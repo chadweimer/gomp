@@ -1,0 +1,7 @@
+{{template "shared/header" .}}
+<ul>
+    {{range $index, $recipe := .Recipes}}
+    <li><a href="/recipes/{{$recipe.ID}}">{{$recipe.Name}}</a></li>
+    {{end}}
+</ul>
+{{template "shared/footer" .}}
