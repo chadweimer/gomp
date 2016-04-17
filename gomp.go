@@ -13,9 +13,13 @@ func main() {
 
 	m.Get("/", routers.Home)
 	m.Group("/recipes", func() {
-		m.Get("/", routers.Recipes)
-		m.Get("/:id:int", routers.Recipe)
+		m.Get("/", routers.ListRecipes)
+		m.Get("/:id:int", routers.GetRecipe)
 	})
+	//m.Group("/meals", func() {
+	//	m.Get("/", routers.Meal)
+	//	m.Get(/:id:int, routers.Meals)
+	//})
 
 	m.Run()
 }
