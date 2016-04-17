@@ -11,7 +11,10 @@ func main() {
 	m.Use(macaron.Renderer())
 	m.Use(macaron.Static("public"))
 
+	// TODO: Redirect to install page if this is first run
+
 	m.Get("/", routers.Home)
+	m.Get("/install", routers.Install)
 	m.Group("/recipes", func() {
 		m.Get("/", routers.ListRecipes)
 		m.Get("/:id:int", routers.GetRecipe)

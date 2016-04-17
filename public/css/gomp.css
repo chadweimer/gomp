@@ -1,0 +1,13 @@
+#pageHeader {
+    border-bottom: 1px solid gray;
+    margin: 0px 0px 20px 0px;
+}
+
+#pageFooter {
+    border-top: 1px solid gray;
+    margin: 20px 0px 0px 0px;
+}
+
+#pageNav {
+    display: inline;
+}
