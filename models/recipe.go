@@ -4,28 +4,36 @@ import "database/sql"
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID   int
-	Name string
+	ID          int
+	Name        string
+	Description string
 }
 
 func GetRecipeByID(id int) (*Recipe, error) {
-	db := OpenDatabase()
+	db, err := OpenDatabase()
+	if err != nil {
+		return nil, err
+	}
 	defer db.Close()
 
 	var name string
-	err := db.QueryRow("SELECT name FROM recipes WHERE id = $1", id).Scan(&name)
+	var description string
+	err = db.QueryRow("SELECT name, description FROM recipes WHERE id = $1", id).Scan(&name, &description)
 	switch {
-		case err == sql.ErrNoRows:
-			return nil, nil
-		case err != nil:
-			return nil, err
-		default:
-			return &Recipe{ID: id, Name: name}, nil
+	case err == sql.ErrNoRows:
+		return nil, nil
+	case err != nil:
+		return nil, err
+	default:
+		return &Recipe{ID: id, Name: name, Description: description}, nil
 	}
 }
 
 func ListRecipes() ([]*Recipe, error) {
-	db := OpenDatabase()
+	db, err := OpenDatabase()
+	if err != nil {
+		return nil, err
+	}
 	defer db.Close()
 
 	var recipes []*Recipe
@@ -36,8 +44,9 @@ func ListRecipes() ([]*Recipe, error) {
 	for rows.Next() {
 		var id int
 		var name string
-		rows.Scan(&id, &name)
-		recipes = append(recipes, &Recipe{ID: id, Name: name})
+		var description string
+		rows.Scan(&id, &name, &description)
+		recipes = append(recipes, &Recipe{ID: id, Name: name, Description: description})
 	}
 
 	return recipes, nil

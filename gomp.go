@@ -13,16 +13,19 @@ func main() {
 
 	// TODO: Redirect to install page if this is first run
 
-	m.Get("/", routers.Home)
+	m.Group("/", func() {
+		m.Get("", routers.Home)
+		m.Group("recipes", func() {
+			m.Get("", routers.ListRecipes)
+			m.Get(":id:int", routers.GetRecipe)
+		})
+		//m.Group("/meals", func() {
+		//	m.Get("/", routers.Meal)
+		//	m.Get(/:id:int, routers.Meals)
+		//})
+	}, routers.CheckInstalled)
+
 	m.Get("/install", routers.Install)
-	m.Group("/recipes", func() {
-		m.Get("/", routers.ListRecipes)
-		m.Get("/:id:int", routers.GetRecipe)
-	})
-	//m.Group("/meals", func() {
-	//	m.Get("/", routers.Meal)
-	//	m.Get(/:id:int, routers.Meals)
-	//})
 
 	m.Run()
 }
