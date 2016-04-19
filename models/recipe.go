@@ -4,12 +4,12 @@ import "database/sql"
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID          int
+	ID          int64
 	Name        string
 	Description string
 }
 
-func GetRecipeByID(id int) (*Recipe, error) {
+func GetRecipeByID(id int64) (*Recipe, error) {
 	db, err := OpenDatabase()
 	if err != nil {
 		return nil, err
@@ -37,12 +37,12 @@ func ListRecipes() ([]*Recipe, error) {
 	defer db.Close()
 
 	var recipes []*Recipe
-	rows, err := db.Query("SELECT id, name FROM recipes")
+	rows, err := db.Query("SELECT id, name, description FROM recipes")
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var id int
+		var id int64
 		var name string
 		var description string
 		rows.Scan(&id, &name, &description)
@@ -50,4 +50,20 @@ func ListRecipes() ([]*Recipe, error) {
 	}
 
 	return recipes, nil
+}
+
+func CreateRecipe(name string, description string) (*Recipe, error) {
+	db, err := OpenDatabase()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	result, err := db.Exec("INSERT INTO recipes (name, description) VALUES ($1, $2)", name, description)
+	if err != nil {
+		return nil, err
+	}
+	id, err := result.LastInsertId()
+
+	return &Recipe{ID: id, Name: name, Description: description}, nil
 }

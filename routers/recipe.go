@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"fmt"
 	"gomp/models"
 	"net/http"
 	"strconv"
@@ -8,9 +9,14 @@ import (
 	"gopkg.in/macaron.v1"
 )
 
+type RecipeForm struct {
+	Name string `binding:"Required"`
+	Description string
+}
+
 // GetRecipe handles retrieving and rendering a single recipe
 func GetRecipe(ctx *macaron.Context) {
-	id, err := strconv.Atoi(ctx.Params("id"))
+	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
 	if err != nil {
 		InternalServerError(ctx)
 		return
@@ -24,7 +30,7 @@ func GetRecipe(ctx *macaron.Context) {
 			NotFound(ctx)
 		default:
 			ctx.Data["Recipe"] = r
-			ctx.HTML(http.StatusOK, "recipe")
+			ctx.HTML(http.StatusOK, "recipe/view")
 	}
 }
 
@@ -36,5 +42,17 @@ func ListRecipes(ctx *macaron.Context) {
 		return
 	}
 	ctx.Data["Recipes"] = recipes
-	ctx.HTML(http.StatusOK, "recipes")
+	ctx.HTML(http.StatusOK, "recipe/list")
+}
+
+func CreateRecipe(ctx *macaron.Context) {
+	ctx.HTML(http.StatusOK, "recipe/create")
+}
+
+func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
+	recipe, err := models.CreateRecipe(form.Name, form.Description)
+	if err != nil {
+
+	}
+	ctx.Redirect(fmt.Sprintf("/recipes/%d", recipe.ID))
 }

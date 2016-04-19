@@ -1,0 +1,15 @@
+{{template "shared/header" .}}
+<form action="/recipes/create" method="post">
+    <div>
+        <span>Name</span>
+	<input name="name" type="text"/>
+    </div>
+    <div>
+        <span>Description</span>
+        <input name="description" type="text"/>
+    </div>
+    <div>
+        <input type="submit" value="Create"/>
+    </div>
+</form>
+{{template "shared/footer" .}}

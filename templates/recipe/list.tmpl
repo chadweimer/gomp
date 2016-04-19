@@ -1,4 +1,7 @@
 {{template "shared/header" .}}
+<div>
+    <a href="/recipes/create">Add a recipe</a>
+</div>
 <ul>
     {{range $index, $recipe := .Recipes}}
     <li><a href="/recipes/{{$recipe.ID}}">{{$recipe.Name}}</a></li>
