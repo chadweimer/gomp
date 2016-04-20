@@ -56,3 +56,38 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 	}
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", recipe.ID))
 }
+
+func EditRecipe(ctx *macaron.Context) {
+    id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+    if err != nil {
+        InternalServerError(ctx)
+        return
+    }
+
+    r, err := models.GetRecipeByID(id)
+    switch {
+        case err != nil:
+            InternalServerError(ctx)
+        case r == nil:
+            NotFound(ctx)
+        default:
+            ctx.Data["Recipe"] = r
+            ctx.HTML(http.StatusOK, "recipe/edit")
+    }
+}
+
+func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
+    id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+    if err != nil {
+        InternalServerError(ctx)
+        return
+    }
+
+    r := models.Recipe{ID: id, Name: form.Name, Description: form.Description}
+    err = r.Update()
+    if err != nil {
+        InternalServerError(ctx)
+        return
+    }
+    ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+}

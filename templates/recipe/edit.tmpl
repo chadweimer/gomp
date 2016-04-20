@@ -2,14 +2,14 @@
 <form method="post">
     <div>
         <span>Name</span>
-	<input name="name" type="text"/>
+	<input name="name" type="text" value="{{.Recipe.Name}}"/>
     </div>
     <div>
         <span>Description</span>
-        <input name="description" type="text"/>
+        <input name="description" type="text" value="{{.Recipe.Description}}"/>
     </div>
     <div>
-        <input type="submit" value="Create"/>
+        <input type="submit" value="Save"/>
     </div>
 </form>
 {{template "shared/footer" .}}
