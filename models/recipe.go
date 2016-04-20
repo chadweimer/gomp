@@ -68,13 +68,13 @@ func CreateRecipe(name string, description string) (*Recipe, error) {
 	return &Recipe{ID: id, Name: name, Description: description}, nil
 }
 
-func (r *Recipe) Update() error {
+func UpdateRecipe(r *Recipe) error {
     db, err := OpenDatabase()
     if err != nil {
         return err
     }
     defer db.Close()
 
-    _, err = db.Exec("UPDATE recipes SET name = $2, description = $3 WHERE id = $1", r.ID, r.Name, r.Description)
+    _, err = db.Exec("UPDATE recipes SET name = $1, description = $2 WHERE id = $3", r.Name, r.Description, r.ID)
     return err
 }

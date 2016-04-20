@@ -83,8 +83,15 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
         return
     }
 
-    r := models.Recipe{ID: id, Name: form.Name, Description: form.Description}
-    err = r.Update()
+    r, err := models.GetRecipeByID(id)
+    if err != nil {
+        InternalServerError(ctx)
+        return
+    }
+
+    r.Name = form.Name
+    r.Description = form.Description
+    err = models.UpdateRecipe(r)
     if err != nil {
         InternalServerError(ctx)
         return
