@@ -1,15 +1,13 @@
 {{template "shared/header" .}}
 <form method="post">
-    <div>
-        <span>Name</span>
-    <input name="name" type="text" value="{{.Recipe.Name}}"/>
-    </div>
-    <div>
-        <span>Description</span>
-        <input name="description" type="text" value="{{.Recipe.Description}}"/>
-    </div>
-    <div>
-        <input type="submit" value="Save"/>
-    </div>
+    <p>
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" value="{{.Recipe.Name}}" required autofocus>
+    </p>
+    <p>
+        <label for="description">Description</label>
+        <input id="description" name="description" type="text" value="{{.Recipe.Description}}">
+    </p>
+    <input type="submit" value="Save">
 </form>
 {{template "shared/footer" .}}

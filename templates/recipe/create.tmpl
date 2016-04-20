@@ -1,15 +1,13 @@
 {{template "shared/header" .}}
 <form method="post">
-    <div>
-        <span>Name</span>
-    <input name="name" type="text"/>
-    </div>
-    <div>
-        <span>Description</span>
-        <input name="description" type="text"/>
-    </div>
-    <div>
-        <input type="submit" value="Create"/>
-    </div>
+    <p>
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required autofocus>
+    </p>
+    <p>
+        <label for="description">Description</label>
+        <input id="description" name="description" type="text">
+    </p>
+    <input type="submit" value="Create">
 </form>
 {{template "shared/footer" .}}
