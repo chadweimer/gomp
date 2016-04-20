@@ -1,10 +1,10 @@
 package main
 
 import (
-	"gomp/routers"
+    "gomp/routers"
 
-	"github.com/go-macaron/binding"
-	"gopkg.in/macaron.v1"
+    "github.com/go-macaron/binding"
+    "gopkg.in/macaron.v1"
 )
 
 func main() {
@@ -22,8 +22,8 @@ func main() {
         m.Post("/edit/:id:int", binding.Bind(routers.RecipeForm{}), routers.EditRecipePost)
     }, routers.CheckInstalled)
     //m.Group("/meals", func() {
-    //	m.Get("/", routers.Meal)
-    //	m.Get(/:id:int, routers.Meals)
+    //  m.Get("/", routers.Meal)
+    //  m.Get(/:id:int, routers.Meals)
     //}, routers.CheckInstalled)
     m.Get("/install", routers.Install)
 

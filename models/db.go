@@ -1,14 +1,14 @@
 package models
 
 import (
-	"database/sql"
+    "database/sql"
 
-	// sqlite3 database driver
-	_ "github.com/mattn/go-sqlite3"
+    // sqlite3 database driver
+    _ "github.com/mattn/go-sqlite3"
 )
 
 func OpenDatabase() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "./data/gomp.db")
+    db, err := sql.Open("sqlite3", "./data/gomp.db")
 
-	return db, err
+    return db, err
 }
