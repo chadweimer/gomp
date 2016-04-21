@@ -2,7 +2,7 @@
 <section class="row">
     {{range $index, $recipe := .Recipes}}
     <article class="col s12 m4">
-        <div class="card blue-grey darken-1">
+        <div class="card blue-grey darken-1 hoverable">
             <div class="card-content white-text">
                 <span class="card-title">{{$recipe.Name}}</span>
                 <p>{{$recipe.Description}}</p>
@@ -16,5 +16,7 @@
     </article>
     {{end}}
 </section>
-<a class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></a>
+<section class="fixed-action-btn" style="bottom: 75px; right: 24px;">
+    <a href="/recipes/create" class="btn-floating btn-large waves-effect waves-light red right"><i class="material-icons">add</i></a>
+</section>
 {{template "shared/footer" .}}
