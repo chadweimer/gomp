@@ -2,6 +2,15 @@
 <a href="/recipes">Back to List</a>
 <a href="/recipes/edit/{{.Recipe.ID}}">Edit</a>
 
-<h1>{{.Recipe.Name}}</h1>
-<p>{{.Recipe.Description}}</p>
+<section class="container">
+    <article class="card-panel grey lighten-4">
+        <header>
+            <h4>{{.Recipe.Name}}</h4>
+        </header>
+        <section class="section">
+            <p>{{.Recipe.Description}}</p>
+            <div class="divider"></div>
+        </section>
+    </article>
+</section>
 {{template "shared/footer" .}}
