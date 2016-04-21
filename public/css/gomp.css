@@ -11,3 +11,7 @@ main {
 .required:after {
     content:" *";
 }
+
+.clickable {
+    cursor: pointer;
+}
