@@ -1,13 +1,38 @@
 {{template "shared/header" .}}
-<form method="post">
-    <p>
-        <label for="name">Name</label>
-        <input id="name" name="name" type="text" required autofocus>
-    </p>
-    <p>
-        <label for="description">Description</label>
-        <input id="description" name="description" type="text">
-    </p>
-    <input type="submit" value="Create">
-</form>
+<section class="container">
+    <header class="row">
+        <h4>Add Recipe</h4>
+        <span>Fill in the fields below.</span>
+    </header>
+    <form class="row" method="post">
+        <div class="row">
+            <p class="input-field col s12 l6">
+                <label for="name" class="active required" data-error="A recipe must have a name">Name</label>
+                <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" required autofocus>
+            </p>
+            <p class="input-field col s12 l12">
+                <label for="description" class="active">Description</label>
+                <textarea id="description" name="description" class="materialize-textarea" placeholder="(e.g., Marinated whole chicked pieces, breaded, and then deep fried to golden perfection.)"></textarea>
+            </p>
+            <!--<p class="input-field col s12 l12">
+                <label for="ingredients" class="active required">Ingredients</label>
+                <textarea id="ingredients" class="materialize-textarea" placeholder="List of ingredients needed and their quantities." required></textarea>
+            </p>
+            <p class="input-field col s12 l12">
+                <label for="directions" class="active required">Directions</label>
+                <textarea id="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required></textarea>
+            </p>-->
+        </div>
+        <div class="row">
+            <button type="submit" class="btn waves-effect">
+                Add
+                <i class="material-icons right">add_circle_outline</i>
+            </button>
+            <button type="reset" class="btn waves-effect">
+                Clear
+                <i class="material-icons right">backspace</i>
+            </button>
+        </div>
+    </form>
+</section>
 {{template "shared/footer" .}}

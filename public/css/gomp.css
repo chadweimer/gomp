@@ -1,13 +1,13 @@
-#pageHeader {
-    border-bottom: 1px solid gray;
-    margin: 0px 0px 20px 0px;
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
 }
 
-#pageFooter {
-    border-top: 1px solid gray;
-    margin: 20px 0px 0px 0px;
+main {
+    flex: 1 0 auto;
 }
 
-#pageNav {
-    display: inline;
+.required:after {
+    content:" *";
 }

@@ -1,8 +1,21 @@
-
-        <footer id="pageFooter">
-            <section id="copyright">
-                Copyright &copy; 2016 Chad Weimer
+        </main>
+        
+        <footer class="page-footer no-padding">
+            <section class="footer-copyright">
+                <section class="container">
+                    <span>&copy; 2016 Chad Weimer</span>
+                </section>
             </section>
         </footer>
+
+        <!--Import jQuery before materialize.js-->
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="/js/materialize.js"></script>
+        <script type="text/javascript">
+            // Initialize collapse button
+            $('.button-collapse').sideNav();
+            // Initialize collapsible (uncomment the line below if you use the dropdown variation)
+            $('.collapsible').collapsible();
+        </script>
     </body>
 </html>

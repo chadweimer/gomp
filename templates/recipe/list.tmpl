@@ -1,10 +1,20 @@
 {{template "shared/header" .}}
-<div>
-    <a href="/recipes/create">Add a recipe</a>
-</div>
-<ul>
+<section class="row">
     {{range $index, $recipe := .Recipes}}
-    <li><a href="/recipes/{{$recipe.ID}}">{{$recipe.Name}}</a></li>
+    <article class="col s12 m4">
+        <div class="card blue-grey darken-1">
+            <div class="card-content white-text">
+                <span class="card-title">{{$recipe.Name}}</span>
+                <p>{{$recipe.Description}}</p>
+            </div>
+            <div class="card-action">
+                <a href="/recipes/{{$recipe.ID}}">View</a>
+                <a href="/recipes/edit/{{$recipe.ID}}">Edit</a>
+                <a href="/recipes/delete/{{$recipe.ID}}">Delete</a>
+            </div>
+        </div>
+    </article>
     {{end}}
-</ul>
+</section>
+<a class="btn-floating btn-large waves-effect waves-light red"><i class="material-icons">add</i></a>
 {{template "shared/footer" .}}
