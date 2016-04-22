@@ -2,21 +2,21 @@
 <section class="row">
     {{range $index, $recipe := .Recipes}}
     <article class="col s12 m6 l4">
-        <div class="card grey lighten-4 hoverable clickable" onclick="location.href = '/recipes/{{$recipe.ID}}';">
+        <div class="card grey lighten-4 hoverable" onclick="location.href = '/recipes/{{$recipe.ID}}';">
             <div class="card-content">
+                <i class="material-icons right">more_vert</i>
                 <span class="card-title">{{$recipe.Name}}</span>
                 <p>{{$recipe.Description}}</p>
             </div>
-            <div class="card-action">
-                <a href="/recipes/{{$recipe.ID}}">View</a>
-                <a href="/recipes/edit/{{$recipe.ID}}">Edit</a>
-                <a href="/recipes/delete/{{$recipe.ID}}">Delete</a>
+            <div class="card-action right-align">
+                <a class="waves-effect btn-floating amber darken-2" href="/recipes/edit/{{$recipe.ID}}"><i class="material-icons">edit</i></a>
+                <a class="waves-effect btn-floating red darken-1" href="/recipes/delete/{{$recipe.ID}}"><i class="material-icons">delete</i></a>
             </div>
         </div>
     </article>
     {{end}}
 </section>
-<section class="fixed-action-btn" style="bottom: 25px; right: 25px;">
+<section class="fixed-action-btn">
     <a id="add-recipe-button" href="/recipes/create" class="btn-floating btn-large waves-effect waves-light red right"><i class="material-icons">add</i></a>
 </section>
 {{template "shared/footer" .}}
