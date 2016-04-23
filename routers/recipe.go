@@ -1,17 +1,18 @@
 package routers
 
 import (
-	"fmt"
-	"gomp/models"
-	"net/http"
-	"strconv"
+    "fmt"
+    "gomp/models"
+    "net/http"
+    "strconv"
 
-	"gopkg.in/macaron.v1"
+    "gopkg.in/macaron.v1"
 )
 
 type RecipeForm struct {
-	Name        string `binding:"Required"`
-	Description string
+    Name        string `binding:"Required"`
+    Description string
+    Directions  string
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
@@ -50,7 +51,7 @@ func CreateRecipe(ctx *macaron.Context) {
 }
 
 func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
-	recipe, err := models.CreateRecipe(form.Name, form.Description)
+	recipe, err := models.CreateRecipe(form.Name, form.Description, form.Directions)
 	if err != nil {
 		InternalServerError(ctx)
 		return
@@ -92,6 +93,7 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 
 	r.Name = form.Name
 	r.Description = form.Description
+	r.Directions = form.Directions
 	err = models.UpdateRecipe(r)
 	if err != nil {
 		InternalServerError(ctx)

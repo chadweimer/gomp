@@ -21,7 +21,7 @@ func Install(ctx *macaron.Context) {
     if err != nil {
         log.Fatal(err)
     }
-    _, err = db.Exec("CREATE TABLE recipes (id INTEGER NOT NULL PRIMARY KEY, name TEXT, description TEXT)")
+    _, err = db.Exec("CREATE TABLE recipes (id INTEGER NOT NULL PRIMARY KEY, name TEXT, description TEXT, directions TEXT)")
     if err != nil {
         log.Fatal(err)
     }

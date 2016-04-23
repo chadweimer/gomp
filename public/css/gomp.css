@@ -15,3 +15,8 @@ main {
 .clickable {
     cursor: pointer;
 }
+
+.plain-text {
+    white-space: pre-wrap;
+}
+

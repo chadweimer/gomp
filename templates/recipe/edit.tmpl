@@ -14,21 +14,21 @@
                 <label for="description" class="active">Description</label>
                 <textarea id="description" name="description" class="materialize-textarea" placeholder="(e.g., Marinated whole chicked pieces, breaded, and then deep fried to golden perfection.)">{{.Recipe.Description}}</textarea>
             </p>
-            <!--<p class="input-field col s12 l12">
+            <p class="input-field col s12 l12">
                 <label for="ingredients" class="active required">Ingredients</label>
-                <textarea id="ingredients" class="materialize-textarea" placeholder="List of ingredients needed and their quantities." required></textarea>
+                <textarea id="ingredients" class="materialize-textarea" placeholder="List of ingredients needed and their quantities."></textarea>
             </p>
             <p class="input-field col s12 l12">
                 <label for="directions" class="active required">Directions</label>
-                <textarea id="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required></textarea>
-            </p>-->
+                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
+            </p>
         </div>
         <div class="center">
             <button type="submit" class="btn waves-effect">
                 Save
                 <i class="material-icons right">save</i>
             </button>
-            <button type="reset" class="btn waves-effect">
+            <button type="button" class="btn waves-effect" onclick="history.back();">
                 Cancel
                 <i class="material-icons right">cancel</i>
             </button>
