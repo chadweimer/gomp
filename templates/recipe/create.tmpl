@@ -15,8 +15,12 @@
                 <textarea id="description" name="description" class="materialize-textarea" placeholder="(e.g., Marinated whole chicked pieces, breaded, and then deep fried to golden perfection.)"></textarea>
             </p>
             <p class="input-field col s12 l12">
-                <label for="ingredients" class="active required">Ingredients</label>
-                <textarea id="ingredients" class="materialize-textarea" placeholder="List of ingredients needed and their quantities."></textarea>
+                <label class="active">Ingredients</label>
+                <div id="ingredients" class="col s12 l12"></div>
+            </p>
+            <p class="input-field col s12 l12">
+                <input id="new-ingredient">
+                <button id="add-ingredient" type="button" class="btn wabes-effect">Add</button>
             </p>
             <p class="input-field col s12 l12">
                 <label for="directions" class="active required">Directions</label>
@@ -25,7 +29,7 @@
         </div>
         <div class="center">
             <button type="submit" class="btn waves-effect">
-                Add
+                Create
                 <i class="material-icons right">add_circle_outline</i>
             </button>
             <button type="button" class="btn waves-effect" onclick="history.back();">

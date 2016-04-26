@@ -13,6 +13,7 @@ type RecipeForm struct {
     Name        string `binding:"Required"`
     Description string
     Directions  string
+    Ingredients []string
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
@@ -51,7 +52,7 @@ func CreateRecipe(ctx *macaron.Context) {
 }
 
 func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
-	recipe, err := models.CreateRecipe(form.Name, form.Description, form.Directions)
+	recipe, err := models.CreateRecipe(form.Name, form.Description, form.Directions, form.Ingredients)
 	if err != nil {
 		InternalServerError(ctx)
 		return

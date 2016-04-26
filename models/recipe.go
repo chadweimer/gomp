@@ -55,7 +55,7 @@ func ListRecipes() ([]*Recipe, error) {
 	return recipes, nil
 }
 
-func CreateRecipe(name string, description string, directions string) (*Recipe, error) {
+func CreateRecipe(name string, description string, directions string, ingredients []string) (*Recipe, error) {
 	db, err := OpenDatabase()
 	if err != nil {
 		return nil, err
