@@ -11,6 +11,7 @@ CREATE TABLE recipe_tags (
     tag TEXT NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id)
 );
+CREATE INDEX recipe_tag_idx ON recipe_tags(tag);
 
 CREATE TABLE ingredient (
     id INTEGER NOT NULL PRIMARY KEY,
