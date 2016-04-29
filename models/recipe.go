@@ -4,31 +4,49 @@ import "database/sql"
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID          int64
-	Name        string
-	Description string
-	Directions  string
+    ID          int64
+    Name        string
+    Description string
+    Directions  string
+    Tags        []string
 }
 
 func GetRecipeByID(id int64) (*Recipe, error) {
-	db, err := OpenDatabase()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
+    db, err := OpenDatabase()
+    if err != nil {
+        return nil, err
+    }
+    defer db.Close()
 
-	var name string
-	var description string
-	var directions string
-	err = db.QueryRow("SELECT name, description, directions FROM recipes WHERE id = $1", id).Scan(&name, &description, &directions)
-	switch {
-	case err == sql.ErrNoRows:
-		return nil, nil
-	case err != nil:
-		return nil, err
-	default:
-		return &Recipe{ID: id, Name: name, Description: description, Directions: directions}, nil
-	}
+    var name string
+    var description string
+    var directions string
+    err = db.QueryRow("SELECT name, description, directions FROM recipe WHERE id = $1", id).Scan(&name, &description, &directions)
+    if err == sql.ErrNoRows {
+        return nil, nil
+    }
+    if err != nil {
+        return nil, err
+    }
+
+    var tags []string
+    rows, err := db.Query("SELECT tag FROM recipe_tags WHERE recipe_id = $1", id)
+    if err != nil {
+        return nil, err
+    }
+    for rows.Next() {
+        var tag string
+        rows.Scan(&tag)
+        tags = append(tags, tag)
+    }
+
+    return &Recipe {
+        ID: id,
+        Name: name,
+        Description: description,
+        Directions: directions,
+        Tags: tags,
+    }, nil
 }
 
 func ListRecipes() ([]*Recipe, error) {
@@ -39,7 +57,7 @@ func ListRecipes() ([]*Recipe, error) {
 	defer db.Close()
 
 	var recipes []*Recipe
-	rows, err := db.Query("SELECT id, name, description, directions FROM recipes")
+	rows, err := db.Query("SELECT id, name, description, directions FROM recipe")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +80,7 @@ func CreateRecipe(name string, description string, directions string, ingredient
 	}
 	defer db.Close()
 
-	result, err := db.Exec("INSERT INTO recipes (name, description, directions) VALUES ($1, $2, $3)", name, description, directions)
+	result, err := db.Exec("INSERT INTO recipe (name, description, directions) VALUES ($1, $2, $3)", name, description, directions)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +96,7 @@ func UpdateRecipe(r *Recipe) error {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("UPDATE recipes SET name = $1, description = $2, directions = $3 WHERE id = $4", r.Name, r.Description, r.Directions, r.ID)
+	_, err = db.Exec("UPDATE recipe SET name = $1, description = $2, directions = $3 WHERE id = $4", r.Name, r.Description, r.Directions, r.ID)
 	return err
 }
 
@@ -89,6 +107,6 @@ func DeleteRecipe(id int64) error {
 	}
 	defer db.Close()
 
-	_, err = db.Exec("DELETE FROM recipes WHERE id = $1", id)
+	_, err = db.Exec("DELETE FROM recipe WHERE id = $1", id)
 	return err
 }
