@@ -7,16 +7,20 @@ $(document).ready(function(){
     $('.modal-trigger').leanModal();
 });
 
-$('#add-ingredient').click(function() {
-    var chip = $('<div class="chip"></div>');
-    chip.append(
-        $('#new-ingredient').val(),
-        '<i class="material-icons">close</i>');
-    var input = $('<input type="hidden" name="ingredients">');
-    input.val($('#new-ingredient').val());
-    chip.append(input);
-    $('#ingredients').append(chip);
-    $('#new-ingredient').val('');
-    $('#new-ingredient').focus();
+$('#add-tag').click(function() {
+    var tags = $('#new-tag').val().split(' ');
+    tags.forEach(function(tag) {
+        tag =tag.toLowerCase();
+        var chip = $('<div class="chip"></div>');
+        chip.append(
+            tag,
+            '<i class="material-icons">close</i>');
+        var input = $('<input type="hidden" name="tags">');
+        input.val(tag);
+        chip.append(input);
+        $('#tags').append(chip);
+    });
+    $('#new-tag').val('');
+    $('#new-tag').focus();
 });
 

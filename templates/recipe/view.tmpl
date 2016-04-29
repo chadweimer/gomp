@@ -9,6 +9,14 @@
             <p class="section plain-text">{{.Recipe.Description}}</p>
             <div class="divider"></div>
             <p class="section plain-text">{{.Recipe.Directions}}</p>
+            <div class="divider"></div>
+            <p class="section">
+                {{range $index, $tag := .Recipe.Tags}}
+                <div class="chip">
+                    {{$tag}}
+                </div>
+                {{end}}
+            </p>
         </section>
     </article>
 </section>

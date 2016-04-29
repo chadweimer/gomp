@@ -1,14 +1,21 @@
 package models
 
-import "database/sql"
+import (
+    "strings"
+    "database/sql"
+)
 
 // Recipe is the primary model class for recipe storage and retrieval
-type Recipe struct {
+type RecipeCompact struct {
     ID          int64
     Name        string
     Description string
     Directions  string
-    Tags        []string
+}
+
+type Recipe struct {
+    Tags []string
+    RecipeCompact
 }
 
 func GetRecipeByID(id int64) (*Recipe, error) {
@@ -40,73 +47,111 @@ func GetRecipeByID(id int64) (*Recipe, error) {
         tags = append(tags, tag)
     }
 
-    return &Recipe {
-        ID: id,
-        Name: name,
-        Description: description,
-        Directions: directions,
+    r := &Recipe {
         Tags: tags,
-    }, nil
+    }
+    r.ID = id
+    r.Name = name
+    r.Description = description
+    r.Directions = directions
+    return r, nil
 }
 
-func ListRecipes() ([]*Recipe, error) {
-	db, err := OpenDatabase()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
+func ListRecipes() ([]*RecipeCompact, error) {
+    db, err := OpenDatabase()
+    if err != nil {
+        return nil, err
+    }
+    defer db.Close()
 
-	var recipes []*Recipe
-	rows, err := db.Query("SELECT id, name, description, directions FROM recipe")
-	if err != nil {
-		return nil, err
-	}
-	for rows.Next() {
-		var id int64
-		var name string
-		var description string
-		var directions string
-		rows.Scan(&id, &name, &description, &directions)
-		recipes = append(recipes, &Recipe{ID: id, Name: name, Description: description, Directions: directions})
-	}
+    var recipes []*RecipeCompact
+    rows, err := db.Query("SELECT id, name, description, directions FROM recipe")
+    if err != nil {
+        return nil, err
+    }
+    for rows.Next() {
+        var id int64
+        var name string
+        var description string
+        var directions string
+        rows.Scan(&id, &name, &description, &directions)
+        recipes = append(recipes, &RecipeCompact{ID: id, Name: name, Description: description, Directions: directions})
+    }
 
-	return recipes, nil
+    return recipes, nil
 }
 
-func CreateRecipe(name string, description string, directions string, ingredients []string) (*Recipe, error) {
-	db, err := OpenDatabase()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
+func CreateRecipe(name string, description string, directions string, tags []string) (int64, error) {
+    db, err := OpenDatabase()
+    if err != nil {
+        return -1, err
+    }
+    defer db.Close()
 
-	result, err := db.Exec("INSERT INTO recipe (name, description, directions) VALUES ($1, $2, $3)", name, description, directions)
-	if err != nil {
-		return nil, err
-	}
-	id, err := result.LastInsertId()
+    tx, err := db.Begin()
+    if err != nil {
+        return -1, err
+    }
+    result, err := db.Exec("INSERT INTO recipe (name, description, directions) VALUES ($1, $2, $3)", name, description, directions)
+    if err != nil {
+        return -1, err
+    }
+    id, err := result.LastInsertId()
+    if err != nil {
+        return -1, err
+    }
 
-	return &Recipe{ID: id, Name: name, Description: description}, nil
+    for _, tag := range tags {
+        err = addTagToRecipe(db, id, tag)
+        if err != nil {
+            return -1, err
+        }
+    }
+    tx.Commit()
+
+    return id, nil
 }
 
 func UpdateRecipe(r *Recipe) error {
-	db, err := OpenDatabase()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+    db, err := OpenDatabase()
+    if err != nil {
+        return err
+    }
+    defer db.Close()
 
-	_, err = db.Exec("UPDATE recipe SET name = $1, description = $2, directions = $3 WHERE id = $4", r.Name, r.Description, r.Directions, r.ID)
-	return err
+    tx, err := db.Begin()
+    if err != nil {
+        return err
+    }
+    _, err = db.Exec("UPDATE recipe SET name = $1, description = $2, directions = $3 WHERE id = $4", r.Name, r.Description, r.Directions, r.ID)
+
+    _, err = db.Exec("DELETE FROM recipe_tags WHERE recipe_id = $1", r.ID)
+    if err != nil {
+        return err
+    }
+    for _, tag := range r.Tags {
+        err = addTagToRecipe(db, r.ID, tag)
+        if err != nil {
+            return err
+        }
+    }
+    tx.Commit()
+
+    return nil
+}
+
+func addTagToRecipe(db *sql.DB, recipeID int64, tag string) error {
+    _, err := db.Exec("INSERT INTO recipe_tags (recipe_id, tag) VALUES ($1, $2)", recipeID, strings.ToLower(tag))
+    return err
 }
 
 func DeleteRecipe(id int64) error {
-	db, err := OpenDatabase()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
+    db, err := OpenDatabase()
+    if err != nil {
+        return err
+    }
+    defer db.Close()
 
-	_, err = db.Exec("DELETE FROM recipe WHERE id = $1", id)
-	return err
+    _, err = db.Exec("DELETE FROM recipe WHERE id = $1", id)
+    return err
 }
