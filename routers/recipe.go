@@ -53,6 +53,12 @@ func ListRecipes(ctx *macaron.Context) {
 
 // CreateRecipe handles rendering the create recipe screen
 func CreateRecipe(ctx *macaron.Context) {
+	units, err := models.ListUnits()
+	if err != nil {
+		InternalServerError(ctx)
+		return
+	}
+	ctx.Data["Units"] = units
 	ctx.HTML(http.StatusOK, "recipe/create")
 }
 
@@ -76,15 +82,24 @@ func EditRecipe(ctx *macaron.Context) {
 	}
 
 	r, err := models.GetRecipeByID(id)
-	switch {
-	case err != nil:
+	if err != nil {
 		InternalServerError(ctx)
-	case r == nil:
-		NotFound(ctx)
-	default:
-		ctx.Data["Recipe"] = r
-		ctx.HTML(http.StatusOK, "recipe/edit")
+		return
 	}
+	if r == nil {
+		NotFound(ctx)
+		return
+	}
+
+	units, err := models.ListUnits()
+	if err != nil {
+		InternalServerError(ctx)
+		return
+	}
+
+	ctx.Data["Recipe"] = r
+	ctx.Data["Units"] = units
+	ctx.HTML(http.StatusOK, "recipe/edit")
 }
 
 // EditRecipePost handles processing the supplied

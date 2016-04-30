@@ -29,6 +29,7 @@ function initCreateEditRecipeForm() {
     });
 
     function addIngredientRow() {
+        // Create the static part of the new entry
         const inputHtml =
             '<div class="ingreditent-row col s12 l12 no-padding">' +
                 '<p class="input-field col s2 m2 l2">' +
@@ -37,17 +38,6 @@ function initCreateEditRecipeForm() {
                 '<p class="input-field col s4 m4 l2">' +
                     '<select name="ingredient-unit" required>' +
                         '<option value="" selected disabled>(Choose)</option>' +
-                        '<option value="item">Item</option>' +
-                        '<optgroup label="Volume">' +
-                            '<option value="tsp">Teaspoon</option>' +
-                            '<option value="tbsp">Tablespoon</option>' +
-                            '<option value="cup">Cup</option>' +
-                            '<option value="fl oz">Fluid Ounce</option>' +
-                        '</optgroup>' +
-                        '<optgroup label="Weight">' +
-                            '<option value="lb">Pound</option>' +
-                            '<option value="oz">Ounce</option>' +
-                        '</optgroup>' +
                     '</select>' +
                 '</p>' +
                 '<p class="input-field col s4 m5 l7">' +
@@ -60,11 +50,29 @@ function initCreateEditRecipeForm() {
                 '</span>' +
             '</div>';
         var newIngredientRow = $(inputHtml);
-        $('#ingredients-placeholder').append(newIngredientRow);
-        newIngredientRow.find('select').material_select();
-        newIngredientRow.find('a.btn-floating').click(function() {
+        var select = newIngredientRow.find('select');
+        var removeButton = newIngredientRow.find('a.btn-floating');
+
+        // Add the unit options from the database, grouped by category
+        var currentOptGroup = null;
+        for (i = 0; i < units.length; i++) {
+            if (currentOptGroup == null || currentOptGroup.attr('label') != units[i].category) {
+                currentOptGroup = $('<optgroup></optgroup>');
+                currentOptGroup.attr('label', units[i].category);
+                select.append(currentOptGroup);
+            }
+            currentOptGroup.append(
+                '<option value="' + units[i].id + '">' + units[i].shortName + '</option>');
+        }
+
+        // Enable the remove button to remove the entire entry
+        removeButton.click(function() {
             $(this).parent().parent().remove();
         });
+
+        // Add the new entry to the page
+        $('#ingredients-placeholder').append(newIngredientRow);
+        select.material_select();
     }
 
     $('#add-ingredient-button').click(addIngredientRow);

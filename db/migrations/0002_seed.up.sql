@@ -1,4 +1,7 @@
 INSERT INTO unit(name, short_name, scale_factor, category) VALUES
+    ('Item', 'itm', 1, 'Count');
+
+INSERT INTO unit(name, short_name, scale_factor, category) VALUES
     ('Teaspoon', 'tsp', 1, 'Volume'),
     ('Tablespoon', 'tbsp', 3, 'Volume'),
     ('Fluid Ounce', 'fl oz', 6, 'Volume'),

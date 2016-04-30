@@ -67,7 +67,7 @@ func ListRecipes() ([]*RecipeCompact, error) {
 	defer db.Close()
 
 	var recipes []*RecipeCompact
-	rows, err := db.Query("SELECT id, name, description, directions FROM recipe")
+	rows, err := db.Query("SELECT id, name, description, directions FROM recipe ORDER BY name")
 	if err != nil {
 		return nil, err
 	}
