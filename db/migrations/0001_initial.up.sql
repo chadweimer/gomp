@@ -19,20 +19,23 @@ CREATE TABLE ingredient (
 );
 CREATE INDEX ingredient_name_idx ON ingredient(name);
 
-CREATE TABLE quantity (
+CREATE TABLE unit (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    short_name TEXT
+    short_name TEXT,
+    scale_factor FLOAT NOT NULL,
+    category TEXT NOT NULL
 );
-CREATE INDEX quantity_name_idx ON quantity(name);
-CREATE INDEX quantity_short_name_idx ON quantity(short_name);
+CREATE INDEX unit_name_idx ON unit(name);
+CREATE INDEX unit_short_name_idx ON unit(short_name);
 
 CREATE TABLE recipe_ingedients (
     recipe_id INTEGER NOT NULL,
-    quantity_id INTEGER NOT NULL,
+    unit_id INTEGER NOT NULL,
     ingredient_id INTEGER NOT NULL,
-    amount INTEGER NOT NULL,
+    amount FLOAT NOT NULL,
+    amount_display TEXT,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id),
-    FOREIGN KEY(quantity_id) REFERENCES quantity(id),
+    FOREIGN KEY(unit_id) REFERENCES unit(id),
     FOREIGN KEY(ingredient_id) REFERENCES ingredient(id)
 );
