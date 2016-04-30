@@ -26,7 +26,6 @@ func main() {
 	//  m.Get("/", routers.Meal)
 	//  m.Get(/:id:int, routers.Meals)
 	//}, routers.CheckInstalled)
-	m.Get("/install", routers.Install)
 
 	m.Run()
 }
