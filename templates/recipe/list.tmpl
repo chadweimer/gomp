@@ -9,8 +9,12 @@
                 <p class="plain-text">{{$recipe.Description}}</p>
             </div>
             <div class="card-action right-align">
-                <a class="waves-effect btn-floating amber darken-2" href="/recipes/edit/{{$recipe.ID}}"><i class="material-icons">edit</i></a>
-                <a class="waves-effect btn-floating red darken-1 modal-trigger" href="#delete-confirm-{{$recipe.ID}}"><i class="material-icons">delete</i></a>
+                <a class="waves-effect btn-floating amber darken-2" href="/recipes/edit/{{$recipe.ID}}">
+                    <i class="material-icons">edit</i>
+                </a>
+                <a class="waves-effect btn-floating red darken-1 modal-trigger" href="#delete-confirm-{{$recipe.ID}}">
+                    <i class="material-icons">delete</i>
+                </a>
             </div>
         </div>
         <div id="delete-confirm-{{$recipe.ID}}" class="modal">
@@ -27,6 +31,8 @@
     {{end}}
 </section>
 <section class="fixed-action-btn">
-    <a href="/recipes/create" class="btn-floating btn-large waves-effect green"><i class="material-icons">add</i></a>
+    <a href="/recipes/create" class="btn-floating btn-large waves-effect green">
+        <i class="material-icons">add</i>
+    </a>
 </section>
 {{template "shared/footer" .}}

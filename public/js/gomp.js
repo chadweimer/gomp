@@ -12,15 +12,17 @@ function initCreateEditRecipeForm() {
     $('#add-tag').click(function() {
         var tags = $('#new-tag').val().split(' ');
         tags.forEach(function(tag) {
-            tag =tag.toLowerCase();
-            var chip = $('<div class="chip"></div>');
-            chip.append(
-                tag,
-                '<i class="material-icons">close</i>');
-            var input = $('<input type="hidden" name="tags">');
-            input.val(tag);
-            chip.append(input);
-            $('#tags').append(chip);
+            if (tag.length == 0) {
+                return;
+            }
+            tag = tag.toLowerCase();
+            var chipHtml =
+                '<div class="chip">' +
+                    tag +
+                    '<i class="material-icons">close</i>' +
+                    '<input type="hidden" name="tags" value="' + tag +'">'
+                '</div>'
+            $('#tags').append(chipHtml);
         });
         $('#new-tag').val('');
         $('#new-tag').focus();
@@ -29,10 +31,10 @@ function initCreateEditRecipeForm() {
     function addIngredientRow() {
         const inputHtml =
             '<div class="ingreditent-row col s12 l12 no-padding">' +
-                '<p class="input-field col s6 l2">' +
+                '<p class="input-field col s2 m2 l2">' +
                     '<input name="ingredient-amount" pattern="^([0-9]+/[1-9][0-9]*)|([0-9]*(\.[0-9]+)?)$" required>' +
                 '</p>' +
-                '<p class="input-field col s6 l2">' +
+                '<p class="input-field col s4 m4 l2">' +
                     '<select name="ingredient-unit" required>' +
                         '<option value="" selected disabled>(Choose)</option>' +
                         '<option value="item">Item</option>' +
@@ -48,10 +50,10 @@ function initCreateEditRecipeForm() {
                         '</optgroup>' +
                     '</select>' +
                 '</p>' +
-                '<p class="input-field col s11 l7">' +
+                '<p class="input-field col s4 m5 l7">' +
                     '<input name="ingredient-name" required>' +
                 '</p>' +
-                '<span class="input-field col s1 l1 right-align">' +
+                '<span class="input-field col s2 m1 l1 right-align">' +
                     '<a class="btn-floating red">' +
                         '<i class="material-icons">close</i>'
                     '</a>' +

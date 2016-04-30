@@ -4,56 +4,58 @@
         <h4>Edit Recipe</h4>
         <span>Fill in the fields below.</span>
     </header>
-    <form class="card-panel grey lighten-4" method="post">
+    <form class="" method="post">
         <div class="row">
-            <p class="input-field col s12 l6">
+            <div class="input-field col s12 l6">
                 <label for="name" class="active required" data-error="A recipe must have a name">Name</label>
                 <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" value="{{.Recipe.Name}}" required autofocus>
-            </p>
-            <p class="input-field col s12 l12">
-                <label for="description" class="active">Description</label>
-                <textarea id="description" name="description" class="materialize-textarea" placeholder="(e.g., Marinated whole chicked pieces, breaded, and then deep fried to golden perfection.)">{{.Recipe.Description}}</textarea>
-            </p>
-            <p class="input-field col s12 l12">
-                <label class="active">Ingredients</label>
-            </p>
-            <p class="input-field col s6 l2">
-                <label class="active required">Quantity</label>
-            </p>
-            <p class="input-field col s6 l2">
-                <label class="active required">Units</label>
-            </p>
-            <p class="input-field col s12 l8">
-                <label class="active required">Name</label>
-            </p>
-            <p id="ingredients-placeholder"></p>
-            <span class="col s12 l12 right-align">
-                <button id="add-ingredient-button" type="button" class="btn-floating waves-effect green">
+            </div>
+            <div class="input-field col s10 m11 l5">
+                <label class="active">Tags</label>
+                <input id="new-tag">
+            </div>
+            <div class="input-field col s2 m1 l1 right-align">
+                <button id="add-tag" type="button" class="btn-floating waves-effect green">
                     <i class="material-icons">add</i>
                 </button>
-            </span>
-            <p class="input-field col s12 l12">
-                <label for="directions" class="active required">Directions</label>
-                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
-            </p>
-            <p class="input-field col s12 l12">
-                <label class="active">Tags</label>
-                <div id="tags" class="col s12 l12">
+            </div>
+            <div class="col s12 offset-l6 l6">
+                <span id="tags" class="">
                     {{range $index, $tag := .Recipe.Tags}}
-                    <div class="chip">
+                    <span class="chip">
                         {{$tag}}
                         <i class="material-icons">close</i>
                         <input type="hidden" name="tags" value="{{$tag}}">
-                    </div>
+                    </span>
                     {{end}}
-                </div>
-            </p>
-            <p class="input-field col s8 l4">
-                <input id="new-tag">
-            </p>
-            <p class="col s4 l4">
-                <button id="add-tag" type="button" class="btn waves-effect">Add</button>
-            </p>
+                </span>
+            </div>
+            <div class="input-field col s12 l12">
+                <label for="description" class="active">Description</label>
+                <textarea id="description" name="description" class="materialize-textarea" placeholder="(e.g., Marinated whole chicked pieces, breaded, and then deep fried to golden perfection.)">{{.Recipe.Description}}</textarea>
+            </div>
+            <div class="input-field col s12 l12">
+                <label class="active">Ingredients</label>
+            </div>
+            <div class="input-field col s2 m2 l2">
+                <label class="active required">Quantity</label>
+            </div>
+            <div class="input-field col s4 m4 l2">
+                <label class="active required">Units</label>
+            </div>
+            <div class="input-field col s6 m6 l8">
+                <label class="active required">Name</label>
+            </div>
+            <div id="ingredients-placeholder"></div>
+            <div class="col offset-s10 s2 offset-m11 m1 offset-l11 l1 right-align">
+                <button id="add-ingredient-button" type="button" class="btn-floating waves-effect green">
+                    <i class="material-icons">add</i>
+                </button>
+            </div>
+            <div class="input-field col s12 l12">
+                <label for="directions" class="active required">Directions</label>
+                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
+            </div>
         </div>
         <div class="center">
             <button type="submit" class="btn waves-effect">
