@@ -23,7 +23,7 @@ CREATE TABLE unit (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     short_name TEXT,
-    scale_factor FLOAT NOT NULL,
+    scale_factor REAL NOT NULL,
     category TEXT NOT NULL
 );
 CREATE INDEX unit_name_idx ON unit(name);
@@ -33,7 +33,7 @@ CREATE TABLE recipe_ingedients (
     recipe_id INTEGER NOT NULL,
     unit_id INTEGER NOT NULL,
     ingredient_id INTEGER NOT NULL,
-    amount FLOAT NOT NULL,
+    amount REAL NOT NULL,
     amount_display TEXT,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id),
     FOREIGN KEY(unit_id) REFERENCES unit(id),

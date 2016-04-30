@@ -30,7 +30,7 @@ function initCreateEditRecipeForm() {
         const inputHtml =
             '<div class="ingreditent-row col s12 l12 no-padding">' +
                 '<p class="input-field col s6 l2">' +
-                    '<input id="ingredient-quantity" name="ingredient-quantity" pattern="^([0-9]+/[1-9][0-9]*)|([0-9]*(\.[0-9]+)?)$" required>' +
+                    '<input name="ingredient-amount" pattern="^([0-9]+/[1-9][0-9]*)|([0-9]*(\.[0-9]+)?)$" required>' +
                 '</p>' +
                 '<p class="input-field col s6 l2">' +
                     '<select name="ingredient-unit" required>' +
