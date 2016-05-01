@@ -8,6 +8,16 @@
             <h4>{{.Recipe.Name}}</h4>
             <p class="section plain-text">{{.Recipe.Description}}</p>
             <div class="divider"></div>
+            <ul>
+                {{range $index, $ingredient := .Recipe.Ingredients}}
+                <li>
+                    <strong>{{$ingredient.AmountDisplay}}</strong>
+                    <span>{{$ingredient.Unit.Name}}</span>
+                    <span>{{$ingredient.Name}}</span>
+                </li>
+                {{end}}
+            </ul>
+            <div class="divider"></div>
             <p class="section plain-text">{{.Recipe.Directions}}</p>
             <div class="divider"></div>
             <p class="section">

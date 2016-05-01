@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"math/big"
 	"strings"
 )
 
@@ -16,7 +17,8 @@ type RecipeCompact struct {
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	Tags []string
+	Tags        []string
+	Ingredients []*Ingredient
 	RecipeCompact
 }
 
@@ -30,7 +32,8 @@ func GetRecipeByID(id int64) (*Recipe, error) {
 	var name string
 	var description string
 	var directions string
-	err = db.QueryRow("SELECT name, description, directions FROM recipe WHERE id = $1", id).Scan(&name, &description, &directions)
+	result := db.QueryRow("SELECT name, description, directions FROM recipe WHERE id = $1", id)
+	err = result.Scan(&name, &description, &directions)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -49,14 +52,20 @@ func GetRecipeByID(id int64) (*Recipe, error) {
 		tags = append(tags, tag)
 	}
 
-	r := &Recipe{
+	recipe := &Recipe{
 		Tags: tags,
 	}
-	r.ID = id
-	r.Name = name
-	r.Description = description
-	r.Directions = directions
-	return r, nil
+	recipe.ID = id
+	recipe.Name = name
+	recipe.Description = description
+	recipe.Directions = directions
+
+	ingredients, err := GetIngredientsByRecipeID(id)
+	if err != nil {
+		return nil, err
+	}
+	recipe.Ingredients = ingredients
+	return recipe, nil
 }
 
 func ListRecipes() ([]*RecipeCompact, error) {
@@ -83,7 +92,14 @@ func ListRecipes() ([]*RecipeCompact, error) {
 	return recipes, nil
 }
 
-func CreateRecipe(name string, description string, directions string, tags []string) (int64, error) {
+func CreateRecipe(
+	name string,
+	description string,
+	directions string,
+	tags []string,
+	ingredientAmounts []string,
+	ingredientUnitIDs []int64,
+	ingredientNames []string) (int64, error) {
 	db, err := OpenDatabase()
 	if err != nil {
 		return -1, err
@@ -109,34 +125,80 @@ func CreateRecipe(name string, description string, directions string, tags []str
 			return -1, err
 		}
 	}
+
+	// TODO: Checks that all the lengths match
+	for i := 0; i < len(ingredientAmounts); i++ {
+		// Convert amount string into a floating point number
+		amountRat := new(big.Rat)
+		amountRat.SetString(ingredientAmounts[i])
+		amount, _ := amountRat.Float64()
+
+		_, err = db.Exec(
+			"INSERT INTO recipe_ingredient (recipe_id, amount, amount_display, name, unit_id) VALUES ($1, $2, $3, $4, $5)",
+			id, amount, ingredientAmounts[i], ingredientNames[i], ingredientUnitIDs[i])
+		if err != nil {
+			return -1, err
+		}
+	}
+
 	tx.Commit()
 
 	return id, nil
 }
 
-func UpdateRecipe(r *Recipe) error {
+func UpdateRecipe(
+	id int64,
+	name string,
+	description string,
+	directions string,
+	tags []string,
+	ingredientAmounts []string,
+	ingredientUnitIDs []int64,
+	ingredientNames []string) error {
 	db, err := OpenDatabase()
 	if err != nil {
 		return err
 	}
-	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec("UPDATE recipe SET name = $1, description = $2, directions = $3 WHERE id = $4", r.Name, r.Description, r.Directions, r.ID)
+	_, err = db.Exec(
+		"UPDATE recipe SET name = $1, description = $2, directions = $3 WHERE id = $4",
+		name, description, directions, id)
 
-	_, err = db.Exec("DELETE FROM recipe_tags WHERE recipe_id = $1", r.ID)
+	// TODO: Deleting and recreating seems inefficent and potentially error prone
+	_, err = db.Exec("DELETE FROM recipe_tags WHERE recipe_id = $1", id)
 	if err != nil {
 		return err
 	}
-	for _, tag := range r.Tags {
-		err = addTagToRecipe(db, r.ID, tag)
+	for _, tag := range tags {
+		err = addTagToRecipe(db, id, tag)
 		if err != nil {
 			return err
 		}
 	}
+
+	// TODO: Deleting and recreating seems inefficent and potentially error prone
+	_, err = db.Exec("DELETE FROM recipe_ingredient WHERE recipe_id = $1", id)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(ingredientAmounts); i++ {
+		// Convert amount string into a floating point number
+		amountRat := new(big.Rat)
+		amountRat.SetString(ingredientAmounts[i])
+		amount, _ := amountRat.Float64()
+
+		_, err = db.Exec(
+			"INSERT INTO recipe_ingredient (recipe_id, amount, amount_display, name, unit_id) VALUES ($1, $2, $3, $4, $5)",
+			id, amount, ingredientAmounts[i], ingredientNames[i], ingredientUnitIDs[i])
+		if err != nil {
+			return err
+		}
+	}
+
 	tx.Commit()
 
 	return nil

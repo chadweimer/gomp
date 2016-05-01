@@ -24,6 +24,16 @@
                     },
                     {{end}}
                 ];
+
+                recipeIngredients = [
+                    {{range $index, $ingredient := .Recipe.Ingredients}}
+                    {
+                        amount:{{$ingredient.AmountDisplay}},
+                        unit:{{$ingredient.Unit.ID}},
+                        name:{{$ingredient.Name}}
+                    },
+                    {{end}}
+                ];
             });
         </script>
         <script type="text/javascript" src="/js/gomp.js"></script>

@@ -13,12 +13,6 @@ CREATE TABLE recipe_tags (
 );
 CREATE INDEX recipe_tag_idx ON recipe_tags(tag);
 
-CREATE TABLE ingredient (
-    id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
-);
-CREATE INDEX ingredient_name_idx ON ingredient(name);
-
 CREATE TABLE unit (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -29,13 +23,13 @@ CREATE TABLE unit (
 CREATE INDEX unit_name_idx ON unit(name);
 CREATE INDEX unit_short_name_idx ON unit(short_name);
 
-CREATE TABLE recipe_ingedients (
-    recipe_id INTEGER NOT NULL,
-    unit_id INTEGER NOT NULL,
-    ingredient_id INTEGER NOT NULL,
+CREATE TABLE recipe_ingredient (
+    name INTEGER NOT NULL,
     amount REAL NOT NULL,
     amount_display TEXT,
+    recipe_id INTEGER NOT NULL,
+    unit_id INTEGER NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id),
-    FOREIGN KEY(unit_id) REFERENCES unit(id),
-    FOREIGN KEY(ingredient_id) REFERENCES ingredient(id)
+    FOREIGN KEY(unit_id) REFERENCES unit(id)
 );
+CREATE INDEX recipe_ingredient_name_idx ON recipe_ingredient(name);

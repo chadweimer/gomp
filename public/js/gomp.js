@@ -28,20 +28,20 @@ function initCreateEditRecipeForm() {
         $('#new-tag').focus();
     });
 
-    function addIngredientRow() {
+    function addIngredientRow(amount, unitId, name) {
         // Create the static part of the new entry
         const inputHtml =
-            '<div class="ingreditent-row col s12 l12 no-padding">' +
+            '<div class="ingredient-row col s12 l12 no-padding">' +
                 '<p class="input-field col s2 m2 l2">' +
-                    '<input name="ingredient-amount" pattern="^([0-9]+/[1-9][0-9]*)|([0-9]*(\.[0-9]+)?)$" required>' +
+                    '<input name="ingredient_amount" pattern="^([0-9]+/[1-9][0-9]*)|([0-9]*(\.[0-9]+)?)$" value="' + amount +'" required>' +
                 '</p>' +
                 '<p class="input-field col s4 m4 l2">' +
-                    '<select name="ingredient-unit" required>' +
+                    '<select name="ingredient_unit" required>' +
                         '<option value="" selected disabled>(Choose)</option>' +
                     '</select>' +
                 '</p>' +
                 '<p class="input-field col s4 m5 l7">' +
-                    '<input name="ingredient-name" required>' +
+                    '<input name="ingredient_name" value="' + name +'" required>' +
                 '</p>' +
                 '<span class="input-field col s2 m1 l1 right-align">' +
                     '<a class="btn-floating red">' +
@@ -64,6 +64,7 @@ function initCreateEditRecipeForm() {
             currentOptGroup.append(
                 '<option value="' + units[i].id + '">' + units[i].shortName + '</option>');
         }
+        select.val(unitId)
 
         // Enable the remove button to remove the entire entry
         removeButton.click(function() {
@@ -75,11 +76,19 @@ function initCreateEditRecipeForm() {
         select.material_select();
     }
 
-    $('#add-ingredient-button').click(addIngredientRow);
+    $('#add-ingredient-button').click(function() {
+        addIngredientRow("", "", "");
+    });
 
     $(document).ready(function() {
-        if ($('.ingreditent-row').length == 0) {
-            addIngredientRow();
+        if (recipeIngredients.length > 0)
+        {
+            recipeIngredients.forEach(function(ingredient) {
+                addIngredientRow(ingredient.amount, ingredient.unit, ingredient.name);
+            });
+        }
+        if ($('.ingredient-row').length == 0) {
+            addIngredientRow("", "", "");
         }
     });
 }
