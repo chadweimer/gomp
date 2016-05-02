@@ -13,8 +13,9 @@ func NotFound(ctx *macaron.Context) {
 }
 
 // InternalServerError handles 500 errors
-func InternalServerError(ctx *macaron.Context) {
-    showError(ctx, http.StatusInternalServerError)
+func InternalServerError(ctx *macaron.Context, err error) {
+	ctx.Data["Error"] = err
+	showError(ctx, http.StatusInternalServerError)
 }
 
 func showError(ctx *macaron.Context, status int) {

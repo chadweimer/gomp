@@ -23,31 +23,27 @@ type RecipeForm struct {
 // GetRecipe handles retrieving and rendering a single recipe
 func GetRecipe(ctx *macaron.Context) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
-	r, err := models.GetRecipeByID(id)
-	switch {
-	case err != nil:
-		fmt.Println(err)
-		InternalServerError(ctx)
-	case r == nil:
-		NotFound(ctx)
-	default:
-		ctx.Data["Recipe"] = r
-		ctx.HTML(http.StatusOK, "recipe/view")
+	recipe, err := models.GetRecipeByID(id)
+	if RedirectIfHasError(ctx, err) {
+		return
 	}
+	if recipe == nil {
+		NotFound(ctx)
+		return
+	}
+
+	ctx.Data["Recipe"] = recipe
+	ctx.HTML(http.StatusOK, "recipe/view")
 }
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func ListRecipes(ctx *macaron.Context) {
 	recipes, err := models.ListRecipes()
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 	ctx.Data["Recipes"] = recipes
@@ -57,9 +53,7 @@ func ListRecipes(ctx *macaron.Context) {
 // CreateRecipe handles rendering the create recipe screen
 func CreateRecipe(ctx *macaron.Context) {
 	units, err := models.ListUnits()
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 	ctx.Data["Units"] = units
@@ -77,9 +71,7 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 		form.IngredientAmount,
 		form.IngredientUnit,
 		form.IngredientName)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
@@ -88,30 +80,25 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 // EditRecipe handles rendering the edit recipe screen
 func EditRecipe(ctx *macaron.Context) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if err != nil {
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
-	r, err := models.GetRecipeByID(id)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	recipe, err := models.GetRecipeByID(id)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	if r == nil {
+	if recipe == nil {
 		NotFound(ctx)
 		return
 	}
 
 	units, err := models.ListUnits()
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
-	ctx.Data["Recipe"] = r
+	ctx.Data["Recipe"] = recipe
 	ctx.Data["Units"] = units
 	ctx.HTML(http.StatusOK, "recipe/edit")
 }
@@ -120,9 +107,7 @@ func EditRecipe(ctx *macaron.Context) {
 // form input from the edit recipe screen
 func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
@@ -135,9 +120,7 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		form.IngredientAmount,
 		form.IngredientUnit,
 		form.IngredientName)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
@@ -146,16 +129,12 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 // DeleteRecipe handles deleting the recipe with the given id
 func DeleteRecipe(ctx *macaron.Context) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
 	err = models.DeleteRecipe(id)
-	if err != nil {
-		fmt.Println(err)
-		InternalServerError(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
