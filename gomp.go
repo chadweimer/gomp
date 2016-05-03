@@ -2,6 +2,8 @@ package main
 
 import (
 	"gomp/routers"
+	"html/template"
+	"strings"
 
 	"github.com/go-macaron/binding"
 	"gopkg.in/macaron.v1"
@@ -9,7 +11,10 @@ import (
 
 func main() {
 	m := macaron.Classic()
-	m.Use(macaron.Renderer())
+	m.Use(macaron.Renderer(macaron.RenderOptions{
+		Funcs: []template.FuncMap{map[string]interface{}{
+			"ToLower": strings.ToLower,
+		}}}))
 	m.Use(macaron.Static("public"))
 
 	m.Get("/", routers.CheckInstalled, routers.Home)
@@ -22,10 +27,6 @@ func main() {
 		m.Post("/edit/:id:int", binding.Bind(routers.RecipeForm{}), routers.EditRecipePost)
 		m.Get("/delete/:id:int", routers.DeleteRecipe)
 	}, routers.CheckInstalled)
-	//m.Group("/meals", func() {
-	//  m.Get("/", routers.Meal)
-	//  m.Get(/:id:int, routers.Meals)
-	//}, routers.CheckInstalled)
 
 	m.Run()
 }

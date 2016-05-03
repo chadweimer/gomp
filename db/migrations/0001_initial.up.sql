@@ -24,6 +24,7 @@ CREATE INDEX unit_name_idx ON unit(name);
 CREATE INDEX unit_short_name_idx ON unit(short_name);
 
 CREATE TABLE recipe_ingredient (
+    id INTEGER NOT NULL PRIMARY KEY,
     name INTEGER NOT NULL,
     amount REAL NOT NULL,
     amount_display TEXT,

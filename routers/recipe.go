@@ -1,8 +1,10 @@
 package routers
 
 import (
+	"database/sql"
 	"fmt"
 	"gomp/models"
+	"math/big"
 	"net/http"
 	"strconv"
 
@@ -27,7 +29,16 @@ func GetRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	recipe, err := models.GetRecipeByID(id)
+	db, err := models.OpenDatabase()
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	defer db.Close()
+
+	recipe := &models.Recipe{
+		ID: id,
+	}
+	err = recipe.Read(db)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -42,19 +53,32 @@ func GetRecipe(ctx *macaron.Context) {
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func ListRecipes(ctx *macaron.Context) {
-	if ctx.Query("q") == "" {
-	recipes, err := models.ListRecipes()
+	db, err := models.OpenDatabase()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	ctx.Data["Recipes"] = recipes
+	defer db.Close()
+
+	recipes := new(models.Recipes)
+	err = recipes.List(db)
+	if RedirectIfHasError(ctx, err) {
+		return
 	}
+
+	ctx.Data["Recipes"] = recipes
 	ctx.HTML(http.StatusOK, "recipe/list")
 }
 
 // CreateRecipe handles rendering the create recipe screen
 func CreateRecipe(ctx *macaron.Context) {
-	units, err := models.ListUnits()
+	db, err := models.OpenDatabase()
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	defer db.Close()
+
+	units := new(models.Units)
+	err = units.List(db)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -65,18 +89,42 @@ func CreateRecipe(ctx *macaron.Context) {
 // CreateRecipePost handles processing the supplied
 // form input from the create recipe screen
 func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
-	id, err := models.CreateRecipe(
-		form.Name,
-		form.Description,
-		form.Directions,
-		form.Tags,
-		form.IngredientAmount,
-		form.IngredientUnit,
-		form.IngredientName)
+	db, err := models.OpenDatabase()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+	defer db.Close()
+
+	recipe := &models.Recipe{
+		Name:        form.Name,
+		Description: form.Description,
+		Directions:  form.Directions,
+		Tags:        form.Tags,
+	}
+
+	// TODO: Checks that all the lengths match
+	for i := 0; i < len(form.IngredientAmount); i++ {
+		// Convert amount string into a floating point number
+		amountRat := new(big.Rat)
+		amountRat.SetString(form.IngredientAmount[i])
+		amount, _ := amountRat.Float64()
+
+		recipe.Ingredients = append(
+			recipe.Ingredients,
+			models.Ingredient{
+				Name:          form.IngredientName[i],
+				Amount:        amount,
+				AmountDisplay: form.IngredientAmount[i],
+				Unit:          models.Unit{ID: form.IngredientUnit[i]},
+			})
+	}
+
+	err = recipe.Create(db)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
+	ctx.Redirect(fmt.Sprintf("/recipes/%d", recipe.ID))
 }
 
 // EditRecipe handles rendering the edit recipe screen
@@ -86,16 +134,24 @@ func EditRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	recipe, err := models.GetRecipeByID(id)
+	db, err := models.OpenDatabase()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	if recipe == nil {
+	defer db.Close()
+
+	recipe := &models.Recipe{ID: id}
+	err = recipe.Read(db)
+	if err == sql.ErrNoRows {
 		NotFound(ctx)
 		return
 	}
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
 
-	units, err := models.ListUnits()
+	units := new(models.Units)
+	err = units.List(db)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -113,18 +169,43 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		return
 	}
 
-	err = models.UpdateRecipe(
-		id,
-		form.Name,
-		form.Description,
-		form.Directions,
-		form.Tags,
-		form.IngredientAmount,
-		form.IngredientUnit,
-		form.IngredientName)
+	db, err := models.OpenDatabase()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
+	defer db.Close()
+
+	recipe := &models.Recipe{
+		ID:          id,
+		Name:        form.Name,
+		Description: form.Description,
+		Directions:  form.Directions,
+		Tags:        form.Tags,
+	}
+
+	// TODO: Checks that all the lengths match
+	for i := 0; i < len(form.IngredientAmount); i++ {
+		// Convert amount string into a floating point number
+		amountRat := new(big.Rat)
+		amountRat.SetString(form.IngredientAmount[i])
+		amount, _ := amountRat.Float64()
+
+		recipe.Ingredients = append(
+			recipe.Ingredients,
+			models.Ingredient{
+				Name:          form.IngredientName[i],
+				Amount:        amount,
+				AmountDisplay: form.IngredientAmount[i],
+				Recipe:        models.Recipe{ID: recipe.ID},
+				Unit:          models.Unit{ID: form.IngredientUnit[i]},
+			})
+	}
+
+	err = recipe.Update(db)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
 }
 
@@ -135,7 +216,14 @@ func DeleteRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	err = models.DeleteRecipe(id)
+	db, err := models.OpenDatabase()
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	defer db.Close()
+
+	recipe := &models.Recipe{ID: id}
+	err = recipe.Delete(db)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}

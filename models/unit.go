@@ -1,7 +1,6 @@
 package models
 
-import "database/sql"
-
+// Unit represents a unit of measure (e.g., tbsp)
 type Unit struct {
 	ID          int64
 	Name        string
@@ -10,63 +9,30 @@ type Unit struct {
 	Category    string
 }
 
-func GetUnitByID(id int64) (*Unit, error) {
+// Units represents a list of Unit objects
+type Units []Unit
+
+func (unit *Unit) Read(id int64) error {
 	db, err := OpenDatabase()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer db.Close()
 
-	var name string
-	var shortName string
-	var scaleFactor float64
-	var category string
-	err = db.QueryRow("SELECT name, short_name, scale_factor, category FROM unit WHERE id = $1", id).Scan(&name, &shortName, &scaleFactor, &category)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &Unit{
-		ID:          id,
-		Name:        name,
-		ShortName:   shortName,
-		ScaleFactor: scaleFactor,
-		Category:    category,
-	}, nil
-
+	row := db.QueryRow("SELECT name, short_name, scale_factor, category FROM unit WHERE id = $1", id)
+	return row.Scan(&unit.Name, &unit.ShortName, &unit.ScaleFactor, &unit.Category)
 }
 
-func ListUnits() ([]*Unit, error) {
-	db, err := OpenDatabase()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	var units []*Unit
+func (units *Units) List(db DbTx) error {
 	rows, err := db.Query("SELECT id, name, short_name, scale_factor, category FROM unit ORDER BY category")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	for rows.Next() {
-		var id int64
-		var name string
-		var shortName string
-		var scaleFactor float64
-		var category string
-		rows.Scan(&id, &name, &shortName, &scaleFactor, &category)
-		var unit = &Unit{
-			ID:          id,
-			Name:        name,
-			ShortName:   shortName,
-			ScaleFactor: scaleFactor,
-			Category:    category,
-		}
-		units = append(units, unit)
+		var unit Unit
+		rows.Scan(&unit.ID, &unit.Name, &unit.ShortName, &unit.ScaleFactor, &unit.Category)
+		*units = append(*units, unit)
 	}
 
-	return units, nil
+	return nil
 }

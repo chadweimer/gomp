@@ -12,7 +12,7 @@
                 {{range $index, $ingredient := .Recipe.Ingredients}}
                 <li>
                     <strong>{{$ingredient.AmountDisplay}}</strong>
-                    <span>{{$ingredient.Unit.Name}}</span>
+                    <span>{{$ingredient.Unit.Name | ToLower}}</span>
                     <span>{{$ingredient.Name}}</span>
                 </li>
                 {{end}}
