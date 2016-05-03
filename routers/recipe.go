@@ -42,11 +42,13 @@ func GetRecipe(ctx *macaron.Context) {
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func ListRecipes(ctx *macaron.Context) {
+	if ctx.Query("q") == "" {
 	recipes, err := models.ListRecipes()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
 	ctx.Data["Recipes"] = recipes
+	}
 	ctx.HTML(http.StatusOK, "recipe/list")
 }
 

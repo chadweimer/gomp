@@ -22,13 +22,21 @@
                     <li><a href="/recipes">Recipes</a></li>
                     <li><a href="/settings">Settings</a></li>
                 </ul>
-                <a href="/" class="brand-logo center hide-on-large-only">GOMP</a>
+                <a href="/" class="brand-logo center hide-on-small-only hide-on-large-only">GOMP</a>
+                <div class="nav-wrapper right">
+                    <form class="nav-wrapper" action="/recipes">
+                        <div class="input-field nav-wrapper">
+                            <input id="search" name="q" type="search" placeholder="Search..." required>
+                            <label for="search"><i class="material-icons">search</i></label>
+                        </div>
+                    </form>
+                </div>
                 <ul id="slide-out" class="side-nav">
                     <li><a href="/">Home</a></li>
                     <li><a href="/recipes">Recipes</a></li>
                     <li><a href="/settings">Settings</a></li>
-                </ul>
-                <a href="#" data-activates="slide-out" class="button-collapse">
+                 </ul>
+                 <a href="#" data-activates="slide-out" class="button-collapse">
                     <i class="material-icons">menu</i>
                 </a>
             </nav>
