@@ -12,17 +12,7 @@ type Unit struct {
 // Units represents a list of Unit objects
 type Units []Unit
 
-func (unit *Unit) Read(id int64) error {
-	db, err := OpenDatabase()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	row := db.QueryRow("SELECT name, short_name, scale_factor, category FROM unit WHERE id = $1", id)
-	return row.Scan(&unit.Name, &unit.ShortName, &unit.ScaleFactor, &unit.Category)
-}
-
+// List retrieves all units from the database
 func (units *Units) List(db DbTx) error {
 	rows, err := db.Query("SELECT id, name, short_name, scale_factor, category FROM unit ORDER BY category")
 	if err != nil {

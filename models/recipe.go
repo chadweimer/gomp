@@ -44,7 +44,7 @@ func (recipe *Recipe) Create(db *sql.DB) error {
 	}
 
 	for _, ingredient := range recipe.Ingredients {
-		ingredient.Recipe.ID = id
+		ingredient.RecipeID = id
 		ingredient.Create(tx)
 	}
 

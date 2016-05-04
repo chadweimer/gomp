@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"os"
 	"fmt"
+	"os"
 
 	"gopkg.in/macaron.v1"
 )
@@ -15,6 +15,8 @@ func CheckInstalled(ctx *macaron.Context) {
 	}
 }
 
+// RedirectIfHasError sends the request to the InternalServerError page
+// if the asupplied error is not nil
 func RedirectIfHasError(ctx *macaron.Context, err error) bool {
 	if err != nil {
 		fmt.Println(err)

@@ -2,6 +2,7 @@ package routers
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"gomp/models"
 	"math/big"
@@ -187,8 +188,16 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 	for i := 0; i < len(form.IngredientAmount); i++ {
 		// Convert amount string into a floating point number
 		amountRat := new(big.Rat)
-		amountRat.SetString(form.IngredientAmount[i])
-		amount, _ := amountRat.Float64()
+		amountRat, ok := amountRat.SetString(form.IngredientAmount[i])
+		var amount float64
+		if ok {
+			amount, ok = amountRat.Float64()
+		}
+		if !ok {
+			RedirectIfHasError(
+				ctx,
+				errors.New("Could not convert supplied ingredient amount"))
+		}
 
 		recipe.Ingredients = append(
 			recipe.Ingredients,
@@ -196,7 +205,7 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 				Name:          form.IngredientName[i],
 				Amount:        amount,
 				AmountDisplay: form.IngredientAmount[i],
-				Recipe:        models.Recipe{ID: recipe.ID},
+				RecipeID:      recipe.ID,
 				Unit:          models.Unit{ID: form.IngredientUnit[i]},
 			})
 	}
