@@ -54,6 +54,18 @@ func GetRecipe(ctx *macaron.Context) {
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func ListRecipes(ctx *macaron.Context) {
+	query := ctx.Query("q")
+	page := ctx.QueryInt("page")
+	fmt.Printf("page = %d", page)
+	if page < 1 {
+		page = 1
+	}
+	count := ctx.QueryInt("count")
+	fmt.Printf("count = %d", count)
+	if count < 1 {
+		count = 15
+	}
+
 	db, err := models.OpenDatabase()
 	if RedirectIfHasError(ctx, err) {
 		return
@@ -61,12 +73,18 @@ func ListRecipes(ctx *macaron.Context) {
 	defer db.Close()
 
 	recipes := new(models.Recipes)
-	err = recipes.List(db)
+	var total int
+	if query == "" {
+		total, err = recipes.List(db, page, count)
+	} else {
+		total, err = recipes.Find(db, query, page, count)
+	}
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
 	ctx.Data["Recipes"] = recipes
+	ctx.Data["ResultCount"] = total
 	ctx.HTML(http.StatusOK, "recipe/list")
 }
 

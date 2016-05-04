@@ -145,19 +145,59 @@ func (recipe *Recipe) Delete(db *sql.DB) error {
 	return nil
 }
 
-func (recipes *Recipes) List(db *sql.DB) error {
-	rows, err := db.Query("SELECT id, name, description, directions FROM recipe ORDER BY name")
+func (recipes *Recipes) List(db *sql.DB, page int, count int) (int, error) {
+	var total int
+	row := db.QueryRow("SELECT count(*) FROM recipe")
+	err := row.Scan(&total)
 	if err != nil {
-		return err
+		return 0, err
+	}
+
+	offset := count * (page - 1)
+	rows, err := db.Query(
+		"SELECT id, name, description, directions FROM recipe ORDER BY name LIMIT ? OFFSET ?",
+		count, offset)
+	if err != nil {
+		return 0, err
 	}
 	for rows.Next() {
 		var recipe Recipe
 		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Directions)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		*recipes = append(*recipes, recipe)
 	}
 
-	return nil
+	return total, nil
+}
+
+func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (int, error) {
+	var total int
+	search = "%" + search + "%"
+	row := db.QueryRow(
+		"SELECT count(*) FROM recipe WHERE name LIKE ? OR description LIKE ? OR directions LIKE ?",
+		search, search, search)
+	err := row.Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+
+	offset := count * (page - 1)
+	rows, err := db.Query(
+		"SELECT id, name, description, directions FROM recipe WHERE name LIKE ? OR description LIKE ? OR directions LIKE ? ORDER BY name LIMIT ? OFFSET ?",
+		search, search, search, count, offset)
+	if err != nil {
+		return 0, err
+	}
+	for rows.Next() {
+		var recipe Recipe
+		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Directions)
+		if err != nil {
+			return 0, err
+		}
+		*recipes = append(*recipes, recipe)
+	}
+
+	return total, nil
 }
