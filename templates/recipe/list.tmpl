@@ -1,11 +1,16 @@
 {{template "shared/header" .}}
 <section class="row">
+    {{if .SearchQuery}}
+    <p class="col s12 l12">
+        Results for search '{{.SearchQuery}}': {{.ResultCount}}
+    </p>
+    {{end}}
     {{range $index, $recipe := .Recipes}}
     <article class="col s12 m6 l4">
         <div class="card grey lighten-4">
             <div class="card-content hoverable clickable" onclick="location.href = '/recipes/{{$recipe.ID}}';">
                 <i class="material-icons right">open_in_new</i>
-                <span class="card-title">{{$recipe.Name}}</span>
+                <h5>{{$recipe.Name}}</h5>
                 <p class="plain-text">{{$recipe.Description}}</p>
             </div>
             <div class="card-action right-align">

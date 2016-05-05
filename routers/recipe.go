@@ -82,6 +82,7 @@ func ListRecipes(ctx *macaron.Context) {
 	}
 
 	ctx.Data["Recipes"] = recipes
+	ctx.Data["SearchQuery"] = query
 	ctx.Data["ResultCount"] = total
 	ctx.HTML(http.StatusOK, "recipe/list")
 }
