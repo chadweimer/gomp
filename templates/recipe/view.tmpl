@@ -30,19 +30,29 @@
         </section>
     </article>
 </section>
-<section class="fixed-action-btn click-to-toggle">
+<section class="fixed-action-btn">
     <a class="btn-floating btn-large waves-effect blue">
         <i class="material-icons">more_vert</i>
     </a>
     <ul>
         <li>
-            <a href="#delete-confirm" class="btn-floating red modal-trigger">
+            <a href="#delete-confirm" class="btn-floating waves-effect red modal-trigger">
                 <i class="material-icons">delete</i>
             </a>
         </li>
         <li>
-            <a href="/recipes/edit/{{.Recipe.ID}}" class="btn-floating amber darken-2">
+            <a href="/recipes/{{.Recipe.ID}}/edit" class="btn-floating waves-effect amber darken-2">
                 <i class="material-icons">mode_edit</i>
+            </a>
+        </li>
+        <li>
+            <a href="#add-image-modal" class="btn-floating waves-effect green modal-trigger">
+                <i class="material-icons">add_a_photo</i>
+            </a>
+        </li>
+        <li>
+            <a href="#add-note-modal" class="btn-floating waves-effect blue modal-trigger">
+                <i class="material-icons">insert_comment</i>
             </a>
         </li>
     </ul>
@@ -54,7 +64,42 @@
     </div>
     <div class="modal-footer">
         <a href="#" class="modal-action modal-close btn-flat">No</a>
-        <a href="/recipes/delete/{{.Recipe.ID}}" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="/recipes/{{.Recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
     </div>
+</div>
+<div id="add-image-modal" class="modal">
+    <form action="/recipes/{{.Recipe.ID}}/attach" method="post">
+        <div class="modal-content">
+            <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
+            <p>Browse to an image file to attach to this recipe.<p>
+            <div class="input-field file-field">
+                <div class="btn">
+                    <span>File</span>
+                    <input name="file_path" type="file">
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="modal-action modal-close btn-flat">Cancel</a>
+            <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
+        </div>
+    </form>
+</div>
+<div id="add-note-modal" class="modal">
+    <form action="/recipes/{{.Recipe.ID}}/note" method="post">
+        <div class="modal-content">
+            <h5 class="blue-text"><i class="material-icons left">insert_comment</i>Add Note</h5>
+            <div class="input-field">
+                <textarea id="note" name="note" class="materialize-textarea" required></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="modal-action modal-close btn-flat">Cancel</a>
+            <button type="submit" class="modal-action modal-close btn-flat">Add</a>
+        </div>
+    </form>
 </div>
 {{template "shared/footer" .}}

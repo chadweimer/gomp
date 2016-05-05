@@ -14,7 +14,7 @@
                 <p class="plain-text">{{$recipe.Description}}</p>
             </div>
             <div class="card-action right-align">
-                <a class="waves-effect btn-floating amber darken-2" href="/recipes/edit/{{$recipe.ID}}">
+                <a class="waves-effect btn-floating amber darken-2" href="/recipes/{{$recipe.ID}}/edit">
                     <i class="material-icons">edit</i>
                 </a>
                 <a class="waves-effect btn-floating red darken-1 modal-trigger" href="#delete-confirm-{{$recipe.ID}}">
@@ -29,7 +29,7 @@
             </div>
             <div class="modal-footer">
                 <a href="#" class="modal-action modal-close btn-flat">No</a>
-                <a href="/recipes/delete/{{$recipe.ID}}" class="modal-action modal-close btn-flat">Yes</a>
+                <a href="/recipes/{{$recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
             </div>
         </div>
     </article>

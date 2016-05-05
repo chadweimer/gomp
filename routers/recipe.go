@@ -113,11 +113,15 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 	}
 	defer db.Close()
 
+	tags := make(models.Tags, len(form.Tags))
+	for _, tag := range form.Tags {
+		tags = append(tags, models.Tag(tag))
+	}
 	recipe := &models.Recipe{
 		Name:        form.Name,
 		Description: form.Description,
 		Directions:  form.Directions,
-		Tags:        form.Tags,
+		Tags:        tags,
 	}
 
 	// TODO: Checks that all the lengths match
@@ -193,12 +197,16 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 	}
 	defer db.Close()
 
+	tags := make(models.Tags, len(form.Tags))
+	for _, tag := range form.Tags {
+		tags = append(tags, models.Tag(tag))
+	}
 	recipe := &models.Recipe{
 		ID:          id,
 		Name:        form.Name,
 		Description: form.Description,
 		Directions:  form.Directions,
-		Tags:        form.Tags,
+		Tags:        tags,
 	}
 
 	// TODO: Checks that all the lengths match
@@ -255,4 +263,22 @@ func DeleteRecipe(ctx *macaron.Context) {
 	}
 
 	ctx.Redirect("/recipes")
+}
+
+func AttachToRecipePost(ctx *macaron.Context) {
+	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
+	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+}
+
+func AddNoteToRecipePost(ctx *macaron.Context) {
+	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
+	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
 }

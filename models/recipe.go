@@ -1,9 +1,6 @@
 package models
 
-import (
-	"database/sql"
-	"strings"
-)
+import "database/sql"
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
@@ -11,7 +8,7 @@ type Recipe struct {
 	Name        string
 	Description string
 	Directions  string
-	Tags        []string
+	Tags        Tags
 	Ingredients Ingredients
 }
 
@@ -35,9 +32,7 @@ func (recipe *Recipe) Create(db *sql.DB) error {
 	}
 
 	for _, tag := range recipe.Tags {
-		_, err = tx.Exec(
-			"INSERT INTO recipe_tags (recipe_id, tag) VALUES ($1, $2)",
-			id, strings.ToLower(tag))
+		tag.Create(tx, id)
 		if err != nil {
 			return err
 		}
@@ -63,23 +58,11 @@ func (recipe *Recipe) Read(db *sql.DB) error {
 		return err
 	}
 
-	var tags []string
-	rows, err := db.Query(
-		"SELECT tag FROM recipe_tags WHERE recipe_id = $1",
-		recipe.ID)
+	err = recipe.Tags.List(db, recipe.ID)
 	if err != nil {
 		return err
 	}
-	for rows.Next() {
-		var tag string
-		err = rows.Scan(&tag)
-		if err != nil {
-			return err
-		}
-		tags = append(tags, tag)
-	}
 
-	recipe.Tags = tags
 	return recipe.Ingredients.List(db, recipe.ID)
 }
 
@@ -93,14 +76,12 @@ func (recipe *Recipe) Update(db *sql.DB) error {
 		recipe.Name, recipe.Description, recipe.Directions, recipe.ID)
 
 	// TODO: Deleting and recreating seems inefficent and potentially error prone
-	_, err = tx.Exec("DELETE FROM recipe_tags WHERE recipe_id = $1", recipe.ID)
+	err = recipe.Tags.DeleteAll(tx, recipe.ID)
 	if err != nil {
 		return err
 	}
 	for _, tag := range recipe.Tags {
-		_, err = tx.Exec(
-			"INSERT INTO recipe_tags (recipe_id, tag) VALUES ($1, $2)",
-			recipe.ID, strings.ToLower(tag))
+		err = tag.Create(tx, recipe.ID)
 		if err != nil {
 			return err
 		}
@@ -130,13 +111,13 @@ func (recipe *Recipe) Delete(db *sql.DB) error {
 		return err
 	}
 
+	err = recipe.Tags.DeleteAll(tx, recipe.ID)
 	_, err = tx.Exec("DELETE FROM recipe_tags WHERE recipe_id = $1", recipe.ID)
 	if err != nil {
 		return err
 	}
 
-	ingredients := new(Ingredients)
-	err = ingredients.DeleteAll(tx, recipe.ID)
+	err = recipe.Ingredients.DeleteAll(tx, recipe.ID)
 	if err != nil {
 		return err
 	}
