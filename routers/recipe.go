@@ -23,6 +23,10 @@ type RecipeForm struct {
 	IngredientName   []string `form:"ingredient_name"`
 }
 
+type NoteForm struct {
+	Note string
+}
+
 // GetRecipe handles retrieving and rendering a single recipe
 func GetRecipe(ctx *macaron.Context) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
@@ -48,7 +52,14 @@ func GetRecipe(ctx *macaron.Context) {
 		return
 	}
 
+	var notes = new(models.Notes)
+	err = notes.List(db, id)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
 	ctx.Data["Recipe"] = recipe
+	ctx.Data["Notes"] = notes
 	ctx.HTML(http.StatusOK, "recipe/view")
 }
 
@@ -274,8 +285,22 @@ func AttachToRecipePost(ctx *macaron.Context) {
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
 }
 
-func AddNoteToRecipePost(ctx *macaron.Context) {
+func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
+	db, err := models.OpenDatabase()
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+
+	note := models.Note {
+		RecipeID: id,
+		Note:     form.Note,
+	}
+	err = note.Create(db)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}

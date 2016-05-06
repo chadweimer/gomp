@@ -3,7 +3,7 @@
     <article class="card grey lighten-4">
         <section class="card-content">
             <a href="/recipes" class="right">
-                <i class="material-icons black-text">close</i>
+                <i class="material-icons black-text">reply</i>
             </a>
             <h4>{{.Recipe.Name}}</h4>
             <p class="section plain-text">{{.Recipe.Description}}</p>
@@ -29,6 +29,18 @@
             </p>
         </section>
     </article>
+    {{range .Notes}}
+    <article class="card grey lighten-4">
+        <section class="card-content">
+            <p class="section">
+                <i class="material-icons left">comment</i>
+                {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
+            </p>
+            <div class="divider"></div>
+            <p class="section">{{.Note}}</p>
+        </section>
+    </article>
+    {{end}}
 </section>
 <section class="fixed-action-btn">
     <a class="btn-floating btn-large waves-effect blue">
@@ -68,7 +80,7 @@
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="/recipes/{{.Recipe.ID}}/attach" method="post">
+    <form action="/recipes/{{.Recipe.ID}}/attach/create" method="post">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -89,7 +101,7 @@
     </form>
 </div>
 <div id="add-note-modal" class="modal">
-    <form action="/recipes/{{.Recipe.ID}}/note" method="post">
+    <form action="/recipes/{{.Recipe.ID}}/note/create" method="post">
         <div class="modal-content">
             <h5 class="blue-text"><i class="material-icons left">insert_comment</i>Add Note</h5>
             <div class="input-field">
