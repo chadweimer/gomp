@@ -15,7 +15,7 @@ func main() {
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ToLower": strings.ToLower,
 		}}}))
-	m.Use(macaron.Static("public"))
+	m.Use(macaron.Static("data/files"))
 
 	m.Get("/", routers.CheckInstalled, routers.Home)
 	m.Group("/recipes", func() {
