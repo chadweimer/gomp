@@ -309,7 +309,7 @@ func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
 		return
 	}
 	
-	destFolderPath := filepath.Join("public", "images", "recipe", strconv.FormatInt(id, 10))
+	destFolderPath := filepath.Join("data", "files", "recipe", strconv.FormatInt(id, 10), "images")
 	err = os.MkdirAll(destFolderPath, os.ModePerm)
 	if RedirectIfHasError(ctx, err) {
 		return
