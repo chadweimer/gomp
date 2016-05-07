@@ -5,9 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"gomp/models"
+	"io/ioutil"
 	"math/big"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"gopkg.in/macaron.v1"
 )
@@ -23,8 +28,15 @@ type RecipeForm struct {
 	IngredientName   []string `form:"ingredient_name"`
 }
 
+// NoteForm encapsulates user input for a note on a recipe
 type NoteForm struct {
 	Note string
+}
+
+// AttachmentForm encapsulates user input for attaching a file (image) to a recipe
+type AttachmentForm struct {
+    FileName    string                `form:"file_name"`
+    FileContent *multipart.FileHeader `form:"file_content"`
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
@@ -276,13 +288,53 @@ func DeleteRecipe(ctx *macaron.Context) {
 	ctx.Redirect("/recipes")
 }
 
-func AttachToRecipePost(ctx *macaron.Context) {
+func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	
+	uploadedFile, err := form.FileContent.Open()
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	defer uploadedFile.Close()
+	
+	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	if ok := isImageFile(uploadedFileData); !ok {
+		RedirectIfHasError(ctx, errors.New("Attachment must be an image"))
+		return
+	}
+	
+	destFolderPath := filepath.Join("public", "images", "recipe", strconv.FormatInt(id, 10))
+	err = os.MkdirAll(destFolderPath, os.ModePerm)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	
+	destFilePath := filepath.Join(destFolderPath, form.FileName)
+	destFile, err := os.Create(destFilePath)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
+	defer destFile.Close()
+	_, err = destFile.Write(uploadedFileData)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+}
+
+func isImageFile(data []byte) bool {
+	contentType := http.DetectContentType(data)
+	if strings.Index(contentType, "image/") != -1 {
+		return  true
+	}
+	return false
 }
 
 func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {

@@ -80,17 +80,17 @@
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="/recipes/{{.Recipe.ID}}/attach/create" method="post">
+    <form action="/recipes/{{.Recipe.ID}}/attach/create" method="post" enctype="multipart/form-data">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
             <div class="input-field file-field">
                 <div class="btn">
                     <span>File</span>
-                    <input name="file_path" type="file">
+                    <input name="file_content" type="file">
                 </div>
                 <div class="file-path-wrapper">
-                    <input class="file-path">
+                    <input name="file_name" class="file-path">
                 </div>
             </div>
         </div>

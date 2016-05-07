@@ -26,7 +26,7 @@ func main() {
 		m.Get("/:id:int/edit", routers.EditRecipe)
 		m.Post("/:id:int/edit", binding.Bind(routers.RecipeForm{}), routers.EditRecipePost)
 		m.Get("/:id:int/delete", routers.DeleteRecipe)
-		m.Post("/:id:int/attach/create", routers.AttachToRecipePost)
+		m.Post("/:id:int/attach/create", binding.Bind(routers.AttachmentForm{}), routers.AttachToRecipePost)
 		m.Post("/:id:int/note/create", binding.Bind(routers.NoteForm{}), routers.AddNoteToRecipePost)
 	}, routers.CheckInstalled)
 
