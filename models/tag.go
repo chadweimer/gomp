@@ -7,7 +7,7 @@ type Tags []Tag
 func (tag *Tag) Create(db DbTx, recipeID int64) error {
 	_, err := db.Exec(
 		"INSERT INTO recipe_tags (recipe_id, tag) VALUES (?, ?)",
-		recipeID, tag)
+		recipeID, string(*tag))
 	return err
 }
 
