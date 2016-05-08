@@ -45,9 +45,14 @@ func (img *RecipeImage) Create(name string, data []byte) error {
 	}
 
 	// Generate the thumbnail
-	thumbPath := filepath.Join(getDirPathForThumbnail(img.RecipeID), name)
+	thumbDir := getDirPathForThumbnail(img.RecipeID)
+	err = os.MkdirAll(thumbDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
 
 	// load image and make 250x250 thumbnail
+	thumbPath := filepath.Join(thumbDir, name)
 	thumbFile, err := imaging.Open(filePath)
 	if err != nil {
 		return err
@@ -60,6 +65,10 @@ func (img *RecipeImage) Create(name string, data []byte) error {
 
 func (imgs *RecipeImages) List(recipeID int64) error {
 	dir := getDirPathForImage(recipeID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return nil
+	}
+	
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return err

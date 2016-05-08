@@ -32,12 +32,25 @@
     <article>
         <ul class="tabs">
             <li class="tab">
-                <a href="#notes-tab">Notes</a>
-            </li>
-            <li class="tab">
                 <a href="#images-tab">Images</a>
             </li>
+            <li class="tab">
+                <a href="#notes-tab">Notes</a>
+            </li>
         </ul>
+        <section id="images-tab">
+            <article class="center">
+            {{range .Images}}
+            <a href="{{.URL}}">
+                {{if .ThumbnailURL}}
+                <img width="250" height="250" src="{{.ThumbnailURL}}">
+                {{else}}
+                <img width="250" height="250" src="{{.URL}}">
+                {{end}}
+            </a>
+            {{end}}
+            </article>
+        </section>
         <section id="notes-tab">
             {{range .Notes}}
             <article class="card grey lighten-4">
@@ -51,19 +64,6 @@
                 </section>
             </article>
             {{end}}
-        </section>
-        <section id="images-tab">
-            <article class="center">
-            {{range .Images}}
-            <a href="{{.URL}}">
-                {{if .ThumbnailURL}}
-                <img width="250" height="250" src="{{.ThumbnailURL}}">
-                {{else}}
-                <img width="250" height="250" src="{{.URL}}">
-                {{end}}
-            </a>
-            {{end}}
-            </article>
         </section>
     </article>
 </section>

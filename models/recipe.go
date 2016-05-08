@@ -8,6 +8,7 @@ type Recipe struct {
 	Name        string
 	Description string
 	Directions  string
+	Image       string
 	Tags        Tags
 	Ingredients Ingredients
 }
@@ -147,6 +148,16 @@ func (recipes *Recipes) List(db *sql.DB, page int, count int) (int, error) {
 		if err != nil {
 			return 0, err
 		}
+		
+		var imgs = new(RecipeImages)
+		err = imgs.List(recipe.ID)
+		if err != nil {
+			return 0, err
+		}
+		if len(*imgs) > 0 {
+			recipe.Image = (*imgs)[0].ThumbnailURL
+		}
+		
 		*recipes = append(*recipes, recipe)
 	}
 
