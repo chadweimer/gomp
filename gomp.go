@@ -20,14 +20,16 @@ func main() {
 	m.Get("/", routers.CheckInstalled, routers.Home)
 	m.Group("/recipes", func() {
 		m.Get("/", routers.ListRecipes)
-		m.Get("/:id:int", routers.GetRecipe)
 		m.Get("/create", routers.CreateRecipe)
 		m.Post("/create", binding.Bind(routers.RecipeForm{}), routers.CreateRecipePost)
-		m.Get("/:id:int/edit", routers.EditRecipe)
-		m.Post("/:id:int/edit", binding.Bind(routers.RecipeForm{}), routers.EditRecipePost)
-		m.Get("/:id:int/delete", routers.DeleteRecipe)
-		m.Post("/:id:int/attach/create", binding.Bind(routers.AttachmentForm{}), routers.AttachToRecipePost)
-		m.Post("/:id:int/note/create", binding.Bind(routers.NoteForm{}), routers.AddNoteToRecipePost)
+		m.Group("/:id:int", func() {
+			m.Get("/", routers.GetRecipe)
+			m.Get("/edit", routers.EditRecipe)
+			m.Post("/edit", binding.Bind(routers.RecipeForm{}), routers.EditRecipePost)
+			m.Get("/delete", routers.DeleteRecipe)
+			m.Post("/attach/create", binding.Bind(routers.AttachmentForm{}), routers.AttachToRecipePost)
+			m.Post("/note/create", binding.Bind(routers.NoteForm{}), routers.AddNoteToRecipePost)
+		})
 	}, routers.CheckInstalled)
 
 	m.Run()
