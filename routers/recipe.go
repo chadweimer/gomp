@@ -9,10 +9,7 @@ import (
 	"math/big"
 	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"gopkg.in/macaron.v1"
 )
@@ -69,9 +66,16 @@ func GetRecipe(ctx *macaron.Context) {
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
+	
+	var imgs = new(models.RecipeImages)
+	err = imgs.List(id)
+	if RedirectIfHasError(ctx, err) {
+		return
+	}
 
 	ctx.Data["Recipe"] = recipe
 	ctx.Data["Notes"] = notes
+	ctx.Data["Images"] = imgs
 	ctx.HTML(http.StatusOK, "recipe/view")
 }
 
@@ -304,37 +308,14 @@ func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	if ok := isImageFile(uploadedFileData); !ok {
-		RedirectIfHasError(ctx, errors.New("Attachment must be an image"))
-		return
-	}
 	
-	destFolderPath := filepath.Join("data", "files", "recipes", strconv.FormatInt(id, 10), "images")
-	err = os.MkdirAll(destFolderPath, os.ModePerm)
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	
-	destFilePath := filepath.Join(destFolderPath, form.FileName)
-	destFile, err := os.Create(destFilePath)
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer destFile.Close()
-	_, err = destFile.Write(uploadedFileData)
+	img := &models.RecipeImage{RecipeID: id}
+	err = img.Create(form.FileName, uploadedFileData)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
 	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
-}
-
-func isImageFile(data []byte) bool {
-	contentType := http.DetectContentType(data)
-	if strings.Index(contentType, "image/") != -1 {
-		return  true
-	}
-	return false
 }
 
 func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {

@@ -20,11 +20,11 @@
             </div>
             <div class="col s12 offset-l6 l6">
                 <span id="tags" class="">
-                    {{range $index, $tag := .Recipe.Tags}}
+                    {{range .Recipe.Tags}}
                     <span class="chip">
-                        {{$tag}}
+                        {{.}}
                         <i class="material-icons">close</i>
-                        <input type="hidden" name="tags" value="{{$tag}}">
+                        <input type="hidden" name="tags" value="{{.}}">
                     </span>
                     {{end}}
                 </span>

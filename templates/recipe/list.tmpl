@@ -5,31 +5,13 @@
         Results for search '{{.SearchQuery}}': {{.ResultCount}}
     </p>
     {{end}}
-    {{range $index, $recipe := .Recipes}}
+    {{range .Recipes}}
     <article class="col s12 m6 l4">
-        <div class="card grey lighten-4">
-            <div class="card-content hoverable clickable" onclick="location.href = '/recipes/{{$recipe.ID}}';">
+        <div class="card grey lighten-4 hoverable clickable">
+            <div class="card-content" onclick="location.href = '/recipes/{{.ID}}';">
                 <i class="material-icons right">open_in_new</i>
-                <h5>{{$recipe.Name}}</h5>
-                <p class="plain-text">{{$recipe.Description}}</p>
-            </div>
-            <div class="card-action right-align">
-                <a class="waves-effect btn-floating amber darken-2" href="/recipes/{{$recipe.ID}}/edit">
-                    <i class="material-icons">edit</i>
-                </a>
-                <a class="waves-effect btn-floating red darken-1 modal-trigger" href="#delete-confirm-{{$recipe.ID}}">
-                    <i class="material-icons">delete</i>
-                </a>
-            </div>
-        </div>
-        <div id="delete-confirm-{{$recipe.ID}}" class="modal">
-            <div class="modal-content">
-                <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-                <p>Are you sure you want to delete '{{$recipe.Name}}'?</p>
-            </div>
-            <div class="modal-footer">
-                <a href="#" class="modal-action modal-close btn-flat">No</a>
-                <a href="/recipes/{{$recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
+                <span class="card-title">{{.Name}}</span>
+                <p class="plain-text">{{.Description}}</p>
             </div>
         </div>
     </article>

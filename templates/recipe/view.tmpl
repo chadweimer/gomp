@@ -9,11 +9,11 @@
             <p class="section plain-text">{{.Recipe.Description}}</p>
             <div class="divider"></div>
             <ul>
-                {{range $index, $ingredient := .Recipe.Ingredients}}
+                {{range .Recipe.Ingredients}}
                 <li>
-                    <strong>{{$ingredient.AmountDisplay}}</strong>
-                    <span>{{$ingredient.Unit.Name | ToLower}}</span>
-                    <span>{{$ingredient.Name}}</span>
+                    <strong>{{.AmountDisplay}}</strong>
+                    <span>{{.Unit.Name | ToLower}}</span>
+                    <span>{{.Name}}</span>
                 </li>
                 {{end}}
             </ul>
@@ -21,26 +21,51 @@
             <p class="section plain-text">{{.Recipe.Directions}}</p>
             <div class="divider"></div>
             <p class="section">
-                {{range $index, $tag := .Recipe.Tags}}
+                {{range .Recipe.Tags}}
                 <div class="chip">
-                    {{$tag}}
+                    {{.}}
                 </div>
                 {{end}}
             </p>
         </section>
     </article>
-    {{range .Notes}}
-    <article class="card grey lighten-4">
-        <section class="card-content">
-            <p class="section">
-                <i class="material-icons left">comment</i>
-                {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
-            </p>
-            <div class="divider"></div>
-            <p class="section">{{.Note}}</p>
+    <article>
+        <ul class="tabs">
+            <li class="tab">
+                <a href="#notes-tab">Notes</a>
+            </li>
+            <li class="tab">
+                <a href="#images-tab">Images</a>
+            </li>
+        </ul>
+        <section id="notes-tab">
+            {{range .Notes}}
+            <article class="card grey lighten-4">
+                <section class="card-content">
+                    <p class="section">
+                        <i class="material-icons left">comment</i>
+                        {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
+                    </p>
+                    <div class="divider"></div>
+                    <p class="section">{{.Note}}</p>
+                </section>
+            </article>
+            {{end}}
+        </section>
+        <section id="images-tab">
+            <article class="center">
+            {{range .Images}}
+            <a href="{{.URL}}">
+                {{if .ThumbnailURL}}
+                <img width="250" height="250" src="{{.ThumbnailURL}}">
+                {{else}}
+                <img width="250" height="250" src="{{.URL}}">
+                {{end}}
+            </a>
+            {{end}}
+            </article>
         </section>
     </article>
-    {{end}}
 </section>
 <section class="fixed-action-btn">
     <a class="btn-floating btn-large waves-effect blue">
