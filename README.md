@@ -17,6 +17,8 @@ go build
 * [Macaron](https://go-macaron.com)
 * [Materialize CSS](http://materializecss.com)
 * [jQuery](https://jquery.com)
+* [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)
+* [disintegration/imaging](https://github.com/disintegration/imaging)
 
 ## License
 
