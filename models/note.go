@@ -3,10 +3,10 @@ package models
 import "time"
 
 type Note struct {
-	ID int64
-	RecipeID int64
-	Note string
-	CreatedAt time.Time
+	ID         int64
+	RecipeID   int64
+	Note       string
+	CreatedAt  time.Time
 	ModifiedAt time.Time
 }
 

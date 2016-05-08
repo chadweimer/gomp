@@ -32,8 +32,8 @@ type NoteForm struct {
 
 // AttachmentForm encapsulates user input for attaching a file (image) to a recipe
 type AttachmentForm struct {
-    FileName    string                `form:"file_name"`
-    FileContent *multipart.FileHeader `form:"file_content"`
+	FileName    string                `form:"file_name"`
+	FileContent *multipart.FileHeader `form:"file_content"`
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
@@ -66,7 +66,7 @@ func GetRecipe(ctx *macaron.Context) {
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	
+
 	var imgs = new(models.RecipeImages)
 	err = imgs.List(id)
 	if RedirectIfHasError(ctx, err) {
@@ -297,18 +297,18 @@ func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	
+
 	uploadedFile, err := form.FileContent.Open()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
 	defer uploadedFile.Close()
-	
+
 	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	
+
 	img := &models.RecipeImage{RecipeID: id}
 	err = img.Create(form.FileName, uploadedFileData)
 	if RedirectIfHasError(ctx, err) {
@@ -329,7 +329,7 @@ func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
 		return
 	}
 
-	note := models.Note {
+	note := models.Note{
 		RecipeID: id,
 		Note:     form.Note,
 	}

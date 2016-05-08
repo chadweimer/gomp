@@ -156,8 +156,8 @@ func (recipes *Recipes) List(db *sql.DB, page int, count int) (int, error) {
 func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (int, error) {
 	var total int
 	search = "%" + search + "%"
-	partialStmt := " FROM recipe AS r "+
-		"INNER JOIN recipe_tags AS t ON t.recipe_id = r.id "+
+	partialStmt := " FROM recipe AS r " +
+		"INNER JOIN recipe_tags AS t ON t.recipe_id = r.id " +
 		"WHERE r.name LIKE ? OR r.description LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
 	countStmt := "SELECT count(r.id)" + partialStmt
 	row := db.QueryRow(countStmt,
