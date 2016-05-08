@@ -6,22 +6,22 @@
     </p>
     {{end}}
     {{range .Recipes}}
-    <article class="col s12 m6 l4">
-        <div class="card small grey lighten-4 hoverable clickable" onclick="location.href = '/recipes/{{.ID}}';">
+    <div class="col s12 m6 l4">
+        <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '/recipes/{{.ID}}';">
             {{if .Image}}
-            <div class="card-image">
+            <section class="card-image">
                 <img src="{{.Image}}" class="darken-25">
                 <span class="card-title">{{.Name}}</span>
-            </div>
+            </section>
             {{end}}
-            <div class="card-content">
+            <section class="card-content">
                 {{if not .Image}}
                 <span class="card-title">{{.Name}}</span>
                 {{end}}
                 <p class="plain-text">{{.Description}}</p>
-            </div>
-        </div>
-    </article>
+            </section>
+        </article>
+    </div>
     {{end}}
 </section>
 <section class="fixed-action-btn">
