@@ -18,7 +18,7 @@ func main() {
 				return a + b
 			},
 		}}}))
-	m.Use(macaron.Static("data"))
+	m.Use(macaron.Static("data/files", macaron.StaticOptions{Prefix: "files"}))
 
 	m.Get("/", routers.CheckInstalled, routers.ListRecipes)
 	m.Group("/recipes", func() {
