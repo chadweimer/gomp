@@ -23,6 +23,85 @@
         </article>
     </div>
     {{end}}
+    
+    {{$baseLink := .PerPage | printf "?q=%s&count=%d&page=" .Query}}
+    <ul class="pagination col s12 l12 center">
+        <li class="{{if eq .PageNum 1}}disabled{{end}}">
+            <a href="{{$baseLink}}1"><i class="material-icons">first_page</i></a>
+        </li>
+        <li class="{{if eq .PageNum 1}}disabled{{end}}">
+            <a href="{{$baseLink}}{{Add .PageNum -1}}"><i class="material-icons">chevron_left</i></a>
+        </li>
+        {{$linkPageNum := .PageNum | Add -5}}
+        {{if gt $linkPageNum 0}}
+        <li class="hide-on-small-only">
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add -4}}
+        {{if gt $linkPageNum 0}}
+        <li class="hide-on-small-only">
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add -3}}
+        {{if gt $linkPageNum 0}}
+        <li class="hide-on-small-only">
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add -2}}
+        {{if gt $linkPageNum 0}}
+        <li>
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add -1}}
+        {{if gt $linkPageNum 0}}
+        <li>
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        <li class="active">
+            <a href="{{$baseLink}}{{.PageNum}}">{{.PageNum}}</a>
+        </li>
+        {{$linkPageNum := .PageNum | Add 1}}
+        {{if le $linkPageNum .NumPages}}
+        <li>
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add 2}}
+        {{if le $linkPageNum .NumPages}}
+        <li>
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add 3}}
+        {{if le $linkPageNum .NumPages}}
+        <li class="hide-on-small-only">
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add 4}}
+        {{if le $linkPageNum .NumPages}}
+        <li class="hide-on-small-only">
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        {{$linkPageNum := .PageNum | Add 5}}
+        {{if le $linkPageNum .NumPages}}
+        <li class="hide-on-small-only">
+            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        </li>
+        {{end}}
+        <li class="{{if eq .PageNum .NumPages}}disabled{{end}}">
+            <a href="{{$baseLink}}{{Add .PageNum 1}}"><i class="material-icons">chevron_right</i></a>
+        </li>
+        <li class="{{if eq .PageNum .NumPages}}disabled{{end}}">
+            <a href="{{$baseLink}}{{.NumPages}}"><i class="material-icons">last_page</i></a>
+        </li>
+    </ul>
 </section>
 <section class="fixed-action-btn">
     <a href="/recipes/create" class="btn-floating btn-large waves-effect green">

@@ -26,3 +26,17 @@ img.darken-25 {
         -ms-filter: brightness(75%);
             filter: brightness(75%);
 }
+
+.fixed-action-btn > a > i {
+  -webkit-transition: -webkit-transform .3s ease-in-out;
+     -moz-transition: -webkit-transform .3s ease-in-out;
+      -ms-transition: -webkit-transform .3s ease-in-out;
+          transition: transform .3s ease-in-out;
+}
+
+.fixed-action-btn > a:hover > i {
+  -webkit-transform: rotate(90deg);
+     -moz-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+          transform: rotate(90deg);
+}
