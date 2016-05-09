@@ -114,5 +114,5 @@ func getDirPathForThumbnail(recipeID int64) string {
 }
 
 func getURLForImage(path string) string {
-	return strings.TrimPrefix(path, filepath.Join("data", "files"))
+	return strings.TrimPrefix(path, filepath.Join("data"))
 }

@@ -168,9 +168,9 @@ func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (in
 	var total int
 	search = "%" + search + "%"
 	partialStmt := " FROM recipe AS r " +
-		"INNER JOIN recipe_tags AS t ON t.recipe_id = r.id " +
+		"LEFT OUTER JOIN recipe_tags AS t ON t.recipe_id = r.id " +
 		"WHERE r.name LIKE ? OR r.description LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
-	countStmt := "SELECT count(r.id)" + partialStmt
+	countStmt := "SELECT count(DISTINCT r.id)" + partialStmt
 	row := db.QueryRow(countStmt,
 		search, search, search, search)
 	err := row.Scan(&total)
@@ -180,7 +180,7 @@ func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (in
 
 	offset := count * (page - 1)
 	selectStmt :=
-		"SELECT r.id, r.name, r.description, r.directions" + partialStmt + " ORDER BY r.name LIMIT ? OFFSET ?"
+		"SELECT DISTINCT r.id, r.name, r.description, r.directions" + partialStmt + " ORDER BY r.name LIMIT ? OFFSET ?"
 	rows, err := db.Query(selectStmt,
 		search, search, search, search, count, offset)
 	if err != nil {
@@ -192,6 +192,16 @@ func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (in
 		if err != nil {
 			return 0, err
 		}
+		
+		var imgs = new(RecipeImages)
+		err = imgs.List(recipe.ID)
+		if err != nil {
+			return 0, err
+		}
+		if len(*imgs) > 0 {
+			recipe.Image = (*imgs)[0].ThumbnailURL
+		}
+		
 		*recipes = append(*recipes, recipe)
 	}
 

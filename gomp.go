@@ -14,10 +14,13 @@ func main() {
 	m.Use(macaron.Renderer(macaron.RenderOptions{
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ToLower": strings.ToLower,
+			"Add": func(a, b int) int {
+				return a + b
+			},
 		}}}))
-	m.Use(macaron.Static("data/files"))
+	m.Use(macaron.Static("data"))
 
-	m.Get("/", routers.CheckInstalled, routers.Home)
+	m.Get("/", routers.CheckInstalled, routers.ListRecipes)
 	m.Group("/recipes", func() {
 		m.Get("/", routers.ListRecipes)
 		m.Get("/create", routers.CreateRecipe)

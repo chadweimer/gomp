@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gomp/models"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"mime/multipart"
 	"net/http"
@@ -108,6 +109,11 @@ func ListRecipes(ctx *macaron.Context) {
 		return
 	}
 
+	ctx.Data["Query"] = query
+	ctx.Data["PageNum"] = page
+	ctx.Data["PerPage"] = count
+	ctx.Data["NumPages"] = int(math.Ceil(float64(total) / float64(count)))
+	
 	ctx.Data["Recipes"] = recipes
 	ctx.Data["SearchQuery"] = query
 	ctx.Data["ResultCount"] = total
@@ -225,8 +231,8 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 	defer db.Close()
 
 	tags := make(models.Tags, len(form.Tags))
-	for _, tag := range form.Tags {
-		tags = append(tags, models.Tag(tag))
+	for i, tag := range form.Tags {
+		tags[i] = models.Tag(tag)
 	}
 	recipe := &models.Recipe{
 		ID:          id,
