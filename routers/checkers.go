@@ -3,15 +3,19 @@ package routers
 import (
 	"fmt"
 	"os"
+	"gomp/models"
 
 	"gopkg.in/macaron.v1"
 )
 
 // CheckInstalled ensures the backend database is present
 func CheckInstalled(ctx *macaron.Context) {
-	if _, err := os.Stat("./data/gomp.db"); os.IsNotExist(err) {
-		// TODO: Redirect to a more specific error page
-		InternalServerError(ctx, err)
+	if _, err := os.Stat("data/gomp.db"); os.IsNotExist(err) {
+		db := new(models.DB)
+		err = db.MigrateUp()
+		if RedirectIfHasError(ctx, err) {
+			return
+		}
 	}
 }
 
