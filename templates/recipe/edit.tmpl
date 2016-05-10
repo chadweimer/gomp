@@ -34,22 +34,8 @@
                 <label for="description" class="active">Description</label>
             </div>
             <div class="input-field col s12 l12">
-                <label class="active">Ingredients</label>
-            </div>
-            <div class="input-field col s2 m2 l2">
-                <label class="active required">Quantity</label>
-            </div>
-            <div class="input-field col s4 m4 l2">
-                <label class="active required">Units</label>
-            </div>
-            <div class="input-field col s6 m6 l8">
-                <label class="active required">Name</label>
-            </div>
-            <div id="ingredients-placeholder"></div>
-            <div class="col offset-s10 s2 offset-m11 m1 offset-l11 l1 right-align">
-                <button id="add-ingredient-button" type="button" class="btn-floating waves-effect green">
-                    <i class="material-icons">add</i>
-                </button>
+                <textarea id="ingredients" name="ingredients" class="materialize-textarea" required>{{.Recipe.Ingredients}}</textarea>
+                <label for="ingredients" class="active">Ingredients</label>
             </div>
             <div class="input-field col s12 l12">
                 <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>

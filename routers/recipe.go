@@ -2,12 +2,10 @@ package routers
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"gomp/models"
 	"io/ioutil"
 	"math"
-	"math/big"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -19,11 +17,9 @@ import (
 type RecipeForm struct {
 	Name             string `binding:"Required"`
 	Description      string
+    Ingredients      string
 	Directions       string
 	Tags             []string
-	IngredientAmount []string `form:"ingredient_amount"`
-	IngredientUnit   []int64  `form:"ingredient_unit"`
-	IngredientName   []string `form:"ingredient_name"`
 }
 
 // NoteForm encapsulates user input for a note on a recipe
@@ -122,18 +118,6 @@ func ListRecipes(ctx *macaron.Context) {
 
 // CreateRecipe handles rendering the create recipe screen
 func CreateRecipe(ctx *macaron.Context) {
-	db, err := models.OpenDatabase()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
-
-	units := new(models.Units)
-	err = units.List(db)
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	ctx.Data["Units"] = units
 	ctx.HTML(http.StatusOK, "recipe/create")
 }
 
@@ -153,25 +137,9 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 	recipe := &models.Recipe{
 		Name:        form.Name,
 		Description: form.Description,
+        Ingredients: form.Ingredients,
 		Directions:  form.Directions,
 		Tags:        tags,
-	}
-
-	// TODO: Checks that all the lengths match
-	for i := 0; i < len(form.IngredientAmount); i++ {
-		// Convert amount string into a floating point number
-		amountRat := new(big.Rat)
-		amountRat.SetString(form.IngredientAmount[i])
-		amount, _ := amountRat.Float64()
-
-		recipe.Ingredients = append(
-			recipe.Ingredients,
-			models.Ingredient{
-				Name:          form.IngredientName[i],
-				Amount:        amount,
-				AmountDisplay: form.IngredientAmount[i],
-				Unit:          models.Unit{ID: form.IngredientUnit[i]},
-			})
 	}
 
 	err = recipe.Create(db)
@@ -205,14 +173,7 @@ func EditRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	units := new(models.Units)
-	err = units.List(db)
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-
 	ctx.Data["Recipe"] = recipe
-	ctx.Data["Units"] = units
 	ctx.HTML(http.StatusOK, "recipe/edit")
 }
 
@@ -238,35 +199,10 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		ID:          id,
 		Name:        form.Name,
 		Description: form.Description,
+        Ingredients: form.Ingredients,
 		Directions:  form.Directions,
 		Tags:        tags,
-	}
-
-	// TODO: Checks that all the lengths match
-	for i := 0; i < len(form.IngredientAmount); i++ {
-		// Convert amount string into a floating point number
-		amountRat := new(big.Rat)
-		amountRat, ok := amountRat.SetString(form.IngredientAmount[i])
-		var amount float64
-		if ok {
-			amount, ok = amountRat.Float64()
-		}
-		if !ok {
-			RedirectIfHasError(
-				ctx,
-				errors.New("Could not convert supplied ingredient amount"))
-		}
-
-		recipe.Ingredients = append(
-			recipe.Ingredients,
-			models.Ingredient{
-				Name:          form.IngredientName[i],
-				Amount:        amount,
-				AmountDisplay: form.IngredientAmount[i],
-				RecipeID:      recipe.ID,
-				Unit:          models.Unit{ID: form.IngredientUnit[i]},
-			})
-	}
+    }
 
 	err = recipe.Update(db)
 	if RedirectIfHasError(ctx, err) {

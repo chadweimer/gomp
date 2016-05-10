@@ -6,21 +6,21 @@ type Tags []Tag
 
 func (tag *Tag) Create(db DbTx, recipeID int64) error {
 	_, err := db.Exec(
-		"INSERT INTO recipe_tags (recipe_id, tag) VALUES (?, ?)",
+		"INSERT INTO recipe_tag (recipe_id, tag) VALUES (?, ?)",
 		recipeID, string(*tag))
 	return err
 }
 
 func (tags *Tags) DeleteAll(db DbTx, recipeID int64) error {
 	_, err := db.Exec(
-		"DELETE FROM recipe_tags WHERE recipe_id = ?",
+		"DELETE FROM recipe_tag WHERE recipe_id = ?",
 		recipeID)
 	return err
 }
 
 func (tags *Tags) List(db DbTx, recipeID int64) error {
 	rows, err := db.Query(
-		"SELECT tag FROM recipe_tags WHERE recipe_id = ?",
+		"SELECT tag FROM recipe_tag WHERE recipe_id = ?",
 		recipeID)
 	if err != nil {
 		return err

@@ -1,36 +1,27 @@
 CREATE TABLE recipe (
     id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    description TEXT,
-    directions TEXT
+    description TEXT NOT NULL,
+    ingredients TEXT NOT NULL,
+    directions TEXT NOT NULL
 );
 CREATE INDEX recipe_name_idx ON recipe(name);
+CREATE INDEX recipe_description_idx ON recipe(description);
+CREATE INDEX recipe_ingtedients_idx ON recipe(ingredients);
+CREATE INDEX recipe_directions_idx ON recipe(description);
 
-CREATE TABLE recipe_tags (
+CREATE TABLE recipe_tag (
     recipe_id INTEGER NOT NULL,
     tag TEXT NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id)
 );
-CREATE INDEX recipe_tag_idx ON recipe_tags(tag);
+CREATE INDEX recipe_tag_idx ON recipe_tag(tag);
 
-CREATE TABLE unit (
+CREATE TABLE recipe_note (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL,
-    short_name TEXT,
-    scale_factor REAL NOT NULL,
-    category TEXT NOT NULL
-);
-CREATE INDEX unit_name_idx ON unit(name);
-CREATE INDEX unit_short_name_idx ON unit(short_name);
-
-CREATE TABLE recipe_ingredient (
-    id INTEGER NOT NULL PRIMARY KEY,
-    name INTEGER NOT NULL,
-    amount REAL NOT NULL,
-    amount_display TEXT,
     recipe_id INTEGER NOT NULL,
-    unit_id INTEGER NOT NULL,
-    FOREIGN KEY(recipe_id) REFERENCES recipe(id),
-    FOREIGN KEY(unit_id) REFERENCES unit(id)
+    note TEXT NOT NULL,
+    created_at DATETIME NOT NULL,
+    modified_at DATETIME NOT NULL,
+    FOREIGN KEY(recipe_id) REFERENCES recipe(id)
 );
-CREATE INDEX recipe_ingredient_name_idx ON recipe_ingredient(name);

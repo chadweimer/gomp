@@ -1,4 +1,3 @@
 DROP TABLE recipe;
-DROP TABLE recipe_tags;
-DROP TABLE unit;
-DROP TABLE recipe_ingredient;
+DROP TABLE recipe_tag;
+DROP TABLE recipe_note;

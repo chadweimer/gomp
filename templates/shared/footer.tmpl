@@ -11,35 +11,6 @@
         <!--Import jQuery before materialize.js-->
         <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="/js/materialize.js"></script>
-        <!-- Initialize page-specific script before gomp.js -->
-        <script type="text/javascript">
-            $(document).ready(function() {
-                {{if .Units}}
-                units = [
-                    {{range $index, $unit := .Units}}
-                    {
-                        id:{{$unit.ID}},
-                        name:{{$unit.Name}},
-                        shortName:{{$unit.ShortName}},
-                        category:{{$unit.Category}}
-                    },
-                    {{end}}
-                ];
-                {{end}}
-
-                {{if .Recipe.Ingredients}}
-                recipeIngredients = [
-                    {{range $index, $ingredient := .Recipe.Ingredients}}
-                    {
-                        amount:{{$ingredient.AmountDisplay}},
-                        unit:{{$ingredient.Unit.ID}},
-                        name:{{$ingredient.Name}}
-                    },
-                    {{end}}
-                ];
-                {{end}}
-            });
-        </script>
         <script type="text/javascript" src="/js/gomp.js"></script>
     </body>
 </html>
