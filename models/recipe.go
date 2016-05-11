@@ -19,9 +19,13 @@ func (recipe *Recipe) Create() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit();
-	
-	return recipe.CreateTx(tx)
+
+	err = recipe.CreateTx(tx)
+    if err != nil {
+        return err
+    }
+
+    return tx.Commit()
 }
 
 func (recipe *Recipe) CreateTx(tx DbTx) error {
@@ -64,9 +68,13 @@ func (recipe *Recipe) Update() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit();
-	
-	return recipe.UpdateTx(tx)
+
+	err = recipe.UpdateTx(tx)
+    if err != nil {
+        return err
+    }
+
+    return tx.Commit()
 }
 
 func (recipe *Recipe) UpdateTx(tx DbTx) error {
@@ -94,9 +102,13 @@ func (recipe *Recipe) Delete() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit();
-	
-	return recipe.DeleteTx(tx)
+
+	err = recipe.DeleteTx(tx)
+    if err != nil {
+        return err
+    }
+
+    return tx.Commit()
 }
 
 func (recipe *Recipe) DeleteTx(tx DbTx) error {

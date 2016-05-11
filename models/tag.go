@@ -9,9 +9,13 @@ func (tag *Tag) Create(recipeID int64) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit();
-	
-	return tag.CreateTx(tx, recipeID)
+
+	err = tag.CreateTx(tx, recipeID)
+    if err != nil {
+        return err
+    }
+
+    return tx.Commit()
 }
 
 func (tag *Tag) CreateTx(tx DbTx, recipeID int64) error {
@@ -26,9 +30,13 @@ func (tags *Tags) DeleteAll(recipeID int64) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit();
-	
-	return tags.DeleteAllTx(tx, recipeID)
+
+	err = tags.DeleteAllTx(tx, recipeID)
+    if err != nil {
+        return err
+    }
+
+    return tx.Commit()
 }
 
 func (tags *Tags) DeleteAllTx(tx DbTx, recipeID int64) error {

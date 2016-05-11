@@ -17,9 +17,13 @@ func (note *Note) Create() error {
 	if err != nil {
 		return err
 	}
-	defer tx.Commit();
-	
-	return note.CreateTx(tx)
+
+	err = note.CreateTx(tx)
+    if err != nil {
+        return err
+    }
+
+    return tx.Commit()
 }
 
 func (note *Note) CreateTx(tx DbTx) error {
