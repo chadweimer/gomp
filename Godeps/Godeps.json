@@ -4,6 +4,11 @@
 	"GodepVersion": "v65",
 	"Deps": [
 		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.2.0-9-gf0aeabc",
+			"Rev": "f0aeabca5a127c4078abb8c8d64298b147264b55"
+		},
+		{
 			"ImportPath": "github.com/Unknwon/com",
 			"Comment": "v1",
 			"Rev": "28b053d5a2923b87ce8c5a08f3af779894a72758"
@@ -13,12 +18,58 @@
 			"Rev": "d8bbae1de109b518dabc98c6c1633eb358c148a4"
 		},
 		{
+			"ImportPath": "github.com/fsnotify/fsnotify",
+			"Comment": "v1.3.0",
+			"Rev": "30411dbcefb7a1da7e84f75530ad3abe4011b4f8"
+		},
+		{
 			"ImportPath": "github.com/go-macaron/binding",
 			"Rev": "bd00823a7e9aa00cb3b1738fde244573ba7cce2c"
 		},
 		{
 			"ImportPath": "github.com/go-macaron/inject",
 			"Rev": "c5ab7bf3a307593cd44cb272d1a5beea473dd072"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/ast",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/parser",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/scanner",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/strconv",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/token",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/json/parser",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/json/scanner",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/json/token",
+			"Rev": "9a905a34e6280ce905da1a32344b25e81011197a"
+		},
+		{
+			"ImportPath": "github.com/magiconair/properties",
+			"Comment": "v1.7.0",
+			"Rev": "c265cfa48dda6474e208715ca93e987829f572f8"
 		},
 		{
 			"ImportPath": "github.com/mattes/migrate/driver",
@@ -56,6 +107,26 @@
 			"Rev": "7204887cf3a42df1cfaa5505dc3a3427f6dded8b"
 		},
 		{
+			"ImportPath": "github.com/mitchellh/mapstructure",
+			"Rev": "d2dd0262208475919e1a362f675cfc0e7c10e905"
+		},
+		{
+			"ImportPath": "github.com/spf13/cast",
+			"Rev": "27b586b42e29bec072fe7379259cc719e1289da6"
+		},
+		{
+			"ImportPath": "github.com/spf13/jwalterweatherman",
+			"Rev": "33c24e77fb80341fe7130ee7c594256ff08ccc46"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "cb88ea77998c3f024757528e3305022ab50b43be"
+		},
+		{
+			"ImportPath": "github.com/spf13/viper",
+			"Rev": "d8a428b8a30606e1d0b355d91edf282609ade1a6"
+		},
+		{
 			"ImportPath": "golang.org/x/image/bmp",
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
@@ -68,6 +139,10 @@
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
 		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "806cb00533e5af545ce95e84b349404f8e5ff7a8"
+		},
+		{
 			"ImportPath": "gopkg.in/ini.v1",
 			"Comment": "v1.11.0",
 			"Rev": "12f418cc7edc5a618a51407b7ac1f1f512139df3"
@@ -76,6 +151,10 @@
 			"ImportPath": "gopkg.in/macaron.v1",
 			"Comment": "v1.1.3",
 			"Rev": "94a5ef7105036242f79e5e07a8eb8651d06c8533"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
 		}
 	]
 }
