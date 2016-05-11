@@ -13,17 +13,17 @@ type Note struct {
 type Notes []Note
 
 func (note *Note) Create() error {
-	tx, err := DB.Sql.Begin();
+	tx, err := DB.Sql.Begin()
 	if err != nil {
 		return err
 	}
 
 	err = note.CreateTx(tx)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 func (note *Note) CreateTx(tx DbTx) error {

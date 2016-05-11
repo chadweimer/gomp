@@ -5,17 +5,17 @@ type Tag string
 type Tags []Tag
 
 func (tag *Tag) Create(recipeID int64) error {
-	tx, err := DB.Sql.Begin();
+	tx, err := DB.Sql.Begin()
 	if err != nil {
 		return err
 	}
 
 	err = tag.CreateTx(tx, recipeID)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 func (tag *Tag) CreateTx(tx DbTx, recipeID int64) error {
@@ -26,17 +26,17 @@ func (tag *Tag) CreateTx(tx DbTx, recipeID int64) error {
 }
 
 func (tags *Tags) DeleteAll(recipeID int64) error {
-	tx, err := DB.Sql.Begin();
+	tx, err := DB.Sql.Begin()
 	if err != nil {
 		return err
 	}
 
 	err = tags.DeleteAllTx(tx, recipeID)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 func (tags *Tags) DeleteAllTx(tx DbTx, recipeID int64) error {

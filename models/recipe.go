@@ -5,7 +5,7 @@ type Recipe struct {
 	ID          int64
 	Name        string
 	Description string
-    Ingredients string
+	Ingredients string
 	Directions  string
 	Image       string
 	Tags        Tags
@@ -15,17 +15,17 @@ type Recipe struct {
 type Recipes []Recipe
 
 func (recipe *Recipe) Create() error {
-	tx, err := DB.Sql.Begin();
+	tx, err := DB.Sql.Begin()
 	if err != nil {
 		return err
 	}
 
 	err = recipe.CreateTx(tx)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 func (recipe *Recipe) CreateTx(tx DbTx) error {
@@ -64,17 +64,17 @@ func (recipe *Recipe) Read() error {
 }
 
 func (recipe *Recipe) Update() error {
-	tx, err := DB.Sql.Begin();
+	tx, err := DB.Sql.Begin()
 	if err != nil {
 		return err
 	}
 
 	err = recipe.UpdateTx(tx)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 func (recipe *Recipe) UpdateTx(tx DbTx) error {
@@ -98,17 +98,17 @@ func (recipe *Recipe) UpdateTx(tx DbTx) error {
 }
 
 func (recipe *Recipe) Delete() error {
-	tx, err := DB.Sql.Begin();
+	tx, err := DB.Sql.Begin()
 	if err != nil {
 		return err
 	}
 
 	err = recipe.DeleteTx(tx)
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return tx.Commit()
+	return tx.Commit()
 }
 
 func (recipe *Recipe) DeleteTx(tx DbTx) error {

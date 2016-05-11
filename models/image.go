@@ -68,7 +68,7 @@ func (imgs *RecipeImages) List(recipeID int64) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return nil
 	}
-	
+
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return err

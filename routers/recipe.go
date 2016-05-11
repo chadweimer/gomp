@@ -15,11 +15,11 @@ import (
 
 // RecipeForm encapsulates user input on the Create and Edit recipe screens
 type RecipeForm struct {
-	Name             string `binding:"Required"`
-	Description      string
-    Ingredients      string
-	Directions       string
-	Tags             []string
+	Name        string `binding:"Required"`
+	Description string
+	Ingredients string
+	Directions  string
+	Tags        []string
 }
 
 // NoteForm encapsulates user input for a note on a recipe
@@ -98,7 +98,7 @@ func ListRecipes(ctx *macaron.Context) {
 	ctx.Data["PageNum"] = page
 	ctx.Data["PerPage"] = count
 	ctx.Data["NumPages"] = int(math.Ceil(float64(total) / float64(count)))
-	
+
 	ctx.Data["Recipes"] = recipes
 	ctx.Data["SearchQuery"] = query
 	ctx.Data["ResultCount"] = total
@@ -120,7 +120,7 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 	recipe := &models.Recipe{
 		Name:        form.Name,
 		Description: form.Description,
-        Ingredients: form.Ingredients,
+		Ingredients: form.Ingredients,
 		Directions:  form.Directions,
 		Tags:        tags,
 	}
@@ -170,10 +170,10 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		ID:          id,
 		Name:        form.Name,
 		Description: form.Description,
-        Ingredients: form.Ingredients,
+		Ingredients: form.Ingredients,
 		Directions:  form.Directions,
 		Tags:        tags,
-    }
+	}
 
 	err = recipe.Update()
 	if RedirectIfHasError(ctx, err) {
