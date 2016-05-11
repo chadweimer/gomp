@@ -21,6 +21,7 @@ go build
 * [mattes/migrate](https://github.com/mattes/migrate)
 * [disintegration/imaging](https://github.com/disintegration/imaging)
 * [GoDep](https://github.com/tools/godep)
+* [Viper](https://github.com/spf13/viper)
 
 ## License
 
