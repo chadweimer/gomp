@@ -7,10 +7,10 @@
     {{end}}
     {{range .Recipes}}
     <div class="col s12 m6 l4">
-        <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '/recipes/{{.ID}}';">
+        <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';">
             {{if .Image}}
             <section class="card-image">
-                <img src="{{.Image}}" class="darken-25">
+                <img src="{{RootUrlPath}}{{.Image}}" class="darken-25">
                 <span class="card-title">{{.Name}}</span>
             </section>
             {{end}}
@@ -104,7 +104,7 @@
     </ul>
 </section>
 <section class="fixed-action-btn">
-    <a href="/recipes/create" class="btn-floating btn-large waves-effect green">
+    <a href="{{RootUrlPath}}/recipes/create" class="btn-floating btn-large waves-effect green">
         <i class="material-icons">add</i>
     </a>
 </section>

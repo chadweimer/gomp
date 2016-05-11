@@ -2,7 +2,7 @@
 <section class="container">
     <article class="card grey lighten-4">
         <section class="card-content">
-            <a href="/recipes" class="right">
+            <a href="{{RootUrlPath}}/recipes" class="right">
                 <i class="material-icons black-text">reply</i>
             </a>
             <h4>{{.Recipe.Name}}</h4>
@@ -33,11 +33,11 @@
         <section id="images-tab">
             <article class="section center">
             {{range .Images}}
-            <a href="{{.URL}}">
+            <a href="{{RootUrlPath}}{{.URL}}">
                 {{if .ThumbnailURL}}
-                <img width="250" height="250" src="{{.ThumbnailURL}}">
+                <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
                 {{else}}
-                <img width="250" height="250" src="{{.URL}}">
+                <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
                 {{end}}
             </a>
             {{end}}
@@ -70,7 +70,7 @@
             </a>
         </li>
         <li>
-            <a href="/recipes/{{.Recipe.ID}}/edit" class="btn-floating waves-effect amber darken-2">
+            <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/edit" class="btn-floating waves-effect amber darken-2">
                 <i class="material-icons">mode_edit</i>
             </a>
         </li>
@@ -93,11 +93,11 @@
     </div>
     <div class="modal-footer">
         <a href="#" class="modal-action modal-close btn-flat">No</a>
-        <a href="/recipes/{{.Recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="/recipes/{{.Recipe.ID}}/attach/create" method="post" enctype="multipart/form-data">
+    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/create" method="post" enctype="multipart/form-data">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -118,7 +118,7 @@
     </form>
 </div>
 <div id="add-note-modal" class="modal">
-    <form action="/recipes/{{.Recipe.ID}}/note/create" method="post">
+    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/create" method="post">
         <div class="modal-content">
             <h5 class="blue-text"><i class="material-icons left">insert_comment</i>Add Note</h5>
             <div class="input-field">

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gomp/modules/conf"
 	"gomp/routers"
 	"html/template"
@@ -11,7 +12,7 @@ import (
 )
 
 func main() {
-	conf.C.Load()
+	rootURLPath := conf.C.GetRootURLPath()
 
 	m := macaron.Classic()
 	m.Use(macaron.Renderer(macaron.RenderOptions{
@@ -20,8 +21,13 @@ func main() {
 			"Add": func(a, b int) int {
 				return a + b
 			},
+			"RootUrlPath": func() string {
+				return rootURLPath
+			},
 		}}}))
-	m.Use(macaron.Static("data/files", macaron.StaticOptions{Prefix: "files"}))
+	m.Use(macaron.Static(fmt.Sprintf("%s/files", conf.C.DataPath), macaron.StaticOptions{
+		Prefix: "files",
+	}))
 
 	m.Get("/", routers.ListRecipes)
 	m.Group("/recipes", func() {
@@ -38,5 +44,7 @@ func main() {
 		})
 	})
 
-	m.Run()
+	m.NotFound(routers.NotFound)
+
+	m.Run("0.0.0.0", conf.C.Port)
 }

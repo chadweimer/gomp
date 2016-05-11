@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"fmt"
+	"gomp/modules/conf"
+	"log"
 	"os"
 
 	"github.com/mattes/migrate/migrate"
@@ -27,29 +30,29 @@ type DbTx interface {
 var DB = new(Database)
 
 func init() {
-	if _, err := os.Stat("data/gomp.db"); os.IsNotExist(err) {
+	if _, err := os.Stat(fmt.Sprintf("%s/gomp.db", conf.C.DataPath)); os.IsNotExist(err) {
 		err = DB.migrateUp()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	err := DB.open()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 // MigrateUp will perform any and all outstanding up database migrations
 func (db *Database) migrateUp() error {
-	if _, err := os.Stat("data"); os.IsNotExist(err) {
-		err = os.Mkdir("data", os.ModePerm)
+	if _, err := os.Stat(conf.C.DataPath); os.IsNotExist(err) {
+		err = os.Mkdir(conf.C.DataPath, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
 
-	allErrs, ok := migrate.UpSync("sqlite3://data/gomp.db", "./db/migrations")
+	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s/gomp.db", conf.C.DataPath), "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {
@@ -64,7 +67,7 @@ func (db *Database) migrateUp() error {
 
 // Open returns a sql.DB instance attached to the database
 func (db *Database) open() error {
-	sqlDB, err := sql.Open("sqlite3", "data/gomp.db")
+	sqlDB, err := sql.Open("sqlite3", fmt.Sprintf("%s/gomp.db", conf.C.DataPath))
 	if err != nil {
 		return err
 	}
