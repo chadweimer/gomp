@@ -6,7 +6,7 @@ Web-based recipe book and weekly meal planner.
 
 ```bash
 cd $GOPATH/src
-git clone http://wmr-lin-pi1/gogs/ghettoc/gomp.git
+git clone https://github.com/chadweimer/gomp.git
 cd gomp
 go build
 ./gomp
@@ -18,7 +18,9 @@ go build
 * [Materialize CSS](http://materializecss.com)
 * [jQuery](https://jquery.com)
 * [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)
+* [mattes/migrate](https://github.com/mattes/migrate)
 * [disintegration/imaging](https://github.com/disintegration/imaging)
+* [GoDep](https://github.com/tools/godep)
 
 ## License
 
