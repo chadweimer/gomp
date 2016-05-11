@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gomp/modules/conf"
 	"gomp/routers"
 	"html/template"
 	"strings"
@@ -10,6 +11,8 @@ import (
 )
 
 func main() {
+	conf.C.Load()
+
 	m := macaron.Classic()
 	m.Use(macaron.Renderer(macaron.RenderOptions{
 		Funcs: []template.FuncMap{map[string]interface{}{
