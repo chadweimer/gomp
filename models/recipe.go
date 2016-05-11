@@ -1,7 +1,5 @@
 package models
 
-import "database/sql"
-
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
 	ID          int64
@@ -16,11 +14,17 @@ type Recipe struct {
 // Recipes represents a list of Recipe objects
 type Recipes []Recipe
 
-func (recipe *Recipe) Create(db *sql.DB) error {
-	tx, err := db.Begin()
+func (recipe *Recipe) Create() error {
+	tx, err := DB.Sql.Begin();
 	if err != nil {
 		return err
 	}
+	defer tx.Commit();
+	
+	return recipe.CreateTx(tx)
+}
+
+func (recipe *Recipe) CreateTx(tx DbTx) error {
 	result, err := tx.Exec(
 		"INSERT INTO recipe (name, description, ingredients, directions) VALUES (?, ?, ?, ?)",
 		recipe.Name, recipe.Description, recipe.Ingredients, recipe.Directions)
@@ -33,20 +37,18 @@ func (recipe *Recipe) Create(db *sql.DB) error {
 	}
 
 	for _, tag := range recipe.Tags {
-		tag.Create(tx, id)
+		tag.CreateTx(tx, id)
 		if err != nil {
 			return err
 		}
 	}
 
-	tx.Commit()
-
 	recipe.ID = id
 	return nil
 }
 
-func (recipe *Recipe) Read(db *sql.DB) error {
-	result := db.QueryRow(
+func (recipe *Recipe) Read() error {
+	result := DB.Sql.QueryRow(
 		"SELECT name, description, ingredients, directions FROM recipe WHERE id = ?",
 		recipe.ID)
 	err := result.Scan(&recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions)
@@ -54,65 +56,73 @@ func (recipe *Recipe) Read(db *sql.DB) error {
 		return err
 	}
 
-	return recipe.Tags.List(db, recipe.ID)
+	return recipe.Tags.List(recipe.ID)
 }
 
-func (recipe *Recipe) Update(db *sql.DB) error {
-	tx, err := db.Begin()
+func (recipe *Recipe) Update() error {
+	tx, err := DB.Sql.Begin();
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(
+	defer tx.Commit();
+	
+	return recipe.UpdateTx(tx)
+}
+
+func (recipe *Recipe) UpdateTx(tx DbTx) error {
+	_, err := tx.Exec(
 		"UPDATE recipe SET name = ?, description = ?, ingredients = ?, directions = ? WHERE id = ?",
 		recipe.Name, recipe.Description, recipe.Ingredients, recipe.Directions, recipe.ID)
 
 	// TODO: Deleting and recreating seems inefficent and potentially error prone
-	err = recipe.Tags.DeleteAll(tx, recipe.ID)
+	err = recipe.Tags.DeleteAllTx(tx, recipe.ID)
 	if err != nil {
 		return err
 	}
 	for _, tag := range recipe.Tags {
-		err = tag.Create(tx, recipe.ID)
+		err = tag.CreateTx(tx, recipe.ID)
 		if err != nil {
 			return err
 		}
 	}
 
-	tx.Commit()
 	return nil
 }
 
-func (recipe *Recipe) Delete(db *sql.DB) error {
-	tx, err := db.Begin()
+func (recipe *Recipe) Delete() error {
+	tx, err := DB.Sql.Begin();
+	if err != nil {
+		return err
+	}
+	defer tx.Commit();
+	
+	return recipe.DeleteTx(tx)
+}
+
+func (recipe *Recipe) DeleteTx(tx DbTx) error {
+	_, err := tx.Exec("DELETE FROM recipe WHERE id = ?", recipe.ID)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec("DELETE FROM recipe WHERE id = ?", recipe.ID)
+	err = recipe.Tags.DeleteAllTx(tx, recipe.ID)
 	if err != nil {
 		return err
 	}
 
-	err = recipe.Tags.DeleteAll(tx, recipe.ID)
-	_, err = tx.Exec("DELETE FROM recipe_tags WHERE recipe_id = $1", recipe.ID)
-	if err != nil {
-		return err
-	}
-
-	tx.Commit()
 	return nil
 }
 
-func (recipes *Recipes) List(db *sql.DB, page int, count int) (int, error) {
+func (recipes *Recipes) List(page int, count int) (int, error) {
 	var total int
-	row := db.QueryRow("SELECT count(*) FROM recipe")
+	row := DB.Sql.QueryRow("SELECT count(*) FROM recipe")
 	err := row.Scan(&total)
 	if err != nil {
 		return 0, err
 	}
 
 	offset := count * (page - 1)
-	rows, err := db.Query(
+	rows, err := DB.Sql.Query(
 		"SELECT id, name, description, ingredients,  directions FROM recipe ORDER BY name LIMIT ? OFFSET ?",
 		count, offset)
 	if err != nil {
@@ -140,14 +150,14 @@ func (recipes *Recipes) List(db *sql.DB, page int, count int) (int, error) {
 	return total, nil
 }
 
-func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (int, error) {
+func (recipes *Recipes) Find(search string, page int, count int) (int, error) {
 	var total int
 	search = "%" + search + "%"
 	partialStmt := " FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_tags AS t ON t.recipe_id = r.id " +
 		"WHERE r.name LIKE ? OR r.description LIKE ? OR r.Ingredients LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
 	countStmt := "SELECT count(DISTINCT r.id)" + partialStmt
-	row := db.QueryRow(countStmt,
+	row := DB.Sql.QueryRow(countStmt,
 		search, search, search, search, search)
 	err := row.Scan(&total)
 	if err != nil {
@@ -157,7 +167,7 @@ func (recipes *Recipes) Find(db *sql.DB, search string, page int, count int) (in
 	offset := count * (page - 1)
 	selectStmt :=
 		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions" + partialStmt + " ORDER BY r.name LIMIT ? OFFSET ?"
-	rows, err := db.Query(selectStmt,
+	rows, err := DB.Sql.Query(selectStmt,
 		search, search, search, search, search, count, offset)
 	if err != nil {
 		return 0, err

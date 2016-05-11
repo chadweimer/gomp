@@ -13,7 +13,7 @@ import (
 	_ "github.com/mattes/migrate/driver/sqlite3"
 )
 
-type DB struct {
+type Database struct {
 	Sql *sql.DB
 }
 
@@ -24,8 +24,24 @@ type DbTx interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
 }
 
+var DB = new(Database)
+
+func init() {
+	if _, err := os.Stat("data/gomp.db"); os.IsNotExist(err) {
+		err = DB.migrateUp()
+		if err != nil {
+			panic(err)
+		}
+	}
+	
+	err := DB.open();
+	if err != nil {
+		panic(err)
+	}
+}
+
 // MigrateUp will perform any and all outstanding up database migrations 
-func (db *DB) MigrateUp() error {
+func (db *Database) migrateUp() error {
 	if _, err := os.Stat("data"); os.IsNotExist(err) {
 		err = os.Mkdir("data", os.ModePerm);
 		if err != nil {
@@ -47,19 +63,12 @@ func (db *DB) MigrateUp() error {
 }
 
 // Open returns a sql.DB instance attached to the database
-func (db *DB) Open() error {
+func (db *Database) open() error {
 	sqlDB, err := sql.Open("sqlite3", "data/gomp.db")
 	if err != nil {
 		return err
 	}
 	
 	db.Sql = sqlDB
-	return nil
-}
-
-func (db *DB) Close() error {
-	if db.Sql != nil {
-		return db.Sql.Close()
-	}
 	return nil
 }

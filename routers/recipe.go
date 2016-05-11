@@ -39,18 +39,11 @@ func GetRecipe(ctx *macaron.Context) {
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
-	
-	db := new(models.DB)
-	err = db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
 
 	recipe := &models.Recipe{
 		ID: id,
 	}
-	err = recipe.Read(db.Sql)
+	err = recipe.Read()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -60,7 +53,7 @@ func GetRecipe(ctx *macaron.Context) {
 	}
 
 	var notes = new(models.Notes)
-	err = notes.List(db.Sql, id)
+	err = notes.List(id)
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -89,19 +82,13 @@ func ListRecipes(ctx *macaron.Context) {
 		count = 15
 	}
 
-	db := new(models.DB)
-	err := db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
-
 	recipes := new(models.Recipes)
 	var total int
+	var err error
 	if query == "" {
-		total, err = recipes.List(db.Sql, page, count)
+		total, err = recipes.List(page, count)
 	} else {
-		total, err = recipes.Find(db.Sql, query, page, count)
+		total, err = recipes.Find(query, page, count)
 	}
 	if RedirectIfHasError(ctx, err) {
 		return
@@ -126,16 +113,9 @@ func CreateRecipe(ctx *macaron.Context) {
 // CreateRecipePost handles processing the supplied
 // form input from the create recipe screen
 func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
-	db := new(models.DB)
-	err := db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
-
 	tags := make(models.Tags, len(form.Tags))
-	for _, tag := range form.Tags {
-		tags = append(tags, models.Tag(tag))
+	for i, tag := range form.Tags {
+		tags[i] = models.Tag(tag)
 	}
 	recipe := &models.Recipe{
 		Name:        form.Name,
@@ -145,7 +125,7 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 		Tags:        tags,
 	}
 
-	err = recipe.Create(db.Sql)
+	err := recipe.Create()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -160,15 +140,8 @@ func EditRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	db := new(models.DB)
-	err = db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
-
 	recipe := &models.Recipe{ID: id}
-	err = recipe.Read(db.Sql)
+	err = recipe.Read()
 	if err == sql.ErrNoRows {
 		NotFound(ctx)
 		return
@@ -189,13 +162,6 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		return
 	}
 
-	db := new(models.DB)
-	err = db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
-
 	tags := make(models.Tags, len(form.Tags))
 	for i, tag := range form.Tags {
 		tags[i] = models.Tag(tag)
@@ -209,7 +175,7 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		Tags:        tags,
     }
 
-	err = recipe.Update(db.Sql)
+	err = recipe.Update()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -224,15 +190,8 @@ func DeleteRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	db := new(models.DB)
-	err = db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-	defer db.Close()
-
 	recipe := &models.Recipe{ID: id}
-	err = recipe.Delete(db.Sql)
+	err = recipe.Delete()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}
@@ -272,17 +231,11 @@ func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
 		return
 	}
 
-	db := new(models.DB)
-	err = db.Open()
-	if RedirectIfHasError(ctx, err) {
-		return
-	}
-
 	note := models.Note{
 		RecipeID: id,
 		Note:     form.Note,
 	}
-	err = note.Create(db.Sql)
+	err = note.Create()
 	if RedirectIfHasError(ctx, err) {
 		return
 	}

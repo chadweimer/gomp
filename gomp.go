@@ -20,7 +20,7 @@ func main() {
 		}}}))
 	m.Use(macaron.Static("data/files", macaron.StaticOptions{Prefix: "files"}))
 
-	m.Get("/", routers.CheckInstalled, routers.ListRecipes)
+	m.Get("/", routers.ListRecipes)
 	m.Group("/recipes", func() {
 		m.Get("/", routers.ListRecipes)
 		m.Get("/create", routers.CreateRecipe)
@@ -33,7 +33,7 @@ func main() {
 			m.Post("/attach/create", binding.Bind(routers.AttachmentForm{}), routers.AttachToRecipePost)
 			m.Post("/note/create", binding.Bind(routers.NoteForm{}), routers.AddNoteToRecipePost)
 		})
-	}, routers.CheckInstalled)
+	})
 
 	m.Run()
 }

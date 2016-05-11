@@ -12,15 +12,25 @@ type Note struct {
 
 type Notes []Note
 
-func (note *Note) Create(db DbTx) error {
-	_, err := db.Exec(
+func (note *Note) Create() error {
+	tx, err := DB.Sql.Begin();
+	if err != nil {
+		return err
+	}
+	defer tx.Commit();
+	
+	return note.CreateTx(tx)
+}
+
+func (note *Note) CreateTx(tx DbTx) error {
+	_, err := tx.Exec(
 		"INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) VALUES (?, ?, datetime('now', 'localtime'), datetime('now', 'localtime'))",
 		note.RecipeID, note.Note)
 	return err
 }
 
-func (notes *Notes) List(db DbTx, recipeID int64) error {
-	rows, err := db.Query(
+func (notes *Notes) List(recipeID int64) error {
+	rows, err := DB.Sql.Query(
 		"SELECT id, note, created_at, modified_at FROM recipe_note WHERE recipe_id = ? ORDER BY created_at DESC",
 		recipeID)
 	if err != nil {
