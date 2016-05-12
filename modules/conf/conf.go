@@ -3,6 +3,7 @@ package conf
 import (
 	"log"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -27,13 +28,13 @@ func init() {
 	viper.SetConfigType("json")
 
 	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
+	if err != nil && !os.IsNotExist(err) {
+		log.Fatal("Failed to read in app.json", err)
 	}
 
 	err = viper.Unmarshal(&C)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to marshal configuration settings", err)
 	}
 }
 
