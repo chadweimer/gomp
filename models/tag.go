@@ -1,11 +1,13 @@
 package models
 
+import "database/sql"
+
 type Tag string
 
 type Tags []Tag
 
 func (tag *Tag) Create(recipeID int64) error {
-	tx, err := DB.Sql.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
@@ -18,7 +20,7 @@ func (tag *Tag) Create(recipeID int64) error {
 	return tx.Commit()
 }
 
-func (tag *Tag) CreateTx(tx DbTx, recipeID int64) error {
+func (tag *Tag) CreateTx(tx *sql.Tx, recipeID int64) error {
 	_, err := tx.Exec(
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES (?, ?)",
 		recipeID, string(*tag))
@@ -26,7 +28,7 @@ func (tag *Tag) CreateTx(tx DbTx, recipeID int64) error {
 }
 
 func (tags *Tags) DeleteAll(recipeID int64) error {
-	tx, err := DB.Sql.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
@@ -39,7 +41,7 @@ func (tags *Tags) DeleteAll(recipeID int64) error {
 	return tx.Commit()
 }
 
-func (tags *Tags) DeleteAllTx(tx DbTx, recipeID int64) error {
+func (tags *Tags) DeleteAllTx(tx *sql.Tx, recipeID int64) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_tag WHERE recipe_id = ?",
 		recipeID)
@@ -47,7 +49,7 @@ func (tags *Tags) DeleteAllTx(tx DbTx, recipeID int64) error {
 }
 
 func (tags *Tags) List(recipeID int64) error {
-	rows, err := DB.Sql.Query(
+	rows, err := db.Query(
 		"SELECT tag FROM recipe_tag WHERE recipe_id = ?",
 		recipeID)
 	if err != nil {

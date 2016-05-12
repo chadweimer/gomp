@@ -1,5 +1,7 @@
 package models
 
+import "database/sql"
+
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
 	ID          int64
@@ -11,11 +13,13 @@ type Recipe struct {
 	Tags        Tags
 }
 
-// Recipes represents a list of Recipe objects
+// Recipes represents a collection of Recipe objects
 type Recipes []Recipe
 
+// Create stores the recipe in the database as a new record using
+// a dedicated transation that is committed if there are not errors.
 func (recipe *Recipe) Create() error {
-	tx, err := DB.Sql.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
@@ -28,7 +32,9 @@ func (recipe *Recipe) Create() error {
 	return tx.Commit()
 }
 
-func (recipe *Recipe) CreateTx(tx DbTx) error {
+// CreateTx stores the recipe in the database as a new record using
+// the specified transaction.
+func (recipe *Recipe) CreateTx(tx *sql.Tx) error {
 	result, err := tx.Exec(
 		"INSERT INTO recipe (name, description, ingredients, directions) VALUES (?, ?, ?, ?)",
 		recipe.Name, recipe.Description, recipe.Ingredients, recipe.Directions)
@@ -51,20 +57,27 @@ func (recipe *Recipe) CreateTx(tx DbTx) error {
 	return nil
 }
 
+// Read retrieves the information about the recipe from the database, if found.
+// If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (recipe *Recipe) Read() error {
-	result := DB.Sql.QueryRow(
+	result := db.QueryRow(
 		"SELECT name, description, ingredients, directions FROM recipe WHERE id = ?",
 		recipe.ID)
 	err := result.Scan(&recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions)
-	if err != nil {
+	if err == sql.ErrNoRows {
+		return ErrNotFound
+	} else if err != nil {
 		return err
 	}
 
 	return recipe.Tags.List(recipe.ID)
 }
 
+// Update stores the specified recipe in the database by updating the
+// existing record with the sepcified id using a dedicated transation
+// that is committed if there are not errors.
 func (recipe *Recipe) Update() error {
-	tx, err := DB.Sql.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
@@ -77,7 +90,9 @@ func (recipe *Recipe) Update() error {
 	return tx.Commit()
 }
 
-func (recipe *Recipe) UpdateTx(tx DbTx) error {
+// UpdateTx stores the specified recipe in the database by updating the
+// existing record with the sepcified id using the specified transaction.
+func (recipe *Recipe) UpdateTx(tx *sql.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe SET name = ?, description = ?, ingredients = ?, directions = ? WHERE id = ?",
 		recipe.Name, recipe.Description, recipe.Ingredients, recipe.Directions, recipe.ID)
@@ -98,7 +113,7 @@ func (recipe *Recipe) UpdateTx(tx DbTx) error {
 }
 
 func (recipe *Recipe) Delete() error {
-	tx, err := DB.Sql.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
@@ -111,7 +126,7 @@ func (recipe *Recipe) Delete() error {
 	return tx.Commit()
 }
 
-func (recipe *Recipe) DeleteTx(tx DbTx) error {
+func (recipe *Recipe) DeleteTx(tx *sql.Tx) error {
 	_, err := tx.Exec("DELETE FROM recipe WHERE id = ?", recipe.ID)
 	if err != nil {
 		return err
@@ -127,14 +142,14 @@ func (recipe *Recipe) DeleteTx(tx DbTx) error {
 
 func (recipes *Recipes) List(page int, count int) (int, error) {
 	var total int
-	row := DB.Sql.QueryRow("SELECT count(*) FROM recipe")
+	row := db.QueryRow("SELECT count(*) FROM recipe")
 	err := row.Scan(&total)
 	if err != nil {
 		return 0, err
 	}
 
 	offset := count * (page - 1)
-	rows, err := DB.Sql.Query(
+	rows, err := db.Query(
 		"SELECT id, name, description, ingredients,  directions FROM recipe ORDER BY name LIMIT ? OFFSET ?",
 		count, offset)
 	if err != nil {
@@ -166,10 +181,10 @@ func (recipes *Recipes) Find(search string, page int, count int) (int, error) {
 	var total int
 	search = "%" + search + "%"
 	partialStmt := " FROM recipe AS r " +
-		"LEFT OUTER JOIN recipe_tags AS t ON t.recipe_id = r.id " +
+		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
 		"WHERE r.name LIKE ? OR r.description LIKE ? OR r.Ingredients LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
 	countStmt := "SELECT count(DISTINCT r.id)" + partialStmt
-	row := DB.Sql.QueryRow(countStmt,
+	row := db.QueryRow(countStmt,
 		search, search, search, search, search)
 	err := row.Scan(&total)
 	if err != nil {
@@ -179,7 +194,7 @@ func (recipes *Recipes) Find(search string, page int, count int) (int, error) {
 	offset := count * (page - 1)
 	selectStmt :=
 		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions" + partialStmt + " ORDER BY r.name LIMIT ? OFFSET ?"
-	rows, err := DB.Sql.Query(selectStmt,
+	rows, err := db.Query(selectStmt,
 		search, search, search, search, search, count, offset)
 	if err != nil {
 		return 0, err

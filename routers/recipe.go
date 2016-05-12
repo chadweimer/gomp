@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"database/sql"
 	"fmt"
 	"gomp/models"
 	"io/ioutil"
@@ -44,11 +43,11 @@ func GetRecipe(ctx *macaron.Context) {
 		ID: id,
 	}
 	err = recipe.Read()
-	if RedirectIfHasError(ctx, err) {
+	if err == models.ErrNotFound {
+		NotFound(ctx)
 		return
 	}
-	if recipe == nil {
-		NotFound(ctx)
+	if RedirectIfHasError(ctx, err) {
 		return
 	}
 
@@ -142,7 +141,7 @@ func EditRecipe(ctx *macaron.Context) {
 
 	recipe := &models.Recipe{ID: id}
 	err = recipe.Read()
-	if err == sql.ErrNoRows {
+	if err == models.ErrNotFound {
 		NotFound(ctx)
 		return
 	}

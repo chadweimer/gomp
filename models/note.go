@@ -1,7 +1,11 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
+// Note represents an individual comment (or note) on a recipe
 type Note struct {
 	ID         int64
 	RecipeID   int64
@@ -10,10 +14,13 @@ type Note struct {
 	ModifiedAt time.Time
 }
 
+// Notes represents a collection of Note objects
 type Notes []Note
 
+// Create stores the note in the database as a new record using
+// a dedicated transation that is committed if there are not errors.
 func (note *Note) Create() error {
-	tx, err := DB.Sql.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
@@ -26,15 +33,18 @@ func (note *Note) Create() error {
 	return tx.Commit()
 }
 
-func (note *Note) CreateTx(tx DbTx) error {
+// CreateTx stores the note in the database as a new record using
+// the specified transaction.
+func (note *Note) CreateTx(tx *sql.Tx) error {
 	_, err := tx.Exec(
 		"INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) VALUES (?, ?, datetime('now', 'localtime'), datetime('now', 'localtime'))",
 		note.RecipeID, note.Note)
 	return err
 }
 
+// List retrieces all notes associated with the recipe with the specified id.
 func (notes *Notes) List(recipeID int64) error {
-	rows, err := DB.Sql.Query(
+	rows, err := db.Query(
 		"SELECT id, note, created_at, modified_at FROM recipe_note WHERE recipe_id = ? ORDER BY created_at DESC",
 		recipeID)
 	if err != nil {

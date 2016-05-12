@@ -16,35 +16,35 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Database struct {
-	Sql *sql.DB
-}
+// ---- Begin Standard Errors ----
 
-// DbTx represents an abstraction of sql.DB and sql.Tx
-type DbTx interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryRow(query string, args ...interface{}) *sql.Row
-}
+// ErrNotFound represents the error when a database record cannot be
+// found matching the criteria specified by the caller
+var ErrNotFound = errors.New("No record found matching supplied criteria")
 
-var DB = new(Database)
+// ---- End Standard Errors ----
+
+var db *sql.DB
+var dbPath string
 
 func init() {
-	if _, err := os.Stat(fmt.Sprintf("%s/gomp.db", conf.C.DataPath)); os.IsNotExist(err) {
-		err = DB.migrateUp()
+	dbPath = fmt.Sprintf("%s/gomp.db", conf.C.DataPath)
+
+	// Create the database if it doesn't yet exists.
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		err = createDatabase()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Failed to create database.", err)
 		}
 	}
 
-	err := DB.open()
+	err := openDatabase()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to open database.", err)
 	}
 }
 
-// MigrateUp will perform any and all outstanding up database migrations
-func (db *Database) migrateUp() error {
+func createDatabase() error {
 	if _, err := os.Stat(conf.C.DataPath); os.IsNotExist(err) {
 		err = os.Mkdir(conf.C.DataPath, os.ModePerm)
 		if err != nil {
@@ -52,7 +52,7 @@ func (db *Database) migrateUp() error {
 		}
 	}
 
-	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s/gomp.db", conf.C.DataPath), "./db/migrations")
+	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s", dbPath), "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {
@@ -65,13 +65,8 @@ func (db *Database) migrateUp() error {
 	return nil
 }
 
-// Open returns a sql.DB instance attached to the database
-func (db *Database) open() error {
-	sqlDB, err := sql.Open("sqlite3", fmt.Sprintf("%s/gomp.db", conf.C.DataPath))
-	if err != nil {
-		return err
-	}
-
-	db.Sql = sqlDB
-	return nil
+func openDatabase() error {
+	var err error
+	db, err = sql.Open("sqlite3", dbPath)
+	return err
 }
