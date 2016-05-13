@@ -25,4 +25,4 @@ go build
 
 ## License
 
-TBD
+[The MIT License(MIT)](LICENSE)
