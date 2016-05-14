@@ -1,5 +1,5 @@
 {
-	"ImportPath": "gomp",
+	"ImportPath": "github.com/chadweimer/gomp",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v65",
 	"Deps": [
