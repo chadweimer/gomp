@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/chadweimer/gomp",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v65",
+	"GodepVersion": "v67",
 	"Deps": [
 		{
 			"ImportPath": "github.com/BurntSushi/toml",
