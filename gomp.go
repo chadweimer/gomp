@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"gomp/modules/conf"
-	"gomp/routers"
 	"html/template"
 	"strings"
 
+	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/routers"
 	"github.com/go-macaron/binding"
 	"gopkg.in/macaron.v1"
 )

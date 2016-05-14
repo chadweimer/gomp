@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"gomp/modules/conf"
 	"log"
 	"os"
 
+	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/mattes/migrate/migrate"
 
 	// sqlite3 database driver

@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"gomp/modules/conf"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/disintegration/imaging"
 )
 

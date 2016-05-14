@@ -2,13 +2,13 @@ package routers
 
 import (
 	"fmt"
-	"gomp/models"
 	"io/ioutil"
 	"math"
 	"mime/multipart"
 	"net/http"
 	"strconv"
 
+	"github.com/chadweimer/gomp/models"
 	"gopkg.in/macaron.v1"
 )
 
