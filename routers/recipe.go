@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/modules/conf"
 	"gopkg.in/macaron.v1"
 )
 
@@ -129,7 +130,7 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("/recipes/%d", recipe.ID))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), recipe.ID))
 }
 
 // EditRecipe handles rendering the edit recipe screen
@@ -179,7 +180,7 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), id))
 }
 
 // DeleteRecipe handles deleting the recipe with the given id
@@ -195,7 +196,7 @@ func DeleteRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	ctx.Redirect("/recipes")
+	ctx.Redirect(fmt.Sprintf("%s/recipes", conf.C.GetRootURLPath()))
 }
 
 func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
@@ -221,7 +222,7 @@ func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), id))
 }
 
 func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
@@ -239,5 +240,5 @@ func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("/recipes/%d", id))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), id))
 }
