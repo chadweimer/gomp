@@ -130,7 +130,7 @@ func CreateRecipePost(ctx *macaron.Context, form RecipeForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), recipe.ID))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), recipe.ID))
 }
 
 // EditRecipe handles rendering the edit recipe screen
@@ -180,7 +180,7 @@ func EditRecipePost(ctx *macaron.Context, form RecipeForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), id))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
 }
 
 // DeleteRecipe handles deleting the recipe with the given id
@@ -196,7 +196,7 @@ func DeleteRecipe(ctx *macaron.Context) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes", conf.C.GetRootURLPath()))
+	ctx.Redirect(fmt.Sprintf("%s/recipes", conf.RootURLPath()))
 }
 
 func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
@@ -222,7 +222,7 @@ func AttachToRecipePost(ctx *macaron.Context, form AttachmentForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), id))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
 }
 
 func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
@@ -240,5 +240,5 @@ func AddNoteToRecipePost(ctx *macaron.Context, form NoteForm) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.C.GetRootURLPath(), id))
+	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
 }
