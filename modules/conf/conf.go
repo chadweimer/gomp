@@ -9,29 +9,32 @@ import (
 	"strings"
 )
 
+// Config encapsules all the configuration settings available to the application
 type Config struct {
-	RootURL  string `mapstructure:"root_url"`
-	Port     int    `mapstructure:"port"`
-	DataPath string `mapstructure:"data_path"`
+	RootURL  string `json:"root_url"`
+	Port     int    `json:"port"`
+	DataPath string `json:"data_path"`
 }
 
-var C Config
+// C is an instance of Config that holds the values read from the configuration
+// file on disk, or default values.
+var C = Config{
+	RootURL:  "http://localhost:4000/",
+	Port:     4000,
+	DataPath: "data",
+}
 
-// Load reads the configuration file from disk, if present
 func init() {
 	file, err := ioutil.ReadFile("conf/app.json")
-	if err != nil && os.IsNotExist(err) {
-		C.RootURL = "http://localhost:4000/"
-		C.Port = 4000
-		C.DataPath = "data"
+	if err != nil && !os.IsNotExist(err) {
 		return
 	} else if err != nil {
-		log.Fatal("Failed to read in app.json", err)
+		log.Fatalf("Failed to read in app.json. Error = %s", err)
 	}
 
 	err = json.Unmarshal(file, &C)
 	if err != nil {
-		log.Fatal("Failed to marshal configuration settings", err)
+		log.Fatalf("Failed to marshal configuration settings. Error = %s", err)
 	}
 }
 
