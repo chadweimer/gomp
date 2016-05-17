@@ -1,12 +1,12 @@
 package conf
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -19,20 +19,17 @@ var C Config
 
 // Load reads the configuration file from disk, if present
 func init() {
-	viper.SetDefault("root_url", "http://localhost:4000/")
-	viper.SetDefault("port", 4000)
-	viper.SetDefault("data_path", "data")
-
-	viper.SetConfigName("app")
-	viper.AddConfigPath("./conf")
-	viper.SetConfigType("json")
-
-	err := viper.ReadInConfig()
-	if err != nil && !os.IsNotExist(err) {
+	file, err := ioutil.ReadFile("conf/app.json")
+	if err != nil && os.IsNotExist(err) {
+		C.RootURL = "http://localhost:4000/"
+		C.Port = 4000
+		C.DataPath = "data"
+		return
+	} else if err != nil {
 		log.Fatal("Failed to read in app.json", err)
 	}
 
-	err = viper.Unmarshal(&C)
+	err = json.Unmarshal(file, &C)
 	if err != nil {
 		log.Fatal("Failed to marshal configuration settings", err)
 	}
