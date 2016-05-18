@@ -107,13 +107,13 @@ func isImageFile(data []byte) bool {
 }
 
 func getDirPathForImage(recipeID int64) string {
-	return filepath.Join(conf.C.DataPath, "files", "recipes", strconv.FormatInt(recipeID, 10), "images")
+	return filepath.Join(conf.DataPath(), "files", "recipes", strconv.FormatInt(recipeID, 10), "images")
 }
 
 func getDirPathForThumbnail(recipeID int64) string {
-	return filepath.Join(conf.C.DataPath, "files", "recipes", strconv.FormatInt(recipeID, 10), "thumbs")
+	return filepath.Join(conf.DataPath(), "files", "recipes", strconv.FormatInt(recipeID, 10), "thumbs")
 }
 
 func getURLForImage(path string) string {
-	return strings.TrimPrefix(path, conf.C.DataPath)
+	return strings.TrimPrefix(path, conf.DataPath())
 }

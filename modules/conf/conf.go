@@ -1,50 +1,65 @@
 package conf
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
-type Config struct {
-	RootURL  string `mapstructure:"root_url"`
-	Port     int    `mapstructure:"port"`
-	DataPath string `mapstructure:"data_path"`
+type config struct {
+	RootURL     string `json:"root_url"`
+	RootURLPath string `json:"-"`
+	Port        int    `json:"port"`
+	DataPath    string `json:"data_path"`
 }
 
-var C Config
+var c = config{
+	RootURL:  "http://localhost:4000/",
+	Port:     4000,
+	DataPath: "data",
+}
 
-// Load reads the configuration file from disk, if present
 func init() {
-	viper.SetDefault("root_url", "http://localhost:4000/")
-	viper.SetDefault("port", 4000)
-	viper.SetDefault("data_path", "data")
-
-	viper.SetConfigName("app")
-	viper.AddConfigPath("./conf")
-	viper.SetConfigType("json")
-
-	err := viper.ReadInConfig()
-	if err != nil && !os.IsNotExist(err) {
-		log.Fatal("Failed to read in app.json", err)
+	file, err := ioutil.ReadFile("conf/app.json")
+	if err == nil {
+		err = json.Unmarshal(file, &c)
+		if err != nil {
+			log.Fatalf("Failed to marshal configuration settings. Error = %s", err)
+		}
+	} else if !os.IsNotExist(err) {
+		log.Fatalf("Failed to read in app.json. Error = %s", err)
+		return
 	}
 
-	err = viper.Unmarshal(&C)
-	if err != nil {
-		log.Fatal("Failed to marshal configuration settings", err)
-	}
-}
-
-// GetRootURLPath returns just the path portion of the RootUrl value,
-// without any trailing slashes.
-func (c *Config) GetRootURLPath() string {
 	// Check if root url has a sub-path
 	url, err := url.Parse(c.RootURL)
 	if err != nil {
-		panic("Invalid root_url")
+		log.Fatal("Invalid root_url")
 	}
-	return strings.TrimSuffix(url.Path, "/")
+	c.RootURLPath = strings.TrimSuffix(url.Path, "/")
+}
+
+// RootURL gets the URL of the root of the site (e.g., http://localhost/gomp).
+func RootURL() string {
+	return c.RootURL
+}
+
+// Port gets the port number under which the site is being hosted.
+func Port() int {
+	return c.Port
+}
+
+// DataPath gets the path (full or relative) under which to store the database
+// and other runtime date (e.g., uploaded images).
+func DataPath() string {
+	return c.DataPath
+}
+
+// RootURLPath gets just the path portion of the RootUrl value,
+// without any trailing slashes.
+func RootURLPath() string {
+	return c.RootURLPath
 }
