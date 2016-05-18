@@ -11,8 +11,8 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/julienschmidt/httprouter"
 	"github.com/mholt/binding"
-	"gopkg.in/macaron.v1"
 )
 
 // RecipeForm encapsulates user input on the Create and Edit recipe screens
@@ -59,8 +59,8 @@ func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
-func GetRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context) {
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+func GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if RedirectIfHasError(resp, err) {
 		return
 	}
@@ -70,7 +70,7 @@ func GetRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context
 	}
 	err = recipe.Read()
 	if err == models.ErrNotFound {
-		NotFound(resp)
+		NotFound(resp, req)
 		return
 	}
 	if RedirectIfHasError(resp, err) {
@@ -98,7 +98,7 @@ func GetRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context
 }
 
 // ListRecipes handles retrieving and rending a list of available recipes
-func ListRecipes(resp http.ResponseWriter, req *http.Request) {
+func ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	query := req.URL.Query().Get("q")
 	page, _ := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
 	if page < 1 {
@@ -135,13 +135,13 @@ func ListRecipes(resp http.ResponseWriter, req *http.Request) {
 }
 
 // CreateRecipe handles rendering the create recipe screen
-func CreateRecipe(resp http.ResponseWriter, req *http.Request) {
+func CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	rend.HTML(resp, http.StatusOK, "recipe/create", make(map[string]interface{}))
 }
 
 // CreateRecipePost handles processing the supplied
 // form input from the create recipe screen
-func CreateRecipePost(resp http.ResponseWriter, req *http.Request) {
+func CreateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
@@ -170,8 +170,8 @@ func CreateRecipePost(resp http.ResponseWriter, req *http.Request) {
 }
 
 // EditRecipe handles rendering the edit recipe screen
-func EditRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context) {
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+func EditRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if RedirectIfHasError(resp, err) {
 		return
 	}
@@ -179,7 +179,7 @@ func EditRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Contex
 	recipe := &models.Recipe{ID: id}
 	err = recipe.Read()
 	if err == models.ErrNotFound {
-		NotFound(resp)
+		NotFound(resp, req)
 		return
 	}
 	if RedirectIfHasError(resp, err) {
@@ -194,7 +194,7 @@ func EditRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Contex
 
 // EditRecipePost handles processing the supplied
 // form input from the edit recipe screen
-func EditRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context) {
+func EditRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
@@ -202,7 +202,7 @@ func EditRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Co
 		return
 	}
 
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if RedirectIfHasError(resp, err) {
 		return
 	}
@@ -229,8 +229,8 @@ func EditRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Co
 }
 
 // DeleteRecipe handles deleting the recipe with the given id
-func DeleteRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context) {
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+func DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if RedirectIfHasError(resp, err) {
 		return
 	}
@@ -244,7 +244,7 @@ func DeleteRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Cont
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", conf.RootURLPath()), http.StatusFound)
 }
 
-func AttachToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context) {
+func AttachToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(AttachmentForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
@@ -252,7 +252,7 @@ func AttachToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaro
 		return
 	}
 
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if RedirectIfHasError(resp, err) {
 		return
 	}
@@ -277,7 +277,7 @@ func AttachToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaro
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
 }
 
-func AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context) {
+func AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(NoteForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
@@ -285,7 +285,7 @@ func AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macar
 		return
 	}
 
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if RedirectIfHasError(resp, err) {
 		return
 	}

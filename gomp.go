@@ -2,34 +2,42 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/routers"
-	"gopkg.in/macaron.v1"
+	"github.com/julienschmidt/httprouter"
+	"gopkg.in/codegangsta/negroni.v0"
 )
 
 func main() {
-	m := macaron.Classic()
-	m.Use(macaron.Static(fmt.Sprintf("%s/files", conf.DataPath()), macaron.StaticOptions{
-		Prefix: "files",
-	}))
+	// Since httprouter explicitly doesn't allow /path/to and /path/:match,
+	// we get a little fancy and use 2 mux'es to emulate/force the behavior
+	mainMux := httprouter.New()
+	mainMux.GET("/", routers.ListRecipes)
+	mainMux.GET("/recipes", routers.ListRecipes)
+	mainMux.GET("/recipes/create", routers.CreateRecipe)
+	mainMux.POST("/recipes/create", routers.CreateRecipePost)
 
-	m.Get("/", routers.ListRecipes)
-	m.Group("/recipes", func() {
-		m.Get("/", routers.ListRecipes)
-		m.Get("/create", routers.CreateRecipe)
-		m.Post("/create", routers.CreateRecipePost)
-		m.Group("/:id:int", func() {
-			m.Get("/", routers.GetRecipe)
-			m.Get("/edit", routers.EditRecipe)
-			m.Post("/edit", routers.EditRecipePost)
-			m.Get("/delete", routers.DeleteRecipe)
-			m.Post("/attach/create", routers.AttachToRecipePost)
-			m.Post("/note/create", routers.AddNoteToRecipePost)
-		})
-	})
+	// Use the recipeMux to configure the routes related to a single recipe,
+	// since /recipes/:id conflicts with /recipes/create above
+	recipeMux := httprouter.New()
+	recipeMux.GET("/recipes/:id", routers.GetRecipe)
+	recipeMux.GET("/recipes/:id/edit", routers.EditRecipe)
+	recipeMux.POST("/recipes/:id/edit", routers.EditRecipePost)
+	recipeMux.GET("/recipes/:id/delete", routers.DeleteRecipe)
+	recipeMux.POST("/recipes/:id/attach/create", routers.AttachToRecipePost)
+	recipeMux.POST("/recipes/:id/note/create", routers.AddNoteToRecipePost)
+	recipeMux.NotFound = http.HandlerFunc(routers.NotFound)
 
-	m.NotFound(routers.NotFound)
+	// Fall into the recipeMux only when the route isn't found in mainMux
+	mainMux.NotFound = recipeMux
 
-	m.Run("0.0.0.0", conf.Port())
+	n := negroni.Classic()
+	files := negroni.NewStatic(http.Dir(fmt.Sprintf("%s/files", conf.DataPath())))
+	files.Prefix = fmt.Sprintf("%s/files", conf.RootURLPath())
+	n.Use(files)
+	n.UseHandler(mainMux)
+
+	n.Run(fmt.Sprintf(":%d", conf.Port()))
 }

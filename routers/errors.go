@@ -6,7 +6,7 @@ import (
 )
 
 // NotFound handles 404 errors
-func NotFound(resp http.ResponseWriter) {
+func NotFound(resp http.ResponseWriter, req *http.Request) {
 	showError(resp, http.StatusNotFound, make(map[string]interface{}))
 }
 

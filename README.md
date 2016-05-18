@@ -14,7 +14,8 @@ go build
 
 ## Credits
 
-* [Macaron](https://go-macaron.com)
+* [Negroni](https://github.com/codegangsta/negroni)
+* [httprouter](https://github.com/julienschmidt/httprouter)
 * [Materialize CSS](http://materializecss.com)
 * [jQuery](https://jquery.com)
 * [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)
