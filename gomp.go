@@ -2,26 +2,14 @@ package main
 
 import (
 	"fmt"
-	"html/template"
-	"strings"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/routers"
-	"github.com/unrolled/render"
 	"gopkg.in/macaron.v1"
 )
 
 func main() {
 	m := macaron.Classic()
-	m.Map(render.New(render.Options{
-		Layout: "shared/layout",
-		Funcs: []template.FuncMap{map[string]interface{}{
-			"ToLower": strings.ToLower,
-			"Add": func(a, b int64) int64 {
-				return a + b
-			},
-			"RootUrlPath": conf.RootURLPath,
-		}}}))
 	m.Use(macaron.Static(fmt.Sprintf("%s/files", conf.DataPath()), macaron.StaticOptions{
 		Prefix: "files",
 	}))
