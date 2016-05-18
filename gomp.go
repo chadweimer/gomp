@@ -17,6 +17,7 @@ func main() {
 
 	m := macaron.Classic()
 	m.Map(render.New(render.Options{
+		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ToLower": strings.ToLower,
 			"Add": func(a, b int) int {
