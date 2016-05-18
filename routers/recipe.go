@@ -60,9 +60,9 @@ func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
-func GetRecipe(ctx *macaron.Context, r *render.Render) {
+func GetRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context, r *render.Render) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
@@ -71,78 +71,82 @@ func GetRecipe(ctx *macaron.Context, r *render.Render) {
 	}
 	err = recipe.Read()
 	if err == models.ErrNotFound {
-		NotFound(ctx, r)
+		NotFound(resp, r)
 		return
 	}
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
 	var notes = new(models.Notes)
 	err = notes.List(id)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
 	var imgs = new(models.RecipeImages)
 	err = imgs.List(id)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Data["Recipe"] = recipe
-	ctx.Data["Notes"] = notes
-	ctx.Data["Images"] = imgs
-	r.HTML(ctx.Resp, http.StatusOK, "recipe/view", ctx.Data)
+	data := map[string]interface{}{
+		"Recipe": recipe,
+		"Notes":  notes,
+		"Images": imgs,
+	}
+	r.HTML(resp, http.StatusOK, "recipe/view", data)
 }
 
 // ListRecipes handles retrieving and rending a list of available recipes
-func ListRecipes(ctx *macaron.Context, r *render.Render) {
-	query := ctx.Query("q")
-	page := ctx.QueryInt("page")
+func ListRecipes(resp http.ResponseWriter, req *http.Request, r *render.Render) {
+	query := req.URL.Query().Get("q")
+	page, _ := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
 	if page < 1 {
 		page = 1
 	}
-	count := ctx.QueryInt("count")
+	count, _ := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
 	if count < 1 {
 		count = 15
 	}
 
 	recipes := new(models.Recipes)
-	var total int
+	var total int64
 	var err error
 	if query == "" {
 		total, err = recipes.List(page, count)
 	} else {
 		total, err = recipes.Find(query, page, count)
 	}
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Data["Query"] = query
-	ctx.Data["PageNum"] = page
-	ctx.Data["PerPage"] = count
-	ctx.Data["NumPages"] = int(math.Ceil(float64(total) / float64(count)))
+	data := map[string]interface{}{
+		"Query":    query,
+		"PageNum":  page,
+		"PerPage":  count,
+		"NumPages": int64(math.Ceil(float64(total) / float64(count))),
 
-	ctx.Data["Recipes"] = recipes
-	ctx.Data["SearchQuery"] = query
-	ctx.Data["ResultCount"] = total
-	r.HTML(ctx.Resp, http.StatusOK, "recipe/list", ctx.Data)
+		"Recipes":     recipes,
+		"SearchQuery": query,
+		"ResultCount": total,
+	}
+	r.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 
 // CreateRecipe handles rendering the create recipe screen
-func CreateRecipe(ctx *macaron.Context, r *render.Render) {
-	r.HTML(ctx.Resp, http.StatusOK, "recipe/create", ctx.Data)
+func CreateRecipe(resp http.ResponseWriter, req *http.Request, r *render.Render) {
+	r.HTML(resp, http.StatusOK, "recipe/create", make(map[string]interface{}))
 }
 
 // CreateRecipePost handles processing the supplied
 // form input from the create recipe screen
-func CreateRecipePost(ctx *macaron.Context, r *render.Render) {
+func CreateRecipePost(resp http.ResponseWriter, req *http.Request, r *render.Render) {
 	form := new(RecipeForm)
-	errs := binding.Bind(ctx.Req.Request, form)
+	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		RedirectIfHasError(resp, r, errors.New(errs.Error()))
 		return
 	}
 
@@ -159,46 +163,48 @@ func CreateRecipePost(ctx *macaron.Context, r *render.Render) {
 	}
 
 	err := recipe.Create()
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), recipe.ID))
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), recipe.ID), http.StatusFound)
 }
 
 // EditRecipe handles rendering the edit recipe screen
-func EditRecipe(ctx *macaron.Context, r *render.Render) {
+func EditRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context, r *render.Render) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
 	recipe := &models.Recipe{ID: id}
 	err = recipe.Read()
 	if err == models.ErrNotFound {
-		NotFound(ctx, r)
+		NotFound(resp, r)
 		return
 	}
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Data["Recipe"] = recipe
-	r.HTML(ctx.Resp, http.StatusOK, "recipe/edit", ctx.Data)
+	data := map[string]interface{}{
+		"Recipe": recipe,
+	}
+	r.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 
 // EditRecipePost handles processing the supplied
 // form input from the edit recipe screen
-func EditRecipePost(ctx *macaron.Context, r *render.Render) {
+func EditRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context, r *render.Render) {
 	form := new(RecipeForm)
-	errs := binding.Bind(ctx.Req.Request, form)
+	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		RedirectIfHasError(resp, r, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
@@ -216,72 +222,72 @@ func EditRecipePost(ctx *macaron.Context, r *render.Render) {
 	}
 
 	err = recipe.Update()
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
 }
 
 // DeleteRecipe handles deleting the recipe with the given id
-func DeleteRecipe(ctx *macaron.Context, r *render.Render) {
+func DeleteRecipe(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context, r *render.Render) {
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
 	recipe := &models.Recipe{ID: id}
 	err = recipe.Delete()
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes", conf.RootURLPath()))
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", conf.RootURLPath()), http.StatusFound)
 }
 
-func AttachToRecipePost(ctx *macaron.Context, r *render.Render) {
+func AttachToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context, r *render.Render) {
 	form := new(AttachmentForm)
-	errs := binding.Bind(ctx.Req.Request, form)
+	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		RedirectIfHasError(resp, r, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
 	uploadedFile, err := form.FileContent.Open()
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 	defer uploadedFile.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
 	img := &models.RecipeImage{RecipeID: id}
 	err = img.Create(form.FileName, uploadedFileData)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
 }
 
-func AddNoteToRecipePost(ctx *macaron.Context, r *render.Render) {
+func AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, ctx *macaron.Context, r *render.Render) {
 	form := new(NoteForm)
-	errs := binding.Bind(ctx.Req.Request, form)
+	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		RedirectIfHasError(resp, r, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
@@ -290,9 +296,9 @@ func AddNoteToRecipePost(ctx *macaron.Context, r *render.Render) {
 		Note:     form.Note,
 	}
 	err = note.Create()
-	if RedirectIfHasError(ctx, r, err) {
+	if RedirectIfHasError(resp, r, err) {
 		return
 	}
 
-	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
 }

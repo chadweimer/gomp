@@ -140,8 +140,8 @@ func (recipe *Recipe) DeleteTx(tx *sql.Tx) error {
 	return nil
 }
 
-func (recipes *Recipes) List(page int, count int) (int, error) {
-	var total int
+func (recipes *Recipes) List(page int64, count int64) (int64, error) {
+	var total int64
 	row := db.QueryRow("SELECT count(*) FROM recipe")
 	err := row.Scan(&total)
 	if err != nil {
@@ -177,8 +177,8 @@ func (recipes *Recipes) List(page int, count int) (int, error) {
 	return total, nil
 }
 
-func (recipes *Recipes) Find(search string, page int, count int) (int, error) {
-	var total int
+func (recipes *Recipes) Find(search string, page int64, count int64) (int64, error) {
+	var total int64
 	search = "%" + search + "%"
 	partialStmt := " FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +

@@ -17,7 +17,7 @@ func main() {
 		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ToLower": strings.ToLower,
-			"Add": func(a, b int) int {
+			"Add": func(a, b int64) int64 {
 				return a + b
 			},
 			"RootUrlPath": conf.RootURLPath,

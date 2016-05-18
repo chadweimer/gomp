@@ -5,20 +5,21 @@ import (
 	"net/http"
 
 	"github.com/unrolled/render"
-	"gopkg.in/macaron.v1"
 )
 
 // NotFound handles 404 errors
-func NotFound(ctx *macaron.Context, r *render.Render) {
-	showError(ctx, r, http.StatusNotFound)
+func NotFound(resp http.ResponseWriter, r *render.Render) {
+	showError(resp, r, http.StatusNotFound, make(map[string]interface{}))
 }
 
 // InternalServerError handles 500 errors
-func InternalServerError(ctx *macaron.Context, r *render.Render, err error) {
-	ctx.Data["Error"] = err
-	showError(ctx, r, http.StatusInternalServerError)
+func InternalServerError(resp http.ResponseWriter, r *render.Render, err error) {
+	data := map[string]interface{}{
+		"Error": err,
+	}
+	showError(resp, r, http.StatusInternalServerError, data)
 }
 
-func showError(ctx *macaron.Context, r *render.Render, status int) {
-	r.HTML(ctx.Resp, status, fmt.Sprintf("status/%d", status), ctx.Data)
+func showError(resp http.ResponseWriter, r *render.Render, status int, data map[string]interface{}) {
+	r.HTML(resp, status, fmt.Sprintf("status/%d", status), data)
 }
