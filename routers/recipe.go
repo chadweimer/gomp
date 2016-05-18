@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -10,28 +11,52 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/mholt/binding"
 	"github.com/unrolled/render"
 	"gopkg.in/macaron.v1"
 )
 
 // RecipeForm encapsulates user input on the Create and Edit recipe screens
 type RecipeForm struct {
-	Name        string `binding:"Required"`
-	Description string
-	Ingredients string
-	Directions  string
-	Tags        []string
+	Name        string   `form:"name"`
+	Description string   `form:"description"`
+	Ingredients string   `form:"ingredients"`
+	Directions  string   `form:"directions"`
+	Tags        []string `form:"tags"`
+}
+
+func (f *RecipeForm) FieldMap(req *http.Request) binding.FieldMap {
+	return binding.FieldMap{
+		&f.Name:        "name",
+		&f.Description: "description",
+		&f.Ingredients: "ingredients",
+		&f.Directions:  "directions",
+		&f.Tags:        "tags",
+	}
 }
 
 // NoteForm encapsulates user input for a note on a recipe
 type NoteForm struct {
-	Note string
+	Note string `form:"note"`
+}
+
+func (f *NoteForm) FieldMap(req *http.Request) binding.FieldMap {
+	return binding.FieldMap{
+		&f.Note: "note",
+	}
 }
 
 // AttachmentForm encapsulates user input for attaching a file (image) to a recipe
 type AttachmentForm struct {
 	FileName    string                `form:"file_name"`
 	FileContent *multipart.FileHeader `form:"file_content"`
+}
+
+func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
+	return binding.FieldMap{
+		&f.FileName:    "file_name",
+		&f.FileContent: "file_content",
+	}
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
@@ -113,7 +138,14 @@ func CreateRecipe(ctx *macaron.Context, r *render.Render) {
 
 // CreateRecipePost handles processing the supplied
 // form input from the create recipe screen
-func CreateRecipePost(ctx *macaron.Context, r *render.Render, form RecipeForm) {
+func CreateRecipePost(ctx *macaron.Context, r *render.Render) {
+	form := new(RecipeForm)
+	errs := binding.Bind(ctx.Req.Request, form)
+	if errs != nil && errs.Len() > 0 {
+		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		return
+	}
+
 	tags := make(models.Tags, len(form.Tags))
 	for i, tag := range form.Tags {
 		tags[i] = models.Tag(tag)
@@ -157,7 +189,14 @@ func EditRecipe(ctx *macaron.Context, r *render.Render) {
 
 // EditRecipePost handles processing the supplied
 // form input from the edit recipe screen
-func EditRecipePost(ctx *macaron.Context, r *render.Render, form RecipeForm) {
+func EditRecipePost(ctx *macaron.Context, r *render.Render) {
+	form := new(RecipeForm)
+	errs := binding.Bind(ctx.Req.Request, form)
+	if errs != nil && errs.Len() > 0 {
+		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		return
+	}
+
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
 	if RedirectIfHasError(ctx, r, err) {
 		return
@@ -200,7 +239,14 @@ func DeleteRecipe(ctx *macaron.Context, r *render.Render) {
 	ctx.Redirect(fmt.Sprintf("%s/recipes", conf.RootURLPath()))
 }
 
-func AttachToRecipePost(ctx *macaron.Context, r *render.Render, form AttachmentForm) {
+func AttachToRecipePost(ctx *macaron.Context, r *render.Render) {
+	form := new(AttachmentForm)
+	errs := binding.Bind(ctx.Req.Request, form)
+	if errs != nil && errs.Len() > 0 {
+		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		return
+	}
+
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
 	if RedirectIfHasError(ctx, r, err) {
 		return
@@ -226,7 +272,14 @@ func AttachToRecipePost(ctx *macaron.Context, r *render.Render, form AttachmentF
 	ctx.Redirect(fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id))
 }
 
-func AddNoteToRecipePost(ctx *macaron.Context, r *render.Render, form NoteForm) {
+func AddNoteToRecipePost(ctx *macaron.Context, r *render.Render) {
+	form := new(NoteForm)
+	errs := binding.Bind(ctx.Req.Request, form)
+	if errs != nil && errs.Len() > 0 {
+		RedirectIfHasError(ctx, r, errors.New(errs.Error()))
+		return
+	}
+
 	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
 	if RedirectIfHasError(ctx, r, err) {
 		return
