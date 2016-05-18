@@ -21,6 +21,7 @@ go build
 * [mattes/migrate](https://github.com/mattes/migrate)
 * [disintegration/imaging](https://github.com/disintegration/imaging)
 * [GoDep](https://github.com/tools/godep)
+* [unrolled/render](https://github.com/unrolled/render)
 
 ## License
 

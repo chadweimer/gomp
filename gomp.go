@@ -8,12 +8,14 @@ import (
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/routers"
 	"github.com/go-macaron/binding"
+	"github.com/unrolled/render"
 	"gopkg.in/macaron.v1"
 )
 
 func main() {
 	m := macaron.Classic()
-	m.Use(macaron.Renderer(macaron.RenderOptions{
+	m.Map(render.New(render.Options{
+		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ToLower": strings.ToLower,
 			"Add": func(a, b int) int {

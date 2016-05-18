@@ -56,6 +56,10 @@
 			"Rev": "7204887cf3a42df1cfaa5505dc3a3427f6dded8b"
 		},
 		{
+			"ImportPath": "github.com/unrolled/render",
+			"Rev": "198ad4d8b8a4612176b804ca10555b222a086b40"
+		},
+		{
 			"ImportPath": "golang.org/x/image/bmp",
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
