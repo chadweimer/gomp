@@ -28,7 +28,7 @@ var db *sql.DB
 var dbPath string
 
 func init() {
-	dbPath = fmt.Sprintf("%s/gomp.db", conf.C.DataPath)
+	dbPath = fmt.Sprintf("%s/gomp.db", conf.DataPath())
 
 	// Create the database if it doesn't yet exists.
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
@@ -45,8 +45,8 @@ func init() {
 }
 
 func createDatabase() error {
-	if _, err := os.Stat(conf.C.DataPath); os.IsNotExist(err) {
-		err = os.Mkdir(conf.C.DataPath, os.ModePerm)
+	if _, err := os.Stat(conf.DataPath()); os.IsNotExist(err) {
+		err = os.Mkdir(conf.DataPath(), os.ModePerm)
 		if err != nil {
 			return err
 		}

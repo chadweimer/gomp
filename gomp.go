@@ -13,8 +13,6 @@ import (
 )
 
 func main() {
-	rootURLPath := conf.C.GetRootURLPath()
-
 	m := macaron.Classic()
 	m.Map(render.New(render.Options{
 		Layout: "shared/layout",
@@ -23,11 +21,9 @@ func main() {
 			"Add": func(a, b int) int {
 				return a + b
 			},
-			"RootUrlPath": func() string {
-				return rootURLPath
-			},
+			"RootUrlPath": conf.RootURLPath,
 		}}}))
-	m.Use(macaron.Static(fmt.Sprintf("%s/files", conf.C.DataPath), macaron.StaticOptions{
+	m.Use(macaron.Static(fmt.Sprintf("%s/files", conf.DataPath()), macaron.StaticOptions{
 		Prefix: "files",
 	}))
 
@@ -48,5 +44,5 @@ func main() {
 
 	m.NotFound(routers.NotFound)
 
-	m.Run("0.0.0.0", conf.C.Port)
+	m.Run("0.0.0.0", conf.Port())
 }
