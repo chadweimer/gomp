@@ -22,6 +22,7 @@ go build
 * [disintegration/imaging](https://github.com/disintegration/imaging)
 * [GoDep](https://github.com/tools/godep)
 * [Viper](https://github.com/spf13/viper)
+* [unrolled/render](https://github.com/unrolled/render)
 
 ## License
 
