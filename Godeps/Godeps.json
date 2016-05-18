@@ -127,6 +127,10 @@
 			"Rev": "d8a428b8a30606e1d0b355d91edf282609ade1a6"
 		},
 		{
+			"ImportPath": "github.com/unrolled/render",
+			"Rev": "198ad4d8b8a4612176b804ca10555b222a086b40"
+		},
+		{
 			"ImportPath": "golang.org/x/image/bmp",
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
