@@ -4,17 +4,13 @@
 	"GodepVersion": "v65",
 	"Deps": [
 		{
-			"ImportPath": "github.com/Unknwon/com",
-			"Comment": "v1",
-			"Rev": "28b053d5a2923b87ce8c5a08f3af779894a72758"
-		},
-		{
 			"ImportPath": "github.com/disintegration/imaging",
 			"Rev": "d8bbae1de109b518dabc98c6c1633eb358c148a4"
 		},
 		{
-			"ImportPath": "github.com/go-macaron/inject",
-			"Rev": "c5ab7bf3a307593cd44cb272d1a5beea473dd072"
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Comment": "v1.1-29-g77366a4",
+			"Rev": "77366a47451a56bb3ba682481eed85b64fea14e8"
 		},
 		{
 			"ImportPath": "github.com/mattes/migrate/driver",
@@ -56,10 +52,6 @@
 			"Rev": "89411c4ffb61f0ebef45d8bdb830103b358ef9fa"
 		},
 		{
-			"ImportPath": "github.com/unrolled/render",
-			"Rev": "198ad4d8b8a4612176b804ca10555b222a086b40"
-		},
-		{
 			"ImportPath": "golang.org/x/image/bmp",
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
@@ -72,14 +64,13 @@
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
 		{
-			"ImportPath": "gopkg.in/ini.v1",
-			"Comment": "v1.11.0",
-			"Rev": "12f418cc7edc5a618a51407b7ac1f1f512139df3"
+			"ImportPath": "gopkg.in/codegangsta/negroni.v0",
+			"Comment": "v0.2.0",
+			"Rev": "fde5e16d32adc7ad637e9cd9ad21d4ebc6192535"
 		},
 		{
-			"ImportPath": "gopkg.in/macaron.v1",
-			"Comment": "v1.1.3",
-			"Rev": "94a5ef7105036242f79e5e07a8eb8651d06c8533"
+			"ImportPath": "gopkg.in/unrolled/render.v1",
+			"Rev": "198ad4d8b8a4612176b804ca10555b222a086b40"
 		}
 	]
 }
