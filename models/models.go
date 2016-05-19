@@ -24,35 +24,52 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // ---- End Standard Errors ----
 
-var db *sql.DB
-var dbPath string
+type Model struct {
+	cfg *conf.Config
+	db  *sql.DB
 
-func init() {
-	dbPath = fmt.Sprintf("%s/gomp.db", conf.DataPath())
+	Recipes *RecipeModel
+	Tags    *TagModel
+	Notes   *NoteModel
+	Images  *RecipeImageModel
+}
+
+func New(cfg *conf.Config) *Model {
+	dbPath := fmt.Sprintf("%s/gomp.db", cfg.DataPath)
 
 	// Create the database if it doesn't yet exists.
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		err = createDatabase()
+		err = createDatabase(cfg.DataPath)
 		if err != nil {
 			log.Fatal("Failed to create database.", err)
 		}
 	}
 
-	err := openDatabase()
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
+
+	m := &Model{
+		cfg: cfg,
+		db:  db,
+	}
+	m.Recipes = &RecipeModel{Model: m}
+	m.Tags = &TagModel{Model: m}
+	m.Notes = &NoteModel{Model: m}
+	m.Images = &RecipeImageModel{Model: m}
+	return m
 }
 
-func createDatabase() error {
-	if _, err := os.Stat(conf.DataPath()); os.IsNotExist(err) {
-		err = os.Mkdir(conf.DataPath(), os.ModePerm)
+func createDatabase(dataPath string) error {
+	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
+		err = os.Mkdir(dataPath, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
 
-	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s", dbPath), "./db/migrations")
+	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s", fmt.Sprintf("%s/gomp.db", dataPath)), "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {
@@ -63,10 +80,4 @@ func createDatabase() error {
 	}
 
 	return nil
-}
-
-func openDatabase() error {
-	var err error
-	db, err = sql.Open("sqlite3", dbPath)
-	return err
 }

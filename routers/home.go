@@ -5,6 +5,6 @@ import (
 )
 
 // Home handles rending the default home page
-func Home(resp http.ResponseWriter, req *http.Request) {
-	rend.HTML(resp, http.StatusOK, "home", make(map[string]interface{}))
+func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request) {
+	rc.HTML(resp, http.StatusOK, "home", make(map[string]interface{}))
 }

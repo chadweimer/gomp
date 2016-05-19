@@ -9,21 +9,30 @@ import (
 	"strings"
 )
 
-type config struct {
-	RootURL     string `json:"root_url"`
+type Config struct {
+	// RootURL gets the URL of the root of the site (e.g., http://localhost/gomp).
+	RootURL string `json:"root_url"`
+
+	// RootURLPath gets just the path portion of the RootUrl value,
+	// without any trailing slashes.
 	RootURLPath string `json:"-"`
-	Port        int    `json:"port"`
-	DataPath    string `json:"data_path"`
+
+	// Port gets the port number under which the site is being hosted.
+	Port int `json:"port"`
+
+	// DataPath gets the path (full or relative) under which to store the database
+	// and other runtime date (e.g., uploaded images).
+	DataPath string `json:"data_path"`
 }
 
-var c = config{
-	RootURL:  "http://localhost:4000/",
-	Port:     4000,
-	DataPath: "data",
-}
+func Load(path string) *Config {
+	c := Config{
+		RootURL:  "http://localhost:4000/",
+		Port:     4000,
+		DataPath: "data",
+	}
 
-func init() {
-	file, err := ioutil.ReadFile("conf/app.json")
+	file, err := ioutil.ReadFile(path)
 	if err == nil {
 		err = json.Unmarshal(file, &c)
 		if err != nil {
@@ -31,7 +40,6 @@ func init() {
 		}
 	} else if !os.IsNotExist(err) {
 		log.Fatalf("Failed to read in app.json. Error = %s", err)
-		return
 	}
 
 	// Check if root url has a sub-path
@@ -40,26 +48,6 @@ func init() {
 		log.Fatal("Invalid root_url")
 	}
 	c.RootURLPath = strings.TrimSuffix(url.Path, "/")
-}
 
-// RootURL gets the URL of the root of the site (e.g., http://localhost/gomp).
-func RootURL() string {
-	return c.RootURL
-}
-
-// Port gets the port number under which the site is being hosted.
-func Port() int {
-	return c.Port
-}
-
-// DataPath gets the path (full or relative) under which to store the database
-// and other runtime date (e.g., uploaded images).
-func DataPath() string {
-	return c.DataPath
-}
-
-// RootURLPath gets just the path portion of the RootUrl value,
-// without any trailing slashes.
-func RootURLPath() string {
-	return c.RootURLPath
+	return &c
 }
