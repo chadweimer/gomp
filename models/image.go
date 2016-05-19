@@ -115,5 +115,5 @@ func getDirPathForThumbnail(recipeID int64) string {
 }
 
 func getURLForImage(path string) string {
-	return strings.TrimPrefix(path, conf.DataPath())
+	return filepath.ToSlash(strings.TrimPrefix(path, conf.DataPath()))
 }
