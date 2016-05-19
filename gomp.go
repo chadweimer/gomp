@@ -35,7 +35,7 @@ func main() {
 
 	n := negroni.Classic()
 	files := negroni.NewStatic(http.Dir(fmt.Sprintf("%s/files", conf.DataPath())))
-	files.Prefix = fmt.Sprintf("%s/files", conf.RootURLPath())
+	files.Prefix = "/files"
 	n.Use(files)
 	n.UseHandler(mainMux)
 
