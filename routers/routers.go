@@ -11,8 +11,16 @@ import (
 
 type RouteController struct {
 	*render.Render
-	Cfg   *conf.Config
-	Model *models.Model
+	cfg   *conf.Config
+	model *models.Model
+}
+
+func NewController(render *render.Render, cfg *conf.Config, model *models.Model) *RouteController {
+	return &RouteController{
+		Render: render,
+		cfg:    cfg,
+		model:  model,
+	}
 }
 
 // RedirectIfHasError sends the request to the InternalServerError page

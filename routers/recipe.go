@@ -64,7 +64,7 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	recipe, err := rc.Model.Recipes.Read(id)
+	recipe, err := rc.model.Recipes.Read(id)
 	if err == models.ErrNotFound {
 		rc.NotFound(resp, req)
 		return
@@ -73,12 +73,12 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	notes, err := rc.Model.Notes.List(id)
+	notes, err := rc.model.Notes.List(id)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	imgs, err := rc.Model.Images.List(id)
+	imgs, err := rc.model.Images.List(id)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
@@ -107,9 +107,9 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	var total int64
 	var err error
 	if query == "" {
-		recipes, total, err = rc.Model.Recipes.List(page, count)
+		recipes, total, err = rc.model.Recipes.List(page, count)
 	} else {
-		recipes, total, err = rc.Model.Recipes.Find(query, page, count)
+		recipes, total, err = rc.model.Recipes.Find(query, page, count)
 	}
 	if rc.RedirectIfHasError(resp, err) {
 		return
@@ -151,12 +151,12 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 		Tags:        form.Tags,
 	}
 
-	err := rc.Model.Recipes.Create(recipe)
+	err := rc.model.Recipes.Create(recipe)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.Cfg.RootURLPath, recipe.ID), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, recipe.ID), http.StatusFound)
 }
 
 // EditRecipe handles rendering the edit recipe screen
@@ -166,7 +166,7 @@ func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	recipe, err := rc.Model.Recipes.Read(id)
+	recipe, err := rc.model.Recipes.Read(id)
 	if err == models.ErrNotFound {
 		rc.NotFound(resp, req)
 		return
@@ -205,12 +205,12 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 		Tags:        form.Tags,
 	}
 
-	err = rc.Model.Recipes.Update(recipe)
+	err = rc.model.Recipes.Update(recipe)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.Cfg.RootURLPath, id), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
 // DeleteRecipe handles deleting the recipe with the given id
@@ -220,12 +220,12 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	err = rc.Model.Recipes.Delete(id)
+	err = rc.model.Recipes.Delete(id)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.Cfg.RootURLPath), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
 func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -252,12 +252,12 @@ func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *htt
 		return
 	}
 
-	err = rc.Model.Images.Save(id, form.FileName, uploadedFileData)
+	err = rc.model.Images.Save(id, form.FileName, uploadedFileData)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.Cfg.RootURLPath, id), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
 func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -277,10 +277,10 @@ func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *ht
 		RecipeID: id,
 		Note:     form.Note,
 	}
-	err = rc.Model.Notes.Create(note)
+	err = rc.model.Notes.Create(note)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.Cfg.RootURLPath, id), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }

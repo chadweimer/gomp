@@ -17,17 +17,14 @@ import (
 func main() {
 	cfg := conf.Load("conf/app.json")
 	model := models.New(cfg)
-	rc := &routers.RouteController{
-		Render: render.New(render.Options{
-			Layout: "shared/layout",
-			Funcs: []template.FuncMap{map[string]interface{}{
-				"ToLower":     strings.ToLower,
-				"Add":         func(a, b int64) int64 { return a + b },
-				"RootUrlPath": func() string { return cfg.RootURLPath },
-			}}}),
-		Cfg:   cfg,
-		Model: model,
-	}
+	renderer := render.New(render.Options{
+		Layout: "shared/layout",
+		Funcs: []template.FuncMap{map[string]interface{}{
+			"ToLower":     strings.ToLower,
+			"Add":         func(a, b int64) int64 { return a + b },
+			"RootUrlPath": func() string { return cfg.RootURLPath },
+		}}})
+	rc := routers.NewController(renderer, cfg, model)
 
 	// Since httprouter explicitly doesn't allow /path/to and /path/:match,
 	// we get a little fancy and use 2 mux'es to emulate/force the behavior
