@@ -23,13 +23,20 @@ type Config struct {
 	// DataPath gets the path (full or relative) under which to store the database
 	// and other runtime date (e.g., uploaded images).
 	DataPath string `json:"data_path"`
+
+	// IsDevelopment defines whether to run the application in "development mode".
+	// Development mode turns on additional features, such as logging, that may
+	// not be desirable in a production environment.
+	IsDevelopment bool `json:"is_development"`
 }
 
+// Load reads the configuration file from the specified path
 func Load(path string) *Config {
 	c := Config{
-		RootURL:  "http://localhost:4000/",
-		Port:     4000,
-		DataPath: "data",
+		RootURL:       "http://localhost:4000/",
+		Port:          4000,
+		DataPath:      "data",
+		IsDevelopment: false,
 	}
 
 	file, err := ioutil.ReadFile(path)

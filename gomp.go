@@ -51,10 +51,13 @@ func main() {
 	// Fall into the recipeMux only when the route isn't found in mainMux
 	mainMux.NotFound = recipeMux
 
-	n := negroni.Classic()
-	files := negroni.NewStatic(http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)))
-	files.Prefix = "/files"
-	n.Use(files)
+	n := negroni.New()
+	n.Use(negroni.NewRecovery())
+	if cfg.IsDevelopment {
+		n.Use(negroni.NewLogger())
+	}
+	n.Use(&negroni.Static{Dir: http.Dir("public")})
+	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
 	n.UseHandler(mainMux)
 
 	n.Run(fmt.Sprintf(":%d", cfg.Port))
