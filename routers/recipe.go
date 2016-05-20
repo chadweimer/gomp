@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mholt/binding"
 )
@@ -59,33 +58,28 @@ func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
-func GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	recipe := &models.Recipe{
-		ID: id,
-	}
-	err = recipe.Read()
+	recipe, err := rc.model.Recipes.Read(id)
 	if err == models.ErrNotFound {
-		NotFound(resp, req)
+		rc.NotFound(resp, req)
 		return
 	}
-	if RedirectIfHasError(resp, err) {
-		return
-	}
-
-	var notes = new(models.Notes)
-	err = notes.List(id)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	var imgs = new(models.RecipeImages)
-	err = imgs.List(id)
-	if RedirectIfHasError(resp, err) {
+	notes, err := rc.model.Notes.List(id)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	imgs, err := rc.model.Images.List(id)
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
@@ -94,11 +88,11 @@ func GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params)
 		"Notes":  notes,
 		"Images": imgs,
 	}
-	rend.HTML(resp, http.StatusOK, "recipe/view", data)
+	rc.HTML(resp, http.StatusOK, "recipe/view", data)
 }
 
 // ListRecipes handles retrieving and rending a list of available recipes
-func ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	query := req.URL.Query().Get("q")
 	page, _ := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
 	if page < 1 {
@@ -109,15 +103,15 @@ func ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Param
 		count = 15
 	}
 
-	recipes := new(models.Recipes)
+	var recipes *models.Recipes
 	var total int64
 	var err error
 	if query == "" {
-		total, err = recipes.List(page, count)
+		recipes, total, err = rc.model.Recipes.List(page, count)
 	} else {
-		total, err = recipes.Find(query, page, count)
+		recipes, total, err = rc.model.Recipes.Find(query, page, count)
 	}
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
@@ -131,173 +125,162 @@ func ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Param
 		"SearchQuery": query,
 		"ResultCount": total,
 	}
-	rend.HTML(resp, http.StatusOK, "recipe/list", data)
+	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 
 // CreateRecipe handles rendering the create recipe screen
-func CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	rend.HTML(resp, http.StatusOK, "recipe/create", make(map[string]interface{}))
+func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	rc.HTML(resp, http.StatusOK, "recipe/create", make(map[string]interface{}))
 }
 
 // CreateRecipePost handles processing the supplied
 // form input from the create recipe screen
-func CreateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(resp, errors.New(errs.Error()))
+		rc.RedirectIfHasError(resp, errors.New(errs.Error()))
 		return
 	}
 
-	tags := make(models.Tags, len(form.Tags))
-	for i, tag := range form.Tags {
-		tags[i] = models.Tag(tag)
-	}
 	recipe := &models.Recipe{
 		Name:        form.Name,
 		Description: form.Description,
 		Ingredients: form.Ingredients,
 		Directions:  form.Directions,
-		Tags:        tags,
+		Tags:        form.Tags,
 	}
 
-	err := recipe.Create()
-	if RedirectIfHasError(resp, err) {
+	err := rc.model.Recipes.Create(recipe)
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), recipe.ID), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, recipe.ID), http.StatusFound)
 }
 
 // EditRecipe handles rendering the edit recipe screen
-func EditRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	recipe := &models.Recipe{ID: id}
-	err = recipe.Read()
+	recipe, err := rc.model.Recipes.Read(id)
 	if err == models.ErrNotFound {
-		NotFound(resp, req)
+		rc.NotFound(resp, req)
 		return
 	}
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
 	data := map[string]interface{}{
 		"Recipe": recipe,
 	}
-	rend.HTML(resp, http.StatusOK, "recipe/edit", data)
+	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 
 // EditRecipePost handles processing the supplied
 // form input from the edit recipe screen
-func EditRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(resp, errors.New(errs.Error()))
+		rc.RedirectIfHasError(resp, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	tags := make(models.Tags, len(form.Tags))
-	for i, tag := range form.Tags {
-		tags[i] = models.Tag(tag)
-	}
 	recipe := &models.Recipe{
 		ID:          id,
 		Name:        form.Name,
 		Description: form.Description,
 		Ingredients: form.Ingredients,
 		Directions:  form.Directions,
-		Tags:        tags,
+		Tags:        form.Tags,
 	}
 
-	err = recipe.Update()
-	if RedirectIfHasError(resp, err) {
+	err = rc.model.Recipes.Update(recipe)
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
 // DeleteRecipe handles deleting the recipe with the given id
-func DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	recipe := &models.Recipe{ID: id}
-	err = recipe.Delete()
-	if RedirectIfHasError(resp, err) {
+	err = rc.model.Recipes.Delete(id)
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", conf.RootURLPath()), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
-func AttachToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(AttachmentForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(resp, errors.New(errs.Error()))
+		rc.RedirectIfHasError(resp, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
 	uploadedFile, err := form.FileContent.Open()
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 	defer uploadedFile.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	img := &models.RecipeImage{RecipeID: id}
-	err = img.Create(form.FileName, uploadedFileData)
-	if RedirectIfHasError(resp, err) {
+	err = rc.model.Images.Save(id, form.FileName, uploadedFileData)
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
-func AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(NoteForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		RedirectIfHasError(resp, errors.New(errs.Error()))
+		rc.RedirectIfHasError(resp, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if RedirectIfHasError(resp, err) {
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	note := models.Note{
+	note := &models.Note{
 		RecipeID: id,
 		Note:     form.Note,
 	}
-	err = note.Create()
-	if RedirectIfHasError(resp, err) {
+	err = rc.model.Notes.Create(note)
+	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", conf.RootURLPath(), id), http.StatusFound)
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }

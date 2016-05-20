@@ -2,17 +2,17 @@ package models
 
 import "database/sql"
 
-type Tag string
+type TagModel struct {
+	*Model
+}
 
-type Tags []Tag
-
-func (tag *Tag) Create(recipeID int64) error {
-	tx, err := db.Begin()
+func (m *TagModel) Create(recipeID int64, tag string) error {
+	tx, err := m.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	err = tag.CreateTx(tx, recipeID)
+	err = m.CreateTx(recipeID, tag, tx)
 	if err != nil {
 		return err
 	}
@@ -20,20 +20,20 @@ func (tag *Tag) Create(recipeID int64) error {
 	return tx.Commit()
 }
 
-func (tag *Tag) CreateTx(tx *sql.Tx, recipeID int64) error {
+func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sql.Tx) error {
 	_, err := tx.Exec(
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES (?, ?)",
-		recipeID, string(*tag))
+		recipeID, tag)
 	return err
 }
 
-func (tags *Tags) DeleteAll(recipeID int64) error {
-	tx, err := db.Begin()
+func (m *TagModel) DeleteAll(recipeID int64) error {
+	tx, err := m.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	err = tags.DeleteAllTx(tx, recipeID)
+	err = m.DeleteAllTx(recipeID, tx)
 	if err != nil {
 		return err
 	}
@@ -41,29 +41,30 @@ func (tags *Tags) DeleteAll(recipeID int64) error {
 	return tx.Commit()
 }
 
-func (tags *Tags) DeleteAllTx(tx *sql.Tx, recipeID int64) error {
+func (m *TagModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_tag WHERE recipe_id = ?",
 		recipeID)
 	return err
 }
 
-func (tags *Tags) List(recipeID int64) error {
-	rows, err := db.Query(
+func (m *TagModel) List(recipeID int64) (*[]string, error) {
+	rows, err := m.db.Query(
 		"SELECT tag FROM recipe_tag WHERE recipe_id = ?",
 		recipeID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	var tags []string
 	for rows.Next() {
 		var tag string
 		err = rows.Scan(&tag)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		*tags = append(*tags, Tag(tag))
+		tags = append(tags, tag)
 	}
 
-	return nil
+	return &tags, nil
 }
