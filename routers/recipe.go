@@ -102,6 +102,10 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		sess.Delete("q")
 		sess.Delete("page")
 		sess.Delete("count")
+		if clear != "" {
+			http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
+			return
+		}
 	} else if query == "" {
 		if sessQuery := sess.Get("q"); sessQuery != nil {
 			query = sessQuery.(string)
