@@ -33,4 +33,7 @@ conf/
 
 # Ignore the main build output
 gomp
+gomp.exe
+gomp.zip
+gomp.tar.gz
 debug
