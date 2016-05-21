@@ -23,6 +23,7 @@ go build
 * [disintegration/imaging](https://github.com/disintegration/imaging)
 * [GoDep](https://github.com/tools/godep)
 * [unrolled/render](https://github.com/unrolled/render)
+* [negroni-sessions](https://github.com/goincremental/negroni-sessions)
 
 ## License
 
