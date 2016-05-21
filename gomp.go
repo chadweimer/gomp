@@ -26,6 +26,10 @@ func main() {
 			"Add":         func(a, b int64) int64 { return a + b },
 			"RootUrlPath": func() string { return cfg.RootURLPath },
 			"Paginate": func(pageNum, numPages, num int64) []int64 {
+				if numPages == 0 {
+					return []int64{1}
+				}
+
 				if numPages < num {
 					num = numPages
 				}

@@ -2,8 +2,10 @@
 <section class="row">
     {{if .SearchQuery}}
     <p class="col s12 l12">
-        Current search: '{{.SearchQuery}}', Results: {{.ResultCount}} |
-        <a href="?clear=true">Clear</a>
+        <span class="toast rounded">
+            Search: {{.SearchQuery}}, Results: {{.ResultCount}}
+            <i class="material-icons right clickable" onclick="location.href='?clear=true';">clear_all</i>
+        </span>
     </p>
     {{end}}
     {{range .Recipes}}
