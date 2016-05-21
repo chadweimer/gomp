@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/goincremental/negroni-sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mholt/binding"
 )
@@ -93,12 +94,36 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	sess := sessions.GetSession(req)
+
 	query := req.URL.Query().Get("q")
-	page, _ := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
+	clear := req.URL.Query().Get("clear")
+	if query != "" || clear != "" {
+		sess.Delete("q")
+		sess.Delete("page")
+		sess.Delete("count")
+	} else if query == "" {
+		if sessQuery := sess.Get("q"); sessQuery != nil {
+			query = sessQuery.(string)
+		}
+	}
+
+	var page int64
+	if pageStr := req.URL.Query().Get("page"); pageStr != "" {
+		page, _ = strconv.ParseInt(pageStr, 10, 64)
+	} else if sessPage := sess.Get("page"); sessPage != nil {
+		page = sessPage.(int64)
+	}
 	if page < 1 {
 		page = 1
 	}
-	count, _ := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
+
+	var count int64
+	if countStr := req.URL.Query().Get("count"); countStr != "" {
+		count, _ = strconv.ParseInt(countStr, 10, 64)
+	} else if sessCount := sess.Get("count"); sessCount != nil {
+		count = sessCount.(int64)
+	}
 	if count < 1 {
 		count = 15
 	}
@@ -114,6 +139,10 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}
+
+	sess.Set("q", query)
+	sess.Set("page", page)
+	sess.Set("count", count)
 
 	data := map[string]interface{}{
 		"Query":    query,

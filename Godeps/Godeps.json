@@ -1,11 +1,38 @@
 {
 	"ImportPath": "github.com/chadweimer/gomp",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v65",
+	"GodepVersion": "v67",
 	"Deps": [
+		{
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Comment": "v0.2.0-31-gaac393b",
+			"Rev": "aac393b02b969df303449ed8ae194a1f8f3b48d6"
+		},
 		{
 			"ImportPath": "github.com/disintegration/imaging",
 			"Rev": "d8bbae1de109b518dabc98c6c1633eb358c148a4"
+		},
+		{
+			"ImportPath": "github.com/goincremental/negroni-sessions",
+			"Rev": "b07e2d18b97e3f627edaa67876c21fa23eba6a08"
+		},
+		{
+			"ImportPath": "github.com/goincremental/negroni-sessions/cookiestore",
+			"Rev": "b07e2d18b97e3f627edaa67876c21fa23eba6a08"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Comment": "v1.1-2-ga8d44e7",
+			"Rev": "a8d44e7d8e4d532b6a27a02dd82abb31cc1b01bd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/securecookie",
+			"Comment": "v1.1",
+			"Rev": "667fe4e3466a040b780561fe9b51a83a3753eefc"
+		},
+		{
+			"ImportPath": "github.com/gorilla/sessions",
+			"Rev": "a4e6dd28f9e9274729417506b9bd0a6c3edb91ce"
 		},
 		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
@@ -62,11 +89,6 @@
 		{
 			"ImportPath": "golang.org/x/image/tiff/lzw",
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
-		},
-		{
-			"ImportPath": "gopkg.in/codegangsta/negroni.v0",
-			"Comment": "v0.2.0",
-			"Rev": "fde5e16d32adc7ad637e9cd9ad21d4ebc6192535"
 		},
 		{
 			"ImportPath": "gopkg.in/unrolled/render.v1",

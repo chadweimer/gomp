@@ -9,8 +9,10 @@ import (
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/routers"
+	"github.com/codegangsta/negroni"
+	"github.com/goincremental/negroni-sessions"
+	"github.com/goincremental/negroni-sessions/cookiestore"
 	"github.com/julienschmidt/httprouter"
-	"gopkg.in/codegangsta/negroni.v0"
 	"gopkg.in/unrolled/render.v1"
 )
 
@@ -53,6 +55,10 @@ func main() {
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
+
+	store := cookiestore.New([]byte(cfg.SecretKey))
+	n.Use(sessions.Sessions("gomp_session", store))
+
 	n.Use(&negroni.Static{Dir: http.Dir("public")})
 	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
 	n.UseHandler(mainMux)

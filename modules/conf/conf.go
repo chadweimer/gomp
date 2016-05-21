@@ -28,6 +28,9 @@ type Config struct {
 	// Development mode turns on additional features, such as logging, that may
 	// not be desirable in a production environment.
 	IsDevelopment bool `json:"is_development"`
+
+	// SecretKey is used to keep data safe.
+	SecretKey string `json:"secret_key"`
 }
 
 // Load reads the configuration file from the specified path
@@ -37,6 +40,7 @@ func Load(path string) *Config {
 		Port:          4000,
 		DataPath:      "data",
 		IsDevelopment: false,
+		SecretKey:     "Secret123",
 	}
 
 	file, err := ioutil.ReadFile(path)

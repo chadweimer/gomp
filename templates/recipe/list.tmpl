@@ -2,7 +2,8 @@
 <section class="row">
     {{if .SearchQuery}}
     <p class="col s12 l12">
-        Results for search '{{.SearchQuery}}': {{.ResultCount}}
+        Current search: '{{.SearchQuery}}', Results: {{.ResultCount}} |
+        <a href="?clear=true">Clear</a>
     </p>
     {{end}}
     {{range .Recipes}}
