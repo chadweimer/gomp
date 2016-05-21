@@ -27,80 +27,22 @@
     
     {{$baseLink := .PerPage | printf "?q=%s&count=%d&page=" .Query}}
     <ul class="pagination col s12 l12 center">
-        <li class="{{if eq .PageNum 1}}disabled{{end}}">
-            <a href="{{if ne .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
+        <li class="{{if le .PageNum 1}}disabled{{end}}">
+            <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
         </li>
-        <li class="{{if eq .PageNum 1}}disabled{{end}}">
-            <a href="{{if ne .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
+        <li class="{{if le .PageNum 1}}disabled{{end}}">
+            <a href="{{if gt .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
         </li>
-        {{$linkPageNum := .PageNum | Add -5}}
-        {{if gt $linkPageNum 0}}
-        <li class="hide-on-small-only">
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add -4}}
-        {{if gt $linkPageNum 0}}
-        <li class="hide-on-small-only">
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        {{range  Paginate .PageNum .NumPages 5}}
+        <li {{if eq $.PageNum .}}class="active"{{end}}>
+            <a href="{{$baseLink}}{{.}}">{{.}}</a>
         </li>
         {{end}}
-        {{$linkPageNum := .PageNum | Add -3}}
-        {{if gt $linkPageNum 0}}
-        <li class="hide-on-small-only">
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
+        <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
+            <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
         </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add -2}}
-        {{if gt $linkPageNum 0}}
-        <li>
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add -1}}
-        {{if gt $linkPageNum 0}}
-        <li>
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        <li class="active">
-            <a href="{{$baseLink}}{{.PageNum}}">{{.PageNum}}</a>
-        </li>
-        {{$linkPageNum := .PageNum | Add 1}}
-        {{if le $linkPageNum .NumPages}}
-        <li>
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add 2}}
-        {{if le $linkPageNum .NumPages}}
-        <li>
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add 3}}
-        {{if le $linkPageNum .NumPages}}
-        <li class="hide-on-small-only">
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add 4}}
-        {{if le $linkPageNum .NumPages}}
-        <li class="hide-on-small-only">
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        {{$linkPageNum := .PageNum | Add 5}}
-        {{if le $linkPageNum .NumPages}}
-        <li class="hide-on-small-only">
-            <a href="{{$baseLink}}{{$linkPageNum}}">{{$linkPageNum}}</a>
-        </li>
-        {{end}}
-        <li class="{{if eq .PageNum .NumPages}}disabled{{end}}">
-            <a href="{{if ne .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
-        </li>
-        <li class="{{if eq .PageNum .NumPages}}disabled{{end}}">
-            <a href="{{if ne .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
+        <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
+            <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
         </li>
     </ul>
 </section>

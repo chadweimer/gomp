@@ -25,6 +25,27 @@ func main() {
 			"ToLower":     strings.ToLower,
 			"Add":         func(a, b int64) int64 { return a + b },
 			"RootUrlPath": func() string { return cfg.RootURLPath },
+			"Paginate": func(pageNum, numPages, num int64) []int64 {
+				if numPages < num {
+					num = numPages
+				}
+
+				startPage := pageNum - num/2
+				endPage := pageNum + num/2
+				if startPage < 1 {
+					startPage = 1
+					endPage = startPage + num - 1
+				} else if endPage > numPages {
+					endPage = numPages
+					startPage = endPage - num + 1
+				}
+
+				pageNums := make([]int64, num, num)
+				for i := int64(0); i < num; i++ {
+					pageNums[i] = i + startPage
+				}
+				return pageNums
+			},
 		}}})
 	rc := routers.NewController(renderer, cfg, model)
 
