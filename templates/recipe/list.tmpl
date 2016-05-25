@@ -1,3 +1,27 @@
+{{ define "css-recipe/list" }}
+<style>
+    .rating-container {
+        position: relative;
+    }
+    
+    .rating {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+    }
+    
+    .rating > i {
+        color: #dddddd;
+        float: right;
+    }
+    
+    .rating > i.active,
+    .rating > i.active ~ i {
+        color: #fdd835;
+    }
+</style>
+{{ end }}
+
 {{ define "content-recipe/list" }}
 <section class="row">
     {{if .SearchQuery}}
@@ -12,8 +36,15 @@
     <div class="col s12 m6 l4">
         <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';">
             {{if .Image}}
-            <section class="card-image">
+            <section class="card-image rating-container">
                 <img src="{{RootUrlPath}}{{.Image}}" class="darken-25">
+                <article class="rating">
+                    <i class="material-icons {{if eq .AvgRating 5.0}}active{{end}}">star</i>
+                    <i class="material-icons {{if eq .AvgRating 4.0}}active{{end}}">star</i>
+                    <i class="material-icons {{if eq .AvgRating 3.0}}active{{end}}">star</i>
+                    <i class="material-icons {{if eq .AvgRating 2.0}}active{{end}}">star</i>
+                    <i class="material-icons {{if eq .AvgRating 1.0}}active{{end}}">star</i>
+                 </article>
                 <span class="card-title">{{.Name}}</span>
             </section>
             {{end}}

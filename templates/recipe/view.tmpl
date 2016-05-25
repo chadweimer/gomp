@@ -1,10 +1,39 @@
+{{ define "css-recipe/view" }}
+<style>
+    .rating > a {
+        color: #dddddd;
+        float: right;
+    }
+    
+    .rating > a.active,
+    .rating > a.active ~ a {
+        color: #fdd835;
+    }
+
+    .rating > a:hover,
+    .rating > a:hover ~ a {
+        color: #ffeb3b !important;
+    }
+</style>
+{{ end }}
+
 {{ define "content-recipe/view" }}
 <section class="container">
     <article class="card grey lighten-4">
         <section class="card-content">
-            <a href="{{RootUrlPath}}/recipes" class="right">
+            <article class="rating">
+                <form id="rating-form" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
+                    <input id="rating-input" name="rating" type="hidden">
+                </form>
+                <a id="rate-5" href="#" {{if eq .Recipe.AvgRating 5.0}}class="active"{{end}}><i class="material-icons">star</i></a>
+                <a id="rate-4" href="#" {{if eq .Recipe.AvgRating 4.0}}class="active"{{end}}><i class="material-icons">star</i></a>
+                <a id="rate-3" href="#" {{if eq .Recipe.AvgRating 3.0}}class="active"{{end}}><i class="material-icons">star</i></a>
+                <a id="rate-2" href="#" {{if eq .Recipe.AvgRating 2.0}}class="active"{{end}}><i class="material-icons">star</i></a>
+                <a id="rate-1" href="#" {{if eq .Recipe.AvgRating 1.0}}class="active"{{end}}><i class="material-icons">star</i></a>
+            </article>
+            <!--a href="{{RootUrlPath}}/recipes" class="right">
                 <i class="material-icons black-text">reply</i>
-            </a>
+            </a-->
             <h4>{{.Recipe.Name}}</h4>
             <p class="section plain-text">{{.Recipe.Description}}</p>
             <div class="divider"></div>
@@ -131,4 +160,29 @@
         </div>
     </form>
 </div>
+{{ end }}
+
+{{ define "js-recipe/view" }}
+<script type="text/javascript">
+    $('#rate-5').click(function() {
+        $('#rating-input').val(5);
+        $('#rating-form').submit();
+    });
+    $('#rate-4').click(function() {
+        $('#rating-input').val(4);
+        $('#rating-form').submit();
+    });
+    $('#rate-3').click(function() {
+        $('#rating-input').val(3);
+        $('#rating-form').submit();
+    });
+    $('#rate-2').click(function() {
+        $('#rating-input').val(2);
+        $('#rating-form').submit();
+    });
+    $('#rate-1').click(function() {
+        $('#rating-input').val(1);
+        $('#rating-form').submit();
+    });
+</script>
 {{ end }}

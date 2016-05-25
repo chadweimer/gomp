@@ -70,6 +70,7 @@ func main() {
 	recipeMux.GET("/recipes/:id/delete", rc.DeleteRecipe)
 	recipeMux.POST("/recipes/:id/attach/create", rc.AttachToRecipePost)
 	recipeMux.POST("/recipes/:id/note/create", rc.AddNoteToRecipePost)
+	recipeMux.POST("/recipes/:id/rate", rc.RateRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 
 	// Fall into the recipeMux only when the route isn't found in mainMux
