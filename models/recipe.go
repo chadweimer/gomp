@@ -165,9 +165,9 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 
 	offset := count * (page - 1)
 	rows, err := m.db.Query(
-		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(AVG(g.rating), 0) "+
+		"SELECT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
 			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
-			"ORDER BY name LIMIT ? OFFSET ?",
+			"ORDER BY r.name LIMIT ? OFFSET ?",
 		count, offset)
 	if err != nil {
 		return nil, 0, err
@@ -212,7 +212,7 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 
 	offset := count * (page - 1)
 	selectStmt :=
-		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(AVG(g.rating), 0) " +
+		"SELECT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) " +
 			partialStmt +
 			" ORDER BY r.name LIMIT ? OFFSET ?"
 	rows, err := m.db.Query(selectStmt,
