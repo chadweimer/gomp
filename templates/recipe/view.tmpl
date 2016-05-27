@@ -11,6 +11,17 @@
         float: right;
     }
     
+    #rating-form  > a.whole {
+        -webkit-clip-path: inset(0 0 0 50%);
+                clip-path: inset(0 0 0 50%);
+        margin-left: -10%;
+    }
+    
+    #rating-form  > a.half {
+        -webkit-clip-path: inset(0 50% 0 0);
+                clip-path: inset(0 50% 0 0);
+    }
+    
     #rating-form > a.active,
     #rating-form > a.active ~ a {
         color: #fdd835;
@@ -29,11 +40,16 @@
         <section class="card grey lighten-4">
             <div class="card-content">
                 <form id="rating-form" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
-                    <a href="#" {{if eq .Recipe.AvgRating 5.0}}class="active"{{end}} data-rating="5"><i class="material-icons">star</i></a>
-                    <a href="#" {{if eq .Recipe.AvgRating 4.0}}class="active"{{end}} data-rating="4"><i class="material-icons">star</i></a>
-                    <a href="#" {{if eq .Recipe.AvgRating 3.0}}class="active"{{end}} data-rating="3"><i class="material-icons">star</i></a>
-                    <a href="#" {{if eq .Recipe.AvgRating 2.0}}class="active"{{end}} data-rating="2"><i class="material-icons">star</i></a>
-                    <a href="#" {{if eq .Recipe.AvgRating 1.0}}class="active"{{end}} data-rating="1"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 3.5}}active{{end}}" data-rating="3.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 3.0}}active{{end}}" data-rating="3.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 2.5}}active{{end}}" data-rating="2.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 2.0}}active{{end}}" data-rating="2.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 1.5}}active{{end}}" data-rating="1.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 1.0}}active{{end}}" data-rating="1.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
                 <!--a href="{{RootUrlPath}}/recipes" class="right">
