@@ -43,6 +43,11 @@ func New(cfg *conf.Config) *Model {
 		if err != nil {
 			log.Fatal("Failed to create database.", err)
 		}
+	} else {
+		err = migrateDatabase(cfg.DataPath)
+		if err != nil {
+			log.Fatal("Failed to migrate database.", err)
+		}
 	}
 
 	db, err := sql.Open("sqlite3", dbPath)
@@ -69,6 +74,10 @@ func createDatabase(dataPath string) error {
 		}
 	}
 
+	return migrateDatabase(dataPath)
+}
+
+func migrateDatabase(dataPath string) error {
 	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s", fmt.Sprintf("%s/gomp.db", dataPath)), "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)

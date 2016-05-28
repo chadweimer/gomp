@@ -1,3 +1,34 @@
+{{ define "css-recipe/list" }}
+<style>
+    .rating-container {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+    
+    .rating-container > i {
+        color: #dddddd;
+        float: right;
+    }
+    
+    .rating-container > i.whole {
+        -webkit-clip-path: inset(0 0 0 50%);
+                clip-path: inset(0 0 0 50%);
+        margin-left: -10%;
+    }
+    
+    .rating-container > i.half {
+        -webkit-clip-path: inset(0 50% 0 0);
+                clip-path: inset(0 50% 0 0);
+    }
+    
+    .rating-container > i.active,
+    .rating-container > i.active ~ i {
+        color: #fdd835;
+    }
+</style>
+{{ end }}
+
 {{ define "content-recipe/list" }}
 <section class="row">
     {{if .SearchQuery}}
@@ -17,6 +48,18 @@
                 <span class="card-title">{{.Name}}</span>
             </section>
             {{end}}
+            <section class="rating-container">
+                <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
+            </section>
             <section class="card-content">
                 {{if not .Image}}
                 <span class="card-title">{{.Name}}</span>

@@ -58,6 +58,17 @@ func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
 	}
 }
 
+// RatingForm encapsulates user input for rating a recipe (1-5)
+type RatingForm struct {
+	Rating float64 `form:"rating"`
+}
+
+func (f *RatingForm) FieldMap(req *http.Request) binding.FieldMap {
+	return binding.FieldMap{
+		&f.Rating: "rating",
+	}
+}
+
 // GetRecipe handles retrieving and rendering a single recipe
 func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
@@ -311,6 +322,27 @@ func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *ht
 		Note:     form.Note,
 	}
 	err = rc.model.Notes.Create(note)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
+}
+
+func (rc *RouteController) RateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	form := new(RatingForm)
+	errs := binding.Bind(req, form)
+	if errs != nil && errs.Len() > 0 {
+		rc.RedirectIfHasError(resp, errors.New(errs.Error()))
+		return
+	}
+
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	err = rc.model.Recipes.SetRating(id, form.Rating)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}

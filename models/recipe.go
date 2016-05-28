@@ -13,6 +13,7 @@ type Recipe struct {
 	Description string
 	Ingredients string
 	Directions  string
+	AvgRating   float64
 	Image       string
 	Tags        []string
 }
@@ -67,9 +68,11 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	recipe := Recipe{ID: id}
 
 	result := m.db.QueryRow(
-		"SELECT name, description, ingredients, directions FROM recipe WHERE id = ?",
+		"SELECT DISTINCT r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
+			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
+			"WHERE r.id = ?",
 		recipe.ID)
-	err := result.Scan(&recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions)
+	err := result.Scan(&recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions, &recipe.AvgRating)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
@@ -162,7 +165,9 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 
 	offset := count * (page - 1)
 	rows, err := m.db.Query(
-		"SELECT id, name, description, ingredients,  directions FROM recipe ORDER BY name LIMIT ? OFFSET ?",
+		"SELECT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
+			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
+			"ORDER BY r.name LIMIT ? OFFSET ?",
 		count, offset)
 	if err != nil {
 		return nil, 0, err
@@ -171,7 +176,7 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 	var recipes Recipes
 	for rows.Next() {
 		var recipe Recipe
-		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions)
+		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions, &recipe.AvgRating)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -193,10 +198,11 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, int64, error) {
 	var total int64
 	search = "%" + search + "%"
-	partialStmt := " FROM recipe AS r " +
+	partialStmt := "FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
+		"LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id " +
 		"WHERE r.name LIKE ? OR r.description LIKE ? OR r.Ingredients LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
-	countStmt := "SELECT count(DISTINCT r.id)" + partialStmt
+	countStmt := "SELECT count(DISTINCT r.id) " + partialStmt
 	row := m.db.QueryRow(countStmt,
 		search, search, search, search, search)
 	err := row.Scan(&total)
@@ -206,7 +212,9 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 
 	offset := count * (page - 1)
 	selectStmt :=
-		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions" + partialStmt + " ORDER BY r.name LIMIT ? OFFSET ?"
+		"SELECT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) " +
+			partialStmt +
+			" ORDER BY r.name LIMIT ? OFFSET ?"
 	rows, err := m.db.Query(selectStmt,
 		search, search, search, search, search, count, offset)
 	if err != nil {
@@ -216,7 +224,7 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	var recipes Recipes
 	for rows.Next() {
 		var recipe Recipe
-		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions)
+		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions, &recipe.AvgRating)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -233,4 +241,20 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	}
 
 	return &recipes, total, nil
+}
+
+func (m *RecipeModel) SetRating(id int64, rating float64) error {
+	var count int64
+	err := m.db.QueryRow("SELECT count(*) FROM recipe_rating WHERE recipe_id = ?", id).Scan(&count)
+	if err == sql.ErrNoRows || count == 0 {
+		_, err := m.db.Exec(
+			"INSERT INTO recipe_rating (recipe_id, rating) VALUES (?, ?)", id, rating)
+		return err
+	}
+
+	if err == nil {
+		_, err = m.db.Exec(
+			"UPDATE recipe_rating SET rating = ? WHERE recipe_id = ?", rating, id)
+	}
+	return err
 }

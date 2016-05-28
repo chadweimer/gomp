@@ -1,61 +1,112 @@
+{{ define "css-recipe/view" }}
+<style>
+    #rating-form {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+    
+    #rating-form > a {
+        color: #dddddd;
+        float: right;
+    }
+    
+    #rating-form  > a.whole {
+        -webkit-clip-path: inset(0 0 0 50%);
+                clip-path: inset(0 0 0 50%);
+        margin-left: -10%;
+    }
+    
+    #rating-form  > a.half {
+        -webkit-clip-path: inset(0 50% 0 0);
+                clip-path: inset(0 50% 0 0);
+    }
+    
+    #rating-form > a.active,
+    #rating-form > a.active ~ a {
+        color: #fdd835;
+    }
+
+    #rating-form > a:hover,
+    #rating-form > a:hover ~ a {
+        color: #ffeb3b !important;
+    }
+</style>
+{{ end }}
+
 {{ define "content-recipe/view" }}
-<section class="container">
-    <article class="card grey lighten-4">
-        <section class="card-content">
-            <a href="{{RootUrlPath}}/recipes" class="right">
-                <i class="material-icons black-text">reply</i>
-            </a>
-            <h4>{{.Recipe.Name}}</h4>
-            <p class="section plain-text">{{.Recipe.Description}}</p>
-            <div class="divider"></div>
-            <p class="section plain-text">{{.Recipe.Ingredients}}</p>
-            <div class="divider"></div>
-            <p class="section plain-text">{{.Recipe.Directions}}</p>
-            <div class="divider"></div>
-            <p class="section">
-                {{range .Recipe.Tags}}
-                <div class="chip">
-                    {{.}}
-                </div>
-                {{end}}
-            </p>
+<section class="row">
+    <article class="col s12 m12 l10 offset-l1">
+        <section class="card grey lighten-4">
+            <div class="card-content">
+                <form id="rating-form" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 3.5}}active{{end}}" data-rating="3.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 3.0}}active{{end}}" data-rating="3.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 2.5}}active{{end}}" data-rating="2.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 2.0}}active{{end}}" data-rating="2.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 1.5}}active{{end}}" data-rating="1.5"><i class="material-icons">star</i></a>
+                    <a href="#" class="whole {{if eq .Recipe.AvgRating 1.0}}active{{end}}" data-rating="1.0"><i class="material-icons">star</i></a>
+                    <a href="#" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
+                    <input id="rating-input" name="rating" type="hidden">
+                </form>
+                <!--a href="{{RootUrlPath}}/recipes" class="right">
+                    <i class="material-icons black-text">reply</i>
+                </a-->
+                <h4>{{.Recipe.Name}}</h4>
+                <p class="section plain-text">{{.Recipe.Description}}</p>
+                <div class="divider"></div>
+                <p class="section plain-text">{{.Recipe.Ingredients}}</p>
+                <div class="divider"></div>
+                <p class="section plain-text">{{.Recipe.Directions}}</p>
+                <div class="divider"></div>
+                <p class="section">
+                    {{range .Recipe.Tags}}
+                    <div class="chip">
+                        {{.}}
+                    </div>
+                    {{end}}
+                </p>
+            </div>
         </section>
-    </article>
-    <article>
-        <ul class="tabs">
-            <li class="tab">
-                <a href="#images-tab">Images</a>
-            </li>
-            <li class="tab">
-                <a href="#notes-tab">Notes</a>
-            </li>
-        </ul>
-        <section id="images-tab">
-            <article class="section center">
-            {{range .Images}}
-            <a href="{{RootUrlPath}}{{.URL}}">
-                {{if .ThumbnailURL}}
-                <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
-                {{else}}
-                <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
-                {{end}}
-            </a>
-            {{end}}
-            </article>
-        </section>
-        <section id="notes-tab">
-            {{range .Notes}}
-            <article class="card grey lighten-4">
-                <section class="card-content">
-                    <p class="section">
-                        <i class="material-icons left">comment</i>
-                        {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
-                    </p>
-                    <div class="divider"></div>
-                    <p class="section">{{.Note}}</p>
+        <section>
+            <ul class="tabs">
+                <li class="tab">
+                    <a href="#images-tab">Images</a>
+                </li>
+                <li class="tab">
+                    <a href="#notes-tab">Notes</a>
+                </li>
+            </ul>
+            <article id="images-tab">
+                <section class="section center">
+                    {{range .Images}}
+                    <a href="{{RootUrlPath}}{{.URL}}">
+                        {{if .ThumbnailURL}}
+                        <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
+                        {{else}}
+                        <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
+                        {{end}}
+                    </a>
+                    {{end}}
                 </section>
             </article>
-            {{end}}
+            <article id="notes-tab">
+                {{range .Notes}}
+                <section class="card grey lighten-4">
+                    <div class="card-content">
+                        <p class="section">
+                            <i class="material-icons left">comment</i>
+                            {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
+                        </p>
+                        <div class="divider"></div>
+                        <p class="section">{{.Note}}</p>
+                    </div>
+                </section>
+                {{end}}
+            </article>
         </section>
     </article>
 </section>
@@ -131,4 +182,13 @@
         </div>
     </form>
 </div>
+{{ end }}
+
+{{ define "js-recipe/view" }}
+<script type="text/javascript">
+    $('#rating-form > a').click(function() {
+        $('#rating-input').val($(this).data("rating"));
+        $('#rating-form').submit();
+    });
+</script>
 {{ end }}
