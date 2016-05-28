@@ -24,8 +24,10 @@ _testmain.go
 *.test
 *.prof
 
-# VSCode files
+# IDE files
 .vscode/
+/.idea/
+.idea/
 
 # Run-time folders not for source control
 data/

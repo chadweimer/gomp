@@ -7,7 +7,7 @@ CREATE TABLE recipe (
 );
 CREATE INDEX recipe_name_idx ON recipe(name);
 CREATE INDEX recipe_description_idx ON recipe(description);
-CREATE INDEX recipe_ingtedients_idx ON recipe(ingredients);
+CREATE INDEX recipe_ingredients_idx ON recipe(ingredients);
 CREATE INDEX recipe_directions_idx ON recipe(description);
 
 CREATE TABLE recipe_tag (
