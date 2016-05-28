@@ -68,7 +68,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	recipe := Recipe{ID: id}
 
 	result := m.db.QueryRow(
-		"SELECT DISTINCT r.name, r.description, r.ingredients, r.directions, IFNULL(AVG(g.rating), 0) "+
+		"SELECT DISTINCT r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
 			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
 			"WHERE r.id = ?",
 		recipe.ID)
