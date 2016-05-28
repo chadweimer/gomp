@@ -2,6 +2,7 @@ package models
 
 import "database/sql"
 
+// RecipeModel provides functionality to edit and retrieve recipes.
 type RecipeModel struct {
 	*Model
 }
@@ -127,6 +128,9 @@ func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sql.Tx) error {
 	return nil
 }
 
+// Delete removes the specified recipe from the database using a dedicated transation
+// that is committed if there are not errors. Note that this method does not delete
+// any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) Delete(id int64) error {
 	tx, err := m.db.Begin()
 	if err != nil {
@@ -141,6 +145,8 @@ func (m *RecipeModel) Delete(id int64) error {
 	return tx.Commit()
 }
 
+// DeleteTx removes the specified recipe from the database using the specified transaction.
+// Note that this method does not delete any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
 	_, err := tx.Exec("DELETE FROM recipe WHERE id = ?", id)
 	if err != nil {
@@ -152,9 +158,20 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
 		return err
 	}
 
+	err = m.Notes.DeleteAllTx(id, tx)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("DELETE FROM recipe_rating WHERE recipe_id = ?", id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
+// List retrieves all recipes within the range specified, sorted by name.
 func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 	var total int64
 	row := m.db.QueryRow("SELECT count(*) FROM recipe")
@@ -195,6 +212,8 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 	return &recipes, total, nil
 }
 
+// Find retrieves all recipes matching the specified search string and within the range specified,
+// sorted by name.
 func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, int64, error) {
 	var total int64
 	search = "%" + search + "%"
@@ -243,6 +262,7 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	return &recipes, total, nil
 }
 
+// SetRating adds or updates the rating of the specified recipe.
 func (m *RecipeModel) SetRating(id int64, rating float64) error {
 	var count int64
 	err := m.db.QueryRow("SELECT count(*) FROM recipe_rating WHERE recipe_id = ?", id).Scan(&count)

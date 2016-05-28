@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// NoteModel provides functionality to edit and retrieve notes attached to recipes.
 type NoteModel struct {
 	*Model
 }
@@ -56,7 +57,32 @@ func (m *NoteModel) CreateTx(note *Note, tx *sql.Tx) error {
 	return nil
 }
 
-// List retrieces all notes associated with the recipe with the specified id.
+// DeleteAll removes all notes for the specified recipe from the database using a dedicated
+// transation that is committed if there are not errors.
+func (m *NoteModel) DeleteAll(recipeID int64) error {
+	tx, err := m.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = m.DeleteAllTx(recipeID, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// DeleteAllTx removes all notes for the specified recipe from the database using the specified
+// transaction.
+func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
+	_, err := tx.Exec(
+		"DELETE FROM recipe_note WHERE recipe_id = ?",
+		recipeID)
+	return err
+}
+
+// List retrieves all notes associated with the recipe with the specified id.
 func (m *NoteModel) List(recipeID int64) (*Notes, error) {
 	rows, err := m.db.Query(
 		"SELECT id, note, created_at, modified_at FROM recipe_note WHERE recipe_id = ? ORDER BY created_at DESC",

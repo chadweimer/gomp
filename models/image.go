@@ -12,18 +12,22 @@ import (
 	"github.com/disintegration/imaging"
 )
 
+// RecipeImageModel provides functionality to edit and retrieve images attached to recipes
 type RecipeImageModel struct {
 	*Model
 }
 
+// RecipeImage represents the data associated with an image attached to a recipe
 type RecipeImage struct {
 	RecipeID     int64
 	URL          string
 	ThumbnailURL string
 }
 
+// RecipeImages represents a collection of RecipeImage objects
 type RecipeImages []RecipeImage
 
+// Save saves the supplied image data as an attachment on the specified recipe
 func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error {
 	if ok := isImageFile(data); !ok {
 		return errors.New("Attachment must be an image")
@@ -72,6 +76,8 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 	return nil
 }
 
+// List returns a RecipeImages slice that contains data for all images
+// attached to the specified recipe
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 	dir := getDirPathForImage(m.cfg.DataPath, recipeID)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -107,6 +113,12 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 	return &imgs, nil
 }
 
+// DeleteAll deletes all the images attached to the specified recipe
+func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
+	dir := getDirPathForRecipe(m.cfg.DataPath, recipeID)
+	return os.RemoveAll(dir)
+}
+
 func isImageFile(data []byte) bool {
 	contentType := http.DetectContentType(data)
 	if strings.Index(contentType, "image/") != -1 {
@@ -115,12 +127,16 @@ func isImageFile(data []byte) bool {
 	return false
 }
 
+func getDirPathForRecipe(dataPath string, recipeID int64) string {
+	return filepath.Join(dataPath, "files", "recipes", strconv.FormatInt(recipeID, 10))
+}
+
 func getDirPathForImage(dataPath string, recipeID int64) string {
-	return filepath.Join(dataPath, "files", "recipes", strconv.FormatInt(recipeID, 10), "images")
+	return filepath.Join(getDirPathForRecipe(dataPath, recipeID), "images")
 }
 
 func getDirPathForThumbnail(dataPath string, recipeID int64) string {
-	return filepath.Join(dataPath, "files", "recipes", strconv.FormatInt(recipeID, 10), "thumbs")
+	return filepath.Join(getDirPathForRecipe(dataPath, recipeID), "thumbs")
 }
 
 func getURLForImage(dataPath string, path string) string {

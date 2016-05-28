@@ -24,6 +24,7 @@ type RecipeForm struct {
 	Tags        []string `form:"tags"`
 }
 
+// FieldMap provides the RecipeForm field name maping for form binding
 func (f *RecipeForm) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
 		&f.Name:        "name",
@@ -39,6 +40,7 @@ type NoteForm struct {
 	Note string `form:"note"`
 }
 
+// FieldMap provides the NoteForm field name maping for form binding
 func (f *NoteForm) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
 		&f.Note: "note",
@@ -51,6 +53,7 @@ type AttachmentForm struct {
 	FileContent *multipart.FileHeader `form:"file_content"`
 }
 
+// FieldMap provides the AttachmentForm field name maping for form binding
 func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
 		&f.FileName:    "file_name",
@@ -63,6 +66,7 @@ type RatingForm struct {
 	Rating float64 `form:"rating"`
 }
 
+// FieldMap provides the RatingForm field name maping for form binding
 func (f *RatingForm) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
 		&f.Rating: "rating",
@@ -177,8 +181,7 @@ func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Requ
 	rc.HTML(resp, http.StatusOK, "recipe/create", make(map[string]interface{}))
 }
 
-// CreateRecipePost handles processing the supplied
-// form input from the create recipe screen
+// CreateRecipePost handles processing the supplied form input from the create recipe screen
 func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
@@ -225,8 +228,7 @@ func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Reques
 	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 
-// EditRecipePost handles processing the supplied
-// form input from the edit recipe screen
+// EditRecipePost handles processing the supplied form input from the edit recipe screen
 func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
@@ -269,9 +271,16 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
+	// If we successfully deleted the recipe, delete all of it's attachments
+	err = rc.model.Images.DeleteAll(id)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
+// AttachToRecipePost handles uploading the specified attachment (image) to a recipe
 func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(AttachmentForm)
 	errs := binding.Bind(req, form)
@@ -304,6 +313,7 @@ func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *htt
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
+// AddNoteToRecipePost handles processing the supplied form input for adding a note to a recipe
 func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(NoteForm)
 	errs := binding.Bind(req, form)
@@ -329,6 +339,7 @@ func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *ht
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
+// RateRecipePost handles adding/updating the rating of a recipe
 func (rc *RouteController) RateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(RatingForm)
 	errs := binding.Bind(req, form)

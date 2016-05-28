@@ -24,6 +24,7 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // ---- End Standard Errors ----
 
+// Model encapsulates the model layer of the application, including database access
 type Model struct {
 	cfg *conf.Config
 	db  *sql.DB
@@ -34,6 +35,7 @@ type Model struct {
 	Images  *RecipeImageModel
 }
 
+// New constructs a new Model object
 func New(cfg *conf.Config) *Model {
 	dbPath := fmt.Sprintf("%s/gomp.db", cfg.DataPath)
 
