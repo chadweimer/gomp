@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -13,6 +14,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/urfave/negroni"
+	"gopkg.in/tylerb/graceful.v1"
 	"gopkg.in/unrolled/render.v1"
 )
 
@@ -87,5 +89,9 @@ func main() {
 	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
 	n.UseHandler(mainMux)
 
-	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), context.ClearHandler(n))
+	timeout := 10*time.Second
+	if cfg.IsDevelopment {
+		timeout = 1*time.Second
+	}
+	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
 }

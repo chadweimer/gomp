@@ -83,6 +83,15 @@
 			"Rev": "f551d3a6b7fc11df315ad9e18b404280680f8bec"
 		},
 		{
+			"ImportPath": "golang.org/x/net/netutil",
+			"Rev": "30db96677b74e24b967e23f911eb3364fc61a011"
+		},
+		{
+			"ImportPath": "gopkg.in/tylerb/graceful.v1",
+			"Comment": "v1.2.5",
+			"Rev": "9a3d4236b03bb5d26f7951134d248f9d5510d599"
+		},
+		{
 			"ImportPath": "gopkg.in/unrolled/render.v1",
 			"Rev": "198ad4d8b8a4612176b804ca10555b222a086b40"
 		}
