@@ -20,6 +20,7 @@ type RecipeImageModel struct {
 // RecipeImage represents the data associated with an image attached to a recipe
 type RecipeImage struct {
 	RecipeID     int64
+	Name         string
 	URL          string
 	ThumbnailURL string
 }
@@ -98,6 +99,7 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 
 			img := RecipeImage{
 				RecipeID: recipeID,
+				Name:     file.Name(),
 				URL:      fileURL,
 			}
 
@@ -111,6 +113,16 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 	}
 
 	return &imgs, nil
+}
+
+// Delete deletes a single image attached to the specified recipe
+func (m *RecipeImageModel) Delete(recipeID int64, name string) error {
+	var mainImgPath = filepath.Join(getDirPathForImage(m.cfg.DataPath, recipeID), name)
+	if err := os.Remove(mainImgPath); err != nil {
+		return err
+	}
+	var thumbImgPath = filepath.Join(getDirPathForThumbnail(m.cfg.DataPath, recipeID), name)
+	return os.Remove(thumbImgPath)
 }
 
 // DeleteAll deletes all the images attached to the specified recipe

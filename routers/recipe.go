@@ -287,8 +287,8 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
-// AttachToRecipePost handles uploading the specified attachment (image) to a recipe
-func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+// CreateAttachmentPost handles uploading the specified attachment (image) to a recipe
+func (rc *RouteController) CreateAttachmentPost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(AttachmentForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
@@ -313,6 +313,23 @@ func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *htt
 	}
 
 	err = rc.model.Images.Save(id, form.FileName, uploadedFileData)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
+}
+
+// DeleteAttachment handles deleting the specified attachment (image) from a recipe
+func (rc *RouteController) DeleteAttachment(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	name := p.ByName("name")
+
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	err = rc.model.Images.Delete(id, name)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}

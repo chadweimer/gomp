@@ -31,6 +31,16 @@
     #rating-form > a:hover ~ a {
         color: #ffeb3b !important;
     }
+    
+    .image-container {
+        position: relative;
+    }
+    
+    .delete-image {
+        position: absolute;
+        top: -20px;
+        right: 15px;
+    }
 </style>
 {{ end }}
 
@@ -80,13 +90,16 @@
                 <div class="divider"></div>
                 <section class="section">
                     {{range .Images}}
-                    <a target="_blank" href="{{RootUrlPath}}{{.URL}}">
-                        {{if .ThumbnailURL}}
-                        <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
-                        {{else}}
-                        <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
-                        {{end}}
-                    </a>
+                    <span class="image-container">
+                        <a target="_blank" href="{{RootUrlPath}}{{.URL}}">
+                            {{if .ThumbnailURL}}
+                            <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
+                            {{else}}
+                            <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
+                            {{end}}
+                        </a>
+                        <a class="delete-image" href="javascript:void(0)" data-image-name="{{.Name}}"><i class="material-icons red-text">delete</i></a>
+                    </span>
                     {{end}}
                 </section>
             </article>
@@ -150,7 +163,7 @@
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/create" method="post" enctype="multipart/form-data">
+    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach" method="post" enctype="multipart/form-data">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -169,6 +182,16 @@
             <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
         </div>
     </form>
+</div>
+<div id="delete-image-confirm" class="modal">
+    <div class="modal-content">
+        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
+        <p>Are you sure you want to delete this image?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
+        <a id="delete-image-yes" class="modal-action modal-close btn-flat">Yes</a>
+    </div>
 </div>
 <div id="add-note-modal" class="modal">
     <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note" method="post">
@@ -201,6 +224,12 @@
     $('#rating-form > a').click(function() {
         $('#rating-input').val($(this).data('rating'));
         $('#rating-form').submit();
+    });
+    
+    $('.delete-image').click(function() {
+        var name = $(this).data('image-name');
+        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + name + '/delete')
+        $('#delete-image-confirm').openModal()
     });
     
     $('.delete-note').click(function() {
