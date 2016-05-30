@@ -9,10 +9,10 @@ import (
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/routers"
-	"github.com/codegangsta/negroni"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
+	"github.com/urfave/negroni"
 	"gopkg.in/unrolled/render.v1"
 )
 
