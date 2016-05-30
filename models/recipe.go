@@ -9,14 +9,15 @@ type RecipeModel struct {
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID          int64
-	Name        string
-	Description string
-	Ingredients string
-	Directions  string
-	AvgRating   float64
-	Image       string
-	Tags        []string
+	ID            int64
+	Name          string
+	ServingSize   string
+	NutritionInfo string
+	Ingredients   string
+	Directions    string
+	AvgRating     float64
+	Image         string
+	Tags          []string
 }
 
 // Recipes represents a collection of Recipe objects
@@ -42,8 +43,8 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 // the specified transaction.
 func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sql.Tx) error {
 	result, err := tx.Exec(
-		"INSERT INTO recipe (name, description, ingredients, directions) VALUES (?, ?, ?, ?)",
-		recipe.Name, recipe.Description, recipe.Ingredients, recipe.Directions)
+		"INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions) VALUES (?, ?, ?, ?, ?)",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
 	if err != nil {
 		return err
 	}
@@ -69,11 +70,18 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	recipe := Recipe{ID: id}
 
 	result := m.db.QueryRow(
-		"SELECT DISTINCT r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
+		"SELECT DISTINCT "+
+			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
 			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
 			"WHERE r.id = ?",
 		recipe.ID)
-	err := result.Scan(&recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions, &recipe.AvgRating)
+	err := result.Scan(
+		&recipe.Name,
+		&recipe.ServingSize,
+		&recipe.NutritionInfo,
+		&recipe.Ingredients,
+		&recipe.Directions,
+		&recipe.AvgRating)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
@@ -110,8 +118,10 @@ func (m *RecipeModel) Update(recipe *Recipe) error {
 // existing record with the sepcified id using the specified transaction.
 func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sql.Tx) error {
 	_, err := tx.Exec(
-		"UPDATE recipe SET name = ?, description = ?, ingredients = ?, directions = ? WHERE id = ?",
-		recipe.Name, recipe.Description, recipe.Ingredients, recipe.Directions, recipe.ID)
+		"UPDATE recipe "+
+			"SET name = ?, serving_size = ?, nutrition_info = ?, ingredients = ?, directions = ? "+
+			"WHERE id = ?",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.ID)
 
 	// TODO: Deleting and recreating seems inefficent and potentially error prone
 	err = m.Tags.DeleteAllTx(recipe.ID, tx)
@@ -182,7 +192,8 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 
 	offset := count * (page - 1)
 	rows, err := m.db.Query(
-		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
+		"SELECT DISTINCT "+
+			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
 			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
 			"ORDER BY r.name LIMIT ? OFFSET ?",
 		count, offset)
@@ -193,7 +204,14 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 	var recipes Recipes
 	for rows.Next() {
 		var recipe Recipe
-		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions, &recipe.AvgRating)
+		err = rows.Scan(
+			&recipe.ID,
+			&recipe.Name,
+			&recipe.ServingSize,
+			&recipe.NutritionInfo,
+			&recipe.Ingredients,
+			&recipe.Directions,
+			&recipe.AvgRating)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -220,10 +238,10 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	partialStmt := "FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
 		"LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id " +
-		"WHERE r.name LIKE ? OR r.description LIKE ? OR r.Ingredients LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
+		"WHERE r.name LIKE ? OR r.Ingredients LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
 	countStmt := "SELECT count(DISTINCT r.id) " + partialStmt
 	row := m.db.QueryRow(countStmt,
-		search, search, search, search, search)
+		search, search, search, search)
 	err := row.Scan(&total)
 	if err != nil {
 		return nil, 0, err
@@ -231,11 +249,12 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 
 	offset := count * (page - 1)
 	selectStmt :=
-		"SELECT DISTINCT r.id, r.name, r.description, r.ingredients, r.directions, IFNULL(g.rating, 0) " +
+		"SELECT DISTINCT " +
+			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, IFNULL(g.rating, 0) " +
 			partialStmt +
 			" ORDER BY r.name LIMIT ? OFFSET ?"
 	rows, err := m.db.Query(selectStmt,
-		search, search, search, search, search, count, offset)
+		search, search, search, search, count, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -243,7 +262,14 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	var recipes Recipes
 	for rows.Next() {
 		var recipe Recipe
-		err = rows.Scan(&recipe.ID, &recipe.Name, &recipe.Description, &recipe.Ingredients, &recipe.Directions, &recipe.AvgRating)
+		err = rows.Scan(
+			&recipe.ID,
+			&recipe.Name,
+			&recipe.ServingSize,
+			&recipe.NutritionInfo,
+			&recipe.Ingredients,
+			&recipe.Directions,
+			&recipe.AvgRating)
 		if err != nil {
 			return nil, 0, err
 		}

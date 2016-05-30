@@ -16,21 +16,23 @@ import (
 
 // RecipeForm encapsulates user input on the Create and Edit recipe screens
 type RecipeForm struct {
-	Name        string   `form:"name"`
-	Description string   `form:"description"`
-	Ingredients string   `form:"ingredients"`
-	Directions  string   `form:"directions"`
-	Tags        []string `form:"tags"`
+	Name          string   `form:"name"`
+	ServingSize   string   `form:"serving-size"`
+	NutritionInfo string   `form:"nutrition-info"`
+	Ingredients   string   `form:"ingredients"`
+	Directions    string   `form:"directions"`
+	Tags          []string `form:"tags"`
 }
 
 // FieldMap provides the RecipeForm field name maping for form binding
 func (f *RecipeForm) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
-		&f.Name:        "name",
-		&f.Description: "description",
-		&f.Ingredients: "ingredients",
-		&f.Directions:  "directions",
-		&f.Tags:        "tags",
+		&f.Name:          "name",
+		&f.ServingSize:   "serving-size",
+		&f.NutritionInfo: "nutrition-info",
+		&f.Ingredients:   "ingredients",
+		&f.Directions:    "directions",
+		&f.Tags:          "tags",
 	}
 }
 
@@ -194,11 +196,12 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 	}
 
 	recipe := &models.Recipe{
-		Name:        form.Name,
-		Description: form.Description,
-		Ingredients: form.Ingredients,
-		Directions:  form.Directions,
-		Tags:        form.Tags,
+		Name:          form.Name,
+		ServingSize:   form.ServingSize,
+		NutritionInfo: form.NutritionInfo,
+		Ingredients:   form.Ingredients,
+		Directions:    form.Directions,
+		Tags:          form.Tags,
 	}
 
 	err := rc.model.Recipes.Create(recipe)
@@ -246,12 +249,13 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 	}
 
 	recipe := &models.Recipe{
-		ID:          id,
-		Name:        form.Name,
-		Description: form.Description,
-		Ingredients: form.Ingredients,
-		Directions:  form.Directions,
-		Tags:        form.Tags,
+		ID:            id,
+		Name:          form.Name,
+		ServingSize:   form.ServingSize,
+		NutritionInfo: form.NutritionInfo,
+		Ingredients:   form.Ingredients,
+		Directions:    form.Directions,
+		Tags:          form.Tags,
 	}
 
 	err = rc.model.Recipes.Update(recipe)

@@ -45,7 +45,6 @@
             {{if .Image}}
             <section class="card-image">
                 <img src="{{RootUrlPath}}{{.Image}}" class="darken-25">
-                <span class="card-title">{{.Name}}</span>
             </section>
             {{end}}
             <section class="rating-container">
@@ -61,10 +60,7 @@
                 <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
             </section>
             <section class="card-content">
-                {{if not .Image}}
                 <span class="card-title">{{.Name}}</span>
-                {{end}}
-                <p class="plain-text">{{.Description}}</p>
             </section>
         </article>
     </div>

@@ -52,15 +52,18 @@
                     <a href="#" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
-                <!--a href="{{RootUrlPath}}/recipes" class="right">
-                    <i class="material-icons black-text">reply</i>
-                </a-->
                 <h4>{{.Recipe.Name}}</h4>
-                <p class="section plain-text">{{.Recipe.Description}}</p>
+                <label>Serving Size</label>
+                <p class="section plain-text">{{.Recipe.ServingSize}}</p>
                 <div class="divider"></div>
+                <label>Ingredients</label>
                 <p class="section plain-text">{{.Recipe.Ingredients}}</p>
                 <div class="divider"></div>
+                <label>Directions</label>
                 <p class="section plain-text">{{.Recipe.Directions}}</p>
+                <div class="divider"></div>
+                <label>Nutrition</label>
+                <p class="section plain-text">{{.Recipe.NutritionInfo}}</p>
                 <div class="divider"></div>
                 <p class="section">
                     {{range .Recipe.Tags}}
@@ -173,7 +176,7 @@
         <div class="modal-content">
             <h5 class="blue-text"><i class="material-icons left">insert_comment</i>Add Note</h5>
             <div class="input-field">
-                <textarea id="note" name="note" class="materialize-textarea" required></textarea>
+                <textarea id="note" name="note" class="materialize-textarea" required autofocus></textarea>
             </div>
         </div>
         <div class="modal-footer">

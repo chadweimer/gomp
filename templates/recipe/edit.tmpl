@@ -5,20 +5,36 @@
     </header>
     <form method="post">
         <div class="row">
-            <div class="input-field col s12 l6">
+            <div class="input-field col s12 l12">
                 <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" value="{{.Recipe.Name}}" required autofocus>
                 <label for="name" class="active required">Name</label>
             </div>
-            <div class="input-field col s10 m11 l5">
+            <div class="input-field col s12 l12">
+                <textarea id="serving-size" name="serving-size" class="materialize-textarea" placeholder="(e.g., 2)">{{.Recipe.ServingSize}}</textarea>
+                <label for="serving-size" class="active">Serving Size</label>
+            </div>
+            <div class="input-field col s12 l12">
+                <textarea id="ingredients" name="ingredients" class="materialize-textarea" placeholder="List of each ingredient, optionally separated into sections (e.g., Marinade)." required>{{.Recipe.Ingredients}}</textarea>
+                <label for="ingredients" class="active">Ingredients</label>
+            </div>
+            <div class="input-field col s12 l12">
+                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
+                <label for="directions" class="active required">Directions</label>
+            </div>
+            <div class="input-field col s12 l12">
+                <textarea id="nutrition-info" name="nutrition-info" class="materialize-textarea" placeholder="(e.g., 100 Calories, 2g Fat)">{{.Recipe.NutritionInfo}}</textarea>
+                <label for="nutrition-info" class="active">Nutrition</label>
+            </div>
+            <div class="input-field col s10 l11">
                 <input id="new-tag">
                 <label for="new-tag" class="active">Tags</label>
             </div>
-            <div class="input-field col s2 m1 l1 right-align">
+            <div class="input-field col s2 l1 right-align">
                 <button id="add-tag" type="button" class="btn-floating waves-effect green">
                     <i class="material-icons">add</i>
                 </button>
             </div>
-            <div class="col s12 offset-l6 l6">
+            <div class="col s12 l12">
                 <span id="tags" class="">
                     {{range .Recipe.Tags}}
                     <span class="chip">
@@ -28,18 +44,6 @@
                     </span>
                     {{end}}
                 </span>
-            </div>
-            <div class="input-field col s12 l12">
-                <textarea id="description" name="description" class="materialize-textarea" placeholder="(e.g., Marinated whole chicked pieces, breaded, and then deep fried to golden perfection.)">{{.Recipe.Description}}</textarea>
-                <label for="description" class="active">Description</label>
-            </div>
-            <div class="input-field col s12 l12">
-                <textarea id="ingredients" name="ingredients" class="materialize-textarea" required>{{.Recipe.Ingredients}}</textarea>
-                <label for="ingredients" class="active">Ingredients</label>
-            </div>
-            <div class="input-field col s12 l12">
-                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
-                <label for="directions" class="active required">Directions</label>
             </div>
         </div>
         <div class="center">
