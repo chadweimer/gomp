@@ -4,21 +4,8 @@
 	"GodepVersion": "v67",
 	"Deps": [
 		{
-			"ImportPath": "github.com/codegangsta/negroni",
-			"Comment": "v0.2.0-31-gaac393b",
-			"Rev": "aac393b02b969df303449ed8ae194a1f8f3b48d6"
-		},
-		{
 			"ImportPath": "github.com/disintegration/imaging",
 			"Rev": "d8bbae1de109b518dabc98c6c1633eb358c148a4"
-		},
-		{
-			"ImportPath": "github.com/goincremental/negroni-sessions",
-			"Rev": "b07e2d18b97e3f627edaa67876c21fa23eba6a08"
-		},
-		{
-			"ImportPath": "github.com/goincremental/negroni-sessions/cookiestore",
-			"Rev": "b07e2d18b97e3f627edaa67876c21fa23eba6a08"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -77,6 +64,11 @@
 		{
 			"ImportPath": "github.com/mholt/binding",
 			"Rev": "89411c4ffb61f0ebef45d8bdb830103b358ef9fa"
+		},
+		{
+			"ImportPath": "github.com/urfave/negroni",
+			"Comment": "v0.2.0-42-gfb7b7c0",
+			"Rev": "fb7b7c045dfb05dc81a5c3688c568550b5bd6e36"
 		},
 		{
 			"ImportPath": "golang.org/x/image/bmp",

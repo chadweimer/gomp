@@ -14,7 +14,7 @@ go build
 
 ## Credits
 
-* [Negroni](https://github.com/codegangsta/negroni)
+* [Negroni](https://github.com/urfave/negroni)
 * [httprouter](https://github.com/julienschmidt/httprouter)
 * [Materialize CSS](http://materializecss.com)
 * [jQuery](https://jquery.com)
@@ -23,7 +23,7 @@ go build
 * [disintegration/imaging](https://github.com/disintegration/imaging)
 * [GoDep](https://github.com/tools/godep)
 * [unrolled/render](https://github.com/unrolled/render)
-* [negroni-sessions](https://github.com/goincremental/negroni-sessions)
+* [Gorilla Sessions](https://github.com/gorilla/sessions)
 
 ## License
 
