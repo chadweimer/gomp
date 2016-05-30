@@ -10,8 +10,8 @@ import (
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/routers"
 	"github.com/codegangsta/negroni"
-	"github.com/goincremental/negroni-sessions"
-	"github.com/goincremental/negroni-sessions/cookiestore"
+	"github.com/gorilla/context"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/unrolled/render.v1"
 )
@@ -19,6 +19,7 @@ import (
 func main() {
 	cfg := conf.Load("conf/app.json")
 	model := models.New(cfg)
+	sessionStore := sessions.NewCookieStore([]byte(cfg.SecretKey))
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
@@ -51,7 +52,7 @@ func main() {
 				return pageNums
 			},
 		}}})
-	rc := routers.NewController(renderer, cfg, model)
+	rc := routers.NewController(renderer, cfg, model, sessionStore)
 
 	// Since httprouter explicitly doesn't allow /path/to and /path/:match,
 	// we get a little fancy and use 2 mux'es to emulate/force the behavior
@@ -82,12 +83,9 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	store := cookiestore.New([]byte(cfg.SecretKey))
-	n.Use(sessions.Sessions("gomp_session", store))
-
 	n.Use(&negroni.Static{Dir: http.Dir("public")})
 	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
 	n.UseHandler(mainMux)
 
-	n.Run(fmt.Sprintf(":%d", cfg.Port))
+	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), context.ClearHandler(n))
 }

@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/goincremental/negroni-sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mholt/binding"
 )
@@ -109,20 +108,24 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	sess := sessions.GetSession(req)
+	sess, err := rc.sessionStore.Get(req, "gomp_session")
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
 
 	query := req.URL.Query().Get("q")
 	clear := req.URL.Query().Get("clear")
 	if query != "" || clear != "" {
-		sess.Delete("q")
-		sess.Delete("page")
-		sess.Delete("count")
+		delete(sess.Values, "q")
+		delete(sess.Values, "page")
+		delete(sess.Values, "count")
 		if clear != "" {
+			sess.Save(req, resp)
 			http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 			return
 		}
 	} else if query == "" {
-		if sessQuery := sess.Get("q"); sessQuery != nil {
+		if sessQuery := sess.Values["q"]; sessQuery != nil {
 			query = sessQuery.(string)
 		}
 	}
@@ -130,7 +133,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	var page int64
 	if pageStr := req.URL.Query().Get("page"); pageStr != "" {
 		page, _ = strconv.ParseInt(pageStr, 10, 64)
-	} else if sessPage := sess.Get("page"); sessPage != nil {
+	} else if sessPage := sess.Values["page"]; sessPage != nil {
 		page = sessPage.(int64)
 	}
 	if page < 1 {
@@ -140,7 +143,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	var count int64
 	if countStr := req.URL.Query().Get("count"); countStr != "" {
 		count, _ = strconv.ParseInt(countStr, 10, 64)
-	} else if sessCount := sess.Get("count"); sessCount != nil {
+	} else if sessCount := sess.Values["count"]; sessCount != nil {
 		count = sessCount.(int64)
 	}
 	if count < 1 {
@@ -149,7 +152,6 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 	var recipes *models.Recipes
 	var total int64
-	var err error
 	if query == "" {
 		recipes, total, err = rc.model.Recipes.List(page, count)
 	} else {
@@ -159,9 +161,10 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	sess.Set("q", query)
-	sess.Set("page", page)
-	sess.Set("count", count)
+	sess.Values["q"] = query
+	sess.Values["page"] = page
+	sess.Values["count"] = count
+	sess.Save(req, resp)
 
 	data := map[string]interface{}{
 		"Query":    query,

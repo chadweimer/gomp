@@ -13,14 +13,6 @@
 			"Rev": "d8bbae1de109b518dabc98c6c1633eb358c148a4"
 		},
 		{
-			"ImportPath": "github.com/goincremental/negroni-sessions",
-			"Rev": "b07e2d18b97e3f627edaa67876c21fa23eba6a08"
-		},
-		{
-			"ImportPath": "github.com/goincremental/negroni-sessions/cookiestore",
-			"Rev": "b07e2d18b97e3f627edaa67876c21fa23eba6a08"
-		},
-		{
 			"ImportPath": "github.com/gorilla/context",
 			"Comment": "v1.1-2-ga8d44e7",
 			"Rev": "a8d44e7d8e4d532b6a27a02dd82abb31cc1b01bd"
