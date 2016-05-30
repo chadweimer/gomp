@@ -40,16 +40,16 @@
         <section class="card grey lighten-4">
             <div class="card-content">
                 <form id="rating-form" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
-                    <a href="#" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
-                    <a href="#" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
-                    <a href="#" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
-                    <a href="#" class="half {{if eq .Recipe.AvgRating 3.5}}active{{end}}" data-rating="3.5"><i class="material-icons">star</i></a>
-                    <a href="#" class="whole {{if eq .Recipe.AvgRating 3.0}}active{{end}}" data-rating="3.0"><i class="material-icons">star</i></a>
-                    <a href="#" class="half {{if eq .Recipe.AvgRating 2.5}}active{{end}}" data-rating="2.5"><i class="material-icons">star</i></a>
-                    <a href="#" class="whole {{if eq .Recipe.AvgRating 2.0}}active{{end}}" data-rating="2.0"><i class="material-icons">star</i></a>
-                    <a href="#" class="half {{if eq .Recipe.AvgRating 1.5}}active{{end}}" data-rating="1.5"><i class="material-icons">star</i></a>
-                    <a href="#" class="whole {{if eq .Recipe.AvgRating 1.0}}active{{end}}" data-rating="1.0"><i class="material-icons">star</i></a>
-                    <a href="#" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 3.5}}active{{end}}" data-rating="3.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 3.0}}active{{end}}" data-rating="3.0"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 2.5}}active{{end}}" data-rating="2.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 2.0}}active{{end}}" data-rating="2.0"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 1.5}}active{{end}}" data-rating="1.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 1.0}}active{{end}}" data-rating="1.0"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
                 <h4>{{.Recipe.Name}}</h4>
@@ -96,11 +96,14 @@
                 {{range .Notes}}
                 <section class="card grey lighten-4">
                     <div class="card-content">
-                        <p class="section">
+                        <p class="section left">
                             <i class="material-icons left">comment</i>
                             {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
                         </p>
-                        <div class="divider"></div>
+                        <p class="section right">
+                            <a class="delete-note" href="javascript:void(0)" data-note-id="{{.ID}}"><i class="material-icons red-text">delete</i></a>
+                        </p>
+                        <div class="divider clearfix"></div>
                         <p class="section plain-text">{{.Note}}</p>
                     </div>
                 </section>
@@ -142,7 +145,7 @@
         <p>Are you sure you want to delete this recipe?</p>
     </div>
     <div class="modal-footer">
-        <a href="#" class="modal-action modal-close btn-flat">No</a>
+        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
         <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
@@ -162,13 +165,13 @@
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" class="modal-action modal-close btn-flat">Cancel</a>
+            <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
             <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
         </div>
     </form>
 </div>
 <div id="add-note-modal" class="modal">
-    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/create" method="post">
+    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note" method="post">
         <div class="modal-content">
             <h5 class="blue-text"><i class="material-icons left">insert_comment</i>Add Note</h5>
             <div class="input-field">
@@ -176,18 +179,34 @@
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" class="modal-action modal-close btn-flat">Cancel</a>
+            <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
             <button type="submit" class="modal-action modal-close btn-flat">Add</a>
         </div>
     </form>
+</div>
+<div id="delete-note-confirm" class="modal">
+    <div class="modal-content">
+        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
+        <p>Are you sure you want to delete this note?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
+        <a id="delete-note-yes" class="modal-action modal-close btn-flat">Yes</a>
+    </div>
 </div>
 {{ end }}
 
 {{ define "js-recipe/view" }}
 <script type="text/javascript">
     $('#rating-form > a').click(function() {
-        $('#rating-input').val($(this).data("rating"));
+        $('#rating-input').val($(this).data('rating'));
         $('#rating-form').submit();
+    });
+    
+    $('.delete-note').click(function() {
+        var noteID = $(this).data('note-id');
+        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/' + noteID + '/delete')
+        $('#delete-note-confirm').openModal()
     });
 </script>
 {{ end }}

@@ -57,6 +57,28 @@ func (m *NoteModel) CreateTx(note *Note, tx *sql.Tx) error {
 	return nil
 }
 
+// Delete removes the specified note from the database using a dedicated transation
+// that is committed if there are not errors.
+func (m *NoteModel) Delete(id int64) error {
+	tx, err := m.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = m.DeleteTx(id, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// DeleteTx removes the specified note from the database using the specified transaction.
+func (m *NoteModel) DeleteTx(id int64, tx *sql.Tx) error {
+	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = ?", id)
+	return err
+}
+
 // DeleteAll removes all notes for the specified recipe from the database using a dedicated
 // transation that is committed if there are not errors.
 func (m *NoteModel) DeleteAll(recipeID int64) error {

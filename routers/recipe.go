@@ -320,8 +320,8 @@ func (rc *RouteController) AttachToRecipePost(resp http.ResponseWriter, req *htt
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
-// AddNoteToRecipePost handles processing the supplied form input for adding a note to a recipe
-func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+// CreateNotePost handles processing the supplied form input for adding a note to a recipe
+func (rc *RouteController) CreateNotePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(NoteForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
@@ -339,6 +339,26 @@ func (rc *RouteController) AddNoteToRecipePost(resp http.ResponseWriter, req *ht
 		Note:     form.Note,
 	}
 	err = rc.model.Notes.Create(note)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
+}
+
+// DeleteNote handles deleting the note with the given id
+func (rc *RouteController) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	noteID, err := strconv.ParseInt(p.ByName("note_id"), 10, 64)
+	if rc.RedirectIfHasError(resp, err) {
+		return
+	}
+
+	err = rc.model.Notes.Delete(noteID)
 	if rc.RedirectIfHasError(resp, err) {
 		return
 	}

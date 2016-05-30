@@ -72,7 +72,8 @@ func main() {
 	recipeMux.POST("/recipes/:id/edit", rc.EditRecipePost)
 	recipeMux.GET("/recipes/:id/delete", rc.DeleteRecipe)
 	recipeMux.POST("/recipes/:id/attach/create", rc.AttachToRecipePost)
-	recipeMux.POST("/recipes/:id/note/create", rc.AddNoteToRecipePost)
+	recipeMux.POST("/recipes/:id/note", rc.CreateNotePost)
+	recipeMux.GET("/recipes/:id/note/:note_id/delete", rc.DeleteNote)
 	recipeMux.POST("/recipes/:id/rate", rc.RateRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 
@@ -89,9 +90,9 @@ func main() {
 	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
 	n.UseHandler(mainMux)
 
-	timeout := 10*time.Second
+	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
-		timeout = 1*time.Second
+		timeout = 1 * time.Second
 	}
 	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
 }
