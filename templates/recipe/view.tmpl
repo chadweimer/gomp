@@ -80,7 +80,7 @@
                 <div class="divider"></div>
                 <section class="section">
                     {{range .Images}}
-                    <a href="{{RootUrlPath}}{{.URL}}">
+                    <a target="_blank" href="{{RootUrlPath}}{{.URL}}">
                         {{if .ThumbnailURL}}
                         <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
                         {{else}}
