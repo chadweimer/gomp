@@ -24,6 +24,7 @@ go build
 * [GoDep](https://github.com/tools/godep)
 * [unrolled/render](https://github.com/unrolled/render)
 * [Gorilla Sessions](https://github.com/gorilla/sessions)
+* [Graceful](https://github.com/tylerb/graceful)
 
 ## License
 
