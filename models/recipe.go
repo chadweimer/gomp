@@ -98,7 +98,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 }
 
 // Update stores the specified recipe in the database by updating the
-// existing record with the sepcified id using a dedicated transation
+// existing record with the specified id using a dedicated transation
 // that is committed if there are not errors.
 func (m *RecipeModel) Update(recipe *Recipe) error {
 	tx, err := m.db.Begin()

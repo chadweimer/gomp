@@ -98,7 +98,9 @@
                             <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
                             {{end}}
                         </a>
-                        <a class="delete-image" href="javascript:void(0)" data-image-name="{{.Name}}"><i class="material-icons red-text">delete</i></a>
+                        <a class="delete-image" href="javascript:void(0)" data-image-name="{{.Name}}">
+                            <i class="material-icons red-text">delete</i>
+                        </a>
                     </span>
                     {{end}}
                 </section>
@@ -114,10 +116,16 @@
                             {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
                         </p>
                         <p class="section right">
-                            <a class="delete-note" href="javascript:void(0)" data-note-id="{{.ID}}"><i class="material-icons red-text">delete</i></a>
+                            <a class="edit-note" href="javascript:void(0)" data-note-id="{{.ID}}" data-note-content="{{QueryEscape .Note}}">
+                                <i class="material-icons amber-text text-darken-2">edit</i>
+                            </a>
+                            <a class="delete-note" href="javascript:void(0)" data-note-id="{{.ID}}">
+                                <i class="material-icons red-text">delete</i>
+                            </a>
                         </p>
                         <div class="divider clearfix"></div>
                         <p class="section plain-text">{{.Note}}</p>
+                        <label class="right">Modified: {{.ModifiedAt.Format "2006 Jan 02, 03:04:05PM"}}</label>
                     </div>
                 </section>
                 {{end}}
@@ -146,7 +154,7 @@
             </a>
         </li>
         <li>
-            <a href="#add-note-modal" class="btn-floating waves-effect blue modal-trigger">
+            <a id="add-note" href="javascript:void(0)" class="btn-floating waves-effect blue">
                 <i class="material-icons">insert_comment</i>
             </a>
         </li>
@@ -193,17 +201,19 @@
         <a id="delete-image-yes" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
-<div id="add-note-modal" class="modal">
-    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note" method="post">
+<div id="note-modal" class="modal">
+    <form method="post">
         <div class="modal-content">
-            <h5 class="blue-text"><i class="material-icons left">insert_comment</i>Add Note</h5>
+            <h5 class="blue-text">
+                <i class="material-icons left">insert_comment</i><span id="note-title">Add Note</span>
+            </h5>
             <div class="input-field">
                 <textarea id="note" name="note" class="materialize-textarea" required autofocus></textarea>
             </div>
         </div>
         <div class="modal-footer">
             <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
-            <button type="submit" class="modal-action modal-close btn-flat">Add</a>
+            <button id="note-submit" type="submit" class="modal-action modal-close btn-flat">Add</button>
         </div>
     </form>
 </div>
@@ -228,14 +238,34 @@
     
     $('.delete-image').click(function() {
         var name = $(this).data('image-name');
-        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + name + '/delete')
-        $('#delete-image-confirm').openModal()
+        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + name + '/delete');
+        $('#delete-image-confirm').openModal();
+    });
+    
+    $('#add-note').click(function() {
+        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note');
+        $('#note').val('');
+        $('#note-title').text('Add Note');
+        $('#note-submit').text('Add');
+        $('#note-modal').openModal();
+    });
+    
+    $('.edit-note').click(function() {
+        var noteID = $(this).data('note-id');
+        var noteContent = $(this).data('note-content');
+        noteContent = noteContent.replace(/\+/g, ' ');
+        noteContent = decodeURIComponent(noteContent);
+        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/' + noteID);
+        $('#note').val(noteContent);
+        $('#note-title').text('Edit Note');
+        $('#note-submit').text('Update');
+        $('#note-modal').openModal();
     });
     
     $('.delete-note').click(function() {
         var noteID = $(this).data('note-id');
-        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/' + noteID + '/delete')
-        $('#delete-note-confirm').openModal()
+        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/' + noteID + '/delete');
+        $('#delete-note-confirm').openModal();
     });
 </script>
 {{ end }}

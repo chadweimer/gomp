@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -26,6 +27,7 @@ func main() {
 		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ToLower":     strings.ToLower,
+			"QueryEscape": url.QueryEscape,
 			"Add":         func(a, b int64) int64 { return a + b },
 			"RootUrlPath": func() string { return cfg.RootURLPath },
 			"Paginate": func(pageNum, numPages, num int64) []int64 {
@@ -74,6 +76,7 @@ func main() {
 	recipeMux.POST("/recipes/:id/attach", rc.CreateAttachmentPost)
 	recipeMux.GET("/recipes/:id/attach/:name/delete", rc.DeleteAttachment)
 	recipeMux.POST("/recipes/:id/note", rc.CreateNotePost)
+	recipeMux.POST("/recipes/:id/note/:note_id", rc.EditNotePost)
 	recipeMux.GET("/recipes/:id/note/:note_id/delete", rc.DeleteNote)
 	recipeMux.POST("/recipes/:id/rate", rc.RateRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
