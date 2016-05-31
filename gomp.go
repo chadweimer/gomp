@@ -30,6 +30,7 @@ func main() {
 			"QueryEscape": url.QueryEscape,
 			"Add":         func(a, b int64) int64 { return a + b },
 			"RootUrlPath": func() string { return cfg.RootURLPath },
+			"TimeEqual":   func(a, b time.Time) bool { return a == b },
 			"Paginate": func(pageNum, numPages, num int64) []int64 {
 				if numPages == 0 {
 					return []int64{1}

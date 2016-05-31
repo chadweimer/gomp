@@ -125,7 +125,9 @@
                         </p>
                         <div class="divider clearfix"></div>
                         <p class="section plain-text">{{.Note}}</p>
+                        {{if not (TimeEqual .CreatedAt .ModifiedAt)}}
                         <label class="right">Modified: {{.ModifiedAt.Format "2006 Jan 02, 03:04:05PM"}}</label>
+                        {{end}}
                     </div>
                 </section>
                 {{end}}
