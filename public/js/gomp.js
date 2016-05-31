@@ -9,9 +9,9 @@ function initCreateEditRecipeForm() {
         return
     }
 
-    $('#add-tag').click(function() {
-        var tags = $('#new-tag').val().split(' ');
-        tags.forEach(function(tag) {
+    $('#new-tag').on('keypress', function(event) {
+        if (event.keyCode == 13) {
+            var tag = $(this).val();
             if (tag.length == 0) {
                 return;
             }
@@ -23,9 +23,11 @@ function initCreateEditRecipeForm() {
                     '<input type="hidden" name="tags" value="' + tag +'">'
                 '</div>'
             $('#tags').append(chipHtml);
-        });
-        $('#new-tag').val('');
-        $('#new-tag').focus();
+            $('#new-tag').val('');
+            $('#new-tag').focus();
+
+            return false;
+        }
     });
 }
 
