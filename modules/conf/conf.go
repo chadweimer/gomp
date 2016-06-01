@@ -36,7 +36,14 @@ type Config struct {
 
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
+	port := 4000
+	if portStr := os.Getenv("PORT"); portStr != "" {
+		var err error
+		port, err = strconv.Atoi(portStr)
+		if err != nil {
+			log.Fatalf("Failed to marshal configuration settings. Error = %s", err)
+		}
+	}
 	c := Config{
 		RootURL:       "http://localhost:4000/",
 		Port:          port,

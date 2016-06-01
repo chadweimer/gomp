@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -95,6 +96,7 @@ func main() {
 	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
 	n.UseHandler(mainMux)
 
+	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
