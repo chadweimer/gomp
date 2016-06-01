@@ -11,12 +11,10 @@ import (
 )
 
 type Config struct {
-	// RootURL gets the URL of the root of the site (e.g., http://localhost/gomp).
-	RootURL string `json:"root_url"`
-
-	// RootURLPath gets just the path portion of the RootUrl value,
-	// without any trailing slashes.
-	RootURLPath string `json:"-"`
+	// RootURLPath gets just the path portion of the base application url.
+	// E.g., if the app sits at http://www.example.com/path/to/gomp,
+	// this setting would be "/path/to/gomp"
+	RootURLPath string `json:"root_url_path"`
 
 	// Port gets the port number under which the site is being hosted.
 	Port int `json:"port"`
@@ -36,22 +34,24 @@ type Config struct {
 
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
-	port := 4000
-	if portStr := os.Getenv("PORT"); portStr != "" {
-		var err error
-		port, err = strconv.Atoi(portStr)
-		if err != nil {
-			log.Fatalf("Failed to marshal configuration settings. Error = %s", err)
-		}
-	}
 	c := Config{
-		RootURL:       "http://localhost:4000/",
-		Port:          port,
+		RootURLPath:   "",
+		Port:          4000,
 		DataPath:      "data",
 		IsDevelopment: false,
 		SecretKey:     "Secret123",
 	}
 
+	// If the PORT environment variable is set, use it.
+	if portStr := os.Getenv("PORT"); portStr != "" {
+		var err error
+		c.Port, err = strconv.Atoi(portStr)
+		if err != nil {
+			log.Fatalf("Failed to marshal configuration settings. Error = %s", err)
+		}
+	}
+
+	// If a config file exists, use it and override anything that came from environment variables
 	file, err := ioutil.ReadFile(path)
 	if err == nil {
 		err = json.Unmarshal(file, &c)
@@ -61,13 +61,6 @@ func Load(path string) *Config {
 	} else if !os.IsNotExist(err) {
 		log.Fatalf("Failed to read in app.json. Error = %s", err)
 	}
-
-	// Check if root url has a sub-path
-	url, err := url.Parse(c.RootURL)
-	if err != nil {
-		log.Fatal("Invalid root_url")
-	}
-	c.RootURLPath = strings.TrimSuffix(url.Path, "/")
 
 	return &c
 }
