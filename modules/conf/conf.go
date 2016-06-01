@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -35,9 +36,10 @@ type Config struct {
 
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
+	port, _ := strconv.Atoi(os.Getenv("PORT"))
 	c := Config{
 		RootURL:       "http://localhost:4000/",
-		Port:          4000,
+		Port:          port,
 		DataPath:      "data",
 		IsDevelopment: false,
 		SecretKey:     "Secret123",
