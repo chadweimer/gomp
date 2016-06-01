@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"net/url"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type Config struct {
