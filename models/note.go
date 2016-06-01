@@ -76,20 +76,10 @@ func (m *NoteModel) Update(note *Note) error {
 // UpdateTx stores the note in the database by updating the existing record with the specified
 // id using the specified transaction.
 func (m *NoteModel) UpdateTx(note *Note, tx *sql.Tx) error {
-	result, err := tx.Exec(
+	_, err := tx.Exec(
 		"UPDATE recipe_note SET note = ?, modified_at = datetime('now', 'localtime') WHERE ID = ? AND recipe_id = ?",
 		note.Note, note.ID, note.RecipeID)
-	if err != nil {
-		return err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	note.ID = id
-	return nil
+	return err
 }
 
 // Delete removes the specified note from the database using a dedicated transation
