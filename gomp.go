@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/urfave/negroni"
-	//"gopkg.in/tylerb/graceful.v1"
+	"gopkg.in/tylerb/graceful.v1"
 	"gopkg.in/unrolled/render.v1"
 )
 
@@ -97,10 +97,9 @@ func main() {
 	n.UseHandler(mainMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)
-	//timeout := 10 * time.Second
-	//if cfg.IsDevelopment {
-	//	timeout = 1 * time.Second
-	//}
-	//graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
-	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), context.ClearHandler(n))
+	timeout := 10 * time.Second
+	if cfg.IsDevelopment {
+		timeout = 1 * time.Second
+	}
+	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
 }
