@@ -18,27 +18,27 @@
     <body>
         <header class="navbar-fixed">
             <nav class="blue">
-                <a href="{{RootUrlPath}}/" class="brand-logo hide-on-med-and-down">GOMP: Go Meal Planner</a>
-                <ul class="right hide-on-med-and-down">
-                    <li><a href="{{RootUrlPath}}/">Home</a></li>
-                    <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
-                </ul>
-                <a href="{{RootUrlPath}}/" class="brand-logo center hide-on-small-only hide-on-large-only">GOMP</a>
-                <div class="nav-wrapper right">
-                    <form class="nav-wrapper" action="{{RootUrlPath}}/recipes">
+                <div class="nav-wrapper">
+                    <a href="{{RootUrlPath}}/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
+                    <ul class="right hide-on-med-and-down">
+                        <li><a href="{{RootUrlPath}}/">Home</a></li>
+                        <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
+                    </ul>
+                    <form class="nav-wrapper right" action="{{RootUrlPath}}/recipes">
                         <div class="input-field nav-wrapper">
                             <input id="search" name="q" type="search" placeholder="Search..." required>
                             <label for="search"><i class="material-icons">search</i></label>
                         </div>
                     </form>
+                    <ul id="slide-out" class="side-nav">
+                        <li><a href="{{RootUrlPath}}/" class="grey-text light truncate">{{ApplicationTitle}}</a></li>
+                        <li><a href="{{RootUrlPath}}/">Home</a></li>
+                        <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
+                    </ul>
+                    <a href="#" data-activates="slide-out" class="button-collapse">
+                        <i class="material-icons">menu</i>
+                    </a>
                 </div>
-                <ul id="slide-out" class="side-nav">
-                    <li><a href="{{RootUrlPath}}/">Home</a></li>
-                    <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
-                 </ul>
-                 <a href="#" data-activates="slide-out" class="button-collapse">
-                    <i class="material-icons">menu</i>
-                </a>
             </nav>
         </header>
 
@@ -46,7 +46,7 @@
 			{{ partial "content" }}
         </main>
 
-        <footer class="page-footer no-padding grey">
+        <footer class="page-footer no-padding grey lighten-1">
             <section class="footer-copyright">
                 <section class="container">
                     <span>Powered by <a href="https://github.com/chadweimer/gomp">GOMP</a>. &copy; 2016 Chad Weimer</span>

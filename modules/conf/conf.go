@@ -31,16 +31,20 @@ type Config struct {
 
 	// SecretKey is used to keep data safe.
 	SecretKey string `json:"secret_key"`
+
+	// ApplicationTitle is used where the application name (title) is displayed on screen.
+	ApplicationTitle string `json:"application_title"`
 }
 
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
 	c := Config{
-		RootURL:       "http://localhost:4000/",
-		Port:          4000,
-		DataPath:      "data",
-		IsDevelopment: false,
-		SecretKey:     "Secret123",
+		RootURL:          "http://localhost:4000/",
+		Port:             4000,
+		DataPath:         "data",
+		IsDevelopment:    false,
+		SecretKey:        "Secret123",
+		ApplicationTitle: "GOMP: Go Meal Planner",
 	}
 
 	file, err := ioutil.ReadFile(path)
