@@ -73,5 +73,11 @@ func Load(path string) *Config {
 		log.Fatalf("Failed to read in app.json. Error = %s", err)
 	}
 
+	log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
+	log.Printf("[config] Port=%d", c.Port)
+	log.Printf("[config] DataPath=%s", c.DataPath)
+	log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
+	log.Printf("[config] SecretKey=%s", c.SecretKey)
+
 	return &c
 }
