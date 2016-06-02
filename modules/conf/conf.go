@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// Config contains the application configuration settings
 type Config struct {
 	// RootURLPath gets just the path portion of the base application url.
 	// E.g., if the app sits at http://www.example.com/path/to/gomp,
@@ -40,13 +41,25 @@ func Load(path string) *Config {
 		SecretKey:     "Secret123",
 	}
 
-	// If the PORT environment variable is set, use it.
-	if portStr := os.Getenv("PORT"); portStr != "" {
+	// If environment variables are set, use them.
+	if envStr := os.Getenv("GOMP_ROOT_URL_PATH"); envStr != "" {
+		c.RootURLPath = envStr
+	}
+	if envStr := os.Getenv("PORT"); envStr != "" {
 		var err error
-		c.Port, err = strconv.Atoi(portStr)
+		c.Port, err = strconv.Atoi(envStr)
 		if err != nil {
-			log.Fatalf("Failed to marshal configuration settings. Error = %s", err)
+			log.Fatalf("Failed to convert PORT environment variable. Error = %s", err)
 		}
+	}
+	if envStr := os.Getenv("GOMP_DATA_PATH"); envStr != "" {
+		c.DataPath = envStr
+	}
+	if envStr := os.Getenv("GOMP_IS_DEVELOPMENT"); envStr != "" {
+		c.IsDevelopment = envStr != "0"
+	}
+	if envStr := os.Getenv("GOMP_SECRET_KEY"); envStr != "" {
+		c.SecretKey = envStr
 	}
 
 	// If a config file exists, use it and override anything that came from environment variables
