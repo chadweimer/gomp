@@ -39,19 +39,19 @@ type Model struct {
 // New constructs a new Model object
 func New(cfg *conf.Config) *Model {
 	// Create the database if it doesn't yet exists.
-	if _, err := os.Stat(cfg.DbConnectionString); os.IsNotExist(err) {
-		err = createDatabase(cfg.DbDriver, cfg.DbConnectionString)
+	if _, err := os.Stat(cfg.DatabaseURL); os.IsNotExist(err) {
+		err = createDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 		if err != nil {
 			log.Fatal("Failed to create database.", err)
 		}
 	} else {
-		err = migrateDatabase(cfg.DbDriver, cfg.DbConnectionString)
+		err = migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 		if err != nil {
 			log.Fatal("Failed to migrate database.", err)
 		}
 	}
 
-	db, err := sql.Open(cfg.DbDriver, cfg.DbConnectionString)
+	db, err := sql.Open(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
@@ -67,8 +67,8 @@ func New(cfg *conf.Config) *Model {
 	return m
 }
 
-func createDatabase(dbDriver, dbConnectionString string) error {
-	dbDir := filepath.Dir(dbConnectionString)
+func createDatabase(databaseDriver, databaseURL string) error {
+	dbDir := filepath.Dir(databaseURL)
 	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
 		err = os.Mkdir(dbDir, os.ModePerm)
 		if err != nil {
@@ -76,11 +76,11 @@ func createDatabase(dbDriver, dbConnectionString string) error {
 		}
 	}
 
-	return migrateDatabase(dbDriver, dbConnectionString)
+	return migrateDatabase(databaseDriver, databaseURL)
 }
 
-func migrateDatabase(dbDriver, dbConnectionString string) error {
-	allErrs, ok := migrate.UpSync(fmt.Sprintf("%s://%s", dbDriver, dbConnectionString), "./db/migrations")
+func migrateDatabase(databaseDriver, databaseURL string) error {
+	allErrs, ok := migrate.UpSync(fmt.Sprintf("%s://%s", databaseDriver, databaseURL), "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {

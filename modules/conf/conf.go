@@ -47,7 +47,7 @@ func Load(path string) *Config {
 		SecretKey:        "Secret123",
 		ApplicationTitle: "GOMP: Go Meal Planner",
 		DatabaseDriver:   "sqlite3",
-		DatabaseURL:      filepath.Join("data", "gomp.db"),
+		DatabaseURL:      "data/gomp.db",
 	}
 
 	// If environment variables are set, use them.
@@ -98,8 +98,8 @@ func Load(path string) *Config {
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecretKey=%s", c.SecretKey)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
-		log.Printf("[config] DbDriver=%s", c.DbDriver)
-		log.Printf("[config] DbConnectionString=%s", c.DbConnectionString)
+		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
+		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
 	}
 
 	return &c
