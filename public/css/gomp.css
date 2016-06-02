@@ -40,3 +40,9 @@ img.darken-25 {
       -ms-transform: rotate(90deg);
           transform: rotate(90deg);
 }
+
+/* This seems like something that was just missed in materialize */
+nav .brand-logo.left {
+  left: 0.5rem;
+  padding: 0;
+}

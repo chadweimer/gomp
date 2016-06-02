@@ -29,16 +29,20 @@ type Config struct {
 
 	// SecretKey is used to keep data safe.
 	SecretKey string `json:"secret_key"`
+
+	// ApplicationTitle is used where the application name (title) is displayed on screen.
+	ApplicationTitle string `json:"application_title"`
 }
 
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
 	c := Config{
-		RootURLPath:   "",
-		Port:          4000,
-		DataPath:      "data",
-		IsDevelopment: false,
-		SecretKey:     "Secret123",
+		RootURLPath:      "",
+		Port:             4000,
+		DataPath:         "data",
+		IsDevelopment:    false,
+		SecretKey:        "Secret123",
+		ApplicationTitle: "GOMP: Go Meal Planner",
 	}
 
 	// If environment variables are set, use them.
@@ -61,6 +65,9 @@ func Load(path string) *Config {
 	if envStr := os.Getenv("GOMP_SECRET_KEY"); envStr != "" {
 		c.SecretKey = envStr
 	}
+	if envStr := os.Getenv("GOMP_APPLICATION_TITLE"); envStr != "" {
+		c.ApplicationTitle = envStr
+	}
 
 	// If a config file exists, use it and override anything that came from environment variables
 	file, err := ioutil.ReadFile(path)
@@ -73,11 +80,14 @@ func Load(path string) *Config {
 		log.Fatalf("Failed to read in app.json. Error = %s", err)
 	}
 
-	log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
-	log.Printf("[config] Port=%d", c.Port)
-	log.Printf("[config] DataPath=%s", c.DataPath)
-	log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
-	log.Printf("[config] SecretKey=%s", c.SecretKey)
+	if c.IsDevelopment {
+		log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
+		log.Printf("[config] Port=%d", c.Port)
+		log.Printf("[config] DataPath=%s", c.DataPath)
+		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
+		log.Printf("[config] SecretKey=%s", c.SecretKey)
+		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
+	}
 
 	return &c
 }
