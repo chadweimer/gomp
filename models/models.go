@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/mattes/migrate/migrate"
@@ -37,22 +38,20 @@ type Model struct {
 
 // New constructs a new Model object
 func New(cfg *conf.Config) *Model {
-	dbPath := fmt.Sprintf("%s/gomp.db", cfg.DataPath)
-
 	// Create the database if it doesn't yet exists.
-	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		err = createDatabase(cfg.DataPath)
+	if _, err := os.Stat(cfg.DbConnectionString); os.IsNotExist(err) {
+		err = createDatabase(cfg.DbDriver, cfg.DbConnectionString)
 		if err != nil {
 			log.Fatal("Failed to create database.", err)
 		}
 	} else {
-		err = migrateDatabase(cfg.DataPath)
+		err = migrateDatabase(cfg.DbDriver, cfg.DbConnectionString)
 		if err != nil {
 			log.Fatal("Failed to migrate database.", err)
 		}
 	}
 
-	db, err := sql.Open("sqlite3", dbPath)
+	db, err := sql.Open(cfg.DbDriver, cfg.DbConnectionString)
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
@@ -68,19 +67,20 @@ func New(cfg *conf.Config) *Model {
 	return m
 }
 
-func createDatabase(dataPath string) error {
-	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
-		err = os.Mkdir(dataPath, os.ModePerm)
+func createDatabase(dbDriver, dbConnectionString string) error {
+	dbDir := filepath.Dir(dbConnectionString)
+	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+		err = os.Mkdir(dbDir, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
 
-	return migrateDatabase(dataPath)
+	return migrateDatabase(dbDriver, dbConnectionString)
 }
 
-func migrateDatabase(dataPath string) error {
-	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s", fmt.Sprintf("%s/gomp.db", dataPath)), "./db/migrations")
+func migrateDatabase(dbDriver, dbConnectionString string) error {
+	allErrs, ok := migrate.UpSync(fmt.Sprintf("%s://%s", dbDriver, dbConnectionString), "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {

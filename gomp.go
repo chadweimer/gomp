@@ -71,7 +71,7 @@ func main() {
 	}
 
 	n.Use(&negroni.Static{Dir: http.Dir("public")})
-	n.Use(&negroni.Static{Dir: http.Dir(fmt.Sprintf("%s/files", cfg.DataPath)), Prefix: "/files"})
+	n.Use(&negroni.Static{Dir: http.Dir(cfg.UploadPath), Prefix: "/uploads"})
 	n.UseHandler(mainMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)

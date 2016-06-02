@@ -35,7 +35,7 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 	}
 
 	// Write the full size file
-	dir := getDirPathForImage(m.cfg.DataPath, recipeID)
+	dir := getDirPathForImage(m.cfg.UploadPath, recipeID)
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 	}
 
 	// Generate the thumbnail
-	thumbDir := getDirPathForThumbnail(m.cfg.DataPath, recipeID)
+	thumbDir := getDirPathForThumbnail(m.cfg.UploadPath, recipeID)
 	err = os.MkdirAll(thumbDir, os.ModePerm)
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 // List returns a RecipeImages slice that contains data for all images
 // attached to the specified recipe
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
-	dir := getDirPathForImage(m.cfg.DataPath, recipeID)
+	dir := getDirPathForImage(m.cfg.UploadPath, recipeID)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return new(RecipeImages), nil
 	}
@@ -95,7 +95,7 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 	for _, file := range files {
 		if !file.IsDir() {
 			filePath := filepath.Join(dir, file.Name())
-			fileURL := getURLForImage(m.cfg.DataPath, filePath)
+			fileURL := getURLForImage(m.cfg.UploadPath, filePath)
 
 			img := RecipeImage{
 				RecipeID: recipeID,
@@ -103,9 +103,9 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 				URL:      fileURL,
 			}
 
-			thumbPath := filepath.Join(getDirPathForThumbnail(m.cfg.DataPath, recipeID), file.Name())
+			thumbPath := filepath.Join(getDirPathForThumbnail(m.cfg.UploadPath, recipeID), file.Name())
 			if _, err := os.Stat(thumbPath); err == nil {
-				img.ThumbnailURL = getURLForImage(m.cfg.DataPath, thumbPath)
+				img.ThumbnailURL = getURLForImage(m.cfg.UploadPath, thumbPath)
 			}
 
 			imgs = append(imgs, img)
@@ -117,17 +117,17 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 
 // Delete deletes a single image attached to the specified recipe
 func (m *RecipeImageModel) Delete(recipeID int64, name string) error {
-	var mainImgPath = filepath.Join(getDirPathForImage(m.cfg.DataPath, recipeID), name)
+	var mainImgPath = filepath.Join(getDirPathForImage(m.cfg.UploadPath, recipeID), name)
 	if err := os.Remove(mainImgPath); err != nil {
 		return err
 	}
-	var thumbImgPath = filepath.Join(getDirPathForThumbnail(m.cfg.DataPath, recipeID), name)
+	var thumbImgPath = filepath.Join(getDirPathForThumbnail(m.cfg.UploadPath, recipeID), name)
 	return os.Remove(thumbImgPath)
 }
 
 // DeleteAll deletes all the images attached to the specified recipe
 func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
-	dir := getDirPathForRecipe(m.cfg.DataPath, recipeID)
+	dir := getDirPathForRecipe(m.cfg.UploadPath, recipeID)
 	return os.RemoveAll(dir)
 }
 
@@ -139,18 +139,18 @@ func isImageFile(data []byte) bool {
 	return false
 }
 
-func getDirPathForRecipe(dataPath string, recipeID int64) string {
-	return filepath.Join(dataPath, "files", "recipes", strconv.FormatInt(recipeID, 10))
+func getDirPathForRecipe(uploadPath string, recipeID int64) string {
+	return filepath.Join(uploadPath, "recipes", strconv.FormatInt(recipeID, 10))
 }
 
-func getDirPathForImage(dataPath string, recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(dataPath, recipeID), "images")
+func getDirPathForImage(uploadPath string, recipeID int64) string {
+	return filepath.Join(getDirPathForRecipe(uploadPath, recipeID), "images")
 }
 
-func getDirPathForThumbnail(dataPath string, recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(dataPath, recipeID), "thumbs")
+func getDirPathForThumbnail(uploadPath string, recipeID int64) string {
+	return filepath.Join(getDirPathForRecipe(uploadPath, recipeID), "thumbs")
 }
 
-func getURLForImage(dataPath string, path string) string {
-	return filepath.ToSlash(strings.TrimPrefix(path, dataPath))
+func getURLForImage(uploadPath string, path string) string {
+	return filepath.ToSlash(filepath.Join("/uploads", strings.TrimPrefix(path, uploadPath)))
 }

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -18,9 +19,8 @@ type Config struct {
 	// Port gets the port number under which the site is being hosted.
 	Port int `json:"port"`
 
-	// DataPath gets the path (full or relative) under which to store the database
-	// and other runtime date (e.g., uploaded images).
-	DataPath string `json:"data_path"`
+	// UploadPath gets the path (full or relative) under which to store uploads.
+	UploadPath string `json:"upload_path"`
 
 	// IsDevelopment defines whether to run the application in "development mode".
 	// Development mode turns on additional features, such as logging, that may
@@ -32,6 +32,9 @@ type Config struct {
 
 	// ApplicationTitle is used where the application name (title) is displayed on screen.
 	ApplicationTitle string `json:"application_title"`
+
+	DatabaseDriver string `json:"database_driver"`
+	DatabaseURL    string `json:"database_url"`
 }
 
 // Load reads the configuration file from the specified path
@@ -39,10 +42,12 @@ func Load(path string) *Config {
 	c := Config{
 		RootURLPath:      "",
 		Port:             4000,
-		DataPath:         "data",
+		UploadPath:       filepath.Join("data", "uploads"),
 		IsDevelopment:    false,
 		SecretKey:        "Secret123",
 		ApplicationTitle: "GOMP: Go Meal Planner",
+		DatabaseDriver:   "sqlite3",
+		DatabaseURL:      filepath.Join("data", "gomp.db"),
 	}
 
 	// If environment variables are set, use them.
@@ -56,8 +61,8 @@ func Load(path string) *Config {
 			log.Fatalf("Failed to convert PORT environment variable. Error = %s", err)
 		}
 	}
-	if envStr := os.Getenv("GOMP_DATA_PATH"); envStr != "" {
-		c.DataPath = envStr
+	if envStr := os.Getenv("GOMP_UPLOAD_PATH"); envStr != "" {
+		c.UploadPath = envStr
 	}
 	if envStr := os.Getenv("GOMP_IS_DEVELOPMENT"); envStr != "" {
 		c.IsDevelopment = envStr != "0"
@@ -67,6 +72,12 @@ func Load(path string) *Config {
 	}
 	if envStr := os.Getenv("GOMP_APPLICATION_TITLE"); envStr != "" {
 		c.ApplicationTitle = envStr
+	}
+	if envStr := os.Getenv("DATABASE_DRIVER"); envStr != "" {
+		c.DatabaseDriver = envStr
+	}
+	if envStr := os.Getenv("DATABASE_URL"); envStr != "" {
+		c.DatabaseURL = envStr
 	}
 
 	// If a config file exists, use it and override anything that came from environment variables
@@ -83,10 +94,12 @@ func Load(path string) *Config {
 	if c.IsDevelopment {
 		log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
 		log.Printf("[config] Port=%d", c.Port)
-		log.Printf("[config] DataPath=%s", c.DataPath)
+		log.Printf("[config] UploadPath=%s", c.UploadPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecretKey=%s", c.SecretKey)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
+		log.Printf("[config] DbDriver=%s", c.DbDriver)
+		log.Printf("[config] DbConnectionString=%s", c.DbConnectionString)
 	}
 
 	return &c
