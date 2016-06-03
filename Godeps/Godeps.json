@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/chadweimer/gomp",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v67",
+	"GodepVersion": "v65",
 	"Deps": [
 		{
 			"ImportPath": "github.com/disintegration/imaging",
@@ -25,6 +25,16 @@
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Comment": "v1.1-29-g77366a4",
 			"Rev": "77366a47451a56bb3ba682481eed85b64fea14e8"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-89-g4bb18a6",
+			"Rev": "4bb18a681683108f2268fcfad6ba63806df95e4f"
+		},
+		{
+			"ImportPath": "github.com/lib/pq/oid",
+			"Comment": "go1.0-cutoff-89-g4bb18a6",
+			"Rev": "4bb18a681683108f2268fcfad6ba63806df95e4f"
 		},
 		{
 			"ImportPath": "github.com/mattes/migrate/driver",
