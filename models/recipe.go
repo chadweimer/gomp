@@ -265,7 +265,7 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 		"SELECT DISTINCT " +
 			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) " +
 			partialStmt +
-			" ORDER BY r.name LIMIT $1 OFFSET $2"
+			" ORDER BY r.name LIMIT $5 OFFSET $6"
 	rows, err := m.db.Query(selectStmt,
 		search, search, search, search, count, offset)
 	if err != nil {
