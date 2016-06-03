@@ -1,37 +1,5 @@
 {{ define "css-recipe/view" }}
 <style>
-    #rating-form {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-    }
-    
-    #rating-form > a {
-        color: #dddddd;
-        float: right;
-    }
-    
-    #rating-form  > a.whole {
-        -webkit-clip-path: inset(0 0 0 50%);
-                clip-path: inset(0 0 0 50%);
-        margin-left: -10%;
-    }
-    
-    #rating-form  > a.half {
-        -webkit-clip-path: inset(0 50% 0 0);
-                clip-path: inset(0 50% 0 0);
-    }
-    
-    #rating-form > a.active,
-    #rating-form > a.active ~ a {
-        color: #fdd835;
-    }
-
-    #rating-form > a:hover,
-    #rating-form > a:hover ~ a {
-        color: #ffeb3b !important;
-    }
-    
     .image-container {
         position: relative;
     }
@@ -49,7 +17,7 @@
     <article class="col s12 m12 l10 offset-l1">
         <section class="card grey lighten-4">
             <div class="card-content">
-                <form id="rating-form" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
+                <form id="rating-form" class="rating-container clickable" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
                     <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
                     <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
                     <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>

@@ -1,53 +1,40 @@
 {{ define "css-recipe/list" }}
-<style>
-    .rating-container {
-        position: absolute;
-        top: 5px;
-        right: 5px;
+<style>    
+    .collection-item {
+        height: 84px;
     }
     
-    .rating-container > i {
-        color: #dddddd;
-        float: right;
-    }
-    
-    .rating-container > i.whole {
-        -webkit-clip-path: inset(0 0 0 50%);
-                clip-path: inset(0 0 0 50%);
-        margin-left: -10%;
-    }
-    
-    .rating-container > i.half {
-        -webkit-clip-path: inset(0 50% 0 0);
-                clip-path: inset(0 50% 0 0);
-    }
-    
-    .rating-container > i.active,
-    .rating-container > i.active ~ i {
-        color: #fdd835;
+    .collection-title {
+        font-size: 24px;
+        font-weight: 300;
     }
 </style>
 {{ end }}
 
 {{ define "content-recipe/list" }}
 <section class="row">
-    {{if .SearchQuery}}
-    <p class="col s12 l12">
-        <span class="toast rounded">
-            Search: {{.SearchQuery}}, Results: {{.ResultCount}}
-            <i class="material-icons right clickable" onclick="location.href='?clear=true';">clear_all</i>
-        </span>
-    </p>
-    {{end}}
-    {{range .Recipes}}
-    <div class="col s12 m6 l4">
-        <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';">
-            {{if .Image}}
-            <section class="card-image">
-                <img src="{{RootUrlPath}}{{.Image}}" class="darken-25">
-            </section>
+    <div class="col s12 l12">
+        <div class="section">
+            {{if .SearchQuery}}
+            <span class="chip left">
+                Search: {{.SearchQuery}}, Results: {{.ResultCount}}
+                <i class="material-icons right clickable" onclick="location.href='?clear=true';">clear_all</i>
+            </span>
             {{end}}
-            <section class="rating-container">
+            <a id="full-view-button" href="javascript:void(0)" class="black-text"><i class="material-icons right">view_agenda</i></a>
+            <a id="compact-view-button" href="javascript:void(0)" class="grey-text"><i class="material-icons right">view_headline</i></a>
+        </div>
+    </div>
+    <div id="full-view">
+        {{range .Recipes}}
+        <div class="col s12 m6 l4">
+            <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';">
+                {{if .Image}}
+                <section class="card-image">
+                    <img src="{{RootUrlPath}}{{.Image}}" class="darken-25">
+                </section>
+                {{end}}
+                <section class="rating-container">
                 <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
                 <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
                 <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
@@ -58,13 +45,40 @@
                 <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
                 <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
                 <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
-            </section>
-            <section class="card-content">
-                <span class="card-title">{{.Name}}</span>
-            </section>
-        </article>
+                </section>
+                <section class="card-content">
+                    <span class="card-title">{{.Name}}</span>
+                </section>
+            </article>
+        </div>
+        {{end}}
     </div>
-    {{end}}
+    <div id="compact-view" class="hide">
+        {{range .Recipes}}
+        <div class="col s12 m6 l4">
+            <div class="collection z-depth-1 hoverable">
+                <article class="collection-item avatar grey lighten-4 clickable" onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';">
+                    <section class="rating-container">
+                <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
+                <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
+                <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
+                    </section>
+                    <section class="section">
+                        <img src="{{RootUrlPath}}{{.Image}}" class="circle">
+                        <span class="title">{{.Name}}</span>
+                    </section>
+                </article>
+            </div>
+        </div>
+        {{end}}
+    </div>
     
     {{$baseLink := .PerPage | printf "?q=%s&count=%d&page=" .Query}}
     <ul class="pagination col s12 l12 center">
@@ -92,4 +106,23 @@
         <i class="material-icons">add</i>
     </a>
 </section>
+{{ end }}
+
+{{ define "js-recipe/list" }}
+<script type="text/javascript">
+    $('#full-view-button').click(function() {
+        $('#full-view').removeClass('hide')
+        $('#full-view-button').removeClass('grey-text').addClass('black-text')
+        
+        $('#compact-view').addClass('hide')
+        $('#compact-view-button').addClass('grey-text').removeClass('black-text')
+    });
+    $('#compact-view-button').click(function() {
+        $('#full-view').addClass('hide')
+        $('#full-view-button').addClass('grey-text').removeClass('black-text')
+        
+        $('#compact-view').removeClass('hide')
+        $('#compact-view-button').removeClass('grey-text').addClass('black-text')
+    });
+</script>
 {{ end }}

@@ -41,6 +41,43 @@ img.darken-25 {
           transform: rotate(90deg);
 }
 
+.card .rating-container {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.collection .rating-container {
+    margin-top: -5px;
+    margin-right: -15px;
+}
+
+.rating-container > * {
+    color: #dddddd;
+    float: right;
+}
+
+.rating-container > .whole {
+    -webkit-clip-path: inset(0 0 0 50%);
+            clip-path: inset(0 0 0 50%);
+    margin-left: -10%;
+}
+
+.rating-container > .half {
+    -webkit-clip-path: inset(0 50% 0 0);
+            clip-path: inset(0 50% 0 0);
+}
+
+.rating-container > .active,
+.rating-container > .active ~ * {
+    color: #fdd835;
+}
+
+.rating-container.clickable > :hover,
+.rating-container.clickable > :hover ~ * {
+    color: #ffeb3b !important;
+}
+
 /* This seems like something that was just missed in materialize */
 nav .brand-logo.left {
   left: 0.5rem;
