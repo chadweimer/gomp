@@ -41,16 +41,27 @@ func (m *NoteModel) Create(note *Note) error {
 // CreateTx stores the note in the database as a new record using
 // the specified transaction.
 func (m *NoteModel) CreateTx(note *Note, tx *sql.Tx) error {
-	result, err := tx.Exec(
-		"INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) VALUES (?, ?, datetime('now', 'localtime'), datetime('now', 'localtime'))",
-		note.RecipeID, note.Note)
-	if err != nil {
-		return err
-	}
+	now := time.Now()
+	sql := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
+		"VALUES ($1, $2, $3, $4)"
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
+	var id int64
+	if m.cfg.DatabaseDriver == "sqlite3" {
+		result, err := tx.Exec(sql, note.RecipeID, note.Note, now, now)
+		if err != nil {
+			return err
+		}
+		id, err = result.LastInsertId()
+		if err != nil {
+			return err
+		}
+	} else {
+		sql = sql + " RETURNING id"
+		row := tx.QueryRow(sql, note.RecipeID, note.Note, now, now)
+		err := row.Scan(&id)
+		if err != nil {
+			return err
+		}
 	}
 
 	note.ID = id
@@ -76,9 +87,9 @@ func (m *NoteModel) Update(note *Note) error {
 // UpdateTx stores the note in the database by updating the existing record with the specified
 // id using the specified transaction.
 func (m *NoteModel) UpdateTx(note *Note, tx *sql.Tx) error {
-	_, err := tx.Exec(
-		"UPDATE recipe_note SET note = ?, modified_at = datetime('now', 'localtime') WHERE ID = ? AND recipe_id = ?",
-		note.Note, note.ID, note.RecipeID)
+	_, err := tx.Exec("UPDATE recipe_note SET note = $1, modified_at = $2 "+
+		"WHERE ID = $3 AND recipe_id = $4",
+		note.Note, time.Now(), note.ID, note.RecipeID)
 	return err
 }
 
@@ -100,7 +111,7 @@ func (m *NoteModel) Delete(id int64) error {
 
 // DeleteTx removes the specified note from the database using the specified transaction.
 func (m *NoteModel) DeleteTx(id int64, tx *sql.Tx) error {
-	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = ?", id)
+	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = $1", id)
 	return err
 }
 
@@ -124,7 +135,7 @@ func (m *NoteModel) DeleteAll(recipeID int64) error {
 // transaction.
 func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
 	_, err := tx.Exec(
-		"DELETE FROM recipe_note WHERE recipe_id = ?",
+		"DELETE FROM recipe_note WHERE recipe_id = $1",
 		recipeID)
 	return err
 }
@@ -132,7 +143,8 @@ func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
 // List retrieves all notes associated with the recipe with the specified id.
 func (m *NoteModel) List(recipeID int64) (*Notes, error) {
 	rows, err := m.db.Query(
-		"SELECT id, note, created_at, modified_at FROM recipe_note WHERE recipe_id = ? ORDER BY created_at DESC",
+		"SELECT id, note, created_at, modified_at FROM recipe_note "+
+			"WHERE recipe_id = $1 ORDER BY created_at DESC",
 		recipeID)
 	if err != nil {
 		return nil, err

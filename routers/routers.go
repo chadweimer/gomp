@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/chadweimer/gomp/models"
@@ -32,7 +32,7 @@ func NewController(render *render.Render, cfg *conf.Config, model *models.Model,
 // if the asupplied error is not nil
 func (rc *RouteController) RedirectIfHasError(resp http.ResponseWriter, err error) bool {
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		rc.InternalServerError(resp, err)
 		return true
 	}

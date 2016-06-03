@@ -42,20 +42,32 @@ type Model struct {
 
 // New constructs a new Model object
 func New(cfg *conf.Config) *Model {
+	dbPath := strings.TrimPrefix(cfg.DatabaseURL, cfg.DatabaseDriver+"://")
+
 	// Create the database if it doesn't yet exists.
-	if _, err := os.Stat(cfg.DatabaseURL); os.IsNotExist(err) {
-		err = createDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
-		if err != nil {
-			log.Fatal("Failed to create database.", err)
-		}
-	} else {
-		err = migrateDatabase(cfg.DatabaseURL)
-		if err != nil {
-			log.Fatal("Failed to migrate database.", err)
+	if cfg.DatabaseDriver == "sqlite3" {
+		if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+			dbDir := filepath.Dir(dbPath)
+			if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+				err = os.MkdirAll(dbDir, os.ModePerm)
+				if err != nil {
+					log.Fatal("Failed to create database folder.", err)
+				}
+			}
 		}
 	}
 
-	db, err := sql.Open(cfg.DatabaseDriver, cfg.DatabaseURL)
+	err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal("Failed to migrate database.", err)
+	}
+
+	var db *sql.DB
+	if cfg.DatabaseDriver == "sqlite3" {
+		db, err = sql.Open(cfg.DatabaseDriver, dbPath)
+	} else {
+		db, err = sql.Open(cfg.DatabaseDriver, cfg.DatabaseURL)
+	}
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
@@ -71,22 +83,8 @@ func New(cfg *conf.Config) *Model {
 	return m
 }
 
-func createDatabase(databaseDriver, databaseURL string) error {
-	if databaseDriver == "sqlite3" {
-		dbDir := filepath.Dir(strings.TrimPrefix(databaseURL, "sqlite3://"))
-		if _, err := os.Stat(dbDir); os.IsNotExist(err) {
-			err = os.Mkdir(dbDir, os.ModePerm)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return migrateDatabase(databaseURL)
-}
-
-func migrateDatabase(databaseURL string) error {
-	allErrs, ok := migrate.UpSync(databaseURL, "./db/migrations")
+func migrateDatabase(databaseDriver, databaseURL string) error {
+	allErrs, ok := migrate.UpSync(databaseURL, filepath.Join("db", "migrations", databaseDriver))
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {
