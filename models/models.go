@@ -16,8 +16,9 @@ import (
 	_ "github.com/mattes/migrate/driver/sqlite3"
 	_ "github.com/mattn/go-sqlite3"
 
-	// postres database driver
+	// postgres database driver
 	_ "github.com/lib/pq"
+	_ "github.com/mattes/migrate/driver/postgres"
 )
 
 // ---- Begin Standard Errors ----
