@@ -33,8 +33,12 @@ type Config struct {
 	// ApplicationTitle is used where the application name (title) is displayed on screen.
 	ApplicationTitle string `json:"application_title"`
 
+	// DatabaseDriver gets which database/sql driver to use.
 	DatabaseDriver string `json:"database_driver"`
-	DatabaseURL    string `json:"database_url"`
+
+	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
+	// database driver when opening the database connection.
+	DatabaseURL string `json:"database_url"`
 }
 
 // Load reads the configuration file from the specified path
@@ -51,34 +55,14 @@ func Load(path string) *Config {
 	}
 
 	// If environment variables are set, use them.
-	if envStr := os.Getenv("GOMP_ROOT_URL_PATH"); envStr != "" {
-		c.RootURLPath = envStr
-	}
-	if envStr := os.Getenv("PORT"); envStr != "" {
-		var err error
-		c.Port, err = strconv.Atoi(envStr)
-		if err != nil {
-			log.Fatalf("Failed to convert PORT environment variable. Error = %s", err)
-		}
-	}
-	if envStr := os.Getenv("GOMP_UPLOAD_PATH"); envStr != "" {
-		c.UploadPath = envStr
-	}
-	if envStr := os.Getenv("GOMP_IS_DEVELOPMENT"); envStr != "" {
-		c.IsDevelopment = envStr != "0"
-	}
-	if envStr := os.Getenv("GOMP_SECRET_KEY"); envStr != "" {
-		c.SecretKey = envStr
-	}
-	if envStr := os.Getenv("GOMP_APPLICATION_TITLE"); envStr != "" {
-		c.ApplicationTitle = envStr
-	}
-	if envStr := os.Getenv("DATABASE_DRIVER"); envStr != "" {
-		c.DatabaseDriver = envStr
-	}
-	if envStr := os.Getenv("DATABASE_URL"); envStr != "" {
-		c.DatabaseURL = envStr
-	}
+	loadEnv("GOMP_ROOT_URL_PATH").fillString(&c.RootURLPath)
+	loadEnv("PORT").fillInt(&c.Port)
+	loadEnv("GOMP_UPLOAD_PATH").fillString(&c.UploadPath)
+	loadEnv("GOMP_IS_DEVELOPMENT").fillBool(&c.IsDevelopment)
+	loadEnv("GOMP_SECRET_KEY").fillString(&c.SecretKey)
+	loadEnv("GOMP_APPLICATION_TITLE").fillString(&c.ApplicationTitle)
+	loadEnv("DATABASE_DRIVER").fillString(&c.DatabaseDriver)
+	loadEnv("DATABASE_URL").fillString(&c.DatabaseURL)
 
 	// If a config file exists, use it and override anything that came from environment variables
 	file, err := ioutil.ReadFile(path)
@@ -103,4 +87,41 @@ func Load(path string) *Config {
 	}
 
 	return &c
+}
+
+type environmentVar struct {
+	Name  string
+	Value string
+	IsSet bool
+}
+
+func loadEnv(name string) *environmentVar {
+	if envStr := os.Getenv(name); envStr != "" {
+		return &environmentVar{Name: name, Value: envStr, IsSet: true}
+	}
+
+	return &environmentVar{Name: name, IsSet: false}
+}
+
+func (e *environmentVar) fillString(value *string) {
+	if e.IsSet {
+		*value = e.Value
+	}
+}
+
+func (e *environmentVar) fillInt(value *int) {
+	if e.IsSet {
+		var err error
+		*value, err = strconv.Atoi(e.Value)
+		if err != nil {
+			log.Fatalf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
+				e.Name, e.Value, err)
+		}
+	}
+}
+
+func (e *environmentVar) fillBool(value *bool) {
+	if e.IsSet {
+		*value = e.Value != "0"
+	}
 }
