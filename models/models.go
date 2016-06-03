@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/mattes/migrate/migrate"
@@ -48,7 +49,7 @@ func New(cfg *conf.Config) *Model {
 			log.Fatal("Failed to create database.", err)
 		}
 	} else {
-		err = migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
+		err = migrateDatabase(cfg.DatabaseURL)
 		if err != nil {
 			log.Fatal("Failed to migrate database.", err)
 		}
@@ -71,19 +72,21 @@ func New(cfg *conf.Config) *Model {
 }
 
 func createDatabase(databaseDriver, databaseURL string) error {
-	dbDir := filepath.Dir(databaseURL)
-	if _, err := os.Stat(dbDir); os.IsNotExist(err) {
-		err = os.Mkdir(dbDir, os.ModePerm)
-		if err != nil {
-			return err
+	if databaseDriver == "sqlite3" {
+		dbDir := filepath.Dir(strings.TrimPrefix(databaseURL, "sqlite3://"))
+		if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+			err = os.Mkdir(dbDir, os.ModePerm)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	return migrateDatabase(databaseDriver, databaseURL)
+	return migrateDatabase(databaseURL)
 }
 
-func migrateDatabase(databaseDriver, databaseURL string) error {
-	allErrs, ok := migrate.UpSync(fmt.Sprintf("%s://%s", databaseDriver, databaseURL), "./db/migrations")
+func migrateDatabase(databaseURL string) error {
+	allErrs, ok := migrate.UpSync(databaseURL, "./db/migrations")
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {

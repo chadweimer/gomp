@@ -51,7 +51,7 @@ func Load(path string) *Config {
 		SecretKey:        "Secret123",
 		ApplicationTitle: "GOMP: Go Meal Planner",
 		DatabaseDriver:   "sqlite3",
-		DatabaseURL:      "data/gomp.db",
+		DatabaseURL:      "sqlite3://data/gomp.db",
 	}
 
 	// If environment variables are set, use them.
