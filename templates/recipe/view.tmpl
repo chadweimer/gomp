@@ -34,17 +34,22 @@
                     <img src="{{RootUrlPath}}{{.Recipe.Image}}" class="circle" style="width: 64px; height: 64px;">
                     {{.Recipe.Name}}
                 </h4>
+                {{if .Recipe.ServingSize}}
                 <label>Serving Size</label>
                 <p class="section plain-text">{{.Recipe.ServingSize}}</p>
                 <div class="divider"></div>
+                {{end}}
                 <label>Ingredients</label>
                 <p class="section plain-text">{{.Recipe.Ingredients}}</p>
                 <div class="divider"></div>
                 <label>Directions</label>
                 <p class="section plain-text">{{.Recipe.Directions}}</p>
+                {{if .Recipe.NutritionInfo}}
                 <div class="divider"></div>
                 <label>Nutrition</label>
                 <p class="section plain-text">{{.Recipe.NutritionInfo}}</p>
+                {{end}}
+                {{if .Recipe.Tags}}
                 <div class="divider"></div>
                 <p class="section">
                     {{range .Recipe.Tags}}
@@ -53,6 +58,7 @@
                     </div>
                     {{end}}
                 </p>
+                {{end}}
             </div>
         </section>
         <section>
