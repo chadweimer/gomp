@@ -29,6 +29,9 @@
             {{end}}
         </div>
     </div>
+    
+    {{template "pagination-recipe/list" .}}
+    
     {{range .Recipes}}
     {{if ne $.ViewType "compact"}}
     <div class="col s12 m6 l4">
@@ -65,26 +68,8 @@
     {{end}}
     {{end}}
     
-    {{$baseLink := .PerPage | printf "?q=%s&count=%d&page=" .Query}}
-    <ul class="pagination col s12 l12 center">
-        <li class="{{if le .PageNum 1}}disabled{{end}}">
-            <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
-        </li>
-        <li class="{{if le .PageNum 1}}disabled{{end}}">
-            <a href="{{if gt .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
-        </li>
-        {{range  Paginate .PageNum .NumPages 5}}
-        <li {{if eq $.PageNum .}}class="active"{{end}}>
-            <a href="{{$baseLink}}{{.}}">{{.}}</a>
-        </li>
-        {{end}}
-        <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
-            <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
-        </li>
-        <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
-            <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
-        </li>
-    </ul>
+    {{template "pagination-recipe/list" .}}
+    
 </section>
 <section class="fixed-action-btn">
     <a href="{{RootUrlPath}}/recipes/create" class="btn-floating btn-large waves-effect green">
@@ -92,3 +77,26 @@
     </a>
 </section>
 {{ end }}
+
+{{define "pagination-recipe/list"}}
+{{$baseLink := .PerPage | printf "?q=%s&count=%d&page=" .Query}}
+<ul class="pagination col s12 l12 center">
+    <li class="{{if le .PageNum 1}}disabled{{end}}">
+        <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
+    </li>
+    <li class="{{if le .PageNum 1}}disabled{{end}}">
+        <a href="{{if gt .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
+    </li>
+    {{range  Paginate .PageNum .NumPages 5}}
+    <li {{if eq $.PageNum .}}class="active"{{end}}>
+        <a href="{{$baseLink}}{{.}}">{{.}}</a>
+    </li>
+    {{end}}
+    <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
+        <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
+    </li>
+    <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
+        <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
+    </li>
+</ul>
+{{end}}

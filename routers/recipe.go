@@ -151,7 +151,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	if viewType == "compact" {
 		count = 60
 	} else {
-		count = 15
+		count = 12
 	}
 
 	var recipes *models.Recipes
