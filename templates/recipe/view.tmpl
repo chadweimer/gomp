@@ -30,7 +30,10 @@
                     <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
-                <h4>{{.Recipe.Name}}</h4>
+                <h4>
+                    <img src="{{RootUrlPath}}{{.Recipe.Image}}" class="circle" style="width: 64px; height: 64px;">
+                    {{.Recipe.Name}}
+                </h4>
                 <label>Serving Size</label>
                 <p class="section plain-text">{{.Recipe.ServingSize}}</p>
                 <div class="divider"></div>

@@ -94,6 +94,13 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	}
 	recipe.Tags = *tags
 
+	imgs, err := m.Images.List(recipe.ID)
+	if err == nil {
+		if len(*imgs) > 0 {
+			recipe.Image = (*imgs)[0].ThumbnailURL
+		}
+	}
+
 	return &recipe, nil
 }
 
@@ -217,11 +224,10 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 		}
 
 		imgs, err := m.Images.List(recipe.ID)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(*imgs) > 0 {
-			recipe.Image = (*imgs)[0].ThumbnailURL
+		if err == nil {
+			if len(*imgs) > 0 {
+				recipe.Image = (*imgs)[0].ThumbnailURL
+			}
 		}
 
 		recipes = append(recipes, recipe)
