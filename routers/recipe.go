@@ -116,18 +116,16 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		log.Print("Invalid session retrieved. Will use a new one...")
 	}
 
-	query := req.URL.Query().Get("q")
 	clear := req.URL.Query().Get("clear")
-	if query != "" || clear != "" {
+	if clear != "" {
 		delete(sess.Values, "q")
-		delete(sess.Values, "page")
-		delete(sess.Values, "count")
-		if clear != "" {
-			sess.Save(req, resp)
-			http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
-			return
-		}
-	} else if query == "" {
+		sess.Save(req, resp)
+		http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
+		return
+	}
+
+	query := req.URL.Query().Get("q")
+	if query == "" {
 		if sessQuery := sess.Values["q"]; sessQuery != nil {
 			query = sessQuery.(string)
 		}
@@ -136,20 +134,23 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	var page int64
 	if pageStr := req.URL.Query().Get("page"); pageStr != "" {
 		page, _ = strconv.ParseInt(pageStr, 10, 64)
-	} else if sessPage := sess.Values["page"]; sessPage != nil {
-		page = sessPage.(int64)
 	}
 	if page < 1 {
 		page = 1
 	}
 
-	var count int64
-	if countStr := req.URL.Query().Get("count"); countStr != "" {
-		count, _ = strconv.ParseInt(countStr, 10, 64)
-	} else if sessCount := sess.Values["count"]; sessCount != nil {
-		count = sessCount.(int64)
+	viewType := req.URL.Query().Get("view")
+	if viewType == "" {
+		viewType = "full"
+		if sessViewType := sess.Values["view"]; sessViewType != nil {
+			viewType = sessViewType.(string)
+		}
 	}
-	if count < 1 {
+
+	var count int64
+	if viewType == "compact" {
+		count = 60
+	} else {
 		count = 15
 	}
 
@@ -165,8 +166,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	}
 
 	sess.Values["q"] = query
-	sess.Values["page"] = page
-	sess.Values["count"] = count
+	sess.Values["view"] = viewType
 	sess.Save(req, resp)
 
 	data := map[string]interface{}{
@@ -178,6 +178,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		"Recipes":     recipes,
 		"SearchQuery": query,
 		"ResultCount": total,
+		"ViewType":    viewType,
 	}
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
