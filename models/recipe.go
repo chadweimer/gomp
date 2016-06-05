@@ -178,12 +178,7 @@ func (m *RecipeModel) Delete(id int64) error {
 // DeleteTx removes the specified recipe from the database using the specified transaction.
 // Note that this method does not delete any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
-	_, err := tx.Exec("DELETE FROM recipe WHERE id = $1", id)
-	if err != nil {
-		return err
-	}
-
-	err = m.Tags.DeleteAllTx(id, tx)
+	err := m.Tags.DeleteAllTx(id, tx)
 	if err != nil {
 		return err
 	}
@@ -194,6 +189,11 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
 	}
 
 	_, err = tx.Exec("DELETE FROM recipe_rating WHERE recipe_id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("DELETE FROM recipe WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
