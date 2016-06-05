@@ -23,6 +23,7 @@ variable, the value in the file is used.
 |-------------------|------------------------|-----------------------|------------------------|
 | root_url_path     | GOMP_ROOT_URL_PATH     | string / string       | <empty>                |
 | port              | PORT                   | uint / unit           | 4000                   |
+| upload_driver     | GOMP_UPLOAD_DRIVER     | string / string       | fs                     |
 | upload_path       | GOMP_UPLOAD_PATH       | string / string       | data                   |
 | is_development    | GOMP_IS_DEVELOPMENT    | bool / '0', '1'       | false, 0               |
 | secret_key        | GOMP_SECRET_KEY        | string / string       | Secret123              |
@@ -38,22 +39,29 @@ this setting would be "/path/to/gomp".
 #### Valid Values
 Any valid url path, excluding domain.
 
+### Port
+Port gets the port number under which the site is being hosted.
+
+#### Valid Values
+Any valid port number.
+
 ## Database Support
 
 ## Credits
 
 * [Negroni](https://github.com/urfave/negroni)
 * [httprouter](https://github.com/julienschmidt/httprouter)
-* [Materialize CSS](http://materializecss.com)
-* [jQuery](https://jquery.com)
 * [mattn/go-sqlite3](https://github.com/mattn/go-sqlite3)
 * [lib/pq](https://github.com/lib/pq)
 * [mattes/migrate](https://github.com/mattes/migrate)
 * [disintegration/imaging](https://github.com/disintegration/imaging)
-* [GoDep](https://github.com/tools/godep)
 * [unrolled/render](https://github.com/unrolled/render)
 * [Gorilla Sessions](https://github.com/gorilla/sessions)
 * [Graceful](https://github.com/tylerb/graceful)
+* [AWS SDK](https://github.com/aws/aws-sdk-go)
+* [GoDep](https://github.com/tools/godep)
+* [Materialize CSS](http://materializecss.com)
+* [jQuery](https://jquery.com)
 
 ## License
 
