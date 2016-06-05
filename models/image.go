@@ -1,20 +1,22 @@
 package models
 
 import (
+	"bytes"
 	"errors"
-	"io/ioutil"
+	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/disintegration/imaging"
 )
 
 // RecipeImageModel provides functionality to edit and retrieve images attached to recipes
 type RecipeImageModel struct {
 	*Model
+	upl upload.Driver
 }
 
 // RecipeImage represents the data associated with an image attached to a recipe
@@ -28,88 +30,74 @@ type RecipeImage struct {
 // RecipeImages represents a collection of RecipeImage objects
 type RecipeImages []RecipeImage
 
+func NewRecipeImageModel(model *Model) *RecipeImageModel {
+	var upl upload.Driver
+	if model.cfg.UploadDriver == "fs" {
+		upl = upload.NewFileSystemDriver(model.cfg)
+	} else if model.cfg.UploadDriver == "s3" {
+		upl = upload.NewS3Driver(model.cfg)
+	} else {
+		log.Fatalf("Invalid UploadDriver '%s' specified", model.cfg.UploadDriver)
+	}
+
+	return &RecipeImageModel{Model: model, upl: upl}
+}
+
 // Save saves the supplied image data as an attachment on the specified recipe
 func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error {
-	if ok := isImageFile(data); !ok {
+	ok, contentType := isImageFile(data)
+	if !ok {
 		return errors.New("Attachment must be an image")
 	}
 
-	// Write the full size file
-	dir := getDirPathForImage(m.cfg.UploadPath, recipeID)
-	err := os.MkdirAll(dir, os.ModePerm)
+	// First decode the image
+	image, err := imaging.Decode(bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
 
-	filePath := filepath.Join(dir, name)
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = file.Write(data)
+	// Then generate a thumbnail image
+	thumbImage := imaging.Thumbnail(image, 250, 250, imaging.CatmullRom)
+	thumbBuf := new(bytes.Buffer)
+	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType))
 	if err != nil {
 		return err
 	}
 
-	// Generate the thumbnail
-	thumbDir := getDirPathForThumbnail(m.cfg.UploadPath, recipeID)
-	err = os.MkdirAll(thumbDir, os.ModePerm)
+	// Save the original image
+	origDir := getDirPathForImage(recipeID)
+	origPath := filepath.Join(origDir, name)
+	err = m.upl.Save(origPath, data)
 	if err != nil {
 		return err
 	}
 
-	// load image and make 250x250 thumbnail
+	// Save the thumbnail image
+	thumbDir := getDirPathForThumbnail(recipeID)
 	thumbPath := filepath.Join(thumbDir, name)
-	thumbFile, err := imaging.Open(filePath)
-	if err != nil {
-		return err
-	}
-	thumbImage := imaging.Thumbnail(thumbFile, 250, 250, imaging.CatmullRom)
-
-	// save the thumbnail image to file
-	err = imaging.Save(thumbImage, thumbPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	err = m.upl.Save(thumbPath, thumbBuf.Bytes())
+	return err
 }
 
 // List returns a RecipeImages slice that contains data for all images
 // attached to the specified recipe
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
-	dir := getDirPathForImage(m.cfg.UploadPath, recipeID)
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		return new(RecipeImages), nil
-	}
-
-	files, err := ioutil.ReadDir(dir)
+	names, origURLs, thumbURLs, err := m.upl.List(getDirPathForRecipe(recipeID))
 	if err != nil {
-		return nil, err
+		return new(RecipeImages), err
 	}
 
 	// TODO: Restrict based on file extension?
 	var imgs RecipeImages
-	for _, file := range files {
-		if !file.IsDir() {
-			filePath := filepath.Join(dir, file.Name())
-			fileURL := getURLForImage(m.cfg.RootURLPath, m.cfg.UploadPath, filePath)
-
-			img := RecipeImage{
-				RecipeID: recipeID,
-				Name:     file.Name(),
-				URL:      fileURL,
-			}
-
-			thumbPath := filepath.Join(getDirPathForThumbnail(m.cfg.UploadPath, recipeID), file.Name())
-			if _, err := os.Stat(thumbPath); err == nil {
-				img.ThumbnailURL = getURLForImage(m.cfg.RootURLPath, m.cfg.UploadPath, thumbPath)
-			}
-
-			imgs = append(imgs, img)
+	for idx, name := range names {
+		img := RecipeImage{
+			RecipeID:     recipeID,
+			Name:         name,
+			URL:          origURLs[idx],
+			ThumbnailURL: thumbURLs[idx],
 		}
+
+		imgs = append(imgs, img)
 	}
 
 	return &imgs, nil
@@ -117,41 +105,52 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 
 // Delete deletes a single image attached to the specified recipe
 func (m *RecipeImageModel) Delete(recipeID int64, name string) error {
-	var mainImgPath = filepath.Join(getDirPathForImage(m.cfg.UploadPath, recipeID), name)
-	if err := os.Remove(mainImgPath); err != nil {
+	var mainImgPath = filepath.Join(getDirPathForImage(recipeID), name)
+	if err := m.upl.Delete(mainImgPath); err != nil {
 		return err
 	}
-	var thumbImgPath = filepath.Join(getDirPathForThumbnail(m.cfg.UploadPath, recipeID), name)
-	return os.Remove(thumbImgPath)
+	var thumbImgPath = filepath.Join(getDirPathForThumbnail(recipeID), name)
+	return m.upl.Delete(thumbImgPath)
 }
 
 // DeleteAll deletes all the images attached to the specified recipe
 func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
-	dir := getDirPathForRecipe(m.cfg.UploadPath, recipeID)
-	return os.RemoveAll(dir)
+	dirPath := getDirPathForRecipe(recipeID)
+	return m.upl.DeleteAll(dirPath)
 }
 
-func isImageFile(data []byte) bool {
+func isImageFile(data []byte) (bool, string) {
 	contentType := http.DetectContentType(data)
 	if strings.Index(contentType, "image/") != -1 {
-		return true
+		return true, contentType
 	}
-	return false
+	return false, ""
 }
 
-func getDirPathForRecipe(uploadPath string, recipeID int64) string {
-	return filepath.Join(uploadPath, "recipes", strconv.FormatInt(recipeID, 10))
+func getImageFormat(contentType string) imaging.Format {
+	switch contentType {
+	case "image/jpeg":
+		return imaging.JPEG
+	case "image/png":
+		return imaging.PNG
+	case "image/gif":
+		return imaging.GIF
+	case "image/bmp":
+		return imaging.BMP
+	case "image/tiff":
+		return imaging.TIFF
+	}
+	return imaging.JPEG
 }
 
-func getDirPathForImage(uploadPath string, recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(uploadPath, recipeID), "images")
+func getDirPathForRecipe(recipeID int64) string {
+	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
 }
 
-func getDirPathForThumbnail(uploadPath string, recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(uploadPath, recipeID), "thumbs")
+func getDirPathForImage(recipeID int64) string {
+	return filepath.Join(getDirPathForRecipe(recipeID), "images")
 }
 
-func getURLForImage(rootURLPath, uploadPath, path string) string {
-	fullFilePath := filepath.Join("/uploads", strings.TrimPrefix(path, uploadPath))
-	return rootURLPath + filepath.ToSlash(fullFilePath)
+func getDirPathForThumbnail(recipeID int64) string {
+	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }

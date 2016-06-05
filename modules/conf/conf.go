@@ -19,7 +19,12 @@ type Config struct {
 	// Port gets the port number under which the site is being hosted.
 	Port int `json:"port"`
 
+	// UploadDriver is used to select which backend data store is used for file uploads.
+	// Available choises are: fs, s3
+	UploadDriver string `json:"upload_driver"`
+
 	// UploadPath gets the path (full or relative) under which to store uploads.
+	// When using Amazon S3, this should be set to the bucket name.
 	UploadPath string `json:"upload_path"`
 
 	// IsDevelopment defines whether to run the application in "development mode".
@@ -34,11 +39,21 @@ type Config struct {
 	ApplicationTitle string `json:"application_title"`
 
 	// DatabaseDriver gets which database/sql driver to use.
+	// Supported drivers: sqlite3, postgres
 	DatabaseDriver string `json:"database_driver"`
 
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
 	DatabaseURL string `json:"database_url"`
+
+	// AwsRegion defines the region to use for the S3 upload driver.
+	AwsRegion string `json:"aws_region"`
+
+	// AwsAccessKeyID defines the Access Key to use for S3 upload driver.
+	AwsAccessKeyID string `json:"aws_access_key_id"`
+
+	// AwsRegion defines the Secret Access Key to use for the S3 upload driver.
+	AwsSecretAccessKey string `json:"aws_secret_access_key"`
 }
 
 // Load reads the configuration file from the specified path
@@ -46,6 +61,7 @@ func Load(path string) *Config {
 	c := Config{
 		RootURLPath:      "",
 		Port:             4000,
+		UploadDriver:     "fs",
 		UploadPath:       filepath.Join("data", "uploads"),
 		IsDevelopment:    false,
 		SecretKey:        "Secret123",
@@ -57,6 +73,7 @@ func Load(path string) *Config {
 	// If environment variables are set, use them.
 	loadEnv("GOMP_ROOT_URL_PATH").fillString(&c.RootURLPath)
 	loadEnv("PORT").fillInt(&c.Port)
+	loadEnv("GOMP_UPLOAD_DRIVER").fillString(&c.UploadDriver)
 	loadEnv("GOMP_UPLOAD_PATH").fillString(&c.UploadPath)
 	loadEnv("GOMP_IS_DEVELOPMENT").fillBool(&c.IsDevelopment)
 	loadEnv("GOMP_SECRET_KEY").fillString(&c.SecretKey)
@@ -78,6 +95,7 @@ func Load(path string) *Config {
 	if c.IsDevelopment {
 		log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
 		log.Printf("[config] Port=%d", c.Port)
+		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
 		log.Printf("[config] UploadPath=%s", c.UploadPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecretKey=%s", c.SecretKey)

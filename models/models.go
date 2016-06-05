@@ -79,7 +79,7 @@ func New(cfg *conf.Config) *Model {
 	m.Recipes = &RecipeModel{Model: m}
 	m.Tags = &TagModel{Model: m}
 	m.Notes = &NoteModel{Model: m}
-	m.Images = &RecipeImageModel{Model: m}
+	m.Images = NewRecipeImageModel(m)
 	return m
 }
 
