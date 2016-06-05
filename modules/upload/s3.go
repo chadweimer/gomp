@@ -2,7 +2,6 @@ package upload
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
