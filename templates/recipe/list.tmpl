@@ -61,7 +61,7 @@
     {{else}}
     <div class="col s12 m6 l3">
         <a href="{{RootUrlPath}}/recipes/{{.ID}}">
-            <img src="{{RootUrlPath}}{{.Image}}" class="compact-image circle">
+            <img {{if .Image}}src="{{RootUrlPath}}{{.Image}}"{{end}} class="compact-image circle">
             <span>{{.Name}}</span>
         </a>
     </div>
