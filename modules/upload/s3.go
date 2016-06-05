@@ -24,8 +24,9 @@ func NewS3Driver(cfg *conf.Config) S3Driver {
 }
 
 func (u S3Driver) connectToS3() *s3.S3 {
-	awsConfig := &aws.Config{
-		Region: aws.String(u.cfg.AwsRegion),
+	awsConfig := new(aws.Config)
+	if u.cfg.AwsRegion != "" {
+		awsConfig.Region = &u.cfg.AwsRegion
 	}
 	if u.cfg.AwsAccessKeyID != "" && u.cfg.AwsSecretAccessKey != "" {
 		awsConfig.Credentials = credentials.NewStaticCredentials(u.cfg.AwsAccessKeyID, u.cfg.AwsSecretAccessKey, "")
