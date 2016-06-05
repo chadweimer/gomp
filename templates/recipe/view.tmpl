@@ -31,7 +31,9 @@
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
                 <h4>
+                    {{if .Recipe.Image}}
                     <img src="{{.Recipe.Image}}" class="circle" style="width: 64px; height: 64px;">
+                    {{end}}
                     {{.Recipe.Name}}
                 </h4>
                 {{if .Recipe.ServingSize}}
