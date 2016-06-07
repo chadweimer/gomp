@@ -2,17 +2,18 @@ package upload
 
 import (
 	"bytes"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/chadweimer/gomp/modules/conf"
-	"io/ioutil"
 )
 
 // S3Driver is an implementation of Driver that uses the Amazon S3.
@@ -96,36 +97,23 @@ func (u S3Driver) List(dirPath string) ([]string, []string, []string, error) {
 	}
 
 	for _, object := range listOutput.Contents {
-		origReq, _ := svc.GetObjectRequest(&s3.GetObjectInput{
-			Bucket: &bucket,
-			Key:    object.Key,
-		})
-		origURL, err := origReq.Presign(30 * time.Minute)
-		if err == nil {
-			urlSegments := strings.Split(*object.Key, "/")
-			name := urlSegments[len(urlSegments)-1]
+		urlSegments := strings.Split(*object.Key, "/")
+		name := urlSegments[len(urlSegments)-1]
+		names = append(names, name)
 
-			names = append(names, name)
-			origURLs = append(origURLs, origURL)
+		origURL := "/uploads/" + *object.Key
+		origURLs = append(origURLs, origURL)
 
-			thumbKey := strings.Replace(*object.Key, "/images/", "/thumbs/", 1)
-			thumbReq, _ := svc.GetObjectRequest(&s3.GetObjectInput{
-				Bucket: &bucket,
-				Key:    &thumbKey,
-			})
-			thumbURL, err := thumbReq.Presign(30 * time.Minute)
-			if err == nil {
-				thumbURLs = append(thumbURLs, thumbURL)
-			} else {
-				thumbURLs = append(thumbURLs, "")
-			}
-		}
+		// TODO: Should we do a HEAD or similar request to ensure the thumbnail exists?
+		thumbKey := strings.Replace(*object.Key, "/images/", "/thumbs/", 1)
+		thumbURL := "/uploads/" + thumbKey
+		thumbURLs = append(thumbURLs, thumbURL)
 	}
 
 	return names, origURLs, thumbURLs, nil
 }
 
-// Static is a middleware handler that serves static files from Amazon S3.
+// S3Static is a middleware handler that serves static files from Amazon S3.
 // If the file does not exist on the S3, it passes along to the next middleware
 // in the chain.
 type S3Static struct {
@@ -134,7 +122,7 @@ type S3Static struct {
 	Prefix string
 }
 
-// NewStatic returns a new instance of S3Static
+// NewS3Static returns a new instance of S3Static
 func NewS3Static(cfg *conf.Config) *S3Static {
 	return &S3Static{
 		cfg:    cfg,
@@ -164,25 +152,66 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 	svc := connectToS3(s.cfg)
 
 	bucket := s.cfg.UploadPath
-	getOut, err := svc.GetObject(&s3.GetObjectInput{
+
+	// Build the GetObject request, passing along conditional GET parameters
+	getReq := s3.GetObjectInput{
 		Bucket: &bucket,
 		Key:    &filePath,
-	})
-	if err != nil {
-		// discard the error?
-		next(rw, r)
-		return
 	}
-	defer getOut.Body.Close()
+	s.passThroughReqHeaders(&getReq, r.Header)
 
-	// TODO: Don't read the file back if we're just a HEAD request
-	buf, err := ioutil.ReadAll(getOut.Body)
+	// Make the request and check the error
+	getResp, err := svc.GetObject(&getReq)
 	if err != nil {
-		// discard the error?
-		next(rw, r)
-		return
+		s3err, ok := err.(awserr.Error)
+		// 304 code is expected
+		if ok && s3err.Code() != "304NotModified" {
+			// discard the error?
+			next(rw, r)
+			return
+		}
 	}
-	http.ServeContent(rw, r, filePath, *getOut.LastModified, bytes.NewReader(buf))
+
+	var buf []byte
+	// If we got content, read it, including associated headers
+	if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
+		defer getResp.Body.Close()
+
+		// Don't read the file back if we're just a HEAD request
+		if r.Method != "HEAD" {
+			buf, err = ioutil.ReadAll(getResp.Body)
+			if err != nil {
+				// discard the error?
+				next(rw, r)
+				return
+			}
+		}
+	}
+	s.passThroughRespHeaders(getResp, rw.Header())
+
+	// Serve up the file to the client
+	http.ServeContent(rw, r, filePath, *getResp.LastModified, bytes.NewReader(buf))
+}
+
+func (s *S3Static) passThroughReqHeaders(getReq *s3.GetObjectInput, reqHeader http.Header) {
+	if ifModSince, err := time.Parse(http.TimeFormat, reqHeader.Get("If-Modified-Since")); err == nil {
+		getReq.IfModifiedSince = &ifModSince
+	}
+	if ifNoneMatch := reqHeader.Get("If-None-Match"); ifNoneMatch != "" {
+		getReq.IfNoneMatch = &ifNoneMatch
+	}
+}
+
+func (s *S3Static) passThroughRespHeaders(getResp *s3.GetObjectOutput, respHeader http.Header) {
+	if getResp.ContentType != nil && *getResp.ContentType != "" {
+		respHeader.Set("Content-Type", *getResp.ContentType)
+	}
+	if getResp.ContentEncoding != nil && *getResp.ContentEncoding != "" {
+		respHeader.Set("Content-Encoding", *getResp.ContentEncoding)
+	}
+	if getResp.ETag != nil && *getResp.ETag != "" {
+		respHeader.Set("ETag", *getResp.ETag)
+	}
 }
 
 func connectToS3(cfg *conf.Config) *s3.S3 {
