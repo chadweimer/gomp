@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/chadweimer/gomp/modules/conf"
+	"io/ioutil"
 )
 
 // S3Driver is an implementation of Driver that uses the Amazon S3.
@@ -23,19 +24,8 @@ func NewS3Driver(cfg *conf.Config) S3Driver {
 	return S3Driver{cfg: cfg}
 }
 
-func (u S3Driver) connectToS3() *s3.S3 {
-	awsConfig := new(aws.Config)
-	if u.cfg.AwsRegion != "" {
-		awsConfig.Region = &u.cfg.AwsRegion
-	}
-	if u.cfg.AwsAccessKeyID != "" && u.cfg.AwsSecretAccessKey != "" {
-		awsConfig.Credentials = credentials.NewStaticCredentials(u.cfg.AwsAccessKeyID, u.cfg.AwsSecretAccessKey, "")
-	}
-	return s3.New(session.New(awsConfig))
-}
-
 func (u S3Driver) Save(filePath string, data []byte) error {
-	svc := u.connectToS3()
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	key := filepath.ToSlash(filePath)
@@ -50,7 +40,7 @@ func (u S3Driver) Save(filePath string, data []byte) error {
 }
 
 func (u S3Driver) Delete(filePath string) error {
-	svc := u.connectToS3()
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	key := filepath.ToSlash(filePath)
@@ -62,8 +52,7 @@ func (u S3Driver) Delete(filePath string) error {
 	return err
 }
 func (u S3Driver) DeleteAll(dirPath string) error {
-
-	svc := u.connectToS3()
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	prefix := filepath.ToSlash(dirPath)
@@ -93,7 +82,7 @@ func (u S3Driver) List(dirPath string) ([]string, []string, []string, error) {
 	var origURLs []string
 	var thumbURLs []string
 
-	svc := u.connectToS3()
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	prefix := filepath.ToSlash(filepath.Join(dirPath, "images"))
@@ -134,4 +123,75 @@ func (u S3Driver) List(dirPath string) ([]string, []string, []string, error) {
 	}
 
 	return names, origURLs, thumbURLs, nil
+}
+
+// Static is a middleware handler that serves static files from Amazon S3.
+// If the file does not exist on the S3, it passes along to the next middleware
+// in the chain.
+type S3Static struct {
+	cfg *conf.Config
+	// Prefix is the optional prefix used to serve the static content
+	Prefix string
+}
+
+// NewStatic returns a new instance of S3Static
+func NewS3Static(cfg *conf.Config) *S3Static {
+	return &S3Static{
+		cfg:    cfg,
+		Prefix: "",
+	}
+}
+
+func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	if r.Method != "GET" && r.Method != "HEAD" {
+		next(rw, r)
+		return
+	}
+	filePath := r.URL.Path
+	// if we have a prefix, filter requests by stripping the prefix
+	if s.Prefix != "" {
+		if !strings.HasPrefix(filePath, s.Prefix) {
+			next(rw, r)
+			return
+		}
+		filePath = filePath[len(s.Prefix):]
+		if filePath != "" && filePath[0] != '/' {
+			next(rw, r)
+			return
+		}
+	}
+
+	svc := connectToS3(s.cfg)
+
+	bucket := s.cfg.UploadPath
+	getOut, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: &bucket,
+		Key:    &filePath,
+	})
+	if err != nil {
+		// discard the error?
+		next(rw, r)
+		return
+	}
+	defer getOut.Body.Close()
+
+	// TODO: Don't read the file back if we're just a HEAD request
+	buf, err := ioutil.ReadAll(getOut.Body)
+	if err != nil {
+		// discard the error?
+		next(rw, r)
+		return
+	}
+	http.ServeContent(rw, r, filePath, *getOut.LastModified, bytes.NewReader(buf))
+}
+
+func connectToS3(cfg *conf.Config) *s3.S3 {
+	awsConfig := new(aws.Config)
+	if cfg.AwsRegion != "" {
+		awsConfig.Region = &cfg.AwsRegion
+	}
+	if cfg.AwsAccessKeyID != "" && cfg.AwsSecretAccessKey != "" {
+		awsConfig.Credentials = credentials.NewStaticCredentials(cfg.AwsAccessKeyID, cfg.AwsSecretAccessKey, "")
+	}
+	return s3.New(session.New(awsConfig))
 }
