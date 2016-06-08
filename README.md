@@ -21,7 +21,7 @@ variable, the value in the file is used.
 
 | JSON              | ENV                    | Value (JSON / ENV)    | Default                |
 |-------------------|------------------------|-----------------------|------------------------|
-| root_url_path     | GOMP_ROOT_URL_PATH     | string / string       | <empty>                |
+| root_url_path     | GOMP_ROOT_URL_PATH     | string / string       | &lt;empty&gt;          |
 | port              | PORT                   | uint / unit           | 4000                   |
 | upload_driver     | GOMP_UPLOAD_DRIVER     | string / string       | fs                     |
 | upload_path       | GOMP_UPLOAD_PATH       | string / string       | data                   |
@@ -32,18 +32,18 @@ variable, the value in the file is used.
 | database_url      | DATABASE_URL           | string / string       | sqlite3://data/gomp.db |
 
 ### Root URL Path
+
 RootURLPath gets just the path portion of the base application url.
 E.g., if the app sits at http://www.example.com/path/to/gomp,
 this setting would be "/path/to/gomp".
 
-#### Valid Values
-Any valid url path, excluding domain.
+Valid Values: Any valid url path, excluding domain.
 
 ### Port
+
 Port gets the port number under which the site is being hosted.
 
-#### Valid Values
-Any valid port number.
+Valid Values: Any valid port number.
 
 ## Database Support
 
