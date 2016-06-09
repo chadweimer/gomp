@@ -29,6 +29,8 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // ---- End Standard Errors ----
 
+const sqlite3Driver = "sqlite3"
+
 // Model encapsulates the model layer of the application, including database access
 type Model struct {
 	cfg *conf.Config
@@ -45,7 +47,7 @@ func New(cfg *conf.Config) *Model {
 	dbPath := strings.TrimPrefix(cfg.DatabaseURL, cfg.DatabaseDriver+"://")
 
 	// Create the database if it doesn't yet exists.
-	if cfg.DatabaseDriver == "sqlite3" {
+	if cfg.DatabaseDriver == sqlite3Driver {
 		if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 			dbDir := filepath.Dir(dbPath)
 			if _, err := os.Stat(dbDir); os.IsNotExist(err) {
@@ -63,7 +65,7 @@ func New(cfg *conf.Config) *Model {
 	}
 
 	var db *sql.DB
-	if cfg.DatabaseDriver == "sqlite3" {
+	if cfg.DatabaseDriver == sqlite3Driver {
 		db, err = sql.Open(cfg.DatabaseDriver, dbPath)
 	} else {
 		db, err = sql.Open(cfg.DatabaseDriver, cfg.DatabaseURL)

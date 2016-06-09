@@ -30,6 +30,7 @@ type RecipeImage struct {
 // RecipeImages represents a collection of RecipeImage objects
 type RecipeImages []RecipeImage
 
+// NewRecipeImageModel constructs a RecipeImageModel
 func NewRecipeImageModel(model *Model) *RecipeImageModel {
 	var upl upload.Driver
 	if model.cfg.UploadDriver == "fs" {
@@ -82,19 +83,19 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 // List returns a RecipeImages slice that contains data for all images
 // attached to the specified recipe
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
-	names, origURLs, thumbURLs, err := m.upl.List(getDirPathForRecipe(recipeID))
+	fileInfos, err := m.upl.List(getDirPathForRecipe(recipeID))
 	if err != nil {
 		return new(RecipeImages), err
 	}
 
 	// TODO: Restrict based on file extension?
 	var imgs RecipeImages
-	for idx, name := range names {
+	for _, fileInfo := range fileInfos {
 		img := RecipeImage{
 			RecipeID:     recipeID,
-			Name:         name,
-			URL:          origURLs[idx],
-			ThumbnailURL: thumbURLs[idx],
+			Name:         fileInfo.Name,
+			URL:          fileInfo.URL,
+			ThumbnailURL: fileInfo.ThumbnailURL,
 		}
 
 		imgs = append(imgs, img)

@@ -21,10 +21,12 @@ type S3Driver struct {
 	cfg *conf.Config
 }
 
+// NewS3Driver constucts a S3Driver.
 func NewS3Driver(cfg *conf.Config) S3Driver {
 	return S3Driver{cfg: cfg}
 }
 
+// Save creates or overrites a file with the provided binary data.
 func (u S3Driver) Save(filePath string, data []byte) error {
 	svc := connectToS3(u.cfg)
 
@@ -40,11 +42,12 @@ func (u S3Driver) Save(filePath string, data []byte) error {
 	return err
 }
 
-func (u S3Driver) Delete(filePath string) error {
+// Delete deletes the file with the specified key, if it exists.
+func (u S3Driver) Delete(key string) error {
 	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
-	key := filepath.ToSlash(filePath)
+	key = filepath.ToSlash(key)
 
 	_, err := svc.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: &bucket,
@@ -52,15 +55,17 @@ func (u S3Driver) Delete(filePath string) error {
 	})
 	return err
 }
-func (u S3Driver) DeleteAll(dirPath string) error {
+
+// DeleteAll deletes all files with the specified key prefix.
+func (u S3Driver) DeleteAll(keyPrefix string) error {
 	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
-	prefix := filepath.ToSlash(dirPath)
+	keyPrefix = filepath.ToSlash(keyPrefix)
 
 	listOutput, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: &bucket,
-		Prefix: &prefix,
+		Prefix: &keyPrefix,
 	})
 	if err != nil {
 		return err
@@ -78,39 +83,41 @@ func (u S3Driver) DeleteAll(dirPath string) error {
 	return nil
 }
 
-func (u S3Driver) List(dirPath string) ([]string, []string, []string, error) {
-	var names []string
-	var origURLs []string
-	var thumbURLs []string
+// List retrieves information about all uploaded files with the specified key prefix.
+func (u S3Driver) List(keyPrefix string) ([]FileInfo, error) {
+	var fileInfos []FileInfo
 
 	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
-	prefix := filepath.ToSlash(filepath.Join(dirPath, "images"))
+	prefix := filepath.ToSlash(filepath.Join(keyPrefix, "images"))
 
 	listOutput, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
 		Bucket: &bucket,
 		Prefix: &prefix,
 	})
 	if err != nil {
-		return names, origURLs, thumbURLs, err
+		return fileInfos, err
 	}
 
 	for _, object := range listOutput.Contents {
 		urlSegments := strings.Split(*object.Key, "/")
 		name := urlSegments[len(urlSegments)-1]
-		names = append(names, name)
-
 		origURL := "/uploads/" + *object.Key
-		origURLs = append(origURLs, origURL)
 
 		// TODO: Should we do a HEAD or similar request to ensure the thumbnail exists?
 		thumbKey := strings.Replace(*object.Key, "/images/", "/thumbs/", 1)
 		thumbURL := "/uploads/" + thumbKey
-		thumbURLs = append(thumbURLs, thumbURL)
+
+		fileInfo := FileInfo{
+			Name:         name,
+			URL:          origURL,
+			ThumbnailURL: thumbURL,
+		}
+		fileInfos = append(fileInfos, fileInfo)
 	}
 
-	return names, origURLs, thumbURLs, nil
+	return fileInfos, nil
 }
 
 // S3Static is a middleware handler that serves static files from Amazon S3.

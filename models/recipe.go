@@ -312,7 +312,7 @@ func (m *RecipeModel) SetRating(id int64, rating float64) error {
 	var count int64
 	err := m.db.QueryRow("SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id).Scan(&count)
 	if err == sql.ErrNoRows || count == 0 {
-		_, err := m.db.Exec(
+		_, err = m.db.Exec(
 			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
 		return err
 	}

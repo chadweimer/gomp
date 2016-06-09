@@ -14,10 +14,12 @@ type FileSystemDriver struct {
 	cfg *conf.Config
 }
 
+// NewFileSystemDriver constucts a FileSystemDriver.
 func NewFileSystemDriver(cfg *conf.Config) FileSystemDriver {
 	return FileSystemDriver{cfg: cfg}
 }
 
+// Save creates or overrites a file with the provided binary data.
 func (u FileSystemDriver) Save(filePath string, data []byte) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.cfg.UploadPath, filePath)
@@ -38,12 +40,15 @@ func (u FileSystemDriver) Save(filePath string, data []byte) error {
 	return err
 }
 
+// Delete deletes the file at the specified path, if it exists.
 func (u FileSystemDriver) Delete(filePath string) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.cfg.UploadPath, filePath)
 
 	return os.Remove(filePath)
 }
+
+// DeleteAll deletes all files at or under the specified directory path.
 func (u FileSystemDriver) DeleteAll(dirPath string) error {
 	// First prepend the base UploadPath
 	dirPath = filepath.Join(u.cfg.UploadPath, dirPath)
@@ -51,40 +56,40 @@ func (u FileSystemDriver) DeleteAll(dirPath string) error {
 	return os.RemoveAll(dirPath)
 }
 
-func (u FileSystemDriver) List(dirPath string) ([]string, []string, []string, error) {
-	var names []string
-	var origURLs []string
-	var thumbURLs []string
+// List retrieves
+func (u FileSystemDriver) List(dirPath string) ([]FileInfo, error) {
+	var fileInfos []FileInfo
 
 	// First prepend the base UploadPath
 	origDirPath := filepath.Join(u.cfg.UploadPath, dirPath, "images")
 	if _, err := os.Stat(origDirPath); os.IsNotExist(err) {
-		return names, origURLs, thumbURLs, nil
+		return fileInfos, nil
 	}
 
 	files, err := ioutil.ReadDir(origDirPath)
 	if err != nil {
-		return names, origURLs, thumbURLs, err
+		return fileInfos, err
 	}
 
 	// TODO: Restrict based on file extension?
 	for _, file := range files {
 		if !file.IsDir() {
-			names = append(names, file.Name())
-
+			name := file.Name()
 			origPath := filepath.Join(origDirPath, file.Name())
-			origURLs = append(origURLs, u.convertPathToURL(origPath))
-
 			thumbPath := filepath.Join(u.cfg.UploadPath, dirPath, "thumbs", file.Name())
-			if _, err := os.Stat(thumbPath); err == nil {
-				thumbURLs = append(thumbURLs, u.convertPathToURL(thumbPath))
-			} else {
-				thumbURLs = append(thumbURLs, "")
+
+			fileInfo := FileInfo{
+				Name: name,
+				URL:  u.convertPathToURL(origPath),
 			}
+			if _, err := os.Stat(thumbPath); err == nil {
+				fileInfo.ThumbnailURL = u.convertPathToURL(thumbPath)
+			}
+			fileInfos = append(fileInfos, fileInfo)
 		}
 	}
 
-	return names, origURLs, thumbURLs, nil
+	return fileInfos, nil
 }
 
 func (u FileSystemDriver) convertPathToURL(path string) string {
