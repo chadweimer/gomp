@@ -56,7 +56,7 @@ func (u FileSystemDriver) DeleteAll(dirPath string) error {
 	return os.RemoveAll(dirPath)
 }
 
-// List retrieves
+// List retrieves information about all uploaded files under the specified directory.
 func (u FileSystemDriver) List(dirPath string) ([]FileInfo, error) {
 	var fileInfos []FileInfo
 
