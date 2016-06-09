@@ -23,6 +23,9 @@ import (
 
 func main() {
 	cfg := conf.Load("conf/app.json")
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("[config] %s", err.Error())
+	}
 	model := models.New(cfg)
 	sessionStore := sessions.NewCookieStore([]byte(cfg.SecretKey))
 	renderer := render.New(render.Options{
@@ -70,23 +73,25 @@ func main() {
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
+	n.Use(negroni.NewStatic(http.Dir("public")))
 
-	n.Use(&negroni.Static{Dir: http.Dir("public")})
 	if cfg.UploadDriver == "fs" {
-		n.Use(&negroni.Static{Dir: http.Dir(cfg.UploadPath), Prefix: "/uploads"})
+		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
+		static.Prefix = "/uploads"
+		n.Use(static)
 	} else if cfg.UploadDriver == "s3" {
 		s3Static := upload.NewS3Static(cfg)
 		s3Static.Prefix = "/uploads"
 		n.Use(s3Static)
 	}
-	n.UseHandler(mainMux)
+	n.UseHandler(context.ClearHandler(mainMux))
 
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
 	}
-	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
+	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, n)
 }
 
 func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {

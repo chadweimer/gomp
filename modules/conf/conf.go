@@ -2,8 +2,10 @@ package conf
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -105,6 +107,45 @@ func Load(path string) *Config {
 	}
 
 	return &c
+}
+
+// Validate checks whether the current configuration settings are valid.
+func (c *Config) Validate() error {
+	_, err := url.Parse(c.RootURLPath)
+	if err != nil {
+		return errors.New("GOMP_ROOT_URL_PATH is invalid")
+	}
+
+	if c.Port <= 0 {
+		return errors.New("PORT must be a positive integer")
+	}
+
+	if c.UploadDriver != "fs" && c.UploadDriver != "s3" {
+		return errors.New("UPLOAD_DRIVER must be one of ('fs', 's3')")
+	}
+
+	if c.UploadPath == "" {
+		return errors.New("UPLOAD_PATH must be specified")
+	}
+
+	if c.SecretKey == "" {
+		return errors.New("GOMP_SECRET_KEY must be specified")
+	}
+
+	if c.ApplicationTitle == "" {
+		return errors.New("GOMP_APPLICATION_TITLE must be specified")
+	}
+
+	if c.DatabaseDriver != "sqlite3" && c.UploadDriver != "postgres" {
+		return errors.New("DATABASE_DRIVER must be one of ('sqlite3', 'postgres')")
+	}
+
+	_, err = url.Parse(c.DatabaseURL)
+	if err != nil {
+		return errors.New("DATABASE_URL is invalid")
+	}
+
+	return nil
 }
 
 type environmentVar struct {
