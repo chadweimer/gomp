@@ -136,7 +136,7 @@ func (c *Config) Validate() error {
 		return errors.New("GOMP_APPLICATION_TITLE must be specified")
 	}
 
-	if c.DatabaseDriver != "sqlite3" && c.UploadDriver != "postgres" {
+	if c.DatabaseDriver != "sqlite3" && c.DatabaseDriver != "postgres" {
 		return errors.New("DATABASE_DRIVER must be one of ('sqlite3', 'postgres')")
 	}
 
