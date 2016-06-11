@@ -20,7 +20,7 @@ func (m *UserModel) Authenticate(username, password string) (*User, error) {
 	var passwordHash string
 
 	result := m.db.QueryRow(
-		"SELECT id, password_hash FROM user WHERE user.username = $1",
+		"SELECT id, password_hash FROM app_user WHERE username = $1",
 		user.Username)
 	err := result.Scan(
 		&user.ID,
@@ -41,7 +41,7 @@ func (m *UserModel) Read(id int64) (*User, error) {
 	user := User{ID: id}
 
 	result := m.db.QueryRow(
-		"SELECT username FROM user WHERE id = $1",
+		"SELECT username FROM app_user WHERE id = $1",
 		user.ID)
 	err := result.Scan(
 		&user.Username)
@@ -73,7 +73,7 @@ func (m *UserModel) CreateTx(username, password string, tx *sql.Tx) error {
 	}
 
 	_, err = tx.Exec(
-		"INSERT INTO user (username, password_hash) VALUES ($1, $2)",
+		"INSERT INTO app_user (username, password_hash) VALUES ($1, $2)",
 		username, passwordHash)
 	if err != nil {
 		return err
