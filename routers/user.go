@@ -2,7 +2,6 @@ package routers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/chadweimer/gomp/models"
@@ -27,12 +26,12 @@ func (f *LoginForm) FieldMap(req *http.Request) binding.FieldMap {
 
 func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		loginPath := fmt.Sprintf("%s/login", rc.cfg.RootURLPath)
 
 		sess, err := rc.sessionStore.Get(req, "UserSession")
 		if err != nil || sess.Values["UserID"] == nil {
-			if req.URL.Path != loginPath {
-				http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+
+			if loginPath := fmt.Sprintf("%s/login", rc.cfg.RootURLPath); req.URL.Path != loginPath {
+				http.Redirect(resp, req, loginPath, http.StatusFound)
 			}
 			return
 		}
@@ -43,10 +42,8 @@ func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.Hand
 			user, err = rc.model.Users.Read(userID)
 		}
 		if user == nil {
-			delete(sess.Values, "UserID")
-			sess.Save(req, resp)
-			if req.URL.Path != loginPath {
-				http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+			if logoutPath := fmt.Sprintf("%s/logout", rc.cfg.RootURLPath); req.URL.Path != logoutPath {
+				http.Redirect(resp, req, logoutPath, http.StatusFound)
 			}
 			return
 		}
@@ -69,18 +66,19 @@ func (rc *RouteController) LoginPost(resp http.ResponseWriter, req *http.Request
 
 	user, err := rc.model.Users.Authenticate(form.Username, form.Password)
 	if err != nil {
-		log.Printf("[authenticate] %s", err.Error())
 		rc.HTML(resp, http.StatusOK, "user/login", make(map[string]interface{}))
 		return
 	}
 
-	// TODO: Create a session with a reasonable expiration
-	sess, err := rc.sessionStore.Get(req, "UserSession")
-	if err != nil {
-		log.Print("Invalid user session retrieved. Will use a new one...")
+	sess, err := rc.sessionStore.New(req, "UserSession")
+	if rc.HasError(resp, err) {
+		return
 	}
 	sess.Values["UserID"] = user.ID
-	sess.Save(req, resp)
+	err = sess.Save(req, resp)
+	if rc.HasError(resp, err) {
+		return
+	}
 
 	http.Redirect(resp, req, fmt.Sprintf("%s/", rc.cfg.RootURLPath), http.StatusFound)
 }
@@ -91,7 +89,10 @@ func (rc *RouteController) Logout(resp http.ResponseWriter, req *http.Request, p
 		for k := range sess.Values {
 			delete(sess.Values, k)
 		}
-		sess.Save(req, resp)
+		err := sess.Save(req, resp)
+		if rc.HasError(resp, err) {
+			return
+		}
 	}
 	http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
 }

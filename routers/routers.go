@@ -28,9 +28,9 @@ func NewController(render *render.Render, cfg *conf.Config, model *models.Model,
 	}
 }
 
-// RedirectIfHasError sends the request to the InternalServerError page
+// HasError sends the request to the InternalServerError page
 // if the asupplied error is not nil
-func (rc *RouteController) RedirectIfHasError(resp http.ResponseWriter, err error) bool {
+func (rc *RouteController) HasError(resp http.ResponseWriter, err error) bool {
 	if err != nil {
 		log.Println(err)
 		rc.InternalServerError(resp, err)
