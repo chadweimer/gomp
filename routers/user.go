@@ -27,9 +27,13 @@ func (f *LoginForm) FieldMap(req *http.Request) binding.FieldMap {
 
 func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+		loginPath := fmt.Sprintf("%s/login", rc.cfg.RootURLPath)
+
 		sess, err := rc.sessionStore.Get(req, "UserSession")
 		if err != nil || sess.Values["UserID"] == nil {
-			http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+			if req.URL.Path != loginPath {
+				http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+			}
 			return
 		}
 
@@ -41,7 +45,9 @@ func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.Hand
 		if user == nil {
 			delete(sess.Values, "UserID")
 			sess.Save(req, resp)
-			http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+			if req.URL.Path != loginPath {
+				http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+			}
 			return
 		}
 
