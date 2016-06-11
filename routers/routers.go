@@ -38,3 +38,7 @@ func (rc *RouteController) RedirectIfHasError(resp http.ResponseWriter, err erro
 	}
 	return false
 }
+
+func (rc *RouteController) NoOp(resp http.ResponseWriter, req *http.Request) {
+	// Do nothing
+}

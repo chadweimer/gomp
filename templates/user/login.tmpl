@@ -1,10 +1,24 @@
 {{ define "content-user/login" }}
 <section class="row">
-	<article class="col s12 l6 pull-l3">
+	<article class="col s12 l6 offset-l3">
 		<div class="card">
-			<span class="card-title">Login</span>
 			<div class="card-content">
-
+				<span class="card-title">Login</span>
+				<form method="POST">
+					<div class="input-field">
+						<input id="username" name="username" class="validate" required autofocus>
+						<label for="username" class="active required">Username<label>
+					</div>
+					<div class="input-field">
+						<input id="password" name="password" type="password" class="validate" required>
+						<label for="password" class="active required">Password<label>
+					</div>
+					<div>
+						<button type="submit" class="btn waves-effect">
+							Login
+						</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	<article>

@@ -111,9 +111,11 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	sess, err := rc.sessionStore.Get(req, "gomp_session")
+	sess, err := rc.sessionStore.Get(req, "UserSession")
 	if err != nil {
-		log.Print("Invalid session retrieved. Will use a new one...")
+		log.Print("Invalid session retrieved.")
+		http.Redirect(resp, req, fmt.Sprintf("%s/logout", rc.cfg.RootURLPath), http.StatusFound)
+		return
 	}
 
 	clear := req.URL.Query().Get("clear")

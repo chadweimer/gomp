@@ -3,7 +3,7 @@
     <header class="row">
         <h4>Edit Recipe</h4>
     </header>
-    <form method="post">
+    <form method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}">
         <div class="row">
             <div class="input-field col s12 l12">
                 <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" value="{{.Recipe.Name}}" required autofocus>
