@@ -1,5 +1,5 @@
 CREATE TABLE user (
-    id INTEGER NOT NULL PRIMARY KEY,
+    id SERIAL NOT NULL PRIMARY KEY,
     username TEXT NOT NULL,
     password_hash TEXT NOT NULL
 );
