@@ -3,4 +3,4 @@ CREATE TABLE app_user (
     username TEXT NOT NULL,
     password_hash TEXT NOT NULL
 );
-CREATE INDEX user_username_idx ON user(app_username);
+CREATE INDEX user_username_idx ON app_user(username);
