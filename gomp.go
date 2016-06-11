@@ -45,7 +45,8 @@ func main() {
 	// Since httprouter explicitly doesn't allow /path/to and /path/:match,
 	// we get a little fancy and use 2 mux'es to emulate/force the behavior
 	mainMux := httprouter.New()
-	mainMux.GET("/", rc.ListRecipes)
+	mainMux.GET("/", rc.RequireAuthentication(rc.ListRecipes))
+	mainMux.GET("/login", rc.Login)
 	mainMux.GET("/recipes", rc.ListRecipes)
 	mainMux.GET("/recipes/create", rc.CreateRecipe)
 	mainMux.POST("/recipes/create", rc.CreateRecipePost)
