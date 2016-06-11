@@ -32,7 +32,7 @@
                 </form>
                 <h4>
                     {{if .Recipe.Image}}
-                    <img src="{{RootUrlPath}}{{.Recipe.Image}}" class="circle" style="width: 64px; height: 64px;">
+                    <img src="{{.Recipe.Image}}" class="circle" style="width: 64px; height: 64px;">
                     {{end}}
                     {{.Recipe.Name}}
                 </h4>
@@ -70,11 +70,11 @@
                 <section class="section">
                     {{range .Images}}
                     <span class="image-container">
-                        <a target="_blank" href="{{RootUrlPath}}{{.URL}}">
+                        <a target="_blank" href="{{.URL}}">
                             {{if .ThumbnailURL}}
-                            <img width="250" height="250" src="{{RootUrlPath}}{{.ThumbnailURL}}">
+                            <img width="250" height="250" src="{{.ThumbnailURL}}">
                             {{else}}
-                            <img width="250" height="250" src="{{RootUrlPath}}{{.URL}}">
+                            <img width="250" height="250" src="{{.URL}}">
                             {{end}}
                         </a>
                         <a class="delete-image" href="javascript:void(0)" data-image-name="{{.Name}}">

@@ -42,19 +42,32 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 // CreateTx stores the recipe in the database as a new record using
 // the specified transaction.
 func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sql.Tx) error {
-	result, err := tx.Exec(
-		"INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions) VALUES (?, ?, ?, ?, ?)",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
-	if err != nil {
-		return err
-	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
+	sql := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions) " +
+		"VALUES ($1, $2, $3, $4, $5)"
+
+	var id int64
+	if m.cfg.DatabaseDriver == "sqlite3" {
+		result, err := tx.Exec(sql,
+			recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
+		if err != nil {
+			return err
+		}
+		id, err = result.LastInsertId()
+		if err != nil {
+			return err
+		}
+	} else {
+		sql = sql + " RETURNING id"
+		row := tx.QueryRow(sql,
+			recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
+		err := row.Scan(&id)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, tag := range recipe.Tags {
-		m.Tags.CreateTx(id, tag, tx)
+		err := m.Tags.CreateTx(id, tag, tx)
 		if err != nil {
 			return err
 		}
@@ -71,9 +84,9 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 
 	result := m.db.QueryRow(
 		"SELECT DISTINCT "+
-			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
+			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) "+
 			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
-			"WHERE r.id = ?",
+			"WHERE r.id = $1",
 		recipe.ID)
 	err := result.Scan(
 		&recipe.Name,
@@ -126,8 +139,8 @@ func (m *RecipeModel) Update(recipe *Recipe) error {
 func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sql.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
-			"SET name = ?, serving_size = ?, nutrition_info = ?, ingredients = ?, directions = ? "+
-			"WHERE id = ?",
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5 "+
+			"WHERE id = $6",
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.ID)
 
 	// TODO: Deleting and recreating seems inefficent and potentially error prone
@@ -165,12 +178,7 @@ func (m *RecipeModel) Delete(id int64) error {
 // DeleteTx removes the specified recipe from the database using the specified transaction.
 // Note that this method does not delete any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
-	_, err := tx.Exec("DELETE FROM recipe WHERE id = ?", id)
-	if err != nil {
-		return err
-	}
-
-	err = m.Tags.DeleteAllTx(id, tx)
+	err := m.Tags.DeleteAllTx(id, tx)
 	if err != nil {
 		return err
 	}
@@ -180,7 +188,12 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
 		return err
 	}
 
-	_, err = tx.Exec("DELETE FROM recipe_rating WHERE recipe_id = ?", id)
+	_, err = tx.Exec("DELETE FROM recipe_rating WHERE recipe_id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("DELETE FROM recipe WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
@@ -200,9 +213,9 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 	offset := count * (page - 1)
 	rows, err := m.db.Query(
 		"SELECT DISTINCT "+
-			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, IFNULL(g.rating, 0) "+
+			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) "+
 			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
-			"ORDER BY r.name LIMIT ? OFFSET ?",
+			"ORDER BY r.name LIMIT $1 OFFSET $2",
 		count, offset)
 	if err != nil {
 		return nil, 0, err
@@ -244,7 +257,7 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	partialStmt := "FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
 		"LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id " +
-		"WHERE r.name LIKE ? OR r.Ingredients LIKE ? OR r.directions LIKE ? OR t.tag LIKE ?"
+		"WHERE r.name LIKE $1 OR r.Ingredients LIKE $2 OR r.directions LIKE $3 OR t.tag LIKE $4"
 	countStmt := "SELECT count(DISTINCT r.id) " + partialStmt
 	row := m.db.QueryRow(countStmt,
 		search, search, search, search)
@@ -256,9 +269,9 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 	offset := count * (page - 1)
 	selectStmt :=
 		"SELECT DISTINCT " +
-			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, IFNULL(g.rating, 0) " +
+			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) " +
 			partialStmt +
-			" ORDER BY r.name LIMIT ? OFFSET ?"
+			" ORDER BY r.name LIMIT $5 OFFSET $6"
 	rows, err := m.db.Query(selectStmt,
 		search, search, search, search, count, offset)
 	if err != nil {
@@ -297,16 +310,16 @@ func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, in
 // SetRating adds or updates the rating of the specified recipe.
 func (m *RecipeModel) SetRating(id int64, rating float64) error {
 	var count int64
-	err := m.db.QueryRow("SELECT count(*) FROM recipe_rating WHERE recipe_id = ?", id).Scan(&count)
+	err := m.db.QueryRow("SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id).Scan(&count)
 	if err == sql.ErrNoRows || count == 0 {
-		_, err := m.db.Exec(
-			"INSERT INTO recipe_rating (recipe_id, rating) VALUES (?, ?)", id, rating)
+		_, err = m.db.Exec(
+			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
 		return err
 	}
 
 	if err == nil {
 		_, err = m.db.Exec(
-			"UPDATE recipe_rating SET rating = ? WHERE recipe_id = ?", rating, id)
+			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
 	}
 	return err
 }

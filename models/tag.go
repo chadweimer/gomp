@@ -27,7 +27,7 @@ func (m *TagModel) Create(recipeID int64, tag string) error {
 // the specified transaction.
 func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sql.Tx) error {
 	_, err := tx.Exec(
-		"INSERT INTO recipe_tag (recipe_id, tag) VALUES (?, ?)",
+		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeID, tag)
 	return err
 }
@@ -52,7 +52,7 @@ func (m *TagModel) DeleteAll(recipeID int64) error {
 // transaction.
 func (m *TagModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
 	_, err := tx.Exec(
-		"DELETE FROM recipe_tag WHERE recipe_id = ?",
+		"DELETE FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)
 	return err
 }
@@ -60,7 +60,7 @@ func (m *TagModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
 // List retrieves all tags associated with the recipe with the specified id.
 func (m *TagModel) List(recipeID int64) (*[]string, error) {
 	rows, err := m.db.Query(
-		"SELECT tag FROM recipe_tag WHERE recipe_id = ?",
+		"SELECT tag FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)
 	if err != nil {
 		return nil, err

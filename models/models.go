@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/mattes/migrate/migrate"
@@ -14,6 +15,10 @@ import (
 	// sqlite3 database driver
 	_ "github.com/mattes/migrate/driver/sqlite3"
 	_ "github.com/mattn/go-sqlite3"
+
+	// postgres database driver
+	_ "github.com/lib/pq"
+	_ "github.com/mattes/migrate/driver/postgres"
 )
 
 // ---- Begin Standard Errors ----
@@ -23,6 +28,8 @@ import (
 var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // ---- End Standard Errors ----
+
+const sqlite3Driver = "sqlite3"
 
 // Model encapsulates the model layer of the application, including database access
 type Model struct {
@@ -37,22 +44,32 @@ type Model struct {
 
 // New constructs a new Model object
 func New(cfg *conf.Config) *Model {
-	dbPath := fmt.Sprintf("%s/gomp.db", cfg.DataPath)
+	dbPath := strings.TrimPrefix(cfg.DatabaseURL, cfg.DatabaseDriver+"://")
 
 	// Create the database if it doesn't yet exists.
-	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		err = createDatabase(cfg.DataPath)
-		if err != nil {
-			log.Fatal("Failed to create database.", err)
-		}
-	} else {
-		err = migrateDatabase(cfg.DataPath)
-		if err != nil {
-			log.Fatal("Failed to migrate database.", err)
+	if cfg.DatabaseDriver == sqlite3Driver {
+		if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+			dbDir := filepath.Dir(dbPath)
+			if _, err := os.Stat(dbDir); os.IsNotExist(err) {
+				err = os.MkdirAll(dbDir, os.ModePerm)
+				if err != nil {
+					log.Fatal("Failed to create database folder.", err)
+				}
+			}
 		}
 	}
 
-	db, err := sql.Open("sqlite3", dbPath)
+	err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatal("Failed to migrate database.", err)
+	}
+
+	var db *sql.DB
+	if cfg.DatabaseDriver == sqlite3Driver {
+		db, err = sql.Open(cfg.DatabaseDriver, dbPath)
+	} else {
+		db, err = sql.Open(cfg.DatabaseDriver, cfg.DatabaseURL)
+	}
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
@@ -64,23 +81,12 @@ func New(cfg *conf.Config) *Model {
 	m.Recipes = &RecipeModel{Model: m}
 	m.Tags = &TagModel{Model: m}
 	m.Notes = &NoteModel{Model: m}
-	m.Images = &RecipeImageModel{Model: m}
+	m.Images = NewRecipeImageModel(m)
 	return m
 }
 
-func createDatabase(dataPath string) error {
-	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
-		err = os.Mkdir(dataPath, os.ModePerm)
-		if err != nil {
-			return err
-		}
-	}
-
-	return migrateDatabase(dataPath)
-}
-
-func migrateDatabase(dataPath string) error {
-	allErrs, ok := migrate.UpSync(fmt.Sprintf("sqlite3://%s", fmt.Sprintf("%s/gomp.db", dataPath)), "./db/migrations")
+func migrateDatabase(databaseDriver, databaseURL string) error {
+	allErrs, ok := migrate.UpSync(databaseURL, filepath.Join("db", "migrations", databaseDriver))
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {
