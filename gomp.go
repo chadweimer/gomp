@@ -42,20 +42,43 @@ func main() {
 		}}})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)
 
-	// Since httprouter explicitly doesn't allow /path/to and /path/:match,
-	// we get a little fancy and use 2 mux'es to emulate/force the behavior
-	mainMux := httprouter.New()
-	mainMux.GET("/", rc.ListRecipes)
-	mainMux.GET("/recipes", rc.ListRecipes)
-	mainMux.GET("/recipes/create", rc.CreateRecipe)
-	mainMux.POST("/recipes/create", rc.CreateRecipePost)
+	authMux := httprouter.New()
+	authMux.GET("/login", rc.Login)
+	authMux.POST("/login", rc.LoginPost)
+	authMux.GET("/logout", rc.Logout)
+	// Do nothing if this route isn't matched. Let the later handlers/routes get processed
+	authMux.NotFound = http.HandlerFunc(rc.NoOp)
 
-	// Use the recipeMux to configure the routes related to a single recipe,
-	// since /recipes/:id conflicts with /recipes/create above
+	n := negroni.New()
+	n.Use(negroni.NewRecovery())
+	if cfg.IsDevelopment {
+		n.Use(negroni.NewLogger())
+	}
+	n.Use(negroni.NewStatic(http.Dir("public")))
+	n.UseHandler(authMux)
+
+	// !!!! IMPORTANT !!!!
+	// Everything before this is valid with or without authentication.
+	// Everything after this requires authentication
+
+	if cfg.UploadDriver == "fs" {
+		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
+		static.Prefix = "/uploads"
+		n.UseFunc(rc.RequireAuthentication(static))
+	} else if cfg.UploadDriver == "s3" {
+		s3Static := upload.NewS3Static(cfg)
+		s3Static.Prefix = "/uploads"
+		n.UseFunc(rc.RequireAuthentication(s3Static))
+	}
+
 	recipeMux := httprouter.New()
+	recipeMux.GET("/", rc.ListRecipes)
+	recipeMux.GET("/new", rc.CreateRecipe)
+	recipeMux.GET("/recipes", rc.ListRecipes)
+	recipeMux.POST("/recipes", rc.CreateRecipePost)
 	recipeMux.GET("/recipes/:id", rc.GetRecipe)
 	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
-	recipeMux.POST("/recipes/:id/edit", rc.EditRecipePost)
+	recipeMux.POST("/recipes/:id", rc.EditRecipePost)
 	recipeMux.GET("/recipes/:id/delete", rc.DeleteRecipe)
 	recipeMux.POST("/recipes/:id/attach", rc.CreateAttachmentPost)
 	recipeMux.GET("/recipes/:id/attach/:name/delete", rc.DeleteAttachment)
@@ -64,34 +87,14 @@ func main() {
 	recipeMux.GET("/recipes/:id/note/:note_id/delete", rc.DeleteNote)
 	recipeMux.POST("/recipes/:id/rate", rc.RateRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
-
-	// Fall into the recipeMux only when the route isn't found in mainMux
-	mainMux.NotFound = recipeMux
-
-	n := negroni.New()
-	n.Use(negroni.NewRecovery())
-	if cfg.IsDevelopment {
-		n.Use(negroni.NewLogger())
-	}
-	n.Use(negroni.NewStatic(http.Dir("public")))
-
-	if cfg.UploadDriver == "fs" {
-		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
-		static.Prefix = "/uploads"
-		n.Use(static)
-	} else if cfg.UploadDriver == "s3" {
-		s3Static := upload.NewS3Static(cfg)
-		s3Static.Prefix = "/uploads"
-		n.Use(s3Static)
-	}
-	n.UseHandler(context.ClearHandler(mainMux))
+	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
 	}
-	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, n)
+	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
 }
 
 func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {

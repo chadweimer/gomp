@@ -40,6 +40,7 @@ type Model struct {
 	Tags    *TagModel
 	Notes   *NoteModel
 	Images  *RecipeImageModel
+	Users   *UserModel
 }
 
 // New constructs a new Model object
@@ -82,6 +83,7 @@ func New(cfg *conf.Config) *Model {
 	m.Tags = &TagModel{Model: m}
 	m.Notes = &NoteModel{Model: m}
 	m.Images = NewRecipeImageModel(m)
+	m.Users = &UserModel{Model: m}
 	return m
 }
 
