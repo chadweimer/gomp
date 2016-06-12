@@ -35,7 +35,9 @@
     {{if ne $.ViewType "compact"}}
     {{range .Recipes}}
     <div class="col s12 m6 l4">
-        <article class="card small grey lighten-4 hoverable clickable" onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';">
+        <article class="card small grey lighten-4 hoverable clickable"
+            onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
+            title="{{.Name}}">
             {{if .Image}}
             <section class="card-image">
                 <img src="{{.Image}}" class="darken-10">
@@ -53,7 +55,7 @@
                 <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
                 <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
             </section>
-            <section class="card-content">
+            <section class="card-content truncate">
                 <span class="card-title">{{.Name}}</span>
             </section>
         </article>
@@ -87,10 +89,10 @@
 {{define "pagination-recipe/list"}}
 {{$baseLink := .Query | printf "?q=%s&page="}}
 <ul class="pagination no-padding col s12 l12 center">
-    <li class="{{if le .PageNum 1}}disabled{{end}}">
+    <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
         <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
     </li>
-    <li class="{{if le .PageNum 1}}disabled{{end}}">
+    <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
         <a href="{{if gt .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
     </li>
     {{range  Paginate .PageNum .NumPages 5}}
@@ -98,10 +100,10 @@
         <a href="{{$baseLink}}{{.}}">{{.}}</a>
     </li>
     {{end}}
-    <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
+    <li class="{{if ge .PageNum .NumPages}}disabled{{end}} no-padding">
         <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
     </li>
-    <li class="{{if ge .PageNum .NumPages}}disabled{{end}}">
+    <li class="{{if ge .PageNum .NumPages}}disabled{{end}} no-padding">
         <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
     </li>
 </ul>
