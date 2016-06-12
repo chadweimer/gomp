@@ -60,16 +60,18 @@
     </div>
     {{end}}
     {{else}}
-    <div class="col s12 m12 l12">
-    {{range .Recipes}}
-        <div>
-            <a href="{{RootUrlPath}}/recipes/{{.ID}}">
+    {{range (ColumnizeRecipes .Recipes 4)}}
+    <div class="col s12 m6 l3">
+        {{range .}}
+        <div class="col s12 l12">
+            <a href="{{RootUrlPath}}/recipes/{{.ID}}" class="truncate" title="{{.Name}}">
                 <img {{if .Image}}src="{{.Image}}"{{end}} class="compact-image circle">
                 <span>{{.Name}}</span>
             </a>
         </div>
-    {{end}}
+        {{end}}
     </div>
+    {{end}}
     {{end}}
 
     {{template "pagination-recipe/list" .}}
