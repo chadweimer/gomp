@@ -62,6 +62,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(negroni.NewStatic(http.Dir("public")))
+	n.UseFunc(rc.UserPopulater)
 	n.UseHandler(authMux)
 
 	// !!!! IMPORTANT !!!!

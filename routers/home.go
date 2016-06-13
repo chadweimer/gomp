@@ -6,5 +6,5 @@ import (
 
 // Home handles rending the default home page
 func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request) {
-	rc.HTML(resp, http.StatusOK, "home", make(map[string]interface{}))
+	rc.HTML(resp, http.StatusOK, "home", rc.Context(req).Data)
 }

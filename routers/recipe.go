@@ -78,7 +78,7 @@ func (f *RatingForm) FieldMap(req *http.Request) binding.FieldMap {
 // GetRecipe handles retrieving and rendering a single recipe
 func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -87,25 +87,24 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 		rc.NotFound(resp, req)
 		return
 	}
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	notes, err := rc.model.Notes.List(id)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	imgs, err := rc.model.Images.List(id)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
-	data := map[string]interface{}{
-		"Recipe": recipe,
-		"Notes":  notes,
-		"Images": imgs,
-	}
+	data := rc.Context(req).Data
+	data["Recipe"] = recipe
+	data["Notes"] = notes
+	data["Images"] = imgs
 	rc.HTML(resp, http.StatusOK, "recipe/view", data)
 }
 
@@ -163,7 +162,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	} else {
 		recipes, total, err = rc.model.Recipes.Find(query, page, count)
 	}
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -171,23 +170,21 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sess.Values["view"] = viewType
 	sess.Save(req, resp)
 
-	data := map[string]interface{}{
-		"Query":    query,
-		"PageNum":  page,
-		"PerPage":  count,
-		"NumPages": int64(math.Ceil(float64(total) / float64(count))),
-
-		"Recipes":     recipes,
-		"SearchQuery": query,
-		"ResultCount": total,
-		"ViewType":    viewType,
-	}
+	data := rc.Context(req).Data
+	data["Query"] = query
+	data["PageNum"] = page
+	data["PerPage"] = count
+	data["NumPages"] = int64(math.Ceil(float64(total) / float64(count)))
+	data["Recipes"] = recipes
+	data["SearchQuery"] = query
+	data["ResultCount"] = total
+	data["ViewType"] = viewType
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 
 // CreateRecipe handles rendering the create recipe screen
 func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	rc.HTML(resp, http.StatusOK, "recipe/create", make(map[string]interface{}))
+	rc.HTML(resp, http.StatusOK, "recipe/create", rc.Context(req).Data)
 }
 
 // CreateRecipePost handles processing the supplied form input from the create recipe screen
@@ -195,7 +192,7 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, errors.New(errs.Error()))
+		rc.HasError(resp, req, errors.New(errs.Error()))
 		return
 	}
 
@@ -209,7 +206,7 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 	}
 
 	err := rc.model.Recipes.Create(recipe)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -219,7 +216,7 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 // EditRecipe handles rendering the edit recipe screen
 func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -228,13 +225,12 @@ func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Reques
 		rc.NotFound(resp, req)
 		return
 	}
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
-	data := map[string]interface{}{
-		"Recipe": recipe,
-	}
+	data := rc.Context(req).Data
+	data["Recipe"] = recipe
 	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 
@@ -243,12 +239,12 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 	form := new(RecipeForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, errors.New(errs.Error()))
+		rc.HasError(resp, req, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -263,7 +259,7 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 	}
 
 	err = rc.model.Recipes.Update(recipe)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -273,18 +269,18 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 // DeleteRecipe handles deleting the recipe with the given id
 func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	err = rc.model.Recipes.Delete(id)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	// If we successfully deleted the recipe, delete all of it's attachments
 	err = rc.model.Images.DeleteAll(id)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -296,28 +292,28 @@ func (rc *RouteController) CreateAttachmentPost(resp http.ResponseWriter, req *h
 	form := new(AttachmentForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, errors.New(errs.Error()))
+		rc.HasError(resp, req, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	uploadedFile, err := form.FileContent.Open()
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 	defer uploadedFile.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	err = rc.model.Images.Save(id, form.FileName, uploadedFileData)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -329,12 +325,12 @@ func (rc *RouteController) DeleteAttachment(resp http.ResponseWriter, req *http.
 	name := p.ByName("name")
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	err = rc.model.Images.Delete(id, name)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -346,12 +342,12 @@ func (rc *RouteController) CreateNotePost(resp http.ResponseWriter, req *http.Re
 	form := new(NoteForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, errors.New(errs.Error()))
+		rc.HasError(resp, req, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -360,7 +356,7 @@ func (rc *RouteController) CreateNotePost(resp http.ResponseWriter, req *http.Re
 		Note:     form.Note,
 	}
 	err = rc.model.Notes.Create(note)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -372,17 +368,17 @@ func (rc *RouteController) EditNotePost(resp http.ResponseWriter, req *http.Requ
 	form := new(NoteForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, errors.New(errs.Error()))
+		rc.HasError(resp, req, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	noteID, err := strconv.ParseInt(p.ByName("note_id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -392,7 +388,7 @@ func (rc *RouteController) EditNotePost(resp http.ResponseWriter, req *http.Requ
 		Note:     form.Note,
 	}
 	err = rc.model.Notes.Update(note)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -402,17 +398,17 @@ func (rc *RouteController) EditNotePost(resp http.ResponseWriter, req *http.Requ
 // DeleteNote handles deleting the note with the given id
 func (rc *RouteController) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	noteID, err := strconv.ParseInt(p.ByName("note_id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	err = rc.model.Notes.Delete(noteID)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
@@ -424,17 +420,17 @@ func (rc *RouteController) RateRecipePost(resp http.ResponseWriter, req *http.Re
 	form := new(RatingForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, errors.New(errs.Error()))
+		rc.HasError(resp, req, errors.New(errs.Error()))
 		return
 	}
 
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	err = rc.model.Recipes.SetRating(id, form.Rating)
-	if rc.HasError(resp, err) {
+	if rc.HasError(resp, req, err) {
 		return
 	}
 

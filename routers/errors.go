@@ -7,14 +7,13 @@ import (
 
 // NotFound handles 404 errors
 func (rc *RouteController) NotFound(resp http.ResponseWriter, req *http.Request) {
-	rc.showError(resp, http.StatusNotFound, make(map[string]interface{}))
+	rc.showError(resp, http.StatusNotFound, rc.Context(req).Data)
 }
 
 // InternalServerError handles 500 errors
-func (rc *RouteController) InternalServerError(resp http.ResponseWriter, err error) {
-	data := map[string]interface{}{
-		"Error": err,
-	}
+func (rc *RouteController) InternalServerError(resp http.ResponseWriter, req *http.Request, err error) {
+	data := rc.Context(req).Data
+	data["Error"] = err
 	rc.showError(resp, http.StatusInternalServerError, data)
 }
 
