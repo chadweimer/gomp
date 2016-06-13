@@ -205,8 +205,7 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
 func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 	var total int64
 	row := m.db.QueryRow("SELECT count(*) FROM recipe")
-	err := row.Scan(&total)
-	if err != nil {
+	if err := row.Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
@@ -254,26 +253,29 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, int64, error) {
 	var total int64
 	search = "%" + search + "%"
+	var like string
+	switch m.cfg.DatabaseDriver {
+	case "sqlite3":
+		like = "LIKE"
+	case "postgres":
+		like = "ILIKE"
+	}
 	partialStmt := "FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
 		"LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id " +
-		"WHERE r.name LIKE $1 OR r.Ingredients LIKE $2 OR r.directions LIKE $3 OR t.tag LIKE $4"
+		"WHERE r.name " + like + " $1 OR r.Ingredients " + like + " $2 OR r.directions " + like + " $3 OR t.tag " + like + " $4"
 	countStmt := "SELECT count(DISTINCT r.id) " + partialStmt
-	row := m.db.QueryRow(countStmt,
-		search, search, search, search)
-	err := row.Scan(&total)
-	if err != nil {
+	row := m.db.QueryRow(countStmt, search, search, search, search)
+	if err := row.Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	offset := count * (page - 1)
-	selectStmt :=
-		"SELECT DISTINCT " +
-			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) " +
-			partialStmt +
-			" ORDER BY r.name LIMIT $5 OFFSET $6"
-	rows, err := m.db.Query(selectStmt,
-		search, search, search, search, count, offset)
+	selectStmt := "SELECT DISTINCT " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) " +
+		partialStmt +
+		" ORDER BY r.name LIMIT $5 OFFSET $6"
+	rows, err := m.db.Query(selectStmt, search, search, search, search, count, offset)
 	if err != nil {
 		return nil, 0, err
 	}
