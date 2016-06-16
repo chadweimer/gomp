@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -26,7 +28,7 @@ func NewS3Driver(cfg *conf.Config) S3Driver {
 
 // Save creates or overrites a file with the provided binary data.
 func (u S3Driver) Save(filePath string, data []byte) error {
-	svc := s3.New(session.New())
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	key := filepath.ToSlash(filePath)
@@ -42,7 +44,7 @@ func (u S3Driver) Save(filePath string, data []byte) error {
 
 // Delete deletes the file with the specified key, if it exists.
 func (u S3Driver) Delete(key string) error {
-	svc := s3.New(session.New())
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	key = filepath.ToSlash(key)
@@ -56,7 +58,7 @@ func (u S3Driver) Delete(key string) error {
 
 // DeleteAll deletes all files with the specified key prefix.
 func (u S3Driver) DeleteAll(keyPrefix string) error {
-	svc := s3.New(session.New())
+	svc := connectToS3(u.cfg)
 
 	bucket := u.cfg.UploadPath
 	keyPrefix = filepath.ToSlash(keyPrefix)
@@ -83,9 +85,10 @@ func (u S3Driver) DeleteAll(keyPrefix string) error {
 
 // List retrieves information about all uploaded files with the specified key prefix.
 func (u S3Driver) List(keyPrefix string) ([]FileInfo, error) {
-	svc := s3.New(session.New())
-
 	var fileInfos []FileInfo
+
+	svc := connectToS3(u.cfg)
+
 	bucket := u.cfg.UploadPath
 	prefix := filepath.ToSlash(filepath.Join(keyPrefix, "images"))
 
@@ -153,7 +156,7 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 		}
 	}
 
-	svc := s3.New(session.New())
+	svc := connectToS3(s.cfg)
 
 	bucket := s.cfg.UploadPath
 
@@ -216,4 +219,15 @@ func (s *S3Static) passThroughRespHeaders(getResp *s3.GetObjectOutput, respHeade
 	if getResp.ETag != nil && *getResp.ETag != "" {
 		respHeader.Set("ETag", *getResp.ETag)
 	}
+}
+
+func connectToS3(cfg *conf.Config) *s3.S3 {
+	awsConfig := new(aws.Config)
+	if cfg.AwsRegion != "" {
+		awsConfig.Region = &cfg.AwsRegion
+	}
+	if cfg.AwsAccessKeyID != "" && cfg.AwsSecretAccessKey != "" {
+		awsConfig.Credentials = credentials.NewStaticCredentials(cfg.AwsAccessKeyID, cfg.AwsSecretAccessKey, "")
+	}
+	return s3.New(session.New(awsConfig))
 }

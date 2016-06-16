@@ -5,28 +5,31 @@ Web-based recipe book and weekly meal planner.
 ## Building and Running
 
 ```bash
-$ go get github.com/chadweimer/gomp
-$ cd $GOPATH/src/github.com/chadweimer/gomp
-$ go build
-$ ./gomp
+cd $GOPATH/src
+git clone https://github.com/chadweimer/gomp.git
+cd gomp
+go build
+./gomp
 ```
 
 ## Configuration
 
-The folliwing table summarizes the available configuration settings, which are settable through environment variables.
-If a setting is present in both the configuration file and OS environment variable, the value in the file is used.
+Certain aspects of the application (e.g., the database url) can be configured either through an
+JSON application configuration file ( and/or envionment variables. The folliwing table summarizes
+the available settings. If a setting is present in both the configuration file and OS environment
+variable, the value in the file is used.
 
-| ENV                    | Value    | Default                |
-|------------------------|----------|------------------------|
-| GOMP_ROOT_URL_PATH     | string   | &lt;empty&gt;          |
-| PORT                   | uint     | 4000                   |
-| GOMP_UPLOAD_DRIVER     | string   | fs                     |
-| GOMP_UPLOAD_PATH       | string   | data                   |
-| GOMP_IS_DEVELOPMENT    | '0', '1' | 0                      |
-| GOMP_SECRET_KEY        | string   | Secret123              |
-| GOMP_APPLICATION_TITLE | string   | GOMP: Go Meal Planner  |
-| DATABASE_DRIVER        | string   | sqlite3                |
-| DATABASE_URL           | string   | sqlite3://data/gomp.db |
+| JSON              | ENV                    | Value (JSON / ENV)    | Default                |
+|-------------------|------------------------|-----------------------|------------------------|
+| root_url_path     | GOMP_ROOT_URL_PATH     | string / string       | &lt;empty&gt;          |
+| port              | PORT                   | uint / unit           | 4000                   |
+| upload_driver     | GOMP_UPLOAD_DRIVER     | string / string       | fs                     |
+| upload_path       | GOMP_UPLOAD_PATH       | string / string       | data                   |
+| is_development    | GOMP_IS_DEVELOPMENT    | bool / '0', '1'       | false, 0               |
+| secret_key        | GOMP_SECRET_KEY        | string / string       | Secret123              |
+| application_title | GOMP_APPLICATION_TITLE | string / string       | GOMP: Go Meal Planner  |
+| database_driver   | DATABASE_DRIVER        | string / string       | sqlite3                |
+| database_url      | DATABASE_URL           | string / string       | sqlite3://data/gomp.db |
 
 ### Root URL Path
 
