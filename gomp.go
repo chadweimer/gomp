@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	"strings"
@@ -133,7 +134,7 @@ func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {
 
 func splitSlice(slice []interface{}, numSplits int) [][]interface{} {
 	count := len(slice)
-	splitCount := count / numSplits
+	splitCount := int(math.Ceil(float64(count) / float64(numSplits)))
 
 	slices := make([][]interface{}, numSplits, numSplits)
 	sliceIndex := 0
