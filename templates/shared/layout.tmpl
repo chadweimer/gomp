@@ -20,10 +20,18 @@
             <nav class="blue">
                 <div class="nav-wrapper">
                     <a href="{{RootUrlPath}}/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
+                    {{if .User }}
                     <ul class="right hide-on-med-and-down">
                         <li><a href="{{RootUrlPath}}/">Home</a></li>
                         <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
-                        <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                        <li>
+                            <a id="userMenuLarge" class="dropdown-button" href="#!" data-activates="userDropdown">
+                                {{.User.Username}}<i class="material-icons right">arrow_drop_down</i>
+                            </a>
+                            <ul id="userDropdown" class="dropdown-content">
+                                <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                            </ul>
+                        </li>
                     </ul>
                     <form class="nav-wrapper right" action="{{RootUrlPath}}/recipes">
                         <div class="input-field nav-wrapper">
@@ -31,11 +39,21 @@
                             <label for="search"><i class="material-icons">search</i></label>
                         </div>
                     </form>
-                    <ul id="slide-out" class="side-nav">
+                    {{end}}
+                    <ul id="slide-out" class="side-nav collapsible collapsible-accordion">
                         <li><a href="{{RootUrlPath}}/" class="grey-text light truncate">{{ApplicationTitle}}</a></li>
+                        {{if .User }}
                         <li><a href="{{RootUrlPath}}/">Home</a></li>
                         <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
-                        <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                        <li>
+                            <a class="collapsible-header" href="#!"><strong>{{.User.Username}}</strong></a>
+                            <div class="collapsible-body">
+                                <ul>
+                                    <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                                </ul>
+                            </div>
+                        </li>
+                        {{end}}
                     </ul>
                     <a href="#" data-activates="slide-out" class="button-collapse">
                         <i class="material-icons">menu</i>

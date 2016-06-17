@@ -30,10 +30,10 @@ func NewController(render *render.Render, cfg *conf.Config, model *models.Model,
 
 // HasError sends the request to the InternalServerError page
 // if the asupplied error is not nil
-func (rc *RouteController) HasError(resp http.ResponseWriter, err error) bool {
+func (rc *RouteController) HasError(resp http.ResponseWriter, req *http.Request, err error) bool {
 	if err != nil {
 		log.Println(err)
-		rc.InternalServerError(resp, err)
+		rc.InternalServerError(resp, req, err)
 		return true
 	}
 	return false
