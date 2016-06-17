@@ -34,7 +34,7 @@ func (c Contexter) ServeHTTP(resp http.ResponseWriter, req *http.Request, next h
 func (c Contexter) addUserToContext(resp http.ResponseWriter, req *http.Request) {
 	sess, err := c.sessionStore.Get(req, "UserSession")
 	if err != nil {
-		log.Printf("[AppContexter] addUserToContext failed: %s", err.Error())
+		log.Printf("[contexter] addUserToContext failed: %s", err.Error())
 		return
 	} else if sess.Values["UserID"] == nil {
 		return
@@ -44,7 +44,7 @@ func (c Contexter) addUserToContext(resp http.ResponseWriter, req *http.Request)
 	if userID, ok := sess.Values["UserID"].(int64); ok {
 		user, err = c.model.Users.Read(userID)
 		if err != nil {
-			log.Printf("[AppContexter] addUserToContext failed: %s", err.Error())
+			log.Printf("[contexter] addUserToContext failed: %s", err.Error())
 		}
 	}
 	if user != nil {
