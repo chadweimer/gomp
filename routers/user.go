@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/chadweimer/gomp/modules/context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mholt/binding"
 	"github.com/urfave/negroni"
@@ -25,7 +26,7 @@ func (f *LoginForm) FieldMap(req *http.Request) binding.FieldMap {
 
 func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-		user := rc.Context(req).Data["User"]
+		user := context.Get(req).Data["User"]
 		if user == nil {
 			if loginPath := fmt.Sprintf("%s/login", rc.cfg.RootURLPath); req.URL.Path != loginPath {
 				http.Redirect(resp, req, loginPath, http.StatusFound)
@@ -38,24 +39,24 @@ func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.Hand
 }
 
 func (rc *RouteController) Login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	if rc.Context(req).Data["User"] != nil {
+	if context.Get(req).Data["User"] != nil {
 		http.Redirect(resp, req, fmt.Sprintf("%s/", rc.cfg.RootURLPath), http.StatusFound)
 	}
 
-	rc.HTML(resp, http.StatusOK, "user/login", rc.Context(req).Data)
+	rc.HTML(resp, http.StatusOK, "user/login", context.Get(req).Data)
 }
 
 func (rc *RouteController) LoginPost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	form := new(LoginForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
-		rc.HTML(resp, http.StatusOK, "user/login", rc.Context(req).Data)
+		rc.HTML(resp, http.StatusOK, "user/login", context.Get(req).Data)
 		return
 	}
 
 	user, err := rc.model.Users.Authenticate(form.Username, form.Password)
 	if err != nil {
-		rc.HTML(resp, http.StatusOK, "user/login", rc.Context(req).Data)
+		rc.HTML(resp, http.StatusOK, "user/login", context.Get(req).Data)
 		return
 	}
 

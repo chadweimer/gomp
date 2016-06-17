@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/modules/context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mholt/binding"
 )
@@ -101,7 +102,7 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	data := rc.Context(req).Data
+	data := context.Get(req).Data
 	data["Recipe"] = recipe
 	data["Notes"] = notes
 	data["Images"] = imgs
@@ -170,7 +171,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sess.Values["view"] = viewType
 	sess.Save(req, resp)
 
-	data := rc.Context(req).Data
+	data := context.Get(req).Data
 	data["Query"] = query
 	data["PageNum"] = page
 	data["PerPage"] = count
@@ -184,7 +185,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 // CreateRecipe handles rendering the create recipe screen
 func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	rc.HTML(resp, http.StatusOK, "recipe/create", rc.Context(req).Data)
+	rc.HTML(resp, http.StatusOK, "recipe/create", context.Get(req).Data)
 }
 
 // CreateRecipePost handles processing the supplied form input from the create recipe screen
@@ -229,7 +230,7 @@ func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	data := rc.Context(req).Data
+	data := context.Get(req).Data
 	data["Recipe"] = recipe
 	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }

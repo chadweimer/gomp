@@ -12,9 +12,9 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/modules/context"
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/chadweimer/gomp/routers"
-	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/urfave/negroni"
@@ -63,7 +63,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(negroni.NewStatic(http.Dir("public")))
-	n.UseFunc(rc.UserPopulater)
+	n.Use(context.NewContexter(cfg, model, sessionStore))
 	n.UseHandler(authMux)
 
 	// !!!! IMPORTANT !!!!
@@ -103,7 +103,7 @@ func main() {
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
 	}
-	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, context.ClearHandler(n))
+	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, n)
 }
 
 func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {
