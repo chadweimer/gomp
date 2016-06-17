@@ -21,9 +21,6 @@
                 <div class="nav-wrapper">
                     <a href="{{RootUrlPath}}/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
                     {{if .User }}
-                    <ul id="userDropdown" class="dropdown-content">
-                        <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
-                    </ul>
                     <ul class="right hide-on-med-and-down">
                         <li><a href="{{RootUrlPath}}/">Home</a></li>
                         <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
@@ -31,6 +28,9 @@
                             <a id="userMenuLarge" class="dropdown-button" href="#!" data-activates="userDropdown">
                                 {{.User.Username}}<i class="material-icons right">arrow_drop_down</i>
                             </a>
+                            <ul id="userDropdown" class="dropdown-content">
+                                <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                            </ul>
                         </li>
                     </ul>
                     <form class="nav-wrapper right" action="{{RootUrlPath}}/recipes">
