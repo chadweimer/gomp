@@ -166,6 +166,9 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 
 	// Make the request and check the error
 	getResp, err := svc.GetObject(&getReq)
+	if getResp != nil && getResp.Body != nil {
+		defer getResp.Body.Close()
+	}
 	if err != nil {
 		s3err, ok := err.(awserr.Error)
 		// 304 code is expected
@@ -179,8 +182,6 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 	var buf []byte
 	// If we got content, read it, including associated headers
 	if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
-		defer getResp.Body.Close()
-
 		// Don't read the file back if we're just a HEAD request
 		if r.Method != "HEAD" {
 			buf, err = ioutil.ReadAll(getResp.Body)
