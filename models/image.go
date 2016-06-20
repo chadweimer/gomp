@@ -72,13 +72,19 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 			if err == nil {
 				switch orientationVal {
 				case 3:
-					log.Printf("[iamging] Rotating thumbnail 180 degress")
+					if m.cfg.IsDevelopment {
+						log.Printf("[imaging] Rotating thumbnail 180 degress")
+					}
 					thumbImage = imaging.Rotate180(thumbImage)
 				case 6:
-					log.Printf("[iamging] Rotating thumbnail 270 degress")
+					if m.cfg.IsDevelopment {
+						log.Printf("[imaging] Rotating thumbnail 270 degress")
+					}
 					thumbImage = imaging.Rotate270(thumbImage)
 				case 8:
-					log.Printf("[iamging] Rotating thumbnail 90 degress")
+					if m.cfg.IsDevelopment {
+						log.Printf("[imaging] Rotating thumbnail 90 degress")
+					}
 					thumbImage = imaging.Rotate90(thumbImage)
 				}
 			}
