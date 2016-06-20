@@ -11,6 +11,7 @@ import (
 
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/disintegration/imaging"
+	"github.com/rwcarlsen/goexif/exif"
 )
 
 // RecipeImageModel provides functionality to edit and retrieve images attached to recipes
@@ -59,6 +60,30 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 
 	// Then generate a thumbnail image
 	thumbImage := imaging.Thumbnail(image, 250, 250, imaging.CatmullRom)
+
+	// Use the EXIF data to determine the orientation of the original image.
+	// This data is lost when generating the thumbnail, so it's needed into
+	// order to potentially explicitly rotate it.
+	exifData, err := exif.Decode(bytes.NewReader(data))
+	if err == nil {
+		orientationTag, err := exifData.Get(exif.Orientation)
+		if err == nil {
+			orientationVal, err := orientationTag.Int(0)
+			if err == nil {
+				switch orientationVal {
+				case 3:
+					log.Printf("[iamging] Rotating thumbnail 180 degress")
+					thumbImage = imaging.Rotate180(thumbImage)
+				case 6:
+					log.Printf("[iamging] Rotating thumbnail 270 degress")
+					thumbImage = imaging.Rotate270(thumbImage)
+				case 8:
+					log.Printf("[iamging] Rotating thumbnail 90 degress")
+					thumbImage = imaging.Rotate90(thumbImage)
+				}
+			}
+		}
+	}
 	thumbBuf := new(bytes.Buffer)
 	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType))
 	if err != nil {

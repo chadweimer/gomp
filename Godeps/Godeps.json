@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/chadweimer/gomp",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v67",
+	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/aws/aws-sdk-go/aws",
@@ -199,6 +199,14 @@
 		{
 			"ImportPath": "github.com/mholt/binding",
 			"Rev": "89411c4ffb61f0ebef45d8bdb830103b358ef9fa"
+		},
+		{
+			"ImportPath": "github.com/rwcarlsen/goexif/exif",
+			"Rev": "709fab3d192d7c62f86043caff1e7e3fb0f42bd8"
+		},
+		{
+			"ImportPath": "github.com/rwcarlsen/goexif/tiff",
+			"Rev": "709fab3d192d7c62f86043caff1e7e3fb0f42bd8"
 		},
 		{
 			"ImportPath": "github.com/urfave/negroni",
