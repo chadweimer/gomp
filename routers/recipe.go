@@ -158,11 +158,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 	var recipes *models.Recipes
 	var total int64
-	if query == "" {
-		recipes, total, err = rc.model.Recipes.List(page, count)
-	} else {
-		recipes, total, err = rc.model.Recipes.Find(query, page, count)
-	}
+	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query}, page, count)
 	if rc.HasError(resp, req, err) {
 		return
 	}
