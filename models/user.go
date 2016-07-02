@@ -1,8 +1,7 @@
 package models
 
 import (
-	"database/sql"
-
+	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,7 +52,7 @@ func (m *UserModel) Read(id int64) (*User, error) {
 }
 
 func (m *UserModel) Create(username, password string) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -66,7 +65,7 @@ func (m *UserModel) Create(username, password string) error {
 	return tx.Commit()
 }
 
-func (m *UserModel) CreateTx(username, password string, tx *sql.Tx) error {
+func (m *UserModel) CreateTx(username, password string, tx *sqlx.Tx) error {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err

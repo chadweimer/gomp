@@ -2,7 +2,6 @@ package models
 
 import (
 	"bytes"
-	"database/sql"
 	"errors"
 	"log"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/jmoiron/sqlx"
 	"github.com/mattes/migrate/migrate"
 
 	// sqlite3 database driver
@@ -34,7 +34,7 @@ const sqlite3Driver = "sqlite3"
 // Model encapsulates the model layer of the application, including database access
 type Model struct {
 	cfg *conf.Config
-	db  *sql.DB
+	db  *sqlx.DB
 
 	Recipes *RecipeModel
 	Tags    *TagModel
@@ -65,11 +65,11 @@ func New(cfg *conf.Config) *Model {
 		log.Fatal("Failed to migrate database.", err)
 	}
 
-	var db *sql.DB
+	var db *sqlx.DB
 	if cfg.DatabaseDriver == sqlite3Driver {
-		db, err = sql.Open(cfg.DatabaseDriver, dbPath)
+		db, err = sqlx.Connect(cfg.DatabaseDriver, dbPath)
 	} else {
-		db, err = sql.Open(cfg.DatabaseDriver, cfg.DatabaseURL)
+		db, err = sqlx.Connect(cfg.DatabaseDriver, cfg.DatabaseURL)
 	}
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
