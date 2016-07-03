@@ -17,6 +17,7 @@ import (
 	"github.com/chadweimer/gomp/routers"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
+	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
 	"gopkg.in/tylerb/graceful.v1"
 	"gopkg.in/unrolled/render.v1"
@@ -62,6 +63,7 @@ func main() {
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
+	n.Use(gzip.Gzip(gzip.DefaultCompression))
 	n.Use(negroni.NewStatic(http.Dir("public")))
 	n.Use(context.NewContexter(cfg, model, sessionStore))
 	n.UseHandler(authMux)

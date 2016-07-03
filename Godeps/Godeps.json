@@ -211,6 +211,10 @@
 			"Rev": "89411c4ffb61f0ebef45d8bdb830103b358ef9fa"
 		},
 		{
+			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
+			"Rev": "13f05ed68248e012fcc773ecd829abcc0bb3abd8"
+		},
+		{
 			"ImportPath": "github.com/rwcarlsen/goexif/exif",
 			"Rev": "709fab3d192d7c62f86043caff1e7e3fb0f42bd8"
 		},
