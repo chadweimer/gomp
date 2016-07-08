@@ -1,6 +1,10 @@
 package models
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"github.com/jmoiron/sqlx"
+)
 
 // RecipeModel provides functionality to edit and retrieve recipes.
 type RecipeModel struct {
@@ -26,7 +30,7 @@ type Recipes []Recipe
 // Create stores the recipe in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *RecipeModel) Create(recipe *Recipe) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -41,7 +45,7 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 
 // CreateTx stores the recipe in the database as a new record using
 // the specified transaction.
-func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sql.Tx) error {
+func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	sql := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions) " +
 		"VALUES ($1, $2, $3, $4, $5)"
 
@@ -121,7 +125,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 // existing record with the specified id using a dedicated transation
 // that is committed if there are not errors.
 func (m *RecipeModel) Update(recipe *Recipe) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -136,7 +140,7 @@ func (m *RecipeModel) Update(recipe *Recipe) error {
 
 // UpdateTx stores the specified recipe in the database by updating the
 // existing record with the sepcified id using the specified transaction.
-func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sql.Tx) error {
+func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5 "+
@@ -162,7 +166,7 @@ func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sql.Tx) error {
 // that is committed if there are not errors. Note that this method does not delete
 // any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) Delete(id int64) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -177,7 +181,7 @@ func (m *RecipeModel) Delete(id int64) error {
 
 // DeleteTx removes the specified recipe from the database using the specified transaction.
 // Note that this method does not delete any attachments that we associated with the deleted recipe.
-func (m *RecipeModel) DeleteTx(id int64, tx *sql.Tx) error {
+func (m *RecipeModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 	err := m.Tags.DeleteAllTx(id, tx)
 	if err != nil {
 		return err
@@ -240,67 +244,6 @@ func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
 			if len(*imgs) > 0 {
 				recipe.Image = (*imgs)[0].ThumbnailURL
 			}
-		}
-
-		recipes = append(recipes, recipe)
-	}
-
-	return &recipes, total, nil
-}
-
-// Find retrieves all recipes matching the specified search string and within the range specified,
-// sorted by name.
-func (m *RecipeModel) Find(search string, page int64, count int64) (*Recipes, int64, error) {
-	var total int64
-	search = "%" + search + "%"
-	var like string
-	switch m.cfg.DatabaseDriver {
-	case "sqlite3":
-		like = "LIKE"
-	case "postgres":
-		like = "ILIKE"
-	}
-	partialStmt := "FROM recipe AS r " +
-		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
-		"LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id " +
-		"WHERE r.name " + like + " $1 OR r.Ingredients " + like + " $2 OR r.directions " + like + " $3 OR t.tag " + like + " $4"
-	countStmt := "SELECT count(DISTINCT r.id) " + partialStmt
-	row := m.db.QueryRow(countStmt, search, search, search, search)
-	if err := row.Scan(&total); err != nil {
-		return nil, 0, err
-	}
-
-	offset := count * (page - 1)
-	selectStmt := "SELECT DISTINCT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) " +
-		partialStmt +
-		" ORDER BY r.name LIMIT $5 OFFSET $6"
-	rows, err := m.db.Query(selectStmt, search, search, search, search, count, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	var recipes Recipes
-	for rows.Next() {
-		var recipe Recipe
-		err = rows.Scan(
-			&recipe.ID,
-			&recipe.Name,
-			&recipe.ServingSize,
-			&recipe.NutritionInfo,
-			&recipe.Ingredients,
-			&recipe.Directions,
-			&recipe.AvgRating)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		imgs, err := m.Images.List(recipe.ID)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(*imgs) > 0 {
-			recipe.Image = (*imgs)[0].ThumbnailURL
 		}
 
 		recipes = append(recipes, recipe)

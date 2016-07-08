@@ -1,6 +1,6 @@
 package models
 
-import "database/sql"
+import "github.com/jmoiron/sqlx"
 
 // TagModel provides functionality to edit and retrieve tags attached to recipes.
 type TagModel struct {
@@ -10,7 +10,7 @@ type TagModel struct {
 // Create stores the tag in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *TagModel) Create(recipeID int64, tag string) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (m *TagModel) Create(recipeID int64, tag string) error {
 
 // CreateTx stores the tag in the database as a new record using
 // the specified transaction.
-func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sql.Tx) error {
+func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeID, tag)
@@ -35,7 +35,7 @@ func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sql.Tx) error {
 // DeleteAll removes all tags for the specified recipe from the database using a dedicated
 // transation that is committed if there are not errors.
 func (m *TagModel) DeleteAll(recipeID int64) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (m *TagModel) DeleteAll(recipeID int64) error {
 
 // DeleteAllTx removes all tags for the specified recipe from the database using the specified
 // transaction.
-func (m *TagModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
+func (m *TagModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)

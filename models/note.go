@@ -1,8 +1,9 @@
 package models
 
 import (
-	"database/sql"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // NoteModel provides functionality to edit and retrieve notes attached to recipes.
@@ -25,7 +26,7 @@ type Notes []Note
 // Create stores the note in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *NoteModel) Create(note *Note) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -40,7 +41,7 @@ func (m *NoteModel) Create(note *Note) error {
 
 // CreateTx stores the note in the database as a new record using
 // the specified transaction.
-func (m *NoteModel) CreateTx(note *Note, tx *sql.Tx) error {
+func (m *NoteModel) CreateTx(note *Note, tx *sqlx.Tx) error {
 	now := time.Now()
 	sql := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
 		"VALUES ($1, $2, $3, $4)"
@@ -71,7 +72,7 @@ func (m *NoteModel) CreateTx(note *Note, tx *sql.Tx) error {
 // Update stores the note in the database by updating the existing record with the specified
 // id using a dedicated transation that is committed if there are not errors.
 func (m *NoteModel) Update(note *Note) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -86,7 +87,7 @@ func (m *NoteModel) Update(note *Note) error {
 
 // UpdateTx stores the note in the database by updating the existing record with the specified
 // id using the specified transaction.
-func (m *NoteModel) UpdateTx(note *Note, tx *sql.Tx) error {
+func (m *NoteModel) UpdateTx(note *Note, tx *sqlx.Tx) error {
 	_, err := tx.Exec("UPDATE recipe_note SET note = $1, modified_at = $2 "+
 		"WHERE ID = $3 AND recipe_id = $4",
 		note.Note, time.Now(), note.ID, note.RecipeID)
@@ -96,7 +97,7 @@ func (m *NoteModel) UpdateTx(note *Note, tx *sql.Tx) error {
 // Delete removes the specified note from the database using a dedicated transation
 // that is committed if there are not errors.
 func (m *NoteModel) Delete(id int64) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -110,7 +111,7 @@ func (m *NoteModel) Delete(id int64) error {
 }
 
 // DeleteTx removes the specified note from the database using the specified transaction.
-func (m *NoteModel) DeleteTx(id int64, tx *sql.Tx) error {
+func (m *NoteModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = $1", id)
 	return err
 }
@@ -118,7 +119,7 @@ func (m *NoteModel) DeleteTx(id int64, tx *sql.Tx) error {
 // DeleteAll removes all notes for the specified recipe from the database using a dedicated
 // transation that is committed if there are not errors.
 func (m *NoteModel) DeleteAll(recipeID int64) error {
-	tx, err := m.db.Begin()
+	tx, err := m.db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -133,7 +134,7 @@ func (m *NoteModel) DeleteAll(recipeID int64) error {
 
 // DeleteAllTx removes all notes for the specified recipe from the database using the specified
 // transaction.
-func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sql.Tx) error {
+func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_note WHERE recipe_id = $1",
 		recipeID)

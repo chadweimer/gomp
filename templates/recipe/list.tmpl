@@ -14,9 +14,9 @@
 <section class="row">
     <div class="col s12 l12">
         <div class="section">
-            {{if .SearchQuery}}
+            {{if (or .SearchQuery .SearchTags)}}
             <span class="chip left">
-                Search: {{.SearchQuery}}, Results: {{.ResultCount}}
+                Search: '{{.SearchQuery}}', Tags: '{{.SearchTags}}', Results: {{.ResultCount}}
                 <i class="material-icons right clickable" onclick="location.href='?clear=true';">clear_all</i>
             </span>
             {{end}}
