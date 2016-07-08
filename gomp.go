@@ -83,7 +83,7 @@ func main() {
 	}
 
 	recipeMux := httprouter.New()
-	recipeMux.GET("/", rc.ListRecipes)
+	recipeMux.GET("/", rc.Home)
 	recipeMux.GET("/new", rc.CreateRecipe)
 	recipeMux.GET("/recipes", rc.ListRecipes)
 	recipeMux.POST("/recipes", rc.CreateRecipePost)
