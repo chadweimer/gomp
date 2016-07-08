@@ -1,10 +1,6 @@
 package models
 
-import (
-	"log"
-
-	"github.com/jmoiron/sqlx"
-)
+import "github.com/jmoiron/sqlx"
 
 // SearchModel provides functionality to search recipes.
 type SearchModel struct {
@@ -54,7 +50,6 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 		return nil, 0, err
 	}
 	countStmt = m.db.Rebind(countStmt)
-	log.Printf("[search] " + countStmt)
 	row := m.db.QueryRow(countStmt, countArgs...)
 	if err := row.Scan(&total); err != nil {
 		return nil, 0, err
@@ -75,7 +70,6 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 		return nil, 0, err
 	}
 	selectStmt = m.db.Rebind(selectStmt)
-	log.Printf("[search] " + selectStmt)
 	rows, err := m.db.Query(selectStmt, selectArgs...)
 	if err != nil {
 		return nil, 0, err
