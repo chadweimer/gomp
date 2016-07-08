@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/context"
@@ -121,6 +122,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	clear := req.URL.Query().Get("clear")
 	if clear != "" {
 		delete(sess.Values, "q")
+		delete(sess.Values, "tags")
 		sess.Save(req, resp)
 		http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 		return
@@ -130,6 +132,16 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	if query == "" {
 		if sessQuery := sess.Values["q"]; sessQuery != nil {
 			query = sessQuery.(string)
+		}
+	}
+
+	var tags []string
+	tagStr := req.URL.Query().Get("tags")
+	if tagStr != "" {
+		tags = strings.Split(tagStr, ",")
+	} else {
+		if sessTags := sess.Values["tags"]; sessTags != nil {
+			tags = sessTags.([]string)
 		}
 	}
 
@@ -158,22 +170,23 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 	var recipes *models.Recipes
 	var total int64
-	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query}, page, count)
+	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags}, page, count)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 
 	sess.Values["q"] = query
+	sess.Values["tags"] = tags
 	sess.Values["view"] = viewType
 	sess.Save(req, resp)
 
 	data := context.Get(req).Data
-	data["Query"] = query
 	data["PageNum"] = page
 	data["PerPage"] = count
 	data["NumPages"] = int64(math.Ceil(float64(total) / float64(count)))
 	data["Recipes"] = recipes
 	data["SearchQuery"] = query
+	data["SearchTags"] = strings.Join(tags, ",")
 	data["ResultCount"] = total
 	data["ViewType"] = viewType
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
