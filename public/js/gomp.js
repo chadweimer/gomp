@@ -8,8 +8,8 @@ $(document).ready(function(){
   );
 });
 
-function initCreateEditRecipeForm() {
-    if ($('#create-recipe-container').length == 0 && $('#edit-recipe-container').length == 0) {
+function initEditRecipeForm() {
+    if ($('#edit-recipe-container').length == 0) {
         return
     }
 
@@ -35,4 +35,4 @@ function initCreateEditRecipeForm() {
     });
 }
 
-initCreateEditRecipeForm();
+initEditRecipeForm();

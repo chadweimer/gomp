@@ -194,7 +194,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 // CreateRecipe handles rendering the create recipe screen
 func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	rc.HTML(resp, http.StatusOK, "recipe/create", context.Get(req).Data)
+	rc.HTML(resp, http.StatusOK, "recipe/edit", context.Get(req).Data)
 }
 
 // CreateRecipePost handles processing the supplied form input from the create recipe screen

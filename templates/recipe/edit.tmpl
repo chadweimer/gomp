@@ -1,7 +1,7 @@
 {{ define "content-recipe/edit" }}
 <section id="edit-recipe-container" class="container">
     <header class="row">
-        <h4>Edit Recipe</h4>
+        <h4>{{if .Recipe}}Edit{{else}}Add{{end}} Recipe</h4>
     </header>
     <form method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}">
         <div class="row">
@@ -30,7 +30,7 @@
                 <label for="new-tag" class="active">Tags</label>
             </div>
             <div class="col s12 l12">
-                <span id="tags" class="">
+                <span id="tags">
                     {{range .Recipe.Tags}}
                     <span class="chip">
                         {{.}}
