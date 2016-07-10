@@ -103,3 +103,7 @@ nav .brand-logo.left {
 .card.tiny {
   height: 200px;
 }
+
+.card.tiny .card-content .card-title {
+  font-size: 1.1rem !important;
+}
