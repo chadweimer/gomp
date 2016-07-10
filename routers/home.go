@@ -13,7 +13,7 @@ func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p h
 	ctx := context.Get(req)
 
 	dinnerRecipes, dinnerCount, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"dinner"}}, 1, 4)
+		models.SearchFilter{Tags: []string{"dinner"}}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
@@ -21,7 +21,7 @@ func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p h
 	ctx.Data["DinnerRecipesCount"] = dinnerCount
 
 	lunchRecipes, lunchCount, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"lunch"}}, 1, 4)
+		models.SearchFilter{Tags: []string{"lunch"}}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
@@ -29,7 +29,7 @@ func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p h
 	ctx.Data["LunchRecipesCount"] = lunchCount
 
 	breakfastRecipes, breakfastCount, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"breakfast"}}, 1, 4)
+		models.SearchFilter{Tags: []string{"breakfast"}}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
