@@ -12,12 +12,31 @@ import (
 func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	ctx := context.Get(req)
 
-	dinnerRecipes, _, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"dinner"}}, 1, 3)
+	dinnerRecipes, dinnerCount, err := rc.model.Search.Find(
+		models.SearchFilter{Tags: []string{"dinner"}}, 1, 4)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["DinnerRecipes"] = dinnerRecipes
+	ctx.Data["DinnerRecipesCount"] = dinnerCount
 
+	lunchRecipes, lunchCount, err := rc.model.Search.Find(
+		models.SearchFilter{Tags: []string{"lunch"}}, 1, 4)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+	ctx.Data["LunchRecipes"] = lunchRecipes
+	ctx.Data["LunchRecipesCount"] = lunchCount
+
+	breakfastRecipes, breakfastCount, err := rc.model.Search.Find(
+		models.SearchFilter{Tags: []string{"breakfast"}}, 1, 4)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+	ctx.Data["BreakfastRecipes"] = breakfastRecipes
+	ctx.Data["BreakfastRecipesCount"] = breakfastCount
+
+	ctx.Data["HomeTitle"] = rc.cfg.HomeTitle
+	ctx.Data["HomeImage"] = rc.cfg.HomeImage
 	rc.HTML(resp, http.StatusOK, "home", context.Get(req).Data)
 }

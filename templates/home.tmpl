@@ -1,3 +1,60 @@
 {{ define "content-home" }}
-
+<section class="container">
+    <header class="center">
+    <h2 class="center">{{.HomeTitle}}</h2>
+    <img class="responsive-img" src="{{.HomeImage}}"/>
+    </header>
+</section>
+<section class="row">
+    <article class="col s12 l12">
+        <h5>Dinner</h5>
+        {{range .DinnerRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=dinner&clear=true">More Dinner Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Lunch</h5>
+        {{range .LunchRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=lunch&clear=true">More Lunch Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Breakfast</h5>
+        {{range .BreakfastRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=breakfast&clear=true">More Breakfast Recipes &gt;&gt;</a>
+    </article>
+</section>
 {{ end }}
+
+{{define "recipecard-home"}}
+<div class="col s12 m4 l2">
+    <article class="card tiny grey lighten-4 hoverable clickable"
+        onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
+        title="{{.Name}}">
+        {{if .Image}}
+        <section class="card-image">
+            <img src="{{.Image}}" class="darken-10">
+        </section>
+        {{end}}
+        <section class="rating-container">
+            <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
+        </section>
+        <section class="card-content truncate">
+            <span class="card-title">{{.Name}}</span>
+        </section>
+    </article>
+</div>
+{{end}}
