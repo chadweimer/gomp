@@ -31,7 +31,7 @@
 {{ end }}
 
 {{define "recipecard-home"}}
-<div class="col s12 m4 l2">
+<div class="col s6 m4 l2">
     <article class="card tiny grey lighten-4 hoverable clickable"
         onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
         title="{{.Name}}">
@@ -53,7 +53,7 @@
             <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
         </section>
         <section class="card-content truncate">
-            <span class="card-title">{{.Name}}</span>
+            <span class="light">{{.Name}}</span>
         </section>
     </article>
 </div>
