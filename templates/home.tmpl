@@ -56,6 +56,13 @@
         <a class="right" href="{{RootUrlPath}}/recipes?tags=vegetarian&clear=true">{{.VegetarianCount}} Vegetarian Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
+        <h5>Sides</h5>
+        {{range .SideRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=side,sides&clear=true">{{.SideCount}} Side Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
         <h5>Drinks</h5>
         {{range .DrinkRecipes}}
             {{template "recipecard-home" .}}

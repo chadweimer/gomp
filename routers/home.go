@@ -12,13 +12,13 @@ import (
 func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	ctx := context.Get(req)
 
-	dinnerRecipes, dinnerCount, err := rc.model.Search.Find(
+	allRecipes, allCount, err := rc.model.Search.Find(
 		models.SearchFilter{SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
-	ctx.Data["Recipes"] = dinnerRecipes
-	ctx.Data["RecipesCount"] = dinnerCount
+	ctx.Data["Recipes"] = allRecipes
+	ctx.Data["RecipesCount"] = allCount
 
 	drinkRecipes, drinkCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"drink", "cocktail"}, SortBy: models.SortByRandom}, 1, 6)
@@ -75,6 +75,14 @@ func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p h
 	}
 	ctx.Data["PastaRecipes"] = pastaRecipes
 	ctx.Data["PastaCount"] = pastaCount
+
+	sideRecipes, sideCount, err := rc.model.Search.Find(
+		models.SearchFilter{Tags: []string{"side", "sides"}, SortBy: models.SortByRandom}, 1, 6)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+	ctx.Data["SideRecipes"] = sideRecipes
+	ctx.Data["SideCount"] = sideCount
 
 	ctx.Data["HomeTitle"] = rc.cfg.HomeTitle
 	ctx.Data["HomeImage"] = rc.cfg.HomeImage
