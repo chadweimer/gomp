@@ -74,11 +74,9 @@ func main() {
 
 	if cfg.UploadDriver == "fs" {
 		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
-		static.Prefix = "/uploads"
 		n.UseFunc(rc.RequireAuthentication(static))
 	} else if cfg.UploadDriver == "s3" {
 		s3Static := upload.NewS3Static(cfg)
-		s3Static.Prefix = "/uploads"
 		n.UseFunc(rc.RequireAuthentication(s3Static))
 	}
 
