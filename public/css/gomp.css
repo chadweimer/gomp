@@ -55,7 +55,7 @@ img.darken-10 {
 .rating-container > .whole {
     -webkit-clip-path: inset(0 0 0 50%);
             clip-path: inset(0 0 0 50%);
-    margin-left: -10%;
+    margin-left: -100%;
 }
 
 .rating-container > .half {
@@ -77,4 +77,33 @@ img.darken-10 {
 nav .brand-logo.left {
   left: 0.5rem;
   padding: 0;
+}
+
+.card.tiny {
+  position: relative;
+}
+
+.card.tiny .card-image {
+  max-height: 60%;
+  overflow: hidden;
+}
+
+.card.tiny .card-content {
+  max-height: 40%;
+  overflow: hidden;
+}
+
+.card.tiny .card-action {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.card.tiny {
+  height: 200px;
+}
+
+.card.tiny .card-content .card-title {
+  font-size: 1.1rem !important;
 }

@@ -1,5 +1,95 @@
 {{ define "content-home" }}
-Welcome to GOMP: Go Meal Planner
-
-<p><a href="{{RootUrlPath}}/recipes">View Recipes</a></p>
+<section class="container">
+    <header class="center">
+    <h2 class="center">{{.HomeTitle}}</h2>
+    <img class="responsive-img" src="{{.HomeImage}}"/>
+    </header>
+</section>
+<section class="row">
+    <article class="col s12 l12">
+        <h5>Recipes</h5>
+        {{range .Recipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?clear=true">{{.RecipesCount}} Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Beef</h5>
+        {{range .BeefRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=beef,steak&clear=true">{{.BeefCount}} Beef Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Poultry</h5>
+        {{range .PoultryRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=poultry,chicken,turkey&clear=true">{{.PoultryCount}} Poultry Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Pork</h5>
+        {{range .PorkRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=pork&clear=true">{{.PorkCount}} Pork Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Seafood</h5>
+        {{range .SeafoodRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=seafood,fish&clear=true">{{.SeafoodCount}} Seafood Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Pasta</h5>
+        {{range .PastaRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=pasta&clear=true">{{.PastaCount}} Pasta Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Vegetarian</h5>
+        {{range .VegetarianRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=vegetarian&clear=true">{{.VegetarianCount}} Vegetarian Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Drinks</h5>
+        {{range .DrinkRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=drink,cocktail&clear=true">{{.DrinkCount}} Drink Recipes &gt;&gt;</a>
+    </article>
+</section>
 {{ end }}
+
+{{define "recipecard-home"}}
+<div class="col s6 m4 l2">
+    <article class="card tiny grey lighten-4 hoverable clickable"
+        onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
+        title="{{.Name}}">
+        {{if .Image}}
+        <section class="card-image">
+            <img src="{{.Image}}" class="darken-10">
+        </section>
+        {{end}}
+        <section class="rating-container">
+            <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
+            <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
+            <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
+        </section>
+        <section class="card-content truncate">
+            <span class="card-title">{{.Name}}</span>
+        </section>
+    </article>
+</div>
+{{end}}

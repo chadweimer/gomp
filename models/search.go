@@ -7,10 +7,21 @@ type SearchModel struct {
 	*Model
 }
 
+// SortBy represents an enumeration of possible sort fields
+type SortBy int
+
+const (
+	SortByName   SortBy = 0
+	SortByID     SortBy = 1
+	SortByDate   SortBy = 2
+	SortByRandom SortBy = 3
+)
+
 // SearchFilter is the primary model class for recipe search
 type SearchFilter struct {
-	Query string
-	Tags  []string
+	Query  string
+	Tags   []string
+	SortBy SortBy
 }
 
 // Find retrieves all recipes matching the specified search filter and within the range specified,
@@ -31,14 +42,12 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 		like = "ILIKE"
 	}
 	partialStmt := "FROM recipe AS r " +
-		"LEFT OUTER JOIN recipe_tag AS t ON t.recipe_id = r.id " +
-		"LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id " +
-		"WHERE (r.name " + like + " ? OR r.Ingredients " + like + " ? OR r.directions " + like + " ? OR t.tag " + like + " ?)"
+		"WHERE (r.name " + like + " ? OR r.Ingredients " + like + " ? OR r.directions " + like + " ? OR EXISTS (SELECT 1 FROM recipe_tag as t WHERE t.recipe_id = r.id AND t.tag " + like + " ?))"
 	if len(filter.Tags) > 0 {
-		partialStmt = partialStmt + " AND (t.tag IN (?))"
+		partialStmt += " AND EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))"
 	}
 
-	countStmt := "SELECT count(DISTINCT r.id) " + partialStmt
+	countStmt := "SELECT count(r.id) " + partialStmt
 	var err error
 	var countArgs []interface{}
 	if len(filter.Tags) == 0 {
@@ -56,10 +65,21 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 	}
 
 	offset := count * (page - 1)
-	selectStmt := "SELECT DISTINCT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) " +
-		partialStmt +
-		" ORDER BY r.name LIMIT ? OFFSET ?"
+	selectStmt := "SELECT " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0)" +
+		partialStmt
+	switch filter.SortBy {
+	case SortByID:
+		selectStmt += " ORDER BY r.id"
+	case SortByName:
+		selectStmt += " ORDER BY r.name"
+	// TODO: Don't have date columns yet
+	//case SortByDate:
+	//	selectStmt += " ORDER BY r.created_on"
+	case SortByRandom:
+		selectStmt += " ORDER BY RANDOM()"
+	}
+	selectStmt += " LIMIT ? OFFSET ?"
 	var selectArgs []interface{}
 	if len(filter.Tags) == 0 {
 		selectStmt, selectArgs, err = sqlx.In(selectStmt, search, search, search, search, count, offset)

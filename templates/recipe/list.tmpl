@@ -87,7 +87,7 @@
 {{ end }}
 
 {{define "pagination-recipe/list"}}
-{{$baseLink := .Query | printf "?q=%s&page="}}
+{{$baseLink := .SearchQuery | printf "?q=%s&page="}}
 <ul class="pagination no-padding col s12 l12 center">
     <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
         <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>

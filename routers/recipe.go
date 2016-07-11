@@ -123,9 +123,6 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	if clear != "" {
 		delete(sess.Values, "q")
 		delete(sess.Values, "tags")
-		sess.Save(req, resp)
-		http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
-		return
 	}
 
 	query := req.URL.Query().Get("q")
