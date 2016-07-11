@@ -12,68 +12,69 @@ import (
 func (rc *RouteController) Home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	ctx := context.Get(req)
 
-	dinnerRecipes, _, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"dinner"}, SortBy: models.SortByRandom}, 1, 6)
+	dinnerRecipes, dinnerCount, err := rc.model.Search.Find(
+		models.SearchFilter{SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
-	ctx.Data["DinnerRecipes"] = dinnerRecipes
+	ctx.Data["Recipes"] = dinnerRecipes
+	ctx.Data["RecipesCount"] = dinnerCount
 
-	lunchRecipes, _, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"lunch"}, SortBy: models.SortByRandom}, 1, 6)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-	ctx.Data["LunchRecipes"] = lunchRecipes
-
-	breakfastRecipes, _, err := rc.model.Search.Find(
-		models.SearchFilter{Tags: []string{"breakfast"}, SortBy: models.SortByRandom}, 1, 6)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-	ctx.Data["BreakfastRecipes"] = breakfastRecipes
-
-	drinkRecipes, _, err := rc.model.Search.Find(
+	drinkRecipes, drinkCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"drink", "cocktail"}, SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["DrinkRecipes"] = drinkRecipes
+	ctx.Data["DrinkCount"] = drinkCount
 
-	beefRecipes, _, err := rc.model.Search.Find(
+	beefRecipes, beefCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"beef", "steak"}, SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["BeefRecipes"] = beefRecipes
+	ctx.Data["BeefCount"] = beefCount
 
-	poultryRecipes, _, err := rc.model.Search.Find(
+	poultryRecipes, poultryCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"poultry", "chicken", "turkey"}, SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["PoultryRecipes"] = poultryRecipes
+	ctx.Data["PoultryCount"] = poultryCount
 
-	porkRecipes, _, err := rc.model.Search.Find(
+	porkRecipes, porkCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"pork"}, SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["PorkRecipes"] = porkRecipes
+	ctx.Data["PorkCount"] = porkCount
 
-	seafoodRecipes, _, err := rc.model.Search.Find(
+	seafoodRecipes, seafoodCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"seafood", "fish"}, SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["SeafoodRecipes"] = seafoodRecipes
+	ctx.Data["SeafoodCount"] = seafoodCount
 
-	vegetarianRecipes, _, err := rc.model.Search.Find(
+	vegetarianRecipes, vegetarianCount, err := rc.model.Search.Find(
 		models.SearchFilter{Tags: []string{"vegetarian"}, SortBy: models.SortByRandom}, 1, 6)
 	if rc.HasError(resp, req, err) {
 		return
 	}
 	ctx.Data["VegetarianRecipes"] = vegetarianRecipes
+	ctx.Data["VegetarianCount"] = vegetarianCount
+
+	pastaRecipes, pastaCount, err := rc.model.Search.Find(
+		models.SearchFilter{Tags: []string{"pasta"}, SortBy: models.SortByRandom}, 1, 6)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+	ctx.Data["PastaRecipes"] = pastaRecipes
+	ctx.Data["PastaCount"] = pastaCount
 
 	ctx.Data["HomeTitle"] = rc.cfg.HomeTitle
 	ctx.Data["HomeImage"] = rc.cfg.HomeImage

@@ -7,67 +7,60 @@
 </section>
 <section class="row">
     <article class="col s12 l12">
-        <h5>Dinner</h5>
-        {{range .DinnerRecipes}}
+        <h5>Recipes</h5>
+        {{range .Recipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=dinner&clear=true">More Dinner Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Lunch</h5>
-        {{range .LunchRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=lunch&clear=true">More Lunch Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Breakfast</h5>
-        {{range .BreakfastRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=breakfast&clear=true">More Breakfast Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?clear=true">{{.RecipesCount}} Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Beef</h5>
         {{range .BeefRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=beef,steak&clear=true">More Beef Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=beef,steak&clear=true">{{.BeefCount}} Beef Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Poultry</h5>
         {{range .PoultryRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=poultry,chicken,turkey&clear=true">More Poultry Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=poultry,chicken,turkey&clear=true">{{.PoultryCount}} Poultry Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Pork</h5>
         {{range .PorkRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=pork&clear=true">More Pork Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=pork&clear=true">{{.PorkCount}} Pork Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Seafood</h5>
         {{range .SeafoodRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=seafood,fish&clear=true">More Seafood Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=seafood,fish&clear=true">{{.SeafoodCount}} Seafood Recipes &gt;&gt;</a>
+    </article>
+    <article class="col s12 l12">
+        <h5>Pasta</h5>
+        {{range .PastaRecipes}}
+            {{template "recipecard-home" .}}
+        {{end}}
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=pasta&clear=true">{{.PastaCount}} Pasta Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Vegetarian</h5>
         {{range .VegetarianRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=vegetarian&clear=true">More Vegetarian Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=vegetarian&clear=true">{{.VegetarianCount}} Vegetarian Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Drinks</h5>
         {{range .DrinkRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=drink,cocktail&clear=true">More Drink Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=drink,cocktail&clear=true">{{.DrinkCount}} Drink Recipes &gt;&gt;</a>
     </article>
 </section>
 {{ end }}
