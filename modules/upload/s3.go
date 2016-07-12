@@ -152,6 +152,11 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 			return
 		}
 	}
+	// if the path is '/', move along because we'll just get bucket information
+	if filePath == "/" {
+		next(rw, r)
+		return
+	}
 
 	svc := s3.New(session.New())
 
