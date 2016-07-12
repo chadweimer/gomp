@@ -100,11 +100,11 @@ func (u S3Driver) List(keyPrefix string) ([]FileInfo, error) {
 	for _, object := range listOutput.Contents {
 		urlSegments := strings.Split(*object.Key, "/")
 		name := urlSegments[len(urlSegments)-1]
-		origURL := "/uploads/" + *object.Key
+		origURL := "/" + *object.Key
 
 		// TODO: Should we do a HEAD or similar request to ensure the thumbnail exists?
 		thumbKey := strings.Replace(*object.Key, "/images/", "/thumbs/", 1)
-		thumbURL := "/uploads/" + thumbKey
+		thumbURL := "/" + thumbKey
 
 		fileInfo := FileInfo{
 			Name:         name,
