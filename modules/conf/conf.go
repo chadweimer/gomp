@@ -27,6 +27,20 @@ type Config struct {
 	// When using Amazon S3, this should be set to the bucket name.
 	UploadPath string
 
+	// FaviconRootPath defines the path, relative to RootURLPath, under which the favicon
+	// and other similar files are located. The following files should be included at this path:
+	// * android-chrome-192x192.png (192x192)
+	// * android-chrome-512x512.png (512x512)
+	// * apple-touch-icon.png (180x180)
+	// * favicon.ico
+	// * favicon-32x32.png (32x32)
+	// * favicon-16x16.png (16x16)
+	// * mstile-150x150.png
+	// * safari-pinned-tab.svg
+	// * manifest.json
+	// * browserconfig.xml
+	FaviconRootPath string
+
 	// IsDevelopment defines whether to run the application in "development mode".
 	// Development mode turns on additional features, such as logging, that may
 	// not be desirable in a production environment.
@@ -60,6 +74,7 @@ func Load(path string) *Config {
 		Port:             4000,
 		UploadDriver:     "fs",
 		UploadPath:       filepath.Join("data", "uploads"),
+		FaviconRootPath:  "",
 		IsDevelopment:    false,
 		SecretKey:        "Secret123",
 		ApplicationTitle: "GOMP: Go Meal Planner",
@@ -74,6 +89,7 @@ func Load(path string) *Config {
 	loadEnv("PORT", &c.Port)
 	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
 	loadEnv("GOMP_UPLOAD_PATH", &c.UploadPath)
+	loadEnv("GOMP_FAVICON_ROOT_PATH", &c.FaviconRootPath)
 	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
 	loadEnv("GOMP_SECRET_KEY", &c.SecretKey)
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
@@ -87,6 +103,7 @@ func Load(path string) *Config {
 		log.Printf("[config] Port=%d", c.Port)
 		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
 		log.Printf("[config] UploadPath=%s", c.UploadPath)
+		log.Printf("[config] FaviconRootPath=%s", c.FaviconRootPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecretKey=%s", c.SecretKey)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
