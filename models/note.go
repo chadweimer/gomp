@@ -44,25 +44,13 @@ func (m *NoteModel) Create(note *Note) error {
 func (m *NoteModel) CreateTx(note *Note, tx *sqlx.Tx) error {
 	now := time.Now()
 	sql := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4)"
+		"VALUES ($1, $2, $3, $4) RETURNING id"
 
 	var id int64
-	if m.cfg.DatabaseDriver == "sqlite3" {
-		result, err := tx.Exec(sql, note.RecipeID, note.Note, now, now)
-		if err != nil {
-			return err
-		}
-		id, err = result.LastInsertId()
-		if err != nil {
-			return err
-		}
-	} else {
-		sql = sql + " RETURNING id"
-		row := tx.QueryRow(sql, note.RecipeID, note.Note, now, now)
-		err := row.Scan(&id)
-		if err != nil {
-			return err
-		}
+	row := tx.QueryRow(sql, note.RecipeID, note.Note, now, now)
+	err := row.Scan(&id)
+	if err != nil {
+		return err
 	}
 
 	note.ID = id
