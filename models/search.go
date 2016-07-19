@@ -34,15 +34,8 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 	} else {
 		search = "%" + filter.Query + "%"
 	}
-	var like string
-	switch m.cfg.DatabaseDriver {
-	case "sqlite3":
-		like = "LIKE"
-	case "postgres":
-		like = "ILIKE"
-	}
 	partialStmt := "FROM recipe AS r " +
-		"WHERE (r.name " + like + " ? OR r.Ingredients " + like + " ? OR r.directions " + like + " ? OR EXISTS (SELECT 1 FROM recipe_tag as t WHERE t.recipe_id = r.id AND t.tag " + like + " ?))"
+		"WHERE (r.name ILIKE ? OR r.Ingredients ILIKE ? OR r.directions ILIKE ? OR EXISTS (SELECT 1 FROM recipe_tag as t WHERE t.recipe_id = r.id AND t.tag ILIKE ?))"
 	if len(filter.Tags) > 0 {
 		partialStmt += " AND EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))"
 	}

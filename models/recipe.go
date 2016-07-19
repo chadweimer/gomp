@@ -47,27 +47,14 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 // the specified transaction.
 func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	sql := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions) " +
-		"VALUES ($1, $2, $3, $4, $5)"
+		"VALUES ($1, $2, $3, $4, $5) RETURNING id"
 
 	var id int64
-	if m.cfg.DatabaseDriver == "sqlite3" {
-		result, err := tx.Exec(sql,
-			recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
-		if err != nil {
-			return err
-		}
-		id, err = result.LastInsertId()
-		if err != nil {
-			return err
-		}
-	} else {
-		sql = sql + " RETURNING id"
-		row := tx.QueryRow(sql,
-			recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
-		err := row.Scan(&id)
-		if err != nil {
-			return err
-		}
+	row := tx.QueryRow(sql,
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
+	err := row.Scan(&id)
+	if err != nil {
+		return err
 	}
 
 	for _, tag := range recipe.Tags {
