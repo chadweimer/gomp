@@ -35,6 +35,7 @@ func main() {
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"RootUrlPath":      func() string { return cfg.RootURLPath },
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
+			"FaviconRootPath":  func() string { return cfg.FaviconRootPath },
 
 			"ToLower":     strings.ToLower,
 			"QueryEscape": url.QueryEscape,
