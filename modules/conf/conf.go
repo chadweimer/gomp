@@ -20,7 +20,7 @@ type Config struct {
 	Port int
 
 	// UploadDriver is used to select which backend data store is used for file uploads.
-	// Available choises are: fs, s3
+	// Supported drivers: fs, s3
 	UploadDriver string
 
 	// UploadPath gets the path (full or relative) under which to store uploads.
@@ -59,7 +59,7 @@ type Config struct {
 	HomeImage string
 
 	// DatabaseDriver gets which database/sql driver to use.
-	// Supported drivers: sqlite3, postgres
+	// Supported drivers: postgres
 	DatabaseDriver string
 
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
@@ -80,8 +80,8 @@ func Load(path string) *Config {
 		ApplicationTitle: "GOMP: Go Meal Planner",
 		HomeTitle:        "",
 		HomeImage:        "",
-		DatabaseDriver:   "sqlite3",
-		DatabaseURL:      "sqlite3://data/gomp.db",
+		DatabaseDriver:   "postgres",
+		DatabaseURL:      "",
 	}
 
 	// If environment variables are set, use them.
@@ -143,8 +143,12 @@ func (c *Config) Validate() error {
 		return errors.New("GOMP_APPLICATION_TITLE must be specified")
 	}
 
-	if c.DatabaseDriver != "sqlite3" && c.DatabaseDriver != "postgres" {
-		return errors.New("DATABASE_DRIVER must be one of ('sqlite3', 'postgres')")
+	if c.DatabaseDriver != "postgres" {
+		return errors.New("DATABASE_DRIVER must be one of ('postgres')")
+	}
+
+	if c.DatabaseURL == "" {
+		return errors.New("DATABASE_URL must be specified")
 	}
 
 	_, err = url.Parse(c.DatabaseURL)

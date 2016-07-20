@@ -177,11 +177,6 @@
 			"Rev": "ce1b59bb819416ca67422929b1cb48bb342720b6"
 		},
 		{
-			"ImportPath": "github.com/mattes/migrate/driver/sqlite3",
-			"Comment": "v1.2.0-70-gce1b59b",
-			"Rev": "ce1b59bb819416ca67422929b1cb48bb342720b6"
-		},
-		{
 			"ImportPath": "github.com/mattes/migrate/file",
 			"Comment": "v1.2.0-70-gce1b59b",
 			"Rev": "ce1b59bb819416ca67422929b1cb48bb342720b6"
@@ -200,11 +195,6 @@
 			"ImportPath": "github.com/mattes/migrate/pipe",
 			"Comment": "v1.2.0-70-gce1b59b",
 			"Rev": "ce1b59bb819416ca67422929b1cb48bb342720b6"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-sqlite3",
-			"Comment": "v1.1.0-67-g7204887",
-			"Rev": "7204887cf3a42df1cfaa5505dc3a3427f6dded8b"
 		},
 		{
 			"ImportPath": "github.com/mholt/binding",
