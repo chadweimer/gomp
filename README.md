@@ -7,8 +7,7 @@ Web-based recipe book.
 
 ## Configuration
 
-The folliwing table summarizes the available configuration settings, which are settable through environment variables.
-If a setting is present in both the configuration file and OS environment variable, the value in the file is used.
+The following table summarizes the available configuration settings, which are settable through environment variables.
 
 | ENV                      | Value    | Default               |
 |--------------------------|----------|-----------------------|
