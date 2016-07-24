@@ -174,7 +174,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, imageData []byte) (strin
 	// Save the original image
 	origDir := getDirPathForImage(imageInfo.RecipeID)
 	origPath := filepath.Join(origDir, imageInfo.Name)
-	origURL := filepath.ToSlash(filepath.Join("/uploads", origPath))
+	origURL := filepath.ToSlash(filepath.Join("/uploads/", origPath))
 	err = m.upl.Save(origPath, imageData)
 	if err != nil {
 		return "", "", err
@@ -183,7 +183,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, imageData []byte) (strin
 	// Save the thumbnail image
 	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
 	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
-	thumbURL := filepath.ToSlash(filepath.Join("/uploads", thumbPath))
+	thumbURL := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
 	err = m.upl.Save(thumbPath, thumbBuf.Bytes())
 	if err != nil {
 		return "", "", err
