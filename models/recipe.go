@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -26,6 +27,23 @@ type Recipe struct {
 
 // Recipes represents a collection of Recipe objects
 type Recipes []Recipe
+
+func (m *RecipeModel) migrate(tx *sqlx.Tx) error {
+	if m.Model.currentDbVersion == 3 && m.Model.previousDbVersion < 3 {
+		ids, err := m.listAllIds()
+		if err != nil {
+			return err
+		}
+		for _, id := range ids {
+			log.Printf("[migrate] Processing recipe %d", id)
+			if err := m.Model.Images.migrateImages(id, tx); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
 
 // Create stores the recipe in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
@@ -193,50 +211,24 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 }
 
 // List retrieves all recipes within the range specified, sorted by name.
-func (m *RecipeModel) List(page int64, count int64) (*Recipes, int64, error) {
-	var total int64
-	row := m.db.QueryRow("SELECT count(*) FROM recipe")
-	if err := row.Scan(&total); err != nil {
-		return nil, 0, err
-	}
-
-	offset := count * (page - 1)
-	rows, err := m.db.Query(
-		"SELECT DISTINCT "+
-			"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) "+
-			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
-			"ORDER BY r.name LIMIT $1 OFFSET $2",
-		count, offset)
+func (m *RecipeModel) listAllIds() ([]int64, error) {
+	rows, err := m.db.Query("SELECT id FROM recipe")
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	var recipes Recipes
+	var ids []int64
 	for rows.Next() {
-		var recipe Recipe
-		err = rows.Scan(
-			&recipe.ID,
-			&recipe.Name,
-			&recipe.ServingSize,
-			&recipe.NutritionInfo,
-			&recipe.Ingredients,
-			&recipe.Directions,
-			&recipe.AvgRating)
+		var id int64
+		err = rows.Scan(&id)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 
-		imgs, err := m.Images.List(recipe.ID)
-		if err == nil {
-			if len(*imgs) > 0 {
-				recipe.Image = (*imgs)[0].ThumbnailURL
-			}
-		}
-
-		recipes = append(recipes, recipe)
+		ids = append(ids, id)
 	}
 
-	return &recipes, total, nil
+	return ids, nil
 }
 
 // SetRating adds or updates the rating of the specified recipe.

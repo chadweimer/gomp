@@ -2,15 +2,18 @@ package models
 
 import (
 	"bytes"
+	"database/sql"
 	"errors"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/disintegration/imaging"
+	"github.com/jmoiron/sqlx"
 	"github.com/rwcarlsen/goexif/exif"
 )
 
@@ -22,10 +25,13 @@ type RecipeImageModel struct {
 
 // RecipeImage represents the data associated with an image attached to a recipe
 type RecipeImage struct {
+	ID           int64
 	RecipeID     int64
 	Name         string
 	URL          string
 	ThumbnailURL string
+	CreatedAt    time.Time
+	ModifiedAt   time.Time
 }
 
 // RecipeImages represents a collection of RecipeImage objects
@@ -45,17 +51,86 @@ func NewRecipeImageModel(model *Model) *RecipeImageModel {
 	return &RecipeImageModel{Model: model, upl: upl}
 }
 
+func (m *RecipeImageModel) migrateImages(recipeID int64, tx *sqlx.Tx) error {
+	files, err := m.upl.List(getDirPathForRecipe(recipeID))
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		log.Printf("[migrate] Processing file %s", file.URL)
+		image := &RecipeImage{
+			RecipeID:     recipeID,
+			Name:         file.Name,
+			URL:          file.URL,
+			ThumbnailURL: file.ThumbnailURL,
+		}
+		if err := m.createImpl(image, tx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Create saves the image using the backing upload.Driver and creates
+// an associated record in the database using a dedicated transation
+// that is committed if there are not errors.
+func (m *RecipeImageModel) Create(imageInfo *RecipeImage, imageData []byte) error {
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	err = m.CreateTx(imageInfo, imageData, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// CreateTx saves the image using the backing upload.Driver and creates
+// an associated record in the database using the specified transaction.
+func (m *RecipeImageModel) CreateTx(imageInfo *RecipeImage, imageData []byte, tx *sqlx.Tx) error {
+	origURL, thumbURL, err := m.save(imageInfo, imageData)
+	if err != nil {
+		return err
+	}
+
+	// Since uploading the image was successful, add a record to the DB
+	imageInfo.URL = origURL
+	imageInfo.ThumbnailURL = thumbURL
+	return m.createImpl(imageInfo, tx)
+}
+
+func (m *RecipeImageModel) createImpl(image *RecipeImage, tx *sqlx.Tx) error {
+	now := time.Now()
+	sql := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
+		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+
+	var id int64
+	row := tx.QueryRow(sql, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now)
+	err := row.Scan(&id)
+	if err != nil {
+		return err
+	}
+
+	image.ID = id
+	return nil
+}
+
 // Save saves the supplied image data as an attachment on the specified recipe
-func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error {
-	ok, contentType := isImageFile(data)
+func (m *RecipeImageModel) save(imageInfo *RecipeImage, imageData []byte) (string, string, error) {
+	ok, contentType := isImageFile(imageData)
 	if !ok {
-		return errors.New("Attachment must be an image")
+		return "", "", errors.New("Attachment must be an image")
 	}
 
 	// First decode the image
-	image, err := imaging.Decode(bytes.NewReader(data))
+	image, err := imaging.Decode(bytes.NewReader(imageData))
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// Then generate a thumbnail image
@@ -64,7 +139,7 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 	// Use the EXIF data to determine the orientation of the original image.
 	// This data is lost when generating the thumbnail, so it's needed into
 	// order to potentially explicitly rotate it.
-	exifData, err := exif.Decode(bytes.NewReader(data))
+	exifData, err := exif.Decode(bytes.NewReader(imageData))
 	if err == nil {
 		orientationTag, err := exifData.Get(exif.Orientation)
 		if err == nil {
@@ -93,62 +168,144 @@ func (m *RecipeImageModel) Save(recipeID int64, name string, data []byte) error 
 	thumbBuf := new(bytes.Buffer)
 	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType))
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// Save the original image
-	origDir := getDirPathForImage(recipeID)
-	origPath := filepath.Join(origDir, name)
-	err = m.upl.Save(origPath, data)
+	origDir := getDirPathForImage(imageInfo.RecipeID)
+	origPath := filepath.Join(origDir, imageInfo.Name)
+	origURL := filepath.ToSlash(origPath)
+	err = m.upl.Save(origPath, imageData)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 
 	// Save the thumbnail image
-	thumbDir := getDirPathForThumbnail(recipeID)
-	thumbPath := filepath.Join(thumbDir, name)
+	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
+	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
+	thumbURL := filepath.ToSlash(thumbPath)
 	err = m.upl.Save(thumbPath, thumbBuf.Bytes())
+	if err != nil {
+		return "", "", err
+	}
+
+	return origURL, thumbURL, nil
+}
+
+// ReadTx retrieves the information about the recipe from the database, if found,
+// using the specified transaction. If no recipe exists with the specified ID,
+// a NoRecordFound error is returned.
+func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
+	image := RecipeImage{ID: id}
+
+	result := m.db.QueryRow(
+		"SELECT recipe_id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image WHERE id = $1",
+		image.ID)
+	err := result.Scan(
+		&image.RecipeID,
+		&image.Name,
+		&image.URL,
+		&image.ThumbnailURL,
+		&image.CreatedAt,
+		&image.ModifiedAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &image, nil
+}
+
+// List retrieves all images associated with the recipe with the specified id.
+func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
+	rows, err := m.db.Query(
+		"SELECT id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image "+
+			"WHERE recipe_id = $1 ORDER BY created_at ASC",
+		recipeID)
+	if err != nil {
+		return nil, err
+	}
+
+	var images RecipeImages
+	for rows.Next() {
+		var image RecipeImage
+		err = rows.Scan(&image.ID, &image.Name, &image.URL, &image.ThumbnailURL, &image.CreatedAt, &image.ModifiedAt)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, image)
+	}
+
+	return &images, nil
+}
+
+// Delete removes the specified image from the backing store and database
+// using a dedicated transation that is committed if there are not errors.
+func (m *RecipeImageModel) Delete(id int64) error {
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	err = m.DeleteTx(id, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// DeleteTx removes the specified image from the backing store and database
+// using the specified transaction.
+func (m *RecipeImageModel) DeleteTx(id int64, tx *sqlx.Tx) error {
+	image, err := m.ReadTx(id, tx)
+	if err != nil {
+		return err
+	}
+
+	var origPath = filepath.FromSlash(image.URL)
+	if err := m.upl.Delete(origPath); err != nil {
+		return err
+	}
+	var thumbPath = filepath.FromSlash(image.ThumbnailURL)
+	if err := m.upl.Delete(thumbPath); err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("DELETE FROM recipe_image WHERE id = $1", id)
 	return err
 }
 
-// List returns a RecipeImages slice that contains data for all images
-// attached to the specified recipe
-func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
-	fileInfos, err := m.upl.List(getDirPathForRecipe(recipeID))
+// DeleteAll removes all images for the specified recipe from the database
+// using a dedicated transation that is committed if there are not errors.
+func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
+	tx, err := m.db.Beginx()
 	if err != nil {
-		return new(RecipeImages), err
-	}
-
-	// TODO: Restrict based on file extension?
-	var imgs RecipeImages
-	for _, fileInfo := range fileInfos {
-		img := RecipeImage{
-			RecipeID:     recipeID,
-			Name:         fileInfo.Name,
-			URL:          fileInfo.URL,
-			ThumbnailURL: fileInfo.ThumbnailURL,
-		}
-
-		imgs = append(imgs, img)
-	}
-
-	return &imgs, nil
-}
-
-// Delete deletes a single image attached to the specified recipe
-func (m *RecipeImageModel) Delete(recipeID int64, name string) error {
-	var mainImgPath = filepath.Join(getDirPathForImage(recipeID), name)
-	if err := m.upl.Delete(mainImgPath); err != nil {
 		return err
 	}
-	var thumbImgPath = filepath.Join(getDirPathForThumbnail(recipeID), name)
-	return m.upl.Delete(thumbImgPath)
+
+	err = m.DeleteAllTx(recipeID, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
-// DeleteAll deletes all the images attached to the specified recipe
-func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
+// DeleteAllTx removes all images for the specified recipe from the database
+// using the specified transaction.
+func (m *RecipeImageModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	dirPath := getDirPathForRecipe(recipeID)
-	return m.upl.DeleteAll(dirPath)
+	err := m.upl.DeleteAll(dirPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(
+		"DELETE FROM recipe_note WHERE recipe_id = $1",
+		recipeID)
+	return err
 }
 
 func isImageFile(data []byte) (bool, string) {
