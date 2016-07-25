@@ -98,6 +98,10 @@ func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error)
 }
 
 func (m *Model) postMigrate() error {
+	if m.previousDbVersion == m.currentDbVersion {
+		return nil
+	}
+
 	tx, err := m.db.Beginx()
 	if err != nil {
 		return err

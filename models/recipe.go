@@ -29,14 +29,21 @@ type Recipe struct {
 type Recipes []Recipe
 
 func (m *RecipeModel) migrate(tx *sqlx.Tx) error {
-	if m.Model.currentDbVersion == 3 && m.Model.previousDbVersion < 3 {
-		ids, err := m.listAllIds()
+	if m.Model.currentDbVersion >= 3 && m.Model.previousDbVersion < 3 {
+		rows, err := m.db.Query("SELECT id FROM recipe")
 		if err != nil {
 			return err
 		}
-		for _, id := range ids {
-			log.Printf("[migrate] Processing recipe %d", id)
-			if err := m.Model.Images.migrateImages(id, tx); err != nil {
+
+		for rows.Next() {
+			var recipeID int64
+			err = rows.Scan(&recipeID)
+			if err != nil {
+				return err
+			}
+
+			log.Printf("[migrate] Processing recipe %d", recipeID)
+			if err := m.Model.Images.migrateImages(recipeID, tx); err != nil {
 				return err
 			}
 		}
@@ -208,27 +215,6 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 	}
 
 	return nil
-}
-
-// List retrieves all recipes within the range specified, sorted by name.
-func (m *RecipeModel) listAllIds() ([]int64, error) {
-	rows, err := m.db.Query("SELECT id FROM recipe")
-	if err != nil {
-		return nil, err
-	}
-
-	var ids []int64
-	for rows.Next() {
-		var id int64
-		err = rows.Scan(&id)
-		if err != nil {
-			return nil, err
-		}
-
-		ids = append(ids, id)
-	}
-
-	return ids, nil
 }
 
 // SetRating adds or updates the rating of the specified recipe.

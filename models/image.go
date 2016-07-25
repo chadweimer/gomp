@@ -193,7 +193,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 
 // ReadTx retrieves the information about the recipe from the database, if found,
 // using the specified transaction. If no recipe exists with the specified ID,
-// a NoRecordFound error is returned.
+// a ErrNotFound error is returned.
 func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	image := RecipeImage{ID: id}
 
@@ -216,7 +216,8 @@ func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	return &image, nil
 }
 
-// List retrieves all images associated with the recipe with the specified id.
+// List returns a RecipeImages slice that contains data for all images
+// attached to the specified recipe.
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 	rows, err := m.db.Query(
 		"SELECT id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image "+
@@ -302,7 +303,7 @@ func (m *RecipeImageModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	}
 
 	_, err = tx.Exec(
-		"DELETE FROM recipe_note WHERE recipe_id = $1",
+		"DELETE FROM recipe_image WHERE recipe_id = $1",
 		recipeID)
 	return err
 }
