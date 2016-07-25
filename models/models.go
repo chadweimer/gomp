@@ -25,8 +25,10 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // Model encapsulates the model layer of the application, including database access
 type Model struct {
-	cfg *conf.Config
-	db  *sqlx.DB
+	cfg               *conf.Config
+	db                *sqlx.DB
+	previousDbVersion uint64
+	currentDbVersion  uint64
 
 	Recipes *RecipeModel
 	Tags    *TagModel
@@ -38,7 +40,7 @@ type Model struct {
 
 // New constructs a new Model object
 func New(cfg *conf.Config) *Model {
-	err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
+	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal("Failed to migrate database.", err)
 	}
@@ -49,8 +51,10 @@ func New(cfg *conf.Config) *Model {
 	}
 
 	m := &Model{
-		cfg: cfg,
-		db:  db,
+		cfg:               cfg,
+		db:                db,
+		previousDbVersion: previousDbVersion,
+		currentDbVersion:  newDbVersion,
 	}
 	m.Recipes = &RecipeModel{Model: m}
 	m.Tags = &TagModel{Model: m}
@@ -58,19 +62,55 @@ func New(cfg *conf.Config) *Model {
 	m.Images = NewRecipeImageModel(m)
 	m.Users = &UserModel{Model: m}
 	m.Search = &SearchModel{Model: m}
+
+	err = m.postMigrate()
+	if err != nil {
+		log.Fatal("Failed to run post-migration steps on database.", err)
+	}
+
 	return m
 }
 
-func migrateDatabase(databaseDriver, databaseURL string) error {
-	allErrs, ok := migrate.UpSync(databaseURL, filepath.Join("db", "migrations", databaseDriver))
+func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error) {
+	migrationPath := filepath.Join("db", "migrations", databaseDriver)
+
+	previousDbVersion, err := migrate.Version(databaseURL, migrationPath)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	allErrs, ok := migrate.UpSync(databaseURL, migrationPath)
 	if !ok {
 		errBuffer := new(bytes.Buffer)
 		for _, err := range allErrs {
 			errBuffer.WriteString(err.Error())
 		}
 
-		return errors.New(errBuffer.String())
+		return 0, 0, errors.New(errBuffer.String())
 	}
 
-	return nil
+	newDbVersion, err := migrate.Version(databaseURL, migrationPath)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return previousDbVersion, newDbVersion, nil
+}
+
+func (m *Model) postMigrate() error {
+	if m.previousDbVersion == m.currentDbVersion {
+		return nil
+	}
+
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	err = m.Recipes.migrate(tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

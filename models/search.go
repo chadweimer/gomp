@@ -59,7 +59,7 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 
 	offset := count * (page - 1)
 	selectStmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0)" +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE recipe_id = r.id LIMIT 1), '')" +
 		partialStmt
 	switch filter.SortBy {
 	case SortByID:
@@ -98,17 +98,10 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 			&recipe.NutritionInfo,
 			&recipe.Ingredients,
 			&recipe.Directions,
-			&recipe.AvgRating)
+			&recipe.AvgRating,
+			&recipe.Image)
 		if err != nil {
 			return nil, 0, err
-		}
-
-		imgs, err := m.Images.List(recipe.ID)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(*imgs) > 0 {
-			recipe.Image = (*imgs)[0].ThumbnailURL
 		}
 
 		recipes = append(recipes, recipe)

@@ -79,7 +79,7 @@
                             <img width="250" height="250" src="{{.URL}}">
                             {{end}}
                         </a>
-                        <a class="delete-image" href="javascript:void(0)" data-image-name="{{.Name}}">
+                        <a class="delete-image" href="javascript:void(0)" data-image-id="{{.ID}}">
                             <i class="material-icons red-text">delete</i>
                         </a>
                     </span>
@@ -225,8 +225,8 @@
     });
     
     $('.delete-image').click(function() {
-        var name = $(this).data('image-name');
-        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + name + '/delete');
+        var imageID = $(this).data('image-id');
+        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + imageID + '/delete');
         $('#delete-image-confirm').openModal();
     });
     

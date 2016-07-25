@@ -92,7 +92,7 @@ func main() {
 	recipeMux.POST("/recipes/:id", rc.EditRecipePost)
 	recipeMux.GET("/recipes/:id/delete", rc.DeleteRecipe)
 	recipeMux.POST("/recipes/:id/attach", rc.CreateAttachmentPost)
-	recipeMux.GET("/recipes/:id/attach/:name/delete", rc.DeleteAttachment)
+	recipeMux.GET("/recipes/:id/attach/:image_id/delete", rc.DeleteAttachment)
 	recipeMux.POST("/recipes/:id/note", rc.CreateNotePost)
 	recipeMux.POST("/recipes/:id/note/:note_id", rc.EditNotePost)
 	recipeMux.GET("/recipes/:id/note/:note_id/delete", rc.DeleteNote)
