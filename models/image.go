@@ -191,8 +191,8 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	return origURL, thumbURL, nil
 }
 
-// ReadTx retrieves the information about the recipe from the database, if found,
-// using the specified transaction. If no recipe exists with the specified ID,
+// ReadTx retrieves the information about the image from the database, if found,
+// using the specified transaction. If no image exists with the specified ID,
 // a ErrNotFound error is returned.
 func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	image := RecipeImage{ID: id}
