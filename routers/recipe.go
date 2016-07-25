@@ -328,6 +328,18 @@ func (rc *RouteController) AttachImagePost(resp http.ResponseWriter, req *http.R
 		return
 	}
 
+	recipe, err := rc.model.Recipes.Read(id)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+	if recipe.MainImage.URL == "" {
+		recipe.MainImage.ID = imageInfo.ID
+		err := rc.model.Recipes.UpdateMainImage(recipe)
+		if rc.HasError(resp, req, err) {
+			return
+		}
+	}
+
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
