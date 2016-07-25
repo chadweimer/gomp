@@ -4,6 +4,11 @@
         position: relative;
     }
     
+    .make-main-image {
+        position: absolute;
+        top: -20px;
+        right: 40px;
+    }
     .delete-image {
         position: absolute;
         top: -20px;
@@ -31,9 +36,9 @@
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
                 <h4>
-                    {{if gt (len .Images) 0}}
-                    <a href="{{(index .Images 0).URL}}">
-                        <img src="{{(index .Images 0).ThumbnailURL}}" class="circle" style="width: 64px; height: 64px;">
+                    {{if .Recipe.MainImageURL}}
+                    <a href="#pictures">
+                        <img src="{{.Recipe.MainImageURL}}" class="circle" style="width: 64px; height: 64px;">
                     </a>
                     {{end}}
                     {{.Recipe.Name}}
@@ -66,7 +71,7 @@
             </div>
         </section>
         <section>
-            <article class="col s12 l6">
+            <article id="pictures" class="col s12 l6">
                 <h5 class="light">Pictures</h5>
                 <div class="divider"></div>
                 <section class="section">
@@ -78,6 +83,9 @@
                             {{else}}
                             <img width="250" height="250" src="{{.URL}}">
                             {{end}}
+                        </a>
+                        <a class="make-main-image" href="javascript:void(0)" data-image-id="{{.ID}}">
+                            <i class="material-icons green-text">photo_library</i>
                         </a>
                         <a class="delete-image" href="javascript:void(0)" data-image-id="{{.ID}}">
                             <i class="material-icons red-text">delete</i>
@@ -179,6 +187,16 @@
         </div>
     </form>
 </div>
+<div id="main-image-confirm" class="modal">
+    <div class="modal-content">
+        <h5 class="green-text"><i class="material-icons left">live_help</i>Change Main Image?</h5>
+        <p>Are you sure you want to make this the main image for the recipe?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
+        <a id="main-image-yes" class="modal-action modal-close btn-flat">Yes</a>
+    </div>
+</div>
 <div id="delete-image-confirm" class="modal">
     <div class="modal-content">
         <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
@@ -224,9 +242,15 @@
         $('#rating-form').submit();
     });
     
+    $('.make-main-image').click(function() {
+        var imageID = $(this).data('image-id');
+        $('#main-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/main');
+        $('#main-image-confirm').openModal();
+    });
+    
     $('.delete-image').click(function() {
         var imageID = $(this).data('image-id');
-        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + imageID + '/delete');
+        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/delete');
         $('#delete-image-confirm').openModal();
     });
     

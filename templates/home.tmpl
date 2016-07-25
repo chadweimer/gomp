@@ -77,9 +77,9 @@
     <article class="card tiny grey lighten-4 hoverable clickable"
         onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
         title="{{.Name}}">
-        {{if .Image}}
+        {{if .MainImageURL}}
         <section class="card-image">
-            <img src="{{.Image}}" class="darken-10">
+            <img src="{{.MainImageURL}}" class="darken-10">
         </section>
         {{end}}
         <section class="rating-container">

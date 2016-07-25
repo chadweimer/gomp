@@ -51,14 +51,14 @@ func (f *NoteForm) FieldMap(req *http.Request) binding.FieldMap {
 	}
 }
 
-// AttachmentForm encapsulates user input for attaching a file (image) to a recipe
-type AttachmentForm struct {
+// AttachImageForm encapsulates user input for attaching an image to a recipe
+type AttachImageForm struct {
 	FileName    string                `form:"file_name"`
 	FileContent *multipart.FileHeader `form:"file_content"`
 }
 
-// FieldMap provides the AttachmentForm field name maping for form binding
-func (f *AttachmentForm) FieldMap(req *http.Request) binding.FieldMap {
+// FieldMap provides the AttachImageForm field name maping for form binding
+func (f *AttachImageForm) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
 		&f.FileName:    "file_name",
 		&f.FileContent: "file_content",
@@ -294,9 +294,9 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
-// CreateAttachmentPost handles uploading the specified attachment (image) to a recipe
-func (rc *RouteController) CreateAttachmentPost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	form := new(AttachmentForm)
+// AttachImagePost handles uploading the specified image to a recipe
+func (rc *RouteController) AttachImagePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	form := new(AttachImageForm)
 	errs := binding.Bind(req, form)
 	if errs != nil && errs.Len() > 0 {
 		rc.HasError(resp, req, errors.New(errs.Error()))
@@ -331,8 +331,32 @@ func (rc *RouteController) CreateAttachmentPost(resp http.ResponseWriter, req *h
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
 
-// DeleteAttachment handles deleting the specified attachment (image) from a recipe
-func (rc *RouteController) DeleteAttachment(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+// SetMainImage changes the main image for a recipe
+func (rc *RouteController) SetMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	imageID, err := strconv.ParseInt(p.ByName("image_id"), 10, 64)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
+	recipeID, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
+	recipe := &models.Recipe{
+		ID:        recipeID,
+		MainImage: models.RecipeImage{ID: imageID},
+	}
+	err = rc.model.Recipes.UpdateMainImage(recipe)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
+	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, recipeID), http.StatusFound)
+}
+
+// DeleteImage handles deleting the specified image from a recipe
+func (rc *RouteController) DeleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	imageID, err := strconv.ParseInt(p.ByName("image_id"), 10, 64)
 	if rc.HasError(resp, req, err) {
 		return
