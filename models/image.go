@@ -68,13 +68,6 @@ func (m *RecipeImageModel) migrateImages(recipeID int64, tx *sqlx.Tx) error {
 		if err := m.createImpl(image, tx); err != nil {
 			return err
 		}
-		if i == 1 {
-			_, err = tx.Exec("UPDATE recipe SET image_id = $1 WHERE id = $2",
-				image.ID, recipeID)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	return nil
