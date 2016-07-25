@@ -120,15 +120,14 @@ func (m *RecipeImageModel) createImpl(image *RecipeImage, tx *sqlx.Tx) error {
 	return nil
 }
 
-// Save saves the supplied image data as an attachment on the specified recipe
-func (m *RecipeImageModel) save(imageInfo *RecipeImage, imageData []byte) (string, string, error) {
-	ok, contentType := isImageFile(imageData)
+func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, string, error) {
+	ok, contentType := isImageFile(data)
 	if !ok {
 		return "", "", errors.New("Attachment must be an image")
 	}
 
 	// First decode the image
-	image, err := imaging.Decode(bytes.NewReader(imageData))
+	image, err := imaging.Decode(bytes.NewReader(data))
 	if err != nil {
 		return "", "", err
 	}
@@ -139,7 +138,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, imageData []byte) (strin
 	// Use the EXIF data to determine the orientation of the original image.
 	// This data is lost when generating the thumbnail, so it's needed into
 	// order to potentially explicitly rotate it.
-	exifData, err := exif.Decode(bytes.NewReader(imageData))
+	exifData, err := exif.Decode(bytes.NewReader(data))
 	if err == nil {
 		orientationTag, err := exifData.Get(exif.Orientation)
 		if err == nil {
@@ -175,7 +174,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, imageData []byte) (strin
 	origDir := getDirPathForImage(imageInfo.RecipeID)
 	origPath := filepath.Join(origDir, imageInfo.Name)
 	origURL := filepath.ToSlash(filepath.Join("/uploads/", origPath))
-	err = m.upl.Save(origPath, imageData)
+	err = m.upl.Save(origPath, data)
 	if err != nil {
 		return "", "", err
 	}
