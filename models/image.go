@@ -57,7 +57,7 @@ func (m *RecipeImageModel) migrateImages(recipeID int64, tx *sqlx.Tx) error {
 		return err
 	}
 
-	for i, file := range files {
+	for _, file := range files {
 		log.Printf("[migrate] Processing file %s", file.URL)
 		image := &RecipeImage{
 			RecipeID:     recipeID,
