@@ -285,12 +285,6 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	// If we successfully deleted the recipe, delete all of it's attachments
-	err = rc.model.Images.DeleteAll(id)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
@@ -326,18 +320,6 @@ func (rc *RouteController) AttachImagePost(resp http.ResponseWriter, req *http.R
 	err = rc.model.Images.Create(imageInfo, uploadedFileData)
 	if rc.HasError(resp, req, err) {
 		return
-	}
-
-	recipe, err := rc.model.Recipes.Read(id)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-	if recipe.MainImage.URL == "" {
-		recipe.MainImage.ID = imageInfo.ID
-		err := rc.model.Recipes.UpdateMainImage(recipe)
-		if rc.HasError(resp, req, err) {
-			return
-		}
 	}
 
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)

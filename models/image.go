@@ -116,6 +116,11 @@ func (m *RecipeImageModel) createImpl(image *RecipeImage, tx *sqlx.Tx) error {
 		return err
 	}
 
+	// Switch to a new main image if necessary, since this might be the first image attached
+	if err := m.setMainImageIfNecessary(image.RecipeID, tx); err != nil {
+		return err
+	}
+
 	image.ID = id
 	return nil
 }
@@ -274,6 +279,20 @@ func (m *RecipeImageModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 	}
 
 	_, err = tx.Exec("DELETE FROM recipe_image WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	// Switch to a new main image if necessary, since the image we just deleted may have been the main image
+	return m.setMainImageIfNecessary(image.RecipeID, tx)
+}
+
+func (m *RecipeImageModel) setMainImageIfNecessary(recipeID int64, tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		"UPDATE recipe "+
+			"SET image_id = (SELECT recipe_image.id FROM recipe_image WHERE recipe_image.recipe_id = recipe.id LIMIT 1)"+
+			"WHERE id = $1 AND image_id IS NULL",
+		recipeID)
 	return err
 }
 
