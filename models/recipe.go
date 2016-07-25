@@ -204,6 +204,11 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 		return err
 	}
 
+	err = m.Images.DeleteAllTx(id, tx)
+	if err != nil {
+		return err
+	}
+
 	_, err = tx.Exec("DELETE FROM recipe_rating WHERE recipe_id = $1", id)
 	if err != nil {
 		return err

@@ -285,12 +285,6 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	// If we successfully deleted the recipe, delete all of it's attachments
-	err = rc.model.Images.DeleteAll(id)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
 }
 
