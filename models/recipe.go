@@ -103,7 +103,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 
 	result := m.db.QueryRow(
 		"SELECT "+
-			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id LIMIT 1), '')"+
+			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')"+
 			"FROM recipe AS r WHERE r.id = $1",
 		recipe.ID)
 	err := result.Scan(
