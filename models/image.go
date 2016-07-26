@@ -196,8 +196,8 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	return origURL, thumbURL, nil
 }
 
-// ReadTx retrieves the information about the recipe from the database, if found,
-// using the specified transaction. If no recipe exists with the specified ID,
+// ReadTx retrieves the information about the image from the database, if found,
+// using the specified transaction. If no image exists with the specified ID,
 // a ErrNotFound error is returned.
 func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	image := RecipeImage{ID: id}
@@ -269,11 +269,11 @@ func (m *RecipeImageModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 		return err
 	}
 
-	var origPath = filepath.FromSlash(image.URL)
+	origPath := filepath.Join(getDirPathForImage(image.RecipeID), image.Name)
 	if err := m.upl.Delete(origPath); err != nil {
 		return err
 	}
-	var thumbPath = filepath.FromSlash(image.ThumbnailURL)
+	thumbPath := filepath.Join(getDirPathForThumbnail(image.RecipeID), image.Name)
 	if err := m.upl.Delete(thumbPath); err != nil {
 		return err
 	}
