@@ -17,7 +17,7 @@
             {{if (or .SearchQuery .SearchTags)}}
             <span class="chip left">
                 Search: '{{.SearchQuery}}', Tags: '{{.SearchTags}}', Results: {{.ResultCount}}
-                <i class="material-icons right clickable" onclick="location.href='?clear=true';">clear_all</i>
+                <i class="material-icons close" onclick="location.href='?clear=true';">clear_all</i>
             </span>
             {{end}}
             {{if ne $.ViewType "compact"}}

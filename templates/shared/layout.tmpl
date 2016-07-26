@@ -18,7 +18,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
         <!--Import materialize.css-->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css" media="screen,projection">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" media="screen,projection">
 
         <!-- Custom GOMP styles -->
         <link rel="stylesheet" type="text/css" href="{{RootUrlPath}}/css/gomp.css">
@@ -38,7 +38,7 @@
                         <li><a href="{{RootUrlPath}}/">Home</a></li>
                         <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
                         <li>
-                            <a id="userMenuLarge" class="dropdown-button" href="#!" data-activates="userDropdown">
+                            <a id="userMenuLarge" class="dropdown-button" href="#!" data-beloworigin="true" data-activates="userDropdown">
                                 {{.User.Username}}<i class="material-icons right">arrow_drop_down</i>
                             </a>
                             <ul id="userDropdown" class="dropdown-content">
@@ -99,10 +99,10 @@
         </footer>
 
         <!--Import jQuery before materialize.js-->
-        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
         
         <!--Import materialize.js-->
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
         
         <!-- Custom GOMP scripts -->
         <script type="text/javascript" src="{{RootUrlPath}}/js/gomp.js"></script>

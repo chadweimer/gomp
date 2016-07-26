@@ -2,10 +2,7 @@
 $(document).ready(function(){
     $('.button-collapse').sideNav();
     $('.modal-trigger').leanModal();
-    $('#userMenuLarge').dropdown({
-      belowOrigin: true, // Displays dropdown below the button
-    }
-  );
+    $('#userMenuLarge').dropdown();
 });
 
 function initEditRecipeForm() {
@@ -23,7 +20,7 @@ function initEditRecipeForm() {
             var chipHtml =
                 '<div class="chip">' +
                     tag +
-                    '<i class="material-icons">close</i>' +
+                    '<i class="material-icons close">close</i>' +
                     '<input type="hidden" name="tags" value="' + tag +'">'
                 '</div>'
             $('#tags').append(chipHtml);
