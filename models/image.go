@@ -264,11 +264,11 @@ func (m *RecipeImageModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 		return err
 	}
 
-	var origPath = filepath.FromSlash(image.URL)
+	origPath := filepath.Join(getDirPathForImage(image.RecipeID), image.Name)
 	if err := m.upl.Delete(origPath); err != nil {
 		return err
 	}
-	var thumbPath = filepath.FromSlash(image.ThumbnailURL)
+	thumbPath := filepath.Join(getDirPathForThumbnail(image.RecipeID), image.Name)
 	if err := m.upl.Delete(thumbPath); err != nil {
 		return err
 	}
