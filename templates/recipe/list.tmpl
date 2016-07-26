@@ -38,9 +38,9 @@
         <article class="card small grey lighten-4 hoverable clickable"
             onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
             title="{{.Name}}">
-            {{if .Image}}
+            {{if .MainImage.ThumbnailURL}}
             <section class="card-image">
-                <img src="{{.Image}}" class="darken-10">
+                <img src="{{.MainImage.ThumbnailURL}}" class="darken-10">
             </section>
             {{end}}
             <section class="rating-container">
@@ -67,7 +67,7 @@
         {{range .}}
         <div class="col s12 l12">
             <a href="{{RootUrlPath}}/recipes/{{.ID}}" class="truncate" title="{{.Name}}">
-                <img {{if .Image}}src="{{.Image}}"{{end}} class="compact-image circle">
+                <img {{if .MainImage.ThumbnailURL}}src="{{.MainImage.ThumbnailURL}}"{{end}} class="compact-image circle">
                 <span>{{.Name}}</span>
             </a>
         </div>

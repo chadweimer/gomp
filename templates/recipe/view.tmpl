@@ -4,6 +4,11 @@
         position: relative;
     }
     
+    .make-main-image {
+        position: absolute;
+        top: -20px;
+        right: 40px;
+    }
     .delete-image {
         position: absolute;
         top: -20px;
@@ -17,7 +22,7 @@
     <article class="col s12 m12 l10 offset-l1">
         <section class="card grey lighten-4">
             <div class="card-content">
-                <form id="rating-form" class="rating-container clickable" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/rate">
+                <form id="rating-form" class="rating-container clickable" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/ratings">
                     <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
                     <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
                     <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
@@ -31,9 +36,9 @@
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
                 <h4>
-                    {{if gt (len .Images) 0}}
-                    <a href="{{(index .Images 0).URL}}">
-                        <img src="{{(index .Images 0).ThumbnailURL}}" class="circle" style="width: 64px; height: 64px;">
+                    {{if .Recipe.MainImage.ThumbnailURL}}
+                    <a href="#pictures">
+                        <img src="{{.Recipe.MainImage.ThumbnailURL}}" class="circle" style="width: 64px; height: 64px;">
                     </a>
                     {{end}}
                     {{.Recipe.Name}}
@@ -66,7 +71,7 @@
             </div>
         </section>
         <section>
-            <article class="col s12 l6">
+            <article id="pictures" class="col s12 l6">
                 <h5 class="light">Pictures</h5>
                 <div class="divider"></div>
                 <section class="section">
@@ -79,6 +84,11 @@
                             <img width="250" height="250" src="{{.URL}}">
                             {{end}}
                         </a>
+                        {{if ne $.Recipe.MainImage.ThumbnailURL .ThumbnailURL}}
+                        <a class="make-main-image" href="javascript:void(0)" data-image-id="{{.ID}}">
+                            <i class="material-icons green-text">photo_library</i>
+                        </a>
+                        {{end}}
                         <a class="delete-image" href="javascript:void(0)" data-image-id="{{.ID}}">
                             <i class="material-icons red-text">delete</i>
                         </a>
@@ -159,7 +169,7 @@
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach" method="post" enctype="multipart/form-data">
+    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images" method="post" enctype="multipart/form-data">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -178,6 +188,16 @@
             <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
         </div>
     </form>
+</div>
+<div id="main-image-confirm" class="modal">
+    <div class="modal-content">
+        <h5 class="green-text"><i class="material-icons left">live_help</i>Change Main Image?</h5>
+        <p>Are you sure you want to make this the main image for the recipe?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
+        <a id="main-image-yes" class="modal-action modal-close btn-flat">Yes</a>
+    </div>
 </div>
 <div id="delete-image-confirm" class="modal">
     <div class="modal-content">
@@ -224,14 +244,20 @@
         $('#rating-form').submit();
     });
     
+    $('.make-main-image').click(function() {
+        var imageID = $(this).data('image-id');
+        $('#main-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/main');
+        $('#main-image-confirm').openModal();
+    });
+    
     $('.delete-image').click(function() {
         var imageID = $(this).data('image-id');
-        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/attach/' + imageID + '/delete');
+        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/delete');
         $('#delete-image-confirm').openModal();
     });
     
     $('#add-note').click(function() {
-        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note');
+        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes');
         $('#note').val('');
         $('#note-title').text('Add Note');
         $('#note-submit').text('Add');
@@ -243,7 +269,7 @@
         var noteContent = $(this).data('note-content');
         noteContent = noteContent.replace(/\+/g, ' ');
         noteContent = decodeURIComponent(noteContent);
-        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/' + noteID);
+        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes/' + noteID);
         $('#note').val(noteContent);
         $('#note-title').text('Edit Note');
         $('#note-submit').text('Update');
@@ -252,7 +278,7 @@
     
     $('.delete-note').click(function() {
         var noteID = $(this).data('note-id');
-        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/note/' + noteID + '/delete');
+        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes/' + noteID + '/delete');
         $('#delete-note-confirm').openModal();
     });
 </script>

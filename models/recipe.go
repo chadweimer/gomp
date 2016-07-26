@@ -21,7 +21,7 @@ type Recipe struct {
 	Ingredients   string
 	Directions    string
 	AvgRating     float64
-	Image         string
+	MainImage     RecipeImage
 	Tags          []string
 }
 
@@ -96,13 +96,15 @@ func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
 // Read retrieves the information about the recipe from the database, if found.
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (m *RecipeModel) Read(id int64) (*Recipe, error) {
-	recipe := Recipe{ID: id}
+	recipe := Recipe{
+		ID:        id,
+		MainImage: RecipeImage{},
+	}
 
 	result := m.db.QueryRow(
-		"SELECT DISTINCT "+
-			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE(g.rating, 0) "+
-			"FROM recipe AS r LEFT OUTER JOIN recipe_rating AS g ON g.recipe_id = r.id "+
-			"WHERE r.id = $1",
+		"SELECT "+
+			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')"+
+			"FROM recipe AS r WHERE r.id = $1",
 		recipe.ID)
 	err := result.Scan(
 		&recipe.Name,
@@ -110,7 +112,8 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 		&recipe.NutritionInfo,
 		&recipe.Ingredients,
 		&recipe.Directions,
-		&recipe.AvgRating)
+		&recipe.AvgRating,
+		&recipe.MainImage.ThumbnailURL)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
@@ -122,13 +125,6 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 		return nil, err
 	}
 	recipe.Tags = *tags
-
-	imgs, err := m.Images.List(recipe.ID)
-	if err == nil {
-		if len(*imgs) > 0 {
-			recipe.Image = (*imgs)[0].ThumbnailURL
-		}
-	}
 
 	return &recipe, nil
 }
@@ -174,6 +170,32 @@ func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	return nil
 }
 
+// UpdateMainImage sets the id of the main image for the specified recipes
+// using a dedicated transation that is committed if there are not errors.
+func (m *RecipeModel) UpdateMainImage(recipe *Recipe) error {
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	err = m.UpdateMainImageTx(recipe, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// UpdateMainImageTx sets the id of the main image for the specified recipes
+// using the specified transaction.
+func (m *RecipeModel) UpdateMainImageTx(recipe *Recipe, tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		"UPDATE recipe SET image_id = $1 WHERE id = $2",
+		recipe.MainImage.ID, recipe.ID)
+
+	return err
+}
+
 // Delete removes the specified recipe from the database using a dedicated transation
 // that is committed if there are not errors. Note that this method does not delete
 // any attachments that we associated with the deleted recipe.
@@ -194,27 +216,13 @@ func (m *RecipeModel) Delete(id int64) error {
 // DeleteTx removes the specified recipe from the database using the specified transaction.
 // Note that this method does not delete any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) DeleteTx(id int64, tx *sqlx.Tx) error {
-	err := m.Tags.DeleteAllTx(id, tx)
+	_, err := tx.Exec("DELETE FROM recipe WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
 
-	err = m.Notes.DeleteAllTx(id, tx)
-	if err != nil {
-		return err
-	}
-
+	// If we successfully deleted the recipe, delete all of it's attachments
 	err = m.Images.DeleteAllTx(id, tx)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec("DELETE FROM recipe_rating WHERE recipe_id = $1", id)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec("DELETE FROM recipe WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
