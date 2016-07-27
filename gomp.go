@@ -107,6 +107,9 @@ func main() {
 		timeout = 1 * time.Second
 	}
 	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, n)
+
+	// Make sure to close the database connection
+	model.TearDown()
 }
 
 func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {
