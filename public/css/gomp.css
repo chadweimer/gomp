@@ -107,3 +107,11 @@ nav .brand-logo.left {
 .card.tiny .card-content .card-title {
   font-size: 1.1rem !important;
 }
+
+.chip {
+    margin-top: 5px !important;
+}
+
+.chips > input {
+    text-transform: lowercase;
+}
