@@ -15,8 +15,7 @@ func (m *TagModel) Create(recipeID int64, tag string) error {
 		return err
 	}
 
-	err = m.CreateTx(recipeID, tag, tx)
-	if err != nil {
+	if err = m.CreateTx(recipeID, tag, tx); err != nil {
 		return err
 	}
 
@@ -40,8 +39,7 @@ func (m *TagModel) DeleteAll(recipeID int64) error {
 		return err
 	}
 
-	err = m.DeleteAllTx(recipeID, tx)
-	if err != nil {
+	if err = m.DeleteAllTx(recipeID, tx); err != nil {
 		return err
 	}
 
@@ -59,7 +57,7 @@ func (m *TagModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 
 // List retrieves all tags associated with the recipe with the specified id.
 func (m *TagModel) List(recipeID int64) (*[]string, error) {
-	rows, err := m.db.Query(
+	rows, err := m.db.Queryx(
 		"SELECT tag FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)
 	if err != nil {
@@ -69,8 +67,7 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 	var tags []string
 	for rows.Next() {
 		var tag string
-		err = rows.Scan(&tag)
-		if err != nil {
+		if err := rows.Scan(&tag); err != nil {
 			return nil, err
 		}
 		tags = append(tags, tag)
@@ -79,5 +76,24 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 	return &tags, nil
 }
 
-//func (m *TagModel) ListMostPopular(count int) (*[]string, error) {
-	// SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY dups DESC LIMIT $1
+// ListMostUsed retrieves the N most used tags.
+func (m *TagModel) ListMostUsed(count int) (*[]string, error) {
+	rows, err := m.db.Queryx(
+		"SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY dups DESC LIMIT $1",
+		count)
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var tag string
+		var throwAway int
+		if err := rows.Scan(&tag, &throwAway); err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	return &tags, nil
+}

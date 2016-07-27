@@ -28,11 +28,11 @@
             <div id="tags" class="input-field col s12 l12">
                 <div class="chips"></div>
             </div>
-			<div>
-				<span class="chip green lighten-5 green-text text-darken-4">beef<i class="material-icons close">add</i></span>
-				<span class="chip green lighten-5 green-text text-darken-4">chicken<i class="material-icons close">add</i></span>
-				<span class="chip green lighten-5 green-text text-darken-4">pork<i class="material-icons close">add</i></span>
-				<span class="chip green lighten-5 green-text text-darken-4">fish<i class="material-icons close">add</i></span>
+			<div class="input-field col s12 l12">
+                <div><label class="active">Suggested Tags</label></div>
+                {{range .SuggestedTags}}
+				<span class="chip green lighten-5 green-text text-darken-4" data-tag="{{.}}">{{.}}<i class="material-icons close add">add</i></span>
+                {{end}}
 			</div>
         </div>
         <div class="center">
@@ -78,6 +78,16 @@ $(document).ready(function(){
         this.value = this.value.toLowerCase();
     });
     $tagInput.after('<label class="active">Tags</label>');
+
+    var $addChip = $('.chip .add');
+    $addChip.on('click', function() {
+        var tagData = $(this).closest('.chip').data('tag');
+        $tagInput.val(tagData);
+        var e = jQuery.Event('keydown');
+        e.which = 13;
+        e.keyCode = 13;
+        $tagInput.trigger(e);
+    });
 });
 </script>
 {{ end }}
