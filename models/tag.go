@@ -57,7 +57,7 @@ func (m *TagModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 
 // List retrieves all tags associated with the recipe with the specified id.
 func (m *TagModel) List(recipeID int64) (*[]string, error) {
-	rows, err := m.db.Queryx(
+	rows, err := m.db.Query(
 		"SELECT tag FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)
 	if err != nil {
@@ -78,7 +78,7 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 
 // ListMostUsed retrieves the N most used tags.
 func (m *TagModel) ListMostUsed(count int) (*[]string, error) {
-	rows, err := m.db.Queryx(
+	rows, err := m.db.Query(
 		"SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY dups DESC LIMIT $1",
 		count)
 	if err != nil {
