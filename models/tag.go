@@ -78,3 +78,6 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 
 	return &tags, nil
 }
+
+//func (m *TagModel) ListMostPopular(count int) (*[]string, error) {
+	// SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY dups DESC LIMIT $1
