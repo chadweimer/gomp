@@ -46,7 +46,10 @@
 {{ define "js-recipe/edit" }}
 <script type="text/javascript">
 $(document).ready(function(){
-    $('#tags > .chips').material_chip({
+    var $tagDiv = $('#tags');
+    var $tagChips = $tagDiv.find('.chips');
+    
+    $tagChips.material_chip({
         data: [
             {{range .Recipe.Tags}}{tag: '{{.}}'},
             {{end}}
@@ -54,19 +57,21 @@ $(document).ready(function(){
         placeholder: '+tag',
         secondaryPlaceholder: '+tag',
     });
-    $('#tags > .chips > .chip').each(function() {
-        $('#tags').append('<input name="tags" type="hidden" value="' + $(this).contents().first().text() + '">');
+    $tagChips.find('.chip').each(function() {
+        $tagDiv.append('<input name="tags" type="hidden" value="' + $(this).contents().first().text() + '">');
     });
-    $('#tags > .chips').on('chip.add', function(e, chip) {
-        $('#tags').append('<input name="tags" type="hidden" value="' + chip.tag + '">');
+    $tagChips.on('chip.add', function(e, chip) {
+        $tagDiv.append('<input name="tags" type="hidden" value="' + chip.tag + '">');
     });
-    $('#tags > .chips').on('chip.delete', function(e, chip) {
-        $('#tags > input[value="' + chip.tag + '"]').remove();
+    $tagChips.on('chip.delete', function(e, chip) {
+        $tagDiv.find('input[value="' + chip.tag + '"]').remove();
     });
-    $('#tags > .chips > input').keyup(function(){
+
+    var $tagInput = $tagDiv.find('.chips > input');
+    $tagInput.keyup(function(){
         this.value = this.value.toLowerCase();
     });
-    $('#tags > .chips > input').after('<label class="active">Tags</label>');
+    $tagInput.after('<label class="active">Tags</label>');
 });
 </script>
 {{ end }}
