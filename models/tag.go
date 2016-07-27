@@ -15,8 +15,7 @@ func (m *TagModel) Create(recipeID int64, tag string) error {
 		return err
 	}
 
-	err = m.CreateTx(recipeID, tag, tx)
-	if err != nil {
+	if err = m.CreateTx(recipeID, tag, tx); err != nil {
 		return err
 	}
 
@@ -40,8 +39,7 @@ func (m *TagModel) DeleteAll(recipeID int64) error {
 		return err
 	}
 
-	err = m.DeleteAllTx(recipeID, tx)
-	if err != nil {
+	if err = m.DeleteAllTx(recipeID, tx); err != nil {
 		return err
 	}
 
@@ -69,8 +67,29 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 	var tags []string
 	for rows.Next() {
 		var tag string
-		err = rows.Scan(&tag)
-		if err != nil {
+		if err := rows.Scan(&tag); err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	return &tags, nil
+}
+
+// ListMostUsed retrieves the N most used tags.
+func (m *TagModel) ListMostUsed(count int) (*[]string, error) {
+	rows, err := m.db.Query(
+		"SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY dups DESC LIMIT $1",
+		count)
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var tag string
+		var throwAway int
+		if err := rows.Scan(&tag, &throwAway); err != nil {
 			return nil, err
 		}
 		tags = append(tags, tag)

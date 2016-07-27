@@ -191,7 +191,14 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 // CreateRecipe handles rendering the create recipe screen
 func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	rc.HTML(resp, http.StatusOK, "recipe/edit", context.Get(req).Data)
+	mostUsedTags, err := rc.model.Tags.ListMostUsed(12)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
+	data := context.Get(req).Data
+	data["SuggestedTags"] = mostUsedTags
+	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 
 // CreateRecipePost handles processing the supplied form input from the create recipe screen
@@ -236,8 +243,14 @@ func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Reques
 		return
 	}
 
+	mostUsedTags, err := rc.model.Tags.ListMostUsed(12)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
 	data := context.Get(req).Data
 	data["Recipe"] = recipe
+	data["SuggestedTags"] = mostUsedTags
 	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 

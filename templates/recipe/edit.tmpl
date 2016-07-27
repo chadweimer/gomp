@@ -25,20 +25,14 @@
                 <textarea id="nutrition-info" name="nutrition-info" class="materialize-textarea" placeholder="(e.g., 100 Calories, 2g Fat)">{{.Recipe.NutritionInfo}}</textarea>
                 <label for="nutrition-info" class="active">Nutrition</label>
             </div>
-            <div class="input-field col s12 l12">
-                <input id="new-tag">
-                <label for="new-tag" class="active">Tags</label>
+            <div id="tags" class="input-field col s12 l12">
+                <div class="chips"></div>
             </div>
-            <div class="col s12 l12">
-                <span id="tags">
-                    {{range .Recipe.Tags}}
-                    <span class="chip">
-                        {{.}}
-                        <i class="material-icons close">close</i>
-                        <input type="hidden" name="tags" value="{{.}}">
-                    </span>
-                    {{end}}
-                </span>
+            <div class="input-field col s12 l12">
+                <div><label class="active">Suggested Tags</label></div>
+                {{range .SuggestedTags}}
+                <span class="chip green lighten-5 green-text text-darken-4" data-tag="{{.}}">{{.}}<i class="material-icons close add">add</i></span>
+                {{end}}
             </div>
         </div>
         <div class="center">
@@ -53,4 +47,47 @@
         </div>
     </form>
 </section>
+{{ end }}
+
+{{ define "js-recipe/edit" }}
+<script type="text/javascript">
+$(document).ready(function(){
+    var $tagDiv = $('#tags');
+    var $tagChips = $tagDiv.find('.chips');
+    
+    $tagChips.material_chip({
+        data: [
+            {{range .Recipe.Tags}}{tag: '{{.}}'},
+            {{end}}
+        ],
+        placeholder: '+tag',
+        secondaryPlaceholder: '+tag',
+    });
+    $tagChips.find('.chip').each(function() {
+        $tagDiv.append('<input name="tags" type="hidden" value="' + $(this).contents().first().text() + '">');
+    });
+    $tagChips.on('chip.add', function(e, chip) {
+        $tagDiv.append('<input name="tags" type="hidden" value="' + chip.tag + '">');
+    });
+    $tagChips.on('chip.delete', function(e, chip) {
+        $tagDiv.find('input[value="' + chip.tag + '"]').remove();
+    });
+
+    var $tagInput = $tagDiv.find('.chips > input');
+    $tagInput.keyup(function(){
+        this.value = this.value.toLowerCase();
+    });
+    $tagInput.after('<label class="active">Tags</label>');
+
+    var $addChip = $('.chip .add');
+    $addChip.on('click', function() {
+        var tagData = $(this).closest('.chip').data('tag');
+        $tagInput.val(tagData);
+        var e = jQuery.Event('keydown');
+        e.which = 13;
+        e.keyCode = 13;
+        $tagInput.trigger(e);
+    });
+});
+</script>
 {{ end }}

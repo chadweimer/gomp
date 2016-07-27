@@ -71,6 +71,15 @@ func New(cfg *conf.Config) *Model {
 	return m
 }
 
+// TearDown closes the connection to the database.
+func (m *Model) TearDown() {
+	if m.db != nil {
+		if err := m.db.Close(); err != nil {
+			log.Fatal("Failed to close the connection to the database.", err)
+		}
+	}
+}
+
 func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error) {
 	migrationPath := filepath.Join("db", "migrations", databaseDriver)
 
