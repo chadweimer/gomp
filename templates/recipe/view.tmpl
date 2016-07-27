@@ -58,6 +58,11 @@
                 <label>Nutrition</label>
                 <p class="section plain-text">{{.Recipe.NutritionInfo}}</p>
                 {{end}}
+                {{if .Recipe.SourceURL}}
+                <label>Source</label>
+                <p class="section plain-text"><a target="_blank" href="{{.Recipe.SourceURL}}">{{.Recipe.SourceURL}}</a></p>
+                <div class="divider"></div>
+                {{end}}
                 {{if .Recipe.Tags}}
                 <div class="divider"></div>
                 <p class="section">

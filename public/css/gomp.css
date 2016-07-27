@@ -8,10 +8,6 @@ main {
     flex: 1 0 auto;
 }
 
-.required:after {
-    content:" *";
-}
-
 .clickable {
     cursor: pointer;
 }

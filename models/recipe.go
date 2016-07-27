@@ -20,6 +20,7 @@ type Recipe struct {
 	NutritionInfo string
 	Ingredients   string
 	Directions    string
+	SourceURL     string
 	AvgRating     float64
 	MainImage     RecipeImage
 	Tags          []string
