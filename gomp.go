@@ -21,6 +21,7 @@ import (
 	"github.com/urfave/negroni"
 	"gopkg.in/tylerb/graceful.v1"
 	"gopkg.in/unrolled/render.v1"
+	"gopkg.in/unrolled/secure.v1"
 )
 
 func main() {
@@ -58,12 +59,19 @@ func main() {
 	// Do nothing if this route isn't matched. Let the later handlers/routes get processed
 	authMux.NotFound = http.HandlerFunc(rc.NoOp)
 
+	sm := secure.New(secure.Options{
+		SSLRedirect:     true,
+		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
+		IsDevelopment:   cfg.IsDevelopment,
+	})
+
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
+	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
 	n.Use(negroni.NewStatic(http.Dir("public")))
 	n.Use(context.NewContexter(cfg, model, sessionStore))
 	n.UseHandler(authMux)
