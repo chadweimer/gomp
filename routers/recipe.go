@@ -24,6 +24,7 @@ type RecipeForm struct {
 	NutritionInfo string   `form:"nutrition-info"`
 	Ingredients   string   `form:"ingredients"`
 	Directions    string   `form:"directions"`
+	SourceURL     string   `form:"source"`
 	Tags          []string `form:"tags"`
 }
 
@@ -35,6 +36,7 @@ func (f *RecipeForm) FieldMap(req *http.Request) binding.FieldMap {
 		&f.NutritionInfo: "nutrition-info",
 		&f.Ingredients:   "ingredients",
 		&f.Directions:    "directions",
+		&f.SourceURL:     "source",
 		&f.Tags:          "tags",
 	}
 }
@@ -216,6 +218,7 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 		NutritionInfo: form.NutritionInfo,
 		Ingredients:   form.Ingredients,
 		Directions:    form.Directions,
+		SourceURL:     form.SourceURL,
 		Tags:          form.Tags,
 	}
 
@@ -275,6 +278,7 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 		NutritionInfo: form.NutritionInfo,
 		Ingredients:   form.Ingredients,
 		Directions:    form.Directions,
+		SourceURL:     form.SourceURL,
 		Tags:          form.Tags,
 	}
 
