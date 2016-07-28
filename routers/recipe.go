@@ -114,7 +114,7 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	sess, err := rc.sessionStore.Get(req, "UserSession")
 	if err != nil {
-		log.Print("Invalid session retrieved.")
+		log.Print("[recipes] Invalid session retrieved.")
 		http.Redirect(resp, req, fmt.Sprintf("%s/logout", rc.cfg.RootURLPath), http.StatusFound)
 		return
 	}
