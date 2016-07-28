@@ -27,9 +27,6 @@
     "GOMP_HOME_TITLE": {
       "required": true
     },
-    "GOMP_IS_DEVELOPMENT": {
-      "required": true
-    },
     "GOMP_SECRET_KEY": {
       "required": true
     },
