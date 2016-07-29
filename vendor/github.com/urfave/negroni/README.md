@@ -67,7 +67,7 @@ You will now have a Go `net/http` webserver running on `localhost:3000`.
 ## Is Negroni a Framework?
 
 Negroni is **not** a framework. It is a middleware-focused library that is
-designed to work directly with net/http.
+designed to work directly with `net/http`.
 
 ## Routing?
 
@@ -398,6 +398,7 @@ linking your middleware if you have built one:
 | [cloudwatch](https://github.com/cvillecsteele/negroni-cloudwatch) | [Colin Steele](https://github.com/cvillecsteele) | AWS cloudwatch metrics middleware |
 | [cors](https://github.com/rs/cors) | [Olivier Poitrey](https://github.com/rs) | [Cross Origin Resource Sharing](http://www.w3.org/TR/cors/) (CORS) support |
 | [delay](https://github.com/jeffbmartinez/delay) | [Jeff Martinez](https://github.com/jeffbmartinez) | Add delays/latency to endpoints. Useful when testing effects of high latency |
+| [New Relic Go Agent](https://github.com/yadvendar/negroni-newrelic-go-agent) | [Yadvendar Champawat](https://github.com/yadvendar) | Official [New Relic Go Agent](https://github.com/newrelic/go-agent) (currently in beta)  |
 | [gorelic](https://github.com/jingweno/negroni-gorelic) | [Jingwen Owen Ou](https://github.com/jingweno) | New Relic agent for Go runtime |
 | [Graceful](https://github.com/tylerb/graceful) | [Tyler Bunnell](https://github.com/tylerb) | Graceful HTTP Shutdown |
 | [gzip](https://github.com/phyber/negroni-gzip) | [phyber](https://github.com/phyber) | GZIP response compression |
@@ -414,6 +415,7 @@ linking your middleware if you have built one:
 | [stats](https://github.com/thoas/stats) | [Florent Messa](https://github.com/thoas) | Store information about your web application (response time, etc.) |
 | [VanGoH](https://github.com/auroratechnologies/vangoh) | [Taylor Wrobel](https://github.com/twrobel3) | Configurable [AWS-Style](http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html) HMAC authentication middleware |
 | [xrequestid](https://github.com/pilu/xrequestid) | [Andrea Franz](https://github.com/pilu) | Middleware that assigns a random X-Request-Id header to each request |
+| [mgo session](https://github.com/joeljames/nigroni-mgo-session) | [Joel James](https://github.com/joeljames) | Middleware that handles creating and closing mgo sessions per request |
 
 ## Examples
 
@@ -423,7 +425,7 @@ Negroni middleware handler.
 
 ## Live code reload?
 
-[gin](https://github.com/urfave/gin) and
+[gin](https://github.com/codegangsta/gin) and
 [fresh](https://github.com/pilu/fresh) both live reload negroni apps.
 
 ## Essential Reading for Beginners of Go & Negroni
