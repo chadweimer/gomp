@@ -19,6 +19,9 @@ type Config struct {
 	// Port gets the port number under which the site is being hosted.
 	Port int
 
+	// RequireSSL specifies whether to redirect all HTTP traffic to HTTPS. Default = true
+	RequireSSL bool
+
 	// UploadDriver is used to select which backend data store is used for file uploads.
 	// Supported drivers: fs, s3
 	UploadDriver string
@@ -32,7 +35,7 @@ type Config struct {
 	// not be desirable in a production environment.
 	IsDevelopment bool
 
-	// SecretKey is used to keep data safe.
+	// SecretKey is used for session authentication. Recommended to be 32 or 64 ASCII characters.
 	SecretKey string
 
 	// ApplicationTitle is used where the application name (title) is displayed on screen.
@@ -58,6 +61,7 @@ func Load(path string) *Config {
 	c := Config{
 		RootURLPath:      "",
 		Port:             4000,
+		RequireSSL:       true,
 		UploadDriver:     "fs",
 		UploadPath:       filepath.Join("data", "uploads"),
 		IsDevelopment:    false,
@@ -72,6 +76,7 @@ func Load(path string) *Config {
 	// If environment variables are set, use them.
 	loadEnv("GOMP_ROOT_URL_PATH", &c.RootURLPath)
 	loadEnv("PORT", &c.Port)
+	loadEnv("GOMP_REQUIRE_SSL", &c.RequireSSL)
 	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
 	loadEnv("GOMP_UPLOAD_PATH", &c.UploadPath)
 	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
@@ -85,6 +90,7 @@ func Load(path string) *Config {
 	if c.IsDevelopment {
 		log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
 		log.Printf("[config] Port=%d", c.Port)
+		log.Printf("[config] RequireSSL=%d", c.RequireSSL)
 		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
 		log.Printf("[config] UploadPath=%s", c.UploadPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)

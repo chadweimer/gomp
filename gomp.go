@@ -31,6 +31,7 @@ func main() {
 	}
 	model := models.New(cfg)
 	sessionStore := sessions.NewCookieStore([]byte(cfg.SecretKey))
+	sessionStore.Options.Secure = !cfg.IsDevelopment && cfg.RequireSSL
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
@@ -52,28 +53,34 @@ func main() {
 		}}})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)
 
-	authMux := httprouter.New()
-	authMux.GET("/login", rc.Login)
-	authMux.POST("/login", rc.LoginPost)
-	authMux.GET("/logout", rc.Logout)
-	// Do nothing if this route isn't matched. Let the later handlers/routes get processed
-	authMux.NotFound = http.HandlerFunc(rc.NoOp)
-
-	sm := secure.New(secure.Options{
-		SSLRedirect:     true,
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
-		IsDevelopment:   cfg.IsDevelopment,
-	})
-
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
+
+	// If specified, require HTTPS
+	securitySettings := secure.Options{
+		SSLRedirect:     cfg.RequireSSL,
+		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
+		IsDevelopment:   cfg.IsDevelopment,
+	}
+	if cfg.RequireSSL {
+		securitySettings.STSSeconds = 31536000
+	}
+	sm := secure.New(securitySettings)
 	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
+
 	n.Use(negroni.NewStatic(http.Dir("public")))
 	n.Use(context.NewContexter(cfg, model, sessionStore))
+
+	authMux := httprouter.New()
+	authMux.GET("/login", rc.Login)
+	authMux.POST("/login", rc.LoginPost)
+	authMux.GET("/logout", rc.Logout)
+	// Do nothing if this route isn't matched. Let the later handlers/routes get processed
+	authMux.NotFound = http.HandlerFunc(rc.NoOp)
 	n.UseHandler(authMux)
 
 	// !!!! IMPORTANT !!!!
