@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/chadweimer/gomp/modules/context"
@@ -61,8 +62,13 @@ func (rc *RouteController) LoginPost(resp http.ResponseWriter, req *http.Request
 	}
 
 	sess, err := rc.sessionStore.New(req, "UserSession")
-	if rc.HasError(resp, req, err) {
-		return
+	if err != nil {
+		if sess == nil {
+			rc.InternalServerError(resp, req, err)
+			return
+		}
+
+		log.Print("[login] Invalid session retrieved.")
 	}
 	sess.Values["UserID"] = user.ID
 	err = sess.Save(req, resp)
