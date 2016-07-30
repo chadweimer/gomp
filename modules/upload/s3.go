@@ -3,6 +3,7 @@ package upload
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -177,7 +178,8 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 	if err != nil {
 		s3err, ok := err.(awserr.Error)
 		// 304 code is expected
-		if ok && s3err.Code() != "304NotModified" {
+		if ok && s3err.Code() != "NotModified" {
+			log.Printf("[S3Static] Error from S3.GetObject: %s", s3err.Code())
 			// discard the error?
 			next(rw, r)
 			return
@@ -191,6 +193,7 @@ func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.
 		if r.Method != "HEAD" {
 			buf, err = ioutil.ReadAll(getResp.Body)
 			if err != nil {
+				log.Printf("[S3Static] Error from ioutil.ReadAll: %s", err.Error())
 				// discard the error?
 				next(rw, r)
 				return
