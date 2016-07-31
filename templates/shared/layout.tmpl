@@ -54,7 +54,7 @@
                         </div>
                     </form>
                     {{end}}
-                    <ul id="slide-out" class="side-nav collapsible collapsible-accordion">
+                    <ul id="mobile-menu" class="side-nav collapsible collapsible-accordion">
                         <li><a href="{{RootUrlPath}}/" class="grey-text light truncate">{{ApplicationTitle}}</a></li>
                         {{if .User }}
                         <li><a href="{{RootUrlPath}}/">Home</a></li>
@@ -69,7 +69,7 @@
                         </li>
                         {{end}}
                     </ul>
-                    <a href="#" data-activates="slide-out" class="button-collapse">
+                    <a id="mobile-menu-button" href="#" data-activates="mobile-menu" class="button-collapse">
                         <i class="material-icons">menu</i>
                     </a>
                 </div>

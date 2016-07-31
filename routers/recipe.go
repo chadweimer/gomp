@@ -125,6 +125,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	if clear != "" {
 		delete(sess.Values, "q")
 		delete(sess.Values, "tags")
+		delete(sess.Values, "sort")
 	}
 
 	query := req.URL.Query().Get("q")
@@ -160,6 +161,25 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		}
 	}
 
+	sortType := req.URL.Query().Get("sort")
+	if sortType == "" {
+		sortType = "name"
+		if sessSortType := sess.Values["sort"]; sessSortType != nil {
+			sortType = sessSortType.(string)
+		}
+	}
+
+	sortBy := models.SortByName
+	sortDesc := false
+	switch strings.ToLower(sortType) {
+	case "name":
+		sortBy = models.SortByName
+		sortDesc = false
+	case "rating":
+		sortBy = models.SortByRating
+		sortDesc = true
+	}
+
 	var count int64
 	if viewType == "compact" {
 		count = 60
@@ -169,7 +189,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 	var recipes *models.Recipes
 	var total int64
-	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags}, page, count)
+	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags, SortBy: sortBy, SortDesc: sortDesc}, page, count)
 	if rc.HasError(resp, req, err) {
 		return
 	}
@@ -177,6 +197,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sess.Values["q"] = query
 	sess.Values["tags"] = tags
 	sess.Values["view"] = viewType
+	sess.Values["sort"] = sortType
 	sess.Save(req, resp)
 
 	data := context.Get(req).Data
@@ -188,6 +209,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	data["SearchTags"] = strings.Join(tags, ",")
 	data["ResultCount"] = total
 	data["ViewType"] = viewType
+	data["SortType"] = sortType
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 
