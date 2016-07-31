@@ -20,6 +20,7 @@ type Recipe struct {
 	NutritionInfo string
 	Ingredients   string
 	Directions    string
+	SourceURL     string
 	AvgRating     float64
 	MainImage     RecipeImage
 	Tags          []string
@@ -71,12 +72,12 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 // CreateTx stores the recipe in the database as a new record using
 // the specified transaction.
 func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
-	sql := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions) " +
-		"VALUES ($1, $2, $3, $4, $5) RETURNING id"
+	sql := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
+		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
 	var id int64
 	row := tx.QueryRow(sql,
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL)
 	err := row.Scan(&id)
 	if err != nil {
 		return err
@@ -103,7 +104,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 
 	result := m.db.QueryRow(
 		"SELECT "+
-			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')"+
+			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')"+
 			"FROM recipe AS r WHERE r.id = $1",
 		recipe.ID)
 	err := result.Scan(
@@ -112,6 +113,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 		&recipe.NutritionInfo,
 		&recipe.Ingredients,
 		&recipe.Directions,
+		&recipe.SourceURL,
 		&recipe.AvgRating,
 		&recipe.MainImage.ThumbnailURL)
 	if err == sql.ErrNoRows {
@@ -151,9 +153,9 @@ func (m *RecipeModel) Update(recipe *Recipe) error {
 func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
-			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5 "+
-			"WHERE id = $6",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.ID)
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6 "+
+			"WHERE id = $7",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL, recipe.ID)
 
 	// TODO: Deleting and recreating seems inefficent and potentially error prone
 	err = m.Tags.DeleteAllTx(recipe.ID, tx)

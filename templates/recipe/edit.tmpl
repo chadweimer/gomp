@@ -7,7 +7,7 @@
         <div class="row">
             <div class="input-field col s12 l12">
                 <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" value="{{.Recipe.Name}}" required autofocus>
-                <label for="name" class="active required">Name</label>
+                <label for="name" class="active">Name *</label>
             </div>
             <div class="input-field col s12 l12">
                 <textarea id="serving-size" name="serving-size" class="materialize-textarea" placeholder="(e.g., 2)">{{.Recipe.ServingSize}}</textarea>
@@ -15,15 +15,19 @@
             </div>
             <div class="input-field col s12 l12">
                 <textarea id="ingredients" name="ingredients" class="materialize-textarea" placeholder="List of each ingredient, optionally separated into sections (e.g., Marinade)." required>{{.Recipe.Ingredients}}</textarea>
-                <label for="ingredients" class="active">Ingredients</label>
+                <label for="ingredients" class="active">Ingredients *</label>
             </div>
             <div class="input-field col s12 l12">
                 <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
-                <label for="directions" class="active required">Directions</label>
+                <label for="directions" class="active">Directions *</label>
             </div>
             <div class="input-field col s12 l12">
                 <textarea id="nutrition-info" name="nutrition-info" class="materialize-textarea" placeholder="(e.g., 100 Calories, 2g Fat)">{{.Recipe.NutritionInfo}}</textarea>
                 <label for="nutrition-info" class="active">Nutrition</label>
+            </div>
+            <div class="input-field col s12 l12">
+                <input id="source" name="source" type="url" placeholder="(e.g., http://www.example.com/recipes/fried-chicken)" value="{{.Recipe.SourceURL}}">
+                <label for="source" class="active">Source</label>
             </div>
             <div id="tags" class="input-field col s12 l12">
                 <div class="chips"></div>
