@@ -53,25 +53,29 @@
                             <label for="search"><i class="material-icons">search</i></label>
                         </div>
                     </form>
-                    {{end}}
-                    <ul id="mobile-menu" class="side-nav collapsible collapsible-accordion">
-                        <li><a href="{{RootUrlPath}}/" class="grey-text light truncate">{{ApplicationTitle}}</a></li>
-                        {{if .User }}
-                        <li><a href="{{RootUrlPath}}/">Home</a></li>
-                        <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
+                    <ul id="mobile-menu" class="side-nav collapsible" data-collapsible="expandable">
                         <li>
-                            <a class="collapsible-header" href="#!"><strong>{{.User.Username}}</strong></a>
+                            <a class="collapsible-header active truncate" href="#!">{{ApplicationTitle}}</a>
                             <div class="collapsible-body">
                                 <ul>
-                                    <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                                    <li><a href="{{RootUrlPath}}/"><i class="material-icons">home</i> Home</a></li>
+                                    <li><a href="{{RootUrlPath}}/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
                                 </ul>
                             </div>
                         </li>
-                        {{end}}
+                        <li>
+                            <a class="collapsible-header active" href="#!">{{.User.Username}}</a>
+                            <div class="collapsible-body">
+                                <ul>
+                                    <li><a href="{{RootUrlPath}}/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
+                                </ul>
+                            </div>
+                        </li>
                     </ul>
                     <a id="mobile-menu-button" href="#" data-activates="mobile-menu" class="button-collapse">
                         <i class="material-icons">menu</i>
                     </a>
+                    {{end}}
                 </div>
             </nav>
         </header>
