@@ -126,6 +126,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		delete(sess.Values, "q")
 		delete(sess.Values, "tags")
 		delete(sess.Values, "sort")
+		delete(sess.Values, "dir")
 	}
 
 	query := req.URL.Query().Get("q")
@@ -170,13 +171,26 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	}
 
 	sortBy := models.SortByName
-	sortDesc := false
 	switch strings.ToLower(sortType) {
 	case "name":
 		sortBy = models.SortByName
-		sortDesc = false
 	case "rating":
 		sortBy = models.SortByRating
+	}
+
+	sortDirType := req.URL.Query().Get("dir")
+	if sortDirType == "" {
+		sortDirType = "ASC"
+		if sessSortDirType := sess.Values["dir"]; sessSortDirType != nil {
+			sortDirType = sessSortDirType.(string)
+		}
+	}
+
+	sortDesc := false
+	switch strings.ToUpper(sortDirType) {
+	case "ASC":
+		sortDesc = false
+	case "DESC":
 		sortDesc = true
 	}
 
@@ -198,6 +212,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sess.Values["tags"] = tags
 	sess.Values["view"] = viewType
 	sess.Values["sort"] = sortType
+	sess.Values["dir"] = sortDirType
 	sess.Save(req, resp)
 
 	data := context.Get(req).Data
@@ -210,6 +225,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	data["ResultCount"] = total
 	data["ViewType"] = viewType
 	data["SortType"] = sortType
+	data["SortDirType"] = sortDirType
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 
