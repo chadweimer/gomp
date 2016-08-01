@@ -42,24 +42,16 @@
                         <a class="collapsible-header active" href="#!">Sort</a>
                         <div class="collapsible-body">
                             <ul>
-                                {{if eq .SortType "name"}}
                                 <li {{if eq .SortType "name"}}class="active"{{end}}>
-                                    <a href="?sort=name&dir={{if eq .SortDirType "DESC"}}ASC{{else}}DESC{{end}}"><i class="material-icons">sort_by_alpha</i> Name</a>
+                                    <a href="?sort=name&dir={{if or (ne .SortType "name") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
+                                        <i class="material-icons">sort_by_alpha</i> Name
+                                    </a>
                                 </li>
-                                {{else}}
-                                <li {{if eq .SortType "name"}}class="active"{{end}}>
-                                    <a href="?sort=name&dir=ASC"><i class="material-icons">sort_by_alpha</i> Name</a>
-                                </li>
-                                {{end}}
-                                {{if eq .SortType "rating"}}
                                 <li {{if eq .SortType "rating"}}class="active"{{end}}>
-                                    <a href="?sort=rating&dir={{if eq .SortDirType "DESC"}}ASC{{else}}DESC{{end}}"><i class="material-icons">star_rate</i> Rating</a>
+                                    <a href="?sort=rating&dir={{if and (eq .SortType "rating") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
+                                        <i class="material-icons">star_rate</i> Rating
+                                    </a>
                                 </li>
-                                {{else}}
-                                <li {{if eq .SortType "rating"}}class="active"{{end}}>
-                                    <a href="?sort=rating&dir=DESC"><i class="material-icons">star_rate</i> Rating</a>
-                                </li>
-                                {{end}}
                             </ul>
                         </div>
                     </li>
