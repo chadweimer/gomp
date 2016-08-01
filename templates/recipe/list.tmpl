@@ -20,13 +20,39 @@
                 <i class="material-icons close" onclick="location.href='?clear=true';">clear_all</i>
             </span>
             {{end}}
-            {{if ne $.ViewType "compact"}}
-            <i class="material-icons right black-text">view_agenda</i>
-            <a href="?view=compact"><i class="material-icons right grey-text">view_headline</i></a>
-            {{else}}
-            <a href="?view=full"><i class="material-icons right grey-text">view_agenda</i></a>
-            <i class="material-icons right black-text">view_headline</i>
-            {{end}}
+            <span class="right">
+                <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
+                    <i class="material-icons black-text">menu</i>
+                </a>
+                <ul id="recipe-list-menu" class="side-nav collapsible" data-collapsible="expandable">
+                    <li>
+                        <a class="collapsible-header active" href="#!">Display</a>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li {{if eq .ViewType "full"}}class="active"{{end}}>
+                                    <a href="?view=full"><i class="material-icons">view_agenda</i> Full</a>
+                                </li>
+                                <li {{if eq .ViewType "compact"}}class="active"{{end}}>
+                                    <a href="?view=compact"><i class="material-icons">view_headline</i> Compact</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="collapsible-header active" href="#!">Sort</a>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li {{if eq .SortType "name"}}class="active"{{end}}>
+                                    <a href="?sort=name"><i class="material-icons">sort_by_alpha</i> Name</a>
+                                </li>
+                                <li {{if eq .SortType "rating"}}class="active"{{end}}>
+                                    <a href="?sort=rating"><i class="material-icons">star_rate</i> Rating</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </span>
         </div>
     </div>
 
@@ -107,4 +133,14 @@
         <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
     </li>
 </ul>
+{{end}}
+
+{{define "js-recipe/list"}}
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#recipe-list-menu-button').sideNav({
+        edge: 'right'
+    });
+});
+</script>
 {{end}}

@@ -13,15 +13,16 @@ type SortBy int
 const (
 	SortByName   SortBy = 0
 	SortByID     SortBy = 1
-	SortByDate   SortBy = 2
+	SortByRating SortBy = 2
 	SortByRandom SortBy = 3
 )
 
 // SearchFilter is the primary model class for recipe search
 type SearchFilter struct {
-	Query  string
-	Tags   []string
-	SortBy SortBy
+	Query    string
+	Tags     []string
+	SortBy   SortBy
+	SortDesc bool
 }
 
 // Find retrieves all recipes matching the specified search filter and within the range specified,
@@ -59,18 +60,20 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 
 	offset := count * (page - 1)
 	selectStmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS overall_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
 		partialStmt
 	switch filter.SortBy {
 	case SortByID:
 		selectStmt += " ORDER BY r.id"
 	case SortByName:
 		selectStmt += " ORDER BY r.name"
-	// TODO: Don't have date columns yet
-	//case SortByDate:
-	//	selectStmt += " ORDER BY r.created_on"
+	case SortByRating:
+		selectStmt += " ORDER BY overall_rating"
 	case SortByRandom:
 		selectStmt += " ORDER BY RANDOM()"
+	}
+	if filter.SortDesc {
+		selectStmt += " DESC"
 	}
 	selectStmt += " LIMIT ? OFFSET ?"
 	var selectArgs []interface{}

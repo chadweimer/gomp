@@ -1,6 +1,6 @@
 
 $(document).ready(function(){
-    $('.button-collapse').sideNav();
+    $('#mobile-menu-button').sideNav();
     $('.modal-trigger').leanModal();
-    $('#userMenuLarge').dropdown();
+    $('.dropdown').dropdown();
 });
