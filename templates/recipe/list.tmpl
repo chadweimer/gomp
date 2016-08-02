@@ -19,9 +19,8 @@
     <div class="col s12 l12">
         <div class="section">
             {{if (or .SearchQuery .SearchTags)}}
-            <span class="chip left">
+            <span class="light left">
                 Search: '{{.SearchQuery}}', Results: {{.ResultCount}}
-                <i class="material-icons close" onclick="location.href='?clear=true';">clear_all</i>
             </span>
             {{end}}
             <span class="right">
