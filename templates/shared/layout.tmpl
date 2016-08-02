@@ -29,7 +29,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <header class="navbar-fixed">
+        <header class="navbar">
             <nav class="blue">
                 <div class="nav-wrapper">
                     <a href="{{RootUrlPath}}/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
@@ -87,17 +87,21 @@
         <footer class="page-footer no-padding grey lighten-1">
             <div class="container">
                 <div class="row">
+                    {{if .User }}
                     <div class="col s12 l12">
-                        <h5 class="white-text">Credits</h5>
-                        <span class="white-text">
-                            Powered by <a href="https://github.com/chadweimer/gomp">GOMP</a></li>.
-                        </span>
+                        <h5 class="white-text">Links</h5>
+                        <ul>
+                            <li><a class="white-text" href="{{RootUrlPath}}/">Home</a></li>
+                            <li><a class="white-text" href="{{RootUrlPath}}/recipes">Recipes</a></li>
+                            <li><a class="white-text" href="{{RootUrlPath}}/logout">Logout</a></li>
+                        </ul>
                     </div>
+                    {{end}}
                 </div>
             </div>
             <div class="footer-copyright">
                 <div class="container">
-                    <span>&copy; 2016 Chad Weimer</span>
+                    <span>&copy; 2016 Chad Weimer. Powered by <a class="white-text" href="https://github.com/chadweimer/gomp">GOMP</a>.</span>
                 </div>
             </div>
         </footer>
