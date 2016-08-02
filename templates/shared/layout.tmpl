@@ -61,24 +61,20 @@
             </nav>
             <ul id="mobile-menu" class="side-nav collapsible" data-collapsible="expandable">
                 <li>
-                    <a class="collapsible-header active truncate" href="#!">{{ApplicationTitle}}</a>
-                    <div class="collapsible-body">
-                        <ul>
-                            <li><a href="{{RootUrlPath}}/"><i class="material-icons">home</i> Home</a></li>
-                            {{if .User }}
-                            <li><a href="{{RootUrlPath}}/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
-                            {{end}}
-                        </ul>
-                    </div>
+                    <span class="collapsible-header active truncate">{{ApplicationTitle}}</span>
+                    <ul class="collapsible-body">
+                        <li><a href="{{RootUrlPath}}/"><i class="material-icons">home</i> Home</a></li>
+                        {{if .User }}
+                        <li><a href="{{RootUrlPath}}/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
+                        {{end}}
+                    </ul>
                 </li>
                 {{if .User }}
                 <li>
-                    <a class="collapsible-header active" href="#!">{{.User.Username}}</a>
-                    <div class="collapsible-body">
-                        <ul>
-                            <li><a href="{{RootUrlPath}}/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
-                        </ul>
-                    </div>
+                    <span class="collapsible-header active">{{.User.Username}}</span>
+                    <ul class="collapsible-body">
+                        <li><a href="{{RootUrlPath}}/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
+                    </ul>
                 </li>
                 {{end}}
             </ul>
