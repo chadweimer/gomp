@@ -136,11 +136,8 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		}
 	}
 
-	var tags []string
-	tagStr := req.URL.Query().Get("tags")
-	if tagStr != "" {
-		tags = strings.Split(tagStr, ",")
-	} else {
+	tags, ok := req.URL.Query()["tags"]
+	if !ok || len(tags) == 0 {
 		if sessTags := sess.Values["tags"]; sessTags != nil {
 			tags = sessTags.([]string)
 		}
@@ -208,6 +205,12 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
+	var allTags *[]string
+	allTags, err = rc.model.Tags.ListAll()
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
 	sess.Values["q"] = query
 	sess.Values["tags"] = tags
 	sess.Values["view"] = viewType
@@ -220,8 +223,9 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	data["PerPage"] = count
 	data["NumPages"] = int64(math.Ceil(float64(total) / float64(count)))
 	data["Recipes"] = recipes
+	data["AllTags"] = allTags
 	data["SearchQuery"] = query
-	data["SearchTags"] = strings.Join(tags, ",")
+	data["SearchTags"] = tags
 	data["ResultCount"] = total
 	data["ViewType"] = viewType
 	data["SortType"] = sortType

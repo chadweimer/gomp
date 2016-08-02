@@ -7,6 +7,10 @@
         vertical-align: middle;
         padding: 5px;
     }
+    .side-nav .collapsible-body.with-checkboxes {
+        padding: 0 23.5px 0 31px;
+    }
+}
 </style>
 {{ end }}
 
@@ -16,7 +20,7 @@
         <div class="section">
             {{if (or .SearchQuery .SearchTags)}}
             <span class="chip left">
-                Search: '{{.SearchQuery}}', Tags: '{{.SearchTags}}', Results: {{.ResultCount}}
+                Search: '{{.SearchQuery}}', Tags: '{{Join .SearchTags ","}}', Results: {{.ResultCount}}
                 <i class="material-icons close" onclick="location.href='?clear=true';">clear_all</i>
             </span>
             {{end}}
@@ -53,6 +57,23 @@
                                     </a>
                                 </li>
                             </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="collapsible-header active" href="#!">Filter by Tag</a>
+                        <div class="collapsible-body with-checkboxes">
+                            <form>
+                                <button class="btn waves-effect" type="submit">Apply</button>
+                                <ul>
+                                    {{range .AllTags}}
+                                    <li>
+                                        <input id="{{.}}-tag" name="tags" type="checkbox" value="{{.}}" {{if StrSliceContains $.SearchTags .}}checked{{end}}>
+                                        <label for="{{.}}-tag">{{.}}</label>
+                                    </li>
+                                    {{end}}
+                                </ul>
+                                </div>
+                            </form>
                         </div>
                     </li>
                 </ul>

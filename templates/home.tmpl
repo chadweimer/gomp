@@ -18,14 +18,14 @@
         {{range .BeefRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=beef,steak&clear=true">{{.BeefCount}} Beef Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=beef&tags=steak&clear=true">{{.BeefCount}} Beef Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Poultry</h5>
         {{range .PoultryRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=poultry,chicken,turkey&clear=true">{{.PoultryCount}} Poultry Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=poultry&tags=chicken&tags=turkey&clear=true">{{.PoultryCount}} Poultry Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Pork</h5>
@@ -39,7 +39,7 @@
         {{range .SeafoodRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=seafood,fish&clear=true">{{.SeafoodCount}} Seafood Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=seafood&tags=fish&clear=true">{{.SeafoodCount}} Seafood Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Pasta</h5>
@@ -60,14 +60,14 @@
         {{range .SideRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=side,sides&clear=true">{{.SideCount}} Side Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=side&tags=sides&clear=true">{{.SideCount}} Side Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Drinks</h5>
         {{range .DrinkRecipes}}
             {{template "recipecard-home" .}}
         {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?tags=drink,cocktail&clear=true">{{.DrinkCount}} Drink Recipes &gt;&gt;</a>
+        <a class="right" href="{{RootUrlPath}}/recipes?tags=drink&tags=cocktail&clear=true">{{.DrinkCount}} Drink Recipes &gt;&gt;</a>
     </article>
 </section>
 {{ end }}
