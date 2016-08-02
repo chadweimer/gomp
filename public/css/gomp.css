@@ -111,3 +111,27 @@ nav .brand-logo.left {
 .chips > input {
     text-transform: lowercase;
 }
+
+.side-nav.flex-container {
+    display: flex;
+    flex-flow: column;
+}
+
+.side-nav.flex-container > * {
+    flex: 0 1 auto;
+    position: relative;
+}
+
+.side-nav.flex-container > .fill {
+    flex: 1 1 auto !important;
+    overflow-y: auto;
+    position: relative;
+}
+
+.side-nav .header-btn {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    height: 100%;
+}
