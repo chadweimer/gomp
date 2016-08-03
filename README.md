@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/chadweimer/gomp.svg?branch=develop)](https://travis-ci.org/chadweimer/gomp)
 [![Build Status](https://travis-ci.org/chadweimer/gomp.svg?branch=master)](https://travis-ci.org/chadweimer/gomp)
 
 # GOMP: Go Meal Planner
