@@ -121,50 +121,27 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	clear := req.URL.Query().Get("clear")
-	if clear != "" {
+	_, ok := req.URL.Query()["reset"]
+	if ok {
 		delete(sess.Values, "q")
 		delete(sess.Values, "tags")
+		delete(sess.Values, "view")
 		delete(sess.Values, "sort")
 		delete(sess.Values, "dir")
 	}
 
-	query := req.URL.Query().Get("q")
-	if query == "" {
-		if sessQuery := sess.Values["q"]; sessQuery != nil {
-			query = sessQuery.(string)
-		}
-	}
+	query := getStringParam(req, sess, "q", "")
+	tags := getStringParams(req, sess, "tags", nil)
+	page := getInt64Param(req, sess, "page", 1, 1, math.MaxInt64)
+	viewType := getStringParam(req, sess, "view", "full")
+	sortType := getStringParam(req, sess, "sort", "name")
+	sortDirType := getStringParam(req, sess, "dir", "ASC")
 
-	tags, ok := req.URL.Query()["tags"]
-	if !ok || len(tags) == 0 {
-		if sessTags := sess.Values["tags"]; sessTags != nil {
-			tags = sessTags.([]string)
-		}
-	}
-
-	var page int64
-	if pageStr := req.URL.Query().Get("page"); pageStr != "" {
-		page, _ = strconv.ParseInt(pageStr, 10, 64)
-	}
-	if page < 1 {
-		page = 1
-	}
-
-	viewType := req.URL.Query().Get("view")
-	if viewType == "" {
-		viewType = "full"
-		if sessViewType := sess.Values["view"]; sessViewType != nil {
-			viewType = sessViewType.(string)
-		}
-	}
-
-	sortType := req.URL.Query().Get("sort")
-	if sortType == "" {
-		sortType = "name"
-		if sessSortType := sess.Values["sort"]; sessSortType != nil {
-			sortType = sessSortType.(string)
-		}
+	var count int64
+	if viewType == "compact" {
+		count = 60
+	} else {
+		count = 12
 	}
 
 	sortBy := models.SortByName
@@ -175,27 +152,12 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		sortBy = models.SortByRating
 	}
 
-	sortDirType := req.URL.Query().Get("dir")
-	if sortDirType == "" {
-		sortDirType = "ASC"
-		if sessSortDirType := sess.Values["dir"]; sessSortDirType != nil {
-			sortDirType = sessSortDirType.(string)
-		}
-	}
-
 	sortDesc := false
 	switch strings.ToUpper(sortDirType) {
 	case "ASC":
 		sortDesc = false
 	case "DESC":
 		sortDesc = true
-	}
-
-	var count int64
-	if viewType == "compact" {
-		count = 60
-	} else {
-		count = 12
 	}
 
 	var recipes *models.Recipes
