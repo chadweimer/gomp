@@ -40,6 +40,7 @@ func main() {
 
 			"ToLower":     strings.ToLower,
 			"QueryEscape": url.QueryEscape,
+			"Join":        strings.Join,
 			"Add":         func(a, b int64) int64 { return a + b },
 			"TimeEqual":   func(a, b time.Time) bool { return a == b },
 			"Paginate":    getPageNumbersForPagination,
@@ -49,6 +50,14 @@ func main() {
 					slice[i] = v
 				}
 				return splitSlice(slice, numSplits)
+			},
+			"StrSliceContains": func(theSlice []string, searchFor string) bool {
+				for _, value := range theSlice {
+					if value == searchFor {
+						return true
+					}
+				}
+				return false
 			},
 		}}})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)

@@ -76,6 +76,26 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 	return &tags, nil
 }
 
+// ListAll retrieves all tags.
+func (m *TagModel) ListAll() (*[]string, error) {
+	rows, err := m.db.Query(
+		"SELECT DISTINCT tag FROM recipe_tag ORDER BY tag")
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var tag string
+		if err := rows.Scan(&tag); err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	return &tags, nil
+}
+
 // ListMostUsed retrieves the N most used tags.
 func (m *TagModel) ListMostUsed(count int) (*[]string, error) {
 	rows, err := m.db.Query(

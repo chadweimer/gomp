@@ -121,53 +121,27 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	clear := req.URL.Query().Get("clear")
-	if clear != "" {
+	_, ok := req.URL.Query()["reset"]
+	if ok {
 		delete(sess.Values, "q")
 		delete(sess.Values, "tags")
+		delete(sess.Values, "view")
 		delete(sess.Values, "sort")
 		delete(sess.Values, "dir")
 	}
 
-	query := req.URL.Query().Get("q")
-	if query == "" {
-		if sessQuery := sess.Values["q"]; sessQuery != nil {
-			query = sessQuery.(string)
-		}
-	}
+	query := getStringParam(req, sess, "q", "")
+	tags := getStringParams(req, sess, "tags", nil)
+	page := getInt64Param(req, sess, "page", 1, 1, math.MaxInt64)
+	viewType := getStringParam(req, sess, "view", "full")
+	sortType := getStringParam(req, sess, "sort", "name")
+	sortDirType := getStringParam(req, sess, "dir", "ASC")
 
-	var tags []string
-	tagStr := req.URL.Query().Get("tags")
-	if tagStr != "" {
-		tags = strings.Split(tagStr, ",")
+	var count int64
+	if viewType == "compact" {
+		count = 60
 	} else {
-		if sessTags := sess.Values["tags"]; sessTags != nil {
-			tags = sessTags.([]string)
-		}
-	}
-
-	var page int64
-	if pageStr := req.URL.Query().Get("page"); pageStr != "" {
-		page, _ = strconv.ParseInt(pageStr, 10, 64)
-	}
-	if page < 1 {
-		page = 1
-	}
-
-	viewType := req.URL.Query().Get("view")
-	if viewType == "" {
-		viewType = "full"
-		if sessViewType := sess.Values["view"]; sessViewType != nil {
-			viewType = sessViewType.(string)
-		}
-	}
-
-	sortType := req.URL.Query().Get("sort")
-	if sortType == "" {
-		sortType = "name"
-		if sessSortType := sess.Values["sort"]; sessSortType != nil {
-			sortType = sessSortType.(string)
-		}
+		count = 12
 	}
 
 	sortBy := models.SortByName
@@ -178,14 +152,6 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		sortBy = models.SortByRating
 	}
 
-	sortDirType := req.URL.Query().Get("dir")
-	if sortDirType == "" {
-		sortDirType = "ASC"
-		if sessSortDirType := sess.Values["dir"]; sessSortDirType != nil {
-			sortDirType = sessSortDirType.(string)
-		}
-	}
-
 	sortDesc := false
 	switch strings.ToUpper(sortDirType) {
 	case "ASC":
@@ -194,16 +160,15 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		sortDesc = true
 	}
 
-	var count int64
-	if viewType == "compact" {
-		count = 60
-	} else {
-		count = 12
-	}
-
 	var recipes *models.Recipes
 	var total int64
 	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags, SortBy: sortBy, SortDesc: sortDesc}, page, count)
+	if rc.HasError(resp, req, err) {
+		return
+	}
+
+	var allTags *[]string
+	allTags, err = rc.model.Tags.ListAll()
 	if rc.HasError(resp, req, err) {
 		return
 	}
@@ -220,8 +185,9 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	data["PerPage"] = count
 	data["NumPages"] = int64(math.Ceil(float64(total) / float64(count)))
 	data["Recipes"] = recipes
+	data["AllTags"] = allTags
 	data["SearchQuery"] = query
-	data["SearchTags"] = strings.Join(tags, ",")
+	data["SearchTags"] = tags
 	data["ResultCount"] = total
 	data["ViewType"] = viewType
 	data["SortType"] = sortType

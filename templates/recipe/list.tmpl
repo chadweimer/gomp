@@ -7,6 +7,7 @@
         vertical-align: middle;
         padding: 5px;
     }
+}
 </style>
 {{ end }}
 
@@ -15,20 +16,22 @@
     <div class="col s12 l12">
         <div class="section">
             {{if (or .SearchQuery .SearchTags)}}
-            <span class="chip left">
-                Search: '{{.SearchQuery}}', Tags: '{{.SearchTags}}', Results: {{.ResultCount}}
-                <i class="material-icons close" onclick="location.href='?clear=true';">clear_all</i>
+            <span class="light left">
+                Search: '{{.SearchQuery}}', Results: {{.ResultCount}}
             </span>
             {{end}}
             <span class="right">
                 <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
                     <i class="material-icons black-text">menu</i>
                 </a>
-                <ul id="recipe-list-menu" class="side-nav collapsible" data-collapsible="expandable">
-                    <li>
-                        <a class="collapsible-header active" href="#!">Display</a>
-                        <div class="collapsible-body">
-                            <ul>
+                <form>
+                    <ul id="recipe-list-menu" class="side-nav collapsible flex-container" data-collapsible="expandable">
+                        <li>
+                            <a class="btn waves-effect" href="?reset">Reset</a>
+                        </li>
+                        <li>
+                            <span class="collapsible-header active">Display</span>
+                            <ul class="collapsible-body">
                                 <li {{if eq .ViewType "full"}}class="active"{{end}}>
                                     <a href="?view=full"><i class="material-icons">view_agenda</i> Full</a>
                                 </li>
@@ -36,12 +39,10 @@
                                     <a href="?view=compact"><i class="material-icons">view_headline</i> Compact</a>
                                 </li>
                             </ul>
-                        </div>
-                    </li>
-                    <li>
-                        <a class="collapsible-header active" href="#!">Sort</a>
-                        <div class="collapsible-body">
-                            <ul>
+                        </li>
+                        <li>
+                            <span class="collapsible-header active">Sort</span>
+                            <ul class="collapsible-body">
                                 <li {{if eq .SortType "name"}}class="active"{{end}}>
                                     <a href="?sort=name&dir={{if or (ne .SortType "name") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
                                         <i class="material-icons">sort_by_alpha</i> Name
@@ -53,9 +54,24 @@
                                     </a>
                                 </li>
                             </ul>
-                        </div>
-                    </li>
-                </ul>
+                        </li>
+                        <li>
+                            <span class="collapsible-header active">Filter by Tag</span>
+                            <button class="btn-flat waves-effect header-btn" type="submit">Apply</button>
+                        </li>
+                        <li class="indented fill">
+                            <ul>
+                                {{range .AllTags}}
+                                <li>
+                                    <input id="{{.}}-tag" name="tags" type="checkbox" value="{{.}}" {{if StrSliceContains $.SearchTags .}}checked{{end}}>
+                                    <label for="{{.}}-tag">{{.}}</label>
+                                </li>
+                                {{end}}
+                            </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </form>
             </span>
         </div>
     </div>

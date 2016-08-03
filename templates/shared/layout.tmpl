@@ -29,7 +29,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <header class="navbar-fixed">
+        <header class="navbar">
             <nav class="blue">
                 <div class="nav-wrapper">
                     <a href="{{RootUrlPath}}/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
@@ -47,9 +47,9 @@
                         </li>
                     </ul>
                     <form class="nav-wrapper right" action="{{RootUrlPath}}/recipes">
-                        <input type="hidden" name="clear" value="true">
                         <div class="input-field nav-wrapper">
-                            <input id="search" name="q" type="search" placeholder="Search..." required>
+                            <input id="search" name="q" type="search" placeholder="Search...">
+                            <input type="hidden" name="tags" value="">
                             <label for="search"><i class="material-icons">search</i></label>
                         </div>
                     </form>
@@ -61,24 +61,20 @@
             </nav>
             <ul id="mobile-menu" class="side-nav collapsible" data-collapsible="expandable">
                 <li>
-                    <a class="collapsible-header active truncate" href="#!">{{ApplicationTitle}}</a>
-                    <div class="collapsible-body">
-                        <ul>
-                            <li><a href="{{RootUrlPath}}/"><i class="material-icons">home</i> Home</a></li>
-                            {{if .User }}
-                            <li><a href="{{RootUrlPath}}/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
-                            {{end}}
-                        </ul>
-                    </div>
+                    <span class="collapsible-header active truncate">{{ApplicationTitle}}</span>
+                    <ul class="collapsible-body">
+                        <li><a href="{{RootUrlPath}}/"><i class="material-icons">home</i> Home</a></li>
+                        {{if .User }}
+                        <li><a href="{{RootUrlPath}}/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
+                        {{end}}
+                    </ul>
                 </li>
                 {{if .User }}
                 <li>
-                    <a class="collapsible-header active" href="#!">{{.User.Username}}</a>
-                    <div class="collapsible-body">
-                        <ul>
-                            <li><a href="{{RootUrlPath}}/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
-                        </ul>
-                    </div>
+                    <span class="collapsible-header active">{{.User.Username}}</span>
+                    <ul class="collapsible-body">
+                        <li><a href="{{RootUrlPath}}/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
+                    </ul>
                 </li>
                 {{end}}
             </ul>
@@ -91,17 +87,21 @@
         <footer class="page-footer no-padding grey lighten-1">
             <div class="container">
                 <div class="row">
+                    {{if .User }}
                     <div class="col s12 l12">
-                        <h5 class="white-text">Credits</h5>
-                        <span class="white-text">
-                            Powered by <a href="https://github.com/chadweimer/gomp">GOMP</a></li>.
-                        </span>
+                        <h5 class="white-text">Links</h5>
+                        <ul>
+                            <li><a class="white-text" href="{{RootUrlPath}}/">Home</a></li>
+                            <li><a class="white-text" href="{{RootUrlPath}}/recipes">Recipes</a></li>
+                            <li><a class="white-text" href="{{RootUrlPath}}/logout">Logout</a></li>
+                        </ul>
                     </div>
+                    {{end}}
                 </div>
             </div>
             <div class="footer-copyright">
                 <div class="container">
-                    <span>&copy; 2016 Chad Weimer</span>
+                    <span>&copy; 2016 Chad Weimer. Powered by <a class="white-text" href="https://github.com/chadweimer/gomp">GOMP</a>.</span>
                 </div>
             </div>
         </footer>
