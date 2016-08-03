@@ -112,6 +112,10 @@ nav .brand-logo.left {
     text-transform: lowercase;
 }
 
+.side-nav .indented {
+    padding: 0 23.5px 0 31px;
+}
+
 .side-nav.flex-container {
     display: flex;
     flex-flow: column;
