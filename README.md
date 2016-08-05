@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/chadweimer/gomp.svg?branch=master)](https://travis-ci.org/chadweimer/gomp)
+[ ![Codeship Status for chadweimer/gomp](https://codeship.com/projects/da7d5cd0-3d77-0134-f898-3a3309225716/status?branch=master)](https://codeship.com/projects/167228)
 
 # GOMP: Go Meal Planner
 
