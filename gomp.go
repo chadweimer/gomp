@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/context"
@@ -83,6 +84,8 @@ func main() {
 
 	n.Use(negroni.NewStatic(http.Dir("public")))
 	n.Use(context.NewContexter(cfg, model, sessionStore))
+
+	n.Use(api.NewRouter(cfg, model))
 
 	authMux := httprouter.New()
 	authMux.GET("/login", rc.Login)
