@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 
 	"github.com/chadweimer/gomp/models"
@@ -22,9 +24,15 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 
 	r.apiMux = httprouter.New()
 	r.apiMux.GET("/api/v1/recipes", r.GetRecipes)
-	r.apiMux.NotFound = http.HandlerFunc(r.NoOp)
+	r.apiMux.GET("/api/v1/recipes/:id", r.GetRecipe)
+	r.apiMux.GET("/api/v1/tags", r.GetTags)
+	r.apiMux.NotFound = http.HandlerFunc(r.NotFound)
 
 	return r
+}
+
+func (ro Router) NotFound(resp http.ResponseWriter, req *http.Request) {
+	// Do nothing
 }
 
 func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
@@ -37,6 +45,22 @@ func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http
 	next(resp, req)
 }
 
-func (ro Router) NoOp(resp http.ResponseWriter, req *http.Request) {
-	// Do nothing
+func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {
+	src, err := json.Marshal(data)
+	if err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	dst := &bytes.Buffer{}
+	if err = json.Indent(dst, src, "", "\t"); err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+	resp.Write(dst.Bytes())
+}
+
+func writeErrorToResponse(resp http.ResponseWriter, err error) {
+	resp.WriteHeader(http.StatusInternalServerError)
+	json.NewEncoder(resp).Encode(err)
 }

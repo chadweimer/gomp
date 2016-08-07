@@ -14,16 +14,16 @@ type RecipeModel struct {
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID            int64
-	Name          string
-	ServingSize   string
-	NutritionInfo string
-	Ingredients   string
-	Directions    string
-	SourceURL     string
-	AvgRating     float64
-	MainImage     RecipeImage
-	Tags          []string
+	ID            int64       `json:"id"`
+	Name          string      `json:"name"`
+	ServingSize   string      `json:"servingSize"`
+	NutritionInfo string      `json:"nutritionInfo"`
+	Ingredients   string      `json:"ingredients"`
+	Directions    string      `json:"directions"`
+	SourceURL     string      `json:"sourceUrl"`
+	AvgRating     float64     `json:"averageRating"`
+	MainImage     RecipeImage `json:"mainImage"`
+	Tags          []string    `json:"tags"`
 }
 
 // Recipes represents a collection of Recipe objects
