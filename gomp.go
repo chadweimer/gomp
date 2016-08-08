@@ -6,8 +6,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/chadweimer/gomp/api"
@@ -38,13 +36,9 @@ func main() {
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"RootUrlPath":      func() string { return cfg.RootURLPath },
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-
-			"ToLower":     strings.ToLower,
-			"QueryEscape": url.QueryEscape,
-			"Join":        strings.Join,
-			"Add":         func(a, b int64) int64 { return a + b },
-			"TimeEqual":   func(a, b time.Time) bool { return a == b },
-			"Paginate":    getPageNumbersForPagination,
+			"Add":              func(a, b int64) int64 { return a + b },
+			"TimeEqual":        func(a, b time.Time) bool { return a == b },
+			"Paginate":         getPageNumbersForPagination,
 			"ColumnizeRecipes": func(recipes *models.Recipes, numSplits int) [][]interface{} {
 				slice := make([]interface{}, len(*recipes))
 				for i, v := range *recipes {
@@ -124,7 +118,6 @@ func main() {
 	recipeMux.POST("/recipes/:id/notes", rc.CreateNotePost)
 	recipeMux.POST("/recipes/:id/notes/:note_id", rc.EditNotePost)
 	recipeMux.GET("/recipes/:id/notes/:note_id/delete", rc.DeleteNote)
-	recipeMux.POST("/recipes/:id/ratings", rc.RateRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 

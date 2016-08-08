@@ -25,19 +25,18 @@
                 <div class="progress">
                     <div class="indeterminate"></div>
                 </div>
-                <form id="rating-form" class="rating-container clickable" method="post" action="{{.UrlPath}}/ratings">
-                    <a href="javascript:void(0)" class="whole" data-rating="5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half" data-rating="4.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole" data-rating="4"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half" data-rating="3.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole" data-rating="3"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half" data-rating="2.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole" data-rating="2"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half" data-rating="1.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole" data-rating="1"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half" data-rating="0.5"><i class="material-icons">star</i></a>
-                    <input id="rating-input" name="rating" type="hidden">
-                </form>
+                <div class="rating-container clickable">
+                    <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>
+                    <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>
+                    <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>
+                    <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>
+                    <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>
+                    <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>
+                    <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>
+                    <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>
+                    <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>
+                    <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>
+                </div>
                 <h4>
                     <a href="#pictures">
                         <img id="recipe-image" class="circle" style="width: 64px; height: 64px;">
@@ -208,14 +207,12 @@
     $(document).ready(function(){
         $.ajax({
             url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId,
-            type: 'GET',
+            method: 'GET',
             dataType: 'json',
         }).done(function(recipe) {
-            $('#recipe .progress').addClass('hide');
-            
             $('#recipe-name').append(recipe.name)
             $('#recipe-image').attr("src", recipe.mainImage.thumbnailUrl)
-            $('#rating-form > a[data-rating="' + recipe.averageRating + '"]').addClass('active');
+            $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
             $('#recipe-ingredients > p').append(recipe.ingredients)
             $('#recipe-directions > p').append(recipe.directions)
 
@@ -242,16 +239,16 @@
             recipe.tags.forEach(function(tag) {
                 $tagsContainer.append('<div class="chip">' + tag + '</div>');
             });
+        }).always(function() {
+            $('#recipe .progress').addClass('hide');
         });
 
         $.ajax({
             url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/images',
-            type: 'GET',
+            method: 'GET',
             dataType: 'json',
         }).done(function(images) {
             if (images != null) {
-                $('#pictures .progress').addClass('hide');
-
                 images.forEach(function(image) {
                     var $imageContent = '\
                         <span class="image-container">\
@@ -280,15 +277,15 @@
                 $('#delete-image-yes').attr('href', '{{.UrlPath}}/images/' + imageId + '/delete');
                 $('#delete-image-confirm').openModal();
             });
+        }).always(function() {
+                $('#pictures .progress').addClass('hide');
         });
 
         $.ajax({
             url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
-            type: 'GET',
+            method: 'GET',
             dataType: 'json',
         }).done(function(notes) {
-            $('#notes .progress').addClass('hide');
-
             if (notes != null) {
                 notes.forEach(function(note) {
                     var $noteContent = '\
@@ -335,11 +332,22 @@
                 $('#delete-note-yes').attr('href', '{{.UrlPath}}/notes/' + noteId + '/delete');
                 $('#delete-note-confirm').openModal();
             });
+        }).always(function() {
+            $('#notes .progress').addClass('hide');
         });
 
-        $('#rating-form > a').click(function() {
-            $('#rating-input').val($(this).data('rating'));
-            $('#rating-form').submit();
+        $('.star').click(function() {
+            var $self = $(this);
+            $.ajax({
+                url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/rating',
+                method: 'PUT',
+                dataType: 'json',
+                processData: false,
+                data: parseFloat($self.data('rating')),
+            }).done(function() {
+                $('.star').removeClass('active');
+                $self.addClass('active');
+            });
         });
         
         $('#add-note').click(function() {

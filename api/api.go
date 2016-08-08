@@ -27,6 +27,7 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux.GET("/api/v1/recipes/:id", r.GetRecipe)
 	r.apiMux.GET("/api/v1/recipes/:id/images", r.GetRecipeImages)
 	r.apiMux.GET("/api/v1/recipes/:id/notes", r.GetRecipeNotes)
+	r.apiMux.PUT("/api/v1/recipes/:id/rating", r.PutRecipeRating)
 	r.apiMux.GET("/api/v1/tags", r.GetTags)
 	r.apiMux.NotFound = http.HandlerFunc(r.NotFound)
 
@@ -60,6 +61,10 @@ func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {
 		return
 	}
 	resp.Write(dst.Bytes())
+}
+
+func readJSONFromRequest(req *http.Request, data interface{}) error {
+	return json.NewDecoder(req.Body).Decode(data)
 }
 
 func writeErrorToResponse(resp http.ResponseWriter, err error) {

@@ -440,25 +440,3 @@ func (rc *RouteController) DeleteNote(resp http.ResponseWriter, req *http.Reques
 
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
-
-// RateRecipePost handles adding/updating the rating of a recipe
-func (rc *RouteController) RateRecipePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	form := new(RatingForm)
-	errs := binding.Bind(req, form)
-	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, req, errors.New(errs.Error()))
-		return
-	}
-
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	err = rc.model.Recipes.SetRating(id, form.Rating)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
-}

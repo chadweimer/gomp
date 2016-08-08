@@ -8,8 +8,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rc Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipes, _, err := rc.model.Search.Find(models.SearchFilter{}, 1, 10)
+func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipes, _, err := r.model.Search.Find(models.SearchFilter{}, 1, 10)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
@@ -18,14 +18,14 @@ func (rc Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httpr
 	writeJSONToResponse(resp, recipes)
 }
 
-func (rc Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
 
-	recipe, err := rc.model.Recipes.Read(id)
+	recipe, err := r.model.Recipes.Read(id)
 	if err == models.ErrNotFound {
 		resp.WriteHeader(http.StatusNotFound)
 		return
@@ -36,4 +36,25 @@ func (rc Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httpro
 	}
 
 	writeJSONToResponse(resp, recipe)
+}
+
+func (r Router) PutRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	if err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	var rating float64
+	if err := readJSONFromRequest(req, &rating); err != nil {
+		resp.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if err := r.model.Recipes.SetRating(id, rating); err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	resp.WriteHeader(http.StatusNoContent)
 }
