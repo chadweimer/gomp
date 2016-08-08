@@ -47,8 +47,11 @@ func (c Contexter) addUserToContext(resp http.ResponseWriter, req *http.Request)
 			log.Printf("[contexter] addUserToContext failed: %s", err.Error())
 		}
 	}
+
+	data := Get(req).Data
+	data["UrlPath"] = req.URL.Path
 	if user != nil {
-		Get(req).Data["User"] = user
+		data["User"] = user
 	}
 }
 

@@ -20,113 +20,72 @@
 {{ define "content-recipe/view" }}
 <section class="row">
     <article class="col s12 m12 l10 offset-l1">
-        <section class="card grey lighten-4">
+        <section id="recipe" class="card grey lighten-4">
             <div class="card-content">
-                <form id="rating-form" class="rating-container clickable" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/ratings">
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 3.5}}active{{end}}" data-rating="3.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 3.0}}active{{end}}" data-rating="3.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 2.5}}active{{end}}" data-rating="2.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 2.0}}active{{end}}" data-rating="2.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 1.5}}active{{end}}" data-rating="1.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 1.0}}active{{end}}" data-rating="1.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
+                <div class="progress">
+                    <div class="indeterminate"></div>
+                </div>
+                <form id="rating-form" class="rating-container clickable" method="post" action="{{.UrlPath}}/ratings">
+                    <a href="javascript:void(0)" class="whole" data-rating="5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half" data-rating="4.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole" data-rating="4"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half" data-rating="3.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole" data-rating="3"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half" data-rating="2.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole" data-rating="2"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half" data-rating="1.5"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="whole" data-rating="1"><i class="material-icons">star</i></a>
+                    <a href="javascript:void(0)" class="half" data-rating="0.5"><i class="material-icons">star</i></a>
                     <input id="rating-input" name="rating" type="hidden">
                 </form>
                 <h4>
-                    {{if .Recipe.MainImage.ThumbnailURL}}
                     <a href="#pictures">
-                        <img src="{{.Recipe.MainImage.ThumbnailURL}}" class="circle" style="width: 64px; height: 64px;">
+                        <img id="recipe-image" class="circle" style="width: 64px; height: 64px;">
                     </a>
-                    {{end}}
-                    {{.Recipe.Name}}
+                    <span id="recipe-name"></span>
                 </h4>
-                {{if .Recipe.ServingSize}}
-                <label>Serving Size</label>
-                <p class="section plain-text">{{.Recipe.ServingSize}}</p>
-                <div class="divider"></div>
-                {{end}}
-                <label>Ingredients</label>
-                <p class="section plain-text">{{.Recipe.Ingredients}}</p>
-                <div class="divider"></div>
-                <label>Directions</label>
-                <p class="section plain-text">{{.Recipe.Directions}}</p>
-                {{if .Recipe.NutritionInfo}}
-                <div class="divider"></div>
-                <label>Nutrition</label>
-                <p class="section plain-text">{{.Recipe.NutritionInfo}}</p>
-                {{end}}
-                {{if .Recipe.SourceURL}}
-                <div class="divider"></div>
-                <label>Source</label>
-                <p class="section"><a target="_blank" href="{{.Recipe.SourceURL}}">{{.Recipe.SourceURL}}</a></p>
-                {{end}}
-                {{if .Recipe.Tags}}
-                <div class="divider"></div>
-                <p class="section">
-                    {{range .Recipe.Tags}}
-                    <div class="chip">
-                        {{.}}
-                    </div>
-                    {{end}}
-                </p>
-                {{end}}
+                <div id="recipe-serving-size" class="hide">
+                    <label>Serving Size</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-ingredients">
+                    <label>Ingredients</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-directions">
+                    <label>Directions</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-nutrition" class="hide">
+                    <label>Nutrition</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-source" class="hide">
+                    <label>Source</label>
+                    <p class="section"><a target="_blank"></a></p>
+                    <div class="divider"></div>
+                </div>
+                <p id="recipe-tags" class="section"></p>
             </div>
         </section>
         <section>
             <article id="pictures" class="col s12 l6">
                 <h5 class="light">Pictures</h5>
                 <div class="divider"></div>
-                <section class="section">
-                    {{range .Images}}
-                    <span class="image-container">
-                        <a target="_blank" href="{{.URL}}">
-                            {{if .ThumbnailURL}}
-                            <img width="250" height="250" src="{{.ThumbnailURL}}">
-                            {{else}}
-                            <img width="250" height="250" src="{{.URL}}">
-                            {{end}}
-                        </a>
-                        {{if ne $.Recipe.MainImage.ThumbnailURL .ThumbnailURL}}
-                        <a class="make-main-image" href="javascript:void(0)" data-image-id="{{.ID}}">
-                            <i class="material-icons green-text">photo_library</i>
-                        </a>
-                        {{end}}
-                        <a class="delete-image" href="javascript:void(0)" data-image-id="{{.ID}}">
-                            <i class="material-icons red-text">delete</i>
-                        </a>
-                    </span>
-                    {{end}}
-                </section>
+                <div class="progress">
+                    <div class="indeterminate"></div>
+                </div>
             </article>
-            <article class="col s12 l6">
+            <article id="notes" class="col s12 l6">
                 <h5 class="light">Notes</h5>
                 <div class="divider"></div>
-                {{range .Notes}}
-                <section class="card grey lighten-4">
-                    <div class="card-content">
-                        <p class="section left">
-                            <i class="material-icons left">comment</i>
-                            {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
-                        </p>
-                        <p class="section right">
-                            <a class="edit-note" href="javascript:void(0)" data-note-id="{{.ID}}" data-note-content="{{QueryEscape .Note}}">
-                                <i class="material-icons amber-text text-darken-2">edit</i>
-                            </a>
-                            <a class="delete-note" href="javascript:void(0)" data-note-id="{{.ID}}">
-                                <i class="material-icons red-text">delete</i>
-                            </a>
-                        </p>
-                        <div class="divider clearfix"></div>
-                        <p class="section plain-text">{{.Note}}</p>
-                        {{if not (TimeEqual .CreatedAt .ModifiedAt)}}
-                        <label class="right">Modified: {{.ModifiedAt.Format "2006 Jan 02, 03:04:05PM"}}</label>
-                        {{end}}
-                    </div>
-                </section>
-                {{end}}
+                <div class="progress">
+                    <div class="indeterminate"></div>
+                </div>
             </article>
         </section>
     </article>
@@ -147,7 +106,7 @@
             </a>
         </li>
         <li>
-            <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/edit" class="btn-floating waves-effect amber darken-2">
+            <a href="{{.UrlPath}}/edit" class="btn-floating waves-effect amber darken-2">
                 <i class="material-icons">mode_edit</i>
             </a>
         </li>
@@ -170,11 +129,11 @@
     </div>
     <div class="modal-footer">
         <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="{{.UrlPath}}/delete" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images" method="post" enctype="multipart/form-data">
+    <form action="{{.UrlPath}}/images" method="post" enctype="multipart/form-data">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -244,47 +203,152 @@
 
 {{ define "js-recipe/view" }}
 <script type="text/javascript">
-    $('#rating-form > a').click(function() {
-        $('#rating-input').val($(this).data('rating'));
-        $('#rating-form').submit();
-    });
+    var recipeId = window.location.pathname.split('/').pop();
     
-    $('.make-main-image').click(function() {
-        var imageID = $(this).data('image-id');
-        $('#main-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/main');
-        $('#main-image-confirm').openModal();
-    });
-    
-    $('.delete-image').click(function() {
-        var imageID = $(this).data('image-id');
-        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/delete');
-        $('#delete-image-confirm').openModal();
-    });
-    
-    $('#add-note').click(function() {
-        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes');
-        $('#note').val('');
-        $('#note-title').text('Add Note');
-        $('#note-submit').text('Add');
-        $('#note-modal').openModal();
-    });
-    
-    $('.edit-note').click(function() {
-        var noteID = $(this).data('note-id');
-        var noteContent = $(this).data('note-content');
-        noteContent = noteContent.replace(/\+/g, ' ');
-        noteContent = decodeURIComponent(noteContent);
-        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes/' + noteID);
-        $('#note').val(noteContent);
-        $('#note-title').text('Edit Note');
-        $('#note-submit').text('Update');
-        $('#note-modal').openModal();
-    });
-    
-    $('.delete-note').click(function() {
-        var noteID = $(this).data('note-id');
-        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes/' + noteID + '/delete');
-        $('#delete-note-confirm').openModal();
+    $(document).ready(function(){
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId,
+            type: 'GET',
+            dataType: 'json',
+        }).done(function(recipe) {
+            $('#recipe .progress').addClass('hide');
+            
+            $('#recipe-name').append(recipe.name)
+            $('#recipe-image').attr("src", recipe.mainImage.thumbnailUrl)
+            $('#rating-form > a[data-rating="' + recipe.averageRating + '"]').addClass('active');
+            $('#recipe-ingredients > p').append(recipe.ingredients)
+            $('#recipe-directions > p').append(recipe.directions)
+
+            if (recipe.servingSize != '') {
+                var $servingSize =  $('#recipe-serving-size')
+                $servingSize.removeClass('hide')
+                $servingSize.find('p').append(recipe.servingSize)
+            }
+
+            if (recipe.nutritionInfo != '') {
+                var $nutritionInfo =  $('#recipe-nutrition')
+                $nutritionInfo.removeClass('hide')
+                $nutritionInfo.find('p').append(recipe.nutritionInfo)
+            }
+
+            if (recipe.sourceUrl != '') {
+                var $sourceUrl =  $('#recipe-source')
+                $sourceUrl.removeClass('hide')
+                $sourceUrl.find('> p > a').attr("href", recipe.sourceUrl)
+                $sourceUrl.find('> p > a').append(recipe.sourceUrl)
+            }
+
+            var $tagsContainer = $('#recipe-tags');
+            recipe.tags.forEach(function(tag) {
+                $tagsContainer.append('<div class="chip">' + tag + '</div>');
+            });
+        });
+
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/images',
+            type: 'GET',
+            dataType: 'json',
+        }).done(function(images) {
+            if (images != null) {
+                $('#pictures .progress').addClass('hide');
+
+                images.forEach(function(image) {
+                    var $imageContent = '\
+                        <span class="image-container">\
+                            <a target="_blank" href="' + image.Url + '">\
+                                <img width="250" height="250" src="' + image.thumbnailUrl + '">\
+                            </a>\
+                            <a class="make-main-image" href="javascript:void(0)" data-image-id="' + image.id + '">\
+                                <i class="material-icons green-text">photo_library</i>\
+                            </a>\
+                            <a class="delete-image" href="javascript:void(0)" data-image-id="' + image.id + '">\
+                                <i class="material-icons red-text">delete</i>\
+                            </a>\
+                        </span>';
+                    $('#pictures').append($imageContent);
+                });
+            }
+        
+            $('.make-main-image').click(function() {
+                var imageId = $(this).data('image-id');
+                $('#main-image-yes').attr('href', '{{.UrlPath}}/images/' + imageId + '/main');
+                $('#main-image-confirm').openModal();
+            });
+            
+            $('.delete-image').click(function() {
+                var imageId = $(this).data('image-id');
+                $('#delete-image-yes').attr('href', '{{.UrlPath}}/images/' + imageId + '/delete');
+                $('#delete-image-confirm').openModal();
+            });
+        });
+
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
+            type: 'GET',
+            dataType: 'json',
+        }).done(function(notes) {
+            $('#notes .progress').addClass('hide');
+
+            if (notes != null) {
+                notes.forEach(function(note) {
+                    var $noteContent = '\
+                        <section class="card grey lighten-4">\
+                            <div class="card-content">\
+                                <p class="section left">\
+                                    <i class="material-icons left">comment</i>' +
+                                    new Date(note.createdAt).toLocaleString() +
+                                '</p>\
+                                <p class="section right">\
+                                    <a class="edit-note" href="javascript:void(0)" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '">\
+                                        <i class="material-icons amber-text text-darken-2">edit</i>\
+                                    </a>\
+                                    <a class="delete-note" href="javascript:void(0)" data-note-id="' + note.id + '">\
+                                        <i class="material-icons red-text">delete</i>\
+                                    </a>\
+                                </p>\
+                                <div class="divider clearfix"></div>\
+                                <p class="section plain-text">' + note.text + '</p>';
+                    if (note.modifiedAt != '') {
+                        $noteContent += '<label class="right">Modified: ' + new Date(note.modifiedAt).toLocaleString() + '</label>';
+                    }
+                    $noteContent += '\
+                            </div>\
+                        </section>';
+                    $('#notes').append($noteContent);
+                });
+            }
+        
+            $('.edit-note').click(function() {
+                var noteId = $(this).data('note-id');
+                var noteContent = $(this).data('note-content');
+                noteContent = noteContent.replace(/\+/g, ' ');
+                noteContent = decodeURIComponent(noteContent);
+                $('#note-modal > form').attr('action', '{{.UrlPath}}/notes/' + noteId);
+                $('#note').val(noteContent);
+                $('#note-title').text('Edit Note');
+                $('#note-submit').text('Update');
+                $('#note-modal').openModal();
+            });
+            
+            $('.delete-note').click(function() {
+                var noteId = $(this).data('note-id');
+                $('#delete-note-yes').attr('href', '{{.UrlPath}}/notes/' + noteId + '/delete');
+                $('#delete-note-confirm').openModal();
+            });
+        });
+
+        $('#rating-form > a').click(function() {
+            $('#rating-input').val($(this).data('rating'));
+            $('#rating-form').submit();
+        });
+        
+        $('#add-note').click(function() {
+            $('#note-modal > form').attr('action', '{{.UrlPath}}/notes');
+            $('#note').val('');
+            $('#note-title').text('Add Note');
+            $('#note-submit').text('Add');
+            $('#note-modal').openModal();
+        });
     });
 </script>
 {{ end }}

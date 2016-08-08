@@ -81,34 +81,7 @@ func (f *RatingForm) FieldMap(req *http.Request) binding.FieldMap {
 
 // GetRecipe handles retrieving and rendering a single recipe
 func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	recipe, err := rc.model.Recipes.Read(id)
-	if err == models.ErrNotFound {
-		rc.NotFound(resp, req)
-		return
-	}
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	notes, err := rc.model.Notes.List(id)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	imgs, err := rc.model.Images.List(id)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
 	data := context.Get(req).Data
-	data["Recipe"] = recipe
-	data["Notes"] = notes
-	data["Images"] = imgs
 	rc.HTML(resp, http.StatusOK, "recipe/view", data)
 }
 
