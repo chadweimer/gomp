@@ -25,13 +25,13 @@ type RecipeImageModel struct {
 
 // RecipeImage represents the data associated with an image attached to a recipe
 type RecipeImage struct {
-	ID           int64
-	RecipeID     int64
-	Name         string
-	URL          string
-	ThumbnailURL string
-	CreatedAt    time.Time
-	ModifiedAt   time.Time
+	ID           int64     `json:"id"`
+	RecipeID     int64     `json:"recipeId"`
+	Name         string    `json:"name"`
+	URL          string    `json:"url"`
+	ThumbnailURL string    `json:"thumbnailUrl"`
+	CreatedAt    time.Time `json:"createdAt"`
+	ModifiedAt   time.Time `json:"modifiedAt"`
 }
 
 // RecipeImages represents a collection of RecipeImage objects

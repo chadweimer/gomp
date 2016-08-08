@@ -25,6 +25,8 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux = httprouter.New()
 	r.apiMux.GET("/api/v1/recipes", r.GetRecipes)
 	r.apiMux.GET("/api/v1/recipes/:id", r.GetRecipe)
+	r.apiMux.GET("/api/v1/recipes/:id/images", r.GetRecipeImages)
+	r.apiMux.GET("/api/v1/recipes/:id/notes", r.GetRecipeNotes)
 	r.apiMux.GET("/api/v1/tags", r.GetTags)
 	r.apiMux.NotFound = http.HandlerFunc(r.NotFound)
 
