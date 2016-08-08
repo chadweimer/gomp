@@ -8,13 +8,13 @@ import (
 )
 
 func (rc Router) GetRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
 
-	images, err := rc.model.Images.List(id)
+	images, err := rc.model.Images.List(recipeID)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return

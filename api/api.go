@@ -24,10 +24,12 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 
 	r.apiMux = httprouter.New()
 	r.apiMux.GET("/api/v1/recipes", r.GetRecipes)
-	r.apiMux.GET("/api/v1/recipes/:id", r.GetRecipe)
-	r.apiMux.GET("/api/v1/recipes/:id/images", r.GetRecipeImages)
-	r.apiMux.GET("/api/v1/recipes/:id/notes", r.GetRecipeNotes)
-	r.apiMux.PUT("/api/v1/recipes/:id/rating", r.PutRecipeRating)
+	r.apiMux.GET("/api/v1/recipes/:recipeID", r.GetRecipe)
+	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.GetRecipeImages)
+	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.GetRecipeNotes)
+	r.apiMux.POST("/api/v1/recipes/:recipeID/notes", r.PostNote)
+	r.apiMux.DELETE("/api/v1/recipes/:recipeID/notes/:noteID", r.DeleteNote)
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.PutRecipeRating)
 	r.apiMux.GET("/api/v1/tags", r.GetTags)
 	r.apiMux.NotFound = http.HandlerFunc(r.NotFound)
 

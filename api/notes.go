@@ -1,24 +1,60 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
 )
 
-func (rc Router) GetRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+func (r Router) GetRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
 
-	notes, err := rc.model.Notes.List(id)
+	notes, err := r.model.Notes.List(recipeID)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
 
 	writeJSONToResponse(resp, notes)
+}
+
+func (r Router) PostNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	if err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	var note models.Note
+	readJSONFromRequest(req, &note)
+	note.RecipeID = recipeID
+	if err := r.model.Notes.Create(&note); err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	resp.WriteHeader(http.StatusCreated)
+	resp.Header().Set("Location", fmt.Sprintf("%s/api/v1/recipes/%d/notes/%d", r.cfg.RootURLPath, recipeID, note.ID))
+}
+
+func (r Router) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
+	if err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	if err := r.model.Notes.Delete(noteID); err != nil {
+		writeErrorToResponse(resp, err)
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
 }

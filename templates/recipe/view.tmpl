@@ -195,7 +195,7 @@
     </div>
     <div class="modal-footer">
         <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-note-yes" class="modal-action modal-close btn-flat">Yes</a>
+        <a id="delete-note-yes" href="javascript:void(0)" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
 {{ end }}
@@ -289,7 +289,7 @@
             if (notes != null) {
                 notes.forEach(function(note) {
                     var $noteContent = '\
-                        <section class="card grey lighten-4">\
+                        <section id="note-' + note.id + '" class="card grey lighten-4">\
                             <div class="card-content">\
                                 <p class="section left">\
                                     <i class="material-icons left">comment</i>' +
@@ -329,7 +329,7 @@
             
             $('.delete-note').click(function() {
                 var noteId = $(this).data('note-id');
-                $('#delete-note-yes').attr('href', '{{.UrlPath}}/notes/' + noteId + '/delete');
+                $('#delete-note-yes').data('note-id', noteId);
                 $('#delete-note-confirm').openModal();
             });
         }).always(function() {
@@ -356,6 +356,20 @@
             $('#note-title').text('Add Note');
             $('#note-submit').text('Add');
             $('#note-modal').openModal();
+        });
+
+        $('#delete-note-yes').click(function() {
+            var $self = $(this);
+            var noteId = $self.data('note-id');
+            var $note = $('#note-' + noteId);
+            $.ajax({
+                url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
+                method: 'DELETE',
+                contentType: 'application/json',
+                dataType: 'text',
+            }).done(function() {
+                $note.remove();
+            });
         });
     });
 </script>

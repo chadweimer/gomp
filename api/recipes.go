@@ -19,13 +19,13 @@ func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 }
 
 func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
 
-	recipe, err := r.model.Recipes.Read(id)
+	recipe, err := r.model.Recipes.Read(recipeID)
 	if err == models.ErrNotFound {
 		resp.WriteHeader(http.StatusNotFound)
 		return
@@ -39,7 +39,7 @@ func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 }
 
 func (r Router) PutRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeErrorToResponse(resp, err)
 		return
@@ -51,7 +51,7 @@ func (r Router) PutRecipeRating(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
-	if err := r.model.Recipes.SetRating(id, rating); err != nil {
+	if err := r.model.Recipes.SetRating(recipeID, rating); err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
