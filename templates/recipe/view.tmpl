@@ -205,6 +205,11 @@
     var recipeId = parseInt(window.location.pathname.split('/').pop());
     
     $(document).ready(function(){
+        loadRecipe();
+        loadMainImage();
+        loadImages();
+        loadNotes();
+
         $('#add-note').click(function() {
             $('#note').val('');
             $('#note-title').text('Add Note');
@@ -212,11 +217,6 @@
             $('#note-submit').data('note-id', '');
             $('#note-modal').openModal();
         });
-
-        loadRecipe();
-        loadMainImage();
-        loadImages();
-        loadNotes();
 
         $('.star').click(function() {
             setRating(parseFloat($(this).data('rating')));
