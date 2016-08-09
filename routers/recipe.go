@@ -41,18 +41,6 @@ func (f *RecipeForm) FieldMap(req *http.Request) binding.FieldMap {
 	}
 }
 
-// NoteForm encapsulates user input for a note on a recipe
-type NoteForm struct {
-	Note string `form:"note"`
-}
-
-// FieldMap provides the NoteForm field name maping for form binding
-func (f *NoteForm) FieldMap(req *http.Request) binding.FieldMap {
-	return binding.FieldMap{
-		&f.Note: "note",
-	}
-}
-
 // AttachImageForm encapsulates user input for attaching an image to a recipe
 type AttachImageForm struct {
 	FileName    string                `form:"file_name"`
@@ -349,62 +337,4 @@ func (rc *RouteController) DeleteImage(resp http.ResponseWriter, req *http.Reque
 	}
 
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, recipeID), http.StatusFound)
-}
-
-// CreateNotePost handles processing the supplied form input for adding a note to a recipe
-func (rc *RouteController) CreateNotePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	form := new(NoteForm)
-	errs := binding.Bind(req, form)
-	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, req, errors.New(errs.Error()))
-		return
-	}
-
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	note := &models.Note{
-		RecipeID: id,
-		Note:     form.Note,
-	}
-	err = rc.model.Notes.Create(note)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
-}
-
-// EditNotePost handles processing the supplied form input for adding a note to a recipe
-func (rc *RouteController) EditNotePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	form := new(NoteForm)
-	errs := binding.Bind(req, form)
-	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, req, errors.New(errs.Error()))
-		return
-	}
-
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	noteID, err := strconv.ParseInt(p.ByName("note_id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	note := &models.Note{
-		ID:       noteID,
-		RecipeID: id,
-		Note:     form.Note,
-	}
-	err = rc.model.Notes.Update(note)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }

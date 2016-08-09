@@ -114,8 +114,6 @@ func main() {
 	recipeMux.POST("/recipes/:id/images", rc.AttachImagePost)
 	recipeMux.GET("/recipes/:id/images/:image_id/delete", rc.DeleteImage)
 	recipeMux.GET("/recipes/:id/images/:image_id/main", rc.SetMainImage)
-	recipeMux.POST("/recipes/:id/notes", rc.CreateNotePost)
-	recipeMux.POST("/recipes/:id/notes/:note_id", rc.EditNotePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 
