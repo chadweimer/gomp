@@ -28,6 +28,7 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.GetRecipeImages)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.GetRecipeNotes)
 	r.apiMux.POST("/api/v1/recipes/:recipeID/notes", r.PostNote)
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/notes/:noteID", r.PutNote)
 	r.apiMux.DELETE("/api/v1/recipes/:recipeID/notes/:noteID", r.DeleteNote)
 	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.PutRecipeRating)
 	r.apiMux.GET("/api/v1/tags", r.GetTags)

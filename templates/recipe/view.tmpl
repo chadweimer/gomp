@@ -85,6 +85,7 @@
                 <div class="progress">
                     <div class="indeterminate"></div>
                 </div>
+                <div id="notes-container"></div>
             </article>
         </section>
     </article>
@@ -200,9 +201,42 @@
 
 {{ define "js-recipe/view" }}
 <script type="text/javascript">
-    var recipeId = window.location.pathname.split('/').pop();
+    var recipeId = parseInt(window.location.pathname.split('/').pop());
     
     $(document).ready(function(){
+        $('#add-note').click(function() {
+            $('#note').val('');
+            $('#note-title').text('Add Note');
+            $('#note-submit').text('Add');
+            $('#note-submit').data('note-id', '');
+            $('#note-modal').openModal();
+        });
+
+        loadRecipe()
+        loadImages();
+        loadNotes();
+
+        $('.star').click(function() {
+            setRating(parseFloat($(this).data('rating')));
+        });
+
+        $('#note-submit').click(function() {
+            var noteIdStr = $(this).data('note-id');
+            if (noteIdStr == '') {
+                addNote($('#note').val());
+            } else {
+                var noteId = parseInt(noteIdStr);
+                editNote(noteId, $('#note').val())
+            }
+        });
+
+        $('#delete-note-yes').click(function() {
+            var noteId = parseInt($(this).data('note-id'));
+            deleteNote(noteId);
+        });
+    });
+
+    function loadRecipe() {
         $.ajax({
             url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId,
             method: 'GET',
@@ -240,7 +274,9 @@
         }).always(function() {
             $('#recipe .progress').addClass('hide');
         });
+    }
 
+    function loadImages() {
         $.ajax({
             url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/images',
             method: 'GET',
@@ -276,14 +312,19 @@
                 $('#delete-image-confirm').openModal();
             });
         }).always(function() {
-                $('#pictures .progress').addClass('hide');
+            $('#pictures .progress').addClass('hide');
         });
+    }
 
+    function loadNotes() {
         $.ajax({
             url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
             method: 'GET',
             dataType: 'json',
         }).done(function(notes) {
+            var $notesContainer = $('#notes-container');
+            $notesContainer.empty();
+
             if (notes != null) {
                 notes.forEach(function(note) {
                     var $noteContent = '\
@@ -309,7 +350,7 @@
                     $noteContent += '\
                             </div>\
                         </section>';
-                    $('#notes').append($noteContent);
+                    $notesContainer.append($noteContent);
                 });
             }
         
@@ -318,10 +359,10 @@
                 var noteContent = $(this).data('note-content');
                 noteContent = noteContent.replace(/\+/g, ' ');
                 noteContent = decodeURIComponent(noteContent);
-                $('#note-modal > form').attr('action', '{{.UrlPath}}/notes/' + noteId);
                 $('#note').val(noteContent);
                 $('#note-title').text('Edit Note');
                 $('#note-submit').text('Update');
+                $('#note-submit').data('note-id', noteId);
                 $('#note-modal').openModal();
             });
             
@@ -333,70 +374,63 @@
         }).always(function() {
             $('#notes .progress').addClass('hide');
         });
+    }
 
-        $('.star').click(function() {
-            var $self = $(this);
-            $.ajax({
-                url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/rating',
-                method: 'PUT',
-                dataType: 'json',
-                processData: false,
-                data: parseFloat($self.data('rating')),
-            }).done(function() {
-                $('.star').removeClass('active');
-                $self.addClass('active');
-            });
+    function addNote(text) {
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
+            method: 'POST',
+            contentType: 'application/json',
+            dataType: 'text',
+            processData: false,
+            data: JSON.stringify({
+                recipeId: recipeId,
+                text: text,
+            }),
+        }).done(function(data, textStatus, jqXHR) {
+            loadNotes();
         });
-        
-        $('#add-note').click(function() {
-            $('#note').val('');
-            $('#note-title').text('Add Note');
-            $('#note-submit').text('Add');
-            $('#note-submit').data('note-id', '');
-            $('#note-modal').openModal();
-        });
+    }
 
-        $('#note-submit').click(function() {
-            var $self = $(this);
-            var noteId = $self.data('note-id');
-            if (noteId == '')
-            {
-                $.ajax({
-                    url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    dataType: 'text',
-                    processData: false,
-                    data: JSON.stringify({ text: $('#note').val() }),
-                }).done(function(data, textStatus, jqXHR) {
-                    var noteUrl = jqXHR.getResponseHeader('Location');
-                });
-            } else {
-                $.ajax({
-                    url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
-                    method: 'PUT',
-                    contentType: 'application/json',
-                    dataType: 'text',
-                    processData: false,
-                    data: JSON.stringify({ text: $('#note').val() }),
-                }).done(function() {
-                });
-            }
+    function editNote(noteId, text) {
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
+            method: 'PUT',
+            contentType: 'application/json',
+            dataType: 'text',
+            processData: false,
+            data: JSON.stringify({
+                id: noteId,
+                recipeId: recipeId,
+                text: text,
+            }),
+        }).done(function(data, textStatus, jqXHR) {
+            loadNotes();
         });
+    }
 
-        $('#delete-note-yes').click(function() {
-            var $self = $(this);
-            var noteId = $self.data('note-id');
-            var $note = $('#note-' + noteId);
-            $.ajax({
-                url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
-                method: 'DELETE',
-                contentType: 'application/json',
-                dataType: 'text',
-            }).done(function() {
-                $note.remove();
-            });
+    function deleteNote(noteId) {
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
+            method: 'DELETE',
+            contentType: 'application/json',
+            dataType: 'text',
+        }).done(function() {
+            loadNotes();
         });
-    });
+    }
+
+    function setRating(newRating) {
+        $.ajax({
+            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/rating',
+            method: 'PUT',
+            dataType: 'json',
+            processData: false,
+            data: newRating,
+        }).done(function() {
+            $('.star').removeClass('active');
+            $('.star[data-rating="' + newRating + '"]').addClass('active');
+        });
+    }
 </script>
 {{ end }}
