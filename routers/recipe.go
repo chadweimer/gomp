@@ -67,18 +67,6 @@ func (f *AttachImageForm) FieldMap(req *http.Request) binding.FieldMap {
 	}
 }
 
-// RatingForm encapsulates user input for rating a recipe (1-5)
-type RatingForm struct {
-	Rating float64 `form:"rating"`
-}
-
-// FieldMap provides the RatingForm field name maping for form binding
-func (f *RatingForm) FieldMap(req *http.Request) binding.FieldMap {
-	return binding.FieldMap{
-		&f.Rating: "rating",
-	}
-}
-
 // GetRecipe handles retrieving and rendering a single recipe
 func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	data := context.Get(req).Data
@@ -414,26 +402,6 @@ func (rc *RouteController) EditNotePost(resp http.ResponseWriter, req *http.Requ
 		Note:     form.Note,
 	}
 	err = rc.model.Notes.Update(note)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
-}
-
-// DeleteNote handles deleting the note with the given id
-func (rc *RouteController) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	noteID, err := strconv.ParseInt(p.ByName("note_id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	err = rc.model.Notes.Delete(noteID)
 	if rc.HasError(resp, req, err) {
 		return
 	}

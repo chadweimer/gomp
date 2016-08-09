@@ -37,7 +37,6 @@ func main() {
 			"RootUrlPath":      func() string { return cfg.RootURLPath },
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 			"Add":              func(a, b int64) int64 { return a + b },
-			"TimeEqual":        func(a, b time.Time) bool { return a == b },
 			"Paginate":         getPageNumbersForPagination,
 			"ColumnizeRecipes": func(recipes *models.Recipes, numSplits int) [][]interface{} {
 				slice := make([]interface{}, len(*recipes))
@@ -117,7 +116,6 @@ func main() {
 	recipeMux.GET("/recipes/:id/images/:image_id/main", rc.SetMainImage)
 	recipeMux.POST("/recipes/:id/notes", rc.CreateNotePost)
 	recipeMux.POST("/recipes/:id/notes/:note_id", rc.EditNotePost)
-	recipeMux.GET("/recipes/:id/notes/:note_id/delete", rc.DeleteNote)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 
