@@ -173,20 +173,18 @@
     </div>
 </div>
 <div id="note-modal" class="modal">
-    <form method="post">
-        <div class="modal-content">
-            <h5 class="blue-text">
-                <i class="material-icons left">insert_comment</i><span id="note-title">Add Note</span>
-            </h5>
-            <div class="input-field">
-                <textarea id="note" name="note" class="materialize-textarea" required autofocus></textarea>
-            </div>
+    <div class="modal-content">
+        <h5 class="blue-text">
+            <i class="material-icons left">insert_comment</i><span id="note-title">Add Note</span>
+        </h5>
+        <div class="input-field">
+            <textarea id="note" name="note" class="materialize-textarea" required autofocus></textarea>
         </div>
-        <div class="modal-footer">
-            <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
-            <button id="note-submit" type="submit" class="modal-action modal-close btn-flat">Add</button>
-        </div>
-    </form>
+    </div>
+    <div class="modal-footer">
+        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
+        <a id="note-submit" href="javascript:void(0)" class="modal-action modal-close btn-flat">Add</a>
+    </div>
 </div>
 <div id="delete-note-confirm" class="modal">
     <div class="modal-content">
@@ -351,11 +349,39 @@
         });
         
         $('#add-note').click(function() {
-            $('#note-modal > form').attr('action', '{{.UrlPath}}/notes');
             $('#note').val('');
             $('#note-title').text('Add Note');
             $('#note-submit').text('Add');
+            $('#note-submit').data('note-id', '');
             $('#note-modal').openModal();
+        });
+
+        $('#note-submit').click(function() {
+            var $self = $(this);
+            var noteId = $self.data('note-id');
+            if (noteId == '')
+            {
+                $.ajax({
+                    url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    dataType: 'text',
+                    processData: false,
+                    data: JSON.stringify({ text: $('#note').val() }),
+                }).done(function(data, textStatus, jqXHR) {
+                    var noteUrl = jqXHR.getResponseHeader('Location');
+                });
+            } else {
+                $.ajax({
+                    url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    dataType: 'text',
+                    processData: false,
+                    data: JSON.stringify({ text: $('#note').val() }),
+                }).done(function() {
+                });
+            }
         });
 
         $('#delete-note-yes').click(function() {

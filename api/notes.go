@@ -33,15 +33,19 @@ func (r Router) PostNote(resp http.ResponseWriter, req *http.Request, p httprout
 	}
 
 	var note models.Note
-	readJSONFromRequest(req, &note)
+	if err := readJSONFromRequest(req, &note); err != nil {
+		resp.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	note.RecipeID = recipeID
 	if err := r.model.Notes.Create(&note); err != nil {
 		writeErrorToResponse(resp, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusCreated)
 	resp.Header().Set("Location", fmt.Sprintf("%s/api/v1/recipes/%d/notes/%d", r.cfg.RootURLPath, recipeID, note.ID))
+	resp.WriteHeader(http.StatusCreated)
 }
 
 func (r Router) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {

@@ -70,6 +70,6 @@ func readJSONFromRequest(req *http.Request, data interface{}) error {
 }
 
 func writeErrorToResponse(resp http.ResponseWriter, err error) {
-	resp.WriteHeader(http.StatusInternalServerError)
 	json.NewEncoder(resp).Encode(err)
+	resp.WriteHeader(http.StatusInternalServerError)
 }
