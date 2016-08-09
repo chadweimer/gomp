@@ -303,7 +303,7 @@
                                 </p>\
                                 <div class="divider clearfix"></div>\
                                 <p class="section plain-text">' + note.text + '</p>';
-                    if (note.modifiedAt != '') {
+                    if (note.modifiedAt != note.createdAt) {
                         $noteContent += '<label class="right">Modified: ' + new Date(note.modifiedAt).toLocaleString() + '</label>';
                     }
                     $noteContent += '\
