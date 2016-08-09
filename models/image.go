@@ -221,6 +221,79 @@ func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	return &image, nil
 }
 
+// ReadMainImage retrieves the information about the main image for the specified
+// recipe image from the database, if found, using a dedicated transation that is
+// committed if there are not errors. If no main image exists,
+// a ErrNotFound error is returned.
+func (m *RecipeImageModel) ReadMainImage(recipeID int64) (*RecipeImage, error) {
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+
+	image, err := m.ReadMainImageTx(recipeID, tx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return image, nil
+}
+
+// ReadMainImageTx retrieves the information about the main image for the specified
+// recipe image from the database, if found, using the specified transaction.
+// If no main image exists, a ErrNotFound error is returned.
+func (m *RecipeImageModel) ReadMainImageTx(recipeID int64, tx *sqlx.Tx) (*RecipeImage, error) {
+	image := RecipeImage{RecipeID: recipeID}
+
+	result := m.db.QueryRow(
+		"SELECT id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)",
+		image.RecipeID)
+	err := result.Scan(
+		&image.ID,
+		&image.Name,
+		&image.URL,
+		&image.ThumbnailURL,
+		&image.CreatedAt,
+		&image.ModifiedAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &image, nil
+}
+
+// UpdateMainImage sets the id of the main image for the specified recipe
+// using a dedicated transation that is committed if there are not errors.
+func (m *RecipeImageModel) UpdateMainImage(image *RecipeImage) error {
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	err = m.UpdateMainImageTx(image, tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// UpdateMainImageTx sets the id of the main image for the specified recipe
+// using the specified transaction.
+func (m *RecipeImageModel) UpdateMainImageTx(image *RecipeImage, tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		"UPDATE recipe SET image_id = $1 WHERE id = $2",
+		image.ID, image.RecipeID)
+
+	return err
+}
+
 // List returns a RecipeImages slice that contains data for all images
 // attached to the specified recipe.
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {

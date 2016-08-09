@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/chadweimer/gomp/models"
@@ -25,7 +26,10 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux = httprouter.New()
 	r.apiMux.GET("/api/v1/recipes", r.GetRecipes)
 	r.apiMux.GET("/api/v1/recipes/:recipeID", r.GetRecipe)
+	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.GetRecipeMainImage)
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.PutRecipeMainImage)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.GetRecipeImages)
+	r.apiMux.DELETE("/api/v1/recipes/:recipeID/images/:imageID", r.DeleteImage)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.GetRecipeNotes)
 	r.apiMux.POST("/api/v1/recipes/:recipeID/notes", r.PostNote)
 	r.apiMux.PUT("/api/v1/recipes/:recipeID/notes/:noteID", r.PutNote)
@@ -52,18 +56,9 @@ func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http
 }
 
 func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {
-	src, err := json.Marshal(data)
-	if err != nil {
+	if err := marshalJSON(resp, data); err != nil {
 		writeErrorToResponse(resp, err)
-		return
 	}
-
-	dst := &bytes.Buffer{}
-	if err = json.Indent(dst, src, "", "\t"); err != nil {
-		writeErrorToResponse(resp, err)
-		return
-	}
-	resp.Write(dst.Bytes())
 }
 
 func readJSONFromRequest(req *http.Request, data interface{}) error {
@@ -71,6 +66,23 @@ func readJSONFromRequest(req *http.Request, data interface{}) error {
 }
 
 func writeErrorToResponse(resp http.ResponseWriter, err error) {
-	json.NewEncoder(resp).Encode(err)
 	resp.WriteHeader(http.StatusInternalServerError)
+	_ = marshalJSON(resp, err.Error())
+}
+
+func marshalJSON(resp http.ResponseWriter, data interface{}) error {
+	src, err := json.Marshal(data)
+	if err != nil {
+		log.Printf("[api] Failed to marshal JSON.")
+		return err
+	}
+
+	dst := &bytes.Buffer{}
+	if err = json.Indent(dst, src, "", "\t"); err != nil {
+		log.Printf("[api] Failed to write JSON to io writer.")
+		return err
+	}
+
+	resp.Write(dst.Bytes())
+	return nil
 }

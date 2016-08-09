@@ -78,6 +78,7 @@
                 <div class="progress">
                     <div class="indeterminate"></div>
                 </div>
+                <div id="images-container"></div>
             </article>
             <article id="notes" class="col s12 l6">
                 <h5 class="light">Notes</h5>
@@ -160,7 +161,7 @@
     </div>
     <div class="modal-footer">
         <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="main-image-yes" class="modal-action modal-close btn-flat">Yes</a>
+        <a id="main-image-yes" href="javascript:void(0)" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
 <div id="delete-image-confirm" class="modal">
@@ -212,7 +213,8 @@
             $('#note-modal').openModal();
         });
 
-        loadRecipe()
+        loadRecipe();
+        loadMainImage();
         loadImages();
         loadNotes();
 
@@ -234,12 +236,21 @@
             var noteId = parseInt($(this).data('note-id'));
             deleteNote(noteId);
         });
+
+        $('#main-image-yes').click(function() {
+            var imageId = parseInt($(this).data('image-id'));
+            setMainImage(imageId);
+        });
+
+        $('#delete-image-yes').click(function() {
+            var imageId = parseInt($(this).data('image-id'));
+            deleteImage(imageId);
+        });
     });
 
     function loadRecipe() {
         loadRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
             $('#recipe-name').append(recipe.name)
-            $('#recipe-image').attr("src", recipe.mainImage.thumbnailUrl)
             $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
             $('#recipe-ingredients > p').append(recipe.ingredients)
             $('#recipe-directions > p').append(recipe.directions)
@@ -272,13 +283,39 @@
         });
     }
 
+    function loadMainImage() {
+        var $recipeImage = $('#recipe-image');
+        loadMainImageAsync('{{RootUrlPath}}', recipeId).done(function(image) {
+            $recipeImage.removeClass('hide');
+            $recipeImage.attr("src", image.thumbnailUrl);
+        }).fail(function() {
+            $recipeImage.addClass('hide');
+        });
+    }
+
+    function setMainImage(imageId) {
+        setMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
+            loadMainImage();
+        });
+    }
+
+    function deleteImage(imageId) {
+        deleteImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
+            loadMainImage();
+            loadImages();
+        });
+    }
+
     function loadImages() {
         loadImagesAsync('{{RootUrlPath}}', recipeId).done(function(images) {
+            var $imagesContainer = $('#images-container');
+            $imagesContainer.empty();
+
             if (images != null) {
                 images.forEach(function(image) {
                     var $imageContent = '\
                         <span class="image-container">\
-                            <a target="_blank" href="' + image.Url + '">\
+                            <a target="_blank" href="' + image.url + '">\
                                 <img width="250" height="250" src="' + image.thumbnailUrl + '">\
                             </a>\
                             <a class="make-main-image" href="javascript:void(0)" data-image-id="' + image.id + '">\
@@ -288,19 +325,19 @@
                                 <i class="material-icons red-text">delete</i>\
                             </a>\
                         </span>';
-                    $('#pictures').append($imageContent);
+                    $imagesContainer.append($imageContent);
                 });
             }
         
             $('.make-main-image').click(function() {
                 var imageId = $(this).data('image-id');
-                $('#main-image-yes').attr('href', '{{.UrlPath}}/images/' + imageId + '/main');
+                $('#main-image-yes').data('image-id', imageId);
                 $('#main-image-confirm').openModal();
             });
             
             $('.delete-image').click(function() {
                 var imageId = $(this).data('image-id');
-                $('#delete-image-yes').attr('href', '{{.UrlPath}}/images/' + imageId + '/delete');
+                $('#delete-image-yes').data('image-id', imageId);
                 $('#delete-image-confirm').openModal();
             });
         }).always(function() {

@@ -13,11 +13,42 @@ function loadRecipeAsync(rootUrlPath, recipeId) {
     });
 }
 
+function loadMainImageAsync(rootUrlPath, recipeId) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
+        method: 'GET',
+        dataType: 'json',
+    });
+}
+
+function setMainImageAsync(rootUrlPath, recipeId, imageId) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
+        method: 'PUT',
+        contentType: 'application/json',
+        dataType: 'text',
+        processData: false,
+        data: JSON.stringify({
+            id: imageId,
+            recipeId: recipeId,
+        }),
+    });
+}
+
 function loadImagesAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
         method: 'GET',
         dataType: 'json',
+    });
+}
+
+function deleteImageAsync(rootUrlPath, recipeId, imageId) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images/' + imageId,
+        method: 'DELETE',
+        contentType: 'application/json',
+        dataType: 'text',
     });
 }
 
