@@ -237,11 +237,7 @@
     });
 
     function loadRecipe() {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId,
-            method: 'GET',
-            dataType: 'json',
-        }).done(function(recipe) {
+        loadRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
             $('#recipe-name').append(recipe.name)
             $('#recipe-image').attr("src", recipe.mainImage.thumbnailUrl)
             $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
@@ -277,11 +273,7 @@
     }
 
     function loadImages() {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/images',
-            method: 'GET',
-            dataType: 'json',
-        }).done(function(images) {
+        loadImagesAsync('{{RootUrlPath}}', recipeId).done(function(images) {
             if (images != null) {
                 images.forEach(function(image) {
                     var $imageContent = '\
@@ -317,11 +309,7 @@
     }
 
     function loadNotes() {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
-            method: 'GET',
-            dataType: 'json',
-        }).done(function(notes) {
+        loadNotesAsync('{{RootUrlPath}}', recipeId).done(function(notes) {
             var $notesContainer = $('#notes-container');
             $notesContainer.empty();
 
@@ -377,59 +365,27 @@
     }
 
     function addNote(text) {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes',
-            method: 'POST',
-            contentType: 'application/json',
-            dataType: 'text',
-            processData: false,
-            data: JSON.stringify({
-                recipeId: recipeId,
-                text: text,
-            }),
-        }).done(function(data, textStatus, jqXHR) {
+        addNoteAsync('{{RootUrlPath}}', recipeId, text).done(function() {
             loadNotes();
         });
     }
 
     function editNote(noteId, text) {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
-            method: 'PUT',
-            contentType: 'application/json',
-            dataType: 'text',
-            processData: false,
-            data: JSON.stringify({
-                id: noteId,
-                recipeId: recipeId,
-                text: text,
-            }),
-        }).done(function(data, textStatus, jqXHR) {
+        editNoteAsync('{{RootUrlPath}}', recipeId, noteId, text).done(function() {
             loadNotes();
         });
     }
 
     function deleteNote(noteId) {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/notes/' + noteId,
-            method: 'DELETE',
-            contentType: 'application/json',
-            dataType: 'text',
-        }).done(function() {
+        deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
             loadNotes();
         });
     }
 
-    function setRating(newRating) {
-        $.ajax({
-            url: '{{RootUrlPath}}/api/v1/recipes/' + recipeId + '/rating',
-            method: 'PUT',
-            dataType: 'json',
-            processData: false,
-            data: newRating,
-        }).done(function() {
+    function setRating(rating) {
+        setRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
             $('.star').removeClass('active');
-            $('.star[data-rating="' + newRating + '"]').addClass('active');
+            $('.star[data-rating="' + rating + '"]').addClass('active');
         });
     }
 </script>
