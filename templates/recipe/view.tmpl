@@ -281,9 +281,11 @@
             }
 
             var $tagsContainer = $('#recipe-tags');
-            recipe.tags.forEach(function(tag) {
-                $tagsContainer.append('<div class="chip">' + tag + '</div>');
-            });
+            if (recipe.tags != null) {
+                recipe.tags.forEach(function(tag) {
+                    $tagsContainer.append('<div class="chip">' + tag + '</div>');
+                });
+            }
         }).always(function() {
             $('#recipe .progress').addClass('hide');
         });
