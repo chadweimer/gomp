@@ -3,10 +3,8 @@ package routers
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
@@ -38,20 +36,6 @@ func (f *RecipeForm) FieldMap(req *http.Request) binding.FieldMap {
 		&f.Directions:    "directions",
 		&f.SourceURL:     "source",
 		&f.Tags:          "tags",
-	}
-}
-
-// AttachImageForm encapsulates user input for attaching an image to a recipe
-type AttachImageForm struct {
-	FileName    string                `form:"file_name"`
-	FileContent *multipart.FileHeader `form:"file_content"`
-}
-
-// FieldMap provides the AttachImageForm field name maping for form binding
-func (f *AttachImageForm) FieldMap(req *http.Request) binding.FieldMap {
-	return binding.FieldMap{
-		&f.FileName:    "file_name",
-		&f.FileContent: "file_content",
 	}
 }
 
@@ -256,41 +240,4 @@ func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Requ
 	}
 
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
-}
-
-// AttachImagePost handles uploading the specified image to a recipe
-func (rc *RouteController) AttachImagePost(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	form := new(AttachImageForm)
-	errs := binding.Bind(req, form)
-	if errs != nil && errs.Len() > 0 {
-		rc.HasError(resp, req, errors.New(errs.Error()))
-		return
-	}
-
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	uploadedFile, err := form.FileContent.Open()
-	if rc.HasError(resp, req, err) {
-		return
-	}
-	defer uploadedFile.Close()
-
-	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	imageInfo := &models.RecipeImage{
-		RecipeID: id,
-		Name:     form.FileName,
-	}
-	err = rc.model.Images.Create(imageInfo, uploadedFileData)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }

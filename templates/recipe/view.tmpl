@@ -134,7 +134,7 @@
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="{{.UrlPath}}/images" method="post" enctype="multipart/form-data">
+    <form id="upload-image-form" method="post" enctype="multipart/form-data">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -242,6 +242,12 @@
             setMainImage(imageId);
         });
 
+        $('#upload-image-form').on('submit', function(e) {
+            e.preventDefault();
+            var imageFormData = new FormData(this);
+            addImage(imageFormData);
+        });
+
         $('#delete-image-yes').click(function() {
             var imageId = parseInt($(this).data('image-id'));
             deleteImage(imageId);
@@ -296,6 +302,13 @@
     function setMainImage(imageId) {
         setMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
             loadMainImage();
+        });
+    }
+
+    function addImage(imageFormData) {
+        addImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
+            loadMainImage();
+            loadImages();
         });
     }
 

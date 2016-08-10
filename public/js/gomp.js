@@ -43,6 +43,19 @@ function loadImagesAsync(rootUrlPath, recipeId) {
     });
 }
 
+function addImageAsync(rootUrlPath, recipeId, imageFormData) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
+        method: 'POST',
+        cache: false,
+        enctype: 'multipart/form-data',
+        contentType: false,
+        dataType: 'text',
+        processData: false,
+        data: imageFormData,
+    });
+}
+
 function deleteImageAsync(rootUrlPath, recipeId, imageId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images/' + imageId,

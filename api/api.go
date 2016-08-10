@@ -29,6 +29,7 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.GetRecipeMainImage)
 	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.PutRecipeMainImage)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.GetRecipeImages)
+	r.apiMux.POST("/api/v1/recipes/:recipeID/images", r.PostImage)
 	r.apiMux.DELETE("/api/v1/recipes/:recipeID/images/:imageID", r.DeleteImage)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.GetRecipeNotes)
 	r.apiMux.POST("/api/v1/recipes/:recipeID/notes", r.PostNote)
@@ -66,6 +67,7 @@ func readJSONFromRequest(req *http.Request, data interface{}) error {
 }
 
 func writeErrorToResponse(resp http.ResponseWriter, err error) {
+	log.Println(err)
 	resp.WriteHeader(http.StatusInternalServerError)
 	_ = marshalJSON(resp, err.Error())
 }
@@ -73,13 +75,13 @@ func writeErrorToResponse(resp http.ResponseWriter, err error) {
 func marshalJSON(resp http.ResponseWriter, data interface{}) error {
 	src, err := json.Marshal(data)
 	if err != nil {
-		log.Printf("[api] Failed to marshal JSON.")
+		log.Println(err)
 		return err
 	}
 
 	dst := &bytes.Buffer{}
 	if err = json.Indent(dst, src, "", "\t"); err != nil {
-		log.Printf("[api] Failed to write JSON to io writer.")
+		log.Println(err)
 		return err
 	}
 
