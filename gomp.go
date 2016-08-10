@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"math"
 	"net/http"
 	"time"
 
@@ -38,13 +37,6 @@ func main() {
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 			"Add":              func(a, b int64) int64 { return a + b },
 			"Paginate":         getPageNumbersForPagination,
-			"ColumnizeRecipes": func(recipes *models.Recipes, numSplits int) [][]interface{} {
-				slice := make([]interface{}, len(*recipes))
-				for i, v := range *recipes {
-					slice[i] = v
-				}
-				return splitSlice(slice, numSplits)
-			},
 			"StrSliceContains": func(theSlice []string, searchFor string) bool {
 				for _, value := range theSlice {
 					if value == searchFor {
@@ -149,21 +141,4 @@ func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {
 		pageNums[i] = i + startPage
 	}
 	return pageNums
-}
-
-func splitSlice(slice []interface{}, numSplits int) [][]interface{} {
-	count := len(slice)
-	splitCount := int(math.Ceil(float64(count) / float64(numSplits)))
-
-	slices := make([][]interface{}, numSplits, numSplits)
-	sliceIndex := 0
-
-	for i, v := range slice {
-		if i >= (sliceIndex+1)*splitCount {
-			sliceIndex = sliceIndex + 1
-		}
-		slices[sliceIndex] = append(slices[sliceIndex], v)
-	}
-
-	return slices
 }

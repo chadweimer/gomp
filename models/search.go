@@ -8,13 +8,13 @@ type SearchModel struct {
 }
 
 const (
-	SortByName   string = "Name"
-	SortByID     string = "ID"
-	SortByRating string = "Rating"
-	SortByRandom string = "Random"
+	SortByName   string = "name"
+	SortByID     string = "id"
+	SortByRating string = "rating"
+	SortByRandom string = "random"
 
-	SortDirAsc  string = "ASC"
-	SortDirDesc string = "DESC"
+	SortDirAsc  string = "asc"
+	SortDirDesc string = "desc"
 )
 
 // SearchFilter is the primary model class for recipe search

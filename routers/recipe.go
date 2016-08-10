@@ -86,10 +86,10 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	}
 
 	sortDir := models.SortDirAsc
-	switch strings.ToUpper(sortDirType) {
-	case "ASC":
+	switch strings.ToLower(sortDirType) {
+	case "asc":
 		sortDir = models.SortDirAsc
-	case "DESC":
+	case "desc":
 		sortDir = models.SortDirDesc
 	}
 
