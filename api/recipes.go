@@ -8,6 +8,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+type getRecipesResponse struct {
+	Recipes *models.Recipes `json:"recipes"`
+	Total   int64           `json:"total"`
+}
+
 func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	query := req.URL.Query().Get("q")
 	tags := req.URL.Query()["tags[]"]
@@ -31,13 +36,13 @@ func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 		}
 	}
 
-	recipes, _, err := r.model.Search.Find(filter)
+	recipes, total, err := r.model.Search.Find(filter)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}
 
-	writeJSONToResponse(resp, recipes)
+	writeJSONToResponse(resp, getRecipesResponse{Recipes: recipes, Total: total})
 }
 
 func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {

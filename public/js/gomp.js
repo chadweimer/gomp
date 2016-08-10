@@ -5,6 +5,13 @@ $(document).ready(function(){
     $('.dropdown').dropdown();
 });
 
+function getQueryString(field) {
+    var href = window.location.href;
+    var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+    var string = reg.exec(href);
+    return string ? string[1] : null;
+}
+
 function getRecipesAsync(rootUrlPath, searchFilter) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes',

@@ -7,6 +7,9 @@
         vertical-align: middle;
         padding: 5px;
     }
+    .pagination li {
+        transform: scale(1.33);
+    }
 }
 </style>
 {{ end }}
@@ -17,7 +20,7 @@
         <div class="section">
             {{if (or .SearchQuery .SearchTags)}}
             <span class="light left">
-                Search: '{{.SearchQuery}}', Results: {{.ResultCount}}
+                Search: '{{.SearchQuery}}', Results: <span id="result-count"></span>
             </span>
             {{end}}
             <span class="right">
@@ -43,13 +46,13 @@
                         <li>
                             <span class="collapsible-header active">Sort</span>
                             <ul class="collapsible-body">
-                                <li {{if eq .SortType "name"}}class="active"{{end}}>
-                                    <a href="?sort=name&dir={{if or (ne .SortType "name") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
+                                <li {{if eq .SortBy "name"}}class="active"{{end}}>
+                                    <a href="?sort=name&dir={{if or (ne .SortBy "name") (eq .SortDir "desc")}}asc{{else}}desc{{end}}">
                                         <i class="material-icons">sort_by_alpha</i> Name
                                     </a>
                                 </li>
-                                <li {{if eq .SortType "rating"}}class="active"{{end}}>
-                                    <a href="?sort=rating&dir={{if and (eq .SortType "rating") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
+                                <li {{if eq .SortBy "rating"}}class="active"{{end}}>
+                                    <a href="?sort=rating&dir={{if and (eq .SortBy "rating") (eq .SortDir "desc")}}asc{{else}}desc{{end}}">
                                         <i class="material-icons">star_rate</i> Rating
                                     </a>
                                 </li>
@@ -76,7 +79,7 @@
         </div>
     </div>
 
-    {{template "pagination-recipe/list" .}}
+    <div class="pagination-container"></div>
 
     <div id="recipes-container">
         <div class="progress">
@@ -84,7 +87,7 @@
         </div>
     </div>
 
-    {{template "pagination-recipe/list" .}}
+    <div class="pagination-container"></div>
 
 </section>
 <section class="fixed-action-btn">
@@ -94,32 +97,15 @@
 </section>
 {{ end }}
 
-{{define "pagination-recipe/list"}}
-{{$baseLink := .SearchQuery | printf "?q=%s&page="}}
-<ul class="pagination no-padding col s12 l12 center">
-    <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
-        <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
-    </li>
-    <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
-        <a href="{{if gt .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
-    </li>
-    {{range  Paginate .PageNum .NumPages 5}}
-    <li {{if eq $.PageNum .}}class="active"{{end}}>
-        <a href="{{$baseLink}}{{.}}">{{.}}</a>
-    </li>
-    {{end}}
-    <li class="{{if ge .PageNum .NumPages}}disabled{{end}} no-padding">
-        <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
-    </li>
-    <li class="{{if ge .PageNum .NumPages}}disabled{{end}} no-padding">
-        <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
-    </li>
-</ul>
-{{end}}
-
 {{define "js-recipe/list"}}
 <script type="text/javascript">
+    
     $(document).ready(function(){
+        var pageNum = parseInt(getQueryString('page'));
+        if (pageNum == null || isNaN(pageNum)) {
+            pageNum = 1;
+        }
+
         $('#recipe-list-menu-button').sideNav({
             edge: 'right'
         });
@@ -127,24 +113,33 @@
         loadRecipes($('#recipes-container'), {
             q: '{{.SearchQuery}}',
             tags: [{{range .SearchTags}}'{{.}}', {{end}}],
-            sort: '{{.SortType}}',
-            dir: '{{.SortDirType}}',
-            page: {{.PageNum}},
-            count: {{.PerPage}},
+            sort: '{{.SortBy}}',
+            dir: '{{.SortDir}}',
+            page: pageNum,
+            {{if ne $.ViewType "compact"}}
+            count: 12,
+            {{else}}
+            count: 60,
+            {{end}}
         });
     });
 
     function loadRecipes($container, searchFilter) {
-        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(recipes) {
+        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(response) {
+            $('#result-count').append(response.total);
+
             $container.empty();
 
-            if (recipes != null) {
+            if (response.recipes != null) {
                 {{if ne $.ViewType "compact"}}
-                addRecipesFull($container, recipes);
+                addRecipesFull($container, response.recipes);
                 {{else}}
-                addRecipesCompact($container, recipes);
+                addRecipesCompact($container, response.recipes);
                 {{end}}
             }
+
+            var numPages = Math.ceil(response.total / {{.PerPage}});
+            addPaginiation(searchFilter.page, numPages);
         });
     }
 
@@ -206,6 +201,30 @@
                 }
             });
         });
+    }
+
+    {{$baseLink := .SearchQuery | printf "?q=%s&page="}}
+    function addPaginiation(pageNum, numPages) {
+        prevPageNum = pageNum - 1;
+        nextpageNum = pageNum + 1;
+        $('.pagination-container').append('\
+            <ul class="pagination no-padding col s12 l12 center">\
+                <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
+                    <a href="' + (pageNum > 1 ? '{{$baseLink}}1' : '#!') + '"><i class="material-icons">first_page</i></a>\
+                </li>\
+                <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
+                    <a href="' + (pageNum > 1 ? '{{$baseLink}}' + prevPageNum : '#!') + '"><i class="material-icons">chevron_left</i></a>\
+                </li>\
+                <li class="active">\
+                    <a href="#!">' + pageNum + '</a>\
+                </li>\
+                <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
+                    <a href="' + (pageNum < numPages ? '{{$baseLink}}' + nextpageNum : '#!') + '"><i class="material-icons">chevron_right</i></a>\
+                </li>\
+                <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
+                    <a href="' + (pageNum < numPages ? '{{$baseLink}}' + numPages : '#!') + '"><i class="material-icons">last_page</i></a>\
+                </li>\
+            </ul>');
     }
 
     function splitArray(items, numSplits) {

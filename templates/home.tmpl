@@ -34,9 +34,8 @@
                     </div>\
                 </div>');
             $wrapper.append($container);
-            $wrapper.append('<a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">' + data.title + ' &gt;&gt;</a>');
             $('#recipes-container').append($wrapper)
-            loadRecipes($container, {
+            loadRecipes($container, data.title, {
                 q: '',
                 tags: data.tags,
                 sort: 'random',
@@ -47,12 +46,12 @@
         });
     });
 
-    function loadRecipes($container, searchFilter) {
-        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(recipes) {
+    function loadRecipes($container, title, searchFilter) {
+        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(response) {
             $container.empty();
 
-            if (recipes != null) {
-                recipes.forEach(function(recipe) {
+            if (response.recipes != null) {
+                response.recipes.forEach(function(recipe) {
                     var $recipeWrapper = $('\
                         <div class="col s6 m4 l2"></div>');
                     var $recipeContent = '\
@@ -86,6 +85,10 @@
                     $container.append($recipeWrapper);
                     $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
                 });
+                $container.append('\
+                    <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">\
+                        ' + title + ' (' + response.total + ') &gt;&gt;\
+                    </a>');
             }
         });
     }

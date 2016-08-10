@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/context"
@@ -65,40 +63,9 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 	query := getStringParam(req, sess, "q", "")
 	tags := getStringParams(req, sess, "tags", nil)
-	page := getInt64Param(req, sess, "page", 1, 1, math.MaxInt64)
 	viewType := getStringParam(req, sess, "view", "full")
-	sortType := getStringParam(req, sess, "sort", "name")
-	sortDirType := getStringParam(req, sess, "dir", "ASC")
-
-	var count int64
-	if viewType == "compact" {
-		count = 60
-	} else {
-		count = 12
-	}
-
-	sortBy := models.SortByName
-	switch strings.ToLower(sortType) {
-	case "name":
-		sortBy = models.SortByName
-	case "rating":
-		sortBy = models.SortByRating
-	}
-
-	sortDir := models.SortDirAsc
-	switch strings.ToLower(sortDirType) {
-	case "asc":
-		sortDir = models.SortDirAsc
-	case "desc":
-		sortDir = models.SortDirDesc
-	}
-
-	var recipes *models.Recipes
-	var total int64
-	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags, SortBy: sortBy, SortDir: sortDir, Page: page, Count: count})
-	if rc.HasError(resp, req, err) {
-		return
-	}
+	sortBy := getStringParam(req, sess, "sort", "name")
+	sortDir := getStringParam(req, sess, "dir", "ASC")
 
 	var allTags *[]string
 	allTags, err = rc.model.Tags.ListAll()
@@ -109,22 +76,17 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sess.Values["q"] = query
 	sess.Values["tags"] = tags
 	sess.Values["view"] = viewType
-	sess.Values["sort"] = sortType
-	sess.Values["dir"] = sortDirType
+	sess.Values["sort"] = sortBy
+	sess.Values["dir"] = sortDir
 	sess.Save(req, resp)
 
 	data := context.Get(req).Data
-	data["PageNum"] = page
-	data["PerPage"] = count
-	data["NumPages"] = int64(math.Ceil(float64(total) / float64(count)))
-	data["Recipes"] = recipes
 	data["AllTags"] = allTags
 	data["SearchQuery"] = query
 	data["SearchTags"] = tags
-	data["ResultCount"] = total
 	data["ViewType"] = viewType
-	data["SortType"] = sortType
-	data["SortDirType"] = sortDirType
+	data["SortBy"] = sortBy
+	data["SortDir"] = sortDir
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 
