@@ -1,169 +1,49 @@
 {{ define "content-home" }}
 <section class="container">
     <header class="center">
-    <h2 class="center">{{.HomeTitle}}</h2>
-    <img class="responsive-img" src="{{.HomeImage}}"/>
+        <h2 class="center">{{.HomeTitle}}</h2>
+        <img class="responsive-img" src="{{.HomeImage}}"/>
     </header>
 </section>
-<section class="row">
-    <article class="col s12 l12">
-        <h5>Recipes</h5>
-        <div id="all-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Beef</h5>
-        <div id="beef-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=beef&tags=steak">Beef Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Poultry</h5>
-        <div id="poultry-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=poultry&tags=chicken&tags=turkey">Poultry Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Pork</h5>
-        <div id="pork-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pork">Pork Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Seafood</h5>
-        <div id="seafood-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=seafood&tags=fish">Seafood Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Pasta</h5>
-        <div id="pasta-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pasta">Pasta Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Vegetarian</h5>
-        <div id="vegetarian-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=vegetarian">Vegetarian Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Sides</h5>
-        <div id="sides-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=side&tags=sides">Side Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Drinks</h5>
-        <div id="drink-recipes-container">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=drink&tags=cocktail">Drink Recipes &gt;&gt;</a>
-    </article>
-</section>
+<section id="recipes-container" class="row"></section>
 {{ end }}
 
 {{ define "js-home" }}
 <script type="text/javascript">
     $(document).ready(function(){
-        loadRecipes($('#all-recipes-container'), {
-            q: '',
-            tags: [],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#beef-recipes-container'), {
-            q: '',
-            tags: ['beef', 'steak'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#poultry-recipes-container'), {
-            q: '',
-            tags: ['chicken', 'turkey', 'poultry'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#pork-recipes-container'), {
-            q: '',
-            tags: ['pork'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#seafood-recipes-container'), {
-            q: '',
-            tags: ['seafood', 'fish'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#pasta-recipes-container'), {
-            q: '',
-            tags: ['pasta'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#vegetarian-recipes-container'), {
-            q: '',
-            tags: ['vegetarian'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#sides-recipes-container'), {
-            q: '',
-            tags: ['side', 'sides'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
-        });
-        loadRecipes($('#drink-recipes-container'), {
-            q: '',
-            tags: ['drink', 'cocktail'],
-            sort: 'Random',
-            dir: 'ASC',
-            page: 1,
-            count: 6,
+        var recipeLists = [
+            { title: 'Recipes', tags: [] },
+            { title: 'Beef', tags: ['beef', 'steak'] },
+            { title: 'Poultry', tags: ['chicken', 'turkey', 'poultry'] },
+            { title: 'Pork', tags: ['pork'] },
+            { title: 'Seafood', tags: ['seafood', 'fish'] },
+            { title: 'Pasta', tags: ['pasta'] },
+            { title: 'Vegetarian', tags: ['vegetarian'] },
+            { title: 'Sides', tags: ['side', 'sides'] },
+            { title: 'Drinks', tags: ['drink', 'cocktail'] },
+        ];
+        recipeLists.forEach(function(data) {
+            var $wrapper = $('\
+                <article class="col s12 l12">\
+                    <h5>' + data.title + '</h5>\
+                </article>');
+            var $container = $('\
+                <div>\
+                    <div class="progress">\
+                        <div class="indeterminate"></div>\
+                    </div>\
+                </div>');
+            $wrapper.append($container);
+            $wrapper.append('<a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">' + data.title + ' &gt;&gt;</a>');
+            $('#recipes-container').append($wrapper)
+            loadRecipes($container, {
+                q: '',
+                tags: data.tags,
+                sort: 'Random',
+                dir: 'ASC',
+                page: 1,
+                count: 6,
+            });
         });
     });
 
@@ -173,19 +53,20 @@
 
             if (recipes != null) {
                 recipes.forEach(function(recipe) {
-                    var $wrapper = $('<div class="col s6 m4 l2"></div>');
+                    var $recipeWrapper = $('\
+                        <div class="col s6 m4 l2"></div>');
                     var $recipeContent = '\
-                        <article class="card tiny grey lighten-4 hoverable clickable"\
+                        <div class="card tiny grey lighten-4 hoverable clickable"\
                             onclick="location.href = \'{{RootUrlPath}}/recipes/' + recipe.id + '\';"\
                             title="' + recipe.name +'">';
                     if (recipe.mainImage.thumbnailUrl != '') {
                         $recipeContent += '\
-                            <section class="card-image">\
+                            <div class="card-image">\
                                 <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
-                            </section>';
+                            </div>';
                     }
                     $recipeContent += '\
-                            <section class="rating-container">\
+                            <div class="rating-container">\
                                 <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>\
                                 <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>\
                                 <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>\
@@ -196,14 +77,14 @@
                                 <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>\
                                 <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>\
                                 <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>\
-                            </section>\
-                            <section class="card-content truncate">\
+                            </div>\
+                            <div class="card-content truncate">\
                                 <span class="card-title">' + recipe.name + '</span>\
-                            </section>\
-                        </article>';
-                    $wrapper.append($recipeContent);
-                    $container.append($wrapper);
-                    $wrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
+                            </div>\
+                        </div>';
+                    $recipeWrapper.append($recipeContent);
+                    $container.append($recipeWrapper);
+                    $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
                 });
             }
         });
