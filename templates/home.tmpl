@@ -173,13 +173,12 @@
 
             if (recipes != null) {
                 recipes.forEach(function(recipe) {
-                    //onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"\
-                    
                     var $wrapper = $('<div class="col s6 m4 l2"></div>');
                     var $recipeContent = '\
                         <article class="card tiny grey lighten-4 hoverable clickable"\
+                            onclick="location.href = \'{{RootUrlPath}}/recipes/' + recipe.id + '\';"\
                             title="' + recipe.name +'">';
-                    if (recipe.thumbnailUrl != '') {
+                    if (recipe.mainImage.thumbnailUrl != '') {
                         $recipeContent += '\
                             <section class="card-image">\
                                 <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
