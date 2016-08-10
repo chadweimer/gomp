@@ -35,16 +35,6 @@ func main() {
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"RootUrlPath":      func() string { return cfg.RootURLPath },
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-			"Add":              func(a, b int64) int64 { return a + b },
-			"Paginate":         getPageNumbersForPagination,
-			"StrSliceContains": func(theSlice []string, searchFor string) bool {
-				for _, value := range theSlice {
-					if value == searchFor {
-						return true
-					}
-				}
-				return false
-			},
 		}}})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)
 
@@ -115,30 +105,4 @@ func main() {
 
 	// Make sure to close the database connection
 	model.TearDown()
-}
-
-func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {
-	if numPages == 0 {
-		return []int64{1}
-	}
-
-	if numPages < num {
-		num = numPages
-	}
-
-	startPage := pageNum - num/2
-	endPage := pageNum + num/2
-	if startPage < 1 {
-		startPage = 1
-		endPage = startPage + num - 1
-	} else if endPage > numPages {
-		endPage = numPages
-		startPage = endPage - num + 1
-	}
-
-	pageNums := make([]int64, num, num)
-	for i := int64(0); i < num; i++ {
-		pageNums[i] = i + startPage
-	}
-	return pageNums
 }

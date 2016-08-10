@@ -67,12 +67,6 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sortBy := getStringParam(req, sess, "sort", "name")
 	sortDir := getStringParam(req, sess, "dir", "ASC")
 
-	var allTags *[]string
-	allTags, err = rc.model.Tags.ListAll()
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
 	sess.Values["q"] = query
 	sess.Values["tags"] = tags
 	sess.Values["view"] = viewType
@@ -81,7 +75,6 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 	sess.Save(req, resp)
 
 	data := context.Get(req).Data
-	data["AllTags"] = allTags
 	data["SearchQuery"] = query
 	data["SearchTags"] = tags
 	data["ViewType"] = viewType

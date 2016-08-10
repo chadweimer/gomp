@@ -85,8 +85,16 @@
                     $container.append($recipeWrapper);
                     $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
                 });
+                var link = '{{RootUrlPath}}/recipes?q=';
+                if (searchFilter.tags.length == 0) {
+                    link += '&tags=';
+                } else {
+                    searchFilter.tags.forEach(function(tag) {
+                        link += '&tags=' + tag;
+                    });
+                }
                 $container.append('\
-                    <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">\
+                    <a class="right" href="' + link + '">\
                         ' + title + ' (' + response.total + ') &gt;&gt;\
                     </a>');
             }

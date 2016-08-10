@@ -63,15 +63,7 @@
                             <button class="btn-flat waves-effect header-btn" type="submit">Apply</button>
                         </li>
                         <li class="indented fill">
-                            <ul>
-                                {{range .AllTags}}
-                                <li>
-                                    <input id="{{.}}-tag" name="tags" type="checkbox" value="{{.}}" {{if StrSliceContains $.SearchTags .}}checked{{end}}>
-                                    <label for="{{.}}-tag">{{.}}</label>
-                                </li>
-                                {{end}}
-                            </ul>
-                            </div>
+                            <ul id="tag-filter-list"></ul>
                         </li>
                     </ul>
                 </form>
@@ -122,6 +114,9 @@
             count: 60,
             {{end}}
         });
+
+        var searchTags = [{{range .SearchTags}}'{{.}}',{{end}}];
+        loadTags(searchTags);
     });
 
     function loadRecipes($container, searchFilter) {
@@ -225,6 +220,20 @@
                     <a href="' + (pageNum < numPages ? '{{$baseLink}}' + numPages : '#!') + '"><i class="material-icons">last_page</i></a>\
                 </li>\
             </ul>');
+    }
+
+    function loadTags(searchTags) {
+        loadTagsAsync('{{RootUrlPath}}').done(function(tags){
+            if (tags != null) {
+                tags.forEach(function(tag){
+                    $('#tag-filter-list').append('\
+                    <li>\
+                        <input id="' + tag + '-tag" name="tags" type="checkbox" value="' + tag + '"' + (searchTags.includes(tag) ? ' checked' : '') + '>\
+                        <label for="' + tag + '-tag">' + tag + '</label>\
+                    </li>');
+                });
+            }
+        });
     }
 
     function splitArray(items, numSplits) {
