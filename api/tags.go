@@ -9,7 +9,7 @@ import (
 func (rc Router) GetTags(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	tags, err := rc.model.Tags.ListAll()
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 

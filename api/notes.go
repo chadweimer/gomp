@@ -12,13 +12,13 @@ import (
 func (r Router) GetRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	notes, err := r.model.Notes.List(recipeID)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 
@@ -28,12 +28,12 @@ func (r Router) GetRecipeNotes(resp http.ResponseWriter, req *http.Request, p ht
 func (r Router) PostNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	if err := r.model.Notes.Create(&note); err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 
@@ -44,23 +44,23 @@ func (r Router) PostNote(resp http.ResponseWriter, req *http.Request, p httprout
 func (r Router) PutNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	if note.ID != noteID {
-		resp.WriteHeader(http.StatusBadRequest)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	if err := r.model.Notes.Update(&note); err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 
@@ -70,12 +70,12 @@ func (r Router) PutNote(resp http.ResponseWriter, req *http.Request, p httproute
 func (r Router) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	if err := r.model.Notes.Delete(noteID); err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 

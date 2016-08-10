@@ -7,27 +7,36 @@ type SearchModel struct {
 	*Model
 }
 
-// SortBy represents an enumeration of possible sort fields
-type SortBy int
-
 const (
-	SortByName   SortBy = 0
-	SortByID     SortBy = 1
-	SortByRating SortBy = 2
-	SortByRandom SortBy = 3
+	SortByName   string = "Name"
+	SortByID     string = "ID"
+	SortByRating string = "Rating"
+	SortByRandom string = "Random"
+
+	SortDirAsc  string = "ASC"
+	SortDirDesc string = "DESC"
 )
 
 // SearchFilter is the primary model class for recipe search
 type SearchFilter struct {
-	Query    string
-	Tags     []string
-	SortBy   SortBy
-	SortDesc bool
+	Query   string   `json:"query"`
+	Tags    []string `json:"tags"`
+	SortBy  string   `json:"sortBy"`
+	SortDir string   `json:"sortDir"`
+	Page    int64    `json:"page"`
+	Count   int64    `json:"count"`
+}
+
+func NewSearchFilter() SearchFilter {
+	return SearchFilter{
+		SortBy:  SortByName,
+		SortDir: SortDirAsc,
+	}
 }
 
 // Find retrieves all recipes matching the specified search filter and within the range specified,
 // sorted by name.
-func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recipes, int64, error) {
+func (m *SearchModel) Find(filter SearchFilter) (*Recipes, int64, error) {
 	var total int64
 	var search string
 	if filter.Query == "" {
@@ -58,7 +67,7 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 		return nil, 0, err
 	}
 
-	offset := count * (page - 1)
+	offset := filter.Count * (filter.Page - 1)
 	selectStmt := "SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS overall_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
 		partialStmt
@@ -72,15 +81,15 @@ func (m *SearchModel) Find(filter SearchFilter, page int64, count int64) (*Recip
 	case SortByRandom:
 		selectStmt += " ORDER BY RANDOM()"
 	}
-	if filter.SortDesc {
+	if filter.SortDir == SortDirDesc {
 		selectStmt += " DESC"
 	}
 	selectStmt += " LIMIT ? OFFSET ?"
 	var selectArgs []interface{}
 	if len(filter.Tags) == 0 {
-		selectStmt, selectArgs, err = sqlx.In(selectStmt, search, search, search, search, count, offset)
+		selectStmt, selectArgs, err = sqlx.In(selectStmt, search, search, search, search, filter.Count, offset)
 	} else {
-		selectStmt, selectArgs, err = sqlx.In(selectStmt, search, search, search, search, filter.Tags, count, offset)
+		selectStmt, selectArgs, err = sqlx.In(selectStmt, search, search, search, search, filter.Tags, filter.Count, offset)
 	}
 	if err != nil {
 		return nil, 0, err

@@ -85,17 +85,17 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 		sortBy = models.SortByRating
 	}
 
-	sortDesc := false
+	sortDir := models.SortDirAsc
 	switch strings.ToUpper(sortDirType) {
 	case "ASC":
-		sortDesc = false
+		sortDir = models.SortDirAsc
 	case "DESC":
-		sortDesc = true
+		sortDir = models.SortDirDesc
 	}
 
 	var recipes *models.Recipes
 	var total int64
-	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags, SortBy: sortBy, SortDesc: sortDesc}, page, count)
+	recipes, total, err = rc.model.Search.Find(models.SearchFilter{Query: query, Tags: tags, SortBy: sortBy, SortDir: sortDir, Page: page, Count: count})
 	if rc.HasError(resp, req, err) {
 		return
 	}

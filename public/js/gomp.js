@@ -5,6 +5,16 @@ $(document).ready(function(){
     $('.dropdown').dropdown();
 });
 
+function getRecipesAsync(rootUrlPath, searchFilter) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes',
+        method: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: searchFilter,
+    });
+}
+
 function loadRecipeAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId,
@@ -47,7 +57,6 @@ function addImageAsync(rootUrlPath, recipeId, imageFormData) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
         method: 'POST',
-        cache: false,
         enctype: 'multipart/form-data',
         contentType: false,
         dataType: 'text',

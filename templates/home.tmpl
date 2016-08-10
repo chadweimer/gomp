@@ -8,95 +8,206 @@
 <section class="row">
     <article class="col s12 l12">
         <h5>Recipes</h5>
-        {{range .Recipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">{{.RecipesCount}} Recipes &gt;&gt;</a>
+        <div id="all-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Beef</h5>
-        {{range .BeefRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=beef&tags=steak">{{.BeefCount}} Beef Recipes &gt;&gt;</a>
+        <div id="beef-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=beef&tags=steak">Beef Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Poultry</h5>
-        {{range .PoultryRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=poultry&tags=chicken&tags=turkey">{{.PoultryCount}} Poultry Recipes &gt;&gt;</a>
+        <div id="poultry-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=poultry&tags=chicken&tags=turkey">Poultry Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Pork</h5>
-        {{range .PorkRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pork">{{.PorkCount}} Pork Recipes &gt;&gt;</a>
+        <div id="pork-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pork">Pork Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Seafood</h5>
-        {{range .SeafoodRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=seafood&tags=fish">{{.SeafoodCount}} Seafood Recipes &gt;&gt;</a>
+        <div id="seafood-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=seafood&tags=fish">Seafood Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Pasta</h5>
-        {{range .PastaRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pasta">{{.PastaCount}} Pasta Recipes &gt;&gt;</a>
+        <div id="pasta-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pasta">Pasta Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Vegetarian</h5>
-        {{range .VegetarianRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=vegetarian">{{.VegetarianCount}} Vegetarian Recipes &gt;&gt;</a>
+        <div id="vegetarian-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=vegetarian">Vegetarian Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Sides</h5>
-        {{range .SideRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=side&tags=sides">{{.SideCount}} Side Recipes &gt;&gt;</a>
+        <div id="sides-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=side&tags=sides">Side Recipes &gt;&gt;</a>
     </article>
     <article class="col s12 l12">
         <h5>Drinks</h5>
-        {{range .DrinkRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=drink&tags=cocktail">{{.DrinkCount}} Drink Recipes &gt;&gt;</a>
+        <div id="drink-recipes-container">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=drink&tags=cocktail">Drink Recipes &gt;&gt;</a>
     </article>
 </section>
 {{ end }}
 
-{{define "recipecard-home"}}
-<div class="col s6 m4 l2">
-    <article class="card tiny grey lighten-4 hoverable clickable"
-        onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
-        title="{{.Name}}">
-        {{if .MainImage.ThumbnailURL}}
-        <section class="card-image">
-            <img src="{{.MainImage.ThumbnailURL}}" class="darken-10">
-        </section>
-        {{end}}
-        <section class="rating-container">
-            <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
-        </section>
-        <section class="card-content truncate">
-            <span class="card-title">{{.Name}}</span>
-        </section>
-    </article>
-</div>
+{{ define "js-home" }}
+<script type="text/javascript">
+    $(document).ready(function(){
+        loadRecipes($('#all-recipes-container'), {
+            q: '',
+            tags: [],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#beef-recipes-container'), {
+            q: '',
+            tags: ['beef', 'steak'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#poultry-recipes-container'), {
+            q: '',
+            tags: ['chicken', 'turkey', 'poultry'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#pork-recipes-container'), {
+            q: '',
+            tags: ['pork'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#seafood-recipes-container'), {
+            q: '',
+            tags: ['seafood', 'fish'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#pasta-recipes-container'), {
+            q: '',
+            tags: ['pasta'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#vegetarian-recipes-container'), {
+            q: '',
+            tags: ['vegetarian'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#sides-recipes-container'), {
+            q: '',
+            tags: ['side', 'sides'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+        loadRecipes($('#drink-recipes-container'), {
+            q: '',
+            tags: ['drink', 'cocktail'],
+            sort: 'Random',
+            dir: 'ASC',
+            page: 1,
+            count: 6,
+        });
+    });
+
+    function loadRecipes($container, searchFilter) {
+        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(recipes) {
+            $container.empty();
+
+            if (recipes != null) {
+                recipes.forEach(function(recipe) {
+                    //onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"\
+                    
+                    var $wrapper = $('<div class="col s6 m4 l2"></div>');
+                    var $recipeContent = '\
+                        <article class="card tiny grey lighten-4 hoverable clickable"\
+                            title="' + recipe.name +'">';
+                    if (recipe.thumbnailUrl != '') {
+                        $recipeContent += '\
+                            <section class="card-image">\
+                                <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
+                            </section>';
+                    }
+                    $recipeContent += '\
+                            <section class="rating-container">\
+                                <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>\
+                            </section>\
+                            <section class="card-content truncate">\
+                                <span class="card-title">' + recipe.name + '</span>\
+                            </section>\
+                        </article>';
+                    $wrapper.append($recipeContent);
+                    $container.append($wrapper);
+                    $wrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
+                });
+            }
+        });
+    }
+</script>
 {{end}}

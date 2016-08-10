@@ -58,7 +58,7 @@ func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http
 
 func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {
 	if err := marshalJSON(resp, data); err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 	}
 }
 
@@ -66,7 +66,15 @@ func readJSONFromRequest(req *http.Request, data interface{}) error {
 	return json.NewDecoder(req.Body).Decode(data)
 }
 
-func writeErrorToResponse(resp http.ResponseWriter, err error) {
+func writeServerErrorToResponse(resp http.ResponseWriter, err error) {
+	writeErrorToResponse(resp, http.StatusInternalServerError, err)
+}
+
+func writeClientErrorToResponse(resp http.ResponseWriter, err error) {
+	writeErrorToResponse(resp, http.StatusBadRequest, err)
+}
+
+func writeErrorToResponse(resp http.ResponseWriter, statusCode int, err error) {
 	log.Println(err)
 	resp.WriteHeader(http.StatusInternalServerError)
 	_ = marshalJSON(resp, err.Error())

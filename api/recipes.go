@@ -9,9 +9,31 @@ import (
 )
 
 func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipes, _, err := r.model.Search.Find(models.SearchFilter{}, 1, 10)
+	query := req.URL.Query().Get("q")
+	tags := req.URL.Query()["tags[]"]
+	sortBy := req.URL.Query().Get("sort")
+	sortDir := req.URL.Query().Get("dir")
+	page, err := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
+	count, err := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
+
+	filter := models.SearchFilter{
+		Query:   query,
+		Tags:    tags,
+		SortBy:  sortBy,
+		SortDir: sortDir,
+		Page:    page,
+		Count:   count,
+	}
+	if req.ContentLength > 0 {
+		if err := readJSONFromRequest(req, &filter); err != nil {
+			writeClientErrorToResponse(resp, err)
+			return
+		}
+	}
+
+	recipes, _, err := r.model.Search.Find(filter)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 
@@ -21,17 +43,17 @@ func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	recipe, err := r.model.Recipes.Read(recipeID)
 	if err == models.ErrNotFound {
-		resp.WriteHeader(http.StatusNotFound)
+		writeErrorToResponse(resp, http.StatusNotFound, err)
 		return
 	}
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 
@@ -41,18 +63,18 @@ func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 func (r Router) PutRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	var rating float64
 	if err := readJSONFromRequest(req, &rating); err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	if err := r.model.Recipes.SetRating(recipeID, rating); err != nil {
-		writeErrorToResponse(resp, err)
+		writeServerErrorToResponse(resp, err)
 		return
 	}
 
