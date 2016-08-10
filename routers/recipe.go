@@ -3,7 +3,6 @@ package routers
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -45,41 +44,7 @@ func (rc *RouteController) GetRecipe(resp http.ResponseWriter, req *http.Request
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	sess, err := rc.sessionStore.Get(req, "UserSession")
-	if err != nil {
-		log.Print("[recipes] Invalid session retrieved.")
-		http.Redirect(resp, req, fmt.Sprintf("%s/logout", rc.cfg.RootURLPath), http.StatusFound)
-		return
-	}
-
-	_, ok := req.URL.Query()["reset"]
-	if ok {
-		delete(sess.Values, "q")
-		delete(sess.Values, "tags")
-		delete(sess.Values, "view")
-		delete(sess.Values, "sort")
-		delete(sess.Values, "dir")
-	}
-
-	query := getStringParam(req, sess, "q", "")
-	tags := getStringParams(req, sess, "tags", nil)
-	viewType := getStringParam(req, sess, "view", "full")
-	sortBy := getStringParam(req, sess, "sort", "name")
-	sortDir := getStringParam(req, sess, "dir", "ASC")
-
-	sess.Values["q"] = query
-	sess.Values["tags"] = tags
-	sess.Values["view"] = viewType
-	sess.Values["sort"] = sortBy
-	sess.Values["dir"] = sortDir
-	sess.Save(req, resp)
-
 	data := context.Get(req).Data
-	data["SearchQuery"] = query
-	data["SearchTags"] = tags
-	data["ViewType"] = viewType
-	data["SortBy"] = sortBy
-	data["SortDir"] = sortDir
 	rc.HTML(resp, http.StatusOK, "recipe/list", data)
 }
 

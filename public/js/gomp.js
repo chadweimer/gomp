@@ -5,11 +5,48 @@ $(document).ready(function(){
     $('.dropdown').dropdown();
 });
 
-function getQueryString(field) {
-    var href = window.location.href;
-    var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
-    var string = reg.exec(href);
-    return string ? string[1] : null;
+function getQueryString(field, isArray = false) {
+    var target = window.location.href;
+    var reg = new RegExp('[?&]' + field + '=([^&#]*)', 'ig');
+
+    var values = [];
+    while(true) {
+        var matches = reg.exec(target);
+        if (matches) {
+            values.push(matches[1]);
+        } else {
+            break;
+        }
+    }
+
+    if (!values.length) {
+        return null;   
+    } else {
+        return isArray ? values : values[0];
+    }
+}
+
+function getQueryStringWithStorageBacking(field, defaultVal, isArray = false) {
+    var val = getQueryString(field, isArray);
+    if (val == null && sessionStorage.getItem(field)) {
+        try {
+            val = JSON.parse(sessionStorage.getItem(field));
+        } catch(err) {
+            // TODO: What should we do with this?
+        }
+    }
+
+    if (val == null) {
+        val = defaultVal;
+    }
+
+    try {
+        sessionStorage.setItem(field, JSON.stringify(val));
+    } catch (err) {
+        // TODO: What should we do with this?
+    }
+
+    return val;
 }
 
 function getRecipesAsync(rootUrlPath, searchFilter) {

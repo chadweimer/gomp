@@ -18,11 +18,9 @@
 <section class="row">
     <div class="col s12 l12">
         <div class="section">
-            {{if (or .SearchQuery .SearchTags)}}
             <span class="light left">
-                Search: '{{.SearchQuery}}', Results: <span id="result-count"></span>
+                Search: '<span id="search-query"></span>', Results: <span id="result-count"></span>
             </span>
-            {{end}}
             <span class="right">
                 <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
                     <i class="material-icons black-text">menu</i>
@@ -30,15 +28,15 @@
                 <form>
                     <ul id="recipe-list-menu" class="side-nav collapsible flex-container" data-collapsible="expandable">
                         <li>
-                            <a class="btn waves-effect" href="?reset">Reset</a>
+                            <a class="btn waves-effect" href="?reset=">Reset</a>
                         </li>
                         <li>
                             <span class="collapsible-header active">Display</span>
                             <ul class="collapsible-body">
-                                <li {{if eq .ViewType "full"}}class="active"{{end}}>
+                                <li id="full-view-item">
                                     <a href="?view=full"><i class="material-icons">view_agenda</i> Full</a>
                                 </li>
-                                <li {{if eq .ViewType "compact"}}class="active"{{end}}>
+                                <li id="compact-view-item">
                                     <a href="?view=compact"><i class="material-icons">view_headline</i> Compact</a>
                                 </li>
                             </ul>
@@ -46,13 +44,13 @@
                         <li>
                             <span class="collapsible-header active">Sort</span>
                             <ul class="collapsible-body">
-                                <li {{if eq .SortBy "name"}}class="active"{{end}}>
-                                    <a href="?sort=name&dir={{if or (ne .SortBy "name") (eq .SortDir "desc")}}asc{{else}}desc{{end}}">
+                                <li id="name-sort-item">
+                                    <a>
                                         <i class="material-icons">sort_by_alpha</i> Name
                                     </a>
                                 </li>
-                                <li {{if eq .SortBy "rating"}}class="active"{{end}}>
-                                    <a href="?sort=rating&dir={{if and (eq .SortBy "rating") (eq .SortDir "desc")}}asc{{else}}desc{{end}}">
+                                <li id="rating-sort-item">
+                                    <a>
                                         <i class="material-icons">star_rate</i> Rating
                                     </a>
                                 </li>
@@ -91,49 +89,59 @@
 
 {{define "js-recipe/list"}}
 <script type="text/javascript">
-    
     $(document).ready(function(){
+        var reset = getQueryString('reset');
+        if (reset != null) {
+            sessionStorage.clear();
+        }
+
         var pageNum = parseInt(getQueryString('page'));
         if (pageNum == null || isNaN(pageNum)) {
             pageNum = 1;
         }
 
+        var query = getQueryStringWithStorageBacking('q', '');
+        var searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v != '');
+        var sortBy = getQueryStringWithStorageBacking('sort', 'name');
+        var sortDir = getQueryStringWithStorageBacking('dir', 'asc');
+        var viewType = getQueryStringWithStorageBacking('view', 'full');
+
+        $('#search-query').append(query);
+        $('#' + sortBy + '-sort-item').addClass('active');
+        $('#' + viewType + '-view-item').addClass('active');
+        $('#name-sort-item > a').attr('href', '?sort=name&dir=' + (sortBy != 'name' || sortDir == 'desc' ? 'asc' : 'desc'));
+        $('#rating-sort-item > a').attr('href', '?sort=rating&dir=' + (sortBy == 'rating' && sortDir == 'desc' ? 'asc' : 'desc'));
         $('#recipe-list-menu-button').sideNav({
             edge: 'right'
         });
         
-        loadRecipes($('#recipes-container'), {
-            q: '{{.SearchQuery}}',
-            tags: [{{range .SearchTags}}'{{.}}', {{end}}],
-            sort: '{{.SortBy}}',
-            dir: '{{.SortDir}}',
+        loadRecipes($('#recipes-container'), viewType, {
+            q: query,
+            tags: searchTags,
+            sort: sortBy,
+            dir: sortDir,
             page: pageNum,
-            {{if ne $.ViewType "compact"}}
-            count: 12,
-            {{else}}
-            count: 60,
-            {{end}}
+            count: (viewType != 'compact' ? 12 : 60),
         });
 
-        var searchTags = [{{range .SearchTags}}'{{.}}',{{end}}];
         loadTags(searchTags);
     });
 
-    function loadRecipes($container, searchFilter) {
+    function loadRecipes($container, viewType, searchFilter) {
         getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(response) {
             $('#result-count').append(response.total);
 
             $container.empty();
 
             if (response.recipes != null) {
-                {{if ne $.ViewType "compact"}}
-                addRecipesFull($container, response.recipes);
-                {{else}}
-                addRecipesCompact($container, response.recipes);
-                {{end}}
+                if (viewType != 'compact') {
+                    addRecipesFull($container, response.recipes);
+                } else {
+                    addRecipesCompact($container, response.recipes);
+                }
             }
 
-            var numPages = Math.ceil(response.total / {{.PerPage}});
+            var numPages = Math.ceil(response.total / searchFilter.count);
             addPaginiation(searchFilter.page, numPages);
         });
     }
@@ -198,26 +206,25 @@
         });
     }
 
-    {{$baseLink := .SearchQuery | printf "?q=%s&page="}}
     function addPaginiation(pageNum, numPages) {
         prevPageNum = pageNum - 1;
         nextpageNum = pageNum + 1;
         $('.pagination-container').append('\
             <ul class="pagination no-padding col s12 l12 center">\
                 <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum > 1 ? '{{$baseLink}}1' : '#!') + '"><i class="material-icons">first_page</i></a>\
+                    <a href="' + (pageNum > 1 ? '?page=1' : '#!') + '"><i class="material-icons">first_page</i></a>\
                 </li>\
                 <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum > 1 ? '{{$baseLink}}' + prevPageNum : '#!') + '"><i class="material-icons">chevron_left</i></a>\
+                    <a href="' + (pageNum > 1 ? '?page=' + prevPageNum : '#!') + '"><i class="material-icons">chevron_left</i></a>\
                 </li>\
                 <li class="active">\
                     <a href="#!">' + pageNum + '</a>\
                 </li>\
                 <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum < numPages ? '{{$baseLink}}' + nextpageNum : '#!') + '"><i class="material-icons">chevron_right</i></a>\
+                    <a href="' + (pageNum < numPages ? '?page=' + nextpageNum : '#!') + '"><i class="material-icons">chevron_right</i></a>\
                 </li>\
                 <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum < numPages ? '{{$baseLink}}' + numPages : '#!') + '"><i class="material-icons">last_page</i></a>\
+                    <a href="' + (pageNum < numPages ? '?page=' + numPages : '#!') + '"><i class="material-icons">last_page</i></a>\
                 </li>\
             </ul>');
     }
