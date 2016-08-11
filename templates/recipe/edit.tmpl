@@ -128,22 +128,21 @@
                 tags.forEach(function(tag){
                     $suggestedTagsContainer.append('\
                         <span class="chip green lighten-5 green-text text-darken-4" data-tag="' + tag + '">\
-                            ' + tag + '<i class="material-icons close add">add</i>\
+                            ' + tag + '<i class="material-icons close" onclick="addSuggestedTag(this); return false;">add</i>\
                         </span>');
                 });
             }
-
-            var $addChip = $('.chip .add');
-            $addChip.on('click', function() {
-                var $tagInput = $('#tags .chips > input');
-                var tagData = $(this).closest('.chip').data('tag');
-                $tagInput.val(tagData);
-                var e = jQuery.Event('keydown');
-                e.which = 13;
-                e.keyCode = 13;
-                $tagInput.trigger(e);
-            });
         });
+    }
+
+    function addSuggestedTag(self) {
+        var $tagInput = $('#tags .chips > input');
+        var tagData = $(self).closest('.chip').data('tag');
+        $tagInput.val(tagData);
+        var e = $.Event('keydown');
+        e.which = 13;
+        e.keyCode = 13;
+        $tagInput.trigger(e);
     }
 
     function saveRecipe() {

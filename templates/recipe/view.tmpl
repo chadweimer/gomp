@@ -117,7 +117,7 @@
             </a>
         </li>
         <li>
-            <a id="add-note" href="javascript:void(0)" class="btn-floating waves-effect blue">
+            <a id="add-note" href="#!" class="btn-floating waves-effect blue" onclick="showAddNoteDialog(); return false;">
                 <i class="material-icons">insert_comment</i>
             </a>
         </li>
@@ -129,12 +129,12 @@
         <p>Are you sure you want to delete this recipe?</p>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-yes" href="javascript:void(0)" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="#!" class="modal-action modal-close btn-flat">No</a>
+        <a href="#!" class="modal-action modal-close btn-flat" onclick="deleteRecipe(); return false;">Yes</a>
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form id="upload-image-form" method="post" enctype="multipart/form-data">
+    <form enctype="multipart/form-data" onsubmit="addImage(this); return false;">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -149,7 +149,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
+            <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
             <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
         </div>
     </form>
@@ -160,8 +160,8 @@
         <p>Are you sure you want to make this the main image for the recipe?</p>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="main-image-yes" href="javascript:void(0)" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="#!" class="modal-action modal-close btn-flat">No</a>
+        <a id="main-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="setMainImage(this); return false;">Yes</a>
     </div>
 </div>
 <div id="delete-image-confirm" class="modal">
@@ -170,8 +170,8 @@
         <p>Are you sure you want to delete this image?</p>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-image-yes" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="#!" class="modal-action modal-close btn-flat">No</a>
+        <a id="delete-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="deleteImage(this); return false;">Yes</a>
     </div>
 </div>
 <div id="note-modal" class="modal">
@@ -184,8 +184,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
-        <a id="note-submit" href="javascript:void(0)" class="modal-action modal-close btn-flat">Add</a>
+        <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
+        <a id="note-submit" href="#!" class="modal-action modal-close btn-flat" onclick="saveNote(this); return false;">Save</a>
     </div>
 </div>
 <div id="delete-note-confirm" class="modal">
@@ -194,8 +194,8 @@
         <p>Are you sure you want to delete this note?</p>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-note-yes" href="javascript:void(0)" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="#!" class="modal-action modal-close btn-flat">No</a>
+        <a id="delete-note-yes" href="#!" class="modal-action modal-close btn-flat" onclick="deleteNote(this); return false;">Yes</a>
     </div>
 </div>
 {{ end }}
@@ -210,51 +210,8 @@
         loadImages();
         loadNotes();
 
-        $('#add-note').click(function() {
-            $('#note').val('');
-            $('#note-title').text('Add Note');
-            $('#note-submit').text('Add');
-            $('#note-submit').data('note-id', '');
-            $('#note-modal').openModal();
-        });
-
         $('.star').click(function() {
             setRating(parseFloat($(this).data('rating')));
-        });
-
-        $('#delete-yes').click(function() {
-            deleteRecipe();
-        });
-
-        $('#note-submit').click(function() {
-            var noteIdStr = $(this).data('note-id');
-            if (noteIdStr == '') {
-                addNote($('#note').val());
-            } else {
-                var noteId = parseInt(noteIdStr);
-                editNote(noteId, $('#note').val())
-            }
-        });
-
-        $('#delete-note-yes').click(function() {
-            var noteId = parseInt($(this).data('note-id'));
-            deleteNote(noteId);
-        });
-
-        $('#main-image-yes').click(function() {
-            var imageId = parseInt($(this).data('image-id'));
-            setMainImage(imageId);
-        });
-
-        $('#upload-image-form').on('submit', function(e) {
-            e.preventDefault();
-            var imageFormData = new FormData(this);
-            addImage(imageFormData);
-        });
-
-        $('#delete-image-yes').click(function() {
-            var imageId = parseInt($(this).data('image-id'));
-            deleteImage(imageId);
         });
     });
 
@@ -311,20 +268,23 @@
         });
     }
 
-    function setMainImage(imageId) {
+    function setMainImage(self) {
+        var imageId = parseInt($(self).data('image-id'));
         putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
             loadMainImage();
         });
     }
 
-    function addImage(imageFormData) {
+    function addImage(self) {
+        var imageFormData = new FormData(self);
         postRecipeImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
             loadMainImage();
             loadImages();
         });
     }
 
-    function deleteImage(imageId) {
+    function deleteImage(self) {
+        var imageId = parseInt($(self).data('image-id'));
         deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
             loadMainImage();
             loadImages();
@@ -343,31 +303,31 @@
                             <a target="_blank" href="' + image.url + '">\
                                 <img width="250" height="250" src="' + image.thumbnailUrl + '">\
                             </a>\
-                            <a class="make-main-image" href="javascript:void(0)" data-image-id="' + image.id + '">\
+                            <a href="#!" class="make-main-image" data-image-id="' + image.id + '" onclick="showMainImageConfirmation(this); return false;">\
                                 <i class="material-icons green-text">photo_library</i>\
                             </a>\
-                            <a class="delete-image" href="javascript:void(0)" data-image-id="' + image.id + '">\
+                            <a href="#!" class="delete-image" data-image-id="' + image.id + '" onclick="showDeleteImageConfirmation(this); return false;">\
                                 <i class="material-icons red-text">delete</i>\
                             </a>\
                         </span>';
                     $imagesContainer.append($imageContent);
                 });
             }
-        
-            $('.make-main-image').click(function() {
-                var imageId = $(this).data('image-id');
-                $('#main-image-yes').data('image-id', imageId);
-                $('#main-image-confirm').openModal();
-            });
-            
-            $('.delete-image').click(function() {
-                var imageId = $(this).data('image-id');
-                $('#delete-image-yes').data('image-id', imageId);
-                $('#delete-image-confirm').openModal();
-            });
         }).always(function() {
             $('#pictures .progress').addClass('hide');
         });
+    }
+        
+    function showMainImageConfirmation(self) {
+        var imageId = $(self).data('image-id');
+        $('#main-image-yes').data('image-id', imageId);
+        $('#main-image-confirm').openModal();
+    }
+    
+    function showDeleteImageConfirmation(self) {
+        var imageId = $(self).data('image-id');
+        $('#delete-image-yes').data('image-id', imageId);
+        $('#delete-image-confirm').openModal();
     }
 
     function loadNotes() {
@@ -385,10 +345,10 @@
                                     new Date(note.createdAt).toLocaleString() +
                                 '</p>\
                                 <p class="section right">\
-                                    <a class="edit-note" href="javascript:void(0)" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '">\
+                                    <a href="#!" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '" onclick="showEditNoteDialog(this); return false;">\
                                         <i class="material-icons amber-text text-darken-2">edit</i>\
                                     </a>\
-                                    <a class="delete-note" href="javascript:void(0)" data-note-id="' + note.id + '">\
+                                    <a href="#!" data-note-id="' + note.id + '" onclick="showDeleteNoteConfirmation(this); return false;">\
                                         <i class="material-icons red-text">delete</i>\
                                     </a>\
                                 </p>\
@@ -403,27 +363,43 @@
                     $notesContainer.append($noteContent);
                 });
             }
-        
-            $('.edit-note').click(function() {
-                var noteId = $(this).data('note-id');
-                var noteContent = $(this).data('note-content');
-                noteContent = noteContent.replace(/\+/g, ' ');
-                noteContent = decodeURIComponent(noteContent);
-                $('#note').val(noteContent);
-                $('#note-title').text('Edit Note');
-                $('#note-submit').text('Update');
-                $('#note-submit').data('note-id', noteId);
-                $('#note-modal').openModal();
-            });
-            
-            $('.delete-note').click(function() {
-                var noteId = $(this).data('note-id');
-                $('#delete-note-yes').data('note-id', noteId);
-                $('#delete-note-confirm').openModal();
-            });
         }).always(function() {
             $('#notes .progress').addClass('hide');
         });
+    }
+        
+    function showEditNoteDialog(self) {
+        var noteId = $(self).data('note-id');
+        var noteContent = $(self).data('note-content');
+        noteContent = noteContent.replace(/\+/g, ' ');
+        noteContent = decodeURIComponent(noteContent);
+        $('#note').val(noteContent);
+        $('#note-title').text('Edit Note');
+        $('#note-submit').data('note-id', noteId);
+        $('#note-modal').openModal();
+    }
+    
+    function showDeleteNoteConfirmation(self) {
+        var noteId = $(self).data('note-id');
+        $('#delete-note-yes').data('note-id', noteId);
+        $('#delete-note-confirm').openModal();
+    }
+
+    function showAddNoteDialog() {
+        $('#note').val('');
+        $('#note-title').text('Add Note');
+        $('#note-submit').data('note-id', '');
+        $('#note-modal').openModal();
+    }
+
+    function saveNote(self) {
+        var noteIdStr = $(self).data('note-id');
+        if (noteIdStr == '') {
+            addNote($('#note').val());
+        } else {
+            var noteId = parseInt(noteIdStr);
+            editNote(noteId, $('#note').val())
+        }
     }
 
     function addNote(text) {
@@ -445,7 +421,8 @@
         });
     }
 
-    function deleteNote(noteId) {
+    function deleteNote(self) {
+        var noteId = parseInt($(self).data('note-id'));
         deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
             loadNotes();
         });
