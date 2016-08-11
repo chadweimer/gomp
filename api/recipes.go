@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -64,6 +65,38 @@ func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 
 	writeJSONToResponse(resp, recipe)
 }
+
+func (r Router) PostRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	var recipe models.Recipe
+	if err := readJSONFromRequest(req, recipe); err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
+
+	if err := r.model.Recipes.Create(&recipe); err != nil {
+		writeServerErrorToResponse(resp, err)
+		return
+	}
+
+	resp.Header().Set("Location", fmt.Sprintf("%s/api/v1/recipes/%d", r.cfg.RootURLPath, recipe.ID))
+	resp.WriteHeader(http.StatusCreated)
+}
+
+func (r Router) PutRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	var recipe models.Recipe
+	if err := readJSONFromRequest(req, recipe); err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
+
+	if err := r.model.Recipes.Update(&recipe); err != nil {
+		writeServerErrorToResponse(resp, err)
+		return
+	}
+
+	resp.WriteHeader(http.StatusNoContent)
+}
+
 func (r Router) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {

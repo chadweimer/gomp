@@ -67,6 +67,28 @@ function getRecipeAsync(rootUrlPath, recipeId) {
     });
 }
 
+function postRecipeAsync(rootUrlPath, recipe) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes',
+        method: 'POST',
+        contentType: 'application/json',
+        dataType: 'text',
+        processData: false,
+        data: JSON.stringify(recipe),
+    });
+}
+
+function putRecipeAsync(rootUrlPath, recipe) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes/' + recipe.id,
+        method: 'PUT',
+        contentType: 'application/json',
+        dataType: 'text',
+        processData: false,
+        data: JSON.stringify(recipe),
+    });
+}
+
 function deleteRecipeAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId,
