@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (r Router) GetRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -25,7 +25,7 @@ func (r Router) GetRecipeNotes(resp http.ResponseWriter, req *http.Request, p ht
 	writeJSONToResponse(resp, notes)
 }
 
-func (r Router) PostNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) postNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -41,7 +41,7 @@ func (r Router) PostNote(resp http.ResponseWriter, req *http.Request, p httprout
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (r Router) PutNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) putNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -55,7 +55,7 @@ func (r Router) PutNote(resp http.ResponseWriter, req *http.Request, p httproute
 	}
 
 	if note.ID != noteID {
-		writeClientErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, errMismatchedNoteID)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (r Router) PutNote(resp http.ResponseWriter, req *http.Request, p httproute
 	resp.WriteHeader(http.StatusNoContent)
 }
 
-func (r Router) DeleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) deleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)

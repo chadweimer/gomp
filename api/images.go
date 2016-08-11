@@ -13,19 +13,19 @@ import (
 	"github.com/mholt/binding"
 )
 
-type PostImageRequest struct {
+type postImageRequest struct {
 	FileName    string                `form:"file_name"`
 	FileContent *multipart.FileHeader `form:"file_content"`
 }
 
-func (r *PostImageRequest) FieldMap(req *http.Request) binding.FieldMap {
+func (r *postImageRequest) FieldMap(req *http.Request) binding.FieldMap {
 	return binding.FieldMap{
 		&r.FileName:    "file_name",
 		&r.FileContent: "file_content",
 	}
 }
 
-func (r Router) GetRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -41,7 +41,7 @@ func (r Router) GetRecipeImages(resp http.ResponseWriter, req *http.Request, p h
 	writeJSONToResponse(resp, images)
 }
 
-func (r Router) GetRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) getRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -61,13 +61,20 @@ func (r Router) GetRecipeMainImage(resp http.ResponseWriter, req *http.Request, 
 	writeJSONToResponse(resp, image)
 }
 
-func (r Router) PutRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	var image models.RecipeImage
-	if err := readJSONFromRequest(req, &image); err != nil {
+func (r Router) putRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
+	var imageID int64
+	if err := readJSONFromRequest(req, &imageID); err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
+
+	image := models.RecipeImage{ID: imageID, RecipeID: recipeID}
 	if err := r.model.Images.UpdateMainImage(&image); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
@@ -75,17 +82,17 @@ func (r Router) PutRecipeMainImage(resp http.ResponseWriter, req *http.Request, 
 
 	resp.WriteHeader(http.StatusNoContent)
 }
-func (r Router) PostImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	form := new(PostImageRequest)
-	errs := binding.Bind(req, form)
-	if errs != nil && errs.Len() > 0 {
-		writeClientErrorToResponse(resp, errors.New(errs.Error()))
-		return
-	}
-
+func (r Router) postImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
+		return
+	}
+
+	form := new(postImageRequest)
+	errs := binding.Bind(req, form)
+	if errs != nil && errs.Len() > 0 {
+		writeClientErrorToResponse(resp, errors.New(errs.Error()))
 		return
 	}
 
@@ -116,7 +123,7 @@ func (r Router) PostImage(resp http.ResponseWriter, req *http.Request, p httprou
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (r Router) DeleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) deleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	imageID, err := strconv.ParseInt(p.ByName("imageID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)

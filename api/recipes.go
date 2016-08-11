@@ -14,7 +14,7 @@ type getRecipesResponse struct {
 	Total   int64           `json:"total"`
 }
 
-func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	query := req.URL.Query().Get("q")
 	tags := req.URL.Query()["tags[]"]
 	sortBy := req.URL.Query().Get("sort")
@@ -46,7 +46,7 @@ func (r Router) GetRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 	writeJSONToResponse(resp, getRecipesResponse{Recipes: recipes, Total: total})
 }
 
-func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -66,7 +66,7 @@ func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 	writeJSONToResponse(resp, recipe)
 }
 
-func (r Router) PostRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, recipe); err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -82,10 +82,21 @@ func (r Router) PostRecipe(resp http.ResponseWriter, req *http.Request, p httpro
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (r Router) PutRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) putRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	if err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
+
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, recipe); err != nil {
 		writeClientErrorToResponse(resp, err)
+		return
+	}
+
+	if recipe.ID != recipeID {
+		writeClientErrorToResponse(resp, errMismatchedRecipeID)
 		return
 	}
 
@@ -97,7 +108,7 @@ func (r Router) PutRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 	resp.WriteHeader(http.StatusNoContent)
 }
 
-func (r Router) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) deleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -113,7 +124,7 @@ func (r Router) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p http
 	resp.WriteHeader(http.StatusOK)
 }
 
-func (r Router) PutRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r Router) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)

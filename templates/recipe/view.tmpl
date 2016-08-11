@@ -303,7 +303,7 @@
 
     function loadMainImage() {
         var $recipeImage = $('#recipe-image');
-        loadMainImageAsync('{{RootUrlPath}}', recipeId).done(function(image) {
+        getRecipeMainImageAsync('{{RootUrlPath}}', recipeId).done(function(image) {
             $recipeImage.removeClass('hide');
             $recipeImage.attr("src", image.thumbnailUrl);
         }).fail(function() {
@@ -312,27 +312,27 @@
     }
 
     function setMainImage(imageId) {
-        setMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
+        putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
             loadMainImage();
         });
     }
 
     function addImage(imageFormData) {
-        addImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
+        postRecipeImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
             loadMainImage();
             loadImages();
         });
     }
 
     function deleteImage(imageId) {
-        deleteImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
+        deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
             loadMainImage();
             loadImages();
         });
     }
 
     function loadImages() {
-        loadImagesAsync('{{RootUrlPath}}', recipeId).done(function(images) {
+        getRecipeImagesAsync('{{RootUrlPath}}', recipeId).done(function(images) {
             var $imagesContainer = $('#images-container');
             $imagesContainer.empty();
 
@@ -371,7 +371,7 @@
     }
 
     function loadNotes() {
-        loadNotesAsync('{{RootUrlPath}}', recipeId).done(function(notes) {
+        getRecipeNotesAsync('{{RootUrlPath}}', recipeId).done(function(notes) {
             var $notesContainer = $('#notes-container');
             $notesContainer.empty();
 
@@ -427,13 +427,20 @@
     }
 
     function addNote(text) {
-        addNoteAsync('{{RootUrlPath}}', recipeId, text).done(function() {
+        postNoteAsync('{{RootUrlPath}}', {
+            recipeId: recipeId,
+            text: text
+        }).done(function() {
             loadNotes();
         });
     }
 
     function editNote(noteId, text) {
-        editNoteAsync('{{RootUrlPath}}', recipeId, noteId, text).done(function() {
+        putNoteAsync('{{RootUrlPath}}', {
+            id: noteId,
+            recipeId: recipeId,
+            text: text
+        }).done(function() {
             loadNotes();
         });
     }
@@ -445,7 +452,7 @@
     }
 
     function setRating(rating) {
-        editRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
+        putRecipeRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
             $('.star').removeClass('active');
             $('.star[data-rating="' + rating + '"]').addClass('active');
         });

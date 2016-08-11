@@ -98,7 +98,7 @@ function deleteRecipeAsync(rootUrlPath, recipeId) {
     });
 }
 
-function loadMainImageAsync(rootUrlPath, recipeId) {
+function getRecipeMainImageAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
         method: 'GET',
@@ -106,21 +106,18 @@ function loadMainImageAsync(rootUrlPath, recipeId) {
     });
 }
 
-function setMainImageAsync(rootUrlPath, recipeId, imageId) {
+function putRecipeMainImageAsync(rootUrlPath, recipeId, imageId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
         method: 'PUT',
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify({
-            id: imageId,
-            recipeId: recipeId,
-        }),
+        data: imageId,
     });
 }
 
-function loadImagesAsync(rootUrlPath, recipeId) {
+function getRecipeImagesAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
         method: 'GET',
@@ -128,7 +125,7 @@ function loadImagesAsync(rootUrlPath, recipeId) {
     });
 }
 
-function addImageAsync(rootUrlPath, recipeId, imageFormData) {
+function postRecipeImageAsync(rootUrlPath, recipeId, imageFormData) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
         method: 'POST',
@@ -140,16 +137,16 @@ function addImageAsync(rootUrlPath, recipeId, imageFormData) {
     });
 }
 
-function deleteImageAsync(rootUrlPath, recipeId, imageId) {
+function deleteImageAsync(rootUrlPath, imageId) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images/' + imageId,
+        url: rootUrlPath + '/api/v1/images/' + imageId,
         method: 'DELETE',
         contentType: 'application/json',
         dataType: 'text',
     });
 }
 
-function loadNotesAsync(rootUrlPath, recipeId) {
+function getRecipeNotesAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/notes',
         method: 'GET',
@@ -157,45 +154,38 @@ function loadNotesAsync(rootUrlPath, recipeId) {
     });
 }
 
-function addNoteAsync(rootUrlPath, recipeId, text) {
+function postNoteAsync(rootUrlPath, note) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/notes',
+        url: rootUrlPath + '/api/v1/notes',
         method: 'POST',
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify({
-            recipeId: recipeId,
-            text: text,
-        }),
+        data: JSON.stringify(note),
     });
 }
 
-function editNoteAsync(rootUrlPath, recipeId, noteId, text) {
+function putNoteAsync(rootUrlPath, note) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/notes/' + noteId,
+        url: rootUrlPath + '/api/v1/notes/' + note.id,
         method: 'PUT',
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify({
-            id: noteId,
-            recipeId: recipeId,
-            text: text,
-        }),
+        data: JSON.stringify(note),
     });
 }
 
 function deleteNoteAsync(rootUrlPath, noteId) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/notes/' + noteId,
+        url: rootUrlPath + '/api/v1/notes/' + noteId,
         method: 'DELETE',
         contentType: 'application/json',
         dataType: 'text',
     });
 }
 
-function editRatingAsync(rootUrlPath, recipeId, rating) {
+function putRecipeRatingAsync(rootUrlPath, recipeId, rating) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/rating',
         method: 'PUT',
@@ -205,7 +195,7 @@ function editRatingAsync(rootUrlPath, recipeId, rating) {
     });
 }
 
-function loadTagsAsync(rootUrlPath) {
+function getTagsAsync(rootUrlPath) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/tags',
         method: 'GET',

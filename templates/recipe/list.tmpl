@@ -230,7 +230,7 @@
     }
 
     function loadTags(searchTags) {
-        loadTagsAsync('{{RootUrlPath}}').done(function(tags){
+        getTagsAsync('{{RootUrlPath}}').done(function(tags){
             if (tags != null) {
                 tags.forEach(function(tag){
                     $('#tag-filter-list').append('\

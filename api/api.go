@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -10,6 +11,13 @@ import (
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/julienschmidt/httprouter"
 )
+
+// ---- Begin Standard Errors ----
+
+var errMismatchedNoteID = errors.New("The note id in the path does not match the one specified in the request body")
+var errMismatchedRecipeID = errors.New("The recipe id in the path does not match the one specified in the request body")
+
+// ---- End Standard Errors ----
 
 type Router struct {
 	cfg    *conf.Config
@@ -24,26 +32,28 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	}
 
 	r.apiMux = httprouter.New()
-	r.apiMux.GET("/api/v1/recipes", r.GetRecipes)
-	r.apiMux.GET("/api/v1/recipes/:recipeID", r.GetRecipe)
-	r.apiMux.DELETE("/api/v1/recipes/:recipeID", r.DeleteRecipe)
-	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.GetRecipeMainImage)
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.PutRecipeMainImage)
-	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.GetRecipeImages)
-	r.apiMux.POST("/api/v1/recipes/:recipeID/images", r.PostImage)
-	r.apiMux.DELETE("/api/v1/recipes/:recipeID/images/:imageID", r.DeleteImage)
-	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.GetRecipeNotes)
-	r.apiMux.POST("/api/v1/recipes/:recipeID/notes", r.PostNote)
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/notes/:noteID", r.PutNote)
-	r.apiMux.DELETE("/api/v1/recipes/:recipeID/notes/:noteID", r.DeleteNote)
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.PutRecipeRating)
-	r.apiMux.GET("/api/v1/tags", r.GetTags)
-	r.apiMux.NotFound = http.HandlerFunc(r.NotFound)
+	r.apiMux.GET("/api/v1/recipes", r.getRecipes)
+	r.apiMux.POST("/api/v1/recipes", r.postRecipe)
+	r.apiMux.GET("/api/v1/recipes/:recipeID", r.getRecipe)
+	r.apiMux.PUT("/api/v1/recipes/:recipeID", r.putRecipe)
+	r.apiMux.DELETE("/api/v1/recipes/:recipeID", r.deleteRecipe)
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.putRecipeRating)
+	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.getRecipeMainImage)
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.putRecipeMainImage)
+	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.getRecipeImages)
+	r.apiMux.POST("/api/v1/recipes/:recipeID/images", r.postImage)
+	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.getRecipeNotes)
+	r.apiMux.DELETE("/api/v1/images/:imageID", r.deleteImage)
+	r.apiMux.POST("/api/v1/notes", r.postNote)
+	r.apiMux.PUT("/api/v1/notes/:noteID", r.putNote)
+	r.apiMux.DELETE("/api/v1/notes/:noteID", r.deleteNote)
+	r.apiMux.GET("/api/v1/tags", r.getTags)
+	r.apiMux.NotFound = http.HandlerFunc(r.notFound)
 
 	return r
 }
 
-func (ro Router) NotFound(resp http.ResponseWriter, req *http.Request) {
+func (ro Router) notFound(resp http.ResponseWriter, req *http.Request) {
 	// Do nothing
 }
 
