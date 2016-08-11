@@ -1,9 +1,9 @@
 {{ define "content-recipe/edit" }}
 <section id="edit-recipe-container" class="container">
     <header class="row">
-        <h4>{{if .Recipe}}Edit{{else}}Add{{end}} Recipe</h4>
+        <h4><span id="action-text">Add</span> Recipe</h4>
     </header>
-    <form method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}">
+    <form id="recipe-form">
         <div class="row">
             <div class="input-field col s12 l12">
                 <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" required autofocus>
@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="center">
-            <button type="submit" class="btn waves-effect">
+            <button type="submit" class="btn waves-effect" onclick="saveRecipe(); return false;">
                 Save
                 <i class="material-icons right">save</i>
             </button>
@@ -62,6 +62,7 @@
     
     $(document).ready(function(){
         if(!isNaN(recipeId)) {
+            $('#action-text').text('Edit');
             loadRecipe();
         } else {
             initTags([]);
@@ -80,9 +81,11 @@
             $('#source').val(recipe.sourceUrl);
 
             var tagsData = [];
-            recipe.tags.forEach(function(tag) {
-                tagsData.push({tag: tag});
-            });
+            if (recipe.tags != null) {
+                recipe.tags.forEach(function(tag) {
+                    tagsData.push({tag: tag});
+                });
+            }
             initTags(tagsData);
         }).always(function() {
             //$('#recipe .progress').addClass('hide');
@@ -130,10 +133,9 @@
                 });
             }
 
-            var $tagDiv = $('#tags');
-            var $tagInput = $tagDiv.find('.chips > input');
             var $addChip = $('.chip .add');
             $addChip.on('click', function() {
+                var $tagInput = $('#tags .chips > input');
                 var tagData = $(this).closest('.chip').data('tag');
                 $tagInput.val(tagData);
                 var e = jQuery.Event('keydown');
@@ -142,8 +144,55 @@
                 $tagInput.trigger(e);
             });
         });
+    }
 
-        
+    function saveRecipe() {
+        var name = $('#name').val();
+        var servingSize = $('#serving-size').val();
+        var ingredients = $('#ingredients').val();
+        var directions = $('#directions').val();
+        var nutritionInfo = $('#nutrition-info').val();
+        var sourceUrl = $('#source').val();
+        var tags = [];
+        $('#recipe-form input[name="tags"]').each(function() {
+            tags.push($(this).val());
+        });
+
+        if (!isNaN(recipeId)) {
+            putRecipeAsync('{{RootUrlPath}}', {
+                id: recipeId,
+                name: name,
+                servingSize: servingSize,
+                ingredients: ingredients,
+                directions: directions,
+                nutritionInfo: nutritionInfo,
+                sourceUrl: sourceUrl,
+                tags: tags,
+            }).done(function() {
+                window.location = '{{RootUrlPath}}/recipes/' + recipeId;
+            });
+        } else {
+            postRecipeAsync('{{RootUrlPath}}', {
+                name: name,
+                servingSize: servingSize,
+                ingredients: ingredients,
+                directions: directions,
+                nutritionInfo: nutritionInfo,
+                sourceUrl: sourceUrl,
+                tags: tags,
+            }).done(function(data, textStatus, request) {
+                var location = document.createElement('a');
+                location.href = request.getResponseHeader('Location');
+                var path = location.pathname;
+
+                var newRecipeId = NaN;
+                var newRecipeIdMatch = path.match(/{{RootUrlPath}}\/api\/v1\/recipes\/(\d+)/);
+                if (newRecipeIdMatch) {
+                    newRecipeId = parseInt(newRecipeIdMatch[1]);
+                }
+                window.location = '{{RootUrlPath}}/recipes/' + newRecipeId;
+            });
+        }
     }
 </script>
 {{ end }}

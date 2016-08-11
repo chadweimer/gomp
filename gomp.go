@@ -88,10 +88,8 @@ func main() {
 	recipeMux.GET("/", rc.Home)
 	recipeMux.GET("/new", rc.CreateRecipe)
 	recipeMux.GET("/recipes", rc.ListRecipes)
-	recipeMux.POST("/recipes", rc.CreateRecipePost)
 	recipeMux.GET("/recipes/:id", rc.GetRecipe)
 	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
-	recipeMux.POST("/recipes/:id", rc.EditRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 

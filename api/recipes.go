@@ -70,7 +70,7 @@ func (r Router) getRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 
 func (r Router) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var recipe models.Recipe
-	if err := readJSONFromRequest(req, recipe); err != nil {
+	if err := readJSONFromRequest(req, &recipe); err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
@@ -92,7 +92,7 @@ func (r Router) putRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 	}
 
 	var recipe models.Recipe
-	if err := readJSONFromRequest(req, recipe); err != nil {
+	if err := readJSONFromRequest(req, &recipe); err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
