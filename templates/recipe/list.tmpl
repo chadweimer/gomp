@@ -124,7 +124,11 @@
             count: (viewType != 'compact' ? 12 : 60),
         });
 
-        loadTags(searchTags);
+        loadTags(searchTags, {
+            sort: "tag",
+            dir: "asc",
+            count: Number.MAX_SAFE_INTEGER,
+        });
     });
 
     function loadRecipes($container, viewType, searchFilter) {
@@ -229,8 +233,8 @@
             </ul>');
     }
 
-    function loadTags(searchTags) {
-        getTagsAsync('{{RootUrlPath}}').done(function(tags){
+    function loadTags(searchTags, tagsFilter) {
+        getTagsAsync('{{RootUrlPath}}', tagsFilter).done(function(tags){
             if (tags != null) {
                 tags.forEach(function(tag){
                     $('#tag-filter-list').append('\

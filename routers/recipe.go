@@ -50,13 +50,7 @@ func (rc *RouteController) ListRecipes(resp http.ResponseWriter, req *http.Reque
 
 // CreateRecipe handles rendering the create recipe screen
 func (rc *RouteController) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	mostUsedTags, err := rc.model.Tags.ListMostUsed(12)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
 	data := context.Get(req).Data
-	data["SuggestedTags"] = mostUsedTags
 	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 
@@ -89,28 +83,7 @@ func (rc *RouteController) CreateRecipePost(resp http.ResponseWriter, req *http.
 
 // EditRecipe handles rendering the edit recipe screen
 func (rc *RouteController) EditRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	recipe, err := rc.model.Recipes.Read(id)
-	if err == models.ErrNotFound {
-		rc.NotFound(resp, req)
-		return
-	}
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	mostUsedTags, err := rc.model.Tags.ListMostUsed(12)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
 	data := context.Get(req).Data
-	data["Recipe"] = recipe
-	data["SuggestedTags"] = mostUsedTags
 	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
 }
 

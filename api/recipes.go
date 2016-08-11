@@ -20,9 +20,17 @@ func (r Router) getRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 	sortBy := req.URL.Query().Get("sort")
 	sortDir := req.URL.Query().Get("dir")
 	page, err := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
+	if err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
 	count, err := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
+	if err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
 
-	filter := models.SearchFilter{
+	filter := models.RecipesFilter{
 		Query:   query,
 		Tags:    tags,
 		SortBy:  sortBy,
@@ -30,14 +38,8 @@ func (r Router) getRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 		Page:    page,
 		Count:   count,
 	}
-	if req.ContentLength > 0 {
-		if err := readJSONFromRequest(req, &filter); err != nil {
-			writeClientErrorToResponse(resp, err)
-			return
-		}
-	}
 
-	recipes, total, err := r.model.Search.Find(filter)
+	recipes, total, err := r.model.Search.FindRecipes(filter)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return

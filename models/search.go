@@ -2,23 +2,27 @@ package models
 
 import "github.com/jmoiron/sqlx"
 
-// SearchModel provides functionality to search recipes.
-type SearchModel struct {
-	*Model
-}
-
 const (
-	SortByName   string = "name"
-	SortByID     string = "id"
-	SortByRating string = "rating"
+	SortRecipeByName   string = "name"
+	SortRecipeByID     string = "id"
+	SortRecipeByRating string = "rating"
+
+	SortTagByText      string = "tag"
+	SortTagByFrequency string = "frequency"
+
 	SortByRandom string = "random"
 
 	SortDirAsc  string = "asc"
 	SortDirDesc string = "desc"
 )
 
-// SearchFilter is the primary model class for recipe search
-type SearchFilter struct {
+// SearchModel provides functionality to search recipes.
+type SearchModel struct {
+	*Model
+}
+
+// RecipesFilter is the primary model class for recipe search
+type RecipesFilter struct {
 	Query   string   `json:"query"`
 	Tags    []string `json:"tags"`
 	SortBy  string   `json:"sortBy"`
@@ -27,9 +31,15 @@ type SearchFilter struct {
 	Count   int64    `json:"count"`
 }
 
-// Find retrieves all recipes matching the specified search filter and within the range specified,
-// sorted by name.
-func (m *SearchModel) Find(filter SearchFilter) (*Recipes, int64, error) {
+// TagsFilter is the primary model class for tag search
+type TagsFilter struct {
+	SortBy  string `json:"sortBy"`
+	SortDir string `json:"sortDir"`
+	Count   int64  `json:"count"`
+}
+
+// FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
+func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error) {
 	var total int64
 	var search string
 	if filter.Query == "" {
@@ -65,11 +75,11 @@ func (m *SearchModel) Find(filter SearchFilter) (*Recipes, int64, error) {
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS overall_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
 		partialStmt
 	switch filter.SortBy {
-	case SortByID:
+	case SortRecipeByID:
 		selectStmt += " ORDER BY r.id"
-	case SortByName:
+	case SortRecipeByName:
 		selectStmt += " ORDER BY r.name"
-	case SortByRating:
+	case SortRecipeByRating:
 		selectStmt += " ORDER BY overall_rating"
 	case SortByRandom:
 		selectStmt += " ORDER BY RANDOM()"
@@ -115,4 +125,38 @@ func (m *SearchModel) Find(filter SearchFilter) (*Recipes, int64, error) {
 	}
 
 	return &recipes, total, nil
+}
+
+// FindRecipes retrieves all tags matching the specified search filter and within the range specified.
+func (m *SearchModel) FindTags(filter TagsFilter) (*[]string, error) {
+	selectStmt := "SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag"
+	switch filter.SortBy {
+	case SortTagByText:
+		selectStmt += " ORDER BY tag"
+	case SortTagByFrequency:
+		selectStmt += " ORDER BY dups"
+	case SortByRandom:
+		selectStmt += " ORDER BY RANDOM()"
+	}
+	if filter.SortDir == SortDirDesc {
+		selectStmt += " DESC"
+	}
+	selectStmt += " LIMIT $1"
+	rows, err := m.db.Query(
+		selectStmt, filter.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []string
+	for rows.Next() {
+		var tag string
+		var throwAway int
+		if err := rows.Scan(&tag, &throwAway); err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	return &tags, nil
 }

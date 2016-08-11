@@ -195,10 +195,12 @@ function putRecipeRatingAsync(rootUrlPath, recipeId, rating) {
     });
 }
 
-function getTagsAsync(rootUrlPath) {
+function getTagsAsync(rootUrlPath, tagsFilter) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/tags',
         method: 'GET',
+        contentType: 'application/json',
         dataType: 'json',
+        data: tagsFilter,
     });
 }
