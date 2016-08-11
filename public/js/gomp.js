@@ -59,11 +59,20 @@ function getRecipesAsync(rootUrlPath, searchFilter) {
     });
 }
 
-function loadRecipeAsync(rootUrlPath, recipeId) {
+function getRecipeAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId,
         method: 'GET',
         dataType: 'json',
+    });
+}
+
+function deleteRecipeAsync(rootUrlPath, recipeId) {
+    return $.ajax({
+        url: rootUrlPath + '/api/v1/recipes/' + recipeId,
+        method: 'DELETE',
+        contentType: 'application/json',
+        dataType: 'text',
     });
 }
 

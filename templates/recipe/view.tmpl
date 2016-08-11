@@ -130,7 +130,7 @@
     </div>
     <div class="modal-footer">
         <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a href="{{.UrlPath}}/delete" class="modal-action modal-close btn-flat">Yes</a>
+        <a id="delete-yes" href="javascript:void(0)" class="modal-action modal-close btn-flat">Yes</a>
     </div>
 </div>
 <div id="add-image-modal" class="modal">
@@ -222,6 +222,10 @@
             setRating(parseFloat($(this).data('rating')));
         });
 
+        $('#delete-yes').click(function() {
+            deleteRecipe();
+        });
+
         $('#note-submit').click(function() {
             var noteIdStr = $(this).data('note-id');
             if (noteIdStr == '') {
@@ -255,7 +259,7 @@
     });
 
     function loadRecipe() {
-        loadRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
+        getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
             $('#recipe-name').append(recipe.name)
             $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
             $('#recipe-ingredients > p').append(recipe.ingredients)
@@ -288,6 +292,12 @@
             }
         }).always(function() {
             $('#recipe .progress').addClass('hide');
+        });
+    }
+
+    function deleteRecipe() {
+        deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function() {
+            window.location = '{{RootUrlPath}}/recipes';
         });
     }
 

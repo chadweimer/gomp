@@ -92,7 +92,6 @@ func main() {
 	recipeMux.GET("/recipes/:id", rc.GetRecipe)
 	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
 	recipeMux.POST("/recipes/:id", rc.EditRecipePost)
-	recipeMux.GET("/recipes/:id/delete", rc.DeleteRecipe)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 

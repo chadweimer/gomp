@@ -26,6 +26,7 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux = httprouter.New()
 	r.apiMux.GET("/api/v1/recipes", r.GetRecipes)
 	r.apiMux.GET("/api/v1/recipes/:recipeID", r.GetRecipe)
+	r.apiMux.DELETE("/api/v1/recipes/:recipeID", r.DeleteRecipe)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.GetRecipeMainImage)
 	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.PutRecipeMainImage)
 	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.GetRecipeImages)
@@ -76,7 +77,7 @@ func writeClientErrorToResponse(resp http.ResponseWriter, err error) {
 
 func writeErrorToResponse(resp http.ResponseWriter, statusCode int, err error) {
 	log.Println(err)
-	resp.WriteHeader(http.StatusInternalServerError)
+	resp.WriteHeader(statusCode)
 	_ = marshalJSON(resp, err.Error())
 }
 

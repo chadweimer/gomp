@@ -64,6 +64,21 @@ func (r Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 
 	writeJSONToResponse(resp, recipe)
 }
+func (r Router) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	if err != nil {
+		writeClientErrorToResponse(resp, err)
+		return
+	}
+
+	err = r.model.Recipes.Delete(recipeID)
+	if err != nil {
+		writeServerErrorToResponse(resp, err)
+		return
+	}
+
+	resp.WriteHeader(http.StatusOK)
+}
 
 func (r Router) PutRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)

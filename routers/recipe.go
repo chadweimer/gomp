@@ -146,18 +146,3 @@ func (rc *RouteController) EditRecipePost(resp http.ResponseWriter, req *http.Re
 
 	http.Redirect(resp, req, fmt.Sprintf("%s/recipes/%d", rc.cfg.RootURLPath, id), http.StatusFound)
 }
-
-// DeleteRecipe handles deleting the recipe with the given id
-func (rc *RouteController) DeleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	id, err := strconv.ParseInt(p.ByName("id"), 10, 64)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	err = rc.model.Recipes.Delete(id)
-	if rc.HasError(resp, req, err) {
-		return
-	}
-
-	http.Redirect(resp, req, fmt.Sprintf("%s/recipes", rc.cfg.RootURLPath), http.StatusFound)
-}
