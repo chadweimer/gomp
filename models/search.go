@@ -27,13 +27,6 @@ type SearchFilter struct {
 	Count   int64    `json:"count"`
 }
 
-func NewSearchFilter() SearchFilter {
-	return SearchFilter{
-		SortBy:  SortByName,
-		SortDir: SortDirAsc,
-	}
-}
-
 // Find retrieves all recipes matching the specified search filter and within the range specified,
 // sorted by name.
 func (m *SearchModel) Find(filter SearchFilter) (*Recipes, int64, error) {
