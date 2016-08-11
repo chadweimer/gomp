@@ -435,7 +435,7 @@
     }
 
     function setRating(rating) {
-        setRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
+        editRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
             $('.star').removeClass('active');
             $('.star[data-rating="' + rating + '"]').addClass('active');
         });
