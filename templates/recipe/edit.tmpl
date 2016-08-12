@@ -75,9 +75,13 @@
         getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
             $('#name').val(recipe.name);
             $('#serving-size').val(recipe.servingSize);
+            $('#serving-size').trigger('autoresize');
             $('#ingredients').val(recipe.ingredients);
+            $('#ingredients').trigger('autoresize');
             $('#directions').val(recipe.directions);
+            $('#directions').trigger('autoresize');
             $('#nutrition-info').val(recipe.nutritionInfo);
+            $('#nutrition-info').trigger('autoresize');
             $('#source').val(recipe.sourceUrl);
 
             var tagsData = [];
