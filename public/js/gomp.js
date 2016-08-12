@@ -49,6 +49,19 @@ function getQueryStringWithStorageBacking(field, defaultVal, isArray = false) {
     return val;
 }
 
+function showBusy(text) {
+    var $busyDialog = $('#busy-dialog');
+    var $busyMessage = $('#busy-message').text(text);
+    $busyDialog.openModal({
+        dismissible: false,
+    });
+}
+
+function hideBusy() {
+    var $busyDialog = $('#busy-dialog');
+    $busyDialog.closeModal();
+}
+
 function getRecipesAsync(rootUrlPath, searchFilter) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes',

@@ -96,27 +96,27 @@
         <i class="material-icons">more_vert</i>
     </a>
     <ul>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="New">
             <a href="{{RootUrlPath}}/new" class="btn-floating waves-effect green">
                 <i class="material-icons">add</i>
             </a>
         </li>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Delete">
             <a href="#delete-confirm" class="btn-floating waves-effect red modal-trigger">
                 <i class="material-icons">delete</i>
             </a>
         </li>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Edit">
             <a href="{{.UrlPath}}/edit" class="btn-floating waves-effect amber darken-2">
                 <i class="material-icons">mode_edit</i>
             </a>
         </li>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Upload Picture">
             <a href="#add-image-modal" class="btn-floating waves-effect green modal-trigger">
                 <i class="material-icons">add_a_photo</i>
             </a>
         </li>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Add Note">
             <a id="add-note" href="#!" class="btn-floating waves-effect blue" onclick="showAddNoteDialog(); return false;">
                 <i class="material-icons">insert_comment</i>
             </a>
@@ -272,14 +272,19 @@
         var imageId = parseInt($(self).data('image-id'));
         putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
             loadMainImage();
+            Materialize.toast('Main image updated', 2000);
         });
     }
 
     function addImage(self) {
+        showBusy('Uploading image...');
         var imageFormData = new FormData(self);
         postRecipeImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
             loadMainImage();
             loadImages();
+            Materialize.toast('Upload complete', 2000);
+        }).always(function() {
+            hideBusy();
         });
     }
 
@@ -288,6 +293,7 @@
         deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
             loadMainImage();
             loadImages();
+            Materialize.toast('Image deleted', 2000);
         });
     }
 
@@ -398,7 +404,7 @@
             addNote($('#note').val());
         } else {
             var noteId = parseInt(noteIdStr);
-            editNote(noteId, $('#note').val())
+            editNote(noteId, $('#note').val());
         }
     }
 
@@ -408,6 +414,7 @@
             text: text
         }).done(function() {
             loadNotes();
+            Materialize.toast('Note added', 2000);
         });
     }
 
@@ -418,6 +425,7 @@
             text: text
         }).done(function() {
             loadNotes();
+            Materialize.toast('Note updated', 2000);
         });
     }
 
@@ -425,6 +433,7 @@
         var noteId = parseInt($(self).data('note-id'));
         deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
             loadNotes();
+            Materialize.toast('Note deleted', 2000);
         });
     }
 
@@ -432,6 +441,7 @@
         putRecipeRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
             $('.star').removeClass('active');
             $('.star[data-rating="' + rating + '"]').addClass('active');
+            Materialize.toast('Rating updated', 2000);
         });
     }
 </script>
