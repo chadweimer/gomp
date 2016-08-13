@@ -7,11 +7,29 @@
         vertical-align: middle;
         padding: 5px;
     }
-    .pagination li {
+    .pagination.grow li {
         transform: scale(1.33);
     }
-    .pagination li i {
+    .pagination.grow li i {
         transform: scale(1.25);
+    }
+    .actions {
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+    .actions li {
+        display: inline-block;
+        border-radius: 2px;
+        text-align: center;
+        vertical-align: top;
+        height: 30px;
+    }
+    .actions li a {
+        color: #444;
+        display: inline-block;
+        font-size: 1.2rem;
+        padding: 0 10px;
+        line-height: 30px;
     }
 }
 </style>
@@ -21,66 +39,66 @@
 <section class="row">
     <div class="col s12 l12">
         <div class="section">
-            <span class="light left">
-                Search: '<span id="search-query"></span>', Results: <span id="result-count"></span>
-            </span>
-            <span class="right">
-                <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
-                    <i class="material-icons black-text">menu</i>
-                </a>
-                <form>
-                    <ul id="recipe-list-menu" class="side-nav collapsible flex-container" data-collapsible="expandable">
-                        <li>
-                            <a class="btn waves-effect" href="?reset=">Reset</a>
-                        </li>
-                        <li>
-                            <span class="collapsible-header active">Display</span>
-                            <ul class="collapsible-body">
-                                <li id="full-view-item">
-                                    <a href="?view=full"><i class="material-icons">view_agenda</i> Full</a>
-                                </li>
-                                <li id="compact-view-item">
-                                    <a href="?view=compact"><i class="material-icons">view_headline</i> Compact</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <span class="collapsible-header active">Sort</span>
-                            <ul class="collapsible-body">
-                                <li id="name-sort-item">
-                                    <a>
-                                        <i class="material-icons">sort_by_alpha</i> Name
-                                    </a>
-                                </li>
-                                <li id="rating-sort-item">
-                                    <a>
-                                        <i class="material-icons">star_rate</i> Rating
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <span class="collapsible-header active">Filter by Tag</span>
-                            <button class="btn-flat waves-effect header-btn" type="submit">Apply</button>
-                        </li>
-                        <li class="indented fill">
-                            <ul id="tag-filter-list"></ul>
-                        </li>
-                    </ul>
-                </form>
-            </span>
+            <div class="left">
+                <span class="light">Search: '<span id="search-query"></span>', Results: <span id="result-count"></span></span>
+            </div>
+            <div class="right">
+                <ul class="actions">
+                    <li>
+                        <a href="#!" class="" onclick="reset(); return false;">
+                            <i class="material-icons">clear_all</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
+                            <i class="material-icons">settings</i>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="recipe-list-menu" class="side-nav collapsible flex-container" data-collapsible="expandable">
+                    <li>
+                        <span class="collapsible-header active">Display</span>
+                        <ul class="collapsible-body">
+                            <li class="view-mode full">
+                                <a href="#!" onclick="changeViewMode('full'); return false;"><i class="material-icons">view_agenda</i> Full</a>
+                            </li>
+                            <li class="view-mode compact">
+                                <a href="#!" onclick="changeViewMode('compact'); return false;"><i class="material-icons">view_headline</i> Compact</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="collapsible-header active">Sort</span>
+                        <ul class="collapsible-body">
+                            <li class="sort name">
+                                <a href="#!" onclick="changeSort('name', 'asc'); return false;">
+                                    <i class="material-icons">sort_by_alpha</i> Name
+                                </a>
+                            </li>
+                            <li class="sort rating">
+                                <a href="#!" onclick="changeSort('rating', 'desc'); return false;">
+                                    <i class="material-icons">star_rate</i> Rating
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="collapsible-header active">Filter by Tag</span>
+                        <a href="#!" class="btn-flat waves-effect header-btn" onclick="applyTags(); return false;">Apply</a>
+                    </li>
+                    <li class="indented fill">
+                        <ul id="tag-filter-list"></ul>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    <div class="pagination-container"></div>
+    <div class="pagination-container before col s12 l12"></div>
 
-    <div id="recipes-container">
-        <div class="progress">
-            <div class="indeterminate"></div>
-        </div>
-    </div>
+    <div class="recipes-container col s12 l12"></div>
 
-    <div class="pagination-container"></div>
+    <div class="pagination-container after col s12 l12"></div>
 
 </section>
 <section class="fixed-action-btn">
@@ -93,63 +111,113 @@
 {{define "js-recipe/list"}}
 <script type="text/javascript">
     $(document).ready(function(){
-        var reset = getQueryString('reset');
-        if (reset != null) {
-            sessionStorage.clear();
-        }
+        $('#recipe-list-menu-button').sideNav({
+            edge: 'right',
+            closeOnClick: true
+        });
 
-        var pageNum = parseInt(getQueryString('page'));
+        pageNum = parseInt(getQueryString('page'));
         if (pageNum == null || isNaN(pageNum)) {
             pageNum = 1;
         }
 
-        var query = getQueryStringWithStorageBacking('q', '');
-        var searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v != '');
-        var sortBy = getQueryStringWithStorageBacking('sort', 'name');
-        var sortDir = getQueryStringWithStorageBacking('dir', 'asc');
-        var viewType = getQueryStringWithStorageBacking('view', 'full');
+        query = getQueryStringWithStorageBacking('q', '');
+        searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v != '');
+        sortBy = getQueryStringWithStorageBacking('sort', 'name');
+        sortDir = getQueryStringWithStorageBacking('dir', 'asc');
+        viewMode = getQueryStringWithStorageBacking('view', 'full');
 
-        $('#search-query').append(query);
-        $('#' + sortBy + '-sort-item').addClass('active');
-        $('#' + viewType + '-view-item').addClass('active');
-        $('#name-sort-item > a').attr('href', '?sort=name&dir=' + (sortBy != 'name' || sortDir == 'desc' ? 'asc' : 'desc'));
-        $('#rating-sort-item > a').attr('href', '?sort=rating&dir=' + (sortBy == 'rating' && sortDir == 'desc' ? 'asc' : 'desc'));
-        $('#recipe-list-menu-button').sideNav({
-            edge: 'right'
-        });
+        loadRecipes();
+        loadTags(searchTags);
+    });
+
+    function reset() {
+        sessionStorage.clear();
+        pageNum = 1;
+        query = '';
+        searchTags = [];
+        sortBy = 'name';
+        sortDir = 'asc';
+        viewMode = 'full';
+
+        loadRecipes();
+        loadTags(searchTags);
+    }
+
+    function changeViewMode(newViewMode) {
+        viewMode = newViewMode;
+        trySaveToSessionStorage('view', JSON.stringify(viewMode));
+
+        loadRecipes();
+    }
+
+    function changeSort(newSortBy, defaultSortDir) {
+        if (sortBy == newSortBy) {
+            sortDir = (sortDir == 'asc' ? 'desc' : 'asc');
+        } else {
+            sortBy = newSortBy;
+            sortDir = defaultSortDir;
+        }
+        trySaveToSessionStorage('sort', JSON.stringify(sortBy));
+        trySaveToSessionStorage('dir', JSON.stringify(sortDir));
+
+        loadRecipes();
+    }
+
+    function changePage(newPageNum) {
+        pageNum = newPageNum;
+
+        loadRecipes();
+    }
+
+    function applyTags() {
+        var checkedTags = [];
+        $('#tag-filter-list input[name="tags"]:checked').each(function() {
+            checkedTags.push($(this).val());
+        })
+        searchTags = checkedTags;
+        trySaveToSessionStorage('tags', JSON.stringify(searchTags));
+
+        loadRecipes();
+        loadTags(searchTags);
+    }
+
+    function loadRecipes() {
+        showBusy('Loading recipes...');
+
+        $('#search-query').text(query);
+        $('.view-mode').removeClass('active');
+        $('.view-mode.' + viewMode).addClass('active');
+        $('.sort').removeClass('active');
+        $('.sort.' + sortBy).addClass('active');
         
-        loadRecipes($('#recipes-container'), viewType, {
+        var $container = $('.recipes-container');
+
+        var count = (viewMode != 'compact' ? 12 : 60);
+        getRecipesAsync('{{RootUrlPath}}', {
             q: query,
             tags: searchTags,
             sort: sortBy,
             dir: sortDir,
             page: pageNum,
-            count: (viewType != 'compact' ? 12 : 60),
-        });
-
-        loadTags(searchTags, {
-            sort: "tag",
-            dir: "asc",
-            count: Number.MAX_SAFE_INTEGER,
-        });
-    });
-
-    function loadRecipes($container, viewType, searchFilter) {
-        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(response) {
-            $('#result-count').append(response.total);
+            count: count,
+        }).done(function(response) {
+            $('#result-count').text(response.total);
 
             $container.empty();
 
             if (response.recipes != null) {
-                if (viewType != 'compact') {
+                if (viewMode != 'compact') {
                     addRecipesFull($container, response.recipes);
                 } else {
                     addRecipesCompact($container, response.recipes);
                 }
             }
 
-            var numPages = Math.ceil(response.total / searchFilter.count);
-            addPaginiation(searchFilter.page, numPages);
+            var numPages = Math.ceil(response.total / count);
+            addPaginiation(pageNum, numPages);
+
+            hideBusy();
         });
     }
 
@@ -214,30 +282,32 @@
     }
 
     function addPaginiation(pageNum, numPages) {
-        prevPageNum = pageNum - 1;
-        nextpageNum = pageNum + 1;
-        $('.pagination-container').append('\
-            <ul class="pagination no-padding col s12 l12 center">\
+        $('.pagination-container').html('\
+            <ul class="pagination center grow">\
                 <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum > 1 ? '?page=1' : '#!') + '"><i class="material-icons">first_page</i></a>\
+                    <a href="#!" onclick="changePage(1); return false;"><i class="material-icons">first_page</i></a>\
                 </li>\
                 <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum > 1 ? '?page=' + prevPageNum : '#!') + '"><i class="material-icons">chevron_left</i></a>\
+                    <a href="#!" onclick="changePage(pageNum - 1); return false;"><i class="material-icons">chevron_left</i></a>\
                 </li>\
                 <li class="active">\
                     <a href="#!">' + pageNum + '</a>\
                 </li>\
                 <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum < numPages ? '?page=' + nextpageNum : '#!') + '"><i class="material-icons">chevron_right</i></a>\
+                    <a href="#!" onclick="changePage(pageNum + 1); return false;"><i class="material-icons">chevron_right</i></a>\
                 </li>\
                 <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
-                    <a href="' + (pageNum < numPages ? '?page=' + numPages : '#!') + '"><i class="material-icons">last_page</i></a>\
+                    <a href="#!" onclick="changePage(' + numPages + '); return false;"><i class="material-icons">last_page</i></a>\
                 </li>\
             </ul>');
     }
 
-    function loadTags(searchTags, tagsFilter) {
-        getTagsAsync('{{RootUrlPath}}', tagsFilter).done(function(tags){
+    function loadTags(searchTags) {
+        getTagsAsync('{{RootUrlPath}}', {
+            sort: "tag",
+            dir: "asc",
+            count: Number.MAX_SAFE_INTEGER,
+        }).done(function(tags){
             if (tags != null) {
                 tags.forEach(function(tag){
                     $('#tag-filter-list').append('\

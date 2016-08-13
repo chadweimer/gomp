@@ -40,13 +40,17 @@ function getQueryStringWithStorageBacking(field, defaultVal, isArray = false) {
         val = defaultVal;
     }
 
+    trySaveToSessionStorage(field, JSON.stringify(val));
+
+    return val;
+}
+
+function trySaveToSessionStorage(field, stringVal) {
     try {
-        sessionStorage.setItem(field, JSON.stringify(val));
+        sessionStorage.setItem(field, stringVal);
     } catch (err) {
         // TODO: What should we do with this?
     }
-
-    return val;
 }
 
 function showBusy(text) {

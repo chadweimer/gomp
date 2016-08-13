@@ -138,4 +138,5 @@ nav .brand-logo.left {
     bottom: 0px;
     right: 0px;
     height: 100%;
+    margin: 0px !important;
 }
