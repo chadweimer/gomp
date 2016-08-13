@@ -216,7 +216,7 @@
 
             var numPages = Math.ceil(response.total / count);
             addPaginiation(pageNum, numPages);
-
+        }).always(function() {
             hideBusy();
         });
     }
@@ -308,9 +308,11 @@
             dir: "asc",
             count: Number.MAX_SAFE_INTEGER,
         }).done(function(tags){
+            var $container = $('#tag-filter-list');
+            $container.empty();
             if (tags != null) {
                 tags.forEach(function(tag){
-                    $('#tag-filter-list').append('\
+                    $container.append('\
                     <li>\
                         <input id="' + tag + '-tag" name="tags" type="checkbox" value="' + tag + '"' + (searchTags.includes(tag) ? ' checked' : '') + '>\
                         <label for="' + tag + '-tag">' + tag + '</label>\
