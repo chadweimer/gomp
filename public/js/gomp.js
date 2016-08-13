@@ -1,6 +1,12 @@
 
 $(document).ready(function(){
-    $('#mobile-menu-button').sideNav();
+    $('.button-collapse').sideNav({
+        closeOnClick: true
+    });
+    $('.button-collapse-right').sideNav({
+        edge: 'right',
+        closeOnClick: true
+    });
     $('.modal-trigger').leanModal();
     $('.dropdown').dropdown();
 });

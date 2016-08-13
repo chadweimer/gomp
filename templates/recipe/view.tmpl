@@ -1,9 +1,12 @@
 {{ define "css-recipe/view" }}
 <style>
+    #recipe-image {
+        width: 64px;
+        height: 64px;
+    }
     .image-container {
         position: relative;
     }
-    
     .make-main-image {
         position: absolute;
         top: -20px;
@@ -18,29 +21,24 @@
 {{ end }}
 
 {{ define "content-recipe/view" }}
-<section class="row">
-    <article class="col s12 m12 l10 offset-l1">
-        <section id="recipe" class="card grey lighten-4">
+<div class="row">
+    <div class="col s12 m12 l10 offset-l1">
+        <div id="recipe" class="card grey lighten-4">
             <div class="card-content">
-                <div class="progress">
-                    <div class="indeterminate"></div>
-                </div>
                 <div class="rating-container clickable">
-                    <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>
-                    <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>
-                    <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>
-                    <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>
-                    <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>
-                    <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>
-                    <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>
-                    <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>
-                    <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>
-                    <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>
+                    <a href="#!" class="star whole" data-rating="5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="4.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="4" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="3.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="3" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="2.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="2" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="1.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="1" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="0.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
                 </div>
                 <h4>
-                    <a href="#pictures">
-                        <img id="recipe-image" class="circle" style="width: 64px; height: 64px;">
-                    </a>
+                    <a href="#pictures"><img id="recipe-image" class="circle"></a>
                     <span id="recipe-name"></span>
                 </h4>
                 <div id="recipe-serving-size" class="hide">
@@ -70,31 +68,29 @@
                 </div>
                 <p id="recipe-tags" class="section"></p>
             </div>
-        </section>
-        <section>
-            <article id="pictures" class="col s12 l6">
+        </div>
+        <div>
+            <div id="pictures" class="col s12 l6">
                 <h5 class="light">Pictures</h5>
                 <div class="divider"></div>
                 <div class="progress">
                     <div class="indeterminate"></div>
                 </div>
                 <div id="images-container"></div>
-            </article>
-            <article id="notes" class="col s12 l6">
+            </div>
+            <div id="notes" class="col s12 l6">
                 <h5 class="light">Notes</h5>
                 <div class="divider"></div>
                 <div class="progress">
                     <div class="indeterminate"></div>
                 </div>
                 <div id="notes-container"></div>
-            </article>
-        </section>
-    </article>
-</section>
-<section class="fixed-action-btn">
-    <a class="btn-floating btn-large waves-effect blue">
-        <i class="material-icons">more_vert</i>
-    </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="fixed-action-btn">
+    <a class="btn-floating btn-large waves-effect blue"><i class="material-icons">more_vert</i></a>
     <ul>
         <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="New">
             <a href="{{RootUrlPath}}/new" class="btn-floating waves-effect green">
@@ -117,12 +113,12 @@
             </a>
         </li>
         <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Add Note">
-            <a id="add-note" href="#!" class="btn-floating waves-effect blue" onclick="showAddNoteDialog(); return false;">
+            <a id="add-note" href="#!" class="btn-floating waves-effect blue" onclick="onAddNoteClicked(this, event);">
                 <i class="material-icons">insert_comment</i>
             </a>
         </li>
     </ul>
-</section>
+</div>
 <div id="delete-confirm" class="modal">
     <div class="modal-content">
         <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
@@ -130,11 +126,11 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a href="#!" class="modal-action modal-close btn-flat" onclick="deleteRecipe(); return false;">Yes</a>
+        <a href="#!" class="modal-action modal-close btn-flat" onclick="onDeleteRecipeClicked(this, event);">Yes</a>
     </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form enctype="multipart/form-data" onsubmit="addImage(this); return false;">
+    <form enctype="multipart/form-data" onsubmit="onAddImageSubmitted(this, event);">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -161,7 +157,7 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a id="main-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="setMainImage(this); return false;">Yes</a>
+        <a id="main-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="onSetMainImageClicked(this, event);">Yes</a>
     </div>
 </div>
 <div id="delete-image-confirm" class="modal">
@@ -171,7 +167,7 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="deleteImage(this); return false;">Yes</a>
+        <a id="delete-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="onDeleteImageClicked(this, event);">Yes</a>
     </div>
 </div>
 <div id="note-modal" class="modal">
@@ -185,7 +181,7 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
-        <a id="note-submit" href="#!" class="modal-action modal-close btn-flat" onclick="saveNote(this); return false;">Save</a>
+        <a id="note-submit" href="#!" class="modal-action modal-close btn-flat" onclick="onSaveNoteClicked(this, event);">Save</a>
     </div>
 </div>
 <div id="delete-note-confirm" class="modal">
@@ -195,7 +191,7 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-note-yes" href="#!" class="modal-action modal-close btn-flat" onclick="deleteNote(this); return false;">Yes</a>
+        <a id="delete-note-yes" href="#!" class="modal-action modal-close btn-flat" onclick="onDeleteNoteClicked(this, event);">Yes</a>
     </div>
 </div>
 {{ end }}
@@ -209,13 +205,10 @@
         loadMainImage();
         loadImages();
         loadNotes();
-
-        $('.star').click(function() {
-            setRating(parseFloat($(this).data('rating')));
-        });
     });
 
     function loadRecipe() {
+        showBusy('Loading recipe...');
         getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
             $('#recipe-name').append(recipe.name);
             $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
@@ -248,11 +241,13 @@
                 });
             }
         }).always(function() {
-            $('#recipe .progress').addClass('hide');
+            hideBusy();
         });
     }
 
-    function deleteRecipe() {
+    function onDeleteRecipeClicked(self, e) {
+        e.preventDefault();
+
         deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function() {
             window.location = '{{RootUrlPath}}/recipes';
         });
@@ -268,7 +263,9 @@
         });
     }
 
-    function setMainImage(self) {
+    function onSetMainImageClicked(self, e) {
+        e.preventDefault();
+
         var imageId = parseInt($(self).data('image-id'));
         putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
             loadMainImage();
@@ -276,7 +273,9 @@
         });
     }
 
-    function addImage(self) {
+    function onAddImageSubmitted(self, e) {
+        e.preventDefault();
+
         showBusy('Uploading image...');
         var imageFormData = new FormData(self);
         postRecipeImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
@@ -288,7 +287,9 @@
         });
     }
 
-    function deleteImage(self) {
+    function onDeleteImageClicked(self, e) {
+        e.preventDefault();
+
         var imageId = parseInt($(self).data('image-id'));
         deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
             loadMainImage();
@@ -309,10 +310,10 @@
                             <a target="_blank" href="' + image.url + '">\
                                 <img width="250" height="250" src="' + image.thumbnailUrl + '">\
                             </a>\
-                            <a href="#!" class="make-main-image" data-image-id="' + image.id + '" onclick="showMainImageConfirmation(this); return false;">\
+                            <a href="#!" class="make-main-image" data-image-id="' + image.id + '" onclick="onConfirmSetMainImage(this, event);">\
                                 <i class="material-icons green-text">photo_library</i>\
                             </a>\
-                            <a href="#!" class="delete-image" data-image-id="' + image.id + '" onclick="showDeleteImageConfirmation(this); return false;">\
+                            <a href="#!" class="delete-image" data-image-id="' + image.id + '" onclick="onConfirmDeleteImage(this, event);">\
                                 <i class="material-icons red-text">delete</i>\
                             </a>\
                         </span>';
@@ -324,13 +325,17 @@
         });
     }
         
-    function showMainImageConfirmation(self) {
+    function onConfirmSetMainImage(self, e) {
+        e.preventDefault();
+
         var imageId = $(self).data('image-id');
         $('#main-image-yes').data('image-id', imageId);
         $('#main-image-confirm').openModal();
     }
     
-    function showDeleteImageConfirmation(self) {
+    function onConfirmDeleteImage(self, e) {
+        e.preventDefault();
+
         var imageId = $(self).data('image-id');
         $('#delete-image-yes').data('image-id', imageId);
         $('#delete-image-confirm').openModal();
@@ -351,10 +356,10 @@
                                     new Date(note.createdAt).toLocaleString() +
                                 '</p>\
                                 <p class="section right">\
-                                    <a href="#!" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '" onclick="showEditNoteDialog(this); return false;">\
+                                    <a href="#!" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '" onclick="onEditNoteClicked(this, event);">\
                                         <i class="material-icons amber-text text-darken-2">edit</i>\
                                     </a>\
-                                    <a href="#!" data-note-id="' + note.id + '" onclick="showDeleteNoteConfirmation(this); return false;">\
+                                    <a href="#!" data-note-id="' + note.id + '" onclick="onConfirmDeleteNote(this, event);">\
                                         <i class="material-icons red-text">delete</i>\
                                     </a>\
                                 </p>\
@@ -374,7 +379,9 @@
         });
     }
         
-    function showEditNoteDialog(self) {
+    function onEditNoteClicked(self, e) {
+        e.preventDefault();
+
         var noteId = $(self).data('note-id');
         var noteContent = $(self).data('note-content');
         noteContent = noteContent.replace(/\+/g, ' ');
@@ -385,20 +392,26 @@
         $('#note-modal').openModal();
     }
     
-    function showDeleteNoteConfirmation(self) {
+    function onConfirmDeleteNote(self, e) {
+        e.preventDefault();
+
         var noteId = $(self).data('note-id');
         $('#delete-note-yes').data('note-id', noteId);
         $('#delete-note-confirm').openModal();
     }
 
-    function showAddNoteDialog() {
+    function onAddNoteClicked(self, e) {
+        e.preventDefault();
+
         $('#note').val('');
         $('#note-title').text('Add Note');
         $('#note-submit').data('note-id', '');
         $('#note-modal').openModal();
     }
 
-    function saveNote(self) {
+    function onSaveNoteClicked(self, e) {
+        e.preventDefault();
+
         var noteIdStr = $(self).data('note-id');
         if (noteIdStr == '') {
             addNote($('#note').val());
@@ -429,7 +442,9 @@
         });
     }
 
-    function deleteNote(self) {
+    function onDeleteNoteClicked(self, e) {
+        e.preventDefault();
+
         var noteId = parseInt($(self).data('note-id'));
         deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
             loadNotes();
@@ -437,10 +452,13 @@
         });
     }
 
-    function setRating(rating) {
+    function onSetRatingClicked(self, e) {
+        e.preventDefault();
+
+        var rating = $(self).data('rating');
         putRecipeRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
             $('.star').removeClass('active');
-            $('.star[data-rating="' + rating + '"]').addClass('active');
+            $(self).addClass('active');
             Materialize.toast('Rating updated', 2000);
         });
     }

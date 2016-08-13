@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="center">
-            <button type="submit" class="btn waves-effect" onclick="saveRecipe(); return false;">
+            <button type="submit" class="btn waves-effect" onclick="onSaveRecipeClicked(this, event);">
                 Save
                 <i class="material-icons right">save</i>
             </button>
@@ -53,14 +53,15 @@
 
 {{ define "js-recipe/edit" }}
 <script type="text/javascript">
-    var recipeId = NaN;
-    var path = window.location.pathname;
-    var recipeIdMatch = path.match(/{{RootUrlPath}}\/recipes\/(\d+)\/edit/);
-    if (recipeIdMatch) {
-        recipeId = parseInt(recipeIdMatch[1]);
-    }
     
-    $(document).ready(function(){
+    $(document).ready(function() {
+        recipeId = NaN;
+        var path = window.location.pathname;
+        var recipeIdMatch = path.match(/{{RootUrlPath}}\/recipes\/(\d+)\/edit/);
+        if (recipeIdMatch) {
+            recipeId = parseInt(recipeIdMatch[1]);
+        }
+
         if(!isNaN(recipeId)) {
             $('#action-text').text('Edit');
             loadRecipe();
@@ -72,6 +73,7 @@
     });
 
     function loadRecipe() {
+        showBusy('Loading recipe...');
         getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
             $('#name').val(recipe.name);
             $('#serving-size').val(recipe.servingSize);
@@ -92,7 +94,7 @@
             }
             initTags(tagsData);
         }).always(function() {
-            //$('#recipe .progress').addClass('hide');
+            hideBusy();
         });
     }
 
@@ -132,24 +134,28 @@
                 tags.forEach(function(tag){
                     $suggestedTagsContainer.append('\
                         <span class="chip green lighten-5 green-text text-darken-4" data-tag="' + tag + '">\
-                            ' + tag + '<i class="material-icons close" onclick="addSuggestedTag(this); return false;">add</i>\
+                            ' + tag + '<i class="material-icons close" onclick="suggestedTagClicked(this, event);">add</i>\
                         </span>');
                 });
             }
         });
     }
 
-    function addSuggestedTag(self) {
+    function suggestedTagClicked(self, e) {
+        e.preventDefault();
+
         var $tagInput = $('#tags .chips > input');
         var tagData = $(self).closest('.chip').data('tag');
         $tagInput.val(tagData);
-        var e = $.Event('keydown');
-        e.which = 13;
-        e.keyCode = 13;
-        $tagInput.trigger(e);
+        var ke = $.Event('keydown');
+        ke.which = 13;
+        ke.keyCode = 13;
+        $tagInput.trigger(ke);
     }
 
-    function saveRecipe() {
+    function onSaveRecipeClicked(self, e) {
+        e.preventDefault();
+
         var name = $('#name').val();
         var servingSize = $('#serving-size').val();
         var ingredients = $('#ingredients').val();

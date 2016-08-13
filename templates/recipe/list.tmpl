@@ -1,56 +1,15 @@
-{{ define "css-recipe/list" }}
-<style>
-    .compact-image {
-        box-sizing: initial;
-        width: 32px;
-        height: 32px;
-        vertical-align: middle;
-        padding: 5px;
-    }
-    .pagination.grow li {
-        transform: scale(1.33);
-    }
-    .pagination.grow li i {
-        transform: scale(1.25);
-    }
-    .actions {
-        margin-top: 0px;
-        margin-bottom: 0px;
-    }
-    .actions li {
-        display: inline-block;
-        border-radius: 2px;
-        text-align: center;
-        vertical-align: top;
-        height: 30px;
-    }
-    .actions li a {
-        color: #444;
-        display: inline-block;
-        font-size: 1.2rem;
-        padding: 0 10px;
-        line-height: 30px;
-    }
-}
-</style>
-{{ end }}
-
 {{ define "content-recipe/list" }}
-<section class="row">
+<div class="row">
     <div class="col s12 l12">
         <div class="section">
-            <div class="left">
-                <span class="light">Search: '<span id="search-query"></span>', Results: <span id="result-count"></span></span>
+            <div class="left light">
+                Search: '<span id="search-query"></span>', Results: <span id="result-count"></span>
             </div>
             <div class="right">
                 <ul class="actions">
+                    <li><a href="#!" onclick="onResetClicked(this, event);"><i class="material-icons">clear_all</i></a></li>
                     <li>
-                        <a href="#!" class="" onclick="reset(); return false;">
-                            <i class="material-icons">clear_all</i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
+                        <a href="#!" data-activates="recipe-list-menu" class="button-collapse-right">
                             <i class="material-icons">settings</i>
                         </a>
                     </li>
@@ -60,10 +19,14 @@
                         <span class="collapsible-header active">Display</span>
                         <ul class="collapsible-body">
                             <li class="view-mode full">
-                                <a href="#!" onclick="changeViewMode('full'); return false;"><i class="material-icons">view_agenda</i> Full</a>
+                                <a href="#!" onclick="onChangeViewClicked(this event);" data-mode="full">
+                                    <i class="material-icons">view_agenda</i> Full
+                                </a>
                             </li>
                             <li class="view-mode compact">
-                                <a href="#!" onclick="changeViewMode('compact'); return false;"><i class="material-icons">view_headline</i> Compact</a>
+                                <a href="#!" onclick="onChangeViewClicked(this, event);" data-mode="compact">
+                                    <i class="material-icons">view_headline</i> Compact
+                                </a>
                             </li>
                         </ul>
                     </li>
@@ -71,12 +34,12 @@
                         <span class="collapsible-header active">Sort</span>
                         <ul class="collapsible-body">
                             <li class="sort name">
-                                <a href="#!" onclick="changeSort('name', 'asc'); return false;">
+                                <a href="#!" onclick="onChangeSortClicked(this, event);" data-sort="name" data-dir="asc">
                                     <i class="material-icons">sort_by_alpha</i> Name
                                 </a>
                             </li>
                             <li class="sort rating">
-                                <a href="#!" onclick="changeSort('rating', 'desc'); return false;">
+                                <a href="#!" onclick="onChangeSortClicked(this, event);" data-sort="rating" data-dir="desc">
                                     <i class="material-icons">star_rate</i> Rating
                                 </a>
                             </li>
@@ -84,7 +47,7 @@
                     </li>
                     <li>
                         <span class="collapsible-header active">Filter by Tag</span>
-                        <a href="#!" class="btn-flat waves-effect header-btn" onclick="applyTags(); return false;">Apply</a>
+                        <a href="#!" class="btn-flat waves-effect header-btn" onclick="onApplyTagsClicked(this, event);">Apply</a>
                     </li>
                     <li class="indented fill">
                         <ul id="tag-filter-list"></ul>
@@ -100,22 +63,17 @@
 
     <div class="pagination-container after col s12 l12"></div>
 
-</section>
-<section class="fixed-action-btn">
+</div>
+<div class="fixed-action-btn">
     <a href="{{RootUrlPath}}/new" class="btn-floating btn-large waves-effect green">
         <i class="material-icons">add</i>
     </a>
-</section>
+</div>
 {{ end }}
 
 {{define "js-recipe/list"}}
 <script type="text/javascript">
     $(document).ready(function(){
-        $('#recipe-list-menu-button').sideNav({
-            edge: 'right',
-            closeOnClick: true
-        });
-
         pageNum = parseInt(getQueryString('page'));
         if (pageNum == null || isNaN(pageNum)) {
             pageNum = 1;
@@ -131,7 +89,9 @@
         loadTags(searchTags);
     });
 
-    function reset() {
+    function onResetClicked(self, e) {
+        e.preventDefault();
+
         sessionStorage.clear();
         pageNum = 1;
         query = '';
@@ -144,19 +104,24 @@
         loadTags(searchTags);
     }
 
-    function changeViewMode(newViewMode) {
-        viewMode = newViewMode;
+    function onChangeViewClicked(self, e) {
+        e.preventDefault();
+
+        viewMode = $(self).data('mode');
         trySaveToSessionStorage('view', JSON.stringify(viewMode));
 
         loadRecipes();
     }
 
-    function changeSort(newSortBy, defaultSortDir) {
+    function onChangeSortClicked(self, e) {
+        e.preventDefault();
+
+        var newSortBy = $(self).data('sort');
         if (sortBy == newSortBy) {
             sortDir = (sortDir == 'asc' ? 'desc' : 'asc');
         } else {
             sortBy = newSortBy;
-            sortDir = defaultSortDir;
+            sortDir = $(self).data('dir');
         }
         trySaveToSessionStorage('sort', JSON.stringify(sortBy));
         trySaveToSessionStorage('dir', JSON.stringify(sortDir));
@@ -164,13 +129,20 @@
         loadRecipes();
     }
 
-    function changePage(newPageNum) {
-        pageNum = newPageNum;
+    function onPaginationClicked(self, e) {
+        e.preventDefault();
+
+        pageNum = parseInt($(self).data('page'));
+        if (pageNum == null || isNaN(pageNum)) {
+            pageNum = 1;
+        }
 
         loadRecipes();
     }
 
-    function applyTags() {
+    function onApplyTagsClicked(self, e) {
+        e.preventDefault();
+
         var checkedTags = [];
         $('#tag-filter-list input[name="tags"]:checked').each(function() {
             checkedTags.push($(this).val());
@@ -282,22 +254,32 @@
     }
 
     function addPaginiation(pageNum, numPages) {
+        var prevPageNum = pageNum - 1;
+        var nextPageNum = pageNum + 1;
         $('.pagination-container').html('\
             <ul class="pagination center grow">\
                 <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
-                    <a href="#!" onclick="changePage(1); return false;"><i class="material-icons">first_page</i></a>\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="1">\
+                        <i class="material-icons">first_page</i>\
+                    </a>\
                 </li>\
                 <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
-                    <a href="#!" onclick="changePage(pageNum - 1); return false;"><i class="material-icons">chevron_left</i></a>\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + prevPageNum + '">\
+                        <i class="material-icons">chevron_left</i>\
+                    </a>\
                 </li>\
                 <li class="active">\
                     <a href="#!">' + pageNum + '</a>\
                 </li>\
                 <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
-                    <a href="#!" onclick="changePage(pageNum + 1); return false;"><i class="material-icons">chevron_right</i></a>\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + nextPageNum + '">\
+                        <i class="material-icons">chevron_right</i>\
+                    </a>\
                 </li>\
                 <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
-                    <a href="#!" onclick="changePage(' + numPages + '); return false;"><i class="material-icons">last_page</i></a>\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + numPages + '">\
+                        <i class="material-icons">last_page</i>\
+                    </a>\
                 </li>\
             </ul>');
     }
