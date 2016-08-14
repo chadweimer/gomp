@@ -98,7 +98,7 @@
             </a>
         </li>
         <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Delete">
-            <a href="#!" class="btn-floating waves-effect red" onclick="onConfirmDeleteRecipeClicked(this, event);">
+            <a href="#!" class="btn-floating waves-effect red" onclick="onDeleteRecipeClicked(this, event);">
                 <i class="material-icons">delete</i>
             </a>
         </li>
@@ -140,16 +140,6 @@
         </div>
     </form>
 </div>
-<div id="delete-image-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-        <p>Are you sure you want to delete this image?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="onDeleteImageClicked(this, event);">Yes</a>
-    </div>
-</div>
 <div id="note-modal" class="modal">
     <div class="modal-content">
         <h5 class="blue-text">
@@ -162,16 +152,6 @@
     <div class="modal-footer">
         <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
         <a id="note-submit" href="#!" class="modal-action modal-close btn-flat" onclick="onSaveNoteClicked(this, event);">Save</a>
-    </div>
-</div>
-<div id="delete-note-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-        <p>Are you sure you want to delete this note?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-note-yes" href="#!" class="modal-action modal-close btn-flat" onclick="onDeleteNoteClicked(this, event);">Yes</a>
     </div>
 </div>
 {{ end }}
@@ -225,18 +205,20 @@
         });
     }
 
-    function onConfirmDeleteRecipeClicked(self, e) {
+    function onDeleteRecipeClicked(self, e) {
         e.preventDefault();
 
-        showConfirmation('Delete?', 'warning', 'Are you sure you want to delete this recipe?', onDeleteRecipeClicked);
-    }
+        showConfirmation(
+            'Delete?',
+            'warning',
+            'Are you sure you want to delete this recipe?',
+            function(ee) {
+                e.preventDefault();
 
-    function onDeleteRecipeClicked(e) {
-        e.preventDefault();
-
-        deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function() {
-            window.location = '{{RootUrlPath}}/recipes';
-        });
+                deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function() {
+                    window.location = '{{RootUrlPath}}/recipes';
+                });
+            });
     }
 
     function loadMainImage() {
@@ -266,12 +248,18 @@
     function onDeleteImageClicked(self, e) {
         e.preventDefault();
 
-        var imageId = parseInt($(self).data('image-id'));
-        deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
-            loadMainImage();
-            loadImages();
-            Materialize.toast('Image deleted', 2000);
-        });
+        showConfirmation(
+            'Delete?',
+            'warning',
+            'Are you sure you want to delete this image?',
+            function(ee) {
+                var imageId = parseInt($(self).data('image-id'));
+                deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
+                    loadMainImage();
+                    loadImages();
+                    Materialize.toast('Image deleted', 2000);
+                });
+            });
     }
 
     function loadImages() {
@@ -286,10 +274,10 @@
                             <a target="_blank" href="' + image.url + '">\
                                 <img width="250" height="250" src="' + image.thumbnailUrl + '">\
                             </a>\
-                            <a href="#!" class="make-main-image" data-image-id="' + image.id + '" onclick="onConfirmSetMainImage(this, event);">\
+                            <a href="#!" class="make-main-image" data-image-id="' + image.id + '" onclick="onSetMainImageClicked(this, event);">\
                                 <i class="material-icons green-text">photo_library</i>\
                             </a>\
-                            <a href="#!" class="delete-image" data-image-id="' + image.id + '" onclick="onConfirmDeleteImage(this, event);">\
+                            <a href="#!" class="delete-image" data-image-id="' + image.id + '" onclick="onDeleteImageClicked(this, event);">\
                                 <i class="material-icons red-text">delete</i>\
                             </a>\
                         </span>';
@@ -301,7 +289,7 @@
         });
     }
         
-    function onConfirmSetMainImage(self, e) {
+    function onSetMainImageClicked(self, e) {
         e.preventDefault();
 
         showConfirmation(
@@ -317,14 +305,6 @@
                     Materialize.toast('Main image updated', 2000);
                 });
             });
-    }
-    
-    function onConfirmDeleteImage(self, e) {
-        e.preventDefault();
-
-        var imageId = $(self).data('image-id');
-        $('#delete-image-yes').data('image-id', imageId);
-        $('#delete-image-confirm').openModal();
     }
 
     function loadNotes() {
@@ -345,7 +325,7 @@
                                     <a href="#!" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '" onclick="onEditNoteClicked(this, event);">\
                                         <i class="material-icons amber-text text-darken-2">edit</i>\
                                     </a>\
-                                    <a href="#!" data-note-id="' + note.id + '" onclick="onConfirmDeleteNote(this, event);">\
+                                    <a href="#!" data-note-id="' + note.id + '" onclick="onDeleteNoteClicked(this, event);">\
                                         <i class="material-icons red-text">delete</i>\
                                     </a>\
                                 </p>\
@@ -378,13 +358,6 @@
         $('#note-modal').openModal();
     }
     
-    function onConfirmDeleteNote(self, e) {
-        e.preventDefault();
-
-        var noteId = $(self).data('note-id');
-        $('#delete-note-yes').data('note-id', noteId);
-        $('#delete-note-confirm').openModal();
-    }
 
     function onAddNoteClicked(self, e) {
         e.preventDefault();
@@ -431,11 +404,17 @@
     function onDeleteNoteClicked(self, e) {
         e.preventDefault();
 
-        var noteId = parseInt($(self).data('note-id'));
-        deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
-            loadNotes();
-            Materialize.toast('Note deleted', 2000);
-        });
+        showConfirmation(
+            'Delete?',
+            'warning',
+            'Are you sure you want to delete this note?',
+            function(ee) {
+                var noteId = parseInt($(self).data('note-id'));
+                deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
+                    loadNotes();
+                    Materialize.toast('Note deleted', 2000);
+                });
+            });
     }
 
     function onSetRatingClicked(self, e) {
