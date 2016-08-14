@@ -60,16 +60,22 @@ function trySaveToSessionStorage(field, stringVal) {
 }
 
 function showBusy(text) {
-    var $busyDialog = $('#busy-dialog');
-    var $busyMessage = $('#busy-message').text(text);
-    $busyDialog.openModal({
+    $('#busy-message').text(text);
+    $('#busy-dialog').openModal({
         dismissible: false,
     });
 }
 
 function hideBusy() {
-    var $busyDialog = $('#busy-dialog');
-    $busyDialog.closeModal();
+    $('#busy-dialog').closeModal();
+}
+
+function showConfirmation(title, icon, message, yesCallback) {
+    $('#confirmation-title').text(title);
+    $('#confirmation-image').text(icon);
+    $('#confirmation-message').text(message);
+    $('#confirmation-yes')[0].onclick = yesCallback;
+    $('#confirmation-dialog').openModal();
 }
 
 function getRecipesAsync(rootUrlPath, searchFilter) {

@@ -98,7 +98,7 @@
             </a>
         </li>
         <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Delete">
-            <a href="#delete-confirm" class="btn-floating waves-effect red modal-trigger">
+            <a href="#!" class="btn-floating waves-effect red" onclick="onConfirmDeleteRecipeClicked(this, event);">
                 <i class="material-icons">delete</i>
             </a>
         </li>
@@ -118,16 +118,6 @@
             </a>
         </li>
     </ul>
-</div>
-<div id="delete-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-        <p>Are you sure you want to delete this recipe?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a href="#!" class="modal-action modal-close btn-flat" onclick="onDeleteRecipeClicked(this, event);">Yes</a>
-    </div>
 </div>
 <div id="add-image-modal" class="modal">
     <form enctype="multipart/form-data" onsubmit="onAddImageSubmitted(this, event);">
@@ -149,16 +139,6 @@
             <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
         </div>
     </form>
-</div>
-<div id="main-image-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="green-text"><i class="material-icons left">live_help</i>Change Main Image?</h5>
-        <p>Are you sure you want to make this the main image for the recipe?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-action modal-close btn-flat">No</a>
-        <a id="main-image-yes" href="#!" class="modal-action modal-close btn-flat" onclick="onSetMainImageClicked(this, event);">Yes</a>
-    </div>
 </div>
 <div id="delete-image-confirm" class="modal">
     <div class="modal-content">
@@ -245,7 +225,13 @@
         });
     }
 
-    function onDeleteRecipeClicked(self, e) {
+    function onConfirmDeleteRecipeClicked(self, e) {
+        e.preventDefault();
+
+        showConfirmation('Delete?', 'warning', 'Are you sure you want to delete this recipe?', onDeleteRecipeClicked);
+    }
+
+    function onDeleteRecipeClicked(e) {
         e.preventDefault();
 
         deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function() {
@@ -260,16 +246,6 @@
             $recipeImage.attr("src", image.thumbnailUrl);
         }).fail(function() {
             $recipeImage.addClass('hide');
-        });
-    }
-
-    function onSetMainImageClicked(self, e) {
-        e.preventDefault();
-
-        var imageId = parseInt($(self).data('image-id'));
-        putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
-            loadMainImage();
-            Materialize.toast('Main image updated', 2000);
         });
     }
 
@@ -328,9 +304,19 @@
     function onConfirmSetMainImage(self, e) {
         e.preventDefault();
 
-        var imageId = $(self).data('image-id');
-        $('#main-image-yes').data('image-id', imageId);
-        $('#main-image-confirm').openModal();
+        showConfirmation(
+            'Set Main Image?',
+            'live_help',
+            'Are you sure you want to make this the main image for the recipe?',
+            function(ee) {
+                ee.preventDefault();
+
+                var imageId = parseInt($(self).data('image-id'));
+                putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
+                    loadMainImage();
+                    Materialize.toast('Main image updated', 2000);
+                });
+            });
     }
     
     function onConfirmDeleteImage(self, e) {
