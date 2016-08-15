@@ -5,13 +5,13 @@
         <meta name="application-name" content="{{ApplicationTitle}}">
         <meta name="apple-mobile-web-app-title" content="{{ApplicationTitle}}">
         
-        <link rel="apple-touch-icon" sizes="180x180" href="{{RootUrlPath}}/apple-touch-icon.png">
-        <link rel="icon" type="image/png" href="{{RootUrlPath}}/favicon-32x32.png" sizes="32x32">
-        <link rel="icon" type="image/png" href="{{RootUrlPath}}/favicon-16x16.png" sizes="16x16">
-        <link rel="manifest" href="{{RootUrlPath}}/manifest.json">
-        <link rel="mask-icon" href="{{RootUrlPath}}/safari-pinned-tab.svg" color="#5bbad5">
-        <link rel="shortcut icon" href="{{RootUrlPath}}/favicon.ico">
-        <meta name="msapplication-config" content="{{RootUrlPath}}/browserconfig.xml">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+        <link rel="shortcut icon" href="/favicon.ico">
+        <meta name="msapplication-config" content="/browserconfig.xml">
         <meta name="theme-color" content="#ffffff">
 
         <!--Import Google Icon Font-->
@@ -21,7 +21,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" media="screen,projection">
 
         <!-- Custom GOMP styles -->
-        <link rel="stylesheet" type="text/css" href="{{RootUrlPath}}/css/gomp.css">
+        <link rel="stylesheet" type="text/css" href="/css/gomp.css">
 
         {{ partial "css" }}
 
@@ -32,21 +32,21 @@
         <header class="navbar">
             <nav class="blue">
                 <div class="nav-wrapper">
-                    <a href="{{RootUrlPath}}/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
+                    <a href="/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
                     {{if .User }}
                     <ul class="right hide-on-med-and-down">
-                        <li><a href="{{RootUrlPath}}/">Home</a></li>
-                        <li><a href="{{RootUrlPath}}/recipes">Recipes</a></li>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/recipes">Recipes</a></li>
                         <li>
                             <a href="#!" class="dropdown-button" data-beloworigin="true" data-activates="userDropdown">
                                 {{.User.Username}}<i class="material-icons right">arrow_drop_down</i>
                             </a>
                             <ul id="userDropdown" class="dropdown-content">
-                                <li><a href="{{RootUrlPath}}/logout">Logout</a></li>
+                                <li><a href="/logout">Logout</a></li>
                             </ul>
                         </li>
                     </ul>
-                    <form class="nav-wrapper right" action="{{RootUrlPath}}/recipes">
+                    <form class="nav-wrapper right" action="/recipes">
                         <div class="input-field nav-wrapper">
                             <input id="search" name="q" type="search" placeholder="Search...">
                             <input type="hidden" name="tags" value="">
@@ -63,9 +63,9 @@
                 <li>
                     <span class="collapsible-header active truncate">{{ApplicationTitle}}</span>
                     <ul class="collapsible-body">
-                        <li><a href="{{RootUrlPath}}/"><i class="material-icons">home</i> Home</a></li>
+                        <li><a href="/"><i class="material-icons">home</i> Home</a></li>
                         {{if .User }}
-                        <li><a href="{{RootUrlPath}}/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
+                        <li><a href="/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
                         {{end}}
                     </ul>
                 </li>
@@ -73,7 +73,7 @@
                 <li>
                     <span class="collapsible-header active">{{.User.Username}}</span>
                     <ul class="collapsible-body">
-                        <li><a href="{{RootUrlPath}}/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
+                        <li><a href="/logout"><i class="material-icons">exit_to_app</i> Logout</a></li>
                     </ul>
                 </li>
                 {{end}}
@@ -91,9 +91,9 @@
                     <div class="col s12 l12">
                         <h5 class="white-text">Links</h5>
                         <ul>
-                            <li><a class="white-text" href="{{RootUrlPath}}/">Home</a></li>
-                            <li><a class="white-text" href="{{RootUrlPath}}/recipes">Recipes</a></li>
-                            <li><a class="white-text" href="{{RootUrlPath}}/logout">Logout</a></li>
+                            <li><a class="white-text" href="/">Home</a></li>
+                            <li><a class="white-text" href="/recipes">Recipes</a></li>
+                            <li><a class="white-text" href="/logout">Logout</a></li>
                         </ul>
                     </div>
                     {{end}}
@@ -135,7 +135,7 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
         
         <!-- Custom GOMP scripts -->
-        <script type="text/javascript" src="{{RootUrlPath}}/js/gomp.js"></script>
+        <script type="text/javascript" src="/js/gomp.js"></script>
         {{ partial "js" }}
     </body>
 </html>

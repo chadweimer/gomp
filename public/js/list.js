@@ -91,7 +91,7 @@ function loadRecipes() {
     var $container = $('.recipes-container');
 
     var count = (viewMode !== 'compact' ? 12 : 60);
-    getRecipesAsync('{{RootUrlPath}}', {
+    getRecipesAsync({
         q: query,
         tags: searchTags,
         sort: sortBy,
@@ -124,7 +124,7 @@ function addRecipesFull($container, recipes) {
             <div class="col s12 m6 l4"></div>');
         var $recipeContent = '\
             <div class="card small grey lighten-4 hoverable clickable"\
-                onclick="location.href = \'{{RootUrlPath}}/recipes/' + recipe.id + '\';"\
+                onclick="location.href = \'/recipes/' + recipe.id + '\';"\
                 title="' + recipe.name +'">';
         if (recipe.mainImage.thumbnailUrl !== '') {
             $recipeContent += '\
@@ -165,7 +165,7 @@ function addRecipesCompact($container, recipes) {
             var $recipeWrapper = $('\
                 <div class="col s12 l12"></div>');
             var $recipeContent = '\
-                <a href="{{RootUrlPath}}/recipes/' + recipe.id + '" class="truncate" title="' + recipe.name + '">\
+                <a href="/recipes/' + recipe.id + '" class="truncate" title="' + recipe.name + '">\
                     <img class="compact-image circle">\
                     <span>' + recipe.name + '</span>\
                 </a>';
@@ -210,7 +210,7 @@ function addPaginiation(pageNum, numPages) {
 }
 
 function loadTags(searchTags) {
-    getTagsAsync('{{RootUrlPath}}', {
+    getTagsAsync({
         sort: "tag",
         dir: "asc",
         count: Number.MAX_SAFE_INTEGER

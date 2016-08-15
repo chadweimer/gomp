@@ -15,7 +15,6 @@ The following table summarizes the available configuration settings, which are s
 
 | ENV                      | Value    | Default               |
 |--------------------------|----------|-----------------------|
-| GOMP\_ROOT\_URL_PATH     | string   | &lt;empty&gt;         |
 | PORT                     | uint     | 4000                  |
 | GOMP\_UPLOAD\_DRIVER     | string   | fs                    |
 | GOMP\_UPLOAD\_PATH       | string   | data                  |
@@ -24,14 +23,6 @@ The following table summarizes the available configuration settings, which are s
 | GOMP\_APPLICATION\_TITLE | string   | GOMP: Go Meal Planner |
 | DATABASE_DRIVER          | string   | postgres              |
 | DATABASE\_URL            | string   | &lt;empty&gt;         |
-
-### Root URL Path
-
-RootURLPath gets just the path portion of the base application url.
-E.g., if the app sits at http://www.example.com/path/to/gomp,
-this setting would be "/path/to/gomp".
-
-Valid Values: Any valid url path, excluding domain.
 
 ### Port
 

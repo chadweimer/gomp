@@ -10,7 +10,7 @@ $(document).ready(function () {
 
 function loadRecipe() {
     showBusy('Loading recipe...');
-    getRecipeAsync('{{RootUrlPath}}', recipeId).done(function (recipe) {
+    getRecipeAsync(recipeId).done(function (recipe) {
         $('#recipe-name').append(recipe.name);
         $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
         $('#recipe-ingredients > p').append(recipe.ingredients);
@@ -56,15 +56,15 @@ function onDeleteRecipeClicked(self, e) {
         function (ee) {
             e.preventDefault();
 
-            deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function () {
-                window.location = '{{RootUrlPath}}/recipes';
+            deleteRecipeAsync(recipeId).done(function () {
+                window.location = '/recipes';
             });
         });
 }
 
 function loadMainImage() {
     var $recipeImage = $('#recipe-image');
-    getRecipeMainImageAsync('{{RootUrlPath}}', recipeId).done(function (image) {
+    getRecipeMainImageAsync(recipeId).done(function (image) {
         $recipeImage.removeClass('hide');
         $recipeImage.attr("src", image.thumbnailUrl);
     }).fail(function () {
@@ -77,7 +77,7 @@ function onAddImageSubmitted(self, e) {
 
     showBusy('Uploading image...');
     var imageFormData = new FormData(self);
-    postRecipeImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function () {
+    postRecipeImageAsync(recipeId, imageFormData).done(function () {
         loadMainImage();
         loadImages();
         Materialize.toast('Upload complete', 2000);
@@ -95,7 +95,7 @@ function onDeleteImageClicked(self, e) {
         'Are you sure you want to delete this image?',
         function (ee) {
             var imageId = parseInt($(self).data('image-id'), 10);
-            deleteImageAsync('{{RootUrlPath}}', imageId).done(function () {
+            deleteImageAsync(imageId).done(function () {
                 loadMainImage();
                 loadImages();
                 Materialize.toast('Image deleted', 2000);
@@ -104,7 +104,7 @@ function onDeleteImageClicked(self, e) {
 }
 
 function loadImages() {
-    getRecipeImagesAsync('{{RootUrlPath}}', recipeId).done(function (images) {
+    getRecipeImagesAsync(recipeId).done(function (images) {
         var $imagesContainer = $('#images-container');
         $imagesContainer.empty();
 
@@ -141,7 +141,7 @@ function onSetMainImageClicked(self, e) {
             ee.preventDefault();
 
             var imageId = parseInt($(self).data('image-id'), 10);
-            putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function () {
+            putRecipeMainImageAsync(recipeId, imageId).done(function () {
                 loadMainImage();
                 Materialize.toast('Main image updated', 2000);
             });
@@ -149,7 +149,7 @@ function onSetMainImageClicked(self, e) {
 }
 
 function loadNotes() {
-    getRecipeNotesAsync('{{RootUrlPath}}', recipeId).done(function (notes) {
+    getRecipeNotesAsync(recipeId).done(function (notes) {
         var $notesContainer = $('#notes-container');
         $notesContainer.empty();
 
@@ -222,7 +222,7 @@ function onSaveNoteClicked(self, e) {
 }
 
 function addNote(text) {
-    postNoteAsync('{{RootUrlPath}}', {
+    postNoteAsync({
         recipeId: recipeId,
         text: text
     }).done(function () {
@@ -232,7 +232,7 @@ function addNote(text) {
 }
 
 function editNote(noteId, text) {
-    putNoteAsync('{{RootUrlPath}}', {
+    putNoteAsync({
         id: noteId,
         recipeId: recipeId,
         text: text
@@ -251,7 +251,7 @@ function onDeleteNoteClicked(self, e) {
         'Are you sure you want to delete this note?',
         function (ee) {
             var noteId = parseInt($(self).data('note-id'), 10);
-            deleteNoteAsync('{{RootUrlPath}}', noteId).done(function () {
+            deleteNoteAsync(noteId).done(function () {
                 loadNotes();
                 Materialize.toast('Note deleted', 2000);
             });
@@ -262,7 +262,7 @@ function onSetRatingClicked(self, e) {
     e.preventDefault();
 
     var rating = $(self).data('rating');
-    putRecipeRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function () {
+    putRecipeRatingAsync(recipeId, rating).done(function () {
         $('.star').removeClass('active');
         $(self).addClass('active');
         Materialize.toast('Rating updated', 2000);

@@ -33,7 +33,6 @@ func main() {
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
-			"RootUrlPath":      func() string { return cfg.RootURLPath },
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 		}}})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)

@@ -11,11 +11,6 @@ import (
 
 // Config contains the application configuration settings
 type Config struct {
-	// RootURLPath gets just the path portion of the base application url.
-	// E.g., if the app sits at http://www.example.com/path/to/gomp,
-	// this setting would be "/path/to/gomp"
-	RootURLPath string
-
 	// Port gets the port number under which the site is being hosted.
 	Port int
 
@@ -59,7 +54,6 @@ type Config struct {
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
 	c := Config{
-		RootURLPath:      "",
 		Port:             4000,
 		RequireSSL:       true,
 		UploadDriver:     "fs",
@@ -74,7 +68,6 @@ func Load(path string) *Config {
 	}
 
 	// If environment variables are set, use them.
-	loadEnv("GOMP_ROOT_URL_PATH", &c.RootURLPath)
 	loadEnv("PORT", &c.Port)
 	loadEnv("GOMP_REQUIRE_SSL", &c.RequireSSL)
 	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
@@ -88,7 +81,6 @@ func Load(path string) *Config {
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 
 	if c.IsDevelopment {
-		log.Printf("[config] RootUrlPath=%s", c.RootURLPath)
 		log.Printf("[config] Port=%d", c.Port)
 		log.Printf("[config] RequireSSL=%d", c.RequireSSL)
 		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
@@ -107,11 +99,6 @@ func Load(path string) *Config {
 
 // Validate checks whether the current configuration settings are valid.
 func (c *Config) Validate() error {
-	_, err := url.Parse(c.RootURLPath)
-	if err != nil {
-		return errors.New("GOMP_ROOT_URL_PATH is invalid")
-	}
-
 	if c.Port <= 0 {
 		return errors.New("PORT must be a positive integer")
 	}
@@ -140,8 +127,7 @@ func (c *Config) Validate() error {
 		return errors.New("DATABASE_URL must be specified")
 	}
 
-	_, err = url.Parse(c.DatabaseURL)
-	if err != nil {
+	if _, err := url.Parse(c.DatabaseURL); err != nil {
 		return errors.New("DATABASE_URL is invalid")
 	}
 

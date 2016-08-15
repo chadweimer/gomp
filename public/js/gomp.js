@@ -118,41 +118,41 @@ function deleteAsync(url) {
     });
 }
 
-function getRecipesAsync(rootUrlPath, searchFilter) {
-    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes', searchFilter);
+function getRecipesAsync(searchFilter) {
+    return getAsync(API_BASE_PATH + '/recipes', searchFilter);
 }
 
-function getRecipeAsync(rootUrlPath, recipeId) {
-    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId);
+function getRecipeAsync(recipeId) {
+    return getAsync(API_BASE_PATH + '/recipes/' + recipeId);
 }
 
-function postRecipeAsync(rootUrlPath, recipe) {
-    return postAsync(rootUrlPath + API_BASE_PATH + '/recipes', JSON.stringify(recipe));
+function postRecipeAsync(recipe) {
+    return postAsync(API_BASE_PATH + '/recipes', JSON.stringify(recipe));
 }
 
-function putRecipeAsync(rootUrlPath, recipe) {
-    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipe.id, JSON.stringify(recipe));
+function putRecipeAsync(recipe) {
+    return putAsync(API_BASE_PATH + '/recipes/' + recipe.id, JSON.stringify(recipe));
 }
 
-function deleteRecipeAsync(rootUrlPath, recipeId) {
-    return deleteAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId);
+function deleteRecipeAsync(recipeId) {
+    return deleteAsync(API_BASE_PATH + '/recipes/' + recipeId);
 }
 
-function getRecipeMainImageAsync(rootUrlPath, recipeId) {
-    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/image');
+function getRecipeMainImageAsync(recipeId) {
+    return getAsync(API_BASE_PATH + '/recipes/' + recipeId + '/image');
 }
 
-function putRecipeMainImageAsync(rootUrlPath, recipeId, imageId) {
-    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/image', imageId);
+function putRecipeMainImageAsync(recipeId, imageId) {
+    return putAsync(API_BASE_PATH + '/recipes/' + recipeId + '/image', imageId);
 }
 
-function getRecipeImagesAsync(rootUrlPath, recipeId) {
-    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/images');
+function getRecipeImagesAsync(recipeId) {
+    return getAsync(API_BASE_PATH + '/recipes/' + recipeId + '/images');
 }
 
-function postRecipeImageAsync(rootUrlPath, recipeId, imageFormData) {
+function postRecipeImageAsync(recipeId, imageFormData) {
     return $.ajax({
-        url: rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/images',
+        url: API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
         enctype: 'multipart/form-data',
         contentType: false,
@@ -162,30 +162,30 @@ function postRecipeImageAsync(rootUrlPath, recipeId, imageFormData) {
     });
 }
 
-function deleteImageAsync(rootUrlPath, imageId) {
-    return deleteAsync(rootUrlPath + API_BASE_PATH + '/images/' + imageId);
+function deleteImageAsync(imageId) {
+    return deleteAsync( API_BASE_PATH + '/images/' + imageId);
 }
 
-function getRecipeNotesAsync(rootUrlPath, recipeId) {
-    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/notes');
+function getRecipeNotesAsync(recipeId) {
+    return getAsync( API_BASE_PATH + '/recipes/' + recipeId + '/notes');
 }
 
-function postNoteAsync(rootUrlPath, note) {
-    return postAsync(rootUrlPath + API_BASE_PATH + '/notes', JSON.stringify(note));
+function postNoteAsync(note) {
+    return postAsync(API_BASE_PATH + '/notes', JSON.stringify(note));
 }
 
-function putNoteAsync(rootUrlPath, note) {
-    return putAsync(rootUrlPath + API_BASE_PATH + '/notes/' + note.id, JSON.stringify(note));
+function putNoteAsync(note) {
+    return putAsync(API_BASE_PATH + '/notes/' + note.id, JSON.stringify(note));
 }
 
-function deleteNoteAsync(rootUrlPath, noteId) {
-    return deleteAsync(rootUrlPath + API_BASE_PATH + '/notes/' + noteId);
+function deleteNoteAsync(noteId) {
+    return deleteAsync(API_BASE_PATH + '/notes/' + noteId);
 }
 
-function putRecipeRatingAsync(rootUrlPath, recipeId, rating) {
-    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/rating', rating);
+function putRecipeRatingAsync(recipeId, rating) {
+    return putAsync(API_BASE_PATH + '/recipes/' + recipeId + '/rating', rating);
 }
 
-function getTagsAsync(rootUrlPath, tagsFilter) {
-    return getAsync(rootUrlPath + API_BASE_PATH + '/tags', tagsFilter);
+function getTagsAsync(tagsFilter) {
+    return getAsync(API_BASE_PATH + '/tags', tagsFilter);
 }

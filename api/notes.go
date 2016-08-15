@@ -37,7 +37,7 @@ func (r Router) postNote(resp http.ResponseWriter, req *http.Request, p httprout
 		return
 	}
 
-	resp.Header().Set("Location", fmt.Sprintf("%s/api/v1/recipes/%d/notes/%d", r.cfg.RootURLPath, note.RecipeID, note.ID))
+	resp.Header().Set("Location", fmt.Sprintf("/api/v1/recipes/%d/notes/%d", note.RecipeID, note.ID))
 	resp.WriteHeader(http.StatusCreated)
 }
 

@@ -1,7 +1,7 @@
 $(document).ready(function() {
     recipeId = NaN;
     var path = window.location.pathname;
-    var recipeIdMatch = path.match(/{{RootUrlPath}}\/recipes\/(\d+)\/edit/);
+    var recipeIdMatch = path.match(/\/recipes\/(\d+)\/edit/);
     if (recipeIdMatch) {
         recipeId = parseInt(recipeIdMatch[1], 10);
     }
@@ -18,7 +18,7 @@ $(document).ready(function() {
 
 function loadRecipe() {
     showBusy('Loading recipe...');
-    getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
+    getRecipeAsync(recipeId).done(function(recipe) {
         $('#name').val(recipe.name);
         $('#serving-size').val(recipe.servingSize);
         $('#serving-size').trigger('autoresize');
@@ -69,7 +69,7 @@ function initTags(initialTags) {
 
 function loadSuggestedTags() {
     var $suggestedTagsContainer = $('#suggested-tags-container');
-    getTagsAsync('{{RootUrlPath}}', {
+    getTagsAsync({
         sort: "frequency",
         dir: "desc",
         count: 12
@@ -112,7 +112,7 @@ function onSaveRecipeClicked(self, e) {
     });
 
     if (!isNaN(recipeId)) {
-        putRecipeAsync('{{RootUrlPath}}', {
+        putRecipeAsync({
             id: recipeId,
             name: name,
             servingSize: servingSize,
@@ -122,10 +122,10 @@ function onSaveRecipeClicked(self, e) {
             sourceUrl: sourceUrl,
             tags: tags
         }).done(function() {
-            window.location = '{{RootUrlPath}}/recipes/' + recipeId;
+            window.location = '/recipes/' + recipeId;
         });
     } else {
-        postRecipeAsync('{{RootUrlPath}}', {
+        postRecipeAsync({
             name: name,
             servingSize: servingSize,
             ingredients: ingredients,
@@ -139,11 +139,11 @@ function onSaveRecipeClicked(self, e) {
             var path = location.pathname;
 
             var newRecipeId = NaN;
-            var newRecipeIdMatch = path.match(/{{RootUrlPath}}\/api\/v1\/recipes\/(\d+)/);
+            var newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
             if (newRecipeIdMatch) {
                 newRecipeId = parseInt(newRecipeIdMatch[1], 10);
             }
-            window.location = '{{RootUrlPath}}/recipes/' + newRecipeId;
+            window.location = '/recipes/' + newRecipeId;
         });
     }
 }

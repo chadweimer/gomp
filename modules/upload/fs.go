@@ -93,5 +93,5 @@ func (u FileSystemDriver) List(dirPath string) ([]FileInfo, error) {
 
 func (u FileSystemDriver) convertPathToURL(path string) string {
 	fullFilePath := filepath.Join("/uploads", strings.TrimPrefix(path, u.cfg.UploadPath))
-	return u.cfg.RootURLPath + filepath.ToSlash(fullFilePath)
+	return filepath.ToSlash(fullFilePath)
 }

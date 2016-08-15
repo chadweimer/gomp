@@ -35,7 +35,7 @@ $(document).ready(function () {
 });
 
 function loadRecipes($container, title, searchFilter) {
-    getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function (response) {
+    getRecipesAsync(searchFilter).done(function (response) {
         $container.empty();
 
         if (response.recipes !== null) {
@@ -44,7 +44,7 @@ function loadRecipes($container, title, searchFilter) {
                     <div class="col s6 m4 l2"></div>');
                 var $recipeContent = '\
                     <div class="card tiny grey lighten-4 hoverable clickable"\
-                        onclick="location.href = \'{{RootUrlPath}}/recipes/' + recipe.id + '\';"\
+                        onclick="location.href = \'/recipes/' + recipe.id + '\';"\
                         title="' + recipe.name + '">';
                 if (recipe.mainImage.thumbnailUrl !== '') {
                     $recipeContent += '\
@@ -73,7 +73,7 @@ function loadRecipes($container, title, searchFilter) {
                 $container.append($recipeWrapper);
                 $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
             });
-            var link = '{{RootUrlPath}}/recipes?q=';
+            var link = '/recipes?q=';
             if (searchFilter.tags.length === 0) {
                 link += '&tags=';
             } else {

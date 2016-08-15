@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -29,7 +28,7 @@ func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.Hand
 	return func(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 		user := context.Get(req).Data["User"]
 		if user == nil {
-			if loginPath := fmt.Sprintf("%s/login", rc.cfg.RootURLPath); req.URL.Path != loginPath {
+			if loginPath := "/login"; req.URL.Path != loginPath {
 				http.Redirect(resp, req, loginPath, http.StatusFound)
 			}
 			return
@@ -41,7 +40,7 @@ func (rc *RouteController) RequireAuthentication(h negroni.Handler) negroni.Hand
 
 func (rc *RouteController) Login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	if context.Get(req).Data["User"] != nil {
-		http.Redirect(resp, req, fmt.Sprintf("%s/", rc.cfg.RootURLPath), http.StatusFound)
+		http.Redirect(resp, req, "/", http.StatusFound)
 	}
 
 	rc.HTML(resp, http.StatusOK, "user/login", context.Get(req).Data)
@@ -76,7 +75,7 @@ func (rc *RouteController) LoginPost(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	http.Redirect(resp, req, fmt.Sprintf("%s/", rc.cfg.RootURLPath), http.StatusFound)
+	http.Redirect(resp, req, "/", http.StatusFound)
 }
 
 func (rc *RouteController) Logout(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -90,5 +89,5 @@ func (rc *RouteController) Logout(resp http.ResponseWriter, req *http.Request, p
 			return
 		}
 	}
-	http.Redirect(resp, req, fmt.Sprintf("%s/login", rc.cfg.RootURLPath), http.StatusFound)
+	http.Redirect(resp, req, "/login", http.StatusFound)
 }

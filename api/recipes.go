@@ -80,7 +80,7 @@ func (r Router) postRecipe(resp http.ResponseWriter, req *http.Request, p httpro
 		return
 	}
 
-	resp.Header().Set("Location", fmt.Sprintf("%s/api/v1/recipes/%d", r.cfg.RootURLPath, recipe.ID))
+	resp.Header().Set("Location", fmt.Sprintf("/api/v1/recipes/%d", recipe.ID))
 	resp.WriteHeader(http.StatusCreated)
 }
 

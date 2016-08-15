@@ -119,7 +119,7 @@ func (r Router) postImage(resp http.ResponseWriter, req *http.Request, p httprou
 		return
 	}
 
-	resp.Header().Set("Location", fmt.Sprintf("%s/api/v1/recipes/%d/images/%d", r.cfg.RootURLPath, imageInfo.RecipeID, imageInfo.ID))
+	resp.Header().Set("Location", fmt.Sprintf("/api/v1/recipes/%d/images/%d", imageInfo.RecipeID, imageInfo.ID))
 	resp.WriteHeader(http.StatusCreated)
 }
 
