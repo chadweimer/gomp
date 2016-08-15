@@ -65,7 +65,7 @@ main {
 }
 .rating-container.clickable > :hover,
 .rating-container.clickable > :hover ~ a {
-    color: #ffeb3b !important;
+    color: #ffeb3b !important; /* csslint allow: important */
 }
 
 /* This seems like something that was just missed in materialize */
@@ -87,7 +87,7 @@ nav .brand-logo.left {
     overflow: hidden;
 }
 .card.tiny .card-content .card-title {
-    font-size: 1.1rem !important;
+    font-size: 1.1rem;
 }
 .card.tiny .card-action {
     position: absolute;
@@ -97,7 +97,7 @@ nav .brand-logo.left {
 }
 
 .chip {
-    margin-top: 5px !important;
+    margin-top: 5px;
 }
 .chips > input {
     text-transform: lowercase;
@@ -115,7 +115,7 @@ nav .brand-logo.left {
     position: relative;
 }
 .side-nav.flex-container > .fill {
-    flex: 1 1 auto !important;
+    flex: 1 1 auto;
     overflow-y: auto;
     position: relative;
 }
@@ -125,7 +125,7 @@ nav .brand-logo.left {
     bottom: 0;
     right: 0;
     height: 100%;
-    margin: 0 !important;
+    margin: 0 !important; /* csslint allow: important */
 }
 
 .compact-image {
