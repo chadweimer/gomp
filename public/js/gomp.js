@@ -1,4 +1,3 @@
-
 $(document).ready(function(){
     $('.button-collapse').sideNav({
         closeOnClick: true
@@ -16,17 +15,15 @@ function getQueryString(field, isArray = false) {
     var reg = new RegExp('[?&]' + field + '=([^&#]*)', 'ig');
 
     var values = [];
-    while(true) {
+    do {
         var matches = reg.exec(target);
         if (matches) {
             values.push(matches[1]);
-        } else {
-            break;
         }
-    }
+    } while(matches);
 
     if (!values.length) {
-        return null;   
+        return null;
     } else {
         return isArray ? values : values[0];
     }
