@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"math"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
+	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/context"
@@ -37,28 +35,6 @@ func main() {
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"RootUrlPath":      func() string { return cfg.RootURLPath },
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-
-			"ToLower":     strings.ToLower,
-			"QueryEscape": url.QueryEscape,
-			"Join":        strings.Join,
-			"Add":         func(a, b int64) int64 { return a + b },
-			"TimeEqual":   func(a, b time.Time) bool { return a == b },
-			"Paginate":    getPageNumbersForPagination,
-			"ColumnizeRecipes": func(recipes *models.Recipes, numSplits int) [][]interface{} {
-				slice := make([]interface{}, len(*recipes))
-				for i, v := range *recipes {
-					slice[i] = v
-				}
-				return splitSlice(slice, numSplits)
-			},
-			"StrSliceContains": func(theSlice []string, searchFor string) bool {
-				for _, value := range theSlice {
-					if value == searchFor {
-						return true
-					}
-				}
-				return false
-			},
 		}}})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)
 
@@ -83,6 +59,8 @@ func main() {
 
 	n.Use(negroni.NewStatic(http.Dir("public")))
 	n.Use(context.NewContexter(cfg, model, sessionStore))
+
+	n.Use(api.NewRouter(cfg, model))
 
 	authMux := httprouter.New()
 	authMux.GET("/login", rc.Login)
@@ -110,18 +88,8 @@ func main() {
 	recipeMux.GET("/", rc.Home)
 	recipeMux.GET("/new", rc.CreateRecipe)
 	recipeMux.GET("/recipes", rc.ListRecipes)
-	recipeMux.POST("/recipes", rc.CreateRecipePost)
 	recipeMux.GET("/recipes/:id", rc.GetRecipe)
 	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
-	recipeMux.POST("/recipes/:id", rc.EditRecipePost)
-	recipeMux.GET("/recipes/:id/delete", rc.DeleteRecipe)
-	recipeMux.POST("/recipes/:id/images", rc.AttachImagePost)
-	recipeMux.GET("/recipes/:id/images/:image_id/delete", rc.DeleteImage)
-	recipeMux.GET("/recipes/:id/images/:image_id/main", rc.SetMainImage)
-	recipeMux.POST("/recipes/:id/notes", rc.CreateNotePost)
-	recipeMux.POST("/recipes/:id/notes/:note_id", rc.EditNotePost)
-	recipeMux.GET("/recipes/:id/notes/:note_id/delete", rc.DeleteNote)
-	recipeMux.POST("/recipes/:id/ratings", rc.RateRecipePost)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
 	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 
@@ -134,47 +102,4 @@ func main() {
 
 	// Make sure to close the database connection
 	model.TearDown()
-}
-
-func getPageNumbersForPagination(pageNum, numPages, num int64) []int64 {
-	if numPages == 0 {
-		return []int64{1}
-	}
-
-	if numPages < num {
-		num = numPages
-	}
-
-	startPage := pageNum - num/2
-	endPage := pageNum + num/2
-	if startPage < 1 {
-		startPage = 1
-		endPage = startPage + num - 1
-	} else if endPage > numPages {
-		endPage = numPages
-		startPage = endPage - num + 1
-	}
-
-	pageNums := make([]int64, num, num)
-	for i := int64(0); i < num; i++ {
-		pageNums[i] = i + startPage
-	}
-	return pageNums
-}
-
-func splitSlice(slice []interface{}, numSplits int) [][]interface{} {
-	count := len(slice)
-	splitCount := int(math.Ceil(float64(count) / float64(numSplits)))
-
-	slices := make([][]interface{}, numSplits, numSplits)
-	sliceIndex := 0
-
-	for i, v := range slice {
-		if i >= (sliceIndex+1)*splitCount {
-			sliceIndex = sliceIndex + 1
-		}
-		slices[sliceIndex] = append(slices[sliceIndex], v)
-	}
-
-	return slices
 }

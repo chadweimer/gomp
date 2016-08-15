@@ -29,7 +29,6 @@ img.darken-10 {
       -ms-transition: -webkit-transform .3s ease-in-out;
           transition: transform .3s ease-in-out;
 }
-
 .fixed-action-btn > a:hover > i {
   -webkit-transform: rotate(90deg);
      -moz-transform: rotate(90deg);
@@ -42,28 +41,23 @@ img.darken-10 {
     top: 5px;
     right: 5px;
 }
-
 .rating-container > * {
     color: #dddddd;
     float: right;
 }
-
 .rating-container > .whole {
     -webkit-clip-path: inset(0 0 0 50%);
             clip-path: inset(0 0 0 50%);
     margin-left: -100%;
 }
-
 .rating-container > .half {
     -webkit-clip-path: inset(0 50% 0 0);
             clip-path: inset(0 50% 0 0);
 }
-
 .rating-container > .active,
 .rating-container > .active ~ * {
     color: #fdd835;
 }
-
 .rating-container.clickable > :hover,
 .rating-container.clickable > :hover ~ * {
     color: #ffeb3b !important;
@@ -71,43 +65,35 @@ img.darken-10 {
 
 /* This seems like something that was just missed in materialize */
 nav .brand-logo.left {
-  left: 0.5rem;
-  padding: 0;
+    left: 0.5rem;
+    padding: 0;
 }
 
 .card.tiny {
-  position: relative;
+    position: relative;
+    height: 200px;
 }
-
 .card.tiny .card-image {
   max-height: 60%;
   overflow: hidden;
 }
-
 .card.tiny .card-content {
-  max-height: 40%;
-  overflow: hidden;
+    max-height: 40%;
+    overflow: hidden;
 }
-
-.card.tiny .card-action {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
-
-.card.tiny {
-  height: 200px;
-}
-
 .card.tiny .card-content .card-title {
-  font-size: 1.1rem !important;
+    font-size: 1.1rem !important;
+}
+.card.tiny .card-action {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .chip {
     margin-top: 5px !important;
 }
-
 .chips > input {
     text-transform: lowercase;
 }
@@ -115,27 +101,58 @@ nav .brand-logo.left {
 .side-nav .indented {
     padding: 0 23.5px 0 31px;
 }
-
 .side-nav.flex-container {
     display: flex;
     flex-flow: column;
 }
-
 .side-nav.flex-container > * {
     flex: 0 1 auto;
     position: relative;
 }
-
 .side-nav.flex-container > .fill {
     flex: 1 1 auto !important;
     overflow-y: auto;
     position: relative;
 }
-
 .side-nav .header-btn {
     position: absolute;
     top: 0px;
     bottom: 0px;
     right: 0px;
     height: 100%;
+    margin: 0px !important;
+}
+
+.compact-image {
+    box-sizing: initial;
+    width: 32px;
+    height: 32px;
+    vertical-align: middle;
+    padding: 5px;
+}
+
+.pagination.grow li {
+    transform: scale(1.25);
+}
+.pagination.grow li i {
+    transform: scale(1.15);
+}
+
+.actions {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.actions li {
+    display: inline-block;
+    border-radius: 2px;
+    text-align: center;
+    vertical-align: top;
+    height: 30px;
+}
+.actions li a {
+    color: #444;
+    display: inline-block;
+    font-size: 1.2rem;
+    padding: 0 10px;
+    line-height: 30px;
 }

@@ -14,16 +14,16 @@ type RecipeModel struct {
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID            int64
-	Name          string
-	ServingSize   string
-	NutritionInfo string
-	Ingredients   string
-	Directions    string
-	SourceURL     string
-	AvgRating     float64
-	MainImage     RecipeImage
-	Tags          []string
+	ID            int64       `json:"id"`
+	Name          string      `json:"name"`
+	ServingSize   string      `json:"servingSize"`
+	NutritionInfo string      `json:"nutritionInfo"`
+	Ingredients   string      `json:"ingredients"`
+	Directions    string      `json:"directions"`
+	SourceURL     string      `json:"sourceUrl"`
+	AvgRating     float64     `json:"averageRating"`
+	MainImage     RecipeImage `json:"mainImage"`
+	Tags          []string    `json:"tags"`
 }
 
 // Recipes represents a collection of Recipe objects
@@ -98,13 +98,12 @@ func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	recipe := Recipe{
-		ID:        id,
-		MainImage: RecipeImage{},
+		ID: id,
 	}
 
 	result := m.db.QueryRow(
 		"SELECT "+
-			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0), COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')"+
+			"r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) "+
 			"FROM recipe AS r WHERE r.id = $1",
 		recipe.ID)
 	err := result.Scan(
@@ -114,8 +113,7 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 		&recipe.Ingredients,
 		&recipe.Directions,
 		&recipe.SourceURL,
-		&recipe.AvgRating,
-		&recipe.MainImage.ThumbnailURL)
+		&recipe.AvgRating)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
@@ -170,32 +168,6 @@ func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	}
 
 	return nil
-}
-
-// UpdateMainImage sets the id of the main image for the specified recipes
-// using a dedicated transation that is committed if there are not errors.
-func (m *RecipeModel) UpdateMainImage(recipe *Recipe) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	err = m.UpdateMainImageTx(recipe, tx)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-// UpdateMainImageTx sets the id of the main image for the specified recipes
-// using the specified transaction.
-func (m *RecipeModel) UpdateMainImageTx(recipe *Recipe, tx *sqlx.Tx) error {
-	_, err := tx.Exec(
-		"UPDATE recipe SET image_id = $1 WHERE id = $2",
-		recipe.MainImage.ID, recipe.ID)
-
-	return err
 }
 
 // Delete removes the specified recipe from the database using a dedicated transation

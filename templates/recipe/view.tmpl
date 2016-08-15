@@ -1,9 +1,12 @@
 {{ define "css-recipe/view" }}
 <style>
+    #recipe-image {
+        width: 64px;
+        height: 64px;
+    }
     .image-container {
         position: relative;
     }
-    
     .make-main-image {
         position: absolute;
         top: -20px;
@@ -18,163 +21,106 @@
 {{ end }}
 
 {{ define "content-recipe/view" }}
-<section class="row">
-    <article class="col s12 m12 l10 offset-l1">
-        <section class="card grey lighten-4">
+<div class="row">
+    <div class="col s12 m12 l10 offset-l1">
+        <div id="recipe" class="card grey lighten-4">
             <div class="card-content">
-                <form id="rating-form" class="rating-container clickable" method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/ratings">
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 5.0}}active{{end}}" data-rating="5.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 4.5}}active{{end}}" data-rating="4.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 4.0}}active{{end}}" data-rating="4.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 3.5}}active{{end}}" data-rating="3.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 3.0}}active{{end}}" data-rating="3.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 2.5}}active{{end}}" data-rating="2.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 2.0}}active{{end}}" data-rating="2.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 1.5}}active{{end}}" data-rating="1.5"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="whole {{if eq .Recipe.AvgRating 1.0}}active{{end}}" data-rating="1.0"><i class="material-icons">star</i></a>
-                    <a href="javascript:void(0)" class="half {{if eq .Recipe.AvgRating 0.5}}active{{end}}" data-rating="0.5"><i class="material-icons">star</i></a>
-                    <input id="rating-input" name="rating" type="hidden">
-                </form>
+                <div class="rating-container clickable">
+                    <a href="#!" class="star whole" data-rating="5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="4.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="4" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="3.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="3" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="2.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="2" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="1.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star whole" data-rating="1" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                    <a href="#!" class="star half" data-rating="0.5" onclick="onSetRatingClicked(this, event);"><i class="material-icons">star</i></a>
+                </div>
                 <h4>
-                    {{if .Recipe.MainImage.ThumbnailURL}}
-                    <a href="#pictures">
-                        <img src="{{.Recipe.MainImage.ThumbnailURL}}" class="circle" style="width: 64px; height: 64px;">
-                    </a>
-                    {{end}}
-                    {{.Recipe.Name}}
+                    <a href="#pictures"><img id="recipe-image" class="circle"></a>
+                    <span id="recipe-name"></span>
                 </h4>
-                {{if .Recipe.ServingSize}}
-                <label>Serving Size</label>
-                <p class="section plain-text">{{.Recipe.ServingSize}}</p>
-                <div class="divider"></div>
-                {{end}}
-                <label>Ingredients</label>
-                <p class="section plain-text">{{.Recipe.Ingredients}}</p>
-                <div class="divider"></div>
-                <label>Directions</label>
-                <p class="section plain-text">{{.Recipe.Directions}}</p>
-                {{if .Recipe.NutritionInfo}}
-                <div class="divider"></div>
-                <label>Nutrition</label>
-                <p class="section plain-text">{{.Recipe.NutritionInfo}}</p>
-                {{end}}
-                {{if .Recipe.SourceURL}}
-                <div class="divider"></div>
-                <label>Source</label>
-                <p class="section"><a target="_blank" href="{{.Recipe.SourceURL}}">{{.Recipe.SourceURL}}</a></p>
-                {{end}}
-                {{if .Recipe.Tags}}
-                <div class="divider"></div>
-                <p class="section">
-                    {{range .Recipe.Tags}}
-                    <div class="chip">
-                        {{.}}
-                    </div>
-                    {{end}}
-                </p>
-                {{end}}
+                <div id="recipe-serving-size" class="hide">
+                    <label>Serving Size</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-ingredients">
+                    <label>Ingredients</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-directions">
+                    <label>Directions</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-nutrition" class="hide">
+                    <label>Nutrition</label>
+                    <p class="section plain-text"></p>
+                    <div class="divider"></div>
+                </div>
+                <div id="recipe-source" class="hide">
+                    <label>Source</label>
+                    <p class="section"><a target="_blank"></a></p>
+                    <div class="divider"></div>
+                </div>
+                <p id="recipe-tags" class="section"></p>
             </div>
-        </section>
-        <section>
-            <article id="pictures" class="col s12 l6">
+        </div>
+        <div>
+            <div id="pictures" class="col s12 l6">
                 <h5 class="light">Pictures</h5>
                 <div class="divider"></div>
-                <section class="section">
-                    {{range .Images}}
-                    <span class="image-container">
-                        <a target="_blank" href="{{.URL}}">
-                            {{if .ThumbnailURL}}
-                            <img width="250" height="250" src="{{.ThumbnailURL}}">
-                            {{else}}
-                            <img width="250" height="250" src="{{.URL}}">
-                            {{end}}
-                        </a>
-                        {{if ne $.Recipe.MainImage.ThumbnailURL .ThumbnailURL}}
-                        <a class="make-main-image" href="javascript:void(0)" data-image-id="{{.ID}}">
-                            <i class="material-icons green-text">photo_library</i>
-                        </a>
-                        {{end}}
-                        <a class="delete-image" href="javascript:void(0)" data-image-id="{{.ID}}">
-                            <i class="material-icons red-text">delete</i>
-                        </a>
-                    </span>
-                    {{end}}
-                </section>
-            </article>
-            <article class="col s12 l6">
+                <div class="progress">
+                    <div class="indeterminate"></div>
+                </div>
+                <div id="images-container"></div>
+            </div>
+            <div id="notes" class="col s12 l6">
                 <h5 class="light">Notes</h5>
                 <div class="divider"></div>
-                {{range .Notes}}
-                <section class="card grey lighten-4">
-                    <div class="card-content">
-                        <p class="section left">
-                            <i class="material-icons left">comment</i>
-                            {{.CreatedAt.Format "2006 Jan 02, 03:04:05PM"}}
-                        </p>
-                        <p class="section right">
-                            <a class="edit-note" href="javascript:void(0)" data-note-id="{{.ID}}" data-note-content="{{QueryEscape .Note}}">
-                                <i class="material-icons amber-text text-darken-2">edit</i>
-                            </a>
-                            <a class="delete-note" href="javascript:void(0)" data-note-id="{{.ID}}">
-                                <i class="material-icons red-text">delete</i>
-                            </a>
-                        </p>
-                        <div class="divider clearfix"></div>
-                        <p class="section plain-text">{{.Note}}</p>
-                        {{if not (TimeEqual .CreatedAt .ModifiedAt)}}
-                        <label class="right">Modified: {{.ModifiedAt.Format "2006 Jan 02, 03:04:05PM"}}</label>
-                        {{end}}
-                    </div>
-                </section>
-                {{end}}
-            </article>
-        </section>
-    </article>
-</section>
-<section class="fixed-action-btn">
-    <a class="btn-floating btn-large waves-effect blue">
-        <i class="material-icons">more_vert</i>
-    </a>
+                <div class="progress">
+                    <div class="indeterminate"></div>
+                </div>
+                <div id="notes-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="fixed-action-btn">
+    <a class="btn-floating btn-large waves-effect blue"><i class="material-icons">more_vert</i></a>
     <ul>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="New">
             <a href="{{RootUrlPath}}/new" class="btn-floating waves-effect green">
                 <i class="material-icons">add</i>
             </a>
         </li>
-        <li>
-            <a href="#delete-confirm" class="btn-floating waves-effect red modal-trigger">
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Delete">
+            <a href="#!" class="btn-floating waves-effect red" onclick="onDeleteRecipeClicked(this, event);">
                 <i class="material-icons">delete</i>
             </a>
         </li>
-        <li>
-            <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/edit" class="btn-floating waves-effect amber darken-2">
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Edit">
+            <a href="{{.UrlPath}}/edit" class="btn-floating waves-effect amber darken-2">
                 <i class="material-icons">mode_edit</i>
             </a>
         </li>
-        <li>
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Upload Picture">
             <a href="#add-image-modal" class="btn-floating waves-effect green modal-trigger">
                 <i class="material-icons">add_a_photo</i>
             </a>
         </li>
-        <li>
-            <a id="add-note" href="javascript:void(0)" class="btn-floating waves-effect blue">
+        <li class="tooltipped" data-position="left" data-delay="0" data-tooltip="Add Note">
+            <a id="add-note" href="#!" class="btn-floating waves-effect blue" onclick="onAddNoteClicked(this, event);">
                 <i class="material-icons">insert_comment</i>
             </a>
         </li>
     </ul>
-</section>
-<div id="delete-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-        <p>Are you sure you want to delete this recipe?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a href="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/delete" class="modal-action modal-close btn-flat">Yes</a>
-    </div>
 </div>
 <div id="add-image-modal" class="modal">
-    <form action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images" method="post" enctype="multipart/form-data">
+    <form enctype="multipart/form-data" onsubmit="onAddImageSubmitted(this, event);">
         <div class="modal-content">
             <h5 class="green-text"><i class="material-icons left">add_a_photo</i>Attach Image</h5>
             <p>Browse to an image file to attach to this recipe.<p>
@@ -189,102 +135,297 @@
             </div>
         </div>
         <div class="modal-footer">
-            <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
+            <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
             <button type="submit" class="modal-action modal-close btn-flat">Attach</button>
         </div>
     </form>
 </div>
-<div id="main-image-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="green-text"><i class="material-icons left">live_help</i>Change Main Image?</h5>
-        <p>Are you sure you want to make this the main image for the recipe?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="main-image-yes" class="modal-action modal-close btn-flat">Yes</a>
-    </div>
-</div>
-<div id="delete-image-confirm" class="modal">
-    <div class="modal-content">
-        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-        <p>Are you sure you want to delete this image?</p>
-    </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-image-yes" class="modal-action modal-close btn-flat">Yes</a>
-    </div>
-</div>
 <div id="note-modal" class="modal">
-    <form method="post">
-        <div class="modal-content">
-            <h5 class="blue-text">
-                <i class="material-icons left">insert_comment</i><span id="note-title">Add Note</span>
-            </h5>
-            <div class="input-field">
-                <textarea id="note" name="note" class="materialize-textarea" required autofocus></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <a href="javascript:void(0)" class="modal-action modal-close btn-flat">Cancel</a>
-            <button id="note-submit" type="submit" class="modal-action modal-close btn-flat">Add</button>
-        </div>
-    </form>
-</div>
-<div id="delete-note-confirm" class="modal">
     <div class="modal-content">
-        <h5 class="red-text"><i class="material-icons left">warning</i>Delete?</h5>
-        <p>Are you sure you want to delete this note?</p>
+        <h5 class="blue-text">
+            <i class="material-icons left">insert_comment</i><span id="note-title">Add Note</span>
+        </h5>
+        <div class="input-field">
+            <textarea id="note" name="note" class="materialize-textarea" required autofocus></textarea>
+        </div>
     </div>
     <div class="modal-footer">
-        <a href="javascript:void(0)" class="modal-action modal-close btn-flat">No</a>
-        <a id="delete-note-yes" class="modal-action modal-close btn-flat">Yes</a>
+        <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
+        <a id="note-submit" href="#!" class="modal-action modal-close btn-flat" onclick="onSaveNoteClicked(this, event);">Save</a>
     </div>
 </div>
 {{ end }}
 
 {{ define "js-recipe/view" }}
 <script type="text/javascript">
-    $('#rating-form > a').click(function() {
-        $('#rating-input').val($(this).data('rating'));
-        $('#rating-form').submit();
-    });
+    var recipeId = parseInt(window.location.pathname.split('/').pop());
     
-    $('.make-main-image').click(function() {
-        var imageID = $(this).data('image-id');
-        $('#main-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/main');
-        $('#main-image-confirm').openModal();
+    $(document).ready(function(){
+        loadRecipe();
+        loadMainImage();
+        loadImages();
+        loadNotes();
     });
-    
-    $('.delete-image').click(function() {
-        var imageID = $(this).data('image-id');
-        $('#delete-image-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/images/' + imageID + '/delete');
-        $('#delete-image-confirm').openModal();
-    });
-    
-    $('#add-note').click(function() {
-        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes');
-        $('#note').val('');
-        $('#note-title').text('Add Note');
-        $('#note-submit').text('Add');
-        $('#note-modal').openModal();
-    });
-    
-    $('.edit-note').click(function() {
-        var noteID = $(this).data('note-id');
-        var noteContent = $(this).data('note-content');
+
+    function loadRecipe() {
+        showBusy('Loading recipe...');
+        getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
+            $('#recipe-name').append(recipe.name);
+            $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
+            $('#recipe-ingredients > p').append(recipe.ingredients);
+            $('#recipe-directions > p').append(recipe.directions);
+
+            if (recipe.servingSize != '') {
+                var $servingSize =  $('#recipe-serving-size');
+                $servingSize.removeClass('hide');
+                $servingSize.find('p').append(recipe.servingSize);
+            }
+
+            if (recipe.nutritionInfo != '') {
+                var $nutritionInfo =  $('#recipe-nutrition');
+                $nutritionInfo.removeClass('hide');
+                $nutritionInfo.find('p').append(recipe.nutritionInfo);
+            }
+
+            if (recipe.sourceUrl != '') {
+                var $sourceUrl =  $('#recipe-source');
+                $sourceUrl.removeClass('hide');
+                $sourceUrl.find('> p > a').attr("href", recipe.sourceUrl);
+                $sourceUrl.find('> p > a').append(recipe.sourceUrl);
+            }
+
+            var $tagsContainer = $('#recipe-tags');
+            if (recipe.tags != null) {
+                recipe.tags.forEach(function(tag) {
+                    $tagsContainer.append('<div class="chip">' + tag + '</div>');
+                });
+            }
+        }).always(function() {
+            hideBusy();
+        });
+    }
+
+    function onDeleteRecipeClicked(self, e) {
+        e.preventDefault();
+
+        showConfirmation(
+            'Delete?',
+            'warning',
+            'Are you sure you want to delete this recipe?',
+            function(ee) {
+                e.preventDefault();
+
+                deleteRecipeAsync('{{RootUrlPath}}', recipeId).done(function() {
+                    window.location = '{{RootUrlPath}}/recipes';
+                });
+            });
+    }
+
+    function loadMainImage() {
+        var $recipeImage = $('#recipe-image');
+        getRecipeMainImageAsync('{{RootUrlPath}}', recipeId).done(function(image) {
+            $recipeImage.removeClass('hide');
+            $recipeImage.attr("src", image.thumbnailUrl);
+        }).fail(function() {
+            $recipeImage.addClass('hide');
+        });
+    }
+
+    function onAddImageSubmitted(self, e) {
+        e.preventDefault();
+
+        showBusy('Uploading image...');
+        var imageFormData = new FormData(self);
+        postRecipeImageAsync('{{RootUrlPath}}', recipeId, imageFormData).done(function() {
+            loadMainImage();
+            loadImages();
+            Materialize.toast('Upload complete', 2000);
+        }).always(function() {
+            hideBusy();
+        });
+    }
+
+    function onDeleteImageClicked(self, e) {
+        e.preventDefault();
+
+        showConfirmation(
+            'Delete?',
+            'warning',
+            'Are you sure you want to delete this image?',
+            function(ee) {
+                var imageId = parseInt($(self).data('image-id'));
+                deleteImageAsync('{{RootUrlPath}}', imageId).done(function() {
+                    loadMainImage();
+                    loadImages();
+                    Materialize.toast('Image deleted', 2000);
+                });
+            });
+    }
+
+    function loadImages() {
+        getRecipeImagesAsync('{{RootUrlPath}}', recipeId).done(function(images) {
+            var $imagesContainer = $('#images-container');
+            $imagesContainer.empty();
+
+            if (images != null) {
+                images.forEach(function(image) {
+                    var $imageContent = '\
+                        <span class="image-container">\
+                            <a target="_blank" href="' + image.url + '">\
+                                <img width="250" height="250" src="' + image.thumbnailUrl + '">\
+                            </a>\
+                            <a href="#!" class="make-main-image" data-image-id="' + image.id + '" onclick="onSetMainImageClicked(this, event);">\
+                                <i class="material-icons green-text">photo_library</i>\
+                            </a>\
+                            <a href="#!" class="delete-image" data-image-id="' + image.id + '" onclick="onDeleteImageClicked(this, event);">\
+                                <i class="material-icons red-text">delete</i>\
+                            </a>\
+                        </span>';
+                    $imagesContainer.append($imageContent);
+                });
+            }
+        }).always(function() {
+            $('#pictures .progress').addClass('hide');
+        });
+    }
+        
+    function onSetMainImageClicked(self, e) {
+        e.preventDefault();
+
+        showConfirmation(
+            'Set Main Image?',
+            'live_help',
+            'Are you sure you want to make this the main image for the recipe?',
+            function(ee) {
+                ee.preventDefault();
+
+                var imageId = parseInt($(self).data('image-id'));
+                putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function() {
+                    loadMainImage();
+                    Materialize.toast('Main image updated', 2000);
+                });
+            });
+    }
+
+    function loadNotes() {
+        getRecipeNotesAsync('{{RootUrlPath}}', recipeId).done(function(notes) {
+            var $notesContainer = $('#notes-container');
+            $notesContainer.empty();
+
+            if (notes != null) {
+                notes.forEach(function(note) {
+                    var $noteContent = '\
+                        <section id="note-' + note.id + '" class="card grey lighten-4">\
+                            <div class="card-content">\
+                                <p class="section left">\
+                                    <i class="material-icons left">comment</i>' +
+                                    new Date(note.createdAt).toLocaleString() +
+                                '</p>\
+                                <p class="section right">\
+                                    <a href="#!" data-note-id="' + note.id + '" data-note-content="' + encodeURI(note.text) + '" onclick="onEditNoteClicked(this, event);">\
+                                        <i class="material-icons amber-text text-darken-2">edit</i>\
+                                    </a>\
+                                    <a href="#!" data-note-id="' + note.id + '" onclick="onDeleteNoteClicked(this, event);">\
+                                        <i class="material-icons red-text">delete</i>\
+                                    </a>\
+                                </p>\
+                                <div class="divider clearfix"></div>\
+                                <p class="section plain-text">' + note.text + '</p>';
+                    if (note.modifiedAt != note.createdAt) {
+                        $noteContent += '<label class="right">Modified: ' + new Date(note.modifiedAt).toLocaleString() + '</label>';
+                    }
+                    $noteContent += '\
+                            </div>\
+                        </section>';
+                    $notesContainer.append($noteContent);
+                });
+            }
+        }).always(function() {
+            $('#notes .progress').addClass('hide');
+        });
+    }
+        
+    function onEditNoteClicked(self, e) {
+        e.preventDefault();
+
+        var noteId = $(self).data('note-id');
+        var noteContent = $(self).data('note-content');
         noteContent = noteContent.replace(/\+/g, ' ');
         noteContent = decodeURIComponent(noteContent);
-        $('#note-modal > form').attr('action', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes/' + noteID);
         $('#note').val(noteContent);
         $('#note-title').text('Edit Note');
-        $('#note-submit').text('Update');
+        $('#note-submit').data('note-id', noteId);
         $('#note-modal').openModal();
-    });
+    }
     
-    $('.delete-note').click(function() {
-        var noteID = $(this).data('note-id');
-        $('#delete-note-yes').attr('href', '{{RootUrlPath}}/recipes/{{.Recipe.ID}}/notes/' + noteID + '/delete');
-        $('#delete-note-confirm').openModal();
-    });
+
+    function onAddNoteClicked(self, e) {
+        e.preventDefault();
+
+        $('#note').val('');
+        $('#note-title').text('Add Note');
+        $('#note-submit').data('note-id', '');
+        $('#note-modal').openModal();
+    }
+
+    function onSaveNoteClicked(self, e) {
+        e.preventDefault();
+
+        var noteIdStr = $(self).data('note-id');
+        if (noteIdStr == '') {
+            addNote($('#note').val());
+        } else {
+            var noteId = parseInt(noteIdStr);
+            editNote(noteId, $('#note').val());
+        }
+    }
+
+    function addNote(text) {
+        postNoteAsync('{{RootUrlPath}}', {
+            recipeId: recipeId,
+            text: text
+        }).done(function() {
+            loadNotes();
+            Materialize.toast('Note added', 2000);
+        });
+    }
+
+    function editNote(noteId, text) {
+        putNoteAsync('{{RootUrlPath}}', {
+            id: noteId,
+            recipeId: recipeId,
+            text: text
+        }).done(function() {
+            loadNotes();
+            Materialize.toast('Note updated', 2000);
+        });
+    }
+
+    function onDeleteNoteClicked(self, e) {
+        e.preventDefault();
+
+        showConfirmation(
+            'Delete?',
+            'warning',
+            'Are you sure you want to delete this note?',
+            function(ee) {
+                var noteId = parseInt($(self).data('note-id'));
+                deleteNoteAsync('{{RootUrlPath}}', noteId).done(function() {
+                    loadNotes();
+                    Materialize.toast('Note deleted', 2000);
+                });
+            });
+    }
+
+    function onSetRatingClicked(self, e) {
+        e.preventDefault();
+
+        var rating = $(self).data('rating');
+        putRecipeRatingAsync('{{RootUrlPath}}', recipeId, rating).done(function() {
+            $('.star').removeClass('active');
+            $(self).addClass('active');
+            Materialize.toast('Rating updated', 2000);
+        });
+    }
 </script>
 {{ end }}

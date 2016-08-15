@@ -1,102 +1,109 @@
 {{ define "content-home" }}
 <section class="container">
     <header class="center">
-    <h2 class="center">{{.HomeTitle}}</h2>
-    <img class="responsive-img" src="{{.HomeImage}}"/>
+        <h2 class="center">{{.HomeTitle}}</h2>
+        <img class="responsive-img" src="{{.HomeImage}}"/>
     </header>
 </section>
-<section class="row">
-    <article class="col s12 l12">
-        <h5>Recipes</h5>
-        {{range .Recipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=">{{.RecipesCount}} Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Beef</h5>
-        {{range .BeefRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=beef&tags=steak">{{.BeefCount}} Beef Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Poultry</h5>
-        {{range .PoultryRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=poultry&tags=chicken&tags=turkey">{{.PoultryCount}} Poultry Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Pork</h5>
-        {{range .PorkRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pork">{{.PorkCount}} Pork Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Seafood</h5>
-        {{range .SeafoodRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=seafood&tags=fish">{{.SeafoodCount}} Seafood Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Pasta</h5>
-        {{range .PastaRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=pasta">{{.PastaCount}} Pasta Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Vegetarian</h5>
-        {{range .VegetarianRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=vegetarian">{{.VegetarianCount}} Vegetarian Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Sides</h5>
-        {{range .SideRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=side&tags=sides">{{.SideCount}} Side Recipes &gt;&gt;</a>
-    </article>
-    <article class="col s12 l12">
-        <h5>Drinks</h5>
-        {{range .DrinkRecipes}}
-            {{template "recipecard-home" .}}
-        {{end}}
-        <a class="right" href="{{RootUrlPath}}/recipes?q=&tags=drink&tags=cocktail">{{.DrinkCount}} Drink Recipes &gt;&gt;</a>
-    </article>
-</section>
+<section id="recipes-container" class="row"></section>
+<div class="fixed-action-btn">
+    <a href="{{RootUrlPath}}/new" class="btn-floating btn-large waves-effect green">
+        <i class="material-icons">add</i>
+    </a>
+</div>
 {{ end }}
 
-{{define "recipecard-home"}}
-<div class="col s6 m4 l2">
-    <article class="card tiny grey lighten-4 hoverable clickable"
-        onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
-        title="{{.Name}}">
-        {{if .MainImage.ThumbnailURL}}
-        <section class="card-image">
-            <img src="{{.MainImage.ThumbnailURL}}" class="darken-10">
-        </section>
-        {{end}}
-        <section class="rating-container">
-            <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
-            <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
-            <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
-        </section>
-        <section class="card-content truncate">
-            <span class="card-title">{{.Name}}</span>
-        </section>
-    </article>
-</div>
+{{ define "js-home" }}
+<script type="text/javascript">
+    $(document).ready(function(){
+        var recipeLists = [
+            { title: 'Recipes', tags: [] },
+            { title: 'Beef', tags: ['beef', 'steak'] },
+            { title: 'Poultry', tags: ['chicken', 'turkey', 'poultry'] },
+            { title: 'Pork', tags: ['pork'] },
+            { title: 'Seafood', tags: ['seafood', 'fish'] },
+            { title: 'Pasta', tags: ['pasta'] },
+            { title: 'Vegetarian', tags: ['vegetarian'] },
+            { title: 'Sides', tags: ['side', 'sides'] },
+            { title: 'Drinks', tags: ['drink', 'cocktail'] },
+        ];
+        recipeLists.forEach(function(data) {
+            var $wrapper = $('\
+                <article class="col s12 l12">\
+                    <h5>' + data.title + '</h5>\
+                </article>');
+            var $container = $('\
+                <div>\
+                    <div class="progress">\
+                        <div class="indeterminate"></div>\
+                    </div>\
+                </div>');
+            $wrapper.append($container);
+            $('#recipes-container').append($wrapper)
+            loadRecipes($container, data.title, {
+                q: '',
+                tags: data.tags,
+                sort: 'random',
+                dir: 'asc',
+                page: 1,
+                count: 6,
+            });
+        });
+    });
+
+    function loadRecipes($container, title, searchFilter) {
+        getRecipesAsync('{{RootUrlPath}}', searchFilter).done(function(response) {
+            $container.empty();
+
+            if (response.recipes != null) {
+                response.recipes.forEach(function(recipe) {
+                    var $recipeWrapper = $('\
+                        <div class="col s6 m4 l2"></div>');
+                    var $recipeContent = '\
+                        <div class="card tiny grey lighten-4 hoverable clickable"\
+                            onclick="location.href = \'{{RootUrlPath}}/recipes/' + recipe.id + '\';"\
+                            title="' + recipe.name +'">';
+                    if (recipe.mainImage.thumbnailUrl != '') {
+                        $recipeContent += '\
+                            <div class="card-image">\
+                                <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
+                            </div>';
+                    }
+                    $recipeContent += '\
+                            <div class="rating-container">\
+                                <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>\
+                                <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>\
+                                <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>\
+                            </div>\
+                            <div class="card-content truncate">\
+                                <span class="card-title">' + recipe.name + '</span>\
+                            </div>\
+                        </div>';
+                    $recipeWrapper.append($recipeContent);
+                    $container.append($recipeWrapper);
+                    $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
+                });
+                var link = '{{RootUrlPath}}/recipes?q=';
+                if (searchFilter.tags.length == 0) {
+                    link += '&tags=';
+                } else {
+                    searchFilter.tags.forEach(function(tag) {
+                        link += '&tags=' + tag;
+                    });
+                }
+                $container.append('\
+                    <a class="right" href="' + link + '">\
+                        ' + title + ' (' + response.total + ') &gt;&gt;\
+                    </a>');
+            }
+        });
+    }
+</script>
 {{end}}

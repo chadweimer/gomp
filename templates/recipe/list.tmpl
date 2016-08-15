@@ -1,166 +1,324 @@
-{{ define "css-recipe/list" }}
-<style>
-    .compact-image {
-        box-sizing: initial;
-        width: 32px;
-        height: 32px;
-        vertical-align: middle;
-        padding: 5px;
-    }
-}
-</style>
-{{ end }}
-
 {{ define "content-recipe/list" }}
-<section class="row">
+<div class="row">
     <div class="col s12 l12">
         <div class="section">
-            {{if (or .SearchQuery .SearchTags)}}
-            <span class="light left">
-                Search: '{{.SearchQuery}}', Results: {{.ResultCount}}
-            </span>
-            {{end}}
-            <span class="right">
-                <a id="recipe-list-menu-button" href="#!" data-activates="recipe-list-menu" class="button-collapse show-on-large">
-                    <i class="material-icons black-text">menu</i>
-                </a>
-                <form>
-                    <ul id="recipe-list-menu" class="side-nav collapsible flex-container" data-collapsible="expandable">
-                        <li>
-                            <a class="btn waves-effect" href="?reset">Reset</a>
-                        </li>
-                        <li>
-                            <span class="collapsible-header active">Display</span>
-                            <ul class="collapsible-body">
-                                <li {{if eq .ViewType "full"}}class="active"{{end}}>
-                                    <a href="?view=full"><i class="material-icons">view_agenda</i> Full</a>
-                                </li>
-                                <li {{if eq .ViewType "compact"}}class="active"{{end}}>
-                                    <a href="?view=compact"><i class="material-icons">view_headline</i> Compact</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <span class="collapsible-header active">Sort</span>
-                            <ul class="collapsible-body">
-                                <li {{if eq .SortType "name"}}class="active"{{end}}>
-                                    <a href="?sort=name&dir={{if or (ne .SortType "name") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
-                                        <i class="material-icons">sort_by_alpha</i> Name
-                                    </a>
-                                </li>
-                                <li {{if eq .SortType "rating"}}class="active"{{end}}>
-                                    <a href="?sort=rating&dir={{if and (eq .SortType "rating") (eq .SortDirType "DESC")}}ASC{{else}}DESC{{end}}">
-                                        <i class="material-icons">star_rate</i> Rating
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <span class="collapsible-header active">Filter by Tag</span>
-                            <button class="btn-flat waves-effect header-btn" type="submit">Apply</button>
-                        </li>
-                        <li class="indented fill">
-                            <ul>
-                                {{range .AllTags}}
-                                <li>
-                                    <input id="{{.}}-tag" name="tags" type="checkbox" value="{{.}}" {{if StrSliceContains $.SearchTags .}}checked{{end}}>
-                                    <label for="{{.}}-tag">{{.}}</label>
-                                </li>
-                                {{end}}
-                            </ul>
-                            </div>
-                        </li>
-                    </ul>
-                </form>
-            </span>
+            <div class="left light">
+                Search: '<span id="search-query"></span>', Results: <span id="result-count"></span>
+            </div>
+            <div class="right">
+                <ul class="actions">
+                    <li><a href="#!" onclick="onResetClicked(this, event);"><i class="material-icons">clear_all</i></a></li>
+                    <li>
+                        <a href="#!" data-activates="recipe-list-menu" class="button-collapse-right">
+                            <i class="material-icons">settings</i>
+                        </a>
+                    </li>
+                </ul>
+                <ul id="recipe-list-menu" class="side-nav collapsible flex-container" data-collapsible="expandable">
+                    <li>
+                        <span class="collapsible-header active">Display</span>
+                        <ul class="collapsible-body">
+                            <li class="view-mode full">
+                                <a href="#!" onclick="onChangeViewClicked(this, event);" data-mode="full">
+                                    <i class="material-icons">view_agenda</i> Full
+                                </a>
+                            </li>
+                            <li class="view-mode compact">
+                                <a href="#!" onclick="onChangeViewClicked(this, event);" data-mode="compact">
+                                    <i class="material-icons">view_headline</i> Compact
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="collapsible-header active">Sort</span>
+                        <ul class="collapsible-body">
+                            <li class="sort name">
+                                <a href="#!" onclick="onChangeSortClicked(this, event);" data-sort="name" data-dir="asc">
+                                    <i class="material-icons">sort_by_alpha</i> Name
+                                </a>
+                            </li>
+                            <li class="sort rating">
+                                <a href="#!" onclick="onChangeSortClicked(this, event);" data-sort="rating" data-dir="desc">
+                                    <i class="material-icons">star_rate</i> Rating
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="collapsible-header active">Filter by Tag</span>
+                        <a href="#!" class="btn-flat waves-effect header-btn" onclick="onApplyTagsClicked(this, event);">Apply</a>
+                    </li>
+                    <li class="indented fill">
+                        <ul id="tag-filter-list"></ul>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    {{template "pagination-recipe/list" .}}
+    <div class="pagination-container before col s12 l12"></div>
 
-    {{if ne $.ViewType "compact"}}
-    {{range .Recipes}}
-    <div class="col s12 m6 l4">
-        <article class="card small grey lighten-4 hoverable clickable"
-            onclick="location.href = '{{RootUrlPath}}/recipes/{{.ID}}';"
-            title="{{.Name}}">
-            {{if .MainImage.ThumbnailURL}}
-            <section class="card-image">
-                <img src="{{.MainImage.ThumbnailURL}}" class="darken-10">
-            </section>
-            {{end}}
-            <section class="rating-container">
-                <i class="material-icons whole {{if eq .AvgRating 5.0}}active{{end}}">star</i>
-                <i class="material-icons half {{if eq .AvgRating 4.5}}active{{end}}">star</i>
-                <i class="material-icons whole {{if eq .AvgRating 4.0}}active{{end}}">star</i>
-                <i class="material-icons half {{if eq .AvgRating 3.5}}active{{end}}">star</i>
-                <i class="material-icons whole {{if eq .AvgRating 3.0}}active{{end}}">star</i>
-                <i class="material-icons half {{if eq .AvgRating 2.5}}active{{end}}">star</i>
-                <i class="material-icons whole {{if eq .AvgRating 2.0}}active{{end}}">star</i>
-                <i class="material-icons half {{if eq .AvgRating 1.5}}active{{end}}">star</i>
-                <i class="material-icons whole {{if eq .AvgRating 1.0}}active{{end}}">star</i>
-                <i class="material-icons half {{if eq .AvgRating 0.5}}active{{end}}">star</i>
-            </section>
-            <section class="card-content truncate">
-                <span class="card-title">{{.Name}}</span>
-            </section>
-        </article>
-    </div>
-    {{end}}
-    {{else}}
-    {{range (ColumnizeRecipes .Recipes 4)}}
-    <div class="col s12 m6 l3">
-        {{range .}}
-        <div class="col s12 l12">
-            <a href="{{RootUrlPath}}/recipes/{{.ID}}" class="truncate" title="{{.Name}}">
-                <img {{if .MainImage.ThumbnailURL}}src="{{.MainImage.ThumbnailURL}}"{{end}} class="compact-image circle">
-                <span>{{.Name}}</span>
-            </a>
-        </div>
-        {{end}}
-    </div>
-    {{end}}
-    {{end}}
+    <div class="recipes-container col s12 l12"></div>
 
-    {{template "pagination-recipe/list" .}}
+    <div class="pagination-container after col s12 l12"></div>
 
-</section>
-<section class="fixed-action-btn">
+</div>
+<div class="fixed-action-btn">
     <a href="{{RootUrlPath}}/new" class="btn-floating btn-large waves-effect green">
         <i class="material-icons">add</i>
     </a>
-</section>
+</div>
 {{ end }}
-
-{{define "pagination-recipe/list"}}
-{{$baseLink := .SearchQuery | printf "?q=%s&page="}}
-<ul class="pagination no-padding col s12 l12 center">
-    <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
-        <a href="{{if gt .PageNum 1}}{{$baseLink}}1{{else}}#{{end}}"><i class="material-icons">first_page</i></a>
-    </li>
-    <li class="{{if le .PageNum 1}}disabled{{end}} no-padding">
-        <a href="{{if gt .PageNum 1}}{{$baseLink}}{{Add .PageNum -1}}{{else}}#{{end}}"><i class="material-icons">chevron_left</i></a>
-    </li>
-    {{range  Paginate .PageNum .NumPages 5}}
-    <li {{if eq $.PageNum .}}class="active"{{end}}>
-        <a href="{{$baseLink}}{{.}}">{{.}}</a>
-    </li>
-    {{end}}
-    <li class="{{if ge .PageNum .NumPages}}disabled{{end}} no-padding">
-        <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{Add .PageNum 1}}{{else}}#{{end}}"><i class="material-icons">chevron_right</i></a>
-    </li>
-    <li class="{{if ge .PageNum .NumPages}}disabled{{end}} no-padding">
-        <a href="{{if lt .PageNum .NumPages}}{{$baseLink}}{{.NumPages}}{{else}}#{{end}}"><i class="material-icons">last_page</i></a>
-    </li>
-</ul>
-{{end}}
 
 {{define "js-recipe/list"}}
 <script type="text/javascript">
-$(document).ready(function(){
-    $('#recipe-list-menu-button').sideNav({
-        edge: 'right'
+    $(document).ready(function(){
+        pageNum = parseInt(getQueryString('page'));
+        if (pageNum == null || isNaN(pageNum)) {
+            pageNum = 1;
+        }
+
+        query = getQueryStringWithStorageBacking('q', '');
+        searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v != '');
+        sortBy = getQueryStringWithStorageBacking('sort', 'name');
+        sortDir = getQueryStringWithStorageBacking('dir', 'asc');
+        viewMode = getQueryStringWithStorageBacking('view', 'full');
+
+        loadRecipes();
+        loadTags(searchTags);
     });
-});
+
+    function onResetClicked(self, e) {
+        e.preventDefault();
+
+        sessionStorage.clear();
+        pageNum = 1;
+        query = '';
+        searchTags = [];
+        sortBy = 'name';
+        sortDir = 'asc';
+        viewMode = 'full';
+
+        loadRecipes();
+        loadTags(searchTags);
+    }
+
+    function onChangeViewClicked(self, e) {
+        e.preventDefault();
+
+        viewMode = $(self).data('mode');
+        trySaveToSessionStorage('view', JSON.stringify(viewMode));
+
+        loadRecipes();
+    }
+
+    function onChangeSortClicked(self, e) {
+        e.preventDefault();
+
+        var newSortBy = $(self).data('sort');
+        if (sortBy == newSortBy) {
+            sortDir = (sortDir == 'asc' ? 'desc' : 'asc');
+        } else {
+            sortBy = newSortBy;
+            sortDir = $(self).data('dir');
+        }
+        trySaveToSessionStorage('sort', JSON.stringify(sortBy));
+        trySaveToSessionStorage('dir', JSON.stringify(sortDir));
+
+        loadRecipes();
+    }
+
+    function onPaginationClicked(self, e) {
+        e.preventDefault();
+
+        pageNum = parseInt($(self).data('page'));
+        if (pageNum == null || isNaN(pageNum)) {
+            pageNum = 1;
+        }
+
+        loadRecipes();
+    }
+
+    function onApplyTagsClicked(self, e) {
+        e.preventDefault();
+
+        var checkedTags = [];
+        $('#tag-filter-list input[name="tags"]:checked').each(function() {
+            checkedTags.push($(this).val());
+        })
+        searchTags = checkedTags;
+        trySaveToSessionStorage('tags', JSON.stringify(searchTags));
+
+        loadRecipes();
+        loadTags(searchTags);
+    }
+
+    function loadRecipes() {
+        showBusy('Loading recipes...');
+
+        $('#search-query').text(query);
+        $('.view-mode').removeClass('active');
+        $('.view-mode.' + viewMode).addClass('active');
+        $('.sort').removeClass('active');
+        $('.sort.' + sortBy).addClass('active');
+        
+        var $container = $('.recipes-container');
+
+        var count = (viewMode != 'compact' ? 12 : 60);
+        getRecipesAsync('{{RootUrlPath}}', {
+            q: query,
+            tags: searchTags,
+            sort: sortBy,
+            dir: sortDir,
+            page: pageNum,
+            count: count,
+        }).done(function(response) {
+            $('#result-count').text(response.total);
+
+            $container.empty();
+
+            if (response.recipes != null) {
+                if (viewMode != 'compact') {
+                    addRecipesFull($container, response.recipes);
+                } else {
+                    addRecipesCompact($container, response.recipes);
+                }
+            }
+
+            var numPages = Math.ceil(response.total / count);
+            addPaginiation(pageNum, numPages);
+        }).always(function() {
+            hideBusy();
+        });
+    }
+
+    function addRecipesFull($container, recipes) {
+        recipes.forEach(function(recipe) {
+            var $recipeWrapper = $('\
+                <div class="col s12 m6 l4"></div>');
+            var $recipeContent = '\
+                <div class="card small grey lighten-4 hoverable clickable"\
+                    onclick="location.href = \'{{RootUrlPath}}/recipes/' + recipe.id + '\';"\
+                    title="' + recipe.name +'">';
+            if (recipe.mainImage.thumbnailUrl != '') {
+                $recipeContent += '\
+                    <div class="card-image">\
+                        <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
+                    </div>';
+            }
+            $recipeContent += '\
+                    <div class="rating-container">\
+                        <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>\
+                        <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>\
+                        <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>\
+                        <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>\
+                        <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>\
+                        <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>\
+                        <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>\
+                        <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>\
+                        <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>\
+                        <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>\
+                    </div>\
+                    <div class="card-content truncate">\
+                        <span class="card-title">' + recipe.name + '</span>\
+                    </div>\
+                </div>';
+            $recipeWrapper.append($recipeContent);
+            $container.append($recipeWrapper);
+            $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
+        });
+    }
+
+    function addRecipesCompact($container, recipes) {
+        var columnizedRecipes = splitArray(recipes, 4);
+        columnizedRecipes.forEach(function(innerRecipes) {
+            var $innerContainer = $('<div class="col s12 m6 l3"></div>');
+            $container.append($innerContainer);
+
+            innerRecipes.forEach(function(recipe) {
+                var $recipeWrapper = $('\
+                    <div class="col s12 l12"></div>');
+                var $recipeContent = '\
+                    <a href="{{RootUrlPath}}/recipes/' + recipe.id + '" class="truncate" title="' + recipe.name + '">\
+                        <img class="compact-image circle">\
+                        <span>' + recipe.name + '</span>\
+                    </a>';
+                $recipeWrapper.append($recipeContent);
+                $innerContainer.append($recipeWrapper);
+                if (recipe.mainImage.thumbnailUrl != '') {
+                    $recipeWrapper.find('img').attr('src', recipe.mainImage.thumbnailUrl);
+                }
+            });
+        });
+    }
+
+    function addPaginiation(pageNum, numPages) {
+        var prevPageNum = pageNum - 1;
+        var nextPageNum = pageNum + 1;
+        $('.pagination-container').html('\
+            <ul class="pagination center grow">\
+                <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="1">\
+                        <i class="material-icons">first_page</i>\
+                    </a>\
+                </li>\
+                <li class="' + (pageNum == 1 ? 'disabled' : '') + '">\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + prevPageNum + '">\
+                        <i class="material-icons">chevron_left</i>\
+                    </a>\
+                </li>\
+                <li class="active">\
+                    <a href="#!">' + pageNum + '</a>\
+                </li>\
+                <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + nextPageNum + '">\
+                        <i class="material-icons">chevron_right</i>\
+                    </a>\
+                </li>\
+                <li class="' + (pageNum == numPages ? 'disabled' : '') + '">\
+                    <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + numPages + '">\
+                        <i class="material-icons">last_page</i>\
+                    </a>\
+                </li>\
+            </ul>');
+    }
+
+    function loadTags(searchTags) {
+        getTagsAsync('{{RootUrlPath}}', {
+            sort: "tag",
+            dir: "asc",
+            count: Number.MAX_SAFE_INTEGER,
+        }).done(function(tags){
+            var $container = $('#tag-filter-list');
+            $container.empty();
+            if (tags != null) {
+                tags.forEach(function(tag){
+                    $container.append('\
+                    <li>\
+                        <input id="' + tag + '-tag" name="tags" type="checkbox" value="' + tag + '"' + (searchTags.includes(tag) ? ' checked' : '') + '>\
+                        <label for="' + tag + '-tag">' + tag + '</label>\
+                    </li>');
+                });
+            }
+        });
+    }
+
+    function splitArray(items, numSplits) {
+        var splitCount = Math.ceil(items.length / numSplits)
+
+        var newArrays = [[]];
+        var index = 0
+
+        for (i = 0; i < items.length; i++) {
+            if (i >= (index + 1) * splitCount) {
+                newArrays.push([]);
+                index++;
+            }
+            newArrays[index].push(items[i]);
+        }
+
+        return newArrays;
+    }
 </script>
 {{end}}

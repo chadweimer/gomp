@@ -1,32 +1,32 @@
 {{ define "content-recipe/edit" }}
 <section id="edit-recipe-container" class="container">
     <header class="row">
-        <h4>{{if .Recipe}}Edit{{else}}Add{{end}} Recipe</h4>
+        <h4><span id="action-text">Add</span> Recipe</h4>
     </header>
-    <form method="post" action="{{RootUrlPath}}/recipes/{{.Recipe.ID}}">
+    <form id="recipe-form">
         <div class="row">
             <div class="input-field col s12 l12">
-                <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" value="{{.Recipe.Name}}" required autofocus>
+                <input id="name" name="name" class="validate" placeholder="(e.g., Fried Chicken)" required autofocus>
                 <label for="name" class="active">Name *</label>
             </div>
             <div class="input-field col s12 l12">
-                <textarea id="serving-size" name="serving-size" class="materialize-textarea" placeholder="(e.g., 2)">{{.Recipe.ServingSize}}</textarea>
+                <textarea id="serving-size" name="serving-size" class="materialize-textarea" placeholder="(e.g., 2)"></textarea>
                 <label for="serving-size" class="active">Serving Size</label>
             </div>
             <div class="input-field col s12 l12">
-                <textarea id="ingredients" name="ingredients" class="materialize-textarea" placeholder="List of each ingredient, optionally separated into sections (e.g., Marinade)." required>{{.Recipe.Ingredients}}</textarea>
+                <textarea id="ingredients" name="ingredients" class="materialize-textarea" placeholder="List of each ingredient, optionally separated into sections (e.g., Marinade)." required></textarea>
                 <label for="ingredients" class="active">Ingredients *</label>
             </div>
             <div class="input-field col s12 l12">
-                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required>{{.Recipe.Directions}}</textarea>
+                <textarea id="directions" name="directions" class="materialize-textarea" placeholder="Step-by-step directions to follow to make the dish." required></textarea>
                 <label for="directions" class="active">Directions *</label>
             </div>
             <div class="input-field col s12 l12">
-                <textarea id="nutrition-info" name="nutrition-info" class="materialize-textarea" placeholder="(e.g., 100 Calories, 2g Fat)">{{.Recipe.NutritionInfo}}</textarea>
+                <textarea id="nutrition-info" name="nutrition-info" class="materialize-textarea" placeholder="(e.g., 100 Calories, 2g Fat)"></textarea>
                 <label for="nutrition-info" class="active">Nutrition</label>
             </div>
             <div class="input-field col s12 l12">
-                <input id="source" name="source" type="url" placeholder="(e.g., http://www.example.com/recipes/fried-chicken)" value="{{.Recipe.SourceURL}}">
+                <input id="source" name="source" type="url" placeholder="(e.g., http://www.example.com/recipes/fried-chicken)">
                 <label for="source" class="active">Source</label>
             </div>
             <div id="tags" class="input-field col s12 l12">
@@ -34,13 +34,11 @@
             </div>
             <div class="input-field col s12 l12">
                 <div><label class="active">Suggested Tags</label></div>
-                {{range .SuggestedTags}}
-                <span class="chip green lighten-5 green-text text-darken-4" data-tag="{{.}}">{{.}}<i class="material-icons close add">add</i></span>
-                {{end}}
+                <div id="suggested-tags-container"></div>
             </div>
         </div>
         <div class="center">
-            <button type="submit" class="btn waves-effect">
+            <button type="submit" class="btn waves-effect" onclick="onSaveRecipeClicked(this, event);">
                 Save
                 <i class="material-icons right">save</i>
             </button>
@@ -55,43 +53,155 @@
 
 {{ define "js-recipe/edit" }}
 <script type="text/javascript">
-$(document).ready(function(){
-    var $tagDiv = $('#tags');
-    var $tagChips = $tagDiv.find('.chips');
     
-    $tagChips.material_chip({
-        data: [
-            {{range .Recipe.Tags}}{tag: '{{.}}'},
-            {{end}}
-        ],
-        placeholder: '+tag',
-        secondaryPlaceholder: '+tag',
-    });
-    $tagChips.find('.chip').each(function() {
-        $tagDiv.append('<input name="tags" type="hidden" value="' + $(this).contents().first().text() + '">');
-    });
-    $tagChips.on('chip.add', function(e, chip) {
-        $tagDiv.append('<input name="tags" type="hidden" value="' + chip.tag + '">');
-    });
-    $tagChips.on('chip.delete', function(e, chip) {
-        $tagDiv.find('input[value="' + chip.tag + '"]').remove();
+    $(document).ready(function() {
+        recipeId = NaN;
+        var path = window.location.pathname;
+        var recipeIdMatch = path.match(/{{RootUrlPath}}\/recipes\/(\d+)\/edit/);
+        if (recipeIdMatch) {
+            recipeId = parseInt(recipeIdMatch[1]);
+        }
+
+        if(!isNaN(recipeId)) {
+            $('#action-text').text('Edit');
+            loadRecipe();
+        } else {
+            initTags([]);
+        }
+
+        loadSuggestedTags();
     });
 
-    var $tagInput = $tagDiv.find('.chips > input');
-    $tagInput.keyup(function(){
-        this.value = this.value.toLowerCase();
-    });
-    $tagInput.after('<label class="active">Tags</label>');
+    function loadRecipe() {
+        showBusy('Loading recipe...');
+        getRecipeAsync('{{RootUrlPath}}', recipeId).done(function(recipe) {
+            $('#name').val(recipe.name);
+            $('#serving-size').val(recipe.servingSize);
+            $('#serving-size').trigger('autoresize');
+            $('#ingredients').val(recipe.ingredients);
+            $('#ingredients').trigger('autoresize');
+            $('#directions').val(recipe.directions);
+            $('#directions').trigger('autoresize');
+            $('#nutrition-info').val(recipe.nutritionInfo);
+            $('#nutrition-info').trigger('autoresize');
+            $('#source').val(recipe.sourceUrl);
 
-    var $addChip = $('.chip .add');
-    $addChip.on('click', function() {
-        var tagData = $(this).closest('.chip').data('tag');
+            var tagsData = [];
+            if (recipe.tags != null) {
+                recipe.tags.forEach(function(tag) {
+                    tagsData.push({tag: tag});
+                });
+            }
+            initTags(tagsData);
+        }).always(function() {
+            hideBusy();
+        });
+    }
+
+    function initTags(initialTags) {
+        var $tagDiv = $('#tags');
+        var $tagChips = $tagDiv.find('.chips');
+        $tagChips.material_chip({
+            data: initialTags,
+            placeholder: '+tag',
+            secondaryPlaceholder: '+tag',
+        });
+        $tagChips.find('.chip').each(function() {
+            $tagDiv.append('<input name="tags" type="hidden" value="' + $(this).contents().first().text() + '">');
+        });
+        $tagChips.on('chip.add', function(e, chip) {
+            $tagDiv.append('<input name="tags" type="hidden" value="' + chip.tag + '">');
+        });
+        $tagChips.on('chip.delete', function(e, chip) {
+            $tagDiv.find('input[value="' + chip.tag + '"]').remove();
+        });
+
+        var $tagInput = $tagDiv.find('.chips > input');
+        $tagInput.keyup(function(){
+            this.value = this.value.toLowerCase();
+        });
+        $tagInput.after('<label class="active">Tags</label>');
+    }
+
+    function loadSuggestedTags() {
+        var $suggestedTagsContainer = $('#suggested-tags-container');
+        getTagsAsync('{{RootUrlPath}}', {
+            sort: "frequency",
+            dir: "desc",
+            count: 12,
+        }).done(function(tags){
+            if (tags != null) {
+                tags.forEach(function(tag){
+                    $suggestedTagsContainer.append('\
+                        <span class="chip green lighten-5 green-text text-darken-4" data-tag="' + tag + '">\
+                            ' + tag + '<i class="material-icons close" onclick="suggestedTagClicked(this, event);">add</i>\
+                        </span>');
+                });
+            }
+        });
+    }
+
+    function suggestedTagClicked(self, e) {
+        e.preventDefault();
+
+        var $tagInput = $('#tags .chips > input');
+        var tagData = $(self).closest('.chip').data('tag');
         $tagInput.val(tagData);
-        var e = jQuery.Event('keydown');
-        e.which = 13;
-        e.keyCode = 13;
-        $tagInput.trigger(e);
-    });
-});
+        var ke = $.Event('keydown');
+        ke.which = 13;
+        ke.keyCode = 13;
+        $tagInput.trigger(ke);
+    }
+
+    function onSaveRecipeClicked(self, e) {
+        e.preventDefault();
+
+        var name = $('#name').val();
+        var servingSize = $('#serving-size').val();
+        var ingredients = $('#ingredients').val();
+        var directions = $('#directions').val();
+        var nutritionInfo = $('#nutrition-info').val();
+        var sourceUrl = $('#source').val();
+        var tags = [];
+        $('#recipe-form input[name="tags"]').each(function() {
+            tags.push($(this).val());
+        });
+
+        if (!isNaN(recipeId)) {
+            putRecipeAsync('{{RootUrlPath}}', {
+                id: recipeId,
+                name: name,
+                servingSize: servingSize,
+                ingredients: ingredients,
+                directions: directions,
+                nutritionInfo: nutritionInfo,
+                sourceUrl: sourceUrl,
+                tags: tags,
+            }).done(function() {
+                window.location = '{{RootUrlPath}}/recipes/' + recipeId;
+            });
+        } else {
+            postRecipeAsync('{{RootUrlPath}}', {
+                name: name,
+                servingSize: servingSize,
+                ingredients: ingredients,
+                directions: directions,
+                nutritionInfo: nutritionInfo,
+                sourceUrl: sourceUrl,
+                tags: tags,
+            }).done(function(data, textStatus, request) {
+                var location = document.createElement('a');
+                location.href = request.getResponseHeader('Location');
+                var path = location.pathname;
+
+                var newRecipeId = NaN;
+                var newRecipeIdMatch = path.match(/{{RootUrlPath}}\/api\/v1\/recipes\/(\d+)/);
+                if (newRecipeIdMatch) {
+                    newRecipeId = parseInt(newRecipeIdMatch[1]);
+                }
+                window.location = '{{RootUrlPath}}/recipes/' + newRecipeId;
+            });
+        }
+    }
 </script>
 {{ end }}
