@@ -71,7 +71,6 @@ func (u FileSystemDriver) List(dirPath string) ([]FileInfo, error) {
 		return fileInfos, err
 	}
 
-	// TODO: Restrict based on file extension?
 	for _, file := range files {
 		if !file.IsDir() {
 			name := file.Name()
