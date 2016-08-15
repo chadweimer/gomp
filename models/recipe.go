@@ -155,7 +155,7 @@ func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 			"WHERE id = $7",
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL, recipe.ID)
 
-	// TODO: Deleting and recreating seems inefficent and potentially error prone
+	// TODO: Deleting and recreating seems inefficent. Maybe make this smarter.
 	err = m.Tags.DeleteAllTx(recipe.ID, tx)
 	if err != nil {
 		return err
