@@ -1,5 +1,8 @@
-[![Build Status](https://travis-ci.org/chadweimer/gomp.svg?branch=master)](https://travis-ci.org/chadweimer/gomp)
-[![CircleCI](https://circleci.com/gh/chadweimer/gomp.svg?style=svg)](https://circleci.com/gh/chadweimer/gomp)
+[![Travis](https://img.shields.io/travis/chadweimer/gomp.svg?style=flat-square&label=travisci)](https://travis-ci.org/chadweimer/gomp)
+[![CircleCI](https://img.shields.io/circleci/project/chadweimer/gomp.svg?style=flat-square&label=circleci)](https://circleci.com/gh/chadweimer/gomp)
+[![Closed Pull Requests](https://img.shields.io/github/issues-pr-closed-raw/chadweimer/gomp.svg?style=flat-square)](https://github.com/chadweimer/gomp/pulls)
+[![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg?style=flat-square)](https://github.com/chadweimer/gomp/releases)
+[![license](https://img.shields.io/github/license/chadweimer/gomp.svg?style=flat-square)](LICENSE)
 
 # GOMP: Go Meal Planner
 
