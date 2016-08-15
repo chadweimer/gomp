@@ -1,6 +1,6 @@
 
 $(document).ready(function () {
-    recipeId = parseInt(window.location.pathname.split('/').pop());
+    recipeId = parseInt(window.location.pathname.split('/').pop(), 10);
 
     loadRecipe();
     loadMainImage();
@@ -94,7 +94,7 @@ function onDeleteImageClicked(self, e) {
         'warning',
         'Are you sure you want to delete this image?',
         function (ee) {
-            var imageId = parseInt($(self).data('image-id'));
+            var imageId = parseInt($(self).data('image-id'), 10);
             deleteImageAsync('{{RootUrlPath}}', imageId).done(function () {
                 loadMainImage();
                 loadImages();
@@ -140,7 +140,7 @@ function onSetMainImageClicked(self, e) {
         function (ee) {
             ee.preventDefault();
 
-            var imageId = parseInt($(self).data('image-id'));
+            var imageId = parseInt($(self).data('image-id'), 10);
             putRecipeMainImageAsync('{{RootUrlPath}}', recipeId, imageId).done(function () {
                 loadMainImage();
                 Materialize.toast('Main image updated', 2000);
@@ -216,7 +216,7 @@ function onSaveNoteClicked(self, e) {
     if (noteIdStr === '') {
         addNote($('#note').val());
     } else {
-        var noteId = parseInt(noteIdStr);
+        var noteId = parseInt(noteIdStr, 10);
         editNote(noteId, $('#note').val());
     }
 }
@@ -250,7 +250,7 @@ function onDeleteNoteClicked(self, e) {
         'warning',
         'Are you sure you want to delete this note?',
         function (ee) {
-            var noteId = parseInt($(self).data('note-id'));
+            var noteId = parseInt($(self).data('note-id'), 10);
             deleteNoteAsync('{{RootUrlPath}}', noteId).done(function () {
                 loadNotes();
                 Materialize.toast('Note deleted', 2000);

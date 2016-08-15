@@ -1,11 +1,11 @@
 $(document).ready(function(){
-    pageNum = parseInt(getQueryString('page'));
+    pageNum = parseInt(getQueryString('page'), 10);
     if (pageNum === null || isNaN(pageNum)) {
         pageNum = 1;
     }
 
     query = getQueryStringWithStorageBacking('q', '');
-    searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v != '');
+    searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v !== '');
     sortBy = getQueryStringWithStorageBacking('sort', 'name');
     sortDir = getQueryStringWithStorageBacking('dir', 'asc');
     viewMode = getQueryStringWithStorageBacking('view', 'full');
@@ -57,7 +57,7 @@ function onChangeSortClicked(self, e) {
 function onPaginationClicked(self, e) {
     e.preventDefault();
 
-    pageNum = parseInt($(self).data('page'));
+    pageNum = parseInt($(self).data('page'), 10);
     if (pageNum === null || isNaN(pageNum)) {
         pageNum = 1;
     }

@@ -3,7 +3,7 @@ $(document).ready(function() {
     var path = window.location.pathname;
     var recipeIdMatch = path.match(/{{RootUrlPath}}\/recipes\/(\d+)\/edit/);
     if (recipeIdMatch) {
-        recipeId = parseInt(recipeIdMatch[1]);
+        recipeId = parseInt(recipeIdMatch[1], 10);
     }
 
     if(!isNaN(recipeId)) {
@@ -141,7 +141,7 @@ function onSaveRecipeClicked(self, e) {
             var newRecipeId = NaN;
             var newRecipeIdMatch = path.match(/{{RootUrlPath}}\/api\/v1\/recipes\/(\d+)/);
             if (newRecipeIdMatch) {
-                newRecipeId = parseInt(newRecipeIdMatch[1]);
+                newRecipeId = parseInt(newRecipeIdMatch[1], 10);
             }
             window.location = '{{RootUrlPath}}/recipes/' + newRecipeId;
         });
