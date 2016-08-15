@@ -78,85 +78,84 @@ function showConfirmation(title, icon, message, yesCallback) {
     $('#confirmation-dialog').openModal();
 }
 
-function getRecipesAsync(rootUrlPath, searchFilter) {
+const API_BASE_PATH = '/api/v1';
+
+function getAsync(url, data = null) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes',
+        url: url,
         method: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        data: searchFilter
+        data: data
     });
 }
 
-function getRecipeAsync(rootUrlPath, recipeId) {
+function putAsync(url, data) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId,
-        method: 'GET',
-        dataType: 'json'
-    });
-}
-
-function postRecipeAsync(rootUrlPath, recipe) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes',
+        url: url,
         method: 'POST',
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify(recipe)
+        data: data
     });
 }
 
-function putRecipeAsync(rootUrlPath, recipe) {
+function postAsync(url, data) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipe.id,
-        method: 'PUT',
+        url: url,
+        method: 'POST',
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify(recipe)
+        data: data
     });
 }
 
-function deleteRecipeAsync(rootUrlPath, recipeId) {
+function deleteAsync(url) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId,
+        url: url,
         method: 'DELETE',
         contentType: 'application/json',
         dataType: 'text'
     });
 }
 
+function getRecipesAsync(rootUrlPath, searchFilter) {
+    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes', searchFilter);
+}
+
+function getRecipeAsync(rootUrlPath, recipeId) {
+    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId);
+}
+
+function postRecipeAsync(rootUrlPath, recipe) {
+    return postAsync(rootUrlPath + API_BASE_PATH + '/recipes', JSON.stringify(recipe));
+}
+
+function putRecipeAsync(rootUrlPath, recipe) {
+    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes' + recipe.id, JSON.stringify(recipe));
+}
+
+function deleteRecipeAsync(rootUrlPath, recipeId) {
+    return deleteAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId);
+}
+
 function getRecipeMainImageAsync(rootUrlPath, recipeId) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
-        method: 'GET',
-        dataType: 'json'
-    });
+    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/image');
 }
 
 function putRecipeMainImageAsync(rootUrlPath, recipeId, imageId) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
-        method: 'PUT',
-        contentType: 'application/json',
-        dataType: 'text',
-        processData: false,
-        data: imageId
-    });
+    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/image', imageId);
 }
 
 function getRecipeImagesAsync(rootUrlPath, recipeId) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
-        method: 'GET',
-        dataType: 'json'
-    });
+    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/images');
 }
 
 function postRecipeImageAsync(rootUrlPath, recipeId, imageFormData) {
     return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
+        url: rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
         enctype: 'multipart/form-data',
         contentType: false,
@@ -167,69 +166,29 @@ function postRecipeImageAsync(rootUrlPath, recipeId, imageFormData) {
 }
 
 function deleteImageAsync(rootUrlPath, imageId) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/images/' + imageId,
-        method: 'DELETE',
-        contentType: 'application/json',
-        dataType: 'text'
-    });
+    return deleteAsync(rootUrlPath + API_BASE_PATH + '/images/' + imageId);
 }
 
 function getRecipeNotesAsync(rootUrlPath, recipeId) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/notes',
-        method: 'GET',
-        dataType: 'json'
-    });
+    return getAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/notes');
 }
 
 function postNoteAsync(rootUrlPath, note) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/notes',
-        method: 'POST',
-        contentType: 'application/json',
-        dataType: 'text',
-        processData: false,
-        data: JSON.stringify(note)
-    });
+    return postAsync(rootUrlPath + API_BASE_PATH + '/notes', JSON.stringify(note));
 }
 
 function putNoteAsync(rootUrlPath, note) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/notes/' + note.id,
-        method: 'PUT',
-        contentType: 'application/json',
-        dataType: 'text',
-        processData: false,
-        data: JSON.stringify(note)
-    });
+    return putAsync(rootUrlPath + API_BASE_PATH + '/notes/' + note.id, JSON.stringify(note));
 }
 
 function deleteNoteAsync(rootUrlPath, noteId) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/notes/' + noteId,
-        method: 'DELETE',
-        contentType: 'application/json',
-        dataType: 'text'
-    });
+    return deleteAsync(rootUrlPath + API_BASE_PATH + '/notes/' + noteId);
 }
 
 function putRecipeRatingAsync(rootUrlPath, recipeId, rating) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/rating',
-        method: 'PUT',
-        dataType: 'json',
-        processData: false,
-        data: rating
-    });
+    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipeId + '/rating', rating);
 }
 
 function getTagsAsync(rootUrlPath, tagsFilter) {
-    return $.ajax({
-        url: rootUrlPath + '/api/v1/tags',
-        method: 'GET',
-        contentType: 'application/json',
-        dataType: 'json',
-        data: tagsFilter
-    });
+    return getAsync(rootUrlPath + API_BASE_PATH + '/tags', tagsFilter);
 }
