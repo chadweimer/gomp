@@ -1,4 +1,4 @@
-$(document).ready(function(){
+$(document).ready(function() {
     $('.button-collapse').sideNav({
         closeOnClick: true
     });
@@ -20,7 +20,7 @@ function getQueryString(field, isArray = false) {
         if (matches) {
             values.push(matches[1]);
         }
-    } while(matches);
+    } while (matches);
 
     if (!values.length) {
         return null;
@@ -34,7 +34,7 @@ function getQueryStringWithStorageBacking(field, defaultVal, isArray = false) {
     if (val === null && sessionStorage.getItem(field)) {
         try {
             val = JSON.parse(sessionStorage.getItem(field));
-        } catch(ex) {
+        } catch (ex) {
             console.warn("Failed to retrieve value of '%s' in sessionStorage. Error: %s", field, ex);
         }
     }
