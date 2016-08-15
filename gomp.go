@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -32,9 +31,7 @@ func main() {
 	sessionStore.Options.Secure = !cfg.IsDevelopment && cfg.RequireSSL
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
-		Funcs: []template.FuncMap{map[string]interface{}{
-			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-		}}})
+	})
 	rc := routers.NewController(renderer, cfg, model, sessionStore)
 
 	n := negroni.New()

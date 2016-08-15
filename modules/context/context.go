@@ -10,14 +10,16 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+// Contexter handles managing application-wide context information.
 type Contexter struct {
 	cfg          *conf.Config
 	model        *models.Model
 	sessionStore sessions.Store
 }
 
-func NewContexter(cfg *conf.Config, model *models.Model, sessionStore sessions.Store) Contexter {
-	return Contexter{
+// NewContexter constructs a new instance of Contexter.
+func NewContexter(cfg *conf.Config, model *models.Model, sessionStore sessions.Store) *Contexter {
+	return &Contexter{
 		cfg:          cfg,
 		model:        model,
 		sessionStore: sessionStore}
@@ -50,15 +52,18 @@ func (c Contexter) addUserToContext(resp http.ResponseWriter, req *http.Request)
 
 	data := Get(req).Data
 	data["UrlPath"] = req.URL.Path
+	data["ApplicationTitle"] = c.cfg.ApplicationTitle
 	if user != nil {
 		data["User"] = user
 	}
 }
 
+// RequestContext represents the context data for a single request.
 type RequestContext struct {
 	Data map[string]interface{}
 }
 
+// Get returns the RequestContext for the specified request object, creating a new one if necessary.
 func Get(req *http.Request) *RequestContext {
 	c, ok := context.GetOk(req, "Context")
 	if ok {

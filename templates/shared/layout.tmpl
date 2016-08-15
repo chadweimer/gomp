@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ApplicationTitle}}</title>
-        <meta name="application-name" content="{{ApplicationTitle}}">
-        <meta name="apple-mobile-web-app-title" content="{{ApplicationTitle}}">
+        <title>{{.ApplicationTitle}}</title>
+        <meta name="application-name" content="{{.ApplicationTitle}}">
+        <meta name="apple-mobile-web-app-title" content="{{.ApplicationTitle}}">
         
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
         <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
@@ -32,7 +32,7 @@
         <header class="navbar">
             <nav class="blue">
                 <div class="nav-wrapper">
-                    <a href="/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
+                    <a href="/" class="brand-logo left hide-on-med-and-down">{{.ApplicationTitle}}</a>
                     {{if .User }}
                     <ul class="right hide-on-med-and-down">
                         <li><a href="/">Home</a></li>
@@ -61,7 +61,7 @@
             </nav>
             <ul id="mobile-menu" class="side-nav collapsible" data-collapsible="expandable">
                 <li>
-                    <span class="collapsible-header active truncate">{{ApplicationTitle}}</span>
+                    <span class="collapsible-header active truncate">{{.ApplicationTitle}}</span>
                     <ul class="collapsible-body">
                         <li><a href="/"><i class="material-icons">home</i> Home</a></li>
                         {{if .User }}
