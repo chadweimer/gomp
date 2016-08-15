@@ -16,10 +16,11 @@ main {
     white-space: pre-wrap;
 }
 
-img.darken-10 {
+.darken-10 {
     -webkit-filter: brightness(90%);
        -moz-filter: brightness(90%);
         -ms-filter: brightness(90%);
+         -o-filter: brightness(90%);
             filter: brightness(90%);
 }
 
@@ -27,12 +28,14 @@ img.darken-10 {
   -webkit-transition: -webkit-transform .3s ease-in-out;
      -moz-transition: -webkit-transform .3s ease-in-out;
       -ms-transition: -webkit-transform .3s ease-in-out;
+       -o-transition: -webkit-transform .3s ease-in-out;
           transition: transform .3s ease-in-out;
 }
 .fixed-action-btn > a:hover > i {
   -webkit-transform: rotate(90deg);
      -moz-transform: rotate(90deg);
       -ms-transform: rotate(90deg);
+       -o-transform: rotate(90deg);
           transform: rotate(90deg);
 }
 
@@ -41,7 +44,8 @@ img.darken-10 {
     top: 5px;
     right: 5px;
 }
-.rating-container > * {
+.rating-container > a,
+.rating-container > span {
     color: #dddddd;
     float: right;
 }
@@ -55,11 +59,12 @@ img.darken-10 {
             clip-path: inset(0 50% 0 0);
 }
 .rating-container > .active,
-.rating-container > .active ~ * {
+.rating-container > .active ~ a,
+.rating-container > .active ~ span {
     color: #fdd835;
 }
 .rating-container.clickable > :hover,
-.rating-container.clickable > :hover ~ * {
+.rating-container.clickable > :hover ~ a {
     color: #ffeb3b !important;
 }
 
@@ -116,11 +121,11 @@ nav .brand-logo.left {
 }
 .side-nav .header-btn {
     position: absolute;
-    top: 0px;
-    bottom: 0px;
-    right: 0px;
+    top: 0;
+    bottom: 0;
+    right: 0;
     height: 100%;
-    margin: 0px !important;
+    margin: 0 !important;
 }
 
 .compact-image {
@@ -139,8 +144,8 @@ nav .brand-logo.left {
 }
 
 .actions {
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 .actions li {
     display: inline-block;

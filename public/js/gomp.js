@@ -34,15 +34,15 @@ function getQueryString(field, isArray = false) {
 
 function getQueryStringWithStorageBacking(field, defaultVal, isArray = false) {
     var val = getQueryString(field, isArray);
-    if (val == null && sessionStorage.getItem(field)) {
+    if (val === null && sessionStorage.getItem(field)) {
         try {
             val = JSON.parse(sessionStorage.getItem(field));
-        } catch(err) {
-            // TODO: What should we do with this?
+        } catch(ex) {
+            console.warn("Failed to retrieve value of '%s' in sessionStorage. Error: %s", field, ex);
         }
     }
 
-    if (val == null) {
+    if (val === null) {
         val = defaultVal;
     }
 
@@ -54,15 +54,15 @@ function getQueryStringWithStorageBacking(field, defaultVal, isArray = false) {
 function trySaveToSessionStorage(field, stringVal) {
     try {
         sessionStorage.setItem(field, stringVal);
-    } catch (err) {
-        // TODO: What should we do with this?
+    } catch (ex) {
+        console.warn("Failed to save value of '%s' in sessionStorage. Error: %s", field, ex);
     }
 }
 
 function showBusy(text) {
     $('#busy-message').text(text);
     $('#busy-dialog').openModal({
-        dismissible: false,
+        dismissible: false
     });
 }
 
@@ -84,7 +84,7 @@ function getRecipesAsync(rootUrlPath, searchFilter) {
         method: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        data: searchFilter,
+        data: searchFilter
     });
 }
 
@@ -92,7 +92,7 @@ function getRecipeAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId,
         method: 'GET',
-        dataType: 'json',
+        dataType: 'json'
     });
 }
 
@@ -103,7 +103,7 @@ function postRecipeAsync(rootUrlPath, recipe) {
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify(recipe),
+        data: JSON.stringify(recipe)
     });
 }
 
@@ -114,7 +114,7 @@ function putRecipeAsync(rootUrlPath, recipe) {
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify(recipe),
+        data: JSON.stringify(recipe)
     });
 }
 
@@ -123,7 +123,7 @@ function deleteRecipeAsync(rootUrlPath, recipeId) {
         url: rootUrlPath + '/api/v1/recipes/' + recipeId,
         method: 'DELETE',
         contentType: 'application/json',
-        dataType: 'text',
+        dataType: 'text'
     });
 }
 
@@ -131,7 +131,7 @@ function getRecipeMainImageAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/image',
         method: 'GET',
-        dataType: 'json',
+        dataType: 'json'
     });
 }
 
@@ -142,7 +142,7 @@ function putRecipeMainImageAsync(rootUrlPath, recipeId, imageId) {
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: imageId,
+        data: imageId
     });
 }
 
@@ -150,7 +150,7 @@ function getRecipeImagesAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/images',
         method: 'GET',
-        dataType: 'json',
+        dataType: 'json'
     });
 }
 
@@ -162,7 +162,7 @@ function postRecipeImageAsync(rootUrlPath, recipeId, imageFormData) {
         contentType: false,
         dataType: 'text',
         processData: false,
-        data: imageFormData,
+        data: imageFormData
     });
 }
 
@@ -171,7 +171,7 @@ function deleteImageAsync(rootUrlPath, imageId) {
         url: rootUrlPath + '/api/v1/images/' + imageId,
         method: 'DELETE',
         contentType: 'application/json',
-        dataType: 'text',
+        dataType: 'text'
     });
 }
 
@@ -179,7 +179,7 @@ function getRecipeNotesAsync(rootUrlPath, recipeId) {
     return $.ajax({
         url: rootUrlPath + '/api/v1/recipes/' + recipeId + '/notes',
         method: 'GET',
-        dataType: 'json',
+        dataType: 'json'
     });
 }
 
@@ -190,7 +190,7 @@ function postNoteAsync(rootUrlPath, note) {
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify(note),
+        data: JSON.stringify(note)
     });
 }
 
@@ -201,7 +201,7 @@ function putNoteAsync(rootUrlPath, note) {
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
-        data: JSON.stringify(note),
+        data: JSON.stringify(note)
     });
 }
 
@@ -210,7 +210,7 @@ function deleteNoteAsync(rootUrlPath, noteId) {
         url: rootUrlPath + '/api/v1/notes/' + noteId,
         method: 'DELETE',
         contentType: 'application/json',
-        dataType: 'text',
+        dataType: 'text'
     });
 }
 
@@ -220,7 +220,7 @@ function putRecipeRatingAsync(rootUrlPath, recipeId, rating) {
         method: 'PUT',
         dataType: 'json',
         processData: false,
-        data: rating,
+        data: rating
     });
 }
 
@@ -230,6 +230,6 @@ function getTagsAsync(rootUrlPath, tagsFilter) {
         method: 'GET',
         contentType: 'application/json',
         dataType: 'json',
-        data: tagsFilter,
+        data: tagsFilter
     });
 }
