@@ -93,7 +93,7 @@ function getAsync(url, data = null) {
 function putAsync(url, data) {
     return $.ajax({
         url: url,
-        method: 'POST',
+        method: 'PUT',
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
@@ -134,7 +134,7 @@ function postRecipeAsync(rootUrlPath, recipe) {
 }
 
 function putRecipeAsync(rootUrlPath, recipe) {
-    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes' + recipe.id, JSON.stringify(recipe));
+    return putAsync(rootUrlPath + API_BASE_PATH + '/recipes/' + recipe.id, JSON.stringify(recipe));
 }
 
 function deleteRecipeAsync(rootUrlPath, recipeId) {
