@@ -1,7 +1,5 @@
 ---
 engines:
-  csslint:
-    enabled: true
   duplication:
     enabled: true
     config:

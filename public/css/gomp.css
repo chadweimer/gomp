@@ -51,11 +51,17 @@ main {
 }
 .rating-container > .whole {
     -webkit-clip-path: inset(0 0 0 50%);
+       -moz-clip-path: inset(0 0 0 50%);
+        -ms-clip-path: inset(0 0 0 50%);
+         -o-clip-path: inset(0 0 0 50%);
             clip-path: inset(0 0 0 50%);
     margin-left: -100%;
 }
 .rating-container > .half {
     -webkit-clip-path: inset(0 50% 0 0);
+       -moz-clip-path: inset(0 50% 0 0);
+        -ms-clip-path: inset(0 50% 0 0);
+         -o-clip-path: inset(0 50% 0 0);
             clip-path: inset(0 50% 0 0);
 }
 .rating-container > .active,
@@ -63,9 +69,9 @@ main {
 .rating-container > .active ~ span {
     color: #fdd835;
 }
-.rating-container.clickable > :hover,
-.rating-container.clickable > :hover ~ a {
-    color: #ffeb3b !important; /* csslint allow: important */
+.rating-container > a:hover,
+.rating-container > a:hover ~ a {
+    color: #ffeb3b !important;
 }
 
 /* This seems like something that was just missed in materialize */
@@ -110,11 +116,11 @@ nav .brand-logo.left {
     display: flex;
     flex-flow: column;
 }
-.side-nav.flex-container > * {
+.side-nav.flex-container > .flex-auto {
     flex: 0 1 auto;
     position: relative;
 }
-.side-nav.flex-container > .fill {
+.side-nav.flex-container > .flex-fill {
     flex: 1 1 auto;
     overflow-y: auto;
     position: relative;
@@ -125,7 +131,7 @@ nav .brand-logo.left {
     bottom: 0;
     right: 0;
     height: 100%;
-    margin: 0 !important; /* csslint allow: important */
+    margin: 0 !important;
 }
 
 .compact-image {
