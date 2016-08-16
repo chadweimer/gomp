@@ -12,7 +12,6 @@ import (
 	"github.com/chadweimer/gomp/modules/context"
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/chadweimer/gomp/routers"
-	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
@@ -27,12 +26,10 @@ func main() {
 		log.Fatalf("[config] %s", err.Error())
 	}
 	model := models.New(cfg)
-	sessionStore := sessions.NewCookieStore([]byte(cfg.SecretKey))
-	sessionStore.Options.Secure = !cfg.IsDevelopment && cfg.RequireSSL
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
 	})
-	rc := routers.NewController(renderer, cfg, model, sessionStore)
+	rc := routers.NewController(renderer, cfg, model)
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
@@ -54,17 +51,8 @@ func main() {
 	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
 
 	n.Use(negroni.NewStatic(http.Dir("public")))
-	n.Use(context.NewContexter(cfg, model, sessionStore))
-
+	n.Use(context.NewContexter(cfg, model))
 	n.Use(api.NewRouter(cfg, model))
-
-	authMux := httprouter.New()
-	authMux.GET("/login", rc.Login)
-	authMux.POST("/login", rc.LoginPost)
-	authMux.GET("/logout", rc.Logout)
-	// Do nothing if this route isn't matched. Let the later handlers/routes get processed
-	authMux.NotFound = http.HandlerFunc(rc.NoOp)
-	n.UseHandler(authMux)
 
 	// !!!! IMPORTANT !!!!
 	// Everything before this is valid with or without authentication.
@@ -73,21 +61,25 @@ func main() {
 	if cfg.UploadDriver == "fs" {
 		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
 		static.Prefix = "/uploads"
-		n.UseFunc(rc.RequireAuthentication(static))
+		// TODO: n.UseFunc(rc.RequireAuthentication(static))
+		n.Use(static)
 	} else if cfg.UploadDriver == "s3" {
 		s3Static := upload.NewS3Static(cfg)
 		s3Static.Prefix = "/uploads"
-		n.UseFunc(rc.RequireAuthentication(s3Static))
+		// TODO: n.UseFunc(rc.RequireAuthentication(s3Static))
+		n.Use(s3Static)
 	}
 
 	recipeMux := httprouter.New()
 	recipeMux.GET("/", rc.Home)
+	recipeMux.GET("/login", rc.Login)
 	recipeMux.GET("/new", rc.CreateRecipe)
 	recipeMux.GET("/recipes", rc.ListRecipes)
 	recipeMux.GET("/recipes/:id", rc.GetRecipe)
 	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
-	n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
+	//n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
+	n.UseHandler(recipeMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second

@@ -1,4 +1,12 @@
 $(document).ready(function() {
+    // Redirect to login if necessary
+    if (window.location.pathname !== '/login') {
+        var token = localStorage.getItem("jwtToken");
+        if (token === null) {
+            window.location = '/login';
+        }
+    }
+
     $('.button-collapse').sideNav({
         closeOnClick: true
     });
@@ -82,12 +90,28 @@ function showConfirmation(title, icon, message, yesCallback) {
     $('#confirmation-dialog').openModal();
 }
 
+function onLogoutClicked(self, e) {
+    e.preventDefault();
+
+    logout();
+}
+
+function logout() {
+    localStorage.removeItem("jwtToken");
+    window.location = '/login';
+}
+
 const API_BASE_PATH = '/api/v1';
 
 function getAsync(url, data = null) {
+    var token = localStorage.getItem("jwtToken");
+    // TODO: What if no token?
     return $.ajax({
         url: url,
         method: 'GET',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
         contentType: 'application/json',
         dataType: 'json',
         data: data
@@ -95,9 +119,14 @@ function getAsync(url, data = null) {
 }
 
 function putAsync(url, data) {
+    var token = localStorage.getItem("jwtToken");
+    // TODO: What if no token?
     return $.ajax({
         url: url,
         method: 'PUT',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
@@ -106,9 +135,14 @@ function putAsync(url, data) {
 }
 
 function postAsync(url, data) {
+    var token = localStorage.getItem("jwtToken");
+    // TODO: What if no token?
     return $.ajax({
         url: url,
         method: 'POST',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
@@ -117,12 +151,24 @@ function postAsync(url, data) {
 }
 
 function deleteAsync(url) {
+    var token = localStorage.getItem("jwtToken");
+    // TODO: What if no token?
     return $.ajax({
         url: url,
         method: 'DELETE',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
         contentType: 'application/json',
         dataType: 'text'
     });
+}
+
+function postAuthenticeAsync(username, password) {
+    return postAsync(API_BASE_PATH + '/auth', JSON.stringify({
+        username: username,
+        password: password
+    }));
 }
 
 function getRecipesAsync(searchFilter) {
@@ -158,9 +204,14 @@ function getRecipeImagesAsync(recipeId) {
 }
 
 function postRecipeImageAsync(recipeId, imageFormData) {
+    var token = localStorage.getItem("jwtToken");
+    // TODO: What if no token?
     return $.ajax({
         url: API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        },
         enctype: 'multipart/form-data',
         contentType: false,
         dataType: 'text',

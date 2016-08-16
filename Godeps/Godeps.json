@@ -138,15 +138,6 @@
 			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
 		},
 		{
-			"ImportPath": "github.com/gorilla/securecookie",
-			"Comment": "v1.1-2-gff35634",
-			"Rev": "ff356348f74133a59d3e93aa24b5b4551b6fe90d"
-		},
-		{
-			"ImportPath": "github.com/gorilla/sessions",
-			"Rev": "56ba4b0a11da87516629a57408a5f7e4c8ea7b0b"
-		},
-		{
 			"ImportPath": "github.com/jmespath/go-jmespath",
 			"Comment": "0.2.2-12-g0b12d6b",
 			"Rev": "0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74"

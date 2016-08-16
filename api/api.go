@@ -33,7 +33,7 @@ func NewRouter(cfg *conf.Config, model *models.Model) *Router {
 	}
 
 	r.apiMux = httprouter.New()
-	r.apiMux.GET("/api/v1/auth", r.postAuthenticate)
+	r.apiMux.POST("/api/v1/auth", r.postAuthenticate)
 	r.apiMux.GET("/api/v1/recipes", r.requireAuthentication(r.getRecipes))
 	r.apiMux.POST("/api/v1/recipes", r.requireAuthentication(r.postRecipe))
 	r.apiMux.GET("/api/v1/recipes/:recipeID", r.requireAuthentication(r.getRecipe))
