@@ -19,13 +19,14 @@ var errMismatchedRecipeID = errors.New("The recipe id in the path does not match
 
 // ---- End Standard Errors ----
 
+// Router handles the routing table for the API methods.
 type Router struct {
 	cfg    *conf.Config
 	model  *models.Model
 	apiMux *httprouter.Router
 }
 
-func NewRouter(cfg *conf.Config, model *models.Model) Router {
+func NewRouter(cfg *conf.Config, model *models.Model) *Router {
 	r := Router{
 		cfg:   cfg,
 		model: model,
@@ -50,10 +51,10 @@ func NewRouter(cfg *conf.Config, model *models.Model) Router {
 	r.apiMux.GET("/api/v1/tags", r.getTags)
 	r.apiMux.NotFound = http.HandlerFunc(r.notFound)
 
-	return r
+	return &r
 }
 
-func (ro Router) notFound(resp http.ResponseWriter, req *http.Request) {
+func (r Router) notFound(resp http.ResponseWriter, req *http.Request) {
 	// Do nothing
 }
 
