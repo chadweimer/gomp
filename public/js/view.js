@@ -15,25 +15,11 @@ function loadRecipe() {
         $('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
         $('#recipe-ingredients > p').append(recipe.ingredients);
         $('#recipe-directions > p').append(recipe.directions);
-
-        if (recipe.servingSize !== '') {
-            var $servingSize = $('#recipe-serving-size');
-            $servingSize.removeClass('hide');
-            $servingSize.find('p').append(recipe.servingSize);
-        }
-
-        if (recipe.nutritionInfo !== '') {
-            var $nutritionInfo = $('#recipe-nutrition');
-            $nutritionInfo.removeClass('hide');
-            $nutritionInfo.find('p').append(recipe.nutritionInfo);
-        }
-
-        if (recipe.sourceUrl !== '') {
-            var $sourceUrl = $('#recipe-source');
-            $sourceUrl.removeClass('hide');
-            $sourceUrl.find('> p > a').attr("href", recipe.sourceUrl);
-            $sourceUrl.find('> p > a').append(recipe.sourceUrl);
-        }
+        $('#recipe-serving-size > p').append(recipe.servingSize);
+        $('#recipe-nutrition > p').append(recipe.nutritionInfo);
+        var $sourceUrl = $('#recipe-source > p > a');
+        $sourceUrl.attr("href", recipe.sourceUrl);
+        $sourceUrl.append(recipe.sourceUrl);
 
         var $tagsContainer = $('#recipe-tags');
         if (recipe.tags !== null) {

@@ -8,6 +8,13 @@ $(document).ready(function() {
     });
     $('.modal-trigger').leanModal();
     $('.dropdown').dropdown();
+    $('.hideable-content').on('DOMSubtreeModified', function () {
+        if ($(this).is(':empty')) {
+            $(this).closest('.hideable').addClass('hide');
+        } else {
+            $(this).closest('.hideable').removeClass('hide');
+        }
+    });
 });
 
 function getQueryString(field, isArray = false) {
