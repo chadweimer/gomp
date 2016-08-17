@@ -9,7 +9,6 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/chadweimer/gomp/modules/context"
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/phyber/negroni-gzip/gzip"
@@ -50,7 +49,7 @@ func main() {
 	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
 
 	n.Use(negroni.NewStatic(http.Dir("public")))
-	n.Use(context.NewContexter(cfg, model))
+	n.Use(NewContexter(cfg, model))
 	n.Use(api.NewRouter(cfg, model))
 
 	if cfg.UploadDriver == "fs" {

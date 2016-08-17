@@ -1,4 +1,4 @@
-package context
+package main
 
 import (
 	"net/http"
@@ -25,15 +25,10 @@ func NewContexter(cfg *conf.Config, model *models.Model) *Contexter {
 func (c Contexter) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
 	defer context.Clear(req)
 
-	c.addUserToContext(resp, req)
-
-	next(resp, req)
-}
-
-func (c Contexter) addUserToContext(resp http.ResponseWriter, req *http.Request) {
-	data := Get(req).Data
+	data := GetContext(req).Data
 	data["UrlPath"] = req.URL.Path
 	data["ApplicationTitle"] = c.cfg.ApplicationTitle
+	next(resp, req)
 }
 
 // RequestContext represents the context data for a single request.
@@ -41,8 +36,8 @@ type RequestContext struct {
 	Data map[string]interface{}
 }
 
-// Get returns the RequestContext for the specified request object, creating a new one if necessary.
-func Get(req *http.Request) *RequestContext {
+// GetContext returns the RequestContext for the specified request object, creating a new one if necessary.
+func GetContext(req *http.Request) *RequestContext {
 	c, ok := context.GetOk(req, "Context")
 	if ok {
 		ctx := c.(RequestContext)
