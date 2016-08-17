@@ -127,13 +127,12 @@ function logout() {
 const API_BASE_PATH = '/api/v1';
 
 function getAsync(url, data = null) {
-    var token = localStorage.getItem("jwtToken");
-    // TODO: What if no token?
+    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'GET',
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
         },
         contentType: 'application/json',
         dataType: 'json',
@@ -142,13 +141,12 @@ function getAsync(url, data = null) {
 }
 
 function putAsync(url, data) {
-    var token = localStorage.getItem("jwtToken");
-    // TODO: What if no token?
+    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'PUT',
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
         },
         contentType: 'application/json',
         dataType: 'text',
@@ -158,13 +156,12 @@ function putAsync(url, data) {
 }
 
 function postAsync(url, data) {
-    var token = localStorage.getItem("jwtToken");
-    // TODO: What if no token?
+    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'POST',
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
         },
         contentType: 'application/json',
         dataType: 'text',
@@ -174,13 +171,12 @@ function postAsync(url, data) {
 }
 
 function deleteAsync(url) {
-    var token = localStorage.getItem("jwtToken");
-    // TODO: What if no token?
+    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'DELETE',
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
         },
         contentType: 'application/json',
         dataType: 'text'
@@ -227,13 +223,12 @@ function getRecipeImagesAsync(recipeId) {
 }
 
 function postRecipeImageAsync(recipeId, imageFormData) {
-    var token = localStorage.getItem("jwtToken");
-    // TODO: What if no token?
+    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
         },
         enctype: 'multipart/form-data',
         contentType: false,
