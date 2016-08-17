@@ -132,7 +132,6 @@ function logout() {
 const API_BASE_PATH = '/api/v1';
 
 function getAsync(url, data = null) {
-    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'GET',
@@ -146,7 +145,6 @@ function getAsync(url, data = null) {
 }
 
 function putAsync(url, data) {
-    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'PUT',
@@ -161,7 +159,6 @@ function putAsync(url, data) {
 }
 
 function postAsync(url, data) {
-    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'POST',
@@ -176,7 +173,6 @@ function postAsync(url, data) {
 }
 
 function deleteAsync(url) {
-    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: url,
         method: 'DELETE',
@@ -228,7 +224,6 @@ function getRecipeImagesAsync(recipeId) {
 }
 
 function postRecipeImageAsync(recipeId, imageFormData) {
-    // TODO: What if the token is no longer valid?
     return $.ajax({
         url: API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
