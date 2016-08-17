@@ -28,49 +28,39 @@ func NewRouter(render *render.Render, cfg *conf.Config, model *models.Model) *Ro
 
 // Login handles rendering the login page
 func (rc *Router) Login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	data := GetContext(req).Data
-	rc.HTML(resp, http.StatusOK, "user/login", data)
+	rc.HTML(resp, http.StatusOK, "user/login", nil)
 }
 
 // Home handles rending the default home page
 func (rc *Router) Home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	data := GetContext(req).Data
-
-	data["HomeTitle"] = rc.cfg.HomeTitle
-	data["HomeImage"] = rc.cfg.HomeImage
-	rc.HTML(resp, http.StatusOK, "home", data)
+	rc.HTML(resp, http.StatusOK, "home", nil)
 }
 
 // GetRecipe handles retrieving and rendering a single recipe
 func (rc *Router) GetRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	data := GetContext(req).Data
-	rc.HTML(resp, http.StatusOK, "recipe/view", data)
+	rc.HTML(resp, http.StatusOK, "recipe/view", nil)
 }
 
 // ListRecipes handles retrieving and rending a list of available recipes
 func (rc *Router) ListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	data := GetContext(req).Data
-	rc.HTML(resp, http.StatusOK, "recipe/list", data)
+	rc.HTML(resp, http.StatusOK, "recipe/list", nil)
 }
 
 // CreateRecipe handles rendering the create recipe screen
 func (rc *Router) CreateRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	data := GetContext(req).Data
-	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
+	rc.HTML(resp, http.StatusOK, "recipe/edit", nil)
 }
 
 // EditRecipe handles rendering the edit recipe screen
 func (rc *Router) EditRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	data := GetContext(req).Data
-	rc.HTML(resp, http.StatusOK, "recipe/edit", data)
+	rc.HTML(resp, http.StatusOK, "recipe/edit", nil)
 }
 
 // NotFound handles 404 errors
 func (rc *Router) NotFound(resp http.ResponseWriter, req *http.Request) {
-	data := GetContext(req).Data
-	rc.showError(resp, http.StatusNotFound, data)
+	rc.showError(resp, http.StatusNotFound, nil)
 }
 
 func (rc *Router) showError(resp http.ResponseWriter, status int, data map[string]interface{}) {
-	rc.HTML(resp, status, fmt.Sprintf("status/%d", status), data)
+	rc.HTML(resp, status, fmt.Sprintf("status/%d", status), nil)
 }

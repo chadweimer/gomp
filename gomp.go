@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -26,6 +27,11 @@ func main() {
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
+		Funcs: []template.FuncMap{map[string]interface{}{
+			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
+			"HomeTitle":        func() string { return cfg.HomeTitle },
+			"HomeImage":        func() string { return cfg.HomeImage },
+		}},
 	})
 	rc := NewRouter(renderer, cfg, model)
 
@@ -49,7 +55,6 @@ func main() {
 	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
 
 	n.Use(negroni.NewStatic(http.Dir("public")))
-	n.Use(NewContexter(cfg, model))
 	n.Use(api.NewRouter(cfg, model))
 
 	if cfg.UploadDriver == "fs" {
