@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -56,12 +58,11 @@ func NewRouter(cfg *conf.Config, model *models.Model) *Router {
 }
 
 func (r Router) notFound(resp http.ResponseWriter, req *http.Request) {
-	// Do nothing
+	writeErrorToResponse(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 
 func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	handler, _, _ := r.apiMux.Lookup(req.Method, req.URL.Path)
-	if handler != nil {
+	if strings.HasPrefix(req.URL.Path, "/api") {
 		resp.Header().Set("Content-Type", "application/json")
 		r.apiMux.ServeHTTP(resp, req)
 		return
@@ -85,6 +86,10 @@ func writeServerErrorToResponse(resp http.ResponseWriter, err error) {
 
 func writeClientErrorToResponse(resp http.ResponseWriter, err error) {
 	writeErrorToResponse(resp, http.StatusBadRequest, err)
+}
+
+func writeUnauthorizedErrorToResponse(resp http.ResponseWriter, err error) {
+	writeErrorToResponse(resp, http.StatusUnauthorized, err)
 }
 
 func writeErrorToResponse(resp http.ResponseWriter, statusCode int, err error) {

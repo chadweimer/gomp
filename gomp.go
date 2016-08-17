@@ -11,7 +11,6 @@ import (
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/upload"
-	"github.com/julienschmidt/httprouter"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
 	"gopkg.in/tylerb/graceful.v1"
@@ -33,7 +32,6 @@ func main() {
 			"HomeImage":        func() string { return cfg.HomeImage },
 		}},
 	})
-	rc := NewRouter(renderer, cfg, model)
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
@@ -55,7 +53,6 @@ func main() {
 	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
 
 	n.Use(negroni.NewStatic(http.Dir("public")))
-	n.Use(api.NewRouter(cfg, model))
 
 	if cfg.UploadDriver == "fs" {
 		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
@@ -67,15 +64,8 @@ func main() {
 		n.Use(s3Static)
 	}
 
-	recipeMux := httprouter.New()
-	recipeMux.GET("/", rc.Home)
-	recipeMux.GET("/login", rc.Login)
-	recipeMux.GET("/new", rc.CreateRecipe)
-	recipeMux.GET("/recipes", rc.ListRecipes)
-	recipeMux.GET("/recipes/:id", rc.GetRecipe)
-	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
-	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
-	n.UseHandler(recipeMux)
+	n.Use(api.NewRouter(cfg, model))
+	n.Use(newUIRouter(renderer))
 
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second

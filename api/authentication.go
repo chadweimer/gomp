@@ -29,7 +29,7 @@ func (r Router) postAuthenticate(resp http.ResponseWriter, req *http.Request, p 
 
 	user, err := r.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
-		resp.WriteHeader(http.StatusUnauthorized)
+		writeUnauthorizedErrorToResponse(resp, err)
 		return
 	}
 
@@ -50,13 +50,13 @@ func (r Router) requireAuthentication(handler httprouter.Handle) httprouter.Hand
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
-			resp.WriteHeader(http.StatusUnauthorized)
+			writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header missing"))
 			return
 		}
 
 		authHeaderParts := strings.Split(authHeader, " ")
 		if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
-			writeErrorToResponse(resp, http.StatusUnauthorized, errors.New("Authorization header must be in the form 'Bearer {token}'"))
+			writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header must be in the form 'Bearer {token}'"))
 			return
 		}
 
@@ -69,7 +69,7 @@ func (r Router) requireAuthentication(handler httprouter.Handle) httprouter.Hand
 			return []byte(r.cfg.SecretKey), nil
 		})
 		if err != nil || !token.Valid {
-			resp.WriteHeader(http.StatusUnauthorized)
+			writeUnauthorizedErrorToResponse(resp, err)
 			return
 		}
 
