@@ -11,7 +11,6 @@ import (
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/context"
 	"github.com/chadweimer/gomp/modules/upload"
-	"github.com/chadweimer/gomp/routers"
 	"github.com/julienschmidt/httprouter"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
@@ -29,7 +28,7 @@ func main() {
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
 	})
-	rc := routers.NewController(renderer, cfg, model)
+	rc := NewRouter(renderer, cfg, model)
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
