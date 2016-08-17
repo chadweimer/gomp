@@ -1,8 +1,6 @@
 package routers
 
 import (
-	"net/http"
-
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"gopkg.in/unrolled/render.v1"
@@ -22,8 +20,4 @@ func NewController(render *render.Render, cfg *conf.Config, model *models.Model)
 		cfg:    cfg,
 		model:  model,
 	}
-}
-
-func (rc *RouteController) NoOp(resp http.ResponseWriter, req *http.Request) {
-	// Do nothing
 }

@@ -54,19 +54,13 @@ func main() {
 	n.Use(context.NewContexter(cfg, model))
 	n.Use(api.NewRouter(cfg, model))
 
-	// !!!! IMPORTANT !!!!
-	// Everything before this is valid with or without authentication.
-	// Everything after this requires authentication
-
 	if cfg.UploadDriver == "fs" {
 		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
 		static.Prefix = "/uploads"
-		// TODO: n.UseFunc(rc.RequireAuthentication(static))
 		n.Use(static)
 	} else if cfg.UploadDriver == "s3" {
 		s3Static := upload.NewS3Static(cfg)
 		s3Static.Prefix = "/uploads"
-		// TODO: n.UseFunc(rc.RequireAuthentication(s3Static))
 		n.Use(s3Static)
 	}
 
@@ -78,7 +72,6 @@ func main() {
 	recipeMux.GET("/recipes/:id", rc.GetRecipe)
 	recipeMux.GET("/recipes/:id/edit", rc.EditRecipe)
 	recipeMux.NotFound = http.HandlerFunc(rc.NotFound)
-	//n.UseFunc(rc.RequireAuthentication(negroni.Wrap(recipeMux)))
 	n.UseHandler(recipeMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)
