@@ -27,6 +27,7 @@ func NewRouter(render *render.Render, cfg *conf.Config, model *models.Model) *Ro
 	}
 }
 
+// Login handles rendering the login page
 func (rc *Router) Login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	rc.HTML(resp, http.StatusOK, "user/login", context.Get(req).Data)
 }
