@@ -13,6 +13,7 @@
                         <input id="password" name="password" type="password" class="validate" required>
                         <label for="password" class="active required">Password<label>
                     </div>
+                    <div id="login-message" class="col s12 l12 red-text"></div>
                     <div>
                         <button type="submit" class="btn waves-effect"  onclick="onLoginClicked(this, event);">
                             Login
@@ -24,7 +25,3 @@
     <article>
 </section>
 {{end}}
-
-{{ define "js-user/login" }}
-<script type="text/javascript" src="/js/login.js"></script>
-{{ end }}

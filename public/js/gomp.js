@@ -1,10 +1,18 @@
 $(document).ready(function() {
+    currentUsername = localStorage.getItem("username");
+    jwtToken = localStorage.getItem("jwtToken");
+
     // Redirect to login if necessary
     if (window.location.pathname !== '/login') {
-        var token = localStorage.getItem("jwtToken");
-        if (token === null) {
+        if (jwtToken === null) {
             window.location = '/login';
         }
+    }
+
+    if (currentUsername !== null) {
+        $('.username').text(currentUsername);
+    } else {
+        $('.require-login').addClass('hide');
     }
 
     $('.button-collapse').sideNav({
@@ -90,6 +98,21 @@ function showConfirmation(title, icon, message, yesCallback) {
     $('#confirmation-dialog').openModal();
 }
 
+function onLoginClicked(self, e) {
+    e.preventDefault();
+
+    var username = $('#username').val();
+    var password = $('#password').val();
+    postAuthenticeAsync(username, password).done(function (responseStr) {
+        var response = JSON.parse(responseStr);
+        localStorage.setItem("username", username);
+        localStorage.setItem("jwtToken", response.token);
+        window.location = '/';
+    }).fail(function () {
+        $('#login-message').text('Login failed. Check your username and password and try again.');
+    });
+}
+
 function onLogoutClicked(self, e) {
     e.preventDefault();
 
@@ -97,7 +120,7 @@ function onLogoutClicked(self, e) {
 }
 
 function logout() {
-    localStorage.removeItem("jwtToken");
+    localStorage.clear();
     window.location = '/login';
 }
 

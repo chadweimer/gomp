@@ -37,8 +37,9 @@
                         <li><a href="/">Home</a></li>
                         <li><a href="/recipes">Recipes</a></li>
                         <li>
-                            <a id="user-menu" href="#!" class="dropdown-button" data-beloworigin="true" data-activates="userDropdown">
-                                PLACEHOLDER<i class="material-icons right">arrow_drop_down</i>
+                            <a href="#!" class="dropdown-button" data-beloworigin="true" data-activates="userDropdown">
+                                <span class="username"></span>
+                                <i class="material-icons right">arrow_drop_down</i>
                             </a>
                             <ul id="userDropdown" class="dropdown-content">
                                 <li><a href="#!" onclick="onLogoutClicked(this, event);">Logout</a></li>
@@ -66,7 +67,7 @@
                     </ul>
                 </li>
                 <li class="require-login">
-                    <span class="collapsible-header active">PLACEHOLDER</span>
+                    <span class="collapsible-header active username"></span>
                     <ul class="collapsible-body">
                         <li><a href="#!" onclick="onLogoutClicked(this, event);"><i class="material-icons">exit_to_app</i> Logout</a></li>
                     </ul>
