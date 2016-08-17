@@ -5,9 +5,14 @@ $(document).ready(function() {
     // Redirect to login if necessary
     if (window.location.pathname !== '/login') {
         if (jwtToken === null) {
-            window.location = '/login';
+            logout();
         }
     }
+    $(this).ajaxError(function (e, xhr, settings) {
+        if (xhr.status === 401) {
+            logout();
+        }
+    });
 
     if (currentUsername !== null) {
         $('.username').text(currentUsername);
