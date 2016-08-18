@@ -82,7 +82,7 @@ func Load(path string) *Config {
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
-		log.Printf("[config] RequireSSL=%d", c.RequireSSL)
+		log.Printf("[config] RequireSSL=%t", c.RequireSSL)
 		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
 		log.Printf("[config] UploadPath=%s", c.UploadPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
