@@ -28,6 +28,7 @@ type Router struct {
 	apiMux *httprouter.Router
 }
 
+// NewRouter returns a new instance of Router
 func NewRouter(cfg *conf.Config, model *models.Model) *Router {
 	r := Router{
 		cfg:   cfg,

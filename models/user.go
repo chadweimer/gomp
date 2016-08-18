@@ -1,19 +1,19 @@
 package models
 
-import (
-	"github.com/jmoiron/sqlx"
-	"golang.org/x/crypto/bcrypt"
-)
+import "golang.org/x/crypto/bcrypt"
 
+// UserModel provides functionality to edit and authenticate users.
 type UserModel struct {
 	*Model
 }
 
+// User represents an individual user
 type User struct {
 	ID       int64
 	Username string
 }
 
+// Authenticate verifies the username and password combination match an existing user
 func (m *UserModel) Authenticate(username, password string) (*User, error) {
 	user := User{Username: username}
 	var passwordHash string

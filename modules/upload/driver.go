@@ -8,6 +8,7 @@ type Driver interface {
 	DeleteAll(dirPath string) error
 }
 
+// FileInfo represents information about a single file
 type FileInfo struct {
 	Name         string
 	URL          string
