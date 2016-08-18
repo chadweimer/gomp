@@ -168,8 +168,8 @@ function getAsync(url, data = null) {
     return $.ajax({
         url: url,
         method: 'GET',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        headers: {
+            'Authorization': 'Bearer ' + jwtToken
         },
         contentType: 'application/json',
         dataType: 'json',
@@ -177,44 +177,34 @@ function getAsync(url, data = null) {
     });
 }
 
-function putAsync(url, data) {
+function putPostOrDeleteAsync(url, method, data) {
+    if (method !== 'PUT' && method !== 'POST' && method !== 'DELETE') {
+        throw 'Method must be either PUT, POST, or DELETE.';
+    }
+
     return $.ajax({
         url: url,
-        method: 'PUT',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        method: method,
+        headers: {
+            'Authorization': 'Bearer ' + jwtToken
         },
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
         data: data
     });
+}
+
+function putAsync(url, data) {
+    return putPostOrDeleteAsync(url, 'PUT', data);
 }
 
 function postAsync(url, data) {
-    return $.ajax({
-        url: url,
-        method: 'POST',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
-        },
-        contentType: 'application/json',
-        dataType: 'text',
-        processData: false,
-        data: data
-    });
+    return putPostOrDeleteAsync(url, 'POST', data);
 }
 
 function deleteAsync(url) {
-    return $.ajax({
-        url: url,
-        method: 'DELETE',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
-        },
-        contentType: 'application/json',
-        dataType: 'text'
-    });
+    return putPostOrDeleteAsync(url, 'DELETE', null);
 }
 
 function postAuthenticeAsync(username, password) {
@@ -260,8 +250,8 @@ function postRecipeImageAsync(recipeId, imageFormData) {
     return $.ajax({
         url: API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        headers: {
+            'Authorization': 'Bearer ' + jwtToken
         },
         enctype: 'multipart/form-data',
         contentType: false,
