@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -33,34 +35,34 @@ func NewRouter(cfg *conf.Config, model *models.Model) *Router {
 	}
 
 	r.apiMux = httprouter.New()
-	r.apiMux.GET("/api/v1/recipes", r.getRecipes)
-	r.apiMux.POST("/api/v1/recipes", r.postRecipe)
-	r.apiMux.GET("/api/v1/recipes/:recipeID", r.getRecipe)
-	r.apiMux.PUT("/api/v1/recipes/:recipeID", r.putRecipe)
-	r.apiMux.DELETE("/api/v1/recipes/:recipeID", r.deleteRecipe)
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.putRecipeRating)
-	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.getRecipeMainImage)
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.putRecipeMainImage)
-	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.getRecipeImages)
-	r.apiMux.POST("/api/v1/recipes/:recipeID/images", r.postImage)
-	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.getRecipeNotes)
-	r.apiMux.DELETE("/api/v1/images/:imageID", r.deleteImage)
-	r.apiMux.POST("/api/v1/notes", r.postNote)
-	r.apiMux.PUT("/api/v1/notes/:noteID", r.putNote)
-	r.apiMux.DELETE("/api/v1/notes/:noteID", r.deleteNote)
-	r.apiMux.GET("/api/v1/tags", r.getTags)
+	r.apiMux.POST("/api/v1/auth", r.postAuthenticate)
+	r.apiMux.GET("/api/v1/recipes", r.requireAuthentication(r.getRecipes))
+	r.apiMux.POST("/api/v1/recipes", r.requireAuthentication(r.postRecipe))
+	r.apiMux.GET("/api/v1/recipes/:recipeID", r.requireAuthentication(r.getRecipe))
+	r.apiMux.PUT("/api/v1/recipes/:recipeID", r.requireAuthentication(r.putRecipe))
+	r.apiMux.DELETE("/api/v1/recipes/:recipeID", r.requireAuthentication(r.deleteRecipe))
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.requireAuthentication(r.putRecipeRating))
+	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.requireAuthentication(r.getRecipeMainImage))
+	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.requireAuthentication(r.putRecipeMainImage))
+	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.requireAuthentication(r.getRecipeImages))
+	r.apiMux.POST("/api/v1/recipes/:recipeID/images", r.requireAuthentication(r.postImage))
+	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.requireAuthentication(r.getRecipeNotes))
+	r.apiMux.DELETE("/api/v1/images/:imageID", r.requireAuthentication(r.deleteImage))
+	r.apiMux.POST("/api/v1/notes", r.requireAuthentication(r.postNote))
+	r.apiMux.PUT("/api/v1/notes/:noteID", r.requireAuthentication(r.putNote))
+	r.apiMux.DELETE("/api/v1/notes/:noteID", r.requireAuthentication(r.deleteNote))
+	r.apiMux.GET("/api/v1/tags", r.requireAuthentication(r.getTags))
 	r.apiMux.NotFound = http.HandlerFunc(r.notFound)
 
 	return &r
 }
 
 func (r Router) notFound(resp http.ResponseWriter, req *http.Request) {
-	// Do nothing
+	writeErrorToResponse(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 
 func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	handler, _, _ := r.apiMux.Lookup(req.Method, req.URL.Path)
-	if handler != nil {
+	if strings.HasPrefix(req.URL.Path, "/api") {
 		resp.Header().Set("Content-Type", "application/json")
 		r.apiMux.ServeHTTP(resp, req)
 		return
@@ -84,6 +86,10 @@ func writeServerErrorToResponse(resp http.ResponseWriter, err error) {
 
 func writeClientErrorToResponse(resp http.ResponseWriter, err error) {
 	writeErrorToResponse(resp, http.StatusBadRequest, err)
+}
+
+func writeUnauthorizedErrorToResponse(resp http.ResponseWriter, err error) {
+	writeErrorToResponse(resp, http.StatusUnauthorized, err)
 }
 
 func writeErrorToResponse(resp http.ResponseWriter, statusCode int, err error) {

@@ -1,4 +1,26 @@
 $(document).ready(function() {
+    currentUsername = localStorage.getItem("username");
+    jwtToken = localStorage.getItem("jwtToken");
+
+    // Redirect to login if necessary
+    if (window.location.pathname !== '/login') {
+        if (jwtToken === null) {
+            logout();
+            return;
+        }
+        $(this).ajaxError(function (e, xhr, settings) {
+            if (xhr.status === 401) {
+                logout();
+            }
+        });
+    }
+
+    if (currentUsername !== null) {
+        $('.username').text(currentUsername);
+    } else {
+        $('.require-login').addClass('hide');
+    }
+
     $('.button-collapse').sideNav({
         closeOnClick: true
     });
@@ -82,12 +104,41 @@ function showConfirmation(title, icon, message, yesCallback) {
     $('#confirmation-dialog').openModal();
 }
 
+function onLoginClicked(self, e) {
+    e.preventDefault();
+
+    var username = $('#username').val();
+    var password = $('#password').val();
+    postAuthenticeAsync(username, password).done(function (responseStr) {
+        var response = JSON.parse(responseStr);
+        localStorage.setItem("username", username);
+        localStorage.setItem("jwtToken", response.token);
+        window.location = '/';
+    }).fail(function () {
+        $('#login-message').text('Login failed. Check your username and password and try again.');
+    });
+}
+
+function onLogoutClicked(self, e) {
+    e.preventDefault();
+
+    logout();
+}
+
+function logout() {
+    localStorage.clear();
+    window.location = '/login';
+}
+
 const API_BASE_PATH = '/api/v1';
 
 function getAsync(url, data = null) {
     return $.ajax({
         url: url,
         method: 'GET',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        },
         contentType: 'application/json',
         dataType: 'json',
         data: data
@@ -98,6 +149,9 @@ function putAsync(url, data) {
     return $.ajax({
         url: url,
         method: 'PUT',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        },
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
@@ -109,6 +163,9 @@ function postAsync(url, data) {
     return $.ajax({
         url: url,
         method: 'POST',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        },
         contentType: 'application/json',
         dataType: 'text',
         processData: false,
@@ -120,9 +177,19 @@ function deleteAsync(url) {
     return $.ajax({
         url: url,
         method: 'DELETE',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        },
         contentType: 'application/json',
         dataType: 'text'
     });
+}
+
+function postAuthenticeAsync(username, password) {
+    return postAsync(API_BASE_PATH + '/auth', JSON.stringify({
+        username: username,
+        password: password
+    }));
 }
 
 function getRecipesAsync(searchFilter) {
@@ -161,6 +228,9 @@ function postRecipeImageAsync(recipeId, imageFormData) {
     return $.ajax({
         url: API_BASE_PATH + '/recipes/' + recipeId + '/images',
         method: 'POST',
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+        },
         enctype: 'multipart/form-data',
         contentType: false,
         dataType: 'text',

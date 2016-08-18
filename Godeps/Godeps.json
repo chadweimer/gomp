@@ -119,6 +119,11 @@
 			"Rev": "3b8c171554fc7d4fc53b87e25d4926a9e7495c2e"
 		},
 		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v3.0.0-6-g63734ea",
+			"Rev": "63734eae1ef55eaac06fdc0f312615f2e321e273"
+		},
+		{
 			"ImportPath": "github.com/disintegration/imaging",
 			"Rev": "d8bbae1de109b518dabc98c6c1633eb358c148a4"
 		},
@@ -126,20 +131,6 @@
 			"ImportPath": "github.com/go-ini/ini",
 			"Comment": "v1.18.0",
 			"Rev": "cf53f9204df4fbdd7ec4164b57fa6184ba168292"
-		},
-		{
-			"ImportPath": "github.com/gorilla/context",
-			"Comment": "v1.1-4-gaed02d1",
-			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
-		},
-		{
-			"ImportPath": "github.com/gorilla/securecookie",
-			"Comment": "v1.1-2-gff35634",
-			"Rev": "ff356348f74133a59d3e93aa24b5b4551b6fe90d"
-		},
-		{
-			"ImportPath": "github.com/gorilla/sessions",
-			"Rev": "56ba4b0a11da87516629a57408a5f7e4c8ea7b0b"
 		},
 		{
 			"ImportPath": "github.com/jmespath/go-jmespath",
@@ -243,10 +234,6 @@
 			"Rev": "c348254d65821a0aaca538bf5e7774bb522c1dec"
 		},
 		{
-			"ImportPath": "golang.org/x/net/netutil",
-			"Rev": "6a513affb38dc9788b449d59ffed099b8de18fa0"
-		},
-		{
 			"ImportPath": "gopkg.in/tylerb/graceful.v1",
 			"Comment": "v1.2.11",
 			"Rev": "c838c13b2beeea4f4f54496da96a3a6ae567c37a"
@@ -258,16 +245,6 @@
 		{
 			"ImportPath": "gopkg.in/unrolled/secure.v1",
 			"Rev": "4b41e52ab568cbfd31eda3612d98192da1575c77"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/vendor/github.com/go-ini/ini",
-			"Comment": "v1.2.10",
-			"Rev": "3b8c171554fc7d4fc53b87e25d4926a9e7495c2e"
-		},
-		{
-			"ImportPath": "github.com/aws/aws-sdk-go/vendor/github.com/jmespath/go-jmespath",
-			"Comment": "v1.2.10",
-			"Rev": "3b8c171554fc7d4fc53b87e25d4926a9e7495c2e"
 		}
 	]
 }
