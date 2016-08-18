@@ -6,13 +6,14 @@ $(document).ready(function() {
     if (window.location.pathname !== '/login') {
         if (jwtToken === null) {
             logout();
+            return;
         }
+        $(this).ajaxError(function (e, xhr, settings) {
+            if (xhr.status === 401) {
+                logout();
+            }
+        });
     }
-    $(this).ajaxError(function (e, xhr, settings) {
-        if (xhr.status === 401) {
-            logout();
-        }
-    });
 
     if (currentUsername !== null) {
         $('.username').text(currentUsername);
