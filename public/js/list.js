@@ -99,6 +99,7 @@ function loadRecipes() {
         page: pageNum,
         count: count
     }).done(function(response) {
+        $('html, body').animate({scrollTop: 0});
         $('#result-count').text(response.total);
 
         $container.empty();
