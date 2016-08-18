@@ -3,16 +3,32 @@ package models
 import "github.com/jmoiron/sqlx"
 
 const (
-	SortRecipeByName   string = "name"
-	SortRecipeByID     string = "id"
+	// SortRecipeByName represents the value to use in RecipesFilter.SortBy
+	// in order to sort by the recipe name
+	SortRecipeByName string = "name"
+	// SortRecipeByID represents the value to use in RecipesFilter.SortBy
+	// in order to sort by the recipe ID
+	SortRecipeByID string = "id"
+	// SortRecipeByRating represents the value to use in RecipesFilter.SortBy
+	// in order to sort by the recipe rating
 	SortRecipeByRating string = "rating"
 
-	SortTagByText      string = "tag"
+	// SortTagByText represents the value to use in TagsFilter.SortBy
+	// in order to sort by the tag value
+	SortTagByText string = "tag"
+	// SortTagByFrequency represents the value to use in TagsFilter.SortBy
+	// in order to sort by the number of recipes using a tag
 	SortTagByFrequency string = "frequency"
 
+	// SortByRandom represents the value to use in RecipesFilter.SortBy
+	// and TagsFilter.SortBy in order to sort the results randomly
 	SortByRandom string = "random"
 
-	SortDirAsc  string = "asc"
+	// SortDirAsc represents the value to use in RecipesFilter.SortDir
+	// and TagsFilter.SortDir in order to sort the results in ascending order.
+	SortDirAsc string = "asc"
+	// SortDirDesc represents the value to use in RecipesFilter.SortDir
+	// and TagsFilter.SortDir in order to sort the results in descending order.
 	SortDirDesc string = "desc"
 )
 
@@ -127,7 +143,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 	return &recipes, total, nil
 }
 
-// FindRecipes retrieves all tags matching the specified search filter and within the range specified.
+// FindTags retrieves all tags matching the specified search filter and within the range specified.
 func (m *SearchModel) FindTags(filter TagsFilter) (*[]string, error) {
 	selectStmt := "SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag"
 	switch filter.SortBy {
