@@ -40,38 +40,9 @@ function loadRecipes($container, title, searchFilter) {
 
         if (response.recipes !== null) {
             response.recipes.forEach(function (recipe) {
-                var $recipeWrapper = $('\
-                    <div class="col s6 m4 l2"></div>');
-                var $recipeContent = '\
-                    <div class="card tiny grey lighten-4 hoverable clickable"\
-                        onclick="location.href = \'/recipes/' + recipe.id + '\';"\
-                        title="' + recipe.name + '">';
-                if (recipe.mainImage.thumbnailUrl !== '') {
-                    $recipeContent += '\
-                        <div class="card-image">\
-                            <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
-                        </div>';
-                }
-                $recipeContent += '\
-                        <div class="rating-container">\
-                            <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>\
-                            <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>\
-                            <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>\
-                            <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>\
-                            <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>\
-                            <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>\
-                            <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>\
-                            <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>\
-                            <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>\
-                            <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>\
-                        </div>\
-                        <div class="card-content truncate">\
-                            <span class="card-title">' + recipe.name + '</span>\
-                        </div>\
-                    </div>';
-                $recipeWrapper.append($recipeContent);
+                var $recipeWrapper = $('<div class="col s6 m4 l2"></div>');
+                appendRecipeCard($recipeWrapper, recipe, 'tiny');
                 $container.append($recipeWrapper);
-                $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
             });
             var link = '/recipes?q=';
             if (searchFilter.tags.length === 0) {

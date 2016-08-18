@@ -121,38 +121,9 @@ function loadRecipes() {
 
 function addRecipesFull($container, recipes) {
     recipes.forEach(function(recipe) {
-        var $recipeWrapper = $('\
-            <div class="col s12 m6 l4"></div>');
-        var $recipeContent = '\
-            <div class="card small grey lighten-4 hoverable clickable"\
-                onclick="location.href = \'/recipes/' + recipe.id + '\';"\
-                title="' + recipe.name +'">';
-        if (recipe.mainImage.thumbnailUrl !== '') {
-            $recipeContent += '\
-                <div class="card-image">\
-                    <img src="' + recipe.mainImage.thumbnailUrl + '" class="darken-10">\
-                </div>';
-        }
-        $recipeContent += '\
-                <div class="rating-container">\
-                    <span class="star whole" data-rating="5"><i class="material-icons">star</i></span>\
-                    <span class="star half" data-rating="4.5"><i class="material-icons">star</i></span>\
-                    <span class="star whole" data-rating="4"><i class="material-icons">star</i></span>\
-                    <span class="star half" data-rating="3.5"><i class="material-icons">star</i></span>\
-                    <span class="star whole" data-rating="3"><i class="material-icons">star</i></span>\
-                    <span class="star half" data-rating="2.5"><i class="material-icons">star</i></span>\
-                    <span class="star whole" data-rating="2"><i class="material-icons">star</i></span>\
-                    <span class="star half" data-rating="1.5"><i class="material-icons">star</i></span>\
-                    <span class="star whole" data-rating="1"><i class="material-icons">star</i></span>\
-                    <span class="star half" data-rating="0.5"><i class="material-icons">star</i></span>\
-                </div>\
-                <div class="card-content truncate">\
-                    <span class="card-title">' + recipe.name + '</span>\
-                </div>\
-            </div>';
-        $recipeWrapper.append($recipeContent);
+        var $recipeWrapper = $('<div class="col s12 m6 l4"></div>');
+        appendRecipeCard($recipeWrapper, recipe, 'small');
         $container.append($recipeWrapper);
-        $recipeWrapper.find('.star[data-rating="' + recipe.averageRating + '"]').addClass('active');
     });
 }
 
