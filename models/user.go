@@ -50,33 +50,3 @@ func (m *UserModel) Read(id int64) (*User, error) {
 
 	return &user, nil
 }
-
-func (m *UserModel) Create(username, password string) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	err = m.CreateTx(username, password, tx)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func (m *UserModel) CreateTx(username, password string, tx *sqlx.Tx) error {
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Exec(
-		"INSERT INTO app_user (username, password_hash) VALUES ($1, $2)",
-		username, passwordHash)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
