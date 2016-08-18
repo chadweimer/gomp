@@ -172,6 +172,7 @@ function onSetMainImageClicked(self, e) {
 
             var imageId = parseInt($(self).data('image-id'), 10);
             putRecipeMainImageAsync(recipeId, imageId).done(function () {
+                $('html, body').animate({scrollTop: 0});
                 loadMainImage();
                 Materialize.toast('Main image updated', 2000);
             });
