@@ -1,29 +1,14 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
-	"github.com/mholt/binding"
 )
-
-type postImageRequest struct {
-	FileName    string                `form:"file_name"`
-	FileContent *multipart.FileHeader `form:"file_content"`
-}
-
-func (r *postImageRequest) FieldMap(req *http.Request) binding.FieldMap {
-	return binding.FieldMap{
-		&r.FileName:    "file_name",
-		&r.FileContent: "file_content",
-	}
-}
 
 func (r Router) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
@@ -89,21 +74,14 @@ func (r Router) postImage(resp http.ResponseWriter, req *http.Request, p httprou
 		return
 	}
 
-	form := new(postImageRequest)
-	errs := binding.Bind(req, form)
-	if errs != nil && errs.Len() > 0 {
-		writeClientErrorToResponse(resp, errors.New(errs.Error()))
-		return
-	}
-
-	uploadedFile, err := form.FileContent.Open()
+	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
+		writeClientErrorToResponse(resp, err)
 		return
 	}
-	defer uploadedFile.Close()
+	defer file.Close()
 
-	uploadedFileData, err := ioutil.ReadAll(uploadedFile)
+	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
@@ -111,7 +89,7 @@ func (r Router) postImage(resp http.ResponseWriter, req *http.Request, p httprou
 
 	imageInfo := &models.RecipeImage{
 		RecipeID: recipeID,
-		Name:     form.FileName,
+		Name:     fileHeader.Filename,
 	}
 	err = r.model.Images.Create(imageInfo, uploadedFileData)
 	if err != nil {
