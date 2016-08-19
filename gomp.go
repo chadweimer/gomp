@@ -15,7 +15,6 @@ import (
 	"github.com/urfave/negroni"
 	"gopkg.in/tylerb/graceful.v1"
 	"gopkg.in/unrolled/render.v1"
-	"gopkg.in/unrolled/secure.v1"
 )
 
 func main() {
@@ -39,19 +38,6 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
-
-	// If specified, require HTTPS
-	securitySettings := secure.Options{
-		SSLRedirect:     cfg.RequireSSL,
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
-		IsDevelopment:   cfg.IsDevelopment,
-	}
-	if cfg.RequireSSL {
-		securitySettings.STSSeconds = 31536000
-	}
-	sm := secure.New(securitySettings)
-	n.Use(negroni.HandlerFunc(sm.HandlerFuncWithNext))
-
 	n.Use(negroni.NewStatic(http.Dir("public")))
 
 	if cfg.UploadDriver == "fs" {

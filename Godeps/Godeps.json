@@ -241,10 +241,6 @@
 		{
 			"ImportPath": "gopkg.in/unrolled/render.v1",
 			"Rev": "198ad4d8b8a4612176b804ca10555b222a086b40"
-		},
-		{
-			"ImportPath": "gopkg.in/unrolled/secure.v1",
-			"Rev": "4b41e52ab568cbfd31eda3612d98192da1575c77"
 		}
 	]
 }
