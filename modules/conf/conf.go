@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"errors"
 	"log"
 	"net/url"
 	"os"
@@ -48,8 +47,10 @@ type Config struct {
 	DatabaseURL string
 }
 
-// Load reads the configuration file from the specified path
-func Load(path string) *Config {
+var logger = log.New(os.Stdout, "[conf] ", 0)
+
+// Load reads environment variables into strongly-typed properties
+func Load() *Config {
 	c := Config{
 		Port:             4000,
 		UploadDriver:     "fs",
@@ -76,56 +77,55 @@ func Load(path string) *Config {
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 
 	if c.IsDevelopment {
-		log.Printf("[config] Port=%d", c.Port)
-		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
-		log.Printf("[config] UploadPath=%s", c.UploadPath)
-		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
-		log.Printf("[config] SecretKey=%s", c.SecretKey)
-		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
-		log.Printf("[config] HomeTitle=%s", c.HomeTitle)
-		log.Printf("[config] HomeImage=%s", c.HomeImage)
-		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
-		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
+		logger.Printf("Port=%d", c.Port)
+		logger.Printf("UploadDriver=%s", c.UploadDriver)
+		logger.Printf("UploadPath=%s", c.UploadPath)
+		logger.Printf("IsDevelopment=%t", c.IsDevelopment)
+		logger.Printf("SecretKey=%s", c.SecretKey)
+		logger.Printf("ApplicationTitle=%s", c.ApplicationTitle)
+		logger.Printf("HomeTitle=%s", c.HomeTitle)
+		logger.Printf("HomeImage=%s", c.HomeImage)
+		logger.Printf("DatabaseDriver=%s", c.DatabaseDriver)
+		logger.Printf("DatabaseURL=%s", c.DatabaseURL)
 	}
+
+	c.validate()
 
 	return &c
 }
 
-// Validate checks whether the current configuration settings are valid.
-func (c *Config) Validate() error {
+func (c *Config) validate() {
 	if c.Port <= 0 {
-		return errors.New("PORT must be a positive integer")
+		logger.Fatal("PORT must be a positive integer")
 	}
 
 	if c.UploadDriver != "fs" && c.UploadDriver != "s3" {
-		return errors.New("UPLOAD_DRIVER must be one of ('fs', 's3')")
+		logger.Fatal("UPLOAD_DRIVER must be one of ('fs', 's3')")
 	}
 
 	if c.UploadPath == "" {
-		return errors.New("UPLOAD_PATH must be specified")
+		logger.Fatal("UPLOAD_PATH must be specified")
 	}
 
 	if c.SecretKey == "" {
-		return errors.New("GOMP_SECRET_KEY must be specified")
+		logger.Fatal("GOMP_SECRET_KEY must be specified")
 	}
 
 	if c.ApplicationTitle == "" {
-		return errors.New("GOMP_APPLICATION_TITLE must be specified")
+		logger.Fatal("GOMP_APPLICATION_TITLE must be specified")
 	}
 
 	if c.DatabaseDriver != "postgres" {
-		return errors.New("DATABASE_DRIVER must be one of ('postgres')")
+		logger.Fatal("DATABASE_DRIVER must be one of ('postgres')")
 	}
 
 	if c.DatabaseURL == "" {
-		return errors.New("DATABASE_URL must be specified")
+		logger.Fatal("DATABASE_URL must be specified")
 	}
 
 	if _, err := url.Parse(c.DatabaseURL); err != nil {
-		return errors.New("DATABASE_URL is invalid")
+		logger.Fatal("DATABASE_URL is invalid")
 	}
-
-	return nil
 }
 
 func loadEnv(name string, dest interface{}) {
@@ -136,7 +136,7 @@ func loadEnv(name string, dest interface{}) {
 			*dest = envStr
 		case *int:
 			if *dest, err = strconv.Atoi(envStr); err != nil {
-				log.Fatalf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
+				log.Fatalf("Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
 					name, envStr, err)
 			}
 		case *bool:
