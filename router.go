@@ -4,17 +4,21 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/unrolled/render.v1"
 )
 
 type uiRouter struct {
+	cfg   *conf.Config
 	uiMux *httprouter.Router
 	*render.Render
 }
 
-func newUIRouter(renderer *render.Render) *uiRouter {
+func newUIRouter(cfg *conf.Config, renderer *render.Render) *uiRouter {
 	r := uiRouter{
+		cfg:    cfg,
 		Render: renderer,
 	}
 
@@ -25,6 +29,12 @@ func newUIRouter(renderer *render.Render) *uiRouter {
 	r.uiMux.GET("/recipes", r.listRecipes)
 	r.uiMux.GET("/recipes/:id", r.getRecipe)
 	r.uiMux.GET("/recipes/:id/edit", r.editRecipe)
+	if r.cfg.UploadDriver == "fs" {
+		r.uiMux.ServeFiles("/uploads/*filepath", http.Dir(r.cfg.UploadPath))
+	} else if r.cfg.UploadDriver == "s3" {
+		r.uiMux.GET("/uploads/*filepath", upload.HandleS3Uploads(r.cfg.UploadPath))
+	}
+	r.uiMux.ServeFiles("/public/*filepath", http.Dir("public"))
 	r.uiMux.NotFound = http.HandlerFunc(r.notFound)
 
 	return &r
