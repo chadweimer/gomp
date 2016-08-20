@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -21,16 +20,15 @@ var errMismatchedRecipeID = errors.New("The recipe id in the path does not match
 
 // ---- End Standard Errors ----
 
-// Router handles the routing table for the API methods.
-type Router struct {
+type apiHandler struct {
 	cfg    *conf.Config
 	model  *models.Model
 	apiMux *httprouter.Router
 }
 
-// NewRouter returns a new instance of Router
-func NewRouter(cfg *conf.Config, model *models.Model) *Router {
-	r := Router{
+// NewHandler returns a new instance of http.Handler
+func NewHandler(cfg *conf.Config, model *models.Model) http.Handler {
+	r := apiHandler{
 		cfg:   cfg,
 		model: model,
 	}
@@ -58,17 +56,13 @@ func NewRouter(cfg *conf.Config, model *models.Model) *Router {
 	return &r
 }
 
-func (r Router) notFound(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 	writeErrorToResponse(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 
-func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.HasPrefix(req.URL.Path, "/api") {
-		resp.Header().Set("Content-Type", "application/json")
-		r.apiMux.ServeHTTP(resp, req)
-		return
-	}
-	next(resp, req)
+func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	resp.Header().Set("Content-Type", "application/json")
+	h.apiMux.ServeHTTP(resp, req)
 }
 
 func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {

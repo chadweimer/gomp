@@ -14,7 +14,7 @@ type getRecipesResponse struct {
 	Total   int64           `json:"total"`
 }
 
-func (r Router) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	query := req.URL.Query().Get("q")
 	tags := req.URL.Query()["tags[]"]
 	sortBy := req.URL.Query().Get("sort")
@@ -39,7 +39,7 @@ func (r Router) getRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 		Count:   count,
 	}
 
-	recipes, total, err := r.model.Search.FindRecipes(filter)
+	recipes, total, err := h.model.Search.FindRecipes(filter)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
@@ -48,14 +48,14 @@ func (r Router) getRecipes(resp http.ResponseWriter, req *http.Request, p httpro
 	writeJSONToResponse(resp, getRecipesResponse{Recipes: recipes, Total: total})
 }
 
-func (r Router) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	recipe, err := r.model.Recipes.Read(recipeID)
+	recipe, err := h.model.Recipes.Read(recipeID)
 	if err == models.ErrNotFound {
 		writeErrorToResponse(resp, http.StatusNotFound, err)
 		return
@@ -68,14 +68,14 @@ func (r Router) getRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 	writeJSONToResponse(resp, recipe)
 }
 
-func (r Router) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, &recipe); err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	if err := r.model.Recipes.Create(&recipe); err != nil {
+	if err := h.model.Recipes.Create(&recipe); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}
@@ -84,7 +84,7 @@ func (r Router) postRecipe(resp http.ResponseWriter, req *http.Request, p httpro
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (r Router) putRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -102,7 +102,7 @@ func (r Router) putRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 		return
 	}
 
-	if err := r.model.Recipes.Update(&recipe); err != nil {
+	if err := h.model.Recipes.Update(&recipe); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}
@@ -110,14 +110,14 @@ func (r Router) putRecipe(resp http.ResponseWriter, req *http.Request, p httprou
 	resp.WriteHeader(http.StatusNoContent)
 }
 
-func (r Router) deleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	err = r.model.Recipes.Delete(recipeID)
+	err = h.model.Recipes.Delete(recipeID)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
@@ -126,7 +126,7 @@ func (r Router) deleteRecipe(resp http.ResponseWriter, req *http.Request, p http
 	resp.WriteHeader(http.StatusOK)
 }
 
-func (r Router) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -139,7 +139,7 @@ func (r Router) putRecipeRating(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
-	if err := r.model.Recipes.SetRating(recipeID, rating); err != nil {
+	if err := h.model.Recipes.SetRating(recipeID, rating); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}

@@ -10,14 +10,14 @@ import (
 	"gopkg.in/unrolled/render.v1"
 )
 
-type uiRouter struct {
+type uiHandler struct {
 	cfg   *conf.Config
 	uiMux *httprouter.Router
 	*render.Render
 }
 
-func newUIRouter(cfg *conf.Config, renderer *render.Render) *uiRouter {
-	r := uiRouter{
+func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
+	r := uiHandler{
 		cfg:    cfg,
 		Render: renderer,
 	}
@@ -37,42 +37,37 @@ func newUIRouter(cfg *conf.Config, renderer *render.Render) *uiRouter {
 	r.uiMux.ServeFiles("/public/*filepath", http.Dir("public"))
 	r.uiMux.NotFound = http.HandlerFunc(r.notFound)
 
-	return &r
+	return r.uiMux
 }
 
-func (r uiRouter) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	r.uiMux.ServeHTTP(resp, req)
-	next(resp, req)
-}
-
-func (r uiRouter) login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r uiHandler) login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	r.HTML(resp, http.StatusOK, "user/login", nil)
 }
 
-func (r uiRouter) home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r uiHandler) home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	r.HTML(resp, http.StatusOK, "home", nil)
 }
 
-func (r uiRouter) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r uiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	r.HTML(resp, http.StatusOK, "recipe/view", nil)
 }
 
-func (r uiRouter) listRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r uiHandler) listRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	r.HTML(resp, http.StatusOK, "recipe/list", nil)
 }
 
-func (r uiRouter) createRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r uiHandler) createRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	r.HTML(resp, http.StatusOK, "recipe/edit", nil)
 }
 
-func (r uiRouter) editRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (r uiHandler) editRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	r.HTML(resp, http.StatusOK, "recipe/edit", nil)
 }
 
-func (r uiRouter) notFound(resp http.ResponseWriter, req *http.Request) {
+func (r uiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 	r.showError(resp, http.StatusNotFound)
 }
 
-func (r uiRouter) showError(resp http.ResponseWriter, status int) {
+func (r uiHandler) showError(resp http.ResponseWriter, status int) {
 	r.HTML(resp, status, fmt.Sprintf("status/%d", status), nil)
 }

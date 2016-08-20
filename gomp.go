@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/chadweimer/gomp/api"
@@ -36,8 +37,11 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
-	n.Use(api.NewRouter(cfg, model))
-	n.Use(newUIRouter(cfg, renderer))
+
+	mainMux := http.NewServeMux()
+	mainMux.Handle("/api/", api.NewHandler(cfg, model))
+	mainMux.Handle("/", newUIHandler(cfg, renderer))
+	n.UseHandler(mainMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second

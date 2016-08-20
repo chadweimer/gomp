@@ -8,7 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (r Router) getTags(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) getTags(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	sortBy := req.URL.Query().Get("sort")
 	sortDir := req.URL.Query().Get("dir")
 	count, err := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
@@ -23,7 +23,7 @@ func (r Router) getTags(resp http.ResponseWriter, req *http.Request, p httproute
 		Count:   count,
 	}
 
-	tags, err := r.model.Search.FindTags(filter)
+	tags, err := h.model.Search.FindTags(filter)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
