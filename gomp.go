@@ -10,7 +10,6 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
 	"gopkg.in/tylerb/graceful.v1"
@@ -38,20 +37,11 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
-	n.Use(negroni.NewStatic(http.Dir("public")))
 
-	if cfg.UploadDriver == "fs" {
-		static := negroni.NewStatic(http.Dir(cfg.UploadPath))
-		static.Prefix = "/uploads"
-		n.Use(static)
-	} else if cfg.UploadDriver == "s3" {
-		s3Static := upload.NewS3Static(cfg)
-		s3Static.Prefix = "/uploads"
-		n.Use(s3Static)
-	}
-
-	n.Use(api.NewRouter(cfg, model))
-	n.Use(newUIRouter(renderer))
+	mainMux := http.NewServeMux()
+	mainMux.Handle("/api/", api.NewHandler(cfg, model))
+	mainMux.Handle("/", newUIHandler(cfg, renderer))
+	n.UseHandler(mainMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second

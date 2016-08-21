@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -21,54 +20,49 @@ var errMismatchedRecipeID = errors.New("The recipe id in the path does not match
 
 // ---- End Standard Errors ----
 
-// Router handles the routing table for the API methods.
-type Router struct {
+type apiHandler struct {
 	cfg    *conf.Config
 	model  *models.Model
 	apiMux *httprouter.Router
 }
 
-// NewRouter returns a new instance of Router
-func NewRouter(cfg *conf.Config, model *models.Model) *Router {
-	r := Router{
+// NewHandler returns a new instance of http.Handler
+func NewHandler(cfg *conf.Config, model *models.Model) http.Handler {
+	h := apiHandler{
 		cfg:   cfg,
 		model: model,
 	}
 
-	r.apiMux = httprouter.New()
-	r.apiMux.POST("/api/v1/auth", r.postAuthenticate)
-	r.apiMux.GET("/api/v1/recipes", r.requireAuthentication(r.getRecipes))
-	r.apiMux.POST("/api/v1/recipes", r.requireAuthentication(r.postRecipe))
-	r.apiMux.GET("/api/v1/recipes/:recipeID", r.requireAuthentication(r.getRecipe))
-	r.apiMux.PUT("/api/v1/recipes/:recipeID", r.requireAuthentication(r.putRecipe))
-	r.apiMux.DELETE("/api/v1/recipes/:recipeID", r.requireAuthentication(r.deleteRecipe))
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/rating", r.requireAuthentication(r.putRecipeRating))
-	r.apiMux.GET("/api/v1/recipes/:recipeID/image", r.requireAuthentication(r.getRecipeMainImage))
-	r.apiMux.PUT("/api/v1/recipes/:recipeID/image", r.requireAuthentication(r.putRecipeMainImage))
-	r.apiMux.GET("/api/v1/recipes/:recipeID/images", r.requireAuthentication(r.getRecipeImages))
-	r.apiMux.POST("/api/v1/recipes/:recipeID/images", r.requireAuthentication(r.postImage))
-	r.apiMux.GET("/api/v1/recipes/:recipeID/notes", r.requireAuthentication(r.getRecipeNotes))
-	r.apiMux.DELETE("/api/v1/images/:imageID", r.requireAuthentication(r.deleteImage))
-	r.apiMux.POST("/api/v1/notes", r.requireAuthentication(r.postNote))
-	r.apiMux.PUT("/api/v1/notes/:noteID", r.requireAuthentication(r.putNote))
-	r.apiMux.DELETE("/api/v1/notes/:noteID", r.requireAuthentication(r.deleteNote))
-	r.apiMux.GET("/api/v1/tags", r.requireAuthentication(r.getTags))
-	r.apiMux.NotFound = http.HandlerFunc(r.notFound)
+	h.apiMux = httprouter.New()
+	h.apiMux.POST("/api/v1/auth", h.postAuthenticate)
+	h.apiMux.GET("/api/v1/recipes", h.requireAuthentication(h.getRecipes))
+	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.postRecipe))
+	h.apiMux.GET("/api/v1/recipes/:recipeID", h.requireAuthentication(h.getRecipe))
+	h.apiMux.PUT("/api/v1/recipes/:recipeID", h.requireAuthentication(h.putRecipe))
+	h.apiMux.DELETE("/api/v1/recipes/:recipeID", h.requireAuthentication(h.deleteRecipe))
+	h.apiMux.PUT("/api/v1/recipes/:recipeID/rating", h.requireAuthentication(h.putRecipeRating))
+	h.apiMux.GET("/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.getRecipeMainImage))
+	h.apiMux.PUT("/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.putRecipeMainImage))
+	h.apiMux.GET("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.getRecipeImages))
+	h.apiMux.POST("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.postImage))
+	h.apiMux.GET("/api/v1/recipes/:recipeID/notes", h.requireAuthentication(h.getRecipeNotes))
+	h.apiMux.DELETE("/api/v1/images/:imageID", h.requireAuthentication(h.deleteImage))
+	h.apiMux.POST("/api/v1/notes", h.requireAuthentication(h.postNote))
+	h.apiMux.PUT("/api/v1/notes/:noteID", h.requireAuthentication(h.putNote))
+	h.apiMux.DELETE("/api/v1/notes/:noteID", h.requireAuthentication(h.deleteNote))
+	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
+	h.apiMux.NotFound = http.HandlerFunc(h.notFound)
 
-	return &r
+	return &h
 }
 
-func (r Router) notFound(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 	writeErrorToResponse(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 
-func (r Router) ServeHTTP(resp http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
-	if strings.HasPrefix(req.URL.Path, "/api") {
-		resp.Header().Set("Content-Type", "application/json")
-		r.apiMux.ServeHTTP(resp, req)
-		return
-	}
-	next(resp, req)
+func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+	resp.Header().Set("Content-Type", "application/json")
+	h.apiMux.ServeHTTP(resp, req)
 }
 
 func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {

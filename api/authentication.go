@@ -20,14 +20,14 @@ type authenticateResponse struct {
 	Token string `json:"token"`
 }
 
-func (r Router) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var authRequest authenticateRequest
 	if err := readJSONFromRequest(req, &authRequest); err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	user, err := r.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
+	user, err := h.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
 		writeUnauthorizedErrorToResponse(resp, err)
 		return
@@ -38,7 +38,7 @@ func (r Router) postAuthenticate(resp http.ResponseWriter, req *http.Request, p 
 		IssuedAt:  time.Now().Unix(),
 		Subject:   strconv.FormatInt(user.ID, 10),
 	})
-	tokenStr, err := token.SignedString([]byte(r.cfg.SecretKey))
+	tokenStr, err := token.SignedString([]byte(h.cfg.SecretKey))
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 	}
@@ -46,7 +46,7 @@ func (r Router) postAuthenticate(resp http.ResponseWriter, req *http.Request, p 
 	writeJSONToResponse(resp, authenticateResponse{Token: tokenStr})
 }
 
-func (r Router) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
+func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
@@ -66,7 +66,7 @@ func (r Router) requireAuthentication(handler httprouter.Handle) httprouter.Hand
 				return nil, errors.New("Incorrect signing method")
 			}
 
-			return []byte(r.cfg.SecretKey), nil
+			return []byte(h.cfg.SecretKey), nil
 		})
 		if err != nil || !token.Valid {
 			writeUnauthorizedErrorToResponse(resp, err)

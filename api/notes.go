@@ -9,14 +9,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (r Router) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	notes, err := r.model.Notes.List(recipeID)
+	notes, err := h.model.Notes.List(recipeID)
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
@@ -25,14 +25,14 @@ func (r Router) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p ht
 	writeJSONToResponse(resp, notes)
 }
 
-func (r Router) postNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	if err := r.model.Notes.Create(&note); err != nil {
+	if err := h.model.Notes.Create(&note); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}
@@ -41,7 +41,7 @@ func (r Router) postNote(resp http.ResponseWriter, req *http.Request, p httprout
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (r Router) putNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
@@ -59,7 +59,7 @@ func (r Router) putNote(resp http.ResponseWriter, req *http.Request, p httproute
 		return
 	}
 
-	if err := r.model.Notes.Update(&note); err != nil {
+	if err := h.model.Notes.Update(&note); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}
@@ -67,14 +67,14 @@ func (r Router) putNote(resp http.ResponseWriter, req *http.Request, p httproute
 	resp.WriteHeader(http.StatusNoContent)
 }
 
-func (r Router) deleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
 
-	if err := r.model.Notes.Delete(noteID); err != nil {
+	if err := h.model.Notes.Delete(noteID); err != nil {
 		writeServerErrorToResponse(resp, err)
 		return
 	}

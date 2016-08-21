@@ -3,7 +3,6 @@ package upload
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/julienschmidt/httprouter"
 )
 
 // S3Driver is an implementation of Driver that uses the Amazon S3.
@@ -117,95 +117,57 @@ func (u S3Driver) List(keyPrefix string) ([]FileInfo, error) {
 	return fileInfos, nil
 }
 
-// S3Static is a middleware handler that serves static files from Amazon S3.
-// If the file does not exist on the S3, it passes along to the next middleware
-// in the chain.
-type S3Static struct {
-	cfg *conf.Config
-	// Prefix is the optional prefix used to serve the static content
-	Prefix string
-}
-
-// NewS3Static returns a new instance of S3Static
-func NewS3Static(cfg *conf.Config) *S3Static {
-	return &S3Static{
-		cfg:    cfg,
-		Prefix: "",
-	}
-}
-
-func (s *S3Static) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	if r.Method != "GET" && r.Method != "HEAD" {
-		next(rw, r)
-		return
-	}
-	filePath := r.URL.Path
-	// if we have a prefix, filter requests by stripping the prefix
-	if s.Prefix != "" {
-		if !strings.HasPrefix(filePath, s.Prefix) {
-			next(rw, r)
+// HandleS3Uploads returns a handler that serves static files from Amazon S3.
+// If the file does not exist on the S3, a 404 is returned.
+func HandleS3Uploads(bucket string) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		filePath := p.ByName("filepath")
+		// if the path is '/', move along because we'll just get bucket information
+		if filePath == "/" {
+			http.NotFound(resp, req)
 			return
 		}
-		filePath = filePath[len(s.Prefix):]
-		if filePath != "" && filePath[0] != '/' {
-			next(rw, r)
-			return
+
+		svc := s3.New(session.New())
+
+		// Build the GetObject request, passing along conditional GET parameters
+		getReq := s3.GetObjectInput{
+			Bucket: &bucket,
+			Key:    &filePath,
 		}
-	}
-	// if the path is '/', move along because we'll just get bucket information
-	if filePath == "/" {
-		next(rw, r)
-		return
-	}
+		passThroughReqHeaders(&getReq, req.Header)
 
-	svc := s3.New(session.New())
-
-	bucket := s.cfg.UploadPath
-
-	// Build the GetObject request, passing along conditional GET parameters
-	getReq := s3.GetObjectInput{
-		Bucket: &bucket,
-		Key:    &filePath,
-	}
-	s.passThroughReqHeaders(&getReq, r.Header)
-
-	// Make the request and check the error
-	getResp, err := svc.GetObject(&getReq)
-	if getResp != nil && getResp.Body != nil {
-		defer getResp.Body.Close()
-	}
-	if err != nil {
-		s3err, ok := err.(awserr.Error)
-		// 304 code is expected
-		if ok && s3err.Code() != "NotModified" {
-			log.Printf("[S3Static] Error from S3.GetObject: %s", s3err.Code())
-			// discard the error?
-			next(rw, r)
-			return
+		// Make the request and check the error
+		getResp, err := svc.GetObject(&getReq)
+		if getResp != nil && getResp.Body != nil {
+			defer getResp.Body.Close()
 		}
-	}
-
-	var buf []byte
-	// If we got content, read it, including associated headers
-	if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
-		// Don't read the file back if we're just a HEAD request
-		if r.Method != "HEAD" {
-			buf, err = ioutil.ReadAll(getResp.Body)
-			if err != nil {
-				log.Printf("[S3Static] Error from ioutil.ReadAll: %s", err.Error())
-				// discard the error?
-				next(rw, r)
+		if err != nil {
+			s3err, ok := err.(awserr.Error)
+			// 304 code is expected
+			if ok && s3err.Code() != "NotModified" {
+				http.Error(resp, s3err.Message(), http.StatusInternalServerError)
 				return
 			}
 		}
-	}
-	s.passThroughRespHeaders(getResp, rw.Header())
 
-	// Serve up the file to the client
-	http.ServeContent(rw, r, filePath, *getResp.LastModified, bytes.NewReader(buf))
+		var buf []byte
+		// If we got content, read it, including associated headers
+		if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
+			buf, err = ioutil.ReadAll(getResp.Body)
+			if err != nil {
+				http.Error(resp, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+		passThroughRespHeaders(getResp, resp.Header())
+
+		// Serve up the file to the client
+		http.ServeContent(resp, req, filePath, *getResp.LastModified, bytes.NewReader(buf))
+	}
 }
 
-func (s *S3Static) passThroughReqHeaders(getReq *s3.GetObjectInput, reqHeader http.Header) {
+func passThroughReqHeaders(getReq *s3.GetObjectInput, reqHeader http.Header) {
 	if ifModSince, err := time.Parse(http.TimeFormat, reqHeader.Get("If-Modified-Since")); err == nil {
 		getReq.IfModifiedSince = &ifModSince
 	}
@@ -214,7 +176,7 @@ func (s *S3Static) passThroughReqHeaders(getReq *s3.GetObjectInput, reqHeader ht
 	}
 }
 
-func (s *S3Static) passThroughRespHeaders(getResp *s3.GetObjectOutput, respHeader http.Header) {
+func passThroughRespHeaders(getResp *s3.GetObjectOutput, respHeader http.Header) {
 	if getResp.ContentType != nil && *getResp.ContentType != "" {
 		respHeader.Set("Content-Type", *getResp.ContentType)
 	}
