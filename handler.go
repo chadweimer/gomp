@@ -17,57 +17,44 @@ type uiHandler struct {
 }
 
 func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
-	r := uiHandler{
+	h := uiHandler{
 		cfg:    cfg,
 		Render: renderer,
 	}
 
-	r.uiMux = httprouter.New()
-	r.uiMux.GET("/", r.home)
-	r.uiMux.GET("/login", r.login)
-	r.uiMux.GET("/new", r.createRecipe)
-	r.uiMux.GET("/recipes", r.listRecipes)
-	r.uiMux.GET("/recipes/:id", r.getRecipe)
-	r.uiMux.GET("/recipes/:id/edit", r.editRecipe)
-	if r.cfg.UploadDriver == "fs" {
-		r.uiMux.ServeFiles("/uploads/*filepath", http.Dir(r.cfg.UploadPath))
-	} else if r.cfg.UploadDriver == "s3" {
-		r.uiMux.GET("/uploads/*filepath", upload.HandleS3Uploads(r.cfg.UploadPath))
+	h.uiMux = httprouter.New()
+	h.uiMux.GET("/", h.servePage("home"))
+	h.uiMux.GET("/login", h.servePage("user/login"))
+	h.uiMux.GET("/new", h.servePage("recipe/edit"))
+	h.uiMux.GET("/recipes", h.servePage("recipe/list"))
+	h.uiMux.GET("/recipes/:id", h.servePage("recipe/view"))
+	h.uiMux.GET("/recipes/:id/edit", h.servePage("recipe/edit"))
+	h.uiMux.ServeFiles("/public/*filepath", http.Dir("public"))
+	if h.cfg.UploadDriver == "fs" {
+		h.uiMux.ServeFiles("/uploads/*filepath", http.Dir(h.cfg.UploadPath))
+	} else if h.cfg.UploadDriver == "s3" {
+		h.uiMux.GET("/uploads/*filepath", upload.HandleS3Uploads(h.cfg.UploadPath))
 	}
-	r.uiMux.ServeFiles("/public/*filepath", http.Dir("public"))
-	r.uiMux.NotFound = http.HandlerFunc(r.notFound)
+	h.uiMux.NotFound = http.HandlerFunc(h.notFound)
+	h.uiMux.PanicHandler = h.handlePanic
 
-	return r.uiMux
+	return h.uiMux
 }
 
-func (r uiHandler) login(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	r.HTML(resp, http.StatusOK, "user/login", nil)
+func (h uiHandler) servePage(templateName string) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		h.HTML(resp, http.StatusOK, templateName, nil)
+	}
 }
 
-func (r uiHandler) home(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	r.HTML(resp, http.StatusOK, "home", nil)
+func (h uiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
+	h.showError(resp, http.StatusNotFound, nil)
 }
 
-func (r uiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	r.HTML(resp, http.StatusOK, "recipe/view", nil)
+func (h uiHandler) handlePanic(resp http.ResponseWriter, req *http.Request, data interface{}) {
+	h.showError(resp, http.StatusInternalServerError, data)
 }
 
-func (r uiHandler) listRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	r.HTML(resp, http.StatusOK, "recipe/list", nil)
-}
-
-func (r uiHandler) createRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	r.HTML(resp, http.StatusOK, "recipe/edit", nil)
-}
-
-func (r uiHandler) editRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	r.HTML(resp, http.StatusOK, "recipe/edit", nil)
-}
-
-func (r uiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
-	r.showError(resp, http.StatusNotFound)
-}
-
-func (r uiHandler) showError(resp http.ResponseWriter, status int) {
-	r.HTML(resp, status, fmt.Sprintf("status/%d", status), nil)
+func (h uiHandler) showError(resp http.ResponseWriter, status int, data interface{}) {
+	h.HTML(resp, status, fmt.Sprintf("status/%d", status), data)
 }
