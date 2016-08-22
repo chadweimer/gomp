@@ -13,56 +13,53 @@ import (
 func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	images, err := h.model.Images.List(recipeID)
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
-		return
+		panic(err)
 	}
 
-	writeJSONToResponse(resp, images)
+	h.writeJSONToResponse(resp, images)
 }
 
 func (h apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	image, err := h.model.Images.ReadMainImage(recipeID)
 	if err == models.ErrNotFound {
-		writeErrorToResponse(resp, http.StatusNotFound, err)
+		h.writeErrorToResponse(resp, http.StatusNotFound, err)
 		return
 	}
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
-		return
+		panic(err)
 	}
 
-	writeJSONToResponse(resp, image)
+	h.writeJSONToResponse(resp, image)
 }
 
 func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	var imageID int64
-	if err := readJSONFromRequest(req, &imageID); err != nil {
-		writeClientErrorToResponse(resp, err)
+	if err := h.readJSONFromRequest(req, &imageID); err != nil {
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	image := models.RecipeImage{ID: imageID, RecipeID: recipeID}
 	if err := h.model.Images.UpdateMainImage(&image); err != nil {
-		writeServerErrorToResponse(resp, err)
-		return
+		panic(err)
 	}
 
 	resp.WriteHeader(http.StatusNoContent)
@@ -70,21 +67,20 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 	defer file.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
-		return
+		panic(err)
 	}
 
 	imageInfo := &models.RecipeImage{
@@ -93,8 +89,7 @@ func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p htt
 	}
 	err = h.model.Images.Create(imageInfo, uploadedFileData)
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
-		return
+		panic(err)
 	}
 
 	resp.Header().Set("Location", fmt.Sprintf("/api/v1/recipes/%d/images/%d", imageInfo.RecipeID, imageInfo.ID))
@@ -104,13 +99,12 @@ func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p htt
 func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	imageID, err := strconv.ParseInt(p.ByName("imageID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	if err := h.model.Images.Delete(imageID); err != nil {
-		writeServerErrorToResponse(resp, err)
-		return
+		panic(err)
 	}
 
 	resp.WriteHeader(http.StatusOK)

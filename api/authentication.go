@@ -22,14 +22,14 @@ type authenticateResponse struct {
 
 func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var authRequest authenticateRequest
-	if err := readJSONFromRequest(req, &authRequest); err != nil {
-		writeClientErrorToResponse(resp, err)
+	if err := h.readJSONFromRequest(req, &authRequest); err != nil {
+		h.writeClientErrorToResponse(resp, err)
 		return
 	}
 
 	user, err := h.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
-		writeUnauthorizedErrorToResponse(resp, err)
+		h.writeUnauthorizedErrorToResponse(resp, err)
 		return
 	}
 
@@ -40,23 +40,23 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 	})
 	tokenStr, err := token.SignedString([]byte(h.cfg.SecretKey))
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
+		panic(err)
 	}
 
-	writeJSONToResponse(resp, authenticateResponse{Token: tokenStr})
+	h.writeJSONToResponse(resp, authenticateResponse{Token: tokenStr})
 }
 
 func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
-			writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header missing"))
+			h.writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header missing"))
 			return
 		}
 
 		authHeaderParts := strings.Split(authHeader, " ")
 		if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
-			writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header must be in the form 'Bearer {token}'"))
+			h.writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header must be in the form 'Bearer {token}'"))
 			return
 		}
 
@@ -69,7 +69,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 			return []byte(h.cfg.SecretKey), nil
 		})
 		if err != nil || !token.Valid {
-			writeUnauthorizedErrorToResponse(resp, err)
+			h.writeUnauthorizedErrorToResponse(resp, err)
 			return
 		}
 

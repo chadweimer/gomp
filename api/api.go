@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"runtime/debug"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -24,13 +26,15 @@ type apiHandler struct {
 	cfg    *conf.Config
 	model  *models.Model
 	apiMux *httprouter.Router
+	logger *log.Logger
 }
 
 // NewHandler returns a new instance of http.Handler
 func NewHandler(cfg *conf.Config, model *models.Model) http.Handler {
 	h := apiHandler{
-		cfg:   cfg,
-		model: model,
+		cfg:    cfg,
+		model:  model,
+		logger: log.New(os.Stdout, "[api] ", 0),
 	}
 
 	h.apiMux = httprouter.New()
@@ -52,12 +56,28 @@ func NewHandler(cfg *conf.Config, model *models.Model) http.Handler {
 	h.apiMux.DELETE("/api/v1/notes/:noteID", h.requireAuthentication(h.deleteNote))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
 	h.apiMux.NotFound = http.HandlerFunc(h.notFound)
+	h.apiMux.PanicHandler = h.panicHandler
 
 	return &h
 }
 
 func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
-	writeErrorToResponse(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
+	h.writeErrorToResponse(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
+}
+
+func (h apiHandler) panicHandler(resp http.ResponseWriter, req *http.Request, data interface{}) {
+	h.logger.Printf("FATAL ERROR: %s", data)
+
+	if h.cfg.IsDevelopment {
+		h.logger.Printf("STACK: %s", debug.Stack())
+	}
+
+	switch err := data.(type) {
+	default:
+		h.writeErrorToResponse(resp, http.StatusInternalServerError, nil)
+	case error:
+		h.writeErrorToResponse(resp, http.StatusInternalServerError, err)
+	}
 }
 
 func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
@@ -65,44 +85,40 @@ func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	h.apiMux.ServeHTTP(resp, req)
 }
 
-func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {
-	if err := marshalJSON(resp, data); err != nil {
-		writeServerErrorToResponse(resp, err)
+func (h apiHandler) writeJSONToResponse(resp http.ResponseWriter, data interface{}) {
+	if err := h.marshalJSON(resp, data); err != nil {
+		panic(err)
 	}
 }
 
-func readJSONFromRequest(req *http.Request, data interface{}) error {
+func (h apiHandler) readJSONFromRequest(req *http.Request, data interface{}) error {
 	return json.NewDecoder(req.Body).Decode(data)
 }
 
-func writeServerErrorToResponse(resp http.ResponseWriter, err error) {
-	writeErrorToResponse(resp, http.StatusInternalServerError, err)
+func (h apiHandler) writeClientErrorToResponse(resp http.ResponseWriter, err error) {
+	h.writeErrorToResponse(resp, http.StatusBadRequest, err)
 }
 
-func writeClientErrorToResponse(resp http.ResponseWriter, err error) {
-	writeErrorToResponse(resp, http.StatusBadRequest, err)
+func (h apiHandler) writeUnauthorizedErrorToResponse(resp http.ResponseWriter, err error) {
+	h.writeErrorToResponse(resp, http.StatusUnauthorized, err)
 }
 
-func writeUnauthorizedErrorToResponse(resp http.ResponseWriter, err error) {
-	writeErrorToResponse(resp, http.StatusUnauthorized, err)
-}
-
-func writeErrorToResponse(resp http.ResponseWriter, statusCode int, err error) {
-	log.Println(err)
+func (h apiHandler) writeErrorToResponse(resp http.ResponseWriter, statusCode int, err error) {
+	h.logger.Println(err)
 	resp.WriteHeader(statusCode)
-	_ = marshalJSON(resp, err.Error())
+	_ = h.marshalJSON(resp, err.Error())
 }
 
-func marshalJSON(resp http.ResponseWriter, data interface{}) error {
+func (h apiHandler) marshalJSON(resp http.ResponseWriter, data interface{}) error {
 	src, err := json.Marshal(data)
 	if err != nil {
-		log.Println(err)
+		h.logger.Println(err)
 		return err
 	}
 
 	dst := &bytes.Buffer{}
 	if err = json.Indent(dst, src, "", "\t"); err != nil {
-		log.Println(err)
+		h.logger.Println(err)
 		return err
 	}
 

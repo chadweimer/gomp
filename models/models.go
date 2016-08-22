@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/chadweimer/gomp/modules/conf"
@@ -25,8 +26,10 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // Model encapsulates the model layer of the application, including database access
 type Model struct {
-	cfg               *conf.Config
-	db                *sqlx.DB
+	cfg    *conf.Config
+	db     *sqlx.DB
+	logger *log.Logger
+
 	previousDbVersion uint64
 	currentDbVersion  uint64
 
@@ -40,19 +43,22 @@ type Model struct {
 
 // New constructs a new Model object
 func New(cfg *conf.Config) *Model {
+	logger := log.New(os.Stdout, "[model] ", 0)
+
 	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal("Failed to migrate database.", err)
+		logger.Fatal("Failed to migrate database.", err)
 	}
 
 	db, err := sqlx.Connect(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal("Failed to open database.", err)
+		logger.Fatal("Failed to open database.", err)
 	}
 
 	m := &Model{
 		cfg:               cfg,
 		db:                db,
+		logger:            logger,
 		previousDbVersion: previousDbVersion,
 		currentDbVersion:  newDbVersion,
 	}
@@ -65,7 +71,7 @@ func New(cfg *conf.Config) *Model {
 
 	err = m.postMigrate()
 	if err != nil {
-		log.Fatal("Failed to run post-migration steps on database.", err)
+		logger.Fatal("Failed to run post-migration steps on database.", err)
 	}
 
 	return m
@@ -75,7 +81,7 @@ func New(cfg *conf.Config) *Model {
 func (m *Model) TearDown() {
 	if m.db != nil {
 		if err := m.db.Close(); err != nil {
-			log.Fatal("Failed to close the connection to the database.", err)
+			m.logger.Fatal("Failed to close the connection to the database.", err)
 		}
 	}
 }

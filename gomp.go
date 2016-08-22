@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/chadweimer/gomp/api"
@@ -17,10 +18,9 @@ import (
 )
 
 func main() {
-	cfg := conf.Load("conf/app.json")
-	if err := cfg.Validate(); err != nil {
-		log.Fatalf("[config] %s", err.Error())
-	}
+	logger := log.New(os.Stdout, "[gomp] ", 0)
+
+	cfg := conf.Load()
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
 		Layout: "shared/layout",
@@ -32,7 +32,6 @@ func main() {
 	})
 
 	n := negroni.New()
-	n.Use(negroni.NewRecovery())
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
@@ -43,7 +42,7 @@ func main() {
 	mainMux.Handle("/", newUIHandler(cfg, renderer))
 	n.UseHandler(mainMux)
 
-	log.Printf("Starting server on port :%d", cfg.Port)
+	logger.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second

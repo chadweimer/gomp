@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -45,7 +44,7 @@ func NewRecipeImageModel(model *Model) *RecipeImageModel {
 	} else if model.cfg.UploadDriver == "s3" {
 		upl = upload.NewS3Driver(model.cfg)
 	} else {
-		log.Fatalf("Invalid UploadDriver '%s' specified", model.cfg.UploadDriver)
+		model.logger.Fatalf("Invalid UploadDriver '%s' specified", model.cfg.UploadDriver)
 	}
 
 	return &RecipeImageModel{Model: model, upl: upl}
@@ -58,7 +57,7 @@ func (m *RecipeImageModel) migrateImages(recipeID int64, tx *sqlx.Tx) error {
 	}
 
 	for _, file := range files {
-		log.Printf("[migrate] Processing file %s", file.URL)
+		m.logger.Printf("[migrate] Processing file %s", file.URL)
 		image := &RecipeImage{
 			RecipeID:     recipeID,
 			Name:         file.Name,
