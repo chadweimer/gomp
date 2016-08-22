@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"runtime/debug"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/upload"
@@ -11,15 +14,18 @@ import (
 )
 
 type uiHandler struct {
-	cfg   *conf.Config
-	uiMux *httprouter.Router
 	*render.Render
+
+	cfg    *conf.Config
+	uiMux  *httprouter.Router
+	logger *log.Logger
 }
 
 func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
 	h := uiHandler{
 		cfg:    cfg,
 		Render: renderer,
+		logger: log.New(os.Stdout, "[ui] ", 0),
 	}
 
 	h.uiMux = httprouter.New()
@@ -48,13 +54,21 @@ func (h uiHandler) servePage(templateName string) httprouter.Handle {
 }
 
 func (h uiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
-	h.showError(resp, http.StatusNotFound, nil)
+	h.showError(resp, http.StatusNotFound)
 }
 
 func (h uiHandler) handlePanic(resp http.ResponseWriter, req *http.Request, data interface{}) {
-	h.showError(resp, http.StatusInternalServerError, data)
+	h.logger.Printf("FATAL ERROR: %s", data)
+
+	if h.cfg.IsDevelopment {
+		stack := debug.Stack()
+		h.logger.Printf("STACK: %s", stack)
+		fmt.Fprintf(resp, "FATAL ERROR: %s\n%s", data, stack)
+	}
+
+	h.showError(resp, http.StatusInternalServerError)
 }
 
-func (h uiHandler) showError(resp http.ResponseWriter, status int, data interface{}) {
-	h.HTML(resp, status, fmt.Sprintf("status/%d", status), data)
+func (h uiHandler) showError(resp http.ResponseWriter, status int) {
+	h.HTML(resp, status, fmt.Sprintf("status/%d", status), nil)
 }

@@ -32,7 +32,6 @@ func main() {
 	})
 
 	n := negroni.New()
-	n.Use(negroni.NewRecovery())
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}

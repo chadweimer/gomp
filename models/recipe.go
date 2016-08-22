@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -43,7 +42,7 @@ func (m *RecipeModel) migrate(tx *sqlx.Tx) error {
 				return err
 			}
 
-			log.Printf("[migrate] Processing recipe %d", recipeID)
+			m.logger.Printf("[migrate] Processing recipe %d", recipeID)
 			if err := m.Model.Images.migrateImages(recipeID, tx); err != nil {
 				return err
 			}
