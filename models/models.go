@@ -49,6 +49,7 @@ func New(cfg *conf.Config) *Model {
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
+	db.SetMaxOpenConns(cfg.DatabaseMaxConnections)
 
 	m := &Model{
 		cfg:               cfg,
@@ -74,6 +75,7 @@ func New(cfg *conf.Config) *Model {
 // TearDown closes the connection to the database.
 func (m *Model) TearDown() {
 	if m.db != nil {
+		log.Print("Closing database connection...")
 		if err := m.db.Close(); err != nil {
 			log.Fatal("Failed to close the connection to the database.", err)
 		}

@@ -46,21 +46,26 @@ type Config struct {
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
 	DatabaseURL string
+
+	// DatabaseMaxConnections gets the maximum number of open database connection to maintain.
+	// This value is fed to sql.DB.SetMaxOpenConns(N). The default is 0 (unlimited).
+	DatabaseMaxConnections int
 }
 
 // Load reads the configuration file from the specified path
 func Load(path string) *Config {
 	c := Config{
-		Port:             4000,
-		UploadDriver:     "fs",
-		UploadPath:       filepath.Join("data", "uploads"),
-		IsDevelopment:    false,
-		SecretKey:        "Secret123",
-		ApplicationTitle: "GOMP: Go Meal Planner",
-		HomeTitle:        "",
-		HomeImage:        "",
-		DatabaseDriver:   "postgres",
-		DatabaseURL:      "",
+		Port:                   4000,
+		UploadDriver:           "fs",
+		UploadPath:             filepath.Join("data", "uploads"),
+		IsDevelopment:          false,
+		SecretKey:              "Secret123",
+		ApplicationTitle:       "GOMP: Go Meal Planner",
+		HomeTitle:              "",
+		HomeImage:              "",
+		DatabaseDriver:         "postgres",
+		DatabaseURL:            "",
+		DatabaseMaxConnections: 0,
 	}
 
 	// If environment variables are set, use them.
@@ -74,6 +79,7 @@ func Load(path string) *Config {
 	loadEnv("GOMP_HOME_IMAGE", &c.HomeImage)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
+	loadEnv("DATABASE_MAX_CONNS", &c.DatabaseMaxConnections)
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
@@ -86,6 +92,7 @@ func Load(path string) *Config {
 		log.Printf("[config] HomeImage=%s", c.HomeImage)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
+		log.Printf("[config] DatabaseMaxConnections=%d", c.DatabaseMaxConnections)
 	}
 
 	return &c
@@ -123,6 +130,10 @@ func (c *Config) Validate() error {
 
 	if _, err := url.Parse(c.DatabaseURL); err != nil {
 		return errors.New("DATABASE_URL is invalid")
+	}
+
+	if c.DatabaseMaxConnections < 0 {
+		return errors.New("DATABASE_MAX_CONNS must be a non-negative integer")
 	}
 
 	return nil
