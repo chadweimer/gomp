@@ -12,7 +12,7 @@ import (
 func (h apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -21,13 +21,13 @@ func (h apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request, 
 		panic(err)
 	}
 
-	h.writeJSONToResponse(resp, notes)
+	h.JSON(resp, http.StatusOK, notes)
 }
 
 func (h apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var note models.Note
 	if err := h.readJSONFromRequest(req, &note); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -42,18 +42,18 @@ func (h apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p http
 func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var note models.Note
 	if err := h.readJSONFromRequest(req, &note); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if note.ID != noteID {
-		h.writeClientErrorToResponse(resp, errMismatchedNoteID)
+		h.JSON(resp, http.StatusBadRequest, errMismatchedNoteID.Error())
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httpr
 func (h apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 

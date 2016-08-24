@@ -23,7 +23,8 @@ func main() {
 	cfg := conf.Load()
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
-		Layout: "shared/layout",
+		IndentJSON: true,
+		Layout:     "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 			"HomeTitle":        func() string { return cfg.HomeTitle },
@@ -38,7 +39,7 @@ func main() {
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	mainMux := http.NewServeMux()
-	mainMux.Handle("/api/", api.NewHandler(cfg, model))
+	mainMux.Handle("/api/", api.NewHandler(cfg, model, renderer))
 	mainMux.Handle("/", newUIHandler(cfg, renderer))
 	n.UseHandler(mainMux)
 

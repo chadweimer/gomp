@@ -13,7 +13,7 @@ import (
 func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -22,38 +22,38 @@ func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request,
 		panic(err)
 	}
 
-	h.writeJSONToResponse(resp, images)
+	h.JSON(resp, http.StatusOK, images)
 }
 
 func (h apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	image, err := h.model.Images.ReadMainImage(recipeID)
 	if err == models.ErrNotFound {
-		h.writeErrorToResponse(resp, http.StatusNotFound, err)
+		h.JSON(resp, http.StatusNotFound, err)
 		return
 	}
 	if err != nil {
 		panic(err)
 	}
 
-	h.writeJSONToResponse(resp, image)
+	h.JSON(resp, http.StatusOK, image)
 }
 
 func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var imageID int64
 	if err := h.readJSONFromRequest(req, &imageID); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -67,13 +67,13 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 	defer file.Close()
@@ -99,7 +99,7 @@ func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p htt
 func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	imageID, err := strconv.ParseInt(p.ByName("imageID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 

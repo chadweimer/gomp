@@ -23,13 +23,13 @@ type authenticateResponse struct {
 func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var authRequest authenticateRequest
 	if err := h.readJSONFromRequest(req, &authRequest); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	user, err := h.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
-		h.writeUnauthorizedErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusUnauthorized, err.Error())
 		return
 	}
 
@@ -43,20 +43,20 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 		panic(err)
 	}
 
-	h.writeJSONToResponse(resp, authenticateResponse{Token: tokenStr})
+	h.JSON(resp, http.StatusOK, authenticateResponse{Token: tokenStr})
 }
 
 func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
-			h.writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header missing"))
+			h.JSON(resp, http.StatusUnauthorized, "Authorization header missing")
 			return
 		}
 
 		authHeaderParts := strings.Split(authHeader, " ")
 		if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
-			h.writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header must be in the form 'Bearer {token}'"))
+			h.JSON(resp, http.StatusUnauthorized, "Authorization header must be in the form 'Bearer {token}'")
 			return
 		}
 
@@ -68,8 +68,11 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 
 			return []byte(h.cfg.SecretKey), nil
 		})
-		if err != nil || !token.Valid {
-			h.writeUnauthorizedErrorToResponse(resp, err)
+		if err != nil {
+			h.JSON(resp, http.StatusUnauthorized, err.Error())
+			return
+		} else if !token.Valid {
+			h.JSON(resp, http.StatusUnauthorized, "Invalid token")
 			return
 		}
 

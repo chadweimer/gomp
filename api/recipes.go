@@ -21,12 +21,12 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 	sortDir := req.URL.Query().Get("dir")
 	page, err := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 	count, err := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -44,32 +44,32 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 		panic(err)
 	}
 
-	h.writeJSONToResponse(resp, getRecipesResponse{Recipes: recipes, Total: total})
+	h.JSON(resp, http.StatusOK, getRecipesResponse{Recipes: recipes, Total: total})
 }
 
 func (h apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	recipe, err := h.model.Recipes.Read(recipeID)
 	if err == models.ErrNotFound {
-		h.writeErrorToResponse(resp, http.StatusNotFound, err)
+		h.JSON(resp, http.StatusNotFound, err)
 		return
 	}
 	if err != nil {
 		panic(err)
 	}
 
-	h.writeJSONToResponse(resp, recipe)
+	h.JSON(resp, http.StatusOK, recipe)
 }
 
 func (h apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var recipe models.Recipe
 	if err := h.readJSONFromRequest(req, &recipe); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -84,18 +84,18 @@ func (h apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p ht
 func (h apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var recipe models.Recipe
 	if err := h.readJSONFromRequest(req, &recipe); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if recipe.ID != recipeID {
-		h.writeClientErrorToResponse(resp, errMismatchedRecipeID)
+		h.JSON(resp, http.StatusBadRequest, errMismatchedRecipeID.Error())
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p htt
 func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -123,13 +123,13 @@ func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p 
 func (h apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var rating float64
 	if err := h.readJSONFromRequest(req, &rating); err != nil {
-		h.writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
