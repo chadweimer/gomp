@@ -25,13 +25,13 @@ type RecipeImageModel struct {
 
 // RecipeImage represents the data associated with an image attached to a recipe
 type RecipeImage struct {
-	ID           int64     `json:"id"`
-	RecipeID     int64     `json:"recipeId"`
-	Name         string    `json:"name"`
-	URL          string    `json:"url"`
-	ThumbnailURL string    `json:"thumbnailUrl"`
-	CreatedAt    time.Time `json:"createdAt"`
-	ModifiedAt   time.Time `json:"modifiedAt"`
+	ID           int64     `json:"id" db:"id"`
+	RecipeID     int64     `json:"recipeId" db:"recipe_id"`
+	Name         string    `json:"name" db:"name"`
+	URL          string    `json:"url" db:"url"`
+	ThumbnailURL string    `json:"thumbnailUrl" db:"thumbnail_url"`
+	CreatedAt    time.Time `json:"createdAt" db:"created_at"`
+	ModifiedAt   time.Time `json:"modifiedAt" db:"modified_at"`
 }
 
 // RecipeImages represents a collection of RecipeImage objects
@@ -106,23 +106,15 @@ func (m *RecipeImageModel) CreateTx(imageInfo *RecipeImage, imageData []byte, tx
 
 func (m *RecipeImageModel) createImpl(image *RecipeImage, tx *sqlx.Tx) error {
 	now := time.Now()
-	sql := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
+	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
-	var id int64
-	row := tx.QueryRow(sql, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now)
-	err := row.Scan(&id)
-	if err != nil {
+	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now); err != nil {
 		return err
 	}
 
 	// Switch to a new main image if necessary, since this might be the first image attached
-	if err := m.setMainImageIfNecessary(image.RecipeID, tx); err != nil {
-		return err
-	}
-
-	image.ID = id
-	return nil
+	return m.setMainImageIfNecessary(image.RecipeID, tx)
 }
 
 func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, string, error) {
@@ -191,25 +183,15 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 // using the specified transaction. If no image exists with the specified ID,
 // a ErrNotFound error is returned.
 func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
-	image := RecipeImage{ID: id}
-
-	result := m.db.QueryRow(
-		"SELECT recipe_id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image WHERE id = $1",
-		image.ID)
-	err := result.Scan(
-		&image.RecipeID,
-		&image.Name,
-		&image.URL,
-		&image.ThumbnailURL,
-		&image.CreatedAt,
-		&image.ModifiedAt)
+	image := new(RecipeImage)
+	err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = $1", id)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
-	return &image, nil
+	return image, nil
 }
 
 // ReadMainImage retrieves the information about the main image for the specified
@@ -239,25 +221,15 @@ func (m *RecipeImageModel) ReadMainImage(recipeID int64) (*RecipeImage, error) {
 // recipe image from the database, if found, using the specified transaction.
 // If no main image exists, a ErrNotFound error is returned.
 func (m *RecipeImageModel) ReadMainImageTx(recipeID int64, tx *sqlx.Tx) (*RecipeImage, error) {
-	image := RecipeImage{RecipeID: recipeID}
-
-	result := m.db.QueryRow(
-		"SELECT id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)",
-		image.RecipeID)
-	err := result.Scan(
-		&image.ID,
-		&image.Name,
-		&image.URL,
-		&image.ThumbnailURL,
-		&image.CreatedAt,
-		&image.ModifiedAt)
+	image := new(RecipeImage)
+	err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeID)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
-	return &image, nil
+	return image, nil
 }
 
 // UpdateMainImage sets the id of the main image for the specified recipe
@@ -289,28 +261,13 @@ func (m *RecipeImageModel) UpdateMainImageTx(image *RecipeImage, tx *sqlx.Tx) er
 // List returns a RecipeImages slice that contains data for all images
 // attached to the specified recipe.
 func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
-	rows, err := m.db.Query(
-		"SELECT id, name, url, thumbnail_url, created_at, modified_at FROM recipe_image "+
-			"WHERE recipe_id = $1 ORDER BY created_at ASC",
-		recipeID)
-	if err != nil {
+	images := new(RecipeImages)
+
+	if err := m.db.Select(images, "SELECT * FROM recipe_image WHERE recipe_id = $1 ORDER BY created_at ASC", recipeID); err != nil {
 		return nil, err
 	}
 
-	var images RecipeImages
-	for rows.Next() {
-		var image RecipeImage
-		err = rows.Scan(&image.ID, &image.Name, &image.URL, &image.ThumbnailURL, &image.CreatedAt, &image.ModifiedAt)
-		if err != nil {
-			return nil, err
-		}
-		images = append(images, image)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return &images, nil
+	return images, nil
 }
 
 // Delete removes the specified image from the backing store and database
@@ -346,8 +303,7 @@ func (m *RecipeImageModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 		return err
 	}
 
-	_, err = tx.Exec("DELETE FROM recipe_image WHERE id = $1", id)
-	if err != nil {
+	if _, err = tx.Exec("DELETE FROM recipe_image WHERE id = $1", id); err != nil {
 		return err
 	}
 

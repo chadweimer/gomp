@@ -59,22 +59,8 @@ func (m *TagModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 
 // List retrieves all tags associated with the recipe with the specified id.
 func (m *TagModel) List(recipeID int64) (*[]string, error) {
-	rows, err := m.db.Query(
-		"SELECT tag FROM recipe_tag WHERE recipe_id = $1",
-		recipeID)
-	if err != nil {
-		return nil, err
-	}
-
 	var tags []string
-	for rows.Next() {
-		var tag string
-		if err := rows.Scan(&tag); err != nil {
-			return nil, err
-		}
-		tags = append(tags, tag)
-	}
-	if err := rows.Err(); err != nil {
+	if err := m.db.Select(&tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
 		return nil, err
 	}
 

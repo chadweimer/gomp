@@ -9,44 +9,32 @@ type UserModel struct {
 
 // User represents an individual user
 type User struct {
-	ID       int64
-	Username string
+	ID           int64  `db:"id"`
+	Username     string `db:"username"`
+	PasswordHash string `db:"password_hash"`
 }
 
 // Authenticate verifies the username and password combination match an existing user
 func (m *UserModel) Authenticate(username, password string) (*User, error) {
-	user := User{Username: username}
-	var passwordHash string
+	user := new(User)
 
-	result := m.db.QueryRow(
-		"SELECT id, password_hash FROM app_user WHERE username = $1",
-		user.Username)
-	err := result.Scan(
-		&user.ID,
-		&passwordHash)
-	if err != nil {
+	if err := m.db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password))
-	if err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (m *UserModel) Read(id int64) (*User, error) {
-	user := User{ID: id}
+	user := new(User)
 
-	result := m.db.QueryRow(
-		"SELECT username FROM app_user WHERE id = $1",
-		user.ID)
-	err := result.Scan(
-		&user.Username)
-	if err != nil {
+	if err := m.db.Select(user, "SELECT * FROM app_user WHERE id = $1", user.ID); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }

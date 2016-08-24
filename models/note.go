@@ -13,11 +13,11 @@ type NoteModel struct {
 
 // Note represents an individual comment (or note) on a recipe
 type Note struct {
-	ID         int64     `json:"id"`
-	RecipeID   int64     `json:"recipeId"`
-	Note       string    `json:"text"`
-	CreatedAt  time.Time `json:"createdAt"`
-	ModifiedAt time.Time `json:"modifiedAt"`
+	ID         int64     `json:"id" db:"id"`
+	RecipeID   int64     `json:"recipeId" db:"recipe_id"`
+	Note       string    `json:"text" db:"note"`
+	CreatedAt  time.Time `json:"createdAt" db:"created_at"`
+	ModifiedAt time.Time `json:"modifiedAt" db:"modified_at"`
 }
 
 // Notes represents a collection of Note objects
@@ -43,18 +43,10 @@ func (m *NoteModel) Create(note *Note) error {
 // the specified transaction.
 func (m *NoteModel) CreateTx(note *Note, tx *sqlx.Tx) error {
 	now := time.Now()
-	sql := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
+	stmt := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
 		"VALUES ($1, $2, $3, $4) RETURNING id"
 
-	var id int64
-	row := tx.QueryRow(sql, note.RecipeID, note.Note, now, now)
-	err := row.Scan(&id)
-	if err != nil {
-		return err
-	}
-
-	note.ID = id
-	return nil
+	return tx.Get(note, stmt, note.RecipeID, note.Note, now, now)
 }
 
 // Update stores the note in the database by updating the existing record with the specified
@@ -131,26 +123,11 @@ func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 
 // List retrieves all notes associated with the recipe with the specified id.
 func (m *NoteModel) List(recipeID int64) (*Notes, error) {
-	rows, err := m.db.Query(
-		"SELECT id, note, created_at, modified_at FROM recipe_note "+
-			"WHERE recipe_id = $1 ORDER BY created_at DESC",
-		recipeID)
-	if err != nil {
+	notes := new(Notes)
+
+	if err := m.db.Select(notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeID); err != nil {
 		return nil, err
 	}
 
-	var notes Notes
-	for rows.Next() {
-		var note Note
-		err = rows.Scan(&note.ID, &note.Note, &note.CreatedAt, &note.ModifiedAt)
-		if err != nil {
-			return nil, err
-		}
-		notes = append(notes, note)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return &notes, nil
+	return notes, nil
 }
