@@ -50,17 +50,9 @@ func (m *RecipeModel) migrate(tx *sqlx.Tx) error {
 // Create stores the recipe in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *RecipeModel) Create(recipe *Recipe) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.CreateTx(recipe, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.CreateTx(recipe, tx)
+	})
 }
 
 // CreateTx stores the recipe in the database as a new record using
@@ -112,17 +104,9 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 // existing record with the specified id using a dedicated transation
 // that is committed if there are not errors.
 func (m *RecipeModel) Update(recipe *Recipe) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.UpdateTx(recipe, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.UpdateTx(recipe, tx)
+	})
 }
 
 // UpdateTx stores the specified recipe in the database by updating the
@@ -156,17 +140,9 @@ func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 // that is committed if there are not errors. Note that this method does not delete
 // any attachments that we associated with the deleted recipe.
 func (m *RecipeModel) Delete(id int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteTx(id, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteTx(id, tx)
+	})
 }
 
 // DeleteTx removes the specified recipe from the database using the specified transaction.

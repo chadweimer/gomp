@@ -77,17 +77,9 @@ func (m *RecipeImageModel) migrateImages(recipeID int64, tx *sqlx.Tx) error {
 // an associated record in the database using a dedicated transation
 // that is committed if there are not errors.
 func (m *RecipeImageModel) Create(imageInfo *RecipeImage, imageData []byte) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.CreateTx(imageInfo, imageData, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.CreateTx(imageInfo, imageData, tx)
+	})
 }
 
 // CreateTx saves the image using the backing upload.Driver and creates
@@ -194,35 +186,11 @@ func (m *RecipeImageModel) ReadTx(id int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	return image, nil
 }
 
-// ReadMainImage retrieves the information about the main image for the specified
-// recipe image from the database, if found, using a dedicated transation that is
-// committed if there are not errors. If no main image exists,
-// a ErrNotFound error is returned.
+// ReadMainImage retrieves the information about the main image for the specified recipe
+// image from the database. If no main image exists, a ErrNotFound error is returned.
 func (m *RecipeImageModel) ReadMainImage(recipeID int64) (*RecipeImage, error) {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return nil, err
-	}
-
-	image, err := m.ReadMainImageTx(recipeID, tx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return nil, err
-	}
-
-	return image, nil
-}
-
-// ReadMainImageTx retrieves the information about the main image for the specified
-// recipe image from the database, if found, using the specified transaction.
-// If no main image exists, a ErrNotFound error is returned.
-func (m *RecipeImageModel) ReadMainImageTx(recipeID int64, tx *sqlx.Tx) (*RecipeImage, error) {
 	image := new(RecipeImage)
-	err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeID)
+	err := m.db.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeID)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
@@ -235,17 +203,9 @@ func (m *RecipeImageModel) ReadMainImageTx(recipeID int64, tx *sqlx.Tx) (*Recipe
 // UpdateMainImage sets the id of the main image for the specified recipe
 // using a dedicated transation that is committed if there are not errors.
 func (m *RecipeImageModel) UpdateMainImage(image *RecipeImage) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.UpdateMainImageTx(image, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.UpdateMainImageTx(image, tx)
+	})
 }
 
 // UpdateMainImageTx sets the id of the main image for the specified recipe
@@ -273,17 +233,9 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 // Delete removes the specified image from the backing store and database
 // using a dedicated transation that is committed if there are not errors.
 func (m *RecipeImageModel) Delete(id int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteTx(id, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteTx(id, tx)
+	})
 }
 
 // DeleteTx removes the specified image from the backing store and database
@@ -323,17 +275,9 @@ func (m *RecipeImageModel) setMainImageIfNecessary(recipeID int64, tx *sqlx.Tx) 
 // DeleteAll removes all images for the specified recipe from the database
 // using a dedicated transation that is committed if there are not errors.
 func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteAllTx(recipeID, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteAllTx(recipeID, tx)
+	})
 }
 
 // DeleteAllTx removes all images for the specified recipe from the database

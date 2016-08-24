@@ -10,17 +10,9 @@ type TagModel struct {
 // Create stores the tag in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *TagModel) Create(recipeID int64, tag string) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.CreateTx(recipeID, tag, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.CreateTx(recipeID, tag, tx)
+	})
 }
 
 // CreateTx stores the tag in the database as a new record using
@@ -35,17 +27,9 @@ func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sqlx.Tx) error {
 // DeleteAll removes all tags for the specified recipe from the database using a dedicated
 // transation that is committed if there are not errors.
 func (m *TagModel) DeleteAll(recipeID int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteAllTx(recipeID, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteAllTx(recipeID, tx)
+	})
 }
 
 // DeleteAllTx removes all tags for the specified recipe from the database using the specified

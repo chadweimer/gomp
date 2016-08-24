@@ -26,17 +26,9 @@ type Notes []Note
 // Create stores the note in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *NoteModel) Create(note *Note) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.CreateTx(note, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.CreateTx(note, tx)
+	})
 }
 
 // CreateTx stores the note in the database as a new record using
@@ -52,17 +44,9 @@ func (m *NoteModel) CreateTx(note *Note, tx *sqlx.Tx) error {
 // Update stores the note in the database by updating the existing record with the specified
 // id using a dedicated transation that is committed if there are not errors.
 func (m *NoteModel) Update(note *Note) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.UpdateTx(note, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.UpdateTx(note, tx)
+	})
 }
 
 // UpdateTx stores the note in the database by updating the existing record with the specified
@@ -77,17 +61,9 @@ func (m *NoteModel) UpdateTx(note *Note, tx *sqlx.Tx) error {
 // Delete removes the specified note from the database using a dedicated transation
 // that is committed if there are not errors.
 func (m *NoteModel) Delete(id int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteTx(id, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteTx(id, tx)
+	})
 }
 
 // DeleteTx removes the specified note from the database using the specified transaction.
@@ -99,17 +75,9 @@ func (m *NoteModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 // DeleteAll removes all notes for the specified recipe from the database using a dedicated
 // transation that is committed if there are not errors.
 func (m *NoteModel) DeleteAll(recipeID int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteAllTx(recipeID, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteAllTx(recipeID, tx)
+	})
 }
 
 // DeleteAllTx removes all notes for the specified recipe from the database using the specified
