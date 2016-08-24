@@ -31,8 +31,8 @@ func (m *NoteModel) Create(note *Note) error {
 		return err
 	}
 
-	err = m.CreateTx(note, tx)
-	if err != nil {
+	if err = m.CreateTx(note, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -65,8 +65,8 @@ func (m *NoteModel) Update(note *Note) error {
 		return err
 	}
 
-	err = m.UpdateTx(note, tx)
-	if err != nil {
+	if err = m.UpdateTx(note, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -90,8 +90,8 @@ func (m *NoteModel) Delete(id int64) error {
 		return err
 	}
 
-	err = m.DeleteTx(id, tx)
-	if err != nil {
+	if err = m.DeleteTx(id, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -112,8 +112,8 @@ func (m *NoteModel) DeleteAll(recipeID int64) error {
 		return err
 	}
 
-	err = m.DeleteAllTx(recipeID, tx)
-	if err != nil {
+	if err = m.DeleteAllTx(recipeID, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -147,6 +147,9 @@ func (m *NoteModel) List(recipeID int64) (*Notes, error) {
 			return nil, err
 		}
 		notes = append(notes, note)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return &notes, nil

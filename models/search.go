@@ -139,6 +139,9 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 
 		recipes = append(recipes, recipe)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
 
 	return &recipes, total, nil
 }
@@ -172,6 +175,9 @@ func (m *SearchModel) FindTags(filter TagsFilter) (*[]string, error) {
 			return nil, err
 		}
 		tags = append(tags, tag)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return &tags, nil

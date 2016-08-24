@@ -82,8 +82,8 @@ func (m *RecipeImageModel) Create(imageInfo *RecipeImage, imageData []byte) erro
 		return err
 	}
 
-	err = m.CreateTx(imageInfo, imageData, tx)
-	if err != nil {
+	if err = m.CreateTx(imageInfo, imageData, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -224,6 +224,7 @@ func (m *RecipeImageModel) ReadMainImage(recipeID int64) (*RecipeImage, error) {
 
 	image, err := m.ReadMainImageTx(recipeID, tx)
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
@@ -267,8 +268,8 @@ func (m *RecipeImageModel) UpdateMainImage(image *RecipeImage) error {
 		return err
 	}
 
-	err = m.UpdateMainImageTx(image, tx)
-	if err != nil {
+	if err = m.UpdateMainImageTx(image, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -305,6 +306,9 @@ func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
 		}
 		images = append(images, image)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return &images, nil
 }
@@ -317,8 +321,8 @@ func (m *RecipeImageModel) Delete(id int64) error {
 		return err
 	}
 
-	err = m.DeleteTx(id, tx)
-	if err != nil {
+	if err = m.DeleteTx(id, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -368,8 +372,8 @@ func (m *RecipeImageModel) DeleteAll(recipeID int64) error {
 		return err
 	}
 
-	err = m.DeleteAllTx(recipeID, tx)
-	if err != nil {
+	if err = m.DeleteAllTx(recipeID, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 

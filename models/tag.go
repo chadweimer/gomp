@@ -16,6 +16,7 @@ func (m *TagModel) Create(recipeID int64, tag string) error {
 	}
 
 	if err = m.CreateTx(recipeID, tag, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -40,6 +41,7 @@ func (m *TagModel) DeleteAll(recipeID int64) error {
 	}
 
 	if err = m.DeleteAllTx(recipeID, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -71,6 +73,9 @@ func (m *TagModel) List(recipeID int64) (*[]string, error) {
 			return nil, err
 		}
 		tags = append(tags, tag)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return &tags, nil

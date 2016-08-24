@@ -48,6 +48,9 @@ func (m *RecipeModel) migrate(tx *sqlx.Tx) error {
 				return err
 			}
 		}
+		if err := rows.Err(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -61,8 +64,8 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 		return err
 	}
 
-	err = m.CreateTx(recipe, tx)
-	if err != nil {
+	if err = m.CreateTx(recipe, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -138,8 +141,8 @@ func (m *RecipeModel) Update(recipe *Recipe) error {
 		return err
 	}
 
-	err = m.UpdateTx(recipe, tx)
-	if err != nil {
+	if err = m.UpdateTx(recipe, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -179,8 +182,8 @@ func (m *RecipeModel) Delete(id int64) error {
 		return err
 	}
 
-	err = m.DeleteTx(id, tx)
-	if err != nil {
+	if err = m.DeleteTx(id, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 

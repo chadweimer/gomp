@@ -116,8 +116,8 @@ func (m *Model) postMigrate() error {
 		return err
 	}
 
-	err = m.Recipes.migrate(tx)
-	if err != nil {
+	if err = m.Recipes.migrate(tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
