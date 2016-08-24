@@ -87,6 +87,15 @@ func (m *Model) tx(op func(*sqlx.Tx) error) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if recv := recover(); recv != nil {
+			// Make sure to rollback after a panic...
+			tx.Rollback()
+
+			// ... but let the panicing continue
+			panic(recv)
+		}
+	}()
 
 	if err = op(tx); err != nil {
 		tx.Rollback()
