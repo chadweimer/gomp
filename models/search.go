@@ -81,14 +81,13 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 		return nil, 0, err
 	}
 	countStmt = m.db.Rebind(countStmt)
-	row := m.db.QueryRow(countStmt, countArgs...)
-	if err := row.Scan(&total); err != nil {
+	if err := m.db.Get(&total, countStmt, countArgs...); err != nil {
 		return nil, 0, err
 	}
 
 	offset := filter.Count * (filter.Page - 1)
 	selectStmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS overall_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
 		partialStmt
 	switch filter.SortBy {
 	case SortRecipeByID:
@@ -96,7 +95,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 	case SortRecipeByName:
 		selectStmt += " ORDER BY r.name"
 	case SortRecipeByRating:
-		selectStmt += " ORDER BY overall_rating"
+		selectStmt += " ORDER BY avg_rating"
 	case SortByRandom:
 		selectStmt += " ORDER BY RANDOM()"
 	}
@@ -118,6 +117,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 	if err != nil {
 		return nil, 0, err
 	}
+	defer rows.Close()
 
 	var recipes Recipes
 	for rows.Next() {
@@ -166,6 +166,7 @@ func (m *SearchModel) FindTags(filter TagsFilter) (*[]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var tags []string
 	for rows.Next() {

@@ -10,17 +10,9 @@ type TagModel struct {
 // Create stores the tag in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *TagModel) Create(recipeID int64, tag string) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.CreateTx(recipeID, tag, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.CreateTx(recipeID, tag, tx)
+	})
 }
 
 // CreateTx stores the tag in the database as a new record using
@@ -35,17 +27,9 @@ func (m *TagModel) CreateTx(recipeID int64, tag string, tx *sqlx.Tx) error {
 // DeleteAll removes all tags for the specified recipe from the database using a dedicated
 // transation that is committed if there are not errors.
 func (m *TagModel) DeleteAll(recipeID int64) error {
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.DeleteAllTx(recipeID, tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteAllTx(recipeID, tx)
+	})
 }
 
 // DeleteAllTx removes all tags for the specified recipe from the database using the specified
@@ -59,22 +43,8 @@ func (m *TagModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 
 // List retrieves all tags associated with the recipe with the specified id.
 func (m *TagModel) List(recipeID int64) (*[]string, error) {
-	rows, err := m.db.Query(
-		"SELECT tag FROM recipe_tag WHERE recipe_id = $1",
-		recipeID)
-	if err != nil {
-		return nil, err
-	}
-
 	var tags []string
-	for rows.Next() {
-		var tag string
-		if err := rows.Scan(&tag); err != nil {
-			return nil, err
-		}
-		tags = append(tags, tag)
-	}
-	if err := rows.Err(); err != nil {
+	if err := m.db.Select(&tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
 		return nil, err
 	}
 

@@ -82,6 +82,29 @@ func (m *Model) TearDown() {
 	}
 }
 
+func (m *Model) tx(op func(*sqlx.Tx) error) error {
+	tx, err := m.db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if recv := recover(); recv != nil {
+			// Make sure to rollback after a panic...
+			tx.Rollback()
+
+			// ... but let the panicing continue
+			panic(recv)
+		}
+	}()
+
+	if err = op(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error) {
 	migrationPath := filepath.Join("db", "migrations", databaseDriver)
 
@@ -113,15 +136,7 @@ func (m *Model) postMigrate() error {
 		return nil
 	}
 
-	tx, err := m.db.Beginx()
-	if err != nil {
-		return err
-	}
-
-	if err = m.Recipes.migrate(tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.Recipes.migrate(tx)
+	})
 }
