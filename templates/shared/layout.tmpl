@@ -19,6 +19,8 @@
 
         <!--Import materialize.css-->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css" media="screen,projection">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.2.0/material.blue-red.min.css" />
+        <script defer src="https://code.getmdl.io/1.2.0/material.min.js"></script>
 
         <!-- Custom GOMP styles -->
         <link rel="stylesheet" type="text/css" href="/public/css/gomp.css">
@@ -29,75 +31,51 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <header class="navbar">
-            <nav class="blue">
-                <div class="nav-wrapper">
-                    <a href="/" class="brand-logo left hide-on-med-and-down">{{ApplicationTitle}}</a>
-                    <ul class="right hide-on-med-and-down require-login">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/recipes">Recipes</a></li>
-                        <li>
-                            <a href="#!" class="dropdown-button" data-beloworigin="true" data-activates="userDropdown">
-                                <span class="username"></span>
-                                <i class="material-icons right">arrow_drop_down</i>
-                            </a>
-                            <ul id="userDropdown" class="dropdown-content">
-                                <li><a href="#!" onclick="onLogoutClicked(this, event);">Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <form class="nav-wrapper right require-login" action="/recipes">
-                        <div class="input-field nav-wrapper">
-                            <input id="search" name="q" type="search" placeholder="Search...">
-                            <input type="hidden" name="tags" value="">
-                            <label for="search"><i class="material-icons">search</i></label>
-                        </div>
-                    </form>
-                    <a href="#!" data-activates="mobile-menu" class="button-collapse">
-                        <i class="material-icons">menu</i>
-                    </a>
-                </div>
-            </nav>
-            <ul id="mobile-menu" class="side-nav collapsible" data-collapsible="expandable">
-                <li>
-                    <span class="collapsible-header active truncate">{{ApplicationTitle}}</span>
-                    <ul class="collapsible-body require-login">
-                        <li><a href="/"><i class="material-icons">home</i> Home</a></li>
-                        <li><a href="/recipes"><i class="material-icons">view_list</i> Recipes</a></li>
-                    </ul>
-                </li>
-                <li class="require-login">
-                    <span class="collapsible-header active username"></span>
-                    <ul class="collapsible-body">
-                        <li><a href="#!" onclick="onLogoutClicked(this, event);"><i class="material-icons">exit_to_app</i> Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </header>
-
-        <main>
-            {{ partial "content" }}
-        </main>
-
-        <footer class="page-footer no-padding grey lighten-1">
-            <div class="container">
-                <div class="row">
-                    <div class="col s12 l12 require-login">
-                        <h5 class="white-text">Links</h5>
-                        <ul>
-                            <li><a class="white-text" href="/">Home</a></li>
-                            <li><a class="white-text" href="/recipes">Recipes</a></li>
-                            <li><a class="white-text" href="#!" onclick="onLogoutClicked(this, event);">Logout</a></li>
-                        </ul>
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <div class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <span class="mdl-layout-title">{{ApplicationTitle}}</span>
+                    <div class="mdl-layout-spacer"></div>
+                    <div class="mdl-navigation mdl-layout--large-screen-only require-login">
+                        <a class="mdl-navigation__link" href="/">Home</a>
+                        <a class="mdl-navigation__link" href="/recipes">Recipes</a>
+                        <a class="mdl-navigation__link" href="#!" onclick="onLogoutClicked(this, event);">Logout</a>
                     </div>
                 </div>
             </div>
-            <div class="footer-copyright">
-                <div class="container">
-                    <span>&copy; 2016 Chad Weimer. Powered by <a class="white-text" href="https://github.com/chadweimer/gomp">GOMP</a>.</span>
+            <div class="mdl-layout__drawer">
+                <span class="mdl-layout-title">{{ApplicationTitle}}</span>
+                <div class="mdl-navigation require-login">
+                    <a class="mdl-navigation__link" href="/">Home</a>
+                    <a class="mdl-navigation__link" href="/recipes">Recipes</a>
+                    <a class="mdl-navigation__link" href="#!" onclick="onLogoutClicked(this, event);">Logout</a>
                 </div>
             </div>
-        </footer>
+
+            <main class="mdl-layout__content">
+                <div class="page-content">
+                    {{ partial "content" }}
+                </div>
+
+                <footer class="mdl-mega-footer">
+                    <div class="mdl-mega-footer__middle-section">
+                        <div class="mdl-mega-footer__drop-down-section">
+                            <input class="mdl-mega-footer__heading-checkbox" type="checkbox" checked>
+                            <h1 class="mdl-mega-footer__heading">{{ApplicationTitle}}</h1>
+                            <ul class="mdl-mega-footer__link-list require-login">
+                                <li><a href="/">Home</a></li>
+                                <li><a href="/recipes">Recipes</a></li>
+                                <li><a href="#!" onclick="onLogoutClicked(this, event);">Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mdl-mega-footer__bottom-section">
+                        <span>&copy; 2016 Chad Weimer. Powered by <a class="white-text" href="https://github.com/chadweimer/gomp">GOMP</a>.</span>
+                    </div>
+                </footer>
+            </main>
+
+        </div>
 
         <div id="busy-dialog" class="modal">
             <div class="modal-content">
