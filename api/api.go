@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
@@ -63,6 +64,23 @@ func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-Type", "application/json")
 	h.apiMux.ServeHTTP(resp, req)
+}
+
+func getParam(values url.Values, key string) string {
+	val, _ := url.QueryUnescape(values.Get(key))
+	return val
+}
+
+func getParams(values url.Values, key string) []string {
+	var vals []string
+	var ok bool
+	if vals, ok = values[key]; ok {
+		for i, val := range vals {
+			vals[i], _ = url.QueryUnescape(val)
+		}
+	}
+
+	return vals
 }
 
 func writeJSONToResponse(resp http.ResponseWriter, data interface{}) {

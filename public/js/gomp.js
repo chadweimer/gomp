@@ -47,7 +47,8 @@ function getQueryString(field, isArray = false) {
     do {
         var matches = reg.exec(target);
         if (matches) {
-            values.push(matches[1]);
+            var val = decodeURIComponent(matches[1].replace(/\+/, '%20'))
+            values.push(val);
         }
     } while (matches);
 
@@ -160,6 +161,11 @@ function onLogoutClicked(self, e) {
 function logout() {
     localStorage.clear();
     window.location = '/login';
+}
+
+function onSearchSubmit(self, e) {
+    $search = $('#search');
+    $search.val($.trim($search.val()));
 }
 
 const API_BASE_PATH = '/api/v1';
