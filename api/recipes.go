@@ -15,16 +15,16 @@ type getRecipesResponse struct {
 }
 
 func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	query := req.URL.Query().Get("q")
-	tags := req.URL.Query()["tags[]"]
-	sortBy := req.URL.Query().Get("sort")
-	sortDir := req.URL.Query().Get("dir")
-	page, err := strconv.ParseInt(req.URL.Query().Get("page"), 10, 64)
+	query := getParam(req.URL.Query(), "q")
+	tags := getParams(req.URL.Query(), "tags[]")
+	sortBy := getParam(req.URL.Query(), "sort")
+	sortDir := getParam(req.URL.Query(), "dir")
+	page, err := strconv.ParseInt(getParam(req.URL.Query(), "page"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return
 	}
-	count, err := strconv.ParseInt(req.URL.Query().Get("count"), 10, 64)
+	count, err := strconv.ParseInt(getParam(req.URL.Query(), "count"), 10, 64)
 	if err != nil {
 		writeClientErrorToResponse(resp, err)
 		return

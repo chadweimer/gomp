@@ -92,15 +92,22 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 	switch filter.SortBy {
 	case SortRecipeByID:
 		selectStmt += " ORDER BY r.id"
-	case SortRecipeByName:
-		selectStmt += " ORDER BY r.name"
 	case SortRecipeByRating:
 		selectStmt += " ORDER BY avg_rating"
 	case SortByRandom:
 		selectStmt += " ORDER BY RANDOM()"
+	case SortRecipeByName:
+		fallthrough
+	default:
+		selectStmt += " ORDER BY r.name"
 	}
-	if filter.SortDir == SortDirDesc {
+	switch filter.SortDir {
+	case SortDirDesc:
 		selectStmt += " DESC"
+	case SortDirAsc:
+		fallthrough
+	default:
+		selectStmt += " ASC"
 	}
 	selectStmt += " LIMIT ? OFFSET ?"
 	var selectArgs []interface{}

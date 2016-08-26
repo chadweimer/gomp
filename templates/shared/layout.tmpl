@@ -46,7 +46,7 @@
                             </ul>
                         </li>
                     </ul>
-                    <form class="nav-wrapper right require-login" action="/recipes">
+                    <form class="nav-wrapper right require-login" action="/recipes" onsubmit="onSearchSubmit(this, event)">
                         <div class="input-field nav-wrapper">
                             <input id="search" name="q" type="search" placeholder="Search...">
                             <input type="hidden" name="tags" value="">
