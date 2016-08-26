@@ -23,13 +23,7 @@ func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
 	}
 
 	h.uiMux = httprouter.New()
-	h.uiMux.GET("/", h.servePage("home"))
-	h.uiMux.GET("/login", h.servePage("user/login"))
-	h.uiMux.GET("/new", h.servePage("recipe/edit"))
-	h.uiMux.GET("/recipes", h.servePage("recipe/list"))
-	h.uiMux.GET("/recipes/:id", h.servePage("recipe/view"))
-	h.uiMux.GET("/recipes/:id/edit", h.servePage("recipe/edit"))
-	h.uiMux.ServeFiles("/public/*filepath", http.Dir("public"))
+	h.uiMux.ServeFiles("/static/*filepath", http.Dir("static"))
 	if h.cfg.UploadDriver == "fs" {
 		h.uiMux.ServeFiles("/uploads/*filepath", http.Dir(h.cfg.UploadPath))
 	} else if h.cfg.UploadDriver == "s3" {
