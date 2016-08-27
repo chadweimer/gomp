@@ -48,8 +48,8 @@
             url="/api/v1/auth"
             method="POST"
             handle-as="json"
-            on-response="handleAuthResponse"
-            on-error="handleAuthError"></iron-ajax>
+            on-response="handlePostAuthResponse"
+            on-error="handlePostAuthError"></iron-ajax>
         <iron-location id="ironLocation"></iron-location>
     </template>
 
@@ -84,12 +84,12 @@
               }
           },
 
-          handleAuthResponse: function(request) {
+          handlePostAuthResponse: function(request) {
               localStorage.setItem("username", this.username);
               localStorage.setItem("jwtToken", request.detail.response.token);
               this.$.ironLocation.set("path", "/");
           },
-          handleAuthError : function() {
+          handlePostAuthError : function() {
               this.$.loginMessage.innerText = "Login failed. Check your username and password and try again.";
           }
         });

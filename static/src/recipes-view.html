@@ -1,13 +1,90 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 <dom-module id="recipes-view">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
-    <h2>Hello [[prop1]]</h2>
+    <template>
+        <style>
+            :host {
+                display: block;
+                --paper-card-header: {
+                    height: 70%;
+                }
+                --paper-card: {
+                    height: 300px;
+                }
+            }
+            .section {
+                padding: 10px;
+            }
+            .outterContainer {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
+            paper-progress {
+                width: 100%;
+            }
+            
+            @media screen and (min-width: 993px) {
+                .recipeContainer {
+                    width: 33%;
+                }
+                paper-card {
+                    width: 96%;
+                    margin: 2%;
+                }
+            }
+            @media screen and (min-width: 601px) and (max-width: 992px) {
+                .recipeContainer {
+                    width: 50%;
+                }
+                paper-card {
+                    width: 96%;
+                    margin: 2%;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                .recipeContainer {
+                    width: 100%;
+                }
+                paper-card {
+                    margin: 2%;
+                    width: 96%;
+                }
+            }
+        </style>
+
+        <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
+        <div class="section">
+            <div>
+                Search: '[[search]]', Results: [[totalRecipeCount]]
+            </div>
+            <div class="outterContainer">
+                <template is="dom-repeat" items="{{recipes}}">
+                    <div class="recipeContainer">
+                        <paper-card image="[[item.mainImage.thumbnailUrl]]">
+                            <div class="card-content">
+                                [[item.name]]
+                            </div>
+                        </paper-card>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <iron-ajax
+            auto
+            id="recipesAjax"
+            url="/api/v1/recipes"
+            method="GET"
+            handle-as="json"
+            on-request="_handleGetRecipesRequest"
+            on-response="_handleGetRecipesResponse"
+            on-error="_handleGetRecipesError"
+            debounce-duration="300"></iron-ajax>
+        <iron-location id="ironLocation"></iron-location>
   </template>
 
   <script>
@@ -16,11 +93,160 @@
       is: 'recipes-view',
 
       properties: {
-        prop1: {
-          type: String,
-          value: 'recipes-view',
-        },
+          jwtToken: {
+              type: String,
+              value: null
+          },
+          pageNum: {
+              type: Number,
+              value: 1,
+              notify: true,
+              observer: '_pageNumChanged'
+          },
+          search: {
+              type: String,
+              value: '',
+              notify: true,
+              observer: '_searchChanged'
+          },
+          searchTags: {
+              type: Array,
+              value: [],
+              notify: true,
+              observer: '_searchTagsChanged'
+          },
+          sortBy: {
+              type: String,
+              value: 'name',
+              notify: true,
+              observer: '_sortByChanged'
+          },
+          sortDir: {
+              type: String,
+              value: 'asc',
+              notify: true,
+              observer: '_sortDirChanged'
+          },
+          viewMode: {
+              type: String,
+              value: 'full',
+              notify: true,
+              observer: '_viewModeChanged'
+          },
+          loading: {
+              type: Boolean,
+              value: true,
+              notify: true
+          },
+          recipes: {
+              type: Array,
+              value: [],
+              notify: true
+          },
+          totalRecipeCount: {
+              type: Number,
+              value: 0,
+              notify: true
+          }
       },
+
+      attached: function() {
+          this.parentNode.addEventListener("iron-select", this._routeChanged);
+
+          this._initializeVars();
+
+          this._getRecipes();
+      },
+
+      _initializeVars: function() {
+          var jwtToken = localStorage.getItem("jwtToken");
+          this.$.recipesAjax.headers = {"Authorization": "Bearer " + jwtToken};
+
+          this.pageNum = 1;
+          this.search = this._getFromSession('q', '');
+          this.searchTags = this._getFromSession('tags', []).filter(v => v !== '');
+          this.sortBy = this._getFromSession('sort', 'name');
+          this.sortDir = this._getFromSession('dir', 'asc');
+          this.viewMode = this._getFromSession('view', 'full');
+      },
+
+      _pageNumChanged: function() {
+          this._getRecipes();
+      },
+      _searchChanged: function() {
+          this._trySaveToSession('q', this.search);
+          this._getRecipes();
+      },
+      _searchTagsChanged: function() {
+          this._trySaveToSession('tags', this.searchTags);
+          this._getRecipes();
+      },
+      _sortByChanged: function() {
+          this._trySaveToSession('sort', this.sortBy);
+          this._getRecipes();
+      },
+      _sortDirChanged: function() {
+          this._trySaveToSession('dir', this.sortDir);
+          this._getRecipes();
+      },
+      _viewModeChanged: function() {
+          this._trySaveToSession('view', this.viewMode);
+          this._getRecipes();
+      },
+
+      _routeChanged: function(e) {
+          var page = e.target.selected;
+          if (page === "recipes") {
+              this._getRecipes();
+          }
+      },
+
+      _getRecipes: function() {
+          this.$.recipesAjax.params = {
+              "q": this.search,
+              "tags": this.searchTags,
+              "sort": this.sortBy,
+              "dir": this.sortDir,
+              "page": this.pageNum,
+              "count": 12
+          };
+      },
+      _handleGetRecipesRequest: function(request) {
+          this.loading = true;
+      },
+      _handleGetRecipesResponse: function(request) {
+          this.loading = false;
+          this.recipes = request.detail.response.recipes;
+          this.totalRecipeCount = request.detail.response.total;
+      },
+      _handleGetRecipesError : function() {
+          this.loading = false;
+      },
+
+      _getFromSession: function(field, defaultVal) {
+          var val = null
+          if (sessionStorage.getItem(field)) {
+              try {
+                  val = JSON.parse(sessionStorage.getItem(field));
+              } catch (ex) {
+                  console.warn("Failed to retrieve value of '%s' in sessionStorage. Error: %s", field, ex);
+              }
+          }
+
+          if (val === null) {
+              val = defaultVal;
+          }
+
+          return val;
+      },
+
+      _trySaveToSession: function(field, stringVal) {
+          try {
+              sessionStorage.setItem(field, stringVal);
+          } catch (ex) {
+              console.warn("Failed to save value of '%s' in sessionStorage. Error: %s", field, ex);
+          }
+      }
 
     });
   </script>
