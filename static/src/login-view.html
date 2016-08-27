@@ -1,0 +1,97 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+<dom-module id="login-view">
+    <template>
+        <style>
+            :host {
+                display: block;
+                padding: 10px;
+            }
+            .container {
+                @apply(--layout-horizontal);
+                @apply(--layout-center-justified);
+            }
+            #loginMessage {
+                color: red;
+            }
+            @media screen and (min-width: 601px) {
+                paper-card {
+                    width: 50%;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                paper-card {
+                    width: 100%;
+                }
+            }
+        </style>
+        <div class="container">
+            <paper-card heading="Login">
+                <div class="card-content">
+                    <paper-input id="username" name="username" value="{{username}}" label="Username" required autofocus></paper-input>
+                    <paper-input id="password" name="password" value="{{password}}" label="Password" type="password" required></paper-input>
+                    <div id="loginMessage"></div>
+                </div>
+                <div class="card-actions">
+                    <paper-button id="loginButton">Login</paper-button>
+                </div>
+            </paper-card>
+        </div>
+
+        <iron-ajax
+            id="authAjax"
+            url="/api/v1/auth"
+            method="POST"
+            handle-as="json"
+            on-response="handleAuthResponse"
+            on-error="handleAuthError"></iron-ajax>
+        <iron-location id="ironLocation"></iron-location>
+    </template>
+
+    <script>
+        Polymer({
+
+          is: 'login-view',
+
+          properties: {
+              username: {
+                  type: String
+              },
+              password: {
+                  type: String
+              }
+          },
+
+          listeners: {
+              'loginButton.tap': 'onLoginTapped',
+              'username.keydown': 'onInputKeydown',
+              'password.keydown': 'onInputKeydown'
+          },
+
+          onLoginTapped: function(e) {
+              this.$.authAjax.body = JSON.stringify({"username":this.username, "password": this.password});
+              this.$.authAjax.generateRequest();
+          },
+
+          onInputKeydown: function(e) {
+              if (e.keyCode === 13) {
+                  this.$.loginButton.click();
+              }
+          },
+
+          handleAuthResponse: function(request) {
+              localStorage.setItem("username", this.username);
+              localStorage.setItem("jwtToken", request.detail.response.token);
+              this.$.ironLocation.set("path", "/");
+          },
+          handleAuthError : function() {
+              this.$.loginMessage.innerText = "Login failed. Check your username and password and try again.";
+          }
+        });
+    </script>
+</dom-module>

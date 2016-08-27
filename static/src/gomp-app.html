@@ -4,16 +4,18 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
-<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
 <link rel="import" href="../bower_components/paper-styles/shadow.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 
 <dom-module id="gomp-app">
     <template>
@@ -21,16 +23,19 @@
             :host {
                 display: block;
             }
+            paper-toolbar a {
+                color: #FFFFFF;
+            }
         </style>
 
-        <app-location route="{{route}}"></app-location>
+        <app-location id="appLocation" route="{{route}}"></app-location>
         <app-route
             route="{{route}}"
             pattern="/:page"
             data="{{routeData}}"
             tail="{{subroute}}"></app-route>
 
-        <paper-drawer-panel id="drawerPanel">
+        <paper-drawer-panel id="drawerPanel" force-narrow>
             <paper-header-panel drawer>
                 <paper-toolbar><span>[[title]]</span></paper-toolbar>
                 <paper-menu selected="[[page]]" attr-for-selected="name" role="navigation">
@@ -41,7 +46,9 @@
             <paper-header-panel main>
                 <paper-toolbar>
                     <paper-icon-button class="menu-button" icon="menu" paper-drawer-toggle hidden$="{{largeLayout}}"></paper-icon-button>
-                    <div main-title hidden$="{{smallLayout}}">[[title]]</div>
+                    <div class="title" hidden$="{{smallLayout}}">[[title]]</div>
+                    <paper-item name="home"><a href="/">Home</a></paper-item>
+                    <paper-item name="recipes"><a href="/recipes">Recipes</a></paper-item>
                 </paper-toolbar>
 
                 <iron-pages
@@ -50,6 +57,7 @@
                     role="main">
                     <home-view name="home"></home-view>
                     <recipes-view name="recipes"></recipes-view>
+                    <login-view name="login"></login-view>
                 </iron-pages>
             </paper-header-panel>
         </paper-drawer-panel>
@@ -63,6 +71,10 @@
         Polymer({
 
             is: 'gomp-app',
+
+            ready: function() {
+                this.verifyIsAuthenticated();
+            },
 
             properties: {
                 title: {
@@ -97,6 +109,10 @@
                 this.page = page || 'home';
             },
             _pageChanged: function(page) {
+                if (!this.verifyIsAuthenticated()) {
+                    return;
+                }
+
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl(page + '-view.html');
                 this.importHref(resolvedPageUrl, null, null, true);
@@ -106,6 +122,19 @@
             },
             onLayoutChange: function(dontcare) {
                 this.$.drawerPanel.closeDrawer();
+            },
+            verifyIsAuthenticated: function() {
+                var jwtToken = localStorage.getItem("jwtToken");
+                // Redirect to login if necessary
+                if (this.$.appLocation.path !== '/login') {
+                    if (jwtToken === null) {
+                        localStorage.clear();
+                        this.$.appLocation.path = '/login';
+                        //logout();
+                        return false;
+                    }
+                }
+                return true;
             }
         });
     </script>
