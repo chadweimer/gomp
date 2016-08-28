@@ -173,24 +173,34 @@
       _pageNumChanged: function() {
           this._getRecipes();
       },
-      _searchChanged: function() {
-          this._trySaveToSession('q', this.search);
+      _searchChanged: function(newValue, oldValue) {
+          if (oldValue !== undefined) {
+              this._trySaveToSession('q', JSON.stringify(newValue));
+          }
           this._getRecipes();
       },
-      _searchTagsChanged: function() {
-          this._trySaveToSession('tags', this.searchTags);
+      _searchTagsChanged: function(newValue, oldValue) {
+          if (oldValue !== undefined) {
+              this._trySaveToSession('tags', JSON.stringify(newValue));
+          }
           this._getRecipes();
       },
-      _sortByChanged: function() {
-          this._trySaveToSession('sort', this.sortBy);
+      _sortByChanged: function(newValue, oldValue) {
+          if (oldValue !== undefined) {
+              this._trySaveToSession('sort', JSON.stringify(newValue));
+          }
           this._getRecipes();
       },
-      _sortDirChanged: function() {
-          this._trySaveToSession('dir', this.sortDir);
+      _sortDirChanged: function(newValue, oldValue) {
+          if (oldValue !== undefined) {
+              this._trySaveToSession('dir', JSON.stringify(newValue));
+          }
           this._getRecipes();
       },
-      _viewModeChanged: function() {
-          this._trySaveToSession('view', this.viewMode);
+      _viewModeChanged: function(newValue, oldValue) {
+          if (oldValue !== undefined) {
+              this._trySaveToSession('view', JSON.stringify(newValue));
+          }
           this._getRecipes();
       },
 
