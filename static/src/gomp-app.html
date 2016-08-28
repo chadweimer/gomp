@@ -61,7 +61,7 @@
                     <paper-item name="home" hidden$="{{!largeLayout}}"><a href="/">Home</a></paper-item>
                     <paper-item name="recipes" hidden$="{{!largeLayout}}"><a href="/recipes">Recipes</a></paper-item>
                     <paper-item name="logout" hidden$="{{!largeLayout}}"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
-                    <paper-search-bar icon="search" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch"></paper-search-bar>
+                    <paper-search-bar icon="search" query="[[search]]" hide-filter-button="true" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch"></paper-search-bar>
                 </paper-toolbar>
 
                 <iron-pages
@@ -69,7 +69,7 @@
                     attr-for-selected="name"
                     role="main">
                     <home-view name="home"></home-view>
-                    <recipes-view id="recipesView" name="recipes"></recipes-view>
+                    <recipes-view name="recipes" search="{{search}}"></recipes-view>
                     <login-view name="login"></login-view>
                 </iron-pages>
             </paper-scroll-header-panel>
@@ -113,6 +113,10 @@
                     type: String,
                     reflectToAttribute: true,
                     observer: '_pageChanged'
+                },
+                search: {
+                    type: String,
+                    notify: true
                 }
             },
             observers: [
@@ -157,7 +161,7 @@
                 this.$.appLocation.path = '/login';
             },
             _onSearch: function(e) {
-                this.$.recipesView.search = e.target.query;
+                this.search = e.target.query;
                 this.$.appLocation.path = '/recipes';
             }
         });
