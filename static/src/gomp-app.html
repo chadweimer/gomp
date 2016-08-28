@@ -1,6 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
@@ -48,9 +49,9 @@
             <paper-header-panel drawer>
                 <paper-toolbar><span>[[title]]</span></paper-toolbar>
                 <paper-menu selected="[[page]]" attr-for-selected="name" role="navigation">
-                    <paper-item name="home"><a href="/">Home</a></paper-item>
-                    <paper-item name="recipes"><a href="/recipes">Recipes</a></paper-item>
-                    <paper-item name="logout"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
+                    <paper-item name="home"><a href="/"><iron-icon icon="home"></iron-icon> Home</a></paper-item>
+                    <paper-item name="recipes"><a href="/recipes"><iron-icon icon="view-list"></iron-icon> Recipes</a></paper-item>
+                    <paper-item name="logout"><a href="#!" on-tap="_onLogoutTapped"><iron-icon icon="exit-to-app"></iron-icon> Logout</a></paper-item>
                 </paper-menu>
             </paper-header-panel>
             <paper-scroll-header-panel main>
