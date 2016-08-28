@@ -13,6 +13,7 @@
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-search/paper-search.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
 <link rel="import" href="../bower_components/paper-styles/shadow.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
@@ -23,6 +24,13 @@
         <style>
             :host {
                 display: block;
+            }
+            paper-scroll-header-panel {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
             }
             paper-toolbar a {
                 color: #FFFFFF;
@@ -45,7 +53,7 @@
                     <paper-item name="logout"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
                 </paper-menu>
             </paper-header-panel>
-            <paper-header-panel main>
+            <paper-scroll-header-panel main>
                 <paper-toolbar>
                     <paper-icon-button class="menu-button" icon="menu" paper-drawer-toggle hidden$="{{largeLayout}}"></paper-icon-button>
                     <div class="title"><span hidden$="{{smallLayout}}">[[title]]</span></div>
@@ -63,7 +71,7 @@
                     <recipes-view id="recipesView" name="recipes"></recipes-view>
                     <login-view name="login"></login-view>
                 </iron-pages>
-            </paper-header-panel>
+            </paper-scroll-header-panel>
         </paper-drawer-panel>
 
         <iron-media-query query="max-width: 600px" query-matches="{{smallLayout}}"></iron-media-query>
