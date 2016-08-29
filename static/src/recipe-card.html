@@ -1,0 +1,51 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+
+<dom-module id="recipe-card">
+    <template>
+        <style>
+            :host {
+                display: block;
+                --paper-card-header: {
+                    height: 75%;
+                }
+                --paper-card: {
+                    width: 100%;
+                    height: 250px;
+                }
+            }
+            paper-card:hover{
+                @apply(--shadow-elevation-6dp);
+            }
+            .clickable {
+                cursor: pointer;
+            }
+        </style>
+        
+        <paper-card image="[[recipe.mainImage.thumbnailUrl]]" class="clickable" on-tap="_cardTapped">
+            <div class="card-content">
+                [[recipe.name]]
+            </div>
+        </paper-card>
+        <iron-location id="ironLocation"></iron-location>
+    </template>
+
+    <script>
+      Polymer({
+
+        is: 'recipe-card',
+
+        properties: {
+          recipe: {
+            type: Object,
+            value: null,
+          },
+        },
+
+        _cardTapped : function(e) {
+              this.$.ironLocation.set("path", "/recipes/" + this.recipe.id);
+        }
+
+      });
+    </script>
+</dom-module>
