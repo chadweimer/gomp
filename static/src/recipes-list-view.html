@@ -112,7 +112,6 @@
                 value: 0,
                 notify: true
             },
-
             search: {
                 type: String,
                 value: null,
@@ -251,12 +250,12 @@
 
         _handleGetRecipesRequest: function(request) {
             this.loading = true;
-            this.recipes = [];
         },
         _handleGetRecipesResponse: function(request) {
             this.loading = false;
             this.recipes = request.detail.response.recipes;
             this.totalRecipeCount = request.detail.response.total;
+            this.fire('scroll-top');
         },
         _handleGetRecipesError : function() {
             this.loading = false;
