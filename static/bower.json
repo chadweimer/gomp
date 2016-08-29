@@ -15,7 +15,7 @@
     "paper-card": "PolymerElements/paper-card#^1.1.2",
     "paper-input": "PolymerElements/paper-input#^1.1.17",
     "paper-progress": "PolymerElements/paper-progress#^1.0.10",
-    "paper-search": "chadweimer/paper-search#^1.1.12",
+    "paper-search": "Collaborne/paper-search#^1.1.12",
     "paper-scroll-header-panel": "PolymerElements/paper-scroll-header-panel#^1.0.16"
   },
   "devDependencies": {
