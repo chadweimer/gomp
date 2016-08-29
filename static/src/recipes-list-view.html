@@ -1,16 +1,21 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
-<link rel="import" href="recipe-card.html">
+<link rel="import" href="components/recipe-card.html">
+<link rel="import" href="components/pagination-links.html">
 
 <dom-module id="recipes-list-view">
     <template>
         <style>
             :host {
                 display: block;
+                --paper-button: {
+                    min-width: 2.5em;
+                    height: 2.5em;
+                    margin: 0 0.17em;
+                }
             }
             .section {
                 padding: 8px;
@@ -18,6 +23,11 @@
             .outterContainer {
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
+            }
+            .pagination {
+                @apply(--layout-horizontal);
+                @apply(--layout-center-justified);
+                margin: 0.35em;
             }
             paper-progress {
                 width: 100%;
@@ -57,12 +67,18 @@
             <div>
                 Search: '[[search]]', Results: [[totalRecipeCount]]
             </div>
+            <div class="pagination">
+                <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
+            </div>
             <div class="outterContainer">
                 <template is="dom-repeat" items="{{recipes}}">
                     <div class="recipeContainer">
                         <recipe-card recipe="[[item]]"></recipe-card>
                     </div>
                 </template>
+            </div>
+            <div class="pagination">
+                <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
             </div>
         </div>
 
@@ -91,6 +107,12 @@
                 notify: true,
                 observer: '_pageNumChanged'
             },
+            numPages: {
+                type: Number,
+                value: 0,
+                notify: true
+            },
+
             search: {
                 type: String,
                 value: null,
@@ -146,6 +168,10 @@
             this._getRecipes();
         },
 
+        observers: [
+            '_updatePagination(recipes, totalRecipeCount)'
+        ],
+
         _initializeVars: function() {
             var jwtToken = localStorage.getItem("jwtToken");
             this.$.recipesAjax.headers = {"Authorization": "Bearer " + jwtToken};
@@ -169,12 +195,14 @@
             if (oldValue !== undefined && newValue != null) {
                 this._trySaveToSession('q', newValue);
             }
+            this.pageNum = 1;
             this._getRecipes();
         },
         _searchTagsChanged: function(newValue, oldValue) {
             if (oldValue !== undefined && newValue != null) {
                 this._trySaveToSession('tags', newValue);
             }
+            this.pageNum = 1;
             this._getRecipes();
         },
         _sortByChanged: function(newValue, oldValue) {
@@ -193,6 +221,7 @@
             if (oldValue !== undefined && newValue != null) {
                 this._trySaveToSession('view', newValue);
             }
+            this.pageNum = 1;
             this._getRecipes();
         },
 
@@ -210,9 +239,16 @@
                 "sort": this.sortBy,
                 "dir": this.sortDir,
                 "page": this.pageNum,
-                "count": 18
+                "count": this._getRecipeCount()
             };
         },
+        _getRecipeCount: function() {
+            if (this.viewMode === 'compact') {
+                return 60;
+            }
+            return 18;
+        },
+
         _handleGetRecipesRequest: function(request) {
             this.loading = true;
             this.recipes = [];
@@ -224,6 +260,10 @@
         },
         _handleGetRecipesError : function() {
             this.loading = false;
+        },
+
+        _updatePagination: function(recipes, total) {
+            this.numPages = Math.ceil(total / this._getRecipeCount());
         },
 
         _getFromSession: function(field, defaultVal) {
