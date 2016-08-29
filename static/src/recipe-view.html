@@ -7,7 +7,7 @@
                 display: block;
             }
         </style>
-        <h2>Hello [[recipeId]]</h2>
+        <h2>[[recipe.name]]</h2>
 
         <iron-ajax
             auto
@@ -18,7 +18,7 @@
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
             on-error="_handleGetRecipeError"
-            debounce-duration="300"></iron-ajax>
+            debounce-duration="0"></iron-ajax>
     </template>
 
     <script>
@@ -31,6 +31,9 @@
                     type: String,
                     notify: true,
                     observer: '_recipeIdChanged'
+                },
+                recipe: {
+                    type: Object
                 }
             },
 
@@ -40,6 +43,13 @@
             attached: function() {
                 var jwtToken = localStorage.getItem("jwtToken");
                 this.$.recipeAjax.headers = {"Authorization": "Bearer " + jwtToken};
+            },
+
+            _handleGetRecipeRequest: function(request) {
+                this.recipe = null;
+            },
+            _handleGetRecipeResponse: function(request) {
+                this.recipe = request.detail.response;
             }
 
         });
