@@ -1,9 +1,14 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial.html">
+<link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 <link rel="import" href="components/note-card.html">
@@ -47,6 +52,21 @@
             .imagesContainer {
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
+            }
+            paper-fab-speed-dial-action.green {
+                --paper-fab-speed-dial-action-background: var(--paper-green-500);
+            }
+            paper-fab-speed-dial-action.red {
+                --paper-fab-speed-dial-action-background: var(--paper-red-500);
+            }
+            paper-fab-speed-dial-action.amber {
+                --paper-fab-speed-dial-action-background: var(--paper-amber-500);
+            }
+            paper-fab-speed-dial-action.teal {
+                --paper-fab-speed-dial-action-background: var(--paper-teal-500);
+            }
+            paper-fab-speed-dial-action.blue {
+                --paper-fab-speed-dial-action-background: var(--paper-blue-500);
             }
         </style>
 
@@ -111,6 +131,13 @@
                 </div>
             </div>
         </div>
+        <paper-fab-speed-dial icon="icons:more-horiz">
+            <paper-fab-speed-dial-action class="green" icon="icons:add">New</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="red" icon="icons:delete">Delete</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="amber" icon="icons:create">Edit</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo">Upload Picture</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
+        </paper-fab-speed-dial>
 
         <iron-ajax
             auto

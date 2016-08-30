@@ -18,7 +18,8 @@
     "paper-search": "Collaborne/paper-search#^1.1.12",
     "paper-scroll-header-panel": "PolymerElements/paper-scroll-header-panel#^1.0.16",
     "paper-chip": "Collaborne/paper-chip#^1.1.1",
-    "paper-divider": "^1.0.0"
+    "paper-divider": "WebPaperElements/paper-divider#^1.0.0",
+    "paper-fab-speed-dial": "chadweimer/paper-fab-speed-dial#^1.0.14"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
