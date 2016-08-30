@@ -159,6 +159,11 @@
             }
         },
 
+        ready: function() {
+            var jwtToken = localStorage.getItem("jwtToken");
+            this.$.recipesAjax.headers = {"Authorization": "Bearer " + jwtToken};
+        },
+
         attached: function() {
             this.parentNode.addEventListener("iron-select", this._routeChanged);
 
@@ -172,9 +177,6 @@
         ],
 
         _initializeVars: function() {
-            var jwtToken = localStorage.getItem("jwtToken");
-            this.$.recipesAjax.headers = {"Authorization": "Bearer " + jwtToken};
-
             this.pageNum = 1;
             if (this.search === null) {
                 this.search = this._getFromSession('q', '');

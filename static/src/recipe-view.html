@@ -1,13 +1,56 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 <dom-module id="recipe-view">
     <template>
         <style>
             :host {
                 display: block;
+                --paper-card: {
+                    width: 96%;
+                    margin: 2%;
+                }
+            }
+            a {
+                text-transform: none;
+            }
+            paper-progress {
+                width: 100%;
+            }
+            .plain-text {
+                white-space: pre-wrap;
             }
         </style>
-        <h2>[[recipe.name]]</h2>
+
+        <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
+        <paper-card>
+            <div class="card-content">
+                <h3>[[recipe.name]]</h3>
+                <paper-input-container always-float-label hidden$="{{!recipe.servingSize}}">
+                    <label>Serving Size</label>
+                    <p class="plain-text">[[recipe.servingSize]]</p>
+                </paper-input-container>
+                <paper-input-container always-float-label>
+                    <label>Ingredients</label>
+                    <p class="plain-text">[[recipe.ingredients]]</p>
+                </paper-input-container>
+                <paper-input-container always-float-label>
+                    <label>Directions</label>
+                    <p class="plain-text">[[recipe.directions]]</p>
+                </paper-input-container>
+                <paper-input-container always-float-label hidden$="{{!recipe.nutrition}}">
+                    <label>Nutrition</label>
+                    <p class="plain-text">[[recipe.nutrition]]</p>
+                </paper-input-container>
+                <paper-input-container always-float-label hidden$="{{!recipe.sourceUrl}}">
+                    <label>Source</label>
+                    <p class="section"><a target="_blank" href="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                </paper-input-container>
+            </div>
+        </paper-card>
 
         <iron-ajax
             auto
@@ -18,7 +61,7 @@
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
             on-error="_handleGetRecipeError"
-            debounce-duration="0"></iron-ajax>
+            debounce-duration="50"></iron-ajax>
     </template>
 
     <script>
@@ -29,27 +72,34 @@
             properties: {
                 recipeId: {
                     type: String,
-                    notify: true,
-                    observer: '_recipeIdChanged'
+                    notify: true
                 },
                 recipe: {
-                    type: Object
-                }
+                    type: Object,
+                    notify: true
+                },
+                loading: {
+                    type: Boolean,
+                    value: true,
+                    notify: true
+                },
             },
 
-            _recipeIdChanged: function() {
-            },
-
-            attached: function() {
+            ready: function() {
                 var jwtToken = localStorage.getItem("jwtToken");
                 this.$.recipeAjax.headers = {"Authorization": "Bearer " + jwtToken};
             },
 
             _handleGetRecipeRequest: function(request) {
+                this.loading = true;
                 this.recipe = null;
             },
             _handleGetRecipeResponse: function(request) {
                 this.recipe = request.detail.response;
+                this.loading = false;
+            },
+            _handleGetRecipeError: function(request) {
+                this.loading = false;
             }
 
         });
