@@ -16,7 +16,7 @@
                 @apply(--layout-horizontal);
                 @apply(--layout-center-justified);
             }
-            #loginMessage {
+            .error {
                 color: red;
             }
             @media screen and (min-width: 601px) {
@@ -33,9 +33,9 @@
         <div class="container">
             <paper-card heading="Login">
                 <div class="card-content">
-                    <paper-input id="username" name="username" value="{{username}}" label="Username" required autofocus></paper-input>
+                    <paper-input id="username" name="username" value="{{username}}" label="Username" required autofocus autocomplete></paper-input>
                     <paper-input id="password" name="password" value="{{password}}" label="Password" type="password" required></paper-input>
-                    <div id="loginMessage"></div>
+                    <div class="error">[[errorMessage]]</div>
                 </div>
                 <div class="card-actions">
                     <paper-button id="loginButton">Login</paper-button>
@@ -48,6 +48,7 @@
             url="/api/v1/auth"
             method="POST"
             handle-as="json"
+            on-request="handlePostAuthRequest"
             on-response="handlePostAuthResponse"
             on-error="handlePostAuthError"></iron-ajax>
         <iron-location id="ironLocation"></iron-location>
@@ -60,10 +61,16 @@
 
           properties: {
               username: {
-                  type: String
+                  type: String,
+                  notify: true
               },
               password: {
-                  type: String
+                  type: String,
+                  notify: true
+              },
+              errorMessage: {
+                  type: String,
+                  notify: true
               }
           },
 
@@ -84,13 +91,20 @@
               }
           },
 
+          handlePostAuthRequest: function(request) {
+              this.errorMessage = null;
+          },
           handlePostAuthResponse: function(request) {
               localStorage.setItem("username", this.username);
               localStorage.setItem("jwtToken", request.detail.response.token);
+              this.username = null;
+              this.password = null;
               this.$.ironLocation.set("path", "/");
           },
           handlePostAuthError : function() {
-              this.$.loginMessage.innerText = "Login failed. Check your username and password and try again.";
+              this.username = null;
+              this.password = null;
+              this.errorMessage = "Login failed. Check your username and password and try again.";
           }
         });
     </script>
