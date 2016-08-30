@@ -43,11 +43,6 @@
             paper-toolbar a {
                 color: #ffffff;
             }
-            footer {
-                padding: 1em;
-                background: var(--paper-grey-700);
-                color: #ffffff;
-            }
         </style>
 
         <app-location id="appLocation" route="{{route}}"></app-location>
@@ -76,18 +71,16 @@
                     <paper-search-bar icon="search" query="[[search]]" hide-filter-button="true" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch"></paper-search-bar>
                 </paper-toolbar>
 
-                <iron-pages
-                    selected="[[page]]"
-                    attr-for-selected="name"
-                    role="main">
-                    <home-view name="home"></home-view>
-                    <recipes-view name="recipes" route="{{subroute}}" search="{{search}}"></recipes-view>
-                    <login-view name="login"></login-view>
-                </iron-pages>
-
-                <footer>
-                    Powered by GOMP. Copyright &copy; Chad Weimer.
-                </footer>
+                <main>
+                    <iron-pages
+                        selected="[[page]]"
+                        attr-for-selected="name"
+                        role="main">
+                        <home-view name="home"></home-view>
+                        <recipes-view name="recipes" route="{{subroute}}" search="{{search}}"></recipes-view>
+                        <login-view name="login"></login-view>
+                    </iron-pages>
+                </main>
             </paper-scroll-header-panel>
         </paper-drawer-panel>
 
