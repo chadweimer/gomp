@@ -1,6 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../bower_components/paper-input/paper-input-container.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
@@ -23,12 +24,20 @@
             .plain-text {
                 white-space: pre-wrap;
             }
+            .avatar {
+                width: 64px;
+                height: 64px;
+                border-radius: 32px;
+            }
         </style>
 
         <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
         <paper-card>
             <div class="card-content">
-                <h3>[[recipe.name]]</h3>
+                <h2>
+                    <img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]">
+                    [[recipe.name]]
+                </h2>
                 <paper-input-container always-float-label hidden$="{{!recipe.servingSize}}">
                     <label>Serving Size</label>
                     <p class="plain-text">[[recipe.servingSize]]</p>
@@ -49,18 +58,31 @@
                     <label>Source</label>
                     <p class="section"><a target="_blank" href="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
                 </paper-input-container>
+                <div>
+                    <template is="dom-repeat" items="[[recipe.tags]]">
+                        <paper-chip class="chip">[[item]]</paper-chip>
+                    </template>
+                </div>
             </div>
         </paper-card>
 
         <iron-ajax
             auto
             id="recipeAjax"
-            url="/api/v1/recipes/{{recipeId}}"
+            url="/api/v1/recipes/[[recipeId]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
             on-error="_handleGetRecipeError"
+            debounce-duration="50"></iron-ajax>
+        <iron-ajax
+            auto
+            id="mainImageAjax"
+            url="/api/v1/recipes/[[recipeId]]/image"
+            handle-as="json"
+            on-request="_handleGetMainImageRequest"
+            on-response="_handleGetMainImageResponse"
             debounce-duration="50"></iron-ajax>
     </template>
 
@@ -78,6 +100,10 @@
                     type: Object,
                     notify: true
                 },
+                mainImage: {
+                    type: Object,
+                    notify: true
+                },
                 loading: {
                     type: Boolean,
                     value: true,
@@ -88,6 +114,7 @@
             ready: function() {
                 var jwtToken = localStorage.getItem("jwtToken");
                 this.$.recipeAjax.headers = {"Authorization": "Bearer " + jwtToken};
+                this.$.mainImageAjax.headers = {"Authorization": "Bearer " + jwtToken};
             },
 
             _handleGetRecipeRequest: function(request) {
@@ -100,6 +127,12 @@
             },
             _handleGetRecipeError: function(request) {
                 this.loading = false;
+            },
+            _handleGetMainImageRequest: function(request) {
+                this.mainImage = null;
+            },
+            _handleGetMainImageResponse: function(request) {
+                this.mainImage = request.detail.response;
             }
 
         });
