@@ -1,0 +1,80 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+
+<dom-module id="note-card">
+    <template>
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+
+                --paper-card: {
+                    width: 100%;
+                }
+            }
+            paper-card:hover {
+                @apply(--shadow-elevation-6dp);
+            }
+            .note-header {
+                margin-bottom: 0.5em;
+            }
+            .note-content {
+                margin: 0.75em;
+                white-space: pre-wrap;
+            }
+            .note-footer {
+                margin-top: 0.5em;
+            }
+            #modified-date {
+                @apply(--layout-horizontal);
+                @apply(--layout-end-justified);
+            }
+            .date {
+                color: var(--secondary-text-color);
+                font-size: 0.7em;
+                font-weight: lighter;
+            }
+        </style>
+        
+        <paper-card>
+            <div class="card-content">
+                <div class="note-header">
+                    <iron-icon icon="communication:comment"></iron-icon>
+                    <span class="date">[[_formatDate(note.createdAt)]]</span>
+                </div>
+                <paper-divider></paper-divider>
+                <p class="note-content">[[note.text]]</p>
+                <paper-divider hidden$="[[!_showModifiedDate(note)]]"></paper-divider>
+                <div id="modified-date" class="note-footer" hidden$="[[!_showModifiedDate(note)]]">
+                    <span class="date">[[_formatDate(note.modifiedAt)]]</span>
+                </div>
+            </div>
+        </paper-card>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'note-card',
+
+            properties: {
+                note: {
+                    type: Object,
+                    notify: true
+                }
+            },
+
+            _formatDate: function(dateStr) {
+                return new Date(dateStr).toLocaleString();
+            },
+            _showModifiedDate: function(note) {
+                return note.modifiedAt !== note.createdAt;
+            }
+
+        });
+    </script>
+</dom-module>

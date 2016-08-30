@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 
 <dom-module id="recipe-card">
@@ -6,6 +7,8 @@
         <style>
             :host {
                 display: block;
+                color: var(--primary-text-color);
+                
                 --paper-card-header: {
                     height: 75%;
                 }
@@ -31,21 +34,21 @@
     </template>
 
     <script>
-      Polymer({
+        Polymer({
 
-        is: 'recipe-card',
+            is: 'recipe-card',
 
-        properties: {
-          recipe: {
-            type: Object,
-            value: null,
-          },
-        },
+            properties: {
+                recipe: {
+                    type: Object,
+                    notify: true
+                }
+            },
 
-        _cardTapped : function(e) {
-              this.$.ironLocation.set("path", "/recipes/" + this.recipe.id);
-        }
+            _cardTapped : function(e) {
+                this.$.ironLocation.set("path", "/recipes/" + this.recipe.id);
+            }
 
-      });
+        });
     </script>
 </dom-module>

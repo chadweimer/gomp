@@ -4,24 +4,37 @@
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../bower_components/paper-divider/paper-divider.html">
-<link rel="import" href="../bower_components/paper-input/paper-input-container.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="components/note-card.html">
 
 <dom-module id="recipe-view">
     <template>
         <style>
             :host {
                 display: block;
+                color: var(--primary-text-color);
+
                 --paper-card: {
-                    width: 96%;
-                    margin: 2%;
+                    width: 100%;
                 }
+            }
+            article {
+                padding: 8px;
+            }
+            section {
+                padding: 0.5em;
             }
             a {
                 text-transform: none;
             }
             paper-progress {
                 width: 100%;
+            }
+            label {
+                color: var(--secondary-text-color);
+                font-size: 0.7em;
+                font-weight: lighter;
             }
             .plain-text {
                 white-space: pre-wrap;
@@ -31,42 +44,71 @@
                 height: 64px;
                 border-radius: 32px;
             }
+            .imagesContainer {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
         </style>
 
         <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
-        <paper-card>
-            <div class="card-content">
-                <h2>
-                    <img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]">
-                    [[recipe.name]]
-                </h2>
-                <paper-input-container always-float-label hidden$="{{!recipe.servingSize}}">
-                    <label>Serving Size</label>
-                    <p class="plain-text">[[recipe.servingSize]]</p>
-                </paper-input-container>
-                <paper-input-container always-float-label>
-                    <label>Ingredients</label>
-                    <p class="plain-text">[[recipe.ingredients]]</p>
-                </paper-input-container>
-                <paper-input-container always-float-label>
-                    <label>Directions</label>
-                    <p class="plain-text">[[recipe.directions]]</p>
-                </paper-input-container>
-                <paper-input-container always-float-label hidden$="{{!recipe.nutrition}}">
-                    <label>Nutrition</label>
-                    <p class="plain-text">[[recipe.nutrition]]</p>
-                </paper-input-container>
-                <paper-input-container always-float-label hidden$="{{!recipe.sourceUrl}}">
-                    <label>Source</label>
-                    <p class="section"><a target="_blank" href="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
-                </paper-input-container>
-                <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
-            </div>
-        </paper-card>
-        <div class="container">
-            <div id="images">
-                <h3>Pictures</h3>
-                <paper-divider></paper-divider>
+        <article>
+            <paper-card>
+                <div class="card-content">
+                    <h2>
+                        <img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]">
+                        [[recipe.name]]
+                    </h2>
+                    <section hidden$="{{!recipe.servingSize}}">
+                        <label>Serving Size</label>
+                        <p class="plain-text">[[recipe.servingSize]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section>
+                        <label>Ingredients</label>
+                        <p class="plain-text">[[recipe.ingredients]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section>
+                        <label>Directions</label>
+                        <p class="plain-text">[[recipe.directions]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden$="{{!recipe.nutrition}}">
+                        <label>Nutrition</label>
+                        <p class="plain-text">[[recipe.nutrition]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden$="{{!recipe.sourceUrl}}">
+                        <label>Source</label>
+                        <p class="section"><a target="_blank" href="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                </div>
+            </paper-card>
+            <div class="container">
+                <div id="images">
+                    <h3>Pictures</h3>
+                    <paper-divider></paper-divider>
+                    <div class="imagesContainer">
+                        <template is="dom-repeat" items="[[images]]">
+                            <div style="margin: 5px;">
+                                <a target="_blank" href="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div id="notes">
+                    <h3>Notes</h3>
+                    <paper-divider></paper-divider>
+                    <div>
+                        <template is="dom-repeat" items="[[notes]]">
+                            <div style="margin: 5px;">
+                                <note-card note="[[item]]"></note-card>
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -88,6 +130,22 @@
             on-request="_handleGetMainImageRequest"
             on-response="_handleGetMainImageResponse"
             debounce-duration="50"></iron-ajax>
+        <iron-ajax
+            auto
+            id="imagesAjax"
+            url="/api/v1/recipes/[[recipeId]]/images"
+            handle-as="json"
+            on-request="_handleGetImagesRequest"
+            on-response="_handleGetImagesResponse"
+            debounce-duration="50"></iron-ajax>
+        <iron-ajax
+            auto
+            id="notesAjax"
+            url="/api/v1/recipes/[[recipeId]]/notes"
+            handle-as="json"
+            on-request="_handleGetNotesRequest"
+            on-response="_handleGetNotesResponse"
+            debounce-duration="50"></iron-ajax>
     </template>
 
     <script>
@@ -108,6 +166,16 @@
                     type: Object,
                     notify: true
                 },
+                images: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                },
+                notes: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                },
                 loading: {
                     type: Boolean,
                     value: true,
@@ -119,6 +187,8 @@
                 var jwtToken = localStorage.getItem("jwtToken");
                 this.$.recipeAjax.headers = {"Authorization": "Bearer " + jwtToken};
                 this.$.mainImageAjax.headers = {"Authorization": "Bearer " + jwtToken};
+                this.$.imagesAjax.headers = {"Authorization": "Bearer " + jwtToken};
+                this.$.notesAjax.headers = {"Authorization": "Bearer " + jwtToken};
             },
 
             _handleGetRecipeRequest: function(request) {
@@ -137,6 +207,18 @@
             },
             _handleGetMainImageResponse: function(request) {
                 this.mainImage = request.detail.response;
+            },
+            _handleGetImagesRequest: function(request) {
+                this.images = [];
+            },
+            _handleGetImagesResponse: function(request) {
+                this.images = request.detail.response;
+            },
+            _handleGetNotesRequest: function(request) {
+                this.notes = [];
+            },
+            _handleGetNotesResponse: function(request) {
+                this.notes = request.detail.response;
             }
 
         });
