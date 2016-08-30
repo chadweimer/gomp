@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../bower_components/paper-input/paper-input-container.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
@@ -59,11 +60,7 @@
                     <label>Source</label>
                     <p class="section"><a target="_blank" href="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
                 </paper-input-container>
-                <div>
-                    <template is="dom-repeat" items="[[recipe.tags]]">
-                        <paper-chip class="chip">[[item]]</paper-chip>
-                    </template>
-                </div>
+                <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
             </div>
         </paper-card>
         <div class="container">
