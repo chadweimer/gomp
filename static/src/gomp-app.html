@@ -41,7 +41,12 @@
                 right: 0;
             }
             paper-toolbar a {
-                color: #FFFFFF;
+                color: #ffffff;
+            }
+            footer {
+                padding: 1em;
+                background: var(--paper-grey-700);
+                color: #ffffff;
             }
         </style>
 
@@ -79,6 +84,10 @@
                     <recipes-view name="recipes" route="{{subroute}}" search="{{search}}"></recipes-view>
                     <login-view name="login"></login-view>
                 </iron-pages>
+
+                <footer>
+                    Powered by GOMP. Copyright &copy; Chad Weimer.
+                </footer>
             </paper-scroll-header-panel>
         </paper-drawer-panel>
 
