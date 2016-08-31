@@ -23,11 +23,58 @@
             .clickable {
                 cursor: pointer;
             }
+            .truncate {
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .rating-container {
+                display: table;
+                margin-left: -80px;
+            }
+            .rating-container > iron-icon {
+                --iron-icon-height: 16px;
+                --iron-icon-width: 16px;
+                color: #dddddd;
+                float: right;
+            }
+            .rating-container > iron-icon.whole {
+                -webkit-clip-path: inset(0 0 0 50%);
+                   -moz-clip-path: inset(0 0 0 50%);
+                    -ms-clip-path: inset(0 0 0 50%);
+                     -o-clip-path: inset(0 0 0 50%);
+                        clip-path: inset(0 0 0 50%);
+                margin-left: -100%;
+            }
+            .rating-container > iron-icon.half {
+                -webkit-clip-path: inset(0 50% 0 0);
+                   -moz-clip-path: inset(0 50% 0 0);
+                    -ms-clip-path: inset(0 50% 0 0);
+                     -o-clip-path: inset(0 50% 0 0);
+                        clip-path: inset(0 50% 0 0);
+            }
+            .rating-container > iron-icon.active,
+            .rating-container > iron-icon.active ~ iron-icon {
+                color: #fdd835;
+            }
         </style>
         
         <paper-card image="[[recipe.mainImage.thumbnailUrl]]" class="clickable" on-tap="_cardTapped">
             <div class="card-content">
-                [[recipe.name]]
+                <span class="truncate">[[recipe.name]]</span>
+                <div id="ratings" class="rating-container">
+                    <iron-icon icon="icons:star" class="whole" data-rating="5"></iron-icon>
+                    <iron-icon icon="icons:star" class="half" data-rating="4.5"></iron-icon>
+                    <iron-icon icon="icons:star" class="whole" data-rating="4"></iron-icon>
+                    <iron-icon icon="icons:star" class="half" data-rating="3.5"></iron-icon>
+                    <iron-icon icon="icons:star" class="whole" data-rating="3"></iron-icon>
+                    <iron-icon icon="icons:star" class="half" data-rating="2.5"></iron-icon>
+                    <iron-icon icon="icons:star" class="whole" data-rating="2"></iron-icon>
+                    <iron-icon icon="icons:star" class="half" data-rating="1.5"></iron-icon>
+                    <iron-icon icon="icons:star" class="whole" data-rating="1"></iron-icon>
+                    <iron-icon icon="icons:star" class="half" data-rating="0.5"></iron-icon>
+                </div>
             </div>
         </paper-card>
         <iron-location id="ironLocation"></iron-location>
@@ -41,12 +88,27 @@
             properties: {
                 recipe: {
                     type: Object,
-                    notify: true
+                    notify: true,
+                    observer: '_recipeChanged'
                 }
             },
 
             _cardTapped : function(e) {
                 this.$.ironLocation.set("path", "/recipes/" + this.recipe.id);
+            },
+            _recipeChanged: function(newValue, oldValue) {
+                if (!newValue) {
+                    return
+                }
+
+                var stars = this.$.ratings.querySelectorAll(".rating-container > iron-icon");
+                stars.forEach(function(star) {
+                    if (star.dataset.rating === newValue.averageRating.toString()) {
+                        star.classList.add("active");
+                    } else {
+                        star.classList.remove("active");
+                    }
+                });
             }
 
         });
