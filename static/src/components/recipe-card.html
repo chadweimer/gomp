@@ -10,11 +10,11 @@
                 color: var(--primary-text-color);
                 
                 --paper-card-header: {
-                    height: 75%;
+                    height: var(--recipe-card-header-height, 75%);
                 }
                 --paper-card: {
                     width: 100%;
-                    height: 250px;
+                    height: var(--recipe-card-height, 250px);
                 }
             }
             paper-card:hover{
@@ -31,11 +31,11 @@
             }
             .rating-container {
                 display: table;
-                margin-left: -80px;
+                margin-left: calc(var(--recpe-card-rating-size, 16px) * -5);
             }
             .rating-container > iron-icon {
-                --iron-icon-height: 16px;
-                --iron-icon-width: 16px;
+                --iron-icon-height: var(--recpe-card-rating-size, 16px);
+                --iron-icon-width: var(--recpe-card-rating-size, 16px);
                 color: #dddddd;
                 float: right;
             }

@@ -76,8 +76,8 @@
                         selected="[[page]]"
                         attr-for-selected="name"
                         role="main">
-                        <home-view name="home"></home-view>
-                        <recipes-view name="recipes" route="{{subroute}}" search="{{search}}"></recipes-view>
+                        <home-view name="home" title="[[homeTitle]]" image="[[homeImage]]"></home-view>
+                        <recipes-view name="recipes" route="{{subroute}}" search="{{search}}" search-tags="{{searchTags}}"></recipes-view>
                         <login-view name="login"></login-view>
                     </iron-pages>
                 </main>
@@ -94,45 +94,66 @@
 
             is: 'gomp-app',
 
-            ready: function() {
-                this.verifyIsAuthenticated();
-            },
-
             properties: {
                 title: {
                     type: String,
+                    notify: true,
                     value: 'Go Meal Planner'
+                },
+                homeTitle: {
+                    type: String,
+                    notify: true,
+                    value: 'Go Meal Planner'
+                },
+                homeImage: {
+                    type: String,
+                    notify: true,
+                    value: ''
                 },
                 smallLayout: {
                     type: Boolean,
+                    notify: true,
                     value: false,
                     observer: 'onLayoutChange'
                 },
                 medLayout: {
                     type: Boolean,
+                    notify: true,
                     value: false,
                     observer: 'onLayoutChange'
                 },
                 largeLayout: {
                     type: Boolean,
+                    notify: true,
                     value: false,
                     observer: 'onLayoutChange'
                 },
                 page: {
                     type: String,
                     reflectToAttribute: true,
+                    notify: true,
                     observer: '_pageChanged'
                 },
                 search: {
                     type: String,
                     notify: true
-                }
+                },
+                searchTags: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                },
             },
             observers: [
                 '_routePageChanged(routeData.page)'
             ],
             listeners: {
-                'scroll-top': '_scrollToTop'
+                'scroll-top': '_scrollToTop',
+                'home-list-link-clicked': '_onHomeLinkClicked'
+            },
+
+            ready: function() {
+                this.verifyIsAuthenticated();
             },
 
             _routePageChanged: function(page) {
@@ -178,6 +199,11 @@
             },
             _onSearch: function(e) {
                 this.search = e.target.query;
+                this.$.appLocation.path = '/recipes';
+            },
+            _onHomeLinkClicked: function(e) {
+                this.search = '';
+                this.searchTags = e.detail.tags;
                 this.$.appLocation.path = '/recipes';
             }
         });

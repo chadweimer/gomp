@@ -246,7 +246,7 @@
         _getRecipes: function() {
             this.$.recipesAjax.params = {
                 "q": this.search,
-                "tags": this.searchTags,
+                "tags[]": this.searchTags,
                 "sort": this.sortBy,
                 "dir": this.sortDir,
                 "page": this.pageNum,

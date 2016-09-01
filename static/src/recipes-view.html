@@ -19,7 +19,7 @@
             selected="[[page]]"
             attr-for-selected="name"
             role="main">
-            <recipes-list-view name="recipes-list" search="{{search}}"></recipes-list-view>
+            <recipes-list-view name="recipes-list" search="{{search}}" search-tags="{{searchTags}}"></recipes-list-view>
             <recipe-view name="recipe" recipe-id="{{recipeId}}"></recipe-view>
         </iron-pages>
     </template>
@@ -47,7 +47,12 @@
                     type: String,
                     value: null,
                     notify: true
-                }
+                },
+                searchTags: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                },
             },
 
             observers: [

@@ -1,27 +1,82 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
+<link rel="import" href="components/home-list.html">
+
 <dom-module id="home-view">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-    </style>
-    <h2>Hello [[prop1]]</h2>
-  </template>
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            section {
+                padding: 8px;
+            }
+            header {
+                text-align: center;
+            }
+            img.responsive {
+                max-width: 100%;
+                height: auto;
+            }
+        </style>
+        <section>
+            <header>
+                <h1>[[title]]</h1>
+                <img class="responsive" hidden$="[[!image]]" src="[[image]]"/>
+            </header>
+            <home-list id="allRecipes"></home-list>
+            <home-list id="beefRecipes" title="Beef" tags='["beef","steak"]'></home-list>
+            <home-list id="poultryRecipes" title="Poultry" tags='["chicken","turkey","poultry"]'></home-list>
+            <home-list id="seafoodRecipes" title="Seafood" tags='["seafood","fish"]'></home-list>
+            <home-list id="porkRecipes" title="Pork" tags='["pork"]'></home-list>
+            <home-list id="pastaRecipes" title="Pasta" tags='["pasta"]'></home-list>
+            <home-list id="vegetarianRecipes" title="Vegetarian" tags='["vegetarian"]'></home-list>
+            <home-list id="sideRecipes" title="Sides" tags='["side","sides"]'></home-list>
+            <home-list id="drinkRecipes" title="Drinks" tags='["drink","cocktail"]'></home-list>
+        </section>
+    </template>
 
-  <script>
-    Polymer({
+    <script>
+        Polymer({
 
-      is: 'home-view',
+            is: 'home-view',
 
-      properties: {
-        prop1: {
-          type: String,
-          value: 'home-view',
-        },
-      },
+            properties: {
+                title: {
+                    type: String,
+                    notify: true,
+                    value: "Go Meal Planner"
+                },
+                image: {
+                    type: String,
+                    notify: true
+                }
+            },
 
-    });
-  </script>
+            attached: function() {
+                this.parentNode.addEventListener("iron-select", this._routeChanged);
+                this._refreshLists();
+            },
+
+            _routeChanged: function(e) {
+                var page = e.target.selected;
+                if (page === "home") {
+                    this._refreshLists();
+                }
+            },
+
+            _refreshLists: function() {
+                this.$.allRecipes.refresh();
+                this.$.beefRecipes.refresh();
+                this.$.poultryRecipes.refresh();
+                this.$.porkRecipes.refresh();
+                this.$.seafoodRecipes.refresh();
+                this.$.pastaRecipes.refresh();
+                this.$.vegetarianRecipes.refresh();
+                this.$.sideRecipes.refresh();
+                this.$.drinkRecipes.refresh();
+            }
+
+        });
+    </script>
 </dom-module>

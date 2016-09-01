@@ -105,6 +105,28 @@
                 --paper-fab-speed-dial-action-background: var(--paper-blue-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-blue-900);
             }
+            .container {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
+            .tab {
+                margin: 8px;
+            }
+            @media screen and (min-width: 993px) {
+                .tab {
+                    width: calc(50% - 16px);
+                }
+            }
+            @media screen and (min-width: 601px) and (max-width: 992px) {
+                .tab {
+                    width: calc(100% - 16px);
+                }
+            }
+            @media screen and (max-width: 600px) {
+                .tab {
+                    width: calc(100% - 16px);
+                }
+            }
         </style>
 
         <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
@@ -156,7 +178,7 @@
                 </div>
             </paper-card>
             <div class="container">
-                <div id="images">
+                <div id="images" class="tab">
                     <h3>Pictures</h3>
                     <paper-divider></paper-divider>
                     <div class="imagesContainer">
@@ -167,7 +189,7 @@
                         </template>
                     </div>
                 </div>
-                <div id="notes">
+                <div id="notes" class="tab">
                     <h3>Notes</h3>
                     <paper-divider></paper-divider>
                     <div>
