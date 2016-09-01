@@ -10,17 +10,20 @@
             }
         </style>
 
-        <app-route
-            route="{{route}}"
-            pattern="/:recipeId"
-            data="{{routeData}}"
-            tail="{{subroute}}"></app-route>
-        <iron-pages
-            selected="[[page]]"
-            attr-for-selected="name"
-            role="main">
-            <recipes-list-view name="recipes-list" search="{{search}}" search-tags="{{searchTags}}"></recipes-list-view>
-            <recipe-view name="recipe" recipe-id="{{recipeId}}"></recipe-view>
+        <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}" tail="{{subroute}}"></app-route>
+        <iron-pages selected="[[page]]" attr-for-selected="name">
+            <recipes-list-view
+                name="recipes-list"
+                jwt-token="[[jwtToken]]"
+                active="[[_isActive(page, 'recipes-list')]]"
+                search="{{search}}"
+                search-tags="{{searchTags}}"></recipes-list-view>
+
+            <recipe-view
+                name="recipe"
+                jwt-token="[[jwtToken]]"
+                active="[[_isActive(page, 'recipe')]]"
+                recipe-id="{{recipeId}}"></recipe-view>
         </iron-pages>
     </template>
 
@@ -30,18 +33,18 @@
             is: 'recipes-view',
 
             properties: {
+                active: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
                 route: {
                     type: Object,
                     notify: true
-                },
-                recipeId: {
-                    type: String,
-                    notify: true
-                },
-                page: {
-                    type: String,
-                    reflectToAttribute: true,
-                    observer: '_pageChanged'
                 },
                 search: {
                     type: String,
@@ -57,18 +60,16 @@
 
             observers: [
                 '_recipeIdChanged(routeData.recipeId)',
+                '_pageChanged(page)',
                 '_routeChanged(route)'
             ],
             _recipeIdChanged: function(recipeId) {
                 this.recipeId = recipeId;
-                if (this.recipeId) {
-                    this.page = "recipe";
-                } else {
-                    this.page = "recipes-list";
-                }
+                this.page = "recipe";
             },
             _routeChanged: function(route) {
                 if (route.path === '') {
+                    this.recipeId = null;
                     this.page = "recipes-list";
                 }
             },
@@ -76,6 +77,9 @@
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl(page + '-view.html');
                 this.importHref(resolvedPageUrl, null, null, true);
+            },
+            _isActive: function(currentPage, pageToCheck) {
+                return this.active && currentPage === pageToCheck;
             }
 
         });

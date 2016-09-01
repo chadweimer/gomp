@@ -84,6 +84,7 @@
         <iron-ajax
             id="recipesAjax"
             url="/api/v1/recipes"
+            headers="[[ajaxHeaders]]"
             params='{"q":"", "tags": [], "sort": "random", "dir": "asc", "page": 1, "count": 6}'
             method="GET"
             handle-as="json"
@@ -98,6 +99,14 @@
             is: 'home-list',
 
             properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
                 title: {
                     type: String,
                     notify: true,
@@ -116,9 +125,8 @@
                 }
             },
 
-            ready: function() {
-                var jwtToken = localStorage.getItem("jwtToken");
-                this.$.recipesAjax.headers = {"Authorization": "Bearer " + jwtToken};
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
             },
 
             _tagsChanged: function() {

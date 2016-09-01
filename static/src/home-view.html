@@ -24,15 +24,15 @@
                 <h1>[[title]]</h1>
                 <img class="responsive" hidden$="[[!image]]" src="[[image]]"/>
             </header>
-            <home-list id="allRecipes"></home-list>
-            <home-list id="beefRecipes" title="Beef" tags='["beef","steak"]'></home-list>
-            <home-list id="poultryRecipes" title="Poultry" tags='["chicken","turkey","poultry"]'></home-list>
-            <home-list id="seafoodRecipes" title="Seafood" tags='["seafood","fish"]'></home-list>
-            <home-list id="porkRecipes" title="Pork" tags='["pork"]'></home-list>
-            <home-list id="pastaRecipes" title="Pasta" tags='["pasta"]'></home-list>
-            <home-list id="vegetarianRecipes" title="Vegetarian" tags='["vegetarian"]'></home-list>
-            <home-list id="sideRecipes" title="Sides" tags='["side","sides"]'></home-list>
-            <home-list id="drinkRecipes" title="Drinks" tags='["drink","cocktail"]'></home-list>
+            <home-list id="allRecipes" jwt-token="[[jwtToken]]"></home-list>
+            <home-list id="beefRecipes" jwt-token="[[jwtToken]]" title="Beef" tags='["beef","steak"]'></home-list>
+            <home-list id="poultryRecipes" jwt-token="[[jwtToken]]" title="Poultry" tags='["chicken","turkey","poultry"]'></home-list>
+            <home-list id="seafoodRecipes" jwt-token="[[jwtToken]]" title="Seafood" tags='["seafood","fish"]'></home-list>
+            <home-list id="porkRecipes" jwt-token="[[jwtToken]]" title="Pork" tags='["pork"]'></home-list>
+            <home-list id="pastaRecipes" jwt-token="[[jwtToken]]" title="Pasta" tags='["pasta"]'></home-list>
+            <home-list id="vegetarianRecipes" jwt-token="[[jwtToken]]" title="Vegetarian" tags='["vegetarian"]'></home-list>
+            <home-list id="sideRecipes" jwt-token="[[jwtToken]]" title="Sides" tags='["side","sides"]'></home-list>
+            <home-list id="drinkRecipes" jwt-token="[[jwtToken]]" title="Drinks" tags='["drink","cocktail"]'></home-list>
         </section>
     </template>
 
@@ -42,6 +42,16 @@
             is: 'home-view',
 
             properties: {
+                active: {
+                    type: Boolean,
+                    notify: true,
+                    value: false,
+                    observer: '_activeChanged'
+                },
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
                 title: {
                     type: String,
                     notify: true,
@@ -53,14 +63,8 @@
                 }
             },
 
-            attached: function() {
-                this.parentNode.addEventListener("iron-select", this._routeChanged);
-                this._refreshLists();
-            },
-
-            _routeChanged: function(e) {
-                var page = e.target.selected;
-                if (page === "home") {
+            _activeChanged: function(newValue, oldValue) {
+                if (newValue) {
                     this._refreshLists();
                 }
             },

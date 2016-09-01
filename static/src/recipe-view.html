@@ -53,6 +53,9 @@
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
             }
+            .thumbnail {
+                margin: 2px;
+            }
             .rating-container {
                 position: absolute;
                 top: 5px;
@@ -171,7 +174,7 @@
                     </section>
                     <section hidden$="{{!recipe.sourceUrl}}">
                         <label>Source</label>
-                        <p class="section"><a target="_blank" href="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                        <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
                         <paper-divider></paper-divider>
                     </section>
                     <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
@@ -183,9 +186,7 @@
                     <paper-divider></paper-divider>
                     <div class="imagesContainer">
                         <template is="dom-repeat" items="[[images]]">
-                            <div style="margin: 5px;">
-                                <a target="_blank" href="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
-                            </div>
+                            <a target="_blank" href$="[[item.url]]"><img class="thumbnail" src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
                         </template>
                     </div>
                 </div>
@@ -214,36 +215,36 @@
             auto
             id="recipeAjax"
             url="/api/v1/recipes/[[recipeId]]"
+            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
-            on-error="_handleGetRecipeError"
-            debounce-duration="50"></iron-ajax>
+            on-error="_handleGetRecipeError"></iron-ajax>
         <iron-ajax
             auto
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
+            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetMainImageRequest"
-            on-response="_handleGetMainImageResponse"
-            debounce-duration="50"></iron-ajax>
+            on-response="_handleGetMainImageResponse"></iron-ajax>
         <iron-ajax
             auto
             id="imagesAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
+            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetImagesRequest"
-            on-response="_handleGetImagesResponse"
-            debounce-duration="50"></iron-ajax>
+            on-response="_handleGetImagesResponse"></iron-ajax>
         <iron-ajax
             auto
             id="notesAjax"
             url="/api/v1/recipes/[[recipeId]]/notes"
+            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetNotesRequest"
-            on-response="_handleGetNotesResponse"
-            debounce-duration="50"></iron-ajax>
+            on-response="_handleGetNotesResponse"></iron-ajax>
     </template>
 
     <script>
@@ -252,6 +253,20 @@
             is: 'recipe-view',
 
             properties: {
+                active: {
+                    type: Boolean,
+                    notify: true,
+                    value: false,
+                    observer: '_activeChanged'
+                },
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
                 recipeId: {
                     type: String,
                     notify: true
@@ -282,22 +297,23 @@
                 },
             },
 
-            ready: function() {
-                var jwtToken = localStorage.getItem("jwtToken");
-                this.$.recipeAjax.headers = {"Authorization": "Bearer " + jwtToken};
-                this.$.mainImageAjax.headers = {"Authorization": "Bearer " + jwtToken};
-                this.$.imagesAjax.headers = {"Authorization": "Bearer " + jwtToken};
-                this.$.notesAjax.headers = {"Authorization": "Bearer " + jwtToken};
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            _activeChanged: function(newValue, oldValue) {
+                if (!newValue) {
+                    this.recipe = null;
+                    this.mainImage = null;
+                    this.images = [];
+                    this.notes = [];
+                }
             },
 
             _recipeChanged: function(newValue, oldValue) {
-                if (!newValue) {
-                    return
-                }
-
                 var stars = this.$.ratings.querySelectorAll(".rating-container > iron-icon");
                 stars.forEach(function(star) {
-                    if (star.dataset.rating === newValue.averageRating.toString()) {
+                    if (newValue && star.dataset.rating === newValue.averageRating.toString()) {
                         star.classList.add("active");
                     } else {
                         star.classList.remove("active");

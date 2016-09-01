@@ -96,6 +96,7 @@
             auto
             id="recipesAjax"
             url="/api/v1/recipes"
+            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipesRequest"
@@ -111,6 +112,14 @@
         is: 'recipes-list-view',
 
         properties: {
+            jwtToken: {
+                type: String,
+                notify: true
+            },
+            ajaxHeaders: {
+                type: Object,
+                computed: '_getAjaxHeaders(jwtToken)'
+            },
             pageNum: {
                 type: Number,
                 value: 1,
@@ -168,11 +177,9 @@
                 notify: true
             }
         },
-
-        ready: function() {
-            var jwtToken = localStorage.getItem("jwtToken");
-            this.$.recipesAjax.headers = {"Authorization": "Bearer " + jwtToken};
-        },
+        observers: [
+            '_updatePagination(recipes, totalRecipeCount)'
+        ],
 
         attached: function() {
             this.parentNode.addEventListener("iron-select", this._routeChanged);
@@ -182,9 +189,9 @@
             this._getRecipes();
         },
 
-        observers: [
-            '_updatePagination(recipes, totalRecipeCount)'
-        ],
+        _getAjaxHeaders: function(jwtToken) {
+            return {"Authorization": "Bearer " + jwtToken};
+        },
 
         _initializeVars: function() {
             this.pageNum = 1;

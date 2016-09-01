@@ -60,52 +60,63 @@
           is: 'login-view',
 
           properties: {
-              username: {
-                  type: String,
-                  notify: true
-              },
-              password: {
-                  type: String,
-                  notify: true
-              },
-              errorMessage: {
-                  type: String,
-                  notify: true
-              }
-          },
+                active: {
+                    type: Boolean,
+                    notify: true,
+                    value: false,
+                    observer: '_activeChanged'
+                },
+                username: {
+                    type: String,
+                    notify: true
+                },
+                password: {
+                    type: String,
+                    notify: true
+                },
+                errorMessage: {
+                    type: String,
+                    notify: true
+                }
+            },
 
-          listeners: {
-              'loginButton.tap': 'onLoginTapped',
-              'username.keydown': 'onInputKeydown',
-              'password.keydown': 'onInputKeydown'
-          },
+            listeners: {
+                'loginButton.tap': 'onLoginTapped',
+                'username.keydown': 'onInputKeydown',
+                'password.keydown': 'onInputKeydown'
+            },
 
-          onLoginTapped: function(e) {
-              this.$.authAjax.body = JSON.stringify({"username":this.username, "password": this.password});
-              this.$.authAjax.generateRequest();
-          },
+            _activeChanged: function(newValue, oldValue) {
+                if (newValue) {
+                    this.username = '';
+                    this.password = '';
+                    this.errorMessage = '';
+                }
+            },
 
-          onInputKeydown: function(e) {
-              if (e.keyCode === 13) {
-                  this.$.loginButton.click();
-              }
-          },
+            onLoginTapped: function(e) {
+                this.$.authAjax.body = JSON.stringify({"username":this.username, "password": this.password});
+                this.$.authAjax.generateRequest();
+            },
 
-          handlePostAuthRequest: function(request) {
-              this.errorMessage = null;
-          },
-          handlePostAuthResponse: function(request) {
-              localStorage.setItem("username", this.username);
-              localStorage.setItem("jwtToken", request.detail.response.token);
-              this.username = null;
-              this.password = null;
-              this.$.ironLocation.set("path", "/");
-          },
-          handlePostAuthError : function() {
-              this.username = null;
-              this.password = null;
-              this.errorMessage = "Login failed. Check your username and password and try again.";
-          }
+            onInputKeydown: function(e) {
+                if (e.keyCode === 13) {
+                    this.$.loginButton.click();
+                }
+            },
+
+            handlePostAuthRequest: function(request) {
+                this.errorMessage = '';
+            },
+            handlePostAuthResponse: function(request) {
+                localStorage.setItem("username", this.username);
+                localStorage.setItem("jwtToken", request.detail.response.token);
+                this.$.ironLocation.set("path", "/");
+            },
+            handlePostAuthError : function() {
+                this.password = '';
+                this.errorMessage = "Login failed. Check your username and password and try again.";
+            }
         });
     </script>
 </dom-module>

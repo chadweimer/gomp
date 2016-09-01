@@ -46,11 +46,7 @@
         </style>
 
         <app-location id="appLocation" route="{{route}}"></app-location>
-        <app-route
-            route="{{route}}"
-            pattern="/:page"
-            data="{{routeData}}"
-            tail="{{subroute}}"></app-route>
+        <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
         <paper-drawer-panel id="drawerPanel" force-narrow>
             <paper-header-panel drawer>
@@ -72,13 +68,26 @@
                 </paper-toolbar>
 
                 <main>
-                    <iron-pages
-                        selected="[[page]]"
-                        attr-for-selected="name"
-                        role="main">
-                        <home-view name="home" title="[[homeTitle]]" image="[[homeImage]]"></home-view>
-                        <recipes-view name="recipes" route="{{subroute}}" search="{{search}}" search-tags="{{searchTags}}"></recipes-view>
-                        <login-view name="login"></login-view>
+                    <iron-pages selected="[[page]]" attr-for-selected="name">
+                        <home-view
+                            name="home"
+                            jwt-token="[[jwtToken]]"
+                            active="[[_isActive(page, 'home')]]"
+                            title="[[homeTitle]]"
+                            image="[[homeImage]]"></home-view>
+
+                        <recipes-view
+                            name="recipes"
+                            jwt-token="[[jwtToken]]"
+                            active="[[_isActive(page, 'recipes')]]"
+                            route="{{subroute}}"
+                            search="{{search}}"
+                            search-tags="{{searchTags}}"></recipes-view>
+
+                        <login-view
+                            name="login"
+                            jwt-token="[[jwtToken]]"
+                            active="[[_isActive(page, 'login')]]"></login-view>
                     </iron-pages>
                 </main>
             </paper-scroll-header-panel>
@@ -95,6 +104,10 @@
             is: 'gomp-app',
 
             properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
                 title: {
                     type: String,
                     notify: true,
@@ -153,6 +166,7 @@
             },
 
             ready: function() {
+                this.jwtToken = localStorage.getItem("jwtToken");
                 this.verifyIsAuthenticated();
             },
 
@@ -182,10 +196,9 @@
                 this._logout();
             },
             verifyIsAuthenticated: function() {
-                var jwtToken = localStorage.getItem("jwtToken");
                 // Redirect to login if necessary
                 if (this.$.appLocation.path !== '/login') {
-                    if (jwtToken === null) {
+                    if (this.jwtToken === null) {
                         this._logout();
                         return false;
                     }
@@ -205,6 +218,9 @@
                 this.search = '';
                 this.searchTags = e.detail.tags;
                 this.$.appLocation.path = '/recipes';
+            },
+            _isActive: function(currentPage, pageToCheck) {
+                return currentPage === pageToCheck;
             }
         });
     </script>
