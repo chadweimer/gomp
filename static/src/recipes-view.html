@@ -65,7 +65,9 @@
             ],
             _recipeIdChanged: function(recipeId) {
                 this.recipeId = recipeId;
-                this.page = "recipe";
+                if (recipeId) {
+                    this.page = "recipe";
+                }
             },
             _routeChanged: function(route) {
                 if (route.path === '') {
