@@ -16,8 +16,6 @@
         "src/components/recipe-card.html"
     ],
     "includeDependencies": [
-        "bower_components/webcomponentsjs/webcomponents-lite.min.js",
-        "bower_components/paper-styles/classes/*",
-        "bower_components/paper-styles/paper-styles-classes.html"
+        "bower_components/webcomponentsjs/webcomponents-lite.min.js"
     ]
 }
