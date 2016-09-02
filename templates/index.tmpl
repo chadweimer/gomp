@@ -16,7 +16,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="manifest" href="/static/manifest.json">
-        <script src="/static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+        <script src="/static/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
         <link rel="import" href="/static/bower_components/font-roboto/roboto.html">
         <link rel="import" href="/static/bower_components/paper-styles/classes/global.html">
         <link rel="import" href="/static/src/gomp-app.html">
@@ -25,6 +25,14 @@
                 margin: 0;
             }
         </style>
+        <script>
+            // Register service worker if supported.
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/service-worker.js');
+                });
+            }
+        </script>
     </head>
     <body>
         <gomp-app title="{{ApplicationTitle}}" home-title="{{HomeTitle}}" home-image="{{HomeImage}}"></gomp-app>

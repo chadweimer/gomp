@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/chadweimer/gomp/api"
@@ -45,7 +46,12 @@ func main() {
 	mainMux.Handle("/static/", staticHandler)
 	mainMux.Handle("/uploads/", staticHandler)
 	mainMux.Handle("/", http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		renderer.HTML(resp, http.StatusOK, "index", nil)
+		var filePath = fmt.Sprintf("build/bundled%s", req.URL.Path)
+		if stat, err := os.Stat(filePath); os.IsNotExist(err) || stat.IsDir() {
+			renderer.HTML(resp, http.StatusOK, "index", nil)
+		} else {
+			http.ServeFile(resp, req, filePath)
+		}
 	}))
 	n.UseHandler(mainMux)
 

@@ -7,8 +7,9 @@
 # Folders
 _obj
 _test
-bower_components
-node_modules
+bower_components/
+node_modules/
+build/
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -32,10 +33,6 @@ _testmain.go
 .vscode/
 /.idea/
 .idea/
-
-# Run-time folders not for source control
-data/
-conf/
 
 # Ignore the main build output
 gomp
