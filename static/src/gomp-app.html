@@ -3,21 +3,16 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../bower_components/paper-search/paper-search.html">
-<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
 <link rel="import" href="../bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
+<link rel="import" href="../bower_components/paper-styles/classes/global.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
-<link rel="import" href="../bower_components/paper-styles/shadow.html">
-<link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 
 <dom-module id="gomp-app">
@@ -43,6 +38,21 @@
             paper-toolbar a {
                 color: #ffffff;
             }
+            @media screen and (min-width: 993px) {
+                .hide-on-large-only {
+                    display: none;
+                }
+            }
+            @media screen and (max-width: 992px) {
+                .hide-on-med-and-down {
+                    display: none;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                .hide-on-small-only {
+                    display: none;
+                }
+            }
         </style>
 
         <app-location id="appLocation" route="{{route}}"></app-location>
@@ -59,11 +69,11 @@
             </paper-header-panel>
             <paper-scroll-header-panel id="mainPanel" main>
                 <paper-toolbar>
-                    <paper-icon-button class="menu-button" icon="menu" paper-drawer-toggle hidden$="{{largeLayout}}"></paper-icon-button>
-                    <div class="title"><span hidden$="{{smallLayout}}">[[title]]</span></div>
-                    <paper-item name="home" hidden$="{{!largeLayout}}"><a href="/">Home</a></paper-item>
-                    <paper-item name="recipes" hidden$="{{!largeLayout}}"><a href="/recipes">Recipes</a></paper-item>
-                    <paper-item name="logout" hidden$="{{!largeLayout}}"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
+                    <paper-icon-button class="menu-button hide-on-large-only" icon="menu" paper-drawer-toggle></paper-icon-button>
+                    <div class="title"><span class="hide-on-small-only">[[title]]</span></div>
+                    <paper-item name="home" class="hide-on-med-and-down"><a href="/">Home</a></paper-item>
+                    <paper-item name="recipes" class="hide-on-med-and-down"><a href="/recipes">Recipes</a></paper-item>
+                    <paper-item name="logout" class="hide-on-med-and-down"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
                     <paper-search-bar icon="search" query="[[search]]" hide-filter-button="true" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch"></paper-search-bar>
                 </paper-toolbar>
 
@@ -92,10 +102,6 @@
                 </main>
             </paper-scroll-header-panel>
         </paper-drawer-panel>
-
-        <iron-media-query query="max-width: 600px" query-matches="{{smallLayout}}"></iron-media-query>
-        <iron-media-query query="min-width: 601px" query-matches="{{medLayout}}"></iron-media-query>
-        <iron-media-query query="min-width: 993px" query-matches="{{largeLayout}}"></iron-media-query>
     </template>
 
     <script>
@@ -122,24 +128,6 @@
                     type: String,
                     notify: true,
                     value: ''
-                },
-                smallLayout: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                    observer: 'onLayoutChange'
-                },
-                medLayout: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                    observer: 'onLayoutChange'
-                },
-                largeLayout: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                    observer: 'onLayoutChange'
                 },
                 page: {
                     type: String,
@@ -186,9 +174,6 @@
             },
             _scrollToTop: function() {
                 this.$.mainPanel.scrollToTop(true);
-            },
-            onLayoutChange: function(dontcare) {
-                this.$.drawerPanel.closeDrawer();
             },
             _onLogoutTapped: function(e) {
                 e.preventDefault();

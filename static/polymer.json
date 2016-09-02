@@ -1,0 +1,23 @@
+{
+    "shell": "src/gomp-app.html",
+    "sources": [
+        "src/**/*",
+        "*"
+    ],
+    "fragments": [
+        "src/home-view.html",
+        "src/login-view.html",
+        "src/recipes-view.html",
+        "src/recipes-list-view.html",
+        "src/recipe-view.html",
+        "src/components/home-list.html",
+        "src/components/note-card.html",
+        "src/components/pagination-links.html",
+        "src/components/recipe-card.html"
+    ],
+    "includeDependencies": [
+        "bower_components/webcomponentsjs/webcomponents-lite.min.js",
+        "bower_components/paper-styles/classes/*",
+        "bower_components/paper-styles/paper-styles-classes.html"
+    ]
+}
