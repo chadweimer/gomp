@@ -166,7 +166,6 @@
             },
 
             ready: function() {
-                this.jwtToken = localStorage.getItem("jwtToken");
                 this.verifyIsAuthenticated();
             },
 
@@ -196,6 +195,7 @@
                 this._logout();
             },
             verifyIsAuthenticated: function() {
+                this.jwtToken = localStorage.getItem("jwtToken");
                 // Redirect to login if necessary
                 if (this.$.appLocation.path !== '/login') {
                     if (this.jwtToken === null) {
