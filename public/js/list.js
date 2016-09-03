@@ -1,19 +1,3 @@
-$(document).ready(function(){
-    pageNum = parseInt(getQueryString('page'), 10);
-    if (pageNum === null || isNaN(pageNum)) {
-        pageNum = 1;
-    }
-
-    query = getQueryStringWithStorageBacking('q', '');
-    searchTags = getQueryStringWithStorageBacking('tags', [], true).filter(v => v !== '');
-    sortBy = getQueryStringWithStorageBacking('sort', 'name');
-    sortDir = getQueryStringWithStorageBacking('dir', 'asc');
-    viewMode = getQueryStringWithStorageBacking('view', 'full');
-
-    loadRecipes();
-    loadTags(searchTags);
-});
-
 function onResetClicked(self, e) {
     e.preventDefault();
 
@@ -54,17 +38,6 @@ function onChangeSortClicked(self, e) {
     loadRecipes();
 }
 
-function onPaginationClicked(self, e) {
-    e.preventDefault();
-
-    pageNum = parseInt($(self).data('page'), 10);
-    if (pageNum === null || isNaN(pageNum)) {
-        pageNum = 1;
-    }
-
-    loadRecipes();
-}
-
 function onApplyTagsClicked(self, e) {
     e.preventDefault();
 
@@ -77,54 +50,6 @@ function onApplyTagsClicked(self, e) {
 
     loadRecipes();
     loadTags(searchTags);
-}
-
-function loadRecipes() {
-    showBusy('Loading recipes...');
-
-    $('#search-query').text(query);
-    $('.view-mode').removeClass('active');
-    $('.view-mode.' + viewMode).addClass('active');
-    $('.sort').removeClass('active');
-    $('.sort.' + sortBy).addClass('active');
-    
-    var $container = $('.recipes-container');
-
-    var count = (viewMode !== 'compact' ? 12 : 60);
-    getRecipesAsync({
-        q: query,
-        tags: searchTags,
-        sort: sortBy,
-        dir: sortDir,
-        page: pageNum,
-        count: count
-    }).done(function(response) {
-        $('html, body').animate({scrollTop: 0});
-        $('#result-count').text(response.total);
-
-        $container.empty();
-
-        if (response.recipes !== null) {
-            if (viewMode !== 'compact') {
-                addRecipesFull($container, response.recipes);
-            } else {
-                addRecipesCompact($container, response.recipes);
-            }
-        }
-
-        var numPages = Math.ceil(response.total / count);
-        addPaginiation(pageNum, numPages);
-    }).always(function() {
-        hideBusy();
-    });
-}
-
-function addRecipesFull($container, recipes) {
-    recipes.forEach(function(recipe) {
-        var $recipeWrapper = $('<div class="col s12 m6 l4"></div>');
-        appendRecipeCard($recipeWrapper, recipe, 'small');
-        $container.append($recipeWrapper);
-    });
 }
 
 function addRecipesCompact($container, recipes) {
@@ -148,37 +73,6 @@ function addRecipesCompact($container, recipes) {
             }
         });
     });
-}
-
-function addPaginiation(pageNum, numPages) {
-    var prevPageNum = pageNum - 1;
-    var nextPageNum = pageNum + 1;
-    $('.pagination-container').html('\
-        <ul class="pagination center grow">\
-            <li class="' + (pageNum === 1 ? 'disabled' : '') + '">\
-                <a href="#!" onclick="onPaginationClicked(this, event);" data-page="1">\
-                    <i class="material-icons">first_page</i>\
-                </a>\
-            </li>\
-            <li class="' + (pageNum === 1 ? 'disabled' : '') + '">\
-                <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + prevPageNum + '">\
-                    <i class="material-icons">chevron_left</i>\
-                </a>\
-            </li>\
-            <li class="active">\
-                <a href="#!">' + pageNum + '</a>\
-            </li>\
-            <li class="' + (pageNum === numPages ? 'disabled' : '') + '">\
-                <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + nextPageNum + '">\
-                    <i class="material-icons">chevron_right</i>\
-                </a>\
-            </li>\
-            <li class="' + (pageNum === numPages ? 'disabled' : '') + '">\
-                <a href="#!" onclick="onPaginationClicked(this, event);" data-page="' + numPages + '">\
-                    <i class="material-icons">last_page</i>\
-                </a>\
-            </li>\
-        </ul>');
 }
 
 function loadTags(searchTags) {
