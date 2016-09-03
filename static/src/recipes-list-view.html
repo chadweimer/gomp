@@ -201,7 +201,7 @@
             } else {
                 this._trySaveToSession('q', this.search);
             }
-            this.searchTags = this._getFromSession('tags', []).filter(v => v !== '');
+            this.searchTags = this._getFromSession('tags', []).filter(function(v) { return v !== ''; });
             this.sortBy = this._getFromSession('sort', 'name');
             this.sortDir = this._getFromSession('dir', 'asc');
             this.viewMode = this._getFromSession('view', 'full');

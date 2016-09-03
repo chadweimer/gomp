@@ -4,12 +4,15 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial.html">
 <link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 <link rel="import" href="components/note-card.html">
@@ -120,15 +123,24 @@
                 .tab {
                     width: calc(50% - 16px);
                 }
+                paper-dialog {
+                    width: 33%;
+                }
             }
             @media screen and (min-width: 601px) and (max-width: 992px) {
                 .tab {
                     width: calc(100% - 16px);
                 }
+                paper-dialog {
+                    width: 75%;
+                }
             }
             @media screen and (max-width: 600px) {
                 .tab {
                     width: calc(100% - 16px);
+                }
+                paper-dialog {
+                    width: 100%;
                 }
             }
         </style>
@@ -204,13 +216,22 @@
                 </div>
             </div>
         </div>
-        <paper-fab-speed-dial icon="icons:more-vert">
+        <paper-fab-speed-dial id="actions" icon="icons:more-vert">
             <paper-fab-speed-dial-action class="green" icon="icons:add">New</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="red" icon="icons:delete">Delete</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="amber" icon="icons:create">Edit</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo">Upload Picture</paper-fab-speed-dial-action>
-            <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="addNoteButton" class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
         </paper-fab-speed-dial>
+
+        <paper-dialog id="noteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h2>
+            <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm>Save</paper-button>
+            </div>
+        </paper-dialog>
 
         <iron-ajax
             auto
@@ -246,6 +267,26 @@
             handle-as="json"
             on-request="_handleGetNotesRequest"
             on-response="_handleGetNotesResponse"></iron-ajax>
+        <iron-ajax
+            id="postNoteAjax"
+            url="/api/v1/notes"
+            method="POST"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePostNoteResponse"></iron-ajax>
+        <iron-ajax
+            id="putNoteAjax"
+            url="/api/v1/notes/[[noteId]]"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePutNoteResponse"></iron-ajax>
+        <iron-ajax
+            id="deleteNoteAjax"
+            method="DELETE"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleDeleteNoteResponse"></iron-ajax>
     </template>
 
     <script>
@@ -297,6 +338,12 @@
                     notify: true
                 },
             },
+            listeners: {
+                'addNoteButton.tap': '_addNoteButtonTapped',
+                'noteDialog.iron-overlay-closed': '_noteDialogClosed',
+                'note-card-edit': '_editNoteTapped',
+                'note-card-delete': '_deleteNoteTapped'
+            },
 
             _getAjaxHeaders: function(jwtToken) {
                 return {"Authorization": "Bearer " + jwtToken};
@@ -322,34 +369,74 @@
                 });
             },
 
-            _handleGetRecipeRequest: function(request) {
+            _addNoteButtonTapped: function(e) {
+                this.noteId = null;
+                this.noteText = '';
+                this.$.actions.close();
+                this.$.noteDialog.open();
+            },
+            _noteDialogClosed: function(e) {
+                if (e.detail.confirmed) {
+                    if (this.noteId) {
+                        this.$.putNoteAjax.body = JSON.stringify({
+                            "id": this.noteId,
+                            "recipeId": this.recipe.id,
+                            "text": this.noteText
+                        });
+                        this.$.putNoteAjax.generateRequest();
+                    } else {
+                        this.$.postNoteAjax.body = JSON.stringify({"recipeId": this.recipe.id, "text": this.noteText });
+                        this.$.postNoteAjax.generateRequest();
+                    }
+                }
+            },
+            _editNoteTapped: function (e) {
+                this.noteId = e.target.note.id;
+                this.noteText = e.target.note.text;
+                this.$.noteDialog.open();
+            },
+            _deleteNoteTapped: function (e) {
+                this.$.deleteNoteAjax.url = "/api/v1/notes/" + e.target.note.id;
+                this.$.deleteNoteAjax.generateRequest();
+            },
+
+            _handleGetRecipeRequest: function(e) {
                 this.loading = true;
                 this.recipe = null;
             },
-            _handleGetRecipeResponse: function(request) {
-                this.recipe = request.detail.response;
+            _handleGetRecipeResponse: function(e) {
+                this.recipe = e.detail.response;
                 this.loading = false;
             },
-            _handleGetRecipeError: function(request) {
+            _handleGetRecipeError: function(e) {
                 this.loading = false;
             },
-            _handleGetMainImageRequest: function(request) {
+            _handleGetMainImageRequest: function(e) {
                 this.mainImage = null;
             },
-            _handleGetMainImageResponse: function(request) {
-                this.mainImage = request.detail.response;
+            _handleGetMainImageResponse: function(e) {
+                this.mainImage = e.detail.response;
             },
-            _handleGetImagesRequest: function(request) {
+            _handleGetImagesRequest: function(e) {
                 this.images = [];
             },
-            _handleGetImagesResponse: function(request) {
-                this.images = request.detail.response;
+            _handleGetImagesResponse: function(e) {
+                this.images = e.detail.response;
             },
-            _handleGetNotesRequest: function(request) {
+            _handleGetNotesRequest: function(e) {
                 this.notes = [];
             },
-            _handleGetNotesResponse: function(request) {
-                this.notes = request.detail.response;
+            _handleGetNotesResponse: function(e) {
+                this.notes = e.detail.response;
+            },
+            _handlePostNoteResponse: function(e) {
+                this.$.notesAjax.generateRequest();
+            },
+            _handlePutNoteResponse: function(e) {
+                this.$.notesAjax.generateRequest();
+            },
+            _handleDeleteNoteResponse: function(e) {
+                this.$.notesAjax.generateRequest();
             }
 
         });

@@ -23,7 +23,11 @@ func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
 	}
 
 	h.uiMux = httprouter.New()
-	h.uiMux.ServeFiles("/static/*filepath", http.Dir("static/build/bundled"))
+	if cfg.IsDevelopment {
+		h.uiMux.ServeFiles("/static/*filepath", http.Dir("static"))
+	} else {
+		h.uiMux.ServeFiles("/static/*filepath", http.Dir("static/build/bundled"))
+	}
 	if h.cfg.UploadDriver == "fs" {
 		h.uiMux.ServeFiles("/uploads/*filepath", http.Dir(h.cfg.UploadPath))
 	} else if h.cfg.UploadDriver == "s3" {

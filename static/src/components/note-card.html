@@ -4,6 +4,10 @@
 <link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 
 <dom-module id="note-card">
     <template>
@@ -45,6 +49,13 @@
                 <div class="note-header">
                     <iron-icon icon="communication:comment"></iron-icon>
                     <span class="date">[[_formatDate(note.createdAt)]]</span>
+                    <paper-menu-button style="position: absolute; top: 0; right: 0;" horizontal-align="right">
+                        <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
+                        <paper-menu class="dropdown-content">
+                            <paper-item><a id="edit" href="#!"><iron-icon icon="icons:create"></iron-icon> Edit</a></paper-item>
+                            <paper-item><a id="delete" href="#!"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
+                        </paper-menu>
+                    </paper-menu-button>
                 </div>
                 <paper-divider></paper-divider>
                 <p class="note-content">[[note.text]]</p>
@@ -66,6 +77,21 @@
                     type: Object,
                     notify: true
                 }
+            },
+            listeners: {
+                'edit.tap': '_edit',
+                'delete.tap': '_delete'
+            },
+
+            _edit: function(e) {
+                e.preventDefault();
+
+                this.fire('note-card-edit');
+            },
+            _delete: function(e) {
+                e.preventDefault();
+                
+                this.fire('note-card-delete');
             },
 
             _formatDate: function(dateStr) {
