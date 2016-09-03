@@ -107,6 +107,9 @@
                 --paper-fab-speed-dial-action-background: var(--paper-blue-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-blue-900);
             }
+            #noteDialog h2 {
+                color: var(--paper-blue-500);
+            }
             .container {
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
@@ -190,7 +193,7 @@
             </paper-card>
             <div class="container">
                 <div id="images" class="tab">
-                    <image-list jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
+                    <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
                 </div>
                 <div id="notes" class="tab">
                     <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
@@ -301,6 +304,7 @@
             },
             listeners: {
                 'deleteButton.tap': '_deleteButtonTapped',
+                'addImageButton.tap': '_addImageButtonTapped',
                 'addNoteButton.tap': '_addNoteButtonTapped',
                 'noteDialog.iron-overlay-closed': '_noteDialogClosed',
                 'note-card-edit': '_editNoteTapped'
@@ -336,6 +340,11 @@
                 };
                 this.$.confirmDialog.open();
                 this.$.actions.close();
+            },
+
+            _addImageButtonTapped: function(e) {
+                this.$.actions.close();
+                this.$.imageList.add();
             },
 
             _addNoteButtonTapped: function(e) {

@@ -1,7 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
 <dom-module id="image-list">
     <template>
@@ -20,6 +22,9 @@
             paper-divider {
                 width: 100%;
             }
+            #addDialog h2 {
+                color: var(--paper-teal-500);
+            }
         </style>
 
         <header>Pictures</header>
@@ -27,6 +32,14 @@
         <template is="dom-repeat" items="[[images]]">
             <a target="_blank" href$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
         </template>
+
+        <paper-dialog id="addDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <form enctype="multipart/form-data" onsubmit="onAddImageSubmitted(this, event);">
+                <h2><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h2>
+                <p>Browse for a picture to upload to this recipe.<p>
+                <paper-input type="file"></paper-input>
+            </form>
+        </paper-dialog>
 
         <iron-ajax
             auto
@@ -60,6 +73,10 @@
 
             _getAjaxHeaders: function(jwtToken) {
                 return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            add: function() {
+                this.$.addDialog.open();
             },
 
             _handleGetImagesRequest: function(e) {
