@@ -46,6 +46,11 @@
                 font-size: 0.7em;
                 font-weight: lighter;
             }
+            paper-menu-button {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
         </style>
         
         <paper-card>
@@ -53,7 +58,7 @@
                 <div class="note-header">
                     <iron-icon icon="communication:comment"></iron-icon>
                     <span class="date">[[_formatDate(note.createdAt)]]</span>
-                    <paper-menu-button style="position: absolute; top: 0; right: 0;" horizontal-align="right">
+                    <paper-menu-button horizontal-align="right">
                         <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                         <paper-menu class="dropdown-content">
                             <paper-item><a id="edit" href="#!"><iron-icon icon="icons:create"></iron-icon> Edit</a></paper-item>
