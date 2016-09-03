@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 
 <link rel="import" href="note-card.html">
 
@@ -12,11 +13,19 @@
             note-card {
                 margin: 5px;
             }
+            header {
+                font-size: 1.5em;
+            }
+            paper-divider {
+                width: 100%;
+            }
             #confirmDeleteDialog h2 {
                 color: red;
             }
         </style>
 
+        <header>Notes</header>
+        <paper-divider></paper-divider>
         <template is="dom-repeat" items="[[notes]]">
             <note-card jwt-token="[[jwtToken]]" note="[[item]]"></note-card>
         </template>

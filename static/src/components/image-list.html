@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 
 <dom-module id="image-list">
     <template>
@@ -13,8 +14,16 @@
             img {
                 margin: 2px;
             }
+            header {
+                font-size: 1.5em;
+            }
+            paper-divider {
+                width: 100%;
+            }
         </style>
 
+        <header>Pictures</header>
+        <paper-divider></paper-divider>
         <template is="dom-repeat" items="[[images]]">
             <a target="_blank" href$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
         </template>

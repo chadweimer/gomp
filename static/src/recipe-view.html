@@ -157,7 +157,7 @@
                         <iron-icon icon="icons:star" class="half" data-rating="0.5"></iron-icon>
                     </div>
                     <h2>
-                        <img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]">
+                        <a target="_blank" href="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                         [[recipe.name]]
                     </h2>
                     <section hidden$="{{!recipe.servingSize}}">
@@ -190,13 +190,9 @@
             </paper-card>
             <div class="container">
                 <div id="images" class="tab">
-                    <h3>Pictures</h3>
-                    <paper-divider></paper-divider>
                     <image-list jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
                 </div>
                 <div id="notes" class="tab">
-                    <h3>Notes</h3>
-                    <paper-divider></paper-divider>
                     <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
                 </div>
             </div>
