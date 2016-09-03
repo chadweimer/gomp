@@ -233,6 +233,15 @@
             </div>
         </paper-dialog>
 
+        <paper-dialog id="confirmDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="communication:live-help"></iron-icon> <span>Are you sure?</span></h2>
+            <p>[[confirmationText]]</p>
+            <div class="buttons">
+                <paper-button dialog-dismiss>No</paper-button>
+                <paper-button id="confirmYes" dialog-confirm>Yes</paper-button>
+            </div>
+        </paper-dialog>
+
         <iron-ajax
             auto
             id="recipeAjax"
@@ -396,8 +405,14 @@
                 this.$.noteDialog.open();
             },
             _deleteNoteTapped: function (e) {
-                this.$.deleteNoteAjax.url = "/api/v1/notes/" + e.target.note.id;
-                this.$.deleteNoteAjax.generateRequest();
+                this.noteId = e.target.note.id;
+                this.confirmationText = "Are you sure you want to delete this note?";
+                var self = this;
+                this.$.confirmYes.onclick = function(e) {
+                    self.$.deleteNoteAjax.url = "/api/v1/notes/" + self.noteId;
+                    self.$.deleteNoteAjax.generateRequest();
+                };
+                this.$.confirmDialog.open();
             },
 
             _handleGetRecipeRequest: function(e) {
