@@ -1,0 +1,77 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="note-card.html">
+
+<dom-module id="note-list">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            note-card {
+                margin: 5px;
+            }
+            #confirmDeleteDialog h2 {
+                color: red;
+            }
+        </style>
+
+        <template is="dom-repeat" items="[[notes]]">
+            <note-card jwt-token="[[jwtToken]]" note="[[item]]"></note-card>
+        </template>
+
+        <iron-ajax
+            auto
+            id="getAjax"
+            url="/api/v1/recipes/[[recipeId]]/notes"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleGetRequest"
+            on-response="_handleGetResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'note-list',
+
+            properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
+                recipeId: {
+                    type: String,
+                    notify: true
+                }
+            },
+            listeners: {
+                'note-card-deleted': '_noteDeleted'
+            },
+
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            refresh: function() {
+                this.$.getAjax.generateRequest();
+            },
+
+            _noteDeleted: function(e) {
+                this.refresh();
+            },
+
+            _handleGetRequest: function(e) {
+                this.notes = [];
+            },
+            _handleGetResponse: function(e) {
+                this.notes = e.detail.response;
+            }
+        });
+    </script>
+</dom-module>

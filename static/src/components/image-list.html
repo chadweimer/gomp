@@ -1,0 +1,64 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="image-list">
+    <template>
+        <style>
+            :host {
+                display: block;
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
+            img {
+                margin: 2px;
+            }
+        </style>
+
+        <template is="dom-repeat" items="[[images]]">
+            <a target="_blank" href$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
+        </template>
+
+        <iron-ajax
+            auto
+            id="imagesAjax"
+            url="/api/v1/recipes/[[recipeId]]/images"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleGetImagesRequest"
+            on-response="_handleGetImagesResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'image-list',
+
+            properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
+                recipeId: {
+                    type: String,
+                    notify: true
+                }
+            },
+
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            _handleGetImagesRequest: function(e) {
+                this.images = [];
+            },
+            _handleGetImagesResponse: function(e) {
+                this.images = e.detail.response;
+            }
+        });
+    </script>
+</dom-module>

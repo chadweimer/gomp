@@ -1,8 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
@@ -65,6 +69,23 @@
                 </div>
             </div>
         </paper-card>
+
+        <paper-dialog id="confirmDeleteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="icons:delete"></iron-icon> <span>Delete Note?</span></h2>
+            <p>Are you sure you want to delete this note?</p>
+            <div class="buttons">
+                <paper-button dialog-dismiss>No</paper-button>
+                <paper-button id="confirmDelete" dialog-confirm>Yes</paper-button>
+            </div>
+        </paper-dialog>
+
+        <iron-ajax
+            id="deleteAjax"
+            url="/api/v1/notes/[[note.id]]"
+            method="DELETE"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleDeleteResponse"></iron-ajax>
     </template>
 
     <script>
@@ -73,6 +94,14 @@
             is: 'note-card',
 
             properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
                 note: {
                     type: Object,
                     notify: true
@@ -80,7 +109,12 @@
             },
             listeners: {
                 'edit.tap': '_edit',
-                'delete.tap': '_delete'
+                'delete.tap': '_deleteTapped',
+                'confirmDelete.tap': '_deleteNote'
+            },
+
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
             },
 
             _edit: function(e) {
@@ -88,10 +122,13 @@
 
                 this.fire('note-card-edit');
             },
-            _delete: function(e) {
+            _deleteTapped: function(e) {
                 e.preventDefault();
-                
-                this.fire('note-card-delete');
+
+                this.$.confirmDeleteDialog.open();
+            },
+            _deleteNote: function(e) {
+                this.$.deleteAjax.generateRequest();
             },
 
             _formatDate: function(dateStr) {
@@ -99,6 +136,10 @@
             },
             _showModifiedDate: function(note) {
                 return note.modifiedAt !== note.createdAt;
+            },
+
+            _handleDeleteResponse: function(e) {
+                this.fire("note-card-deleted");
             }
 
         });

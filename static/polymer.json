@@ -13,7 +13,9 @@
         "src/components/home-list.html",
         "src/components/note-card.html",
         "src/components/pagination-links.html",
-        "src/components/recipe-card.html"
+        "src/components/recipe-card.html",
+        "src/components/image-list.html",
+        "src/components/note-list.html"
     ],
     "includeDependencies": [
         "bower_components/webcomponentsjs/webcomponents-lite.min.js"
