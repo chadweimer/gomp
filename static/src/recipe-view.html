@@ -207,6 +207,13 @@
             handle-as="json"
             on-response="_handleDeleteRecipeResponse"></iron-ajax>
         <iron-ajax
+            id="rateAjax"
+            url="/api/v1/recipes/[[recipeId]]/rating"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePutRecipeRatingResponse"></iron-ajax>
+        <iron-ajax
             auto
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
@@ -269,7 +276,8 @@
                 'addImageButton.tap': '_addImageButtonTapped',
                 'addNoteButton.tap': '_addNoteButtonTapped',
                 'noteDialog.iron-overlay-closed': '_noteDialogClosed',
-                'note-card-edit': '_editNoteTapped'
+                'note-card-edit': '_editNoteTapped',
+                'star-rating-selected': '_starRatingSelected'
             },
 
             _getAjaxHeaders: function(jwtToken) {
@@ -325,6 +333,11 @@
                 this.$.noteDialog.open();
             },
 
+            _starRatingSelected: function(e) {
+                this.$.rateAjax.body = e.detail.rating;
+                this.$.rateAjax.generateRequest();
+            },
+
             _handleGetRecipeRequest: function(e) {
                 this.loading = true;
                 this.recipe = null;
@@ -338,6 +351,9 @@
             },
             _handleDeleteRecipeResponse: function(e) {
                 this.$.ironLocation.set("path", "/recipes");
+            },
+            _handlePutRecipeRatingResponse: function(e) {
+                this.set("recipe.averageRating", parseFloat(e.target.body));
             },
             _handleGetMainImageRequest: function(e) {
                 this.mainImage = null;

@@ -71,7 +71,11 @@
             },
 
             ready: function() {
-                
+                var self = this;
+                var stars = Polymer.dom(this.root).querySelectorAll("iron-icon");
+                stars.forEach(function(star) {
+                    self.listen(star, 'tap', '_starTapped');
+                });
             },
 
             _valueChanged: function(newValue, oldValue) {
@@ -87,6 +91,10 @@
                         star.classList.remove("active");
                     }
                 });
+            },
+
+            _starTapped: function(e) {
+                this.fire("star-rating-selected", {rating: e.target.dataset.rating});
             }
         });
     </script>
