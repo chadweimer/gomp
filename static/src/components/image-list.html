@@ -4,6 +4,7 @@
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
 <dom-module id="image-list">
     <template>
@@ -34,21 +35,40 @@
         </template>
 
         <paper-dialog id="addDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <form enctype="multipart/form-data" onsubmit="onAddImageSubmitted(this, event);">
-                <h2><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h2>
-                <p>Browse for a picture to upload to this recipe.<p>
-                <paper-input type="file"></paper-input>
+            <h2><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h2>
+            <p>Browse for a picture to upload to this recipe.<p>
+            <form id="addForm" enctype="multipart/form-data">
+                <paper-input name="file_content" type="file"></paper-input>
             </form>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm>Upload</paper-button>
+            </div>
+        </paper-dialog>
+        <paper-dialog id="uploadingDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2>
+                <paper-spinner active></paper-spinner>
+                Uploading
+            </h2>
         </paper-dialog>
 
         <iron-ajax
             auto
-            id="imagesAjax"
+            id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetImagesRequest"
             on-response="_handleGetImagesResponse"></iron-ajax>
+        <iron-ajax
+            id="addAjax"
+            url="/api/v1/recipes/[[recipeId]]/images"
+            method="POST"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleAddRequest"
+            on-response="_handleAddResponse",
+            on-error="_handleAddError"></iron-ajax>
     </template>
 
     <script>
@@ -70,13 +90,25 @@
                     notify: true
                 }
             },
+            listeners: {
+                'addDialog.iron-overlay-closed': '_addDialogClosed'
+            },
 
             _getAjaxHeaders: function(jwtToken) {
                 return {"Authorization": "Bearer " + jwtToken};
             },
 
+            refresh: function() {
+                this.$.getAjax.generateRequest();
+            },
+
             add: function() {
                 this.$.addDialog.open();
+            },
+
+            _addDialogClosed: function(e) {
+                this.$.addAjax.body = new FormData(this.$.addForm);
+                this.$.addAjax.generateRequest();
             },
 
             _handleGetImagesRequest: function(e) {
@@ -84,6 +116,16 @@
             },
             _handleGetImagesResponse: function(e) {
                 this.images = e.detail.response;
+            },
+            _handleAddRequest: function(e) {
+                this.$.uploadingDialog.open();
+            },
+            _handleAddResponse: function(e) {
+                this.$.uploadingDialog.close();
+                this.refresh();
+            },
+            _handleAddError: function(e) {
+                this.$.uploadingDialog.close();
             }
         });
     </script>
