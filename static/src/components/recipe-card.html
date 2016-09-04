@@ -1,8 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+
+<link rel="import" href="star-rating.html">
 
 <dom-module id="recipe-card">
     <template>
@@ -10,6 +10,7 @@
             :host {
                 display: block;
                 color: var(--primary-text-color);
+                cursor: pointer;
                 
                 --paper-card-header: {
                     height: var(--recipe-card-header-height, 75%);
@@ -18,12 +19,10 @@
                     width: 100%;
                     height: var(--recipe-card-height, 250px);
                 }
+                --star-rating-size: 16px;
             }
             paper-card:hover{
                 @apply(--shadow-elevation-6dp);
-            }
-            .clickable {
-                cursor: pointer;
             }
             .truncate {
                 display: block;
@@ -31,52 +30,12 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            .rating-container {
-                display: table;
-                margin-left: calc(var(--recpe-card-rating-size, 16px) * -5);
-            }
-            .rating-container > iron-icon {
-                --iron-icon-height: var(--recpe-card-rating-size, 16px);
-                --iron-icon-width: var(--recpe-card-rating-size, 16px);
-                color: #dddddd;
-                float: right;
-            }
-            .rating-container > iron-icon.whole {
-                -webkit-clip-path: inset(0 0 0 50%);
-                   -moz-clip-path: inset(0 0 0 50%);
-                    -ms-clip-path: inset(0 0 0 50%);
-                     -o-clip-path: inset(0 0 0 50%);
-                        clip-path: inset(0 0 0 50%);
-                margin-left: -100%;
-            }
-            .rating-container > iron-icon.half {
-                -webkit-clip-path: inset(0 50% 0 0);
-                   -moz-clip-path: inset(0 50% 0 0);
-                    -ms-clip-path: inset(0 50% 0 0);
-                     -o-clip-path: inset(0 50% 0 0);
-                        clip-path: inset(0 50% 0 0);
-            }
-            .rating-container > iron-icon.active,
-            .rating-container > iron-icon.active ~ iron-icon {
-                color: #fdd835;
-            }
         </style>
         
-        <paper-card image="[[recipe.mainImage.thumbnailUrl]]" class="clickable" on-tap="_cardTapped">
+        <paper-card image="[[recipe.mainImage.thumbnailUrl]]" on-tap="_cardTapped">
             <div class="card-content">
                 <span class="truncate">[[recipe.name]]</span>
-                <div id="ratings" class="rating-container">
-                    <iron-icon icon="icons:star" class="whole" data-rating="5"></iron-icon>
-                    <iron-icon icon="icons:star" class="half" data-rating="4.5"></iron-icon>
-                    <iron-icon icon="icons:star" class="whole" data-rating="4"></iron-icon>
-                    <iron-icon icon="icons:star" class="half" data-rating="3.5"></iron-icon>
-                    <iron-icon icon="icons:star" class="whole" data-rating="3"></iron-icon>
-                    <iron-icon icon="icons:star" class="half" data-rating="2.5"></iron-icon>
-                    <iron-icon icon="icons:star" class="whole" data-rating="2"></iron-icon>
-                    <iron-icon icon="icons:star" class="half" data-rating="1.5"></iron-icon>
-                    <iron-icon icon="icons:star" class="whole" data-rating="1"></iron-icon>
-                    <iron-icon icon="icons:star" class="half" data-rating="0.5"></iron-icon>
-                </div>
+                <star-rating value="[[recipe.averageRating]]"></star-rating>
             </div>
         </paper-card>
         <iron-location id="ironLocation"></iron-location>
@@ -90,27 +49,12 @@
             properties: {
                 recipe: {
                     type: Object,
-                    notify: true,
-                    observer: '_recipeChanged'
+                    notify: true
                 }
             },
 
             _cardTapped : function(e) {
                 this.$.ironLocation.set("path", "/recipes/" + this.recipe.id);
-            },
-            _recipeChanged: function(newValue, oldValue) {
-                if (!newValue) {
-                    return
-                }
-
-                var stars = this.$.ratings.querySelectorAll(".rating-container > iron-icon");
-                stars.forEach(function(star) {
-                    if (star.dataset.rating === newValue.averageRating.toString()) {
-                        star.classList.add("active");
-                    } else {
-                        star.classList.remove("active");
-                    }
-                });
             }
 
         });
