@@ -38,12 +38,12 @@
             <h2><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h2>
             <p>Browse for a picture to upload to this recipe.<p>
             <form id="addForm" enctype="multipart/form-data">
-                <paper-input name="file_content" type="file"></paper-input>
+                <paper-input name="file_content" type="file" required></paper-input>
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm>Upload</paper-button>
+                </div>
             </form>
-            <div class="buttons">
-                <paper-button dialog-dismiss>Cancel</paper-button>
-                <paper-button dialog-confirm>Upload</paper-button>
-            </div>
         </paper-dialog>
         <paper-dialog id="uploadingDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
             <h2>
@@ -107,8 +107,10 @@
             },
 
             _addDialogClosed: function(e) {
-                this.$.addAjax.body = new FormData(this.$.addForm);
-                this.$.addAjax.generateRequest();
+                if (e.detail.confirmed) {
+                    this.$.addAjax.body = new FormData(this.$.addForm);
+                    this.$.addAjax.generateRequest();
+                }
             },
 
             _handleGetImagesRequest: function(e) {
