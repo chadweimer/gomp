@@ -285,7 +285,8 @@
                 'addNoteButton.tap': '_addNoteButtonTapped',
                 'noteDialog.iron-overlay-closed': '_noteDialogClosed',
                 'note-card-edit': '_editNoteTapped',
-                'star-rating-selected': '_starRatingSelected'
+                'star-rating-selected': '_starRatingSelected',
+                'image-list-main-image-changed': '_mainImageChanged'
             },
 
             _getAjaxHeaders: function(jwtToken) {
@@ -341,6 +342,11 @@
             _starRatingSelected: function(e) {
                 this.$.rateAjax.body = e.detail.rating;
                 this.$.rateAjax.generateRequest();
+            },
+
+            _mainImageChanged: function(e) {
+                this.$.mainImageAjax.generateRequest();
+                this.fire("scroll-top");
             },
 
             _handleGetRecipeRequest: function(e) {

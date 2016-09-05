@@ -52,8 +52,8 @@
                 <paper-menu-button class="menu" horizontal-align="right">
                     <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                     <paper-menu class="dropdown-content">
-                        <paper-item><a id="setMainImage" href="#!"><iron-icon icon="image:photo-library"></iron-icon> Set as main image</a></paper-item>
-                        <paper-item><a id="delete" href="#!"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
+                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon icon="image:photo-library"></iron-icon> Set as main image</a></paper-item>
+                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
                     </paper-menu>
                 </paper-menu-button>
             </div>
@@ -94,6 +94,19 @@
             on-request="_handleAddRequest"
             on-response="_handleAddResponse",
             on-error="_handleAddError"></iron-ajax>
+        <iron-ajax
+            id="setMainImageAjax"
+            url="/api/v1/recipes/[[recipeId]]/image"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleSetMainImageResponse"></iron-ajax>
+        <iron-ajax
+            id="deleteAjax"
+            method="DELETE"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleDeleteResponse"></iron-ajax>
     </template>
 
     <script>
@@ -137,6 +150,18 @@
                     this.$.addAjax.generateRequest();
                 }
             },
+            _setMainImageTapped: function(e) {
+                e.preventDefault();
+
+                this.$.setMainImageAjax.body = parseInt(e.target.dataId, 10);
+                this.$.setMainImageAjax.generateRequest();
+            },
+            _deleteTapped: function(e) {
+                e.preventDefault();
+                
+                this.$.deleteAjax.url = "/api/v1/images/" + e.target.dataId;
+                this.$.deleteAjax.generateRequest();
+            },
 
             _handleGetImagesRequest: function(e) {
                 this.images = [];
@@ -153,6 +178,12 @@
             },
             _handleAddError: function(e) {
                 this.$.uploadingDialog.close();
+            },
+            _handleSetMainImageResponse: function(e) {
+                this.fire('image-list-main-image-changed');
+            },
+            _handleDeleteResponse: function(e) {
+                this.refresh();
             }
         });
     </script>
