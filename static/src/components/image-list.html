@@ -1,9 +1,16 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
 <dom-module id="image-list">
@@ -14,9 +21,6 @@
                 @apply(--layout-horizontal);
                 @apply(--layout-wrap);
             }
-            img {
-                margin: 2px;
-            }
             header {
                 font-size: 1.5em;
             }
@@ -26,12 +30,33 @@
             #addDialog h2 {
                 color: var(--paper-teal-500);
             }
+            .imageContainer {
+                margin: 2px;
+            }
+            .menu {
+                position: relative;
+                color: white;
+                right: 45px;
+                bottom: 5px;
+                margin-right: -45px;
+            }
         </style>
 
         <header>Pictures</header>
         <paper-divider></paper-divider>
         <template is="dom-repeat" items="[[images]]">
-            <a target="_blank" href$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
+            <div class="imageContainer">
+                <a target="_blank" href$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
+            </div>
+            <div>
+                <paper-menu-button class="menu" horizontal-align="right">
+                    <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
+                    <paper-menu class="dropdown-content">
+                        <paper-item><a id="setMainImage" href="#!"><iron-icon icon="image:photo-library"></iron-icon> Set as main image</a></paper-item>
+                        <paper-item><a id="delete" href="#!"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
+                    </paper-menu>
+                </paper-menu-button>
+            </div>
         </template>
 
         <paper-dialog id="addDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
