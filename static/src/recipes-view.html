@@ -1,30 +1,243 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-location/iron-location.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial.html">
+<link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="components/image-list.html">
+<link rel="import" href="components/note-list.html">
+<link rel="import" href="components/star-rating.html">
 
 <dom-module id="recipes-view">
     <template>
         <style>
             :host {
                 display: block;
+                color: var(--primary-text-color);
+
+                --paper-card: {
+                    width: 100%;
+                }
+            }
+            article {
+                padding: 8px;
+            }
+            section {
+                padding: 0.5em;
+            }
+            a {
+                text-transform: none;
+            }
+            paper-progress {
+                width: 100%;
+            }
+            label {
+                color: var(--secondary-text-color);
+                font-size: 0.7em;
+                font-weight: lighter;
+            }
+            .plain-text {
+                white-space: pre-wrap;
+            }
+            .avatar {
+                width: 64px;
+                height: 64px;
+                border-radius: 32px;
+            }
+            star-rating {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+            }
+            paper-fab-speed-dial-action.green {
+                --paper-fab-speed-dial-action-background: var(--paper-green-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-green-900);
+            }
+            paper-fab-speed-dial-action.red {
+                --paper-fab-speed-dial-action-background: var(--paper-red-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-red-900);
+            }
+            paper-fab-speed-dial-action.amber {
+                --paper-fab-speed-dial-action-background: var(--paper-amber-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-amber-900);
+            }
+            paper-fab-speed-dial-action.teal {
+                --paper-fab-speed-dial-action-background: var(--paper-teal-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-teal-900);
+            }
+            paper-fab-speed-dial-action.blue {
+                --paper-fab-speed-dial-action-background: var(--paper-blue-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-blue-900);
+            }
+            #noteDialog h2 {
+                color: var(--paper-blue-500);
+            }
+            .container {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
+            .tab {
+                margin: 8px;
+            }
+            @media screen and (min-width: 993px) {
+                .tab {
+                    width: calc(50% - 16px);
+                }
+                paper-dialog {
+                    width: 33%;
+                }
+            }
+            @media screen and (min-width: 601px) and (max-width: 992px) {
+                .tab {
+                    width: calc(100% - 16px);
+                }
+                paper-dialog {
+                    width: 75%;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                .tab {
+                    width: calc(100% - 16px);
+                }
+                paper-dialog {
+                    width: 100%;
+                }
             }
         </style>
 
-        <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}" tail="{{subroute}}"></app-route>
-        <iron-pages selected="[[page]]" attr-for-selected="name">
-            <recipes-list-view
-                name="recipes-list"
-                jwt-token="[[jwtToken]]"
-                active="[[_isActive(page, 'recipes-list')]]"
-                search="{{search}}"
-                search-tags="{{searchTags}}"></recipes-list-view>
+        <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}"></app-route>
 
-            <recipe-view
-                name="recipe"
-                jwt-token="[[jwtToken]]"
-                active="[[_isActive(page, 'recipe')]]"
-                recipe-id="{{recipeId}}"></recipe-view>
-        </iron-pages>
+        <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
+        <article>
+            <paper-card>
+                <div class="card-content">
+                    <star-rating value="[[recipe.averageRating]]"></star-rating>
+                    <h2>
+                        <a target="_blank" href="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                        [[recipe.name]]
+                    </h2>
+                    <section hidden$="{{!recipe.servingSize}}">
+                        <label>Serving Size</label>
+                        <p class="plain-text">[[recipe.servingSize]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section>
+                        <label>Ingredients</label>
+                        <p class="plain-text">[[recipe.ingredients]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section>
+                        <label>Directions</label>
+                        <p class="plain-text">[[recipe.directions]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden$="{{!recipe.nutrition}}">
+                        <label>Nutrition</label>
+                        <p class="plain-text">[[recipe.nutrition]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden$="{{!recipe.sourceUrl}}">
+                        <label>Source</label>
+                        <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                </div>
+            </paper-card>
+            <div class="container">
+                <div id="images" class="tab">
+                    <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
+                </div>
+                <div id="notes" class="tab">
+                    <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
+                </div>
+            </div>
+        </div>
+        <paper-fab-speed-dial id="actions" icon="icons:more-vert">
+            <paper-fab-speed-dial-action id="newButton" class="green" icon="icons:add">New</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="deleteButton" class="red" icon="icons:delete">Delete</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="editButton" class="amber" icon="icons:create">Edit</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="addImageButton" class="teal" icon="image:add-a-photo">Upload Picture</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="addNoteButton" class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
+        </paper-fab-speed-dial>
+
+        <paper-dialog id="noteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h2>
+            <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm>Save</paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="confirmDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="communication:live-help"></iron-icon> <span>Are you sure?</span></h2>
+            <p>[[confirmationText]]</p>
+            <div class="buttons">
+                <paper-button dialog-dismiss>No</paper-button>
+                <paper-button id="confirmYes" dialog-confirm>Yes</paper-button>
+            </div>
+        </paper-dialog>
+
+        <iron-ajax
+            auto
+            id="getAjax"
+            url="/api/v1/recipes/[[recipeId]]"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-request="_handleGetRecipeRequest"
+            on-response="_handleGetRecipeResponse"
+            on-error="_handleGetRecipeError"></iron-ajax>
+        <iron-ajax
+            id="deleteAjax"
+            url="/api/v1/recipes/[[recipeId]]"
+            method="DELETE"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleDeleteRecipeResponse"></iron-ajax>
+        <iron-ajax
+            id="rateAjax"
+            url="/api/v1/recipes/[[recipeId]]/rating"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePutRecipeRatingResponse"></iron-ajax>
+        <iron-ajax
+            auto
+            id="mainImageAjax"
+            url="/api/v1/recipes/[[recipeId]]/image"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleGetMainImageRequest"
+            on-response="_handleGetMainImageResponse"></iron-ajax>
+        <iron-ajax
+            id="postNoteAjax"
+            url="/api/v1/notes"
+            method="POST"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePostNoteResponse"></iron-ajax>
+        <iron-ajax
+            id="putNoteAjax"
+            url="/api/v1/notes/[[noteId]]"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePutNoteResponse"></iron-ajax>
+        <iron-location id="ironLocation"></iron-location>
     </template>
 
     <script>
@@ -42,46 +255,122 @@
                     type: String,
                     notify: true
                 },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
                 route: {
                     type: Object,
                     notify: true
                 },
-                search: {
+                recipeId: {
                     type: String,
-                    value: null,
                     notify: true
                 },
-                searchTags: {
-                    type: Array,
-                    value: [],
+                recipe: {
+                    type: Object,
                     notify: true
                 },
+                mainImage: {
+                    type: Object,
+                    notify: true
+                },
+            },
+            observers: [
+                '_recipeIdChanged(routeData.recipeId)'
+            ],
+            listeners: {
+                'deleteButton.tap': '_deleteButtonTapped',
+                'addImageButton.tap': '_addImageButtonTapped',
+                'addNoteButton.tap': '_addNoteButtonTapped',
+                'noteDialog.iron-overlay-closed': '_noteDialogClosed',
+                'note-card-edit': '_editNoteTapped',
+                'star-rating-selected': '_starRatingSelected'
             },
 
-            observers: [
-                '_recipeIdChanged(routeData.recipeId)',
-                '_pageChanged(page)',
-                '_routeChanged(route)'
-            ],
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
             _recipeIdChanged: function(recipeId) {
                 this.recipeId = recipeId;
-                if (recipeId) {
-                    this.page = "recipe";
+            },
+
+            _deleteButtonTapped: function(e) {
+                this.confirmationText = "Are you sure you want to delete this recipe?";
+                var self = this;
+                this.$.confirmYes.onclick = function(e) {
+                    self.$.deleteAjax.generateRequest();
+                };
+                this.$.confirmDialog.open();
+                this.$.actions.close();
+            },
+
+            _addImageButtonTapped: function(e) {
+                this.$.actions.close();
+                this.$.imageList.add();
+            },
+
+            _addNoteButtonTapped: function(e) {
+                this.noteId = null;
+                this.noteText = '';
+                this.$.actions.close();
+                this.$.noteDialog.open();
+            },
+            _noteDialogClosed: function(e) {
+                if (e.detail.confirmed) {
+                    if (this.noteId) {
+                        this.$.putNoteAjax.body = JSON.stringify({
+                            "id": this.noteId,
+                            "recipeId": this.recipe.id,
+                            "text": this.noteText
+                        });
+                        this.$.putNoteAjax.generateRequest();
+                    } else {
+                        this.$.postNoteAjax.body = JSON.stringify({"recipeId": this.recipe.id, "text": this.noteText });
+                        this.$.postNoteAjax.generateRequest();
+                    }
                 }
             },
-            _routeChanged: function(route) {
-                if (route.path === '') {
-                    this.recipeId = null;
-                    this.page = "recipes-list";
-                }
+            _editNoteTapped: function (e) {
+                this.noteId = e.target.note.id;
+                this.noteText = e.target.note.text;
+                this.$.noteDialog.open();
             },
-            _pageChanged: function(page) {
-                // Load page import on demand. Show 404 page if fails
-                var resolvedPageUrl = this.resolveUrl(page + '-view.html');
-                this.importHref(resolvedPageUrl, null, null, true);
+
+            _starRatingSelected: function(e) {
+                this.$.rateAjax.body = e.detail.rating;
+                this.$.rateAjax.generateRequest();
             },
-            _isActive: function(currentPage, pageToCheck) {
-                return this.active && currentPage === pageToCheck;
+
+            _handleGetRecipeRequest: function(e) {
+                this.loading = true;
+                this.recipe = null;
+            },
+            _handleGetRecipeResponse: function(e) {
+                this.recipe = e.detail.response;
+                this.loading = false;
+            },
+            _handleGetRecipeError: function(e) {
+                this.loading = false;
+            },
+            _handleDeleteRecipeResponse: function(e) {
+                this.$.ironLocation.set("path", "/search");
+            },
+            _handlePutRecipeRatingResponse: function(e) {
+                this.set("recipe.averageRating", parseFloat(e.target.body));
+            },
+            _handleGetMainImageRequest: function(e) {
+                this.mainImage = null;
+            },
+            _handleGetMainImageResponse: function(e) {
+                this.mainImage = e.detail.response;
+            },
+            _handlePostNoteResponse: function(e) {
+                this.$.noteList.refresh();
+            },
+            _handlePutNoteResponse: function(e) {
+                this.$.noteList.refresh();
             }
 
         });

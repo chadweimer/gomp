@@ -60,9 +60,9 @@
         <paper-drawer-panel id="drawerPanel" force-narrow>
             <paper-header-panel drawer>
                 <paper-toolbar><span>[[title]]</span></paper-toolbar>
-                <paper-menu selected="[[page]]" attr-for-selected="name" role="navigation">
+                <paper-menu selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
                     <paper-item name="home"><a href="/"><iron-icon icon="home"></iron-icon> Home</a></paper-item>
-                    <paper-item name="recipes"><a href="/recipes"><iron-icon icon="view-list"></iron-icon> Recipes</a></paper-item>
+                    <paper-item name="search"><a href="/search"><iron-icon icon="view-list"></iron-icon> Recipes</a></paper-item>
                     <paper-item name="logout"><a href="#!" on-tap="_onLogoutTapped"><iron-icon icon="exit-to-app"></iron-icon> Logout</a></paper-item>
                 </paper-menu>
             </paper-header-panel>
@@ -71,7 +71,7 @@
                     <paper-icon-button class="menu-button hide-on-large-only" icon="menu" paper-drawer-toggle></paper-icon-button>
                     <div class="title"><span class="hide-on-small-only">[[title]]</span></div>
                     <paper-item name="home" class="hide-on-med-and-down"><a href="/">Home</a></paper-item>
-                    <paper-item name="recipes" class="hide-on-med-and-down"><a href="/recipes">Recipes</a></paper-item>
+                    <paper-item name="search" class="hide-on-med-and-down"><a href="/search">Recipes</a></paper-item>
                     <paper-item name="logout" class="hide-on-med-and-down"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
                     <paper-search-bar icon="search" query="[[search]]" hide-filter-button="true" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch"></paper-search-bar>
                 </paper-toolbar>
@@ -85,13 +85,18 @@
                             title="[[homeTitle]]"
                             image="[[homeImage]]"></home-view>
 
+                        <search-view
+                            name="search"
+                            jwt-token="[[jwtToken]]"
+                            active="[[_isActive(page, 'search')]]"
+                            search="{{search}}"
+                            search-tags="{{searchTags}}"></search-view>
+
                         <recipes-view
                             name="recipes"
                             jwt-token="[[jwtToken]]"
                             active="[[_isActive(page, 'recipes')]]"
-                            route="{{subroute}}"
-                            search="{{search}}"
-                            search-tags="{{searchTags}}"></recipes-view>
+                            route="[[subroute]]"></recipes-view>
 
                         <login-view
                             name="login"
@@ -196,12 +201,12 @@
             },
             _onSearch: function(e) {
                 this.search = e.target.query;
-                this.$.appLocation.path = '/recipes';
+                this.$.appLocation.path = '/search';
             },
             _onHomeLinkClicked: function(e) {
                 this.search = '';
                 this.searchTags = e.detail.tags;
-                this.$.appLocation.path = '/recipes';
+                this.$.appLocation.path = '/search';
             },
             _isActive: function(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
