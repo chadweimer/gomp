@@ -200,7 +200,7 @@
                 this.$.appLocation.path = '/login';
             },
             _onSearch: function(e) {
-                this.search = e.target.query;
+                this.search = e.target.query.trim();
                 this.$.appLocation.path = '/search';
             },
             _onHomeLinkClicked: function(e) {
