@@ -8,6 +8,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chips-search.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-divider/paper-divider.html">
@@ -123,40 +124,56 @@
         <article>
             <paper-card>
                 <div class="card-content">
-                    <star-rating value="[[recipe.averageRating]]"></star-rating>
-                    <h2>
-                        <a target="_blank" href="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
-                        [[recipe.name]]
-                    </h2>
-                    <section hidden$="{{!recipe.servingSize}}">
-                        <label>Serving Size</label>
-                        <p class="plain-text">[[recipe.servingSize]]</p>
-                        <paper-divider></paper-divider>
-                    </section>
-                    <section>
-                        <label>Ingredients</label>
-                        <p class="plain-text">[[recipe.ingredients]]</p>
-                        <paper-divider></paper-divider>
-                    </section>
-                    <section>
-                        <label>Directions</label>
-                        <p class="plain-text">[[recipe.directions]]</p>
-                        <paper-divider></paper-divider>
-                    </section>
-                    <section hidden$="{{!recipe.nutrition}}">
-                        <label>Nutrition</label>
-                        <p class="plain-text">[[recipe.nutrition]]</p>
-                        <paper-divider></paper-divider>
-                    </section>
-                    <section hidden$="{{!recipe.sourceUrl}}">
-                        <label>Source</label>
-                        <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
-                        <paper-divider></paper-divider>
-                    </section>
-                    <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                    <div hidden$="[[editing]]">
+                        <star-rating value="[[recipe.averageRating]]"></star-rating>
+                        <h2>
+                            <a target="_blank" href="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                            [[recipe.name]]
+                        </h2>
+                        <section hidden$="{{!recipe.servingSize}}">
+                            <label>Serving Size</label>
+                            <p class="plain-text">[[recipe.servingSize]]</p>
+                            <paper-divider></paper-divider>
+                        </section>
+                        <section>
+                            <label>Ingredients</label>
+                            <p class="plain-text">[[recipe.ingredients]]</p>
+                            <paper-divider></paper-divider>
+                        </section>
+                        <section>
+                            <label>Directions</label>
+                            <p class="plain-text">[[recipe.directions]]</p>
+                            <paper-divider></paper-divider>
+                        </section>
+                        <section hidden$="{{!recipe.nutrition}}">
+                            <label>Nutrition</label>
+                            <p class="plain-text">[[recipe.nutrition]]</p>
+                            <paper-divider></paper-divider>
+                        </section>
+                        <section hidden$="{{!recipe.sourceUrl}}">
+                            <label>Source</label>
+                            <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                            <paper-divider></paper-divider>
+                        <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                        </section>
+                    </div>
+                    <div hidden$="[[!editing]]">
+                        <star-rating value="[[recipe.averageRating]]"></star-rating>
+                        <paper-input label="Name" value="{{recipe.name}}"></paper-input>
+                        <paper-textarea label="Serving Size" value="{{recipe.servingSize}}"></paper-textarea>
+                        <paper-textarea label="Ingredients" value="{{recipe.ingredients}}"></paper-textarea>
+                        <paper-textarea label="Directions" value="{{recipe.directions}}"></paper-textarea>
+                        <paper-textarea label="Nutrition" value="{{recipe.nutrition}}"></paper-textarea>
+                        <paper-input label="Source" value="{{recipe.sourceUrl}}"></paper-input>
+                        <paper-chips-search items="[[_getEditableTags(recipe.tags)]]"></paper-chips-search>
+                    </div>
+                    <div class="card-actions" hidden$="[[!editing]]">
+                        <paper-button id="cancelButton">Cancel</paper-button>
+                        <paper-button id="saveButton">Save</paper-button>
+                    </div>
                 </div>
             </paper-card>
-            <div class="container">
+            <div class="container" hidden$="[[editing]]">
                 <div id="images" class="tab">
                     <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
                 </div>
@@ -165,7 +182,7 @@
                 </div>
             </div>
         </div>
-        <paper-fab-speed-dial id="actions" icon="icons:more-vert">
+        <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]">
             <paper-fab-speed-dial-action id="newButton" class="green" icon="icons:add">New</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action id="deleteButton" class="red" icon="icons:delete">Delete</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action id="editButton" class="amber" icon="icons:create">Edit</paper-fab-speed-dial-action>
@@ -275,18 +292,26 @@
                     type: Object,
                     notify: true
                 },
+                editing: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                }
             },
             observers: [
                 '_recipeIdChanged(routeData.recipeId)'
             ],
             listeners: {
                 'deleteButton.tap': '_deleteButtonTapped',
+                'editButton.tap': '_editButtonTapped',
                 'addImageButton.tap': '_addImageButtonTapped',
                 'addNoteButton.tap': '_addNoteButtonTapped',
                 'noteDialog.iron-overlay-closed': '_noteDialogClosed',
                 'note-card-edit': '_editNoteTapped',
                 'star-rating-selected': '_starRatingSelected',
-                'image-list-main-image-changed': '_mainImageChanged'
+                'image-list-main-image-changed': '_mainImageChanged',
+                'cancelButton.tap': '_cancelButtonTapped',
+                'saveButton.tap': '_saveButtonTapped'
             },
 
             _getAjaxHeaders: function(jwtToken) {
@@ -297,6 +322,21 @@
                 this.recipeId = recipeId;
             },
 
+            refresh: function() {
+                this.$.getAjax.generateRequest();
+                this.$.mainImageAjax.generateRequest();
+                this.$.imageList.refresh();
+                this.$.noteList.refresh();
+            },
+
+            _getEditableTags: function(tags) {
+                var editableTags = [];
+                tags.forEach(function(tag) {
+                    editableTags.push({id: tag, name: tag});
+                });
+                return editableTags;
+            },
+
             _deleteButtonTapped: function(e) {
                 this.confirmationText = "Are you sure you want to delete this recipe?";
                 var self = this;
@@ -305,6 +345,18 @@
                 };
                 this.$.confirmDialog.open();
                 this.$.actions.close();
+            },
+            _editButtonTapped: function(e) {
+                this.$.actions.close();
+                this.editing = true;
+            },
+            _cancelButtonTapped: function(e) {
+                this.editing = false;
+                this.refresh();
+            },
+            _saveButtonTapped: function(e) {
+                this.editing = false;
+                this.refresh();
             },
 
             _addImageButtonTapped: function(e) {
