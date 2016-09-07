@@ -2,12 +2,14 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chips.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chips-search.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
@@ -84,6 +86,19 @@
             }
             #noteDialog h2 {
                 color: var(--paper-blue-500);
+            }
+            .tag {
+                margin: 4px;
+                padding-right: 6px;
+                cursor: pointer;
+                @apply(layout-horizontal);
+            }
+            .tag-add {
+                background-color: var(--paper-green-200);
+            }
+            paper-chip iron-icon {
+                --iron-icon-height: 20px;
+                --iron-icon-width: 20px;
             }
             .container {
                 @apply(--layout-horizontal);
@@ -165,7 +180,20 @@
                         <paper-textarea label="Directions" value="{{recipe.directions}}"></paper-textarea>
                         <paper-textarea label="Nutrition" value="{{recipe.nutrition}}"></paper-textarea>
                         <paper-input label="Source" value="{{recipe.sourceUrl}}"></paper-input>
-                        <paper-chips-search items="[[_getEditableTags(recipe.tags)]]"></paper-chips-search>
+                        <paper-input-container always-float-label="true">
+                            <label>Tags</label>
+                            <template is="dom-repeat" items=[[recipe.tags]]>
+                                <paper-chip class="tag" on-tap="_removeTag" selectable>[[item]] <iron-icon icon="icons:cancel"></iron-icon></paper-chip>
+                            </template>
+                            <input is="iron-input" placeholder="+Tag" style="width: auto; padding-left: 1em;"></input>
+                        </paper-input-container>
+                        <paper-input-container always-float-label="true">
+                            <label>Suggested Tags</label>
+                            <template is="dom-repeat" items=[[suggestedTags]]>
+                                <paper-chip class="tag tag-add" on-tap="_addSuggestedTag" selectable>[[item]] <iron-icon icon="icons:add-box"></iron-icon></paper-chip>
+                            </template>
+                            <input type="hidden">
+                        </paper-input-container>
                     </div>
                     <div class="card-actions" hidden$="[[!editing]]">
                         <paper-button id="cancelButton">Cancel</paper-button>
@@ -225,6 +253,14 @@
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handleDeleteRecipeResponse"></iron-ajax>
+        <iron-ajax
+            id="getSuggestedTagsAjax"
+            url="/api/v1/tags"
+            method="GET"
+            params='{"sort": "frequency", "dir": "desc", "count": 12}'
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
         <iron-ajax
             id="rateAjax"
             url="/api/v1/recipes/[[recipeId]]/rating"
@@ -348,6 +384,7 @@
             },
             _editButtonTapped: function(e) {
                 this.$.actions.close();
+                this.$.getSuggestedTagsAjax.generateRequest();
                 this.editing = true;
             },
             _cancelButtonTapped: function(e) {
@@ -357,6 +394,19 @@
             _saveButtonTapped: function(e) {
                 this.editing = false;
                 this.refresh();
+            },
+            _addSuggestedTag: function(e) {
+                // Add the new tag if it's not already present
+                var tagIndex = this.recipe.tags.indexOf(e.model.item);
+                if (tagIndex == -1) {
+                    this.push("recipe.tags", e.model.item);
+                }
+
+                // Remove the tag from the suggestion list
+                var suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
+                if (suggestedTagIndex > -1) {
+                    this.splice("suggestedTags", suggestedTagIndex, 1);
+                }
             },
 
             _addImageButtonTapped: function(e) {
@@ -429,6 +479,9 @@
             },
             _handlePutNoteResponse: function(e) {
                 this.$.noteList.refresh();
+            },
+            _handleGetSuggestedTagsResponse: function(e) {
+                this.suggestedTags = e.detail.response;
             }
 
         });
