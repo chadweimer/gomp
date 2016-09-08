@@ -1,0 +1,177 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
+<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="star-rating.html">
+
+<dom-module id="recipe-display">
+    <template>
+        <style>
+            :host {
+                display: block;
+
+                --paper-card: {
+                    width: 100%;
+                }
+            }
+            section {
+                padding: 0.5em;
+            }
+            a {
+                text-transform: none;
+            }
+            label {
+                color: var(--secondary-text-color);
+                font-size: 0.7em;
+                font-weight: lighter;
+            }
+            .plain-text {
+                white-space: pre-wrap;
+            }
+            .avatar {
+                width: 64px;
+                height: 64px;
+                border-radius: 32px;
+            }
+            star-rating {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+            }
+        </style>
+
+        <paper-card>
+            <div class="card-content">
+                <star-rating value="[[recipe.averageRating]]"></star-rating>
+                <h2>
+                    <a target="_blank" href="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                    [[recipe.name]]
+                </h2>
+                <section hidden$="{{!recipe.servingSize}}">
+                    <label>Serving Size</label>
+                    <p class="plain-text">[[recipe.servingSize]]</p>
+                    <paper-divider></paper-divider>
+                </section>
+                <section>
+                    <label>Ingredients</label>
+                    <p class="plain-text">[[recipe.ingredients]]</p>
+                    <paper-divider></paper-divider>
+                </section>
+                <section>
+                    <label>Directions</label>
+                    <p class="plain-text">[[recipe.directions]]</p>
+                    <paper-divider></paper-divider>
+                </section>
+                <section hidden$="{{!recipe.nutrition}}">
+                    <label>Nutrition</label>
+                    <p class="plain-text">[[recipe.nutrition]]</p>
+                    <paper-divider></paper-divider>
+                </section>
+                <section hidden$="{{!recipe.sourceUrl}}">
+                    <label>Source</label>
+                    <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                    <paper-divider></paper-divider>
+                <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                </section>
+            </div>
+        </paper-card>
+
+        <iron-ajax
+            auto
+            id="getAjax"
+            url="/api/v1/recipes/[[recipeId]]"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-request="_handleGetRecipeRequest"
+            on-response="_handleGetRecipeResponse"
+            on-error="_handleGetRecipeError"></iron-ajax>
+        <iron-ajax
+            auto
+            id="mainImageAjax"
+            url="/api/v1/recipes/[[recipeId]]/image"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleGetMainImageRequest"
+            on-response="_handleGetMainImageResponse"
+            on-error="_handleGetMainImageError"></iron-ajax>
+        <iron-ajax
+            id="rateAjax"
+            url="/api/v1/recipes/[[recipeId]]/rating"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePutRecipeRatingResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'recipe-display',
+
+            properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
+                recipeId: {
+                    type: String,
+                    notify: true
+                }
+            },
+            listeners: {
+                'star-rating-selected': '_starRatingSelected'
+            },
+
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            refresh: function(options) {
+                if (!options || !options.onlyMainImage) {
+                    this.$.getAjax.generateRequest();
+                }
+                this.$.mainImageAjax.generateRequest();
+            },
+
+            _starRatingSelected: function(e) {
+                this.$.rateAjax.body = e.detail.rating;
+                this.$.rateAjax.generateRequest();
+            },
+
+            _handleGetRecipeRequest: function(e) {
+                this.fire('loading-started');
+                this.recipe = null;
+            },
+            _handleGetRecipeResponse: function(e) {
+                this.recipe = e.detail.response;
+                this.fire('loading-complete');
+            },
+            _handleGetRecipeError: function(e) {
+                this.fire('loading-complete');
+            },
+            _handleGetMainImageRequest: function(e) {
+                this.fire('loading-started');
+                this.mainImage = null;
+            },
+            _handleGetMainImageResponse: function(e) {
+                this.mainImage = e.detail.response;
+                this.fire('loading-complete');
+            },
+            _handleGetMainImageError: function(e) {
+                this.fire('loading-complete');
+            },
+            _handlePutRecipeRatingResponse: function(e) {
+                this.set("recipe.averageRating", parseFloat(e.target.body));
+            },
+        });
+    </script>
+</dom-module>

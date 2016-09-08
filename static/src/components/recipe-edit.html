@@ -1,0 +1,103 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="tag-input.html">
+
+<dom-module id="recipe-edit">
+    <template>
+        <style>
+            :host {
+                display: block;
+
+                --paper-card: {
+                    width: 100%;
+                }
+            }
+        </style>
+
+        <paper-card>
+            <div class="card-content">
+                <paper-input label="Name" value="{{recipe.name}}"></paper-input>
+                <paper-textarea label="Serving Size" value="{{recipe.servingSize}}"></paper-textarea>
+                <paper-textarea label="Ingredients" value="{{recipe.ingredients}}"></paper-textarea>
+                <paper-textarea label="Directions" value="{{recipe.directions}}"></paper-textarea>
+                <paper-textarea label="Nutrition" value="{{recipe.nutrition}}"></paper-textarea>
+                <paper-input label="Source" value="{{recipe.sourceUrl}}"></paper-input>
+                <tag-input id="tagsInput" tags="{{recipe.tags}}" jwt-token="[[jwtToken]]"></tag-input>
+            </div>
+            <div class="card-actions">
+                <paper-button id="cancelButton">Cancel</paper-button>
+                <paper-button id="saveButton">Save</paper-button>
+            </div>
+        </paper-card>
+
+        <iron-ajax
+            auto
+            id="getAjax"
+            url="/api/v1/recipes/[[recipeId]]"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-request="_handleGetRecipeRequest"
+            on-response="_handleGetRecipeResponse"
+            on-error="_handleGetRecipeError"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'recipe-edit',
+
+            properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                },
+                recipeId: {
+                    type: String,
+                    notify: true
+                }
+            },
+            listeners: {
+                'cancelButton.tap': '_cancelButtonTapped',
+                'saveButton.tap': '_saveButtonTapped'
+            },
+
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            refresh: function() {
+                this.$.getAjax.generateRequest();
+                this.$.tagsInput.refresh();
+            },
+
+            _cancelButtonTapped: function(e) {
+                this.fire("recipe-edit-cancel");
+            },
+            _saveButtonTapped: function(e) {
+                this.fire("recipe-edit-save");
+            },
+
+            _handleGetRecipeRequest: function(e) {
+                this.fire('loading-started');
+                this.recipe = null;
+            },
+            _handleGetRecipeResponse: function(e) {
+                this.recipe = e.detail.response;
+                this.fire('loading-complete');
+            },
+            _handleGetRecipeError: function(e) {
+                this.fire('loading-complete');
+            },
+        });
+    </script>
+</dom-module>

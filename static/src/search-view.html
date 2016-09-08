@@ -4,7 +4,6 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
-<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 <link rel="import" href="components/recipe-card.html">
 <link rel="import" href="components/pagination-links.html">
@@ -31,9 +30,6 @@
                 @apply(--layout-horizontal);
                 @apply(--layout-center-justified);
                 margin: 0.35em;
-            }
-            paper-progress {
-                width: 100%;
             }
             paper-fab.green {
                 --paper-fab-background: var(--paper-green-500);
@@ -72,7 +68,6 @@
             }
         </style>
 
-        <paper-progress indeterminate hidden$="{{!loading}}"></paper-progress>
         <div class="section">
             <div>
                  [[totalRecipeCount]] results
@@ -161,11 +156,6 @@
                 value: 'full',
                 notify: true,
                 observer: '_viewModeChanged'
-            },
-            loading: {
-                type: Boolean,
-                value: true,
-                notify: true
             },
             recipes: {
                 type: Array,
@@ -269,16 +259,16 @@
         },
 
         _handleGetRecipesRequest: function(request) {
-            this.loading = true;
+            this.fire('loading-started');
         },
         _handleGetRecipesResponse: function(request) {
-            this.loading = false;
             this.recipes = request.detail.response.recipes;
             this.totalRecipeCount = request.detail.response.total;
             this.fire('scroll-top');
+            this.fire('loading-complete');
         },
         _handleGetRecipesError : function() {
-            this.loading = false;
+            this.fire('loading-complete');
         },
 
         _updatePagination: function(recipes, total) {

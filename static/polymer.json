@@ -15,7 +15,10 @@
         "src/components/recipe-card.html",
         "src/components/image-list.html",
         "src/components/note-list.html",
-        "src/components/star-rating.html"
+        "src/components/star-rating.html",
+        "src/components/recipe-edit.html",
+        "src/components/recipe-display.html",
+        "src/components/tag-input.html"
     ],
     "includeDependencies": [
         "bower_components/webcomponentsjs/webcomponents-lite.min.js"
