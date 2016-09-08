@@ -45,6 +45,24 @@
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
             on-error="_handleGetRecipeError"></iron-ajax>
+        <iron-ajax
+            id="putAjax"
+            url="/api/v1/recipes/[[recipeId]]"
+            headers="[[ajaxHeaders]]"
+            method="PUT"
+            handle-as="json"
+            on-request="_handlePutPostRecipeRequest"
+            on-response="_handlePutRecipeResponse"
+            on-error="_handlePutPostRecipeError"></iron-ajax>
+        <iron-ajax
+            id="postAjax"
+            url="/api/v1/recipes"
+            headers="[[ajaxHeaders]]"
+            method="POST"
+            handle-as="json"
+            on-request="_handlePutPostRecipeRequest"
+            on-response="_handlePostRecipeResponse"
+            on-error="_handlePutPostRecipeError"></iron-ajax>
     </template>
 
     <script>
@@ -53,6 +71,12 @@
             is: 'recipe-edit',
 
             properties: {
+                active: {
+                    type: Boolean,
+                    notify: true,
+                    value: false,
+                    observer: '_activeChanged'
+                },
                 jwtToken: {
                     type: String,
                     notify: true
@@ -79,23 +103,68 @@
                 this.$.getAjax.generateRequest();
                 this.$.tagsInput.refresh();
             },
+            _activeChanged: function() {
+                if (!this.recipeId) {
+                    this.recipe = {
+                        name: '',
+                        servingSize: '',
+                        ingredients: '',
+                        directions: '',
+                        nutrition: '',
+                        sourceUrl: '',
+                        tags: []
+                    };
+                }
+                this.$.tagsInput.refresh();
+            },
 
             _cancelButtonTapped: function(e) {
                 this.fire("recipe-edit-cancel");
             },
             _saveButtonTapped: function(e) {
-                this.fire("recipe-edit-save");
+                if (this.recipeId) {
+                    this.$.putAjax.body = JSON.stringify(this.recipe);
+                    this.$.putAjax.generateRequest();
+                } else {
+                    this.$.postAjax.body = JSON.stringify(this.recipe);
+                    this.$.postAjax.generateRequest();
+                }
             },
 
             _handleGetRecipeRequest: function(e) {
                 this.fire('loading-started');
-                this.recipe = null;
+                if (this.recipeId) {
+                    this.recipe = null;
+                }
             },
             _handleGetRecipeResponse: function(e) {
                 this.recipe = e.detail.response;
                 this.fire('loading-complete');
             },
             _handleGetRecipeError: function(e) {
+                this.fire('loading-complete');
+            },
+            _handlePutPostRecipeRequest: function(e) {
+                this.fire('loading-started');
+            },
+            _handlePutRecipeResponse: function(e) {
+                this.fire('loading-complete');
+                this.fire("recipe-edit-save");
+            },
+            _handlePostRecipeResponse: function(e) {
+                var temp = document.createElement('a');
+                temp.href = e.detail.xhr.getResponseHeader('Location');
+                var path = temp.pathname;
+
+                var newRecipeId = NaN;
+                var newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
+                if (newRecipeIdMatch) {
+                    newRecipeId = parseInt(newRecipeIdMatch[1], 10);
+                }
+                this.fire('loading-complete');
+                this.fire("recipe-edit-save", {redirectUrl: '/recipes/' + newRecipeId});
+            },
+            _handlePutPostRecipeError: function(e) {
                 this.fire('loading-complete');
             },
         });

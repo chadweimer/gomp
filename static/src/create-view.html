@@ -1,0 +1,63 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-location/iron-location.html">
+
+<link rel="import" href="components/recipe-edit.html">
+
+<dom-module id="create-view">
+    <template>
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+            }
+            article {
+                padding: 8px;
+            }
+        </style>
+
+        <article>
+            <recipe-edit id="recipeEdit" jwt-token="[[jwtToken]]" active="[[active]]"></recipe-edit>
+        </article>
+
+        <iron-location id="ironLocation"></iron-location>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'create-view',
+
+            properties: {
+                active: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                jwtToken: {
+                    type: String,
+                    notify: true
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    computed: '_getAjaxHeaders(jwtToken)'
+                }
+            },
+            listeners: {
+                'recipeEdit.recipe-edit-cancel': '_editCanceled',
+                'recipeEdit.recipe-edit-save': '_editSaved'
+            },
+
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
+
+            _editCanceled: function(e) {
+                this.$.ironLocation.set("path", "/search");
+            },
+            _editSaved: function(e) {
+                this.$.ironLocation.set("path", e.detail.redirectUrl);
+            }
+
+        });
+    </script>
+</dom-module>

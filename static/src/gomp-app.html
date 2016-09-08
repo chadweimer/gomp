@@ -103,6 +103,11 @@
                             active="[[_isActive(page, 'recipes')]]"
                             route="[[subroute]]"></recipes-view>
 
+                        <create-view
+                            name="create"
+                            jwt-token="[[jwtToken]]"
+                            active="[[_isActive(page, 'create')]]"></create-view>
+
                         <login-view
                             name="login"
                             jwt-token="[[jwtToken]]"

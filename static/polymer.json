@@ -8,6 +8,7 @@
         "src/home-view.html",
         "src/login-view.html",
         "src/recipes-view.html",
+        "src/create-view.html",
         "src/search-view.html",
         "src/components/home-list.html",
         "src/components/note-card.html",
