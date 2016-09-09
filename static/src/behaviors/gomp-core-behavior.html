@@ -1,0 +1,34 @@
+<script>
+    GompCoreBehavior = {
+        properties: {
+            isReady: {
+                type: Boolean,
+                value: false,
+                notify: true
+            },
+            isActive: {
+                type: Boolean,
+                value: false,
+                notify: true,
+                observer: '_isActiveChanged'
+            },
+            jwtToken: {
+                type: String,
+                notify: true,
+                observer: '_jwtTokenChanged'
+            },
+            ajaxHeaders: {
+                type: Object,
+                notify: true,
+                value: {}
+            },
+        },
+
+        ready: function() {
+            this.isReady = true;
+        },
+        _jwtTokenChanged: function(jwtToken) {
+            this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
+        },
+    };
+</script>

@@ -9,6 +9,8 @@
 <link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="components/image-list.html">
 <link rel="import" href="components/note-list.html">
 <link rel="import" href="components/recipe-display.html">
@@ -148,21 +150,9 @@
         Polymer({
 
             is: 'recipes-view',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                active: {
-                    type: Boolean,
-                    notify: true,
-                    value: false
-                },
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 route: {
                     type: Object,
                     notify: true
@@ -191,10 +181,6 @@
                 'image-list-main-image-changed': '_mainImageChanged',
                 'recipeEdit.recipe-edit-cancel': '_editCanceled',
                 'recipeEdit.recipe-edit-save': '_editSaved'
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             _recipeIdChanged: function(recipeId) {

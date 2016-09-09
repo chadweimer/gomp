@@ -86,32 +86,32 @@
                         <home-view
                             name="home"
                             jwt-token="[[jwtToken]]"
-                            active="[[_isActive(page, 'home')]]"
+                            is-active="[[_isActive(page, 'home')]]"
                             title="[[homeTitle]]"
                             image="[[homeImage]]"></home-view>
 
                         <search-view
                             name="search"
                             jwt-token="[[jwtToken]]"
-                            active="[[_isActive(page, 'search')]]"
+                            is-active="[[_isActive(page, 'search')]]"
                             search="{{search}}"
                             search-tags="{{searchTags}}"></search-view>
 
                         <recipes-view
                             name="recipes"
                             jwt-token="[[jwtToken]]"
-                            active="[[_isActive(page, 'recipes')]]"
+                            is-active="[[_isActive(page, 'recipes')]]"
                             route="[[subroute]]"></recipes-view>
 
                         <create-view
                             name="create"
                             jwt-token="[[jwtToken]]"
-                            active="[[_isActive(page, 'create')]]"></create-view>
+                            is-active="[[_isActive(page, 'create')]]"></create-view>
 
                         <login-view
                             name="login"
                             jwt-token="[[jwtToken]]"
-                            active="[[_isActive(page, 'login')]]"></login-view>
+                            is-active="[[_isActive(page, 'login')]]"></login-view>
                     </iron-pages>
                 </main>
             </paper-scroll-header-panel>

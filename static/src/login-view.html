@@ -6,6 +6,8 @@
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
 <dom-module id="login-view">
     <template>
         <style>
@@ -58,15 +60,10 @@
     <script>
         Polymer({
 
-          is: 'login-view',
+            is: 'login-view',
+            behaviors: [GompCoreBehavior],
 
-          properties: {
-                active: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                    observer: '_activeChanged'
-                },
+            properties: {
                 username: {
                     type: String,
                     notify: true
@@ -87,7 +84,7 @@
                 'password.keydown': 'onInputKeydown'
             },
 
-            _activeChanged: function(newValue, oldValue) {
+            _isActiveChanged: function(newValue, oldValue) {
                 if (newValue) {
                     this.username = '';
                     this.password = '';

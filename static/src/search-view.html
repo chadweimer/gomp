@@ -5,6 +5,8 @@
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="components/recipe-card.html">
 <link rel="import" href="components/pagination-links.html">
 
@@ -105,201 +107,193 @@
     <script>
         Polymer({
 
-        is: 'search-view',
+            is: 'search-view',
+            behaviors: [GompCoreBehavior],
 
-        properties: {
-            jwtToken: {
-                type: String,
-                notify: true
+            properties: {
+                pageNum: {
+                    type: Number,
+                    value: 1,
+                    notify: true,
+                    observer: '_pageNumChanged'
+                },
+                numPages: {
+                    type: Number,
+                    value: 0,
+                    notify: true
+                },
+                search: {
+                    type: String,
+                    value: null,
+                    notify: true,
+                    observer: '_searchChanged'
+                },
+                searchTags: {
+                    type: Array,
+                    value: [],
+                    notify: true,
+                    observer: '_searchTagsChanged'
+                },
+                sortBy: {
+                    type: String,
+                    value: 'name',
+                    notify: true,
+                    observer: '_sortByChanged'
+                },
+                sortDir: {
+                    type: String,
+                    value: 'asc',
+                    notify: true,
+                    observer: '_sortDirChanged'
+                },
+                viewMode: {
+                    type: String,
+                    value: 'full',
+                    notify: true,
+                    observer: '_viewModeChanged'
+                },
+                recipes: {
+                    type: Array,
+                    value: [],
+                    notify: true
+                },
+                totalRecipeCount: {
+                    type: Number,
+                    value: 0,
+                    notify: true
+                }
             },
-            ajaxHeaders: {
-                type: Object,
-                computed: '_getAjaxHeaders(jwtToken)'
-            },
-            pageNum: {
-                type: Number,
-                value: 1,
-                notify: true,
-                observer: '_pageNumChanged'
-            },
-            numPages: {
-                type: Number,
-                value: 0,
-                notify: true
-            },
-            search: {
-                type: String,
-                value: null,
-                notify: true,
-                observer: '_searchChanged'
-            },
-            searchTags: {
-                type: Array,
-                value: [],
-                notify: true,
-                observer: '_searchTagsChanged'
-            },
-            sortBy: {
-                type: String,
-                value: 'name',
-                notify: true,
-                observer: '_sortByChanged'
-            },
-            sortDir: {
-                type: String,
-                value: 'asc',
-                notify: true,
-                observer: '_sortDirChanged'
-            },
-            viewMode: {
-                type: String,
-                value: 'full',
-                notify: true,
-                observer: '_viewModeChanged'
-            },
-            recipes: {
-                type: Array,
-                value: [],
-                notify: true
-            },
-            totalRecipeCount: {
-                type: Number,
-                value: 0,
-                notify: true
-            }
-        },
-        observers: [
-            '_updatePagination(recipes, totalRecipeCount)'
-        ],
+            observers: [
+                '_updatePagination(recipes, totalRecipeCount)'
+            ],
 
-        attached: function() {
-            this.parentNode.addEventListener("iron-select", this._routeChanged);
+            attached: function() {
+                this.parentNode.addEventListener("iron-select", this._routeChanged);
 
-            this._initializeVars();
+                this._initializeVars();
 
-            this._getRecipes();
-        },
-
-        _getAjaxHeaders: function(jwtToken) {
-            return {"Authorization": "Bearer " + jwtToken};
-        },
-
-        _initializeVars: function() {
-            this.pageNum = 1;
-            if (this.search === null) {
-                this.search = this._getFromSession('q', '');
-            } else {
-                this._trySaveToSession('q', this.search);
-            }
-            this.searchTags = this._getFromSession('tags', []).filter(function(v) { return v !== ''; });
-            this.sortBy = this._getFromSession('sort', 'name');
-            this.sortDir = this._getFromSession('dir', 'asc');
-            this.viewMode = this._getFromSession('view', 'full');
-        },
-
-        _pageNumChanged: function() {
-            this._getRecipes();
-        },
-        _searchChanged: function(newValue, oldValue) {
-            if (oldValue !== undefined && newValue != null) {
-                this._trySaveToSession('q', newValue);
-            }
-            this.pageNum = 1;
-            this._getRecipes();
-        },
-        _searchTagsChanged: function(newValue, oldValue) {
-            if (oldValue !== undefined && newValue != null) {
-                this._trySaveToSession('tags', newValue);
-            }
-            this.pageNum = 1;
-            this._getRecipes();
-        },
-        _sortByChanged: function(newValue, oldValue) {
-            if (oldValue !== undefined && newValue != null) {
-                this._trySaveToSession('sort', newValue);
-            }
-            this._getRecipes();
-        },
-        _sortDirChanged: function(newValue, oldValue) {
-            if (oldValue !== undefined && newValue != null) {
-                this._trySaveToSession('dir', newValue);
-            }
-            this._getRecipes();
-        },
-        _viewModeChanged: function(newValue, oldValue) {
-            if (oldValue !== undefined && newValue != null) {
-                this._trySaveToSession('view', newValue);
-            }
-            this.pageNum = 1;
-            this._getRecipes();
-        },
-
-        _routeChanged: function(e) {
-            var page = e.target.selected;
-            if (page === "recipes") {
                 this._getRecipes();
-            }
-        },
+            },
 
-        _getRecipes: function() {
-            this.$.recipesAjax.params = {
-                "q": this.search,
-                "tags[]": this.searchTags,
-                "sort": this.sortBy,
-                "dir": this.sortDir,
-                "page": this.pageNum,
-                "count": this._getRecipeCount()
-            };
-        },
-        _getRecipeCount: function() {
-            if (this.viewMode === 'compact') {
-                return 60;
-            }
-            return 18;
-        },
+            _getAjaxHeaders: function(jwtToken) {
+                return {"Authorization": "Bearer " + jwtToken};
+            },
 
-        _handleGetRecipesRequest: function(request) {
-            this.fire('loading-started');
-        },
-        _handleGetRecipesResponse: function(request) {
-            this.recipes = request.detail.response.recipes;
-            this.totalRecipeCount = request.detail.response.total;
-            this.fire('scroll-top');
-            this.fire('loading-complete');
-        },
-        _handleGetRecipesError : function() {
-            this.fire('loading-complete');
-        },
+            _initializeVars: function() {
+                this.pageNum = 1;
+                if (this.search === null) {
+                    this.search = this._getFromSession('q', '');
+                } else {
+                    this._trySaveToSession('q', this.search);
+                }
+                this.searchTags = this._getFromSession('tags', []).filter(function(v) { return v !== ''; });
+                this.sortBy = this._getFromSession('sort', 'name');
+                this.sortDir = this._getFromSession('dir', 'asc');
+                this.viewMode = this._getFromSession('view', 'full');
+            },
 
-        _updatePagination: function(recipes, total) {
-            this.numPages = Math.ceil(total / this._getRecipeCount());
-        },
+            _pageNumChanged: function() {
+                this._getRecipes();
+            },
+            _searchChanged: function(newValue, oldValue) {
+                if (oldValue !== undefined && newValue != null) {
+                    this._trySaveToSession('q', newValue);
+                }
+                this.pageNum = 1;
+                this._getRecipes();
+            },
+            _searchTagsChanged: function(newValue, oldValue) {
+                if (oldValue !== undefined && newValue != null) {
+                    this._trySaveToSession('tags', newValue);
+                }
+                this.pageNum = 1;
+                this._getRecipes();
+            },
+            _sortByChanged: function(newValue, oldValue) {
+                if (oldValue !== undefined && newValue != null) {
+                    this._trySaveToSession('sort', newValue);
+                }
+                this._getRecipes();
+            },
+            _sortDirChanged: function(newValue, oldValue) {
+                if (oldValue !== undefined && newValue != null) {
+                    this._trySaveToSession('dir', newValue);
+                }
+                this._getRecipes();
+            },
+            _viewModeChanged: function(newValue, oldValue) {
+                if (oldValue !== undefined && newValue != null) {
+                    this._trySaveToSession('view', newValue);
+                }
+                this.pageNum = 1;
+                this._getRecipes();
+            },
 
-        _getFromSession: function(field, defaultVal) {
-            var val = null
-            if (sessionStorage.getItem(field)) {
+            _routeChanged: function(e) {
+                var page = e.target.selected;
+                if (page === "recipes") {
+                    this._getRecipes();
+                }
+            },
+
+            _getRecipes: function() {
+                this.$.recipesAjax.params = {
+                    "q": this.search,
+                    "tags[]": this.searchTags,
+                    "sort": this.sortBy,
+                    "dir": this.sortDir,
+                    "page": this.pageNum,
+                    "count": this._getRecipeCount()
+                };
+            },
+            _getRecipeCount: function() {
+                if (this.viewMode === 'compact') {
+                    return 60;
+                }
+                return 18;
+            },
+
+            _handleGetRecipesRequest: function(request) {
+                this.fire('loading-started');
+            },
+            _handleGetRecipesResponse: function(request) {
+                this.recipes = request.detail.response.recipes;
+                this.totalRecipeCount = request.detail.response.total;
+                this.fire('scroll-top');
+                this.fire('loading-complete');
+            },
+            _handleGetRecipesError : function() {
+                this.fire('loading-complete');
+            },
+
+            _updatePagination: function(recipes, total) {
+                this.numPages = Math.ceil(total / this._getRecipeCount());
+            },
+
+            _getFromSession: function(field, defaultVal) {
+                var val = null
+                if (sessionStorage.getItem(field)) {
+                    try {
+                        val = JSON.parse(sessionStorage.getItem(field));
+                    } catch (ex) {
+                        console.warn("Failed to retrieve value of '%s' in sessionStorage. Error: %s", field, ex);
+                    }
+                }
+
+                if (val === null) {
+                    val = defaultVal;
+                }
+
+                return val;
+            },
+
+            _trySaveToSession: function(field, val) {
                 try {
-                    val = JSON.parse(sessionStorage.getItem(field));
+                    sessionStorage.setItem(field, JSON.stringify(val));
                 } catch (ex) {
-                    console.warn("Failed to retrieve value of '%s' in sessionStorage. Error: %s", field, ex);
+                    console.warn("Failed to save value of '%s' in sessionStorage. Error: %s", field, ex);
                 }
             }
-
-            if (val === null) {
-                val = defaultVal;
-            }
-
-            return val;
-        },
-
-        _trySaveToSession: function(field, val) {
-            try {
-                sessionStorage.setItem(field, JSON.stringify(val));
-            } catch (ex) {
-                console.warn("Failed to save value of '%s' in sessionStorage. Error: %s", field, ex);
-            }
-        }
-
         });
     </script>
 </dom-module>

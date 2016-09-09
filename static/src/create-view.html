@@ -1,6 +1,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="components/recipe-edit.html">
 
 <dom-module id="create-view">
@@ -16,7 +18,7 @@
         </style>
 
         <article>
-            <recipe-edit id="recipeEdit" jwt-token="[[jwtToken]]" active="[[active]]"></recipe-edit>
+            <recipe-edit id="recipeEdit" jwt-token="[[jwtToken]]" active="[[isActive]]"></recipe-edit>
         </article>
 
         <iron-location id="ironLocation"></iron-location>
@@ -26,29 +28,13 @@
         Polymer({
 
             is: 'create-view',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                active: {
-                    type: Boolean,
-                    notify: true,
-                    value: false
-                },
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                }
             },
             listeners: {
                 'recipeEdit.recipe-edit-cancel': '_editCanceled',
                 'recipeEdit.recipe-edit-save': '_editSaved'
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             _editCanceled: function(e) {
