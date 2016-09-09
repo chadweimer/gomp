@@ -20,7 +20,8 @@
     "paper-chip": "Collaborne/paper-chip#^1.1.1",
     "paper-divider": "WebPaperElements/paper-divider#^1.0.0",
     "paper-fab-speed-dial": "chadweimer/paper-fab-speed-dial#^1.0.14",
-    "paper-menu-button": "PolymerElements/paper-menu-button#^1.5.1"
+    "paper-menu-button": "PolymerElements/paper-menu-button#^1.5.1",
+    "app-layout": "PolymerElements/app-layout#^0.10.4"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
