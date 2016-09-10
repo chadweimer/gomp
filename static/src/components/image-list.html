@@ -79,6 +79,15 @@
             </h2>
         </paper-dialog>
 
+        <paper-dialog id="confirmDeleteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="icons:delete"></iron-icon> <span>Delete Picture?</span></h2>
+            <p>Are you sure you want to delete this picture?</p>
+            <div class="buttons">
+                <paper-button dialog-dismiss>No</paper-button>
+                <paper-button id="confirmDelete" dialog-confirm>Yes</paper-button>
+            </div>
+        </paper-dialog>
+
         <iron-ajax
             auto
             id="getAjax"
@@ -129,7 +138,8 @@
                 }
             },
             listeners: {
-                'addDialog.iron-overlay-closed': '_addDialogClosed'
+                'addDialog.iron-overlay-closed': '_addDialogClosed',
+                'confirmDelete.tap': '_deleteImage'
             },
 
             refresh: function() {
@@ -155,6 +165,9 @@
             _deleteTapped: function(e) {
                 e.preventDefault();
                 
+                this.$.confirmDeleteDialog.open();
+            },
+            _deleteImage: function(e) {
                 this.$.deleteAjax.url = "/api/v1/images/" + e.target.dataId;
                 this.$.deleteAjax.generateRequest();
             },
