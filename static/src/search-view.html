@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
@@ -90,6 +91,11 @@
         </div>
         <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
+        <app-localstorage-document key="q" data="{{search}}"></app-localstorage-document>
+        <app-localstorage-document key="tags" data="{{searchTags}}"></app-localstorage-document>
+        <app-localstorage-document key="sort" data="{{sortBy}}"></app-localstorage-document>
+        <app-localstorage-document key="dir" data="{{sortDir}}"></app-localstorage-document>
+        <app-localstorage-document key="viewMode" data="{{view}}"></app-localstorage-document>
         <iron-ajax
             auto
             id="recipesAjax"
@@ -132,25 +138,25 @@
                     type: Array,
                     value: [],
                     notify: true,
-                    observer: '_searchTagsChanged'
+                    observer: '_searchChanged'
                 },
                 sortBy: {
                     type: String,
                     value: 'name',
                     notify: true,
-                    observer: '_sortByChanged'
+                    observer: '_searchChanged'
                 },
                 sortDir: {
                     type: String,
                     value: 'asc',
                     notify: true,
-                    observer: '_sortDirChanged'
+                    observer: '_searchChanged'
                 },
                 viewMode: {
                     type: String,
                     value: 'full',
                     notify: true,
-                    observer: '_viewModeChanged'
+                    observer: '_searchChanged'
                 },
                 recipes: {
                     type: Array,
@@ -170,8 +176,6 @@
             attached: function() {
                 this.parentNode.addEventListener("iron-select", this._routeChanged);
 
-                this._initializeVars();
-
                 this._getRecipes();
             },
 
@@ -179,52 +183,10 @@
                 return {"Authorization": "Bearer " + jwtToken};
             },
 
-            _initializeVars: function() {
-                this.pageNum = 1;
-                if (this.search === null) {
-                    this.search = this._getFromSession('q', '');
-                } else {
-                    this._trySaveToSession('q', this.search);
-                }
-                this.searchTags = this._getFromSession('tags', []).filter(function(v) { return v !== ''; });
-                this.sortBy = this._getFromSession('sort', 'name');
-                this.sortDir = this._getFromSession('dir', 'asc');
-                this.viewMode = this._getFromSession('view', 'full');
-            },
-
             _pageNumChanged: function() {
                 this._getRecipes();
             },
-            _searchChanged: function(newValue, oldValue) {
-                if (oldValue !== undefined && newValue != null) {
-                    this._trySaveToSession('q', newValue);
-                }
-                this.pageNum = 1;
-                this._getRecipes();
-            },
-            _searchTagsChanged: function(newValue, oldValue) {
-                if (oldValue !== undefined && newValue != null) {
-                    this._trySaveToSession('tags', newValue);
-                }
-                this.pageNum = 1;
-                this._getRecipes();
-            },
-            _sortByChanged: function(newValue, oldValue) {
-                if (oldValue !== undefined && newValue != null) {
-                    this._trySaveToSession('sort', newValue);
-                }
-                this._getRecipes();
-            },
-            _sortDirChanged: function(newValue, oldValue) {
-                if (oldValue !== undefined && newValue != null) {
-                    this._trySaveToSession('dir', newValue);
-                }
-                this._getRecipes();
-            },
-            _viewModeChanged: function(newValue, oldValue) {
-                if (oldValue !== undefined && newValue != null) {
-                    this._trySaveToSession('view', newValue);
-                }
+            _searchChanged: function() {
                 this.pageNum = 1;
                 this._getRecipes();
             },
@@ -268,31 +230,6 @@
 
             _updatePagination: function(recipes, total) {
                 this.numPages = Math.ceil(total / this._getRecipeCount());
-            },
-
-            _getFromSession: function(field, defaultVal) {
-                var val = null
-                if (sessionStorage.getItem(field)) {
-                    try {
-                        val = JSON.parse(sessionStorage.getItem(field));
-                    } catch (ex) {
-                        console.warn("Failed to retrieve value of '%s' in sessionStorage. Error: %s", field, ex);
-                    }
-                }
-
-                if (val === null) {
-                    val = defaultVal;
-                }
-
-                return val;
-            },
-
-            _trySaveToSession: function(field, val) {
-                try {
-                    sessionStorage.setItem(field, JSON.stringify(val));
-                } catch (ex) {
-                    console.warn("Failed to save value of '%s' in sessionStorage. Error: %s", field, ex);
-                }
             }
         });
     </script>
