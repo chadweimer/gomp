@@ -3,6 +3,7 @@
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
@@ -12,6 +13,7 @@
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
+<link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
 
 <dom-module id="gomp-app">
@@ -79,7 +81,7 @@
                     <paper-icon-item name="logout" on-tap="_onLogoutTapped"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item>
                 </paper-menu>
             </app-drawer>
-            <app-header-layout id="mainPanel" fullbleed>
+            <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header reveals shadow>
                     <app-toolbar>
                         <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
@@ -87,7 +89,19 @@
                         <paper-item name="home" class="hide-on-med-and-down"><a href="/">Home</a></paper-item>
                         <paper-item name="search" class="hide-on-med-and-down"><a href="/search">Recipes</a></paper-item>
                         <paper-item name="logout" class="hide-on-med-and-down"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
-                        <paper-search-bar icon="search" query="[[search]]" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch"></paper-search-bar>
+                        
+                        <paper-search-bar
+                            icon="search"
+                            query="[[search]]"
+                            nr-selected-filters="[[selectedSearchFiltersCount]]"
+                            on-paper-search-search="_onSearch"
+                            on-paper-search-clear="_onSearch"
+                            on-paper-search-filter="_onFilter"></paper-search-bar>
+                        <paper-filter-dialog
+                            id="filterDialog"
+                            filters="[[searchFilters]]"
+                            selected-filters="{{selectedSearchFilters}}">
+                        
                         <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]" bottom-item></paper-progress>
                     </app-toolbar>
                 </app-header>
@@ -142,6 +156,14 @@
         <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
         <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
         <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
+        <iron-ajax
+            id="tagsAjax"
+            url="/api/v1/tags"
+            headers="[[ajaxHeaders]]"
+            params='{"sort": "tag", "dir": "asc", "count": 100000}'
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetTagsResponse"></iron-ajax>
     </template>
 
     <script>
@@ -152,7 +174,13 @@
             properties: {
                 jwtToken: {
                     type: String,
-                    notify: true
+                    notify: true,
+                    observer: '_jwtTokenChanged'
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    notify: true,
+                    value: {}
                 },
                 title: {
                     type: String,
@@ -174,19 +202,29 @@
                 }
             },
             observers: [
-                '_routePageChanged(routeData.page)'
+                '_routePageChanged(routeData.page)',
+                '_searchTagsChanged(searchTags)'
             ],
             listeners: {
                 'scroll-top': '_scrollToTop',
                 'home-list-link-clicked': '_onHomeLinkClicked',
                 'loading-started': '_loadingStarted',
                 'loading-complete': '_loadingComplete',
-                'iron-overlay-opened': '_patchOverlay'
+                'iron-overlay-opened': '_patchOverlay',
+                'filterDialog.save': '_searchFiltersChanged'
             },
 
             ready: function() {
                 this.loadingCount = 0;
-                this._verifyIsAuthenticated();
+                this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
+
+                if(this._verifyIsAuthenticated()) {
+                    this.$.tagsAjax.generateRequest();
+                }
+            },
+
+            _jwtTokenChanged: function(jwtToken) {
+                this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
             },
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
@@ -261,6 +299,9 @@
                 this.search = e.target.query.trim();
                 this.$.appLocation.path = '/search';
             },
+            _onFilter: function() {
+                this.$.filterDialog.open();
+            },
             _onHomeLinkClicked: function(e) {
                 this.search = '';
                 this.searchTags = e.detail.tags;
@@ -268,6 +309,33 @@
             },
             _isActive: function(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
+            },
+            _handleGetTagsResponse: function(e) {
+                var tags = e.detail.response;
+
+                var filters = [];
+                var tagFilter = { id: "tags", name: "Tags", values: [] };
+                filters.push(tagFilter);
+                tags.forEach(function(tag) {
+                    tagFilter.values.push({ id: tag, name: tag});
+                });
+
+                this.searchFilters = filters;
+            },
+            _searchFiltersChanged: function(e) {
+                if (this.selectedSearchFilters.tags) {
+                    this.searchTags = this.selectedSearchFilters.tags;
+                } else {
+                    this.searchTags = [];
+                }
+                this.$.appLocation.path = '/search';
+            },
+            _searchTagsChanged: function(tags) {
+                if (!this.selectedSearchFilters) {
+                    this.selectedSearchFilters = {};
+                }
+                this.set("selectedSearchFilters.tags", tags);
+                this.selectedSearchFiltersCount = tags.length;
             }
         });
     </script>

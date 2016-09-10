@@ -167,9 +167,7 @@
                 '_updatePagination(recipes, totalRecipeCount)'
             ],
 
-            attached: function() {
-                this.parentNode.addEventListener("iron-select", this._routeChanged);
-
+            ready: function() {
                 this._getRecipes();
             },
 
@@ -179,13 +177,6 @@
             _searchChanged: function() {
                 this.pageNum = 1;
                 this._getRecipes();
-            },
-
-            _routeChanged: function(e) {
-                var page = e.target.selected;
-                if (page === "recipes") {
-                    this._getRecipes();
-                }
             },
 
             _getRecipes: function() {
