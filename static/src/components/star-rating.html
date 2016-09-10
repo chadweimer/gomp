@@ -79,7 +79,7 @@
             },
 
             _valueChanged: function(newValue, oldValue) {
-                if (!newValue) {
+                if (newValue !== 0 && !newValue) {
                     return
                 }
 

@@ -1,9 +1,15 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-submenu.html">
 
 <link rel="import" href="behaviors/gomp-core-behavior.html">
 
@@ -19,6 +25,10 @@
                     min-width: 2.5em;
                     height: 2.5em;
                     margin: 0 0.17em;
+                }
+                --paper-item-selected: {
+                    background: var(--light-accent-color);
+                    color: white;
                 }
             }
             .section {
@@ -39,6 +49,13 @@
                 position: fixed;
                 bottom: 16px;
                 right: 16px;
+            }
+            .menu-trigger {
+                background: var(--paper-grey-600);
+                color: white;
+            }
+            paper-icon-item {
+                cursor: pointer;
             }
             
             @media screen and (min-width: 993px) {
@@ -70,25 +87,57 @@
             }
         </style>
 
-        <div class="section">
-            <div>
-                 [[totalRecipeCount]] results
+        <app-drawer-layout force-narrow>
+            <app-drawer id="settingsDrawer" align="right">
+                <!-- This is here simly to be a spacer since this shows behind the app toolbar -->
+                <app-toolbar></app-toolbar>
+
+                <paper-menu multi>
+                    <paper-submenu opened>
+                        <paper-item class="menu-trigger">View</paper-item>
+                        <paper-menu class="menu-content" selected="[[viewMode]]" attr-for-selected="name" fallback-selection="full">
+                            <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" item-icon></iron-icon> Full</paper-icon-item>
+                            <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" item-icon></iron-icon> Compact</paper-icon-item>
+                        </paper-menu>
+                    </paper-submenu>
+                    <paper-submenu opened>
+                        <paper-item class="menu-trigger">Sort</paper-item>
+                        <paper-menu class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
+                            <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" item-icon></iron-icon> Name</paper-icon-item>
+                            <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" item-icon></iron-icon> Rating</paper-icon-item>
+                        </paper-menu>
+                    </paper-submenu>
+                    <paper-submenu opened>
+                        <paper-item class="menu-trigger">Order</paper-item>
+                        <paper-menu class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="name">
+                            <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" item-icon></iron-icon> ASC</paper-icon-item>
+                            <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" item-icon></iron-icon> DESC</paper-icon-item>
+                        </paper-menu>
+                    </paper-submenu>
+                </paper-menu>
+            </app-drawer>
+
+            <div class="section">
+                <div>
+                    <span style="float: left">[[totalRecipeCount]] results</span>
+                    <iron-icon style="float: right; cursor: pointer;" icon="icons:settings" drawer-toggle></iron-icon>
+                </div>
+                <div class="pagination">
+                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
+                </div>
+                <div class="outterContainer">
+                    <template is="dom-repeat" items="{{recipes}}">
+                        <div class="recipeContainer">
+                            <recipe-card recipe="[[item]]"></recipe-card>
+                        </div>
+                    </template>
+                </div>
+                <div class="pagination">
+                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
+                </div>
             </div>
-            <div class="pagination">
-                <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
-            </div>
-            <div class="outterContainer">
-                <template is="dom-repeat" items="{{recipes}}">
-                    <div class="recipeContainer">
-                        <recipe-card recipe="[[item]]"></recipe-card>
-                    </div>
-                </template>
-            </div>
-            <div class="pagination">
-                <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
-            </div>
-        </div>
-        <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+            <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+        </app-drawer-layout>
 
         <iron-ajax
             auto
@@ -211,6 +260,33 @@
 
             _updatePagination: function(recipes, total) {
                 this.numPages = Math.ceil(total / this._getRecipeCount());
+            },
+
+            _onFullViewTapped: function(e) {
+                this.viewMode = "full";
+                this.$.settingsDrawer.close();
+            },
+            _onCompactViewTapped: function(e) {
+                this.viewMode = "compact";
+                this.$.settingsDrawer.close();
+            },
+            _onNameSortTapped: function(e) {
+                this.sortBy = "name";
+                this.sortDir = "asc";
+                this.$.settingsDrawer.close();
+            },
+            _onRatingSortTapped: function(e) {
+                this.sortBy = "rating";
+                this.sortDir = "desc";
+                this.$.settingsDrawer.close();
+            },
+            _onAscSortTapped: function(e) {
+                this.sortDir = "asc";
+                this.$.settingsDrawer.close();
+            },
+            _onDescSortTapped: function(e) {
+                this.sortDir = "desc";
+                this.$.settingsDrawer.close();
             }
         });
     </script>
