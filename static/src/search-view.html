@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
@@ -91,11 +90,6 @@
         </div>
         <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-        <app-localstorage-document key="q" data="{{search}}"></app-localstorage-document>
-        <app-localstorage-document key="tags" data="{{searchTags}}"></app-localstorage-document>
-        <app-localstorage-document key="sort" data="{{sortBy}}"></app-localstorage-document>
-        <app-localstorage-document key="dir" data="{{sortDir}}"></app-localstorage-document>
-        <app-localstorage-document key="viewMode" data="{{view}}"></app-localstorage-document>
         <iron-ajax
             auto
             id="recipesAjax"
@@ -130,7 +124,7 @@
                 },
                 search: {
                     type: String,
-                    value: null,
+                    value: '',
                     notify: true,
                     observer: '_searchChanged'
                 },
@@ -213,11 +207,11 @@
 
             _handleGetRecipesRequest: function(request) {
                 this.fire('loading-started');
+                this.fire('scroll-top');
             },
             _handleGetRecipesResponse: function(request) {
                 this.recipes = request.detail.response.recipes;
                 this.totalRecipeCount = request.detail.response.total;
-                this.fire('scroll-top');
                 this.fire('loading-complete');
             },
             _handleGetRecipesError : function() {

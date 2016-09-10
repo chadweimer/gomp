@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/app-layout/app-layout.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
@@ -67,7 +68,7 @@
 
         <app-location id="appLocation" route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
-        <app-scrollpos-control selected="{{page}}"></app-scrollpos-control>
+        <app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control>
 
         <app-drawer-layout force-narrow fullbleed>
             <app-drawer id="drawer" swipe-open>
@@ -79,7 +80,7 @@
                 </paper-menu>
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed>
-                <app-header effects="material" reveals shadow>
+                <app-header reveals shadow>
                     <app-toolbar>
                         <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                         <div main-title><span class="hide-on-small-only">[[title]]</span></div>
@@ -105,7 +106,10 @@
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'search')]]"
                             search="{{search}}"
-                            search-tags="{{searchTags}}"></search-view>
+                            search-tags="{{searchTags}}"
+                            sort-by="{{sortBy}}"
+                            sort-dir="{{sortDir}}"
+                            view-mode="{{viewMode}}"></search-view>
 
                         <recipes-view
                             name="recipes"
@@ -122,6 +126,8 @@
                             name="login"
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'login')]]"></login-view>
+
+                        <status-404-view name="status-404"></status-404-view>
                     </iron-pages>
                 </main>
 
@@ -130,6 +136,12 @@
                 </footer>
             </app-header-layout>
         </app-drawer-layout>
+
+        <app-localstorage-document key="q" data="{{search}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="tags" data="{{searchTags}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
     </template>
 
     <script>
@@ -144,17 +156,14 @@
                 },
                 title: {
                     type: String,
-                    notify: true,
                     value: 'Go Meal Planner'
                 },
                 homeTitle: {
                     type: String,
-                    notify: true,
                     value: 'Go Meal Planner'
                 },
                 homeImage: {
                     type: String,
-                    notify: true,
                     value: ''
                 },
                 page: {
@@ -162,20 +171,6 @@
                     reflectToAttribute: true,
                     notify: true,
                     observer: '_pageChanged'
-                },
-                search: {
-                    type: String,
-                    notify: true
-                },
-                searchTags: {
-                    type: Array,
-                    value: [],
-                    notify: true
-                },
-                loadingCount: {
-                    type: Number,
-                    notify: true,
-                    value: 0
                 }
             },
             observers: [
@@ -190,7 +185,8 @@
             },
 
             ready: function() {
-                this.verifyIsAuthenticated();
+                this.loadingCount = 0;
+                this._verifyIsAuthenticated();
             },
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
@@ -218,19 +214,22 @@
                 this.page = page || 'home';
             },
             _pageChanged: function(page) {
-                if (!this.verifyIsAuthenticated()) {
+                if (!this._verifyIsAuthenticated()) {
                     return;
                 }
 
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl(page + '-view.html');
-                this.importHref(resolvedPageUrl, null, null, true);
+                this.importHref(resolvedPageUrl, null, this._show404, true);
 
                 // Make sure to close the drawer
                 this.$.drawer.close();
             },
+            _show404: function() {
+                this.page = "status-404";
+            },
             _scrollToTop: function() {
-                this.$.mainPanel.scrollToTop(true);
+                this.$.scrollControl.scroll(0, 0);
             },
             _onHomeTapped: function(e) {
                 this.$.appLocation.path = "/";
@@ -242,7 +241,7 @@
                 e.preventDefault();
                 this._logout();
             },
-            verifyIsAuthenticated: function() {
+            _verifyIsAuthenticated: function() {
                 this.jwtToken = localStorage.getItem("jwtToken");
                 // Redirect to login if necessary
                 if (this.$.appLocation.path !== '/login') {
