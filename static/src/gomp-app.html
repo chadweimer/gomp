@@ -69,8 +69,8 @@
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
         <app-scrollpos-control selected="{{page}}"></app-scrollpos-control>
 
-        <app-drawer-layout id="drawerPanel" force-narrow fullbleed>
-            <app-drawer swipe-open>
+        <app-drawer-layout force-narrow fullbleed>
+            <app-drawer id="drawer" swipe-open>
                 <app-toolbar><span>[[title]]</span></app-toolbar>
                 <paper-menu selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
                     <paper-icon-item name="home" on-tap="_onHomeTapped"><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item>
@@ -185,11 +185,23 @@
                 'scroll-top': '_scrollToTop',
                 'home-list-link-clicked': '_onHomeLinkClicked',
                 'loading-started': '_loadingStarted',
-                'loading-complete': '_loadingComplete'
+                'loading-complete': '_loadingComplete',
+                'iron-overlay-opened': '_patchOverlay'
             },
 
             ready: function() {
                 this.verifyIsAuthenticated();
+            },
+
+            // https://github.com/PolymerElements/paper-dialog/issues/7
+            _patchOverlay: function (e) {
+                if (e.target.withBackdrop) {
+                    if (e.target.localName === "paper-dialog") {
+                        e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
+                    } else if (e.target.localName === "paper-fab-speed-dial-overlay") {
+                        e.target.parentNode.parentNode.insertBefore(e.target.backdropElement, e.target.parentNode);
+                    }
+                }
             },
             
             _loadingStarted: function(e) {
@@ -215,7 +227,7 @@
                 this.importHref(resolvedPageUrl, null, null, true);
 
                 // Make sure to close the drawer
-                this.$.drawerPanel.closeDrawer();
+                this.$.drawer.close();
             },
             _scrollToTop: function() {
                 this.$.mainPanel.scrollToTop(true);
