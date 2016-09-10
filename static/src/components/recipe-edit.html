@@ -5,6 +5,8 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="tag-input.html">
 
 <dom-module id="recipe-edit">
@@ -69,22 +71,9 @@
         Polymer({
 
             is: 'recipe-edit',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                active: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                    observer: '_activeChanged'
-                },
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 recipeId: {
                     type: String,
                     notify: true
@@ -95,15 +84,11 @@
                 'saveButton.tap': '_saveButtonTapped'
             },
 
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
-            },
-
             refresh: function() {
                 this.$.getAjax.generateRequest();
                 this.$.tagsInput.refresh();
             },
-            _activeChanged: function() {
+            _isActiveChanged: function() {
                 if (!this.recipeId) {
                     this.recipe = {
                         name: '',
@@ -132,24 +117,24 @@
             },
 
             _handleGetRecipeRequest: function(e) {
-                this.fire('loading-started');
+                this.onLoading();
                 if (this.recipeId) {
                     this.recipe = null;
                 }
             },
             _handleGetRecipeResponse: function(e) {
                 this.recipe = e.detail.response;
-                this.fire('loading-complete');
+                this.onLoaded();
             },
             _handleGetRecipeError: function(e) {
-                this.fire('loading-complete');
+                this.onLoaded();
             },
             _handlePutPostRecipeRequest: function(e) {
-                this.fire('loading-started');
+                this.onLoading();
             },
             _handlePutRecipeResponse: function(e) {
-                this.fire('loading-complete');
                 this.fire("recipe-edit-save");
+                this.onLoaded();
             },
             _handlePostRecipeResponse: function(e) {
                 var temp = document.createElement('a');
@@ -161,11 +146,11 @@
                 if (newRecipeIdMatch) {
                     newRecipeId = parseInt(newRecipeIdMatch[1], 10);
                 }
-                this.fire('loading-complete');
                 this.fire("recipe-edit-save", {redirectUrl: '/recipes/' + newRecipeId});
+                this.onLoaded();
             },
             _handlePutPostRecipeError: function(e) {
-                this.fire('loading-complete');
+                this.onLoaded();
             },
         });
     </script>

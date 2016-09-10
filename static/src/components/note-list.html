@@ -2,6 +2,8 @@
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="note-card.html">
 
 <dom-module id="note-list">
@@ -37,23 +39,17 @@
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetRequest"
-            on-response="_handleGetResponse"></iron-ajax>
+            on-response="_handleGetResponse"
+            on-error="_handleGetError"></iron-ajax>
     </template>
 
     <script>
         Polymer({
 
             is: 'note-list',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 recipeId: {
                     type: String,
                     notify: true
@@ -61,10 +57,6 @@
             },
             listeners: {
                 'note-card-deleted': '_noteDeleted'
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             refresh: function() {
@@ -76,10 +68,15 @@
             },
 
             _handleGetRequest: function(e) {
+                this.onLoading();
                 this.notes = [];
             },
             _handleGetResponse: function(e) {
                 this.notes = e.detail.response;
+                this.onLoaded();
+            },
+            _handleGetError: function(e) {
+                this.onLoaded();
             }
         });
     </script>

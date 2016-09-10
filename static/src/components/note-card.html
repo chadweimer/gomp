@@ -13,6 +13,8 @@
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <dom-module id="note-card">
     <template>
         <style>
@@ -90,23 +92,18 @@
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleDeleteResponse"></iron-ajax>
+            on-request="_handleDeleteRequest"
+            on-response="_handleDeleteResponse"
+            on-error="_handleDeleteError"></iron-ajax>
     </template>
 
     <script>
         Polymer({
 
             is: 'note-card',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 note: {
                     type: Object,
                     notify: true
@@ -116,10 +113,6 @@
                 'edit.tap': '_edit',
                 'delete.tap': '_deleteTapped',
                 'confirmDelete.tap': '_deleteNote'
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             _edit: function(e) {
@@ -143,10 +136,16 @@
                 return note.modifiedAt !== note.createdAt;
             },
 
+            _handleDeleteRequest: function(e) {
+                this.onLoading();
+            },
             _handleDeleteResponse: function(e) {
                 this.fire("note-card-deleted");
+                this.onLoaded();
+            },
+            _handleDeleteError: function(e) {
+                this.onLoaded();
             }
-
         });
     </script>
 </dom-module>

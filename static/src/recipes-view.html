@@ -128,21 +128,27 @@
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleDeleteRecipeResponse"></iron-ajax>
+            on-request="_handleRequest"
+            on-response="_handleDeleteRecipeResponse"
+            on-error="_handleError"></iron-ajax>
         <iron-ajax
             id="postNoteAjax"
             url="/api/v1/notes"
             method="POST"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handlePostNoteResponse"></iron-ajax>
+            on-request="_handleRequest"
+            on-response="_handlePostNoteResponse"
+            on-error="_handleError"></iron-ajax>
         <iron-ajax
             id="putNoteAjax"
             url="/api/v1/notes/[[noteId]]"
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handlePutNoteResponse"></iron-ajax>
+            on-request="_handleRequest"
+            on-response="_handlePutNoteResponse"
+            on-error="_handleError"></iron-ajax>
         <iron-location id="ironLocation"></iron-location>
     </template>
 
@@ -268,6 +274,13 @@
             },
             _handlePutNoteResponse: function(e) {
                 this.$.noteList.refresh();
+                this.onLoaded();
+            },
+            _handleRequest: function(e) {
+                this.onLoading();
+            },
+            _handleError: function(e) {
+                this.onLoaded();
             }
 
         });

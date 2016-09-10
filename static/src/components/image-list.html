@@ -13,6 +13,8 @@
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <dom-module id="image-list">
     <template>
         <style>
@@ -84,7 +86,8 @@
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetImagesRequest"
-            on-response="_handleGetImagesResponse"></iron-ajax>
+            on-response="_handleGetImagesResponse"
+            on-error="_onRequestError"></iron-ajax>
         <iron-ajax
             id="addAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
@@ -100,29 +103,26 @@
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleSetMainImageResponse"></iron-ajax>
+            on-request="_handleSetMainImageRequest"
+            on-response="_handleSetMainImageResponse"
+            on-error="_onRequestError"></iron-ajax>
         <iron-ajax
             id="deleteAjax"
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleDeleteResponse"></iron-ajax>
+            on-request="_handleDeleteRequest"
+            on-response="_handleDeleteResponse"
+            on-error="_onRequestError"></iron-ajax>
     </template>
 
     <script>
         Polymer({
 
             is: 'image-list',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 recipeId: {
                     type: String,
                     notify: true
@@ -130,10 +130,6 @@
             },
             listeners: {
                 'addDialog.iron-overlay-closed': '_addDialogClosed'
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             refresh: function() {
@@ -164,26 +160,42 @@
             },
 
             _handleGetImagesRequest: function(e) {
+                this.onLoading();
                 this.images = [];
             },
             _handleGetImagesResponse: function(e) {
                 this.images = e.detail.response;
+                this.onLoaded();
             },
             _handleAddRequest: function(e) {
+                this.onLoading();
                 this.$.uploadingDialog.open();
             },
             _handleAddResponse: function(e) {
                 this.$.uploadingDialog.close();
                 this.refresh();
+                this.onLoaded();
             },
             _handleAddError: function(e) {
                 this.$.uploadingDialog.close();
+                this.onLoaded();
+            },
+            _handleSetMainImageRequest: function(e) {
+                this.onLoading();
             },
             _handleSetMainImageResponse: function(e) {
                 this.fire('image-list-main-image-changed');
+                this.onLoaded();
+            },
+            _handleDeleteRequest: function(e) {
+                this.onLoading();
             },
             _handleDeleteResponse: function(e) {
                 this.refresh();
+                this.onLoaded();
+            },
+            _onRequestError: function(e) {
+                this.onLoaded();
             }
         });
     </script>

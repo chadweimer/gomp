@@ -5,6 +5,8 @@
 <link rel="import" href="../../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input-container.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <dom-module id="tag-input">
     <template>
         <style>
@@ -61,23 +63,18 @@
             params='{"sort": "frequency", "dir": "desc", "count": 12}'
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
+            on-request="_handleGetSuggestedTagsRequest"
+            on-response="_handleGetSuggestedTagsResponse"
+            on-error="_handleGetSuggestedTagsError"></iron-ajax>
     </template>
 
     <script>
         Polymer({
 
             is: 'tag-input',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 tags: {
                     type: Array,
                     notify: true,
@@ -86,9 +83,6 @@
             },
             listeners: {
                 'input.keydown': '_onInputKeydown'
-            },
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             refresh: function() {
@@ -127,8 +121,16 @@
             _onTagRemoveTapped: function(e) {
                 this.remove(e.model.item);
             },
+            _handleGetSuggestedTagsRequest: function(e) {
+                this.onLoading();
+            },
             _handleGetSuggestedTagsResponse: function(e) {
                 this.suggestedTags = e.detail.response;
+                this.onLoaded();
+            },
+            _handleGetSuggestedTagsError: function(e) {
+                this.suggestedTags = e.detail.response;
+                this.onLoaded();
             }
         });
     </script>

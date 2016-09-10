@@ -1,6 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="recipe-card.html">
 
 <dom-module id="home-list">
@@ -76,9 +78,7 @@
                     </div>
                 </template>
             </div>
-            <a class="right" href="#!" on-tap="_onLinkTapped">
-                [[title]] [[total]] &gt;&gt;
-            </a>
+            <a class="right" href="#!" on-tap="_onLinkTapped">[[title]] ([[total]]) &gt;&gt;</a>
         </article>
 
         <iron-ajax
@@ -97,16 +97,9 @@
         Polymer({
 
             is: 'home-list',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 title: {
                     type: String,
                     notify: true,
@@ -117,16 +110,7 @@
                     notify: true,
                     value: [],
                     observer: '_tagsChanged'
-                },
-                recipes: {
-                    type: Array,
-                    notify: true,
-                    value: []
                 }
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             _tagsChanged: function() {
@@ -142,11 +126,18 @@
             refresh: function() {
                 this.$.recipesAjax.generateRequest();
             },
-            _handleGetRecipesRequest: function(request) {
+            _handleGetRecipesRequest: function(e) {
+                this.onLoading();
+                this.total = 0;
                 this.recipes = [];
             },
-            _handleGetRecipesResponse: function(request) {
-                this.recipes = request.detail.response.recipes;
+            _handleGetRecipesResponse: function(e) {
+                this.total = e.detail.response.total;
+                this.recipes = e.detail.response.recipes;
+                this.onLoaded();
+            },
+            _handleGetRecipesError: function(e) {
+                this.onLoaded();
             },
             _onLinkTapped: function(e) {
                 e.preventDefault();

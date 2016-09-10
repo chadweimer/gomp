@@ -6,6 +6,8 @@
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
 <link rel="import" href="star-rating.html">
 
 <dom-module id="recipe-display">
@@ -89,7 +91,7 @@
             handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
-            on-error="_handleGetRecipeError"></iron-ajax>
+            on-error="_handleError"></iron-ajax>
         <iron-ajax
             auto
             id="mainImageAjax"
@@ -98,30 +100,25 @@
             handle-as="json"
             on-request="_handleGetMainImageRequest"
             on-response="_handleGetMainImageResponse"
-            on-error="_handleGetMainImageError"></iron-ajax>
+            on-error="_handleError"></iron-ajax>
         <iron-ajax
             id="rateAjax"
             url="/api/v1/recipes/[[recipeId]]/rating"
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handlePutRecipeRatingResponse"></iron-ajax>
+            on-request="_handlePutRecipeRatingRequest"
+            on-response="_handlePutRecipeRatingResponse"
+            on-error="_handleError"></iron-ajax>
     </template>
 
     <script>
         Polymer({
 
             is: 'recipe-display',
+            behaviors: [GompCoreBehavior],
 
             properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    computed: '_getAjaxHeaders(jwtToken)'
-                },
                 recipeId: {
                     type: String,
                     notify: true
@@ -129,10 +126,6 @@
             },
             listeners: {
                 'star-rating-selected': '_starRatingSelected'
-            },
-
-            _getAjaxHeaders: function(jwtToken) {
-                return {"Authorization": "Bearer " + jwtToken};
             },
 
             refresh: function(options) {
@@ -148,30 +141,30 @@
             },
 
             _handleGetRecipeRequest: function(e) {
-                this.fire('loading-started');
+                this.onLoading();
                 this.recipe = null;
             },
             _handleGetRecipeResponse: function(e) {
                 this.recipe = e.detail.response;
-                this.fire('loading-complete');
-            },
-            _handleGetRecipeError: function(e) {
-                this.fire('loading-complete');
+                this.onLoaded();
             },
             _handleGetMainImageRequest: function(e) {
-                this.fire('loading-started');
+                this.onLoading();
                 this.mainImage = null;
             },
             _handleGetMainImageResponse: function(e) {
                 this.mainImage = e.detail.response;
-                this.fire('loading-complete');
+                this.onLoaded();
             },
-            _handleGetMainImageError: function(e) {
-                this.fire('loading-complete');
+            _handlePutRecipeRatingRequest: function(e) {
+                this.onLoading();
             },
             _handlePutRecipeRatingResponse: function(e) {
                 this.set("recipe.averageRating", parseFloat(e.target.body));
             },
+            _handleError: function(e) {
+                this.onLoaded();
+            }
         });
     </script>
 </dom-module>
