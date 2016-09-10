@@ -57,6 +57,20 @@
             paper-icon-item {
                 cursor: pointer;
             }
+            .compact-recipe {
+                margin: 5px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .avatar {
+                display: inline-block;
+                width: 32px;
+                height: 32px;
+                border-radius: 16px;
+                vertical-align: middle;
+                margin: 5px;
+            }
             
             @media screen and (min-width: 993px) {
                 .recipeContainer {
@@ -123,17 +137,34 @@
                     <iron-icon style="float: right; cursor: pointer;" icon="icons:settings" drawer-toggle></iron-icon>
                 </div>
                 <div class="pagination">
-                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
+                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                 </div>
                 <div class="outterContainer">
-                    <template is="dom-repeat" items="{{recipes}}">
-                        <div class="recipeContainer">
-                            <recipe-card recipe="[[item]]"></recipe-card>
-                        </div>
+                    <template is="dom-if"" if="[[_isViewMode(viewMode, 'full')]]" restamp>
+                        <template is="dom-repeat" items="[[recipes]]">
+                            <div class="recipeContainer">
+                                <recipe-card recipe="[[item]]"></recipe-card>
+                            </div>
+                        </template>
+                    </template>
+                    <template is="dom-if"" if="[[_isViewMode(viewMode, 'compact')]]" restamp>
+                        <template is="dom-repeat" items="[[_columnize(recipes, 3)]]" as="inner">
+                            <div class="recipeContainer">
+                                <template is="dom-repeat" items="[[inner]]" as="recipe">
+                                    <a href="/recipes/[[recipe.id]]">
+                                        <div class="compact-recipe">
+                                            <img src="[[recipe.mainImage.thumbnailUrl]]" class="avatar" hidden$="[[_isNullOrEmpty(recipe.mainImage.thumbnailUrl)]]">
+                                            <span class="avatar" hidden$="[[!_isNullOrEmpty(recipe.mainImage.thumbnailUrl)]]"></span>
+                                            <span>[[recipe.name]]</span>
+                                        </div>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
                     </template>
                 </div>
                 <div class="pagination">
-                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]" show-first-last="false"></pagination-links>
+                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                 </div>
             </div>
             <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
@@ -287,6 +318,29 @@
             _onDescSortTapped: function(e) {
                 this.sortDir = "desc";
                 this.$.settingsDrawer.close();
+            },
+
+            _isViewMode: function(viewMode, expected) {
+                return viewMode === expected;
+            },
+            _columnize: function(items, numSplits) {
+                var splitCount = Math.ceil(items.length / numSplits)
+
+                var newArrays = [[]];
+                var index = 0
+
+                for (i = 0; i < items.length; i++) {
+                    if (i >= (index + 1) * splitCount) {
+                        newArrays.push([]);
+                        index++;
+                    }
+                    newArrays[index].push(items[i]);
+                }
+
+                return newArrays;
+            },
+            _isNullOrEmpty: function(val) {
+                return val === null || val === '';
             }
         });
     </script>

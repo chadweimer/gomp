@@ -17,11 +17,11 @@
             }
         </style>
         
-        <paper-button id="first" raised hidden$="[[!showFirstLast]]" on-tap="_goFirst">|&lt;</paper-button>
+        <paper-button id="first" raised on-tap="_goFirst">|&lt;</paper-button>
         <paper-button id="prev" raised on-tap="_goPrev">&lt;</paper-button>
         <paper-button raised disabled>[[pageNum]]</paper-button>
         <paper-button id="next" raised on-tap="_goNext">&gt;</paper-button>
-        <paper-button id="last" raised hidden$="[[!showFirstLast]]" on-tap="_goLast">&gt;|</paper-button>
+        <paper-button id="last" raised on-tap="_goLast">&gt;|</paper-button>
 
         <iron-location id="ironLocation"></iron-location>
     </template>
@@ -40,11 +40,6 @@
           numPages: {
             type: Number,
             value: 10,
-            notify: true
-          },
-          showFirstLast: {
-            type: Boolean,
-            value: true,
             notify: true
           },
         },
