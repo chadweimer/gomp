@@ -252,7 +252,8 @@
                 'loading-complete': '_loadingComplete',
                 'iron-overlay-opened': '_patchOverlay',
                 'filterDialog.save': '_searchFiltersChanged',
-                'recipes-changed': '_recipesChanged'
+                'recipes-changed': '_recipesChanged',
+                'change-page': '_changePageRequested'
             },
 
             ready: function() {
@@ -305,6 +306,12 @@
             _show404: function() {
                 this.page = "status-404";
             },
+            _changePageRequested: function(e) {
+                this._changeRoute(e.detail);
+            },
+            _changeRoute: function(path) {
+                this.set("route.path", path);
+            },
             _scrollToTop: function() {
                 this.$.scrollControl.scroll(0, 0);
             },
@@ -327,11 +334,11 @@
                 localStorage.clear();
                 sessionStorage.clear();
                 this.ajaxHeaders = null;
-                this.set("route.path", "/login");
+                this._changeRoute("/login");
             },
             _onSearch: function(e) {
                 this.search = e.target.query.trim();
-                this.set("route.path", "/search");
+                this._changeRoute("/search");
             },
             _onFilter: function() {
                 this.$.filterDialog.open();
@@ -339,7 +346,7 @@
             _onHomeLinkClicked: function(e) {
                 this.search = '';
                 this.searchTags = e.detail.tags;
-                this.set("route.path", "/search");
+                this._changeRoute("/search");
             },
             _isActive: function(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
@@ -362,7 +369,7 @@
                 } else {
                     this.searchTags = [];
                 }
-                this.set("route.path", "/search");
+                this._changeRoute("/search");
             },
             _searchTagsChanged: function(tags) {
                 if (!this.selectedSearchFilters) {

@@ -1,5 +1,4 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <dom-module id="pagination-links">
@@ -23,8 +22,6 @@
         <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
         <paper-button id="next" raised on-tap="_goNext">&gt;</paper-button>
         <paper-button id="last" raised on-tap="_goLast">&gt;|</paper-button>
-
-        <iron-location id="ironLocation"></iron-location>
     </template>
 
     <script>

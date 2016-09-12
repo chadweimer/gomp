@@ -1,7 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/iron-location/iron-location.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
@@ -122,7 +121,6 @@
             on-request="_handleRequest"
             on-response="_handleDeleteRecipeResponse"
             on-error="_handleError"></iron-ajax>
-        <iron-location id="ironLocation"></iron-location>
     </template>
 
     <script>
@@ -221,8 +219,8 @@
             },
 
             _handleDeleteRecipeResponse: function(e) {
-                this.$.ironLocation.set("path", "/search");
                 this.fire("recipes-changed");
+                this.fire("change-page", "/search");
                 this.onLoaded();
             },
             _handleRequest: function(e) {
