@@ -32,12 +32,15 @@
             }
         </style>
         
-        <paper-card image="[[recipe.mainImage.thumbnailUrl]]" on-tap="_cardTapped">
-            <div class="card-content">
-                <span class="truncate">[[recipe.name]]</span>
-                <star-rating value="[[recipe.averageRating]]"></star-rating>
-            </div>
-        </paper-card>
+        <a href="/recipes/[[recipe.id]]">
+            <paper-card image="[[recipe.mainImage.thumbnailUrl]]">
+                <div class="card-content">
+                    <span class="truncate">[[recipe.name]]</span>
+                    <star-rating value="[[recipe.averageRating]]"></star-rating>
+                </div>
+            </paper-card>
+        </a>
+
         <iron-location id="ironLocation"></iron-location>
     </template>
 
@@ -51,12 +54,7 @@
                     type: Object,
                     notify: true
                 }
-            },
-
-            _cardTapped : function(e) {
-                this.$.ironLocation.set("path", "/recipes/" + this.recipe.id);
             }
-
         });
     </script>
 </dom-module>

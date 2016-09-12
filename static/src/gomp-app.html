@@ -7,10 +7,10 @@
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
 <link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
@@ -28,6 +28,9 @@
             :host {
                 display: block;
                 @apply(--layout-fullbleed);
+            }
+            iron-pages > :not(.iron-selected) {
+                pointer-events: none;
             }
 
             app-toolbar {
@@ -57,6 +60,13 @@
                 padding-bottom: 10px;
                 font-weight: lighter;
                 font-size: 0.8em;
+            }
+            app-drawer a {
+                display: block;
+            }
+            app-drawer a.iron-selected {
+                background: var(--light-accent-color);
+                color: white;
             }
             @media screen and (min-width: 993px) {
                 .hide-on-large-only {
@@ -92,11 +102,11 @@
         <app-drawer-layout force-narrow fullbleed>
             <app-drawer id="drawer" swipe-open>
                 <app-toolbar><span>[[title]]</span></app-toolbar>
-                <paper-menu selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
-                    <paper-icon-item name="home" on-tap="_onHomeTapped"><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item>
-                    <paper-icon-item name="search" on-tap="_onRecipesTapped"><iron-icon icon="view-list" item-icon></iron-icon> Recipes</paper-icon-item>
-                    <paper-icon-item name="logout" on-tap="_onLogoutTapped"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item>
-                </paper-menu>
+                <iron-selector selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
+                    <a name="home" href="/"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
+                    <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" item-icon></iron-icon> Recipes</paper-icon-item></a>
+                    <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item></a>
+                </iron-selector>
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header reveals shadow>
@@ -106,9 +116,9 @@
                     <app-toolbar hidden$="[[!jwtToken]]">
                         <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                         <div main-title><span class="hide-on-small-only">[[title]]</span></div>
-                        <paper-item name="home" class="hide-on-med-and-down"><a href="/">Home</a></paper-item>
-                        <paper-item name="search" class="hide-on-med-and-down"><a href="/search">Recipes</a></paper-item>
-                        <paper-item name="logout" class="hide-on-med-and-down"><a href="#!" on-tap="_onLogoutTapped">Logout</a></paper-item>
+                        <a href="/"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
+                        <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                        <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
                         
                         <paper-search-bar
                             icon="search"
