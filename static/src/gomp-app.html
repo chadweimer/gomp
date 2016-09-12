@@ -95,7 +95,7 @@
             }
         </style>
 
-        <app-location id="appLocation" route="{{route}}"></app-location>
+        <app-location route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
         <app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control>
 
@@ -308,12 +308,6 @@
             _scrollToTop: function() {
                 this.$.scrollControl.scroll(0, 0);
             },
-            _onHomeTapped: function(e) {
-                this.$.appLocation.path = "/";
-            },
-            _onRecipesTapped: function(e) {
-                this.$.appLocation.path ="/search";
-            },
             _onLogoutTapped: function(e) {
                 e.preventDefault();
                 this._logout();
@@ -321,7 +315,7 @@
             _verifyIsAuthenticated: function() {
                 this.jwtToken = localStorage.getItem("jwtToken");
                 // Redirect to login if necessary
-                if (this.$.appLocation.path !== '/login') {
+                if (this.route.path !== '/login') {
                     if (this.jwtToken === null) {
                         this._logout();
                         return false;
@@ -333,11 +327,11 @@
                 localStorage.clear();
                 sessionStorage.clear();
                 this.ajaxHeaders = null;
-                this.$.appLocation.path = '/login';
+                this.set("route.path", "/login");
             },
             _onSearch: function(e) {
                 this.search = e.target.query.trim();
-                this.$.appLocation.path = '/search';
+                this.set("route.path", "/search");
             },
             _onFilter: function() {
                 this.$.filterDialog.open();
@@ -345,7 +339,7 @@
             _onHomeLinkClicked: function(e) {
                 this.search = '';
                 this.searchTags = e.detail.tags;
-                this.$.appLocation.path = '/search';
+                this.set("route.path", "/search");
             },
             _isActive: function(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
@@ -368,7 +362,7 @@
                 } else {
                     this.searchTags = [];
                 }
-                this.$.appLocation.path = '/search';
+                this.set("route.path", "/search");
             },
             _searchTagsChanged: function(tags) {
                 if (!this.selectedSearchFilters) {
