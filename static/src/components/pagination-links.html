@@ -10,6 +10,7 @@
             }
             paper-button {
                 font-weight: 600;
+                text-transform: lowercase;
             }
             paper-button:not([disabled]) {
                 color: #ffffff;
@@ -19,7 +20,7 @@
         
         <paper-button id="first" raised on-tap="_goFirst">|&lt;</paper-button>
         <paper-button id="prev" raised on-tap="_goPrev">&lt;</paper-button>
-        <paper-button raised disabled>[[pageNum]]</paper-button>
+        <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
         <paper-button id="next" raised on-tap="_goNext">&gt;</paper-button>
         <paper-button id="last" raised on-tap="_goLast">&gt;|</paper-button>
 
