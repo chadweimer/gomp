@@ -134,6 +134,7 @@
             },
             _handlePutRecipeResponse: function(e) {
                 this.fire("recipe-edit-save");
+                this.fire("recipes-changed");
                 this.onLoaded();
             },
             _handlePostRecipeResponse: function(e) {
@@ -147,6 +148,7 @@
                     newRecipeId = parseInt(newRecipeIdMatch[1], 10);
                 }
                 this.fire("recipe-edit-save", {redirectUrl: '/recipes/' + newRecipeId});
+                this.fire("recipes-changed");
                 this.onLoaded();
             },
             _handlePutPostRecipeError: function(e) {

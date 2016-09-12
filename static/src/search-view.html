@@ -248,18 +248,18 @@
             ],
 
             ready: function() {
-                this._getRecipes();
+                this.refresh();
             },
 
             _pageNumChanged: function() {
-                this._getRecipes();
+                this.refresh();
             },
             _searchChanged: function() {
                 this.pageNum = 1;
-                this._getRecipes();
+                this.refresh();
             },
 
-            _getRecipes: function() {
+            refresh: function() {
                 this.$.recipesAjax.params = {
                     "q": this.search,
                     "tags[]": this.searchTags,
@@ -269,6 +269,7 @@
                     "count": this._getRecipeCount()
                 };
             },
+
             _getRecipeCount: function() {
                 if (this.viewMode === 'compact') {
                     return 60;

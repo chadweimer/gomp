@@ -137,6 +137,7 @@
                             image="[[homeImage]]"></home-view>
 
                         <search-view
+                            id="searchView"
                             name="search"
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'search')]]"
@@ -240,7 +241,8 @@
                 'loading-started': '_loadingStarted',
                 'loading-complete': '_loadingComplete',
                 'iron-overlay-opened': '_patchOverlay',
-                'filterDialog.save': '_searchFiltersChanged'
+                'filterDialog.save': '_searchFiltersChanged',
+                'recipes-changed': '_recipesChanged'
             },
 
             ready: function() {
@@ -364,6 +366,12 @@
                 }
                 this.set("selectedSearchFilters.tags", tags);
                 this.selectedSearchFiltersCount = tags.length;
+            },
+
+            _recipesChanged: function(e) {
+                if (this.$.searchView.refresh) {
+                    this.$.searchView.refresh();
+                }
             }
         });
     </script>
