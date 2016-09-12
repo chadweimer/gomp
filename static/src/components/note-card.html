@@ -63,7 +63,7 @@
                 <div class="note-header">
                     <iron-icon icon="communication:comment"></iron-icon>
                     <span class="date">[[_formatDate(note.createdAt)]]</span>
-                    <paper-menu-button horizontal-align="right">
+                    <paper-menu-button id="noteMenu" horizontal-align="right">
                         <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                         <paper-menu class="dropdown-content">
                             <paper-item><a id="edit" href="#!"><iron-icon icon="icons:create"></iron-icon> Edit</a></paper-item>
@@ -113,19 +113,21 @@
                 }
             },
             listeners: {
-                'edit.tap': '_edit',
+                'edit.tap': '_editTapped',
                 'delete.tap': '_deleteTapped',
                 'confirmDelete.tap': '_deleteNote'
             },
 
-            _edit: function(e) {
+            _editTapped: function(e) {
                 e.preventDefault();
 
+                e.target.closest("#noteMenu").close();
                 this.fire('note-card-edit');
             },
             _deleteTapped: function(e) {
                 e.preventDefault();
 
+                e.target.closest("#noteMenu").close();
                 this.$.confirmDeleteDialog.open();
             },
             _deleteNote: function(e) {

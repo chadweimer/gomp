@@ -54,7 +54,7 @@
                 <a target="_blank" href$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
             </div>
             <div>
-                <paper-menu-button class="menu" horizontal-align="right">
+                <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                     <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                     <paper-menu class="dropdown-content">
                         <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon icon="image:photo-library"></iron-icon> Set as main image</a></paper-item>
@@ -162,12 +162,14 @@
             _setMainImageTapped: function(e) {
                 e.preventDefault();
 
+                e.target.closest("#imageMenu").close();
                 this.$.setMainImageAjax.body = parseInt(e.target.dataId, 10);
                 this.$.setMainImageAjax.generateRequest();
             },
             _deleteTapped: function(e) {
                 e.preventDefault();
                 
+                e.target.closest("#imageMenu").close();
                 this.$.confirmDelete.dataId = e.target.dataId;
                 this.$.confirmDeleteDialog.open();
             },
