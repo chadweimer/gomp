@@ -32,6 +32,9 @@
             #addDialog h2 {
                 color: var(--paper-teal-500);
             }
+            #confirmDeleteDialog h2 {
+                color: var(--paper-red-500);
+            }
             .imageContainer {
                 margin: 2px;
             }
@@ -165,6 +168,7 @@
             _deleteTapped: function(e) {
                 e.preventDefault();
                 
+                this.$.confirmDelete.dataId = e.target.dataId;
                 this.$.confirmDeleteDialog.open();
             },
             _deleteImage: function(e) {

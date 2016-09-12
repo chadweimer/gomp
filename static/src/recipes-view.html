@@ -26,6 +26,9 @@
             .container {
                 padding: 8px;
             }
+            #confirmDeleteDialog h2 {
+                color: var(--paper-red-500);
+            }
             paper-fab-speed-dial-action.green {
                 --paper-fab-speed-dial-action-background: var(--paper-green-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-green-900);
@@ -45,9 +48,6 @@
             paper-fab-speed-dial-action.blue {
                 --paper-fab-speed-dial-action-background: var(--paper-blue-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-blue-900);
-            }
-            #noteDialog h2 {
-                color: var(--paper-blue-500);
             }
             .tab-container {
                 @apply(--layout-horizontal);
@@ -104,21 +104,12 @@
             <paper-fab-speed-dial-action id="addNoteButton" class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
         </paper-fab-speed-dial>
 
-        <paper-dialog id="noteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <h2><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h2>
-            <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
-            <div class="buttons">
-                <paper-button dialog-dismiss>Cancel</paper-button>
-                <paper-button dialog-confirm>Save</paper-button>
-            </div>
-        </paper-dialog>
-
-        <paper-dialog id="confirmDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <h2><iron-icon icon="communication:live-help"></iron-icon> <span>Are you sure?</span></h2>
-            <p>[[confirmationText]]</p>
+        <paper-dialog id="confirmDeleteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="communication:live-help"></iron-icon> <span>Delete Recipe?</span></h2>
+            <p>Are you sure you want to delete this recipe?</p>
             <div class="buttons">
                 <paper-button dialog-dismiss>No</paper-button>
-                <paper-button id="confirmYes" dialog-confirm>Yes</paper-button>
+                <paper-button id="confirmDelete" dialog-confirm>Yes</paper-button>
             </div>
         </paper-dialog>
 
@@ -130,24 +121,6 @@
             handle-as="json"
             on-request="_handleRequest"
             on-response="_handleDeleteRecipeResponse"
-            on-error="_handleError"></iron-ajax>
-        <iron-ajax
-            id="postNoteAjax"
-            url="/api/v1/notes"
-            method="POST"
-            headers="[[ajaxHeaders]]"
-            handle-as="json"
-            on-request="_handleRequest"
-            on-response="_handlePostNoteResponse"
-            on-error="_handleError"></iron-ajax>
-        <iron-ajax
-            id="putNoteAjax"
-            url="/api/v1/notes/[[noteId]]"
-            method="PUT"
-            headers="[[ajaxHeaders]]"
-            handle-as="json"
-            on-request="_handleRequest"
-            on-response="_handlePutNoteResponse"
             on-error="_handleError"></iron-ajax>
         <iron-location id="ironLocation"></iron-location>
     </template>
@@ -182,11 +155,10 @@
                 'editButton.tap': '_editButtonTapped',
                 'addImageButton.tap': '_addImageButtonTapped',
                 'addNoteButton.tap': '_addNoteButtonTapped',
-                'noteDialog.iron-overlay-closed': '_noteDialogClosed',
-                'note-card-edit': '_editNoteTapped',
                 'image-list-main-image-changed': '_mainImageChanged',
                 'recipeEdit.recipe-edit-cancel': '_editCanceled',
-                'recipeEdit.recipe-edit-save': '_editSaved'
+                'recipeEdit.recipe-edit-save': '_editSaved',
+                'confirmDelete.tap': '_deleteRecipe'
             },
 
             refresh: function() {
@@ -208,15 +180,17 @@
                 this.$.actions.close();
             },
             _deleteButtonTapped: function(e) {
-                this.confirmationText = "Are you sure you want to delete this recipe?";
-                var self = this;
-                this.$.confirmYes.onclick = function(e) {
-                    self.$.deleteAjax.generateRequest();
-                };
-                this.$.confirmDialog.open();
+                e.preventDefault();
+
+                this.$.confirmDeleteDialog.open();
                 this.$.actions.close();
             },
+            _deleteRecipe: function(e) {
+                this.$.deleteAjax.generateRequest();
+            },
             _editButtonTapped: function(e) {
+                e.preventDefault();
+
                 this.$.actions.close();
                 this.$.recipeEdit.refresh();
                 this.editing = true;
@@ -236,30 +210,8 @@
             },
 
             _addNoteButtonTapped: function(e) {
-                this.noteId = null;
-                this.noteText = '';
                 this.$.actions.close();
-                this.$.noteDialog.open();
-            },
-            _noteDialogClosed: function(e) {
-                if (e.detail.confirmed) {
-                    if (this.noteId) {
-                        this.$.putNoteAjax.body = JSON.stringify({
-                            "id": this.noteId,
-                            "recipeId": this.recipe.id,
-                            "text": this.noteText
-                        });
-                        this.$.putNoteAjax.generateRequest();
-                    } else {
-                        this.$.postNoteAjax.body = JSON.stringify({"recipeId": this.recipe.id, "text": this.noteText });
-                        this.$.postNoteAjax.generateRequest();
-                    }
-                }
-            },
-            _editNoteTapped: function (e) {
-                this.noteId = e.target.note.id;
-                this.noteText = e.target.note.text;
-                this.$.noteDialog.open();
+                this.$.noteList.add();
             },
 
             _mainImageChanged: function(e) {
@@ -269,12 +221,6 @@
 
             _handleDeleteRecipeResponse: function(e) {
                 this.$.ironLocation.set("path", "/search");
-            },
-            _handlePostNoteResponse: function(e) {
-                this.$.noteList.refresh();
-            },
-            _handlePutNoteResponse: function(e) {
-                this.$.noteList.refresh();
                 this.onLoaded();
             },
             _handleRequest: function(e) {
