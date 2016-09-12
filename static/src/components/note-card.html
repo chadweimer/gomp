@@ -53,6 +53,12 @@
                 top: 0;
                 right: 0;
             }
+            .amber {
+                color: var(--paper-amber-500);
+            }
+            .red {
+                color: var(--paper-red-500);
+            }
             #confirmDeleteDialog {
                 --confirmation-dialog-title-color: var(--paper-red-500);
             }
@@ -66,8 +72,8 @@
                     <paper-menu-button id="noteMenu" horizontal-align="right">
                         <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                         <paper-menu class="dropdown-content">
-                            <paper-item><a id="edit" href="#!"><iron-icon icon="icons:create"></iron-icon> Edit</a></paper-item>
-                            <paper-item><a id="delete" href="#!"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
+                            <paper-item><a id="edit" href="#!"><iron-icon class="amber" icon="icons:create"></iron-icon> Edit</a></paper-item>
+                            <paper-item><a id="delete" href="#!"><iron-icon class="red" icon="icons:delete"></iron-icon> Delete</a></paper-item>
                         </paper-menu>
                     </paper-menu-button>
                 </div>

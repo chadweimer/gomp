@@ -34,8 +34,17 @@
             #addDialog h2 {
                 color: var(--paper-teal-500);
             }
+            #confirmMainImageDialog {
+                --confirmation-dialog-title-color: var(--paper-blue-500);
+            }
             #confirmDeleteDialog {
                 --confirmation-dialog-title-color: var(--paper-red-500);
+            }
+            .blue {
+                color: var(--paper-blue-500);
+            }
+            .red {
+                color: var(--paper-red-500);
             }
             .imageContainer {
                 margin: 2px;
@@ -59,8 +68,8 @@
                 <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                     <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                     <paper-menu class="dropdown-content">
-                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon icon="image:photo-library"></iron-icon> Set as main picture</a></paper-item>
-                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
+                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon class="blue" icon="image:photo-library"></iron-icon> Set as main picture</a></paper-item>
+                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon class="red" icon="icons:delete"></iron-icon> Delete</a></paper-item>
                     </paper-menu>
                 </paper-menu-button>
             </div>
