@@ -15,6 +15,8 @@
 
 <link rel="import" href="../behaviors/gomp-core-behavior.html">
 
+<link rel="import" href="confirmation-dialog.html">
+
 <dom-module id="image-list">
     <template>
         <style>
@@ -32,8 +34,8 @@
             #addDialog h2 {
                 color: var(--paper-teal-500);
             }
-            #confirmDeleteDialog h2 {
-                color: var(--paper-red-500);
+            #confirmDeleteDialog {
+                --confirmation-dialog-title-color: var(--paper-red-500);
             }
             .imageContainer {
                 margin: 2px;
@@ -57,7 +59,7 @@
                 <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                     <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
                     <paper-menu class="dropdown-content">
-                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon icon="image:photo-library"></iron-icon> Set as main image</a></paper-item>
+                        <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon icon="image:photo-library"></iron-icon> Set as main picture</a></paper-item>
                         <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon icon="icons:delete"></iron-icon> Delete</a></paper-item>
                     </paper-menu>
                 </paper-menu-button>
@@ -82,14 +84,15 @@
             </h2>
         </paper-dialog>
 
-        <paper-dialog id="confirmDeleteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <h2><iron-icon icon="icons:delete"></iron-icon> <span>Delete Picture?</span></h2>
-            <p>Are you sure you want to delete this picture?</p>
-            <div class="buttons">
-                <paper-button dialog-dismiss>No</paper-button>
-                <paper-button id="confirmDelete" dialog-confirm>Yes</paper-button>
-            </div>
-        </paper-dialog>
+        <confirmation-dialog
+            id="confirmMainImageDialog"
+            title="Change Main Picture?"
+            message="Are you sure you want to make this the main picture for the recipe?"></confirmation-dialog>
+        <confirmation-dialog
+            id="confirmDeleteDialog"
+            icon="delete"
+            title="Delete Picture?"
+            message="Are you sure you want to delete this picture?"></confirmation-dialog>
 
         <iron-ajax
             auto
@@ -142,7 +145,8 @@
             },
             listeners: {
                 'addDialog.iron-overlay-closed': '_addDialogClosed',
-                'confirmDelete.tap': '_deleteImage'
+                'confirmMainImageDialog.confirmed': '_setMainImage',
+                'confirmDeleteDialog.confirmed': '_deleteImage'
             },
 
             refresh: function() {
@@ -163,6 +167,10 @@
                 e.preventDefault();
 
                 e.target.closest("#imageMenu").close();
+                this.$.confirmMainImageDialog.dataId = e.target.dataId;
+                this.$.confirmMainImageDialog.open();
+            },
+            _setMainImage: function(e) {
                 this.$.setMainImageAjax.body = parseInt(e.target.dataId, 10);
                 this.$.setMainImageAjax.generateRequest();
             },
@@ -170,7 +178,7 @@
                 e.preventDefault();
                 
                 e.target.closest("#imageMenu").close();
-                this.$.confirmDelete.dataId = e.target.dataId;
+                this.$.confirmDeleteDialog.dataId = e.target.dataId;
                 this.$.confirmDeleteDialog.open();
             },
             _deleteImage: function(e) {
