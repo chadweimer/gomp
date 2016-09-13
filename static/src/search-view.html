@@ -70,7 +70,11 @@
                 vertical-align: middle;
                 margin: 5px;
             }
-            
+            #settingsIcon {
+                cursor: pointer;
+                float: right;
+                color: var(--paper-grey-800);
+            }
             @media screen and (min-width: 993px) {
                 .recipeContainer {
                     width: 33%;
@@ -133,7 +137,7 @@
             <div class="section">
                 <div>
                     <span>[[totalRecipeCount]] results</span>
-                    <iron-icon style="float: right; cursor: pointer;" icon="icons:settings" drawer-toggle></iron-icon>
+                    <iron-icon id="settingsIcon" icon="icons:settings" drawer-toggle></iron-icon>
                 </div>
                 <div class="pagination">
                     <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
