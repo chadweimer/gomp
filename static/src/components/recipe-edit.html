@@ -104,9 +104,13 @@
             },
 
             _cancelButtonTapped: function(e) {
+                e.preventDefault();
+
                 this.fire("recipe-edit-cancel");
             },
             _saveButtonTapped: function(e) {
+                e.preventDefault();
+
                 if (this.recipeId) {
                     this.$.putAjax.body = JSON.stringify(this.recipe);
                     this.$.putAjax.generateRequest();
