@@ -66,8 +66,14 @@
                 }
             },
 
-            _isActiveChanged: function(newValue, oldValue) {
-                if (newValue) {
+            ready: function() {
+                if (this.isActive) {
+                    this._refreshLists();
+                }
+            },
+
+            _isActiveChanged: function(isActive) {
+                if (isActive && this.isReady) {
                     this._refreshLists();
                 }
             },

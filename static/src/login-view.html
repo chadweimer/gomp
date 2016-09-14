@@ -82,8 +82,8 @@
                 'password.keydown': 'onInputKeydown'
             },
 
-            _isActiveChanged: function(newValue, oldValue) {
-                if (newValue) {
+            _isActiveChanged: function(isActive) {
+                if (isActive) {
                     this.username = '';
                     this.password = '';
                     this.errorMessage = '';

@@ -78,11 +78,17 @@
                 'saveButton.tap': '_saveButtonTapped'
             },
 
+            ready: function() {
+                if (this.isActive) {
+                    this.$.tagsInput.refresh();
+                }
+            },
+
             refresh: function() {
                 this.$.getAjax.generateRequest();
                 this.$.tagsInput.refresh();
             },
-            _isActiveChanged: function() {
+            _isActiveChanged: function(isActive) {
                 if (!this.recipeId) {
                     this.recipe = {
                         name: '',
@@ -94,7 +100,9 @@
                         tags: []
                     };
                 }
-                this.$.tagsInput.refresh();
+                if (isActive && this.isReady) {
+                    this.$.tagsInput.refresh();
+                }
             },
 
             _cancelButtonTapped: function(e) {
