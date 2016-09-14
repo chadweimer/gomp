@@ -297,28 +297,40 @@
             },
 
             _onFullViewTapped: function(e) {
+                e.preventDefault();
+
                 this.viewMode = "full";
                 this.$.settingsDrawer.close();
             },
             _onCompactViewTapped: function(e) {
+                e.preventDefault();
+
                 this.viewMode = "compact";
                 this.$.settingsDrawer.close();
             },
             _onNameSortTapped: function(e) {
+                e.preventDefault();
+
                 this.sortBy = "name";
                 this.sortDir = "asc";
                 this.$.settingsDrawer.close();
             },
             _onRatingSortTapped: function(e) {
+                e.preventDefault();
+
                 this.sortBy = "rating";
                 this.sortDir = "desc";
                 this.$.settingsDrawer.close();
             },
             _onAscSortTapped: function(e) {
+                e.preventDefault();
+
                 this.sortDir = "asc";
                 this.$.settingsDrawer.close();
             },
             _onDescSortTapped: function(e) {
+                e.preventDefault();
+
                 this.sortDir = "desc";
                 this.$.settingsDrawer.close();
             },

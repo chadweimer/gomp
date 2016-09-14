@@ -57,9 +57,13 @@
             },
 
             _onDismissButtonTapped: function(e) {
+                e.preventDefault();
+
                 this.fire("dismissed");
             },
             _onConfirmButtonTapped: function(e) {
+                e.preventDefault();
+                
                 this.fire("confirmed");
             }
         });

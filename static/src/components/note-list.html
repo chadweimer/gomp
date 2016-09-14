@@ -131,6 +131,8 @@
                 }
             },
             _editNoteTapped: function (e) {
+                e.preventDefault();
+                
                 this.noteId = e.target.note.id;
                 this.noteText = e.target.note.text;
                 this.$.noteDialog.open();

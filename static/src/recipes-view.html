@@ -203,11 +203,15 @@
             },
 
             _addImageButtonTapped: function(e) {
+                e.preventDefault();
+
                 this.$.actions.close();
                 this.$.imageList.add();
             },
 
             _addNoteButtonTapped: function(e) {
+                e.preventDefault();
+                
                 this.$.actions.close();
                 this.$.noteList.add();
             },

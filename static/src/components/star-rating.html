@@ -94,6 +94,8 @@
             },
 
             _starTapped: function(e) {
+                e.preventDefault();
+
                 this.fire("star-rating-selected", {rating: e.target.dataset.rating});
             }
         });

@@ -91,6 +91,8 @@
             },
 
             onLoginTapped: function(e) {
+                e.preventDefault();
+                
                 this.$.authAjax.body = JSON.stringify({"username":this.username, "password": this.password});
                 this.$.authAjax.generateRequest();
             },

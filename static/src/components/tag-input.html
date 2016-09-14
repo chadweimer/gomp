@@ -104,6 +104,8 @@
             },
 
             _onSuggestedTagTapped: function(e) {
+                e.preventDefault();
+
                 this.add(e.model.item);
                 
                 // Remove the tag from the suggestion list
@@ -119,6 +121,8 @@
                 }
             },
             _onTagRemoveTapped: function(e) {
+                e.preventDefault();
+
                 this.remove(e.model.item);
             },
             _handleGetSuggestedTagsRequest: function(e) {
