@@ -85,7 +85,6 @@
 
         <div class="container">
             <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]" hidden$="[[editing]]"></recipe-display>
-            <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]" hidden$="[[!editing]]"></recipe-edit>
             <div class="tab-container" hidden$="[[editing]]">
                 <div id="images" class="tab">
                     <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
@@ -93,6 +92,10 @@
                 <div id="notes" class="tab">
                     <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
                 </div>
+            </div>
+            <div hidden$="[[!editing]]">
+                <h3>Edit Recipe</h3>
+                <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]"></recipe-edit>
             </div>
         </div>
         <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]">
@@ -109,7 +112,7 @@
             title="Delete Recipe?"
             message="Are you sure you want to delete this recipe?"></confirmation-dialog>
 
-        <iron-ajax
+        <iron-ajax bubbles
             id="deleteAjax"
             url="/api/v1/recipes/[[recipeId]]"
             method="DELETE"

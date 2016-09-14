@@ -37,7 +37,7 @@
             </div>
         </paper-card>
 
-        <iron-ajax
+        <iron-ajax bubbles
             auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
@@ -47,7 +47,7 @@
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
             on-error="_handleGetRecipeError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="putAjax"
             url="/api/v1/recipes/[[recipeId]]"
             headers="[[ajaxHeaders]]"
@@ -56,7 +56,7 @@
             on-request="_handlePutPostRecipeRequest"
             on-response="_handlePutRecipeResponse"
             on-error="_handlePutPostRecipeError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="postAjax"
             url="/api/v1/recipes"
             headers="[[ajaxHeaders]]"

@@ -103,7 +103,7 @@
             title="Delete Picture?"
             message="Are you sure you want to delete this picture?"></confirmation-dialog>
 
-        <iron-ajax
+        <iron-ajax bubbles
             auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
@@ -112,7 +112,7 @@
             on-request="_handleGetImagesRequest"
             on-response="_handleGetImagesResponse"
             on-error="_onRequestError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="addAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
             method="POST"
@@ -121,7 +121,7 @@
             on-request="_handleAddRequest"
             on-response="_handleAddResponse",
             on-error="_handleAddError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="setMainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
             method="PUT"
@@ -130,7 +130,7 @@
             on-request="_handleSetMainImageRequest"
             on-response="_handleSetMainImageResponse"
             on-error="_onRequestError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="deleteAjax"
             method="DELETE"
             headers="[[ajaxHeaders]]"

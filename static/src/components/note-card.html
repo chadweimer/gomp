@@ -92,7 +92,7 @@
             title="Delete Note?"
             message="Are you sure you want to delete this note?"></confirmation-dialog>
 
-        <iron-ajax
+        <iron-ajax bubbles
             id="deleteAjax"
             url="/api/v1/notes/[[note.id]]"
             method="DELETE"

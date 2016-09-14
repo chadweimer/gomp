@@ -59,7 +59,7 @@
             </div>
         </paper-dialog>
 
-        <iron-ajax
+        <iron-ajax bubbles
             auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/notes"
@@ -68,7 +68,7 @@
             on-request="_handleGetRequest"
             on-response="_handleGetResponse"
             on-error="_handleError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="postNoteAjax"
             url="/api/v1/notes"
             method="POST"
@@ -77,7 +77,7 @@
             on-request="_handleRequest"
             on-response="_handlePostNoteResponse"
             on-error="_handleError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="putNoteAjax"
             url="/api/v1/notes/[[noteId]]"
             method="PUT"

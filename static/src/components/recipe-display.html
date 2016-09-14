@@ -82,7 +82,7 @@
             </div>
         </paper-card>
 
-        <iron-ajax
+        <iron-ajax bubbles
             auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
@@ -92,7 +92,7 @@
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"
             on-error="_handleError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             auto
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
@@ -101,7 +101,7 @@
             on-request="_handleGetMainImageRequest"
             on-response="_handleGetMainImageResponse"
             on-error="_handleError"></iron-ajax>
-        <iron-ajax
+        <iron-ajax bubbles
             id="rateAjax"
             url="/api/v1/recipes/[[recipeId]]/rating"
             method="PUT"

@@ -196,7 +196,7 @@
         <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
         <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
         <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
-        <iron-ajax
+        <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
             headers="[[ajaxHeaders]]"
@@ -253,7 +253,8 @@
                 'iron-overlay-opened': '_patchOverlay',
                 'filterDialog.save': '_searchFiltersChanged',
                 'recipes-changed': '_recipesChanged',
-                'change-page': '_changePageRequested'
+                'change-page': '_changePageRequested',
+                'iron-ajax-error': '_onAjaxError'
             },
 
             ready: function() {
@@ -335,6 +336,11 @@
                 sessionStorage.clear();
                 this.ajaxHeaders = null;
                 this._changeRoute("/login");
+            },
+            _onAjaxError: function(e) {
+                if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
+                    this._logout();
+                }
             },
             _onSearch: function(e) {
                 this.search = e.target.query.trim();
