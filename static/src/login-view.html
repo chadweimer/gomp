@@ -101,12 +101,13 @@
                 }
             },
 
-            handlePostAuthRequest: function(request) {
+            handlePostAuthRequest: function(e) {
                 this.errorMessage = '';
             },
-            handlePostAuthResponse: function(request) {
+            handlePostAuthResponse: function(e) {
                 localStorage.setItem("username", this.username);
-                localStorage.setItem("jwtToken", request.detail.response.token);
+                localStorage.setItem("jwtToken", e.detail.response.token);
+                this.fire('authenticated', e.detail.response.token);
                 this.fire("change-page", "/");
             },
             handlePostAuthError : function() {

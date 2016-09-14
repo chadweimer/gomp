@@ -254,7 +254,8 @@
                 'filterDialog.save': '_searchFiltersChanged',
                 'recipes-changed': '_recipesChanged',
                 'change-page': '_changePageRequested',
-                'iron-ajax-error': '_onAjaxError'
+                'iron-ajax-error': '_onAjaxError',
+                'authenticated': '_onAuthenticated'
             },
 
             ready: function() {
@@ -262,6 +263,10 @@
                 this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
             },
 
+            _onAuthenticated: function(e) {
+                // This is a workaround for a race condition  during login
+                this.jwtToken = e.detail;
+            },
             _jwtTokenChanged: function(jwtToken) {
                 this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
             },
