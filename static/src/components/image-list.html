@@ -103,15 +103,13 @@
             title="Delete Picture?"
             message="Are you sure you want to delete this picture?"></confirmation-dialog>
 
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetImagesRequest"
-            on-response="_handleGetImagesResponse"
-            on-error="_onRequestError"></iron-ajax>
+            on-response="_handleGetImagesResponse"></iron-ajax>
         <iron-ajax bubbles
             id="addAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
@@ -127,17 +125,13 @@
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handleSetMainImageRequest"
-            on-response="_handleSetMainImageResponse"
-            on-error="_onRequestError"></iron-ajax>
+            on-response="_handleSetMainImageResponse"></iron-ajax>
         <iron-ajax bubbles
             id="deleteAjax"
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handleDeleteRequest"
-            on-response="_handleDeleteResponse"
-            on-error="_onRequestError"></iron-ajax>
+            on-response="_handleDeleteResponse"></iron-ajax>
     </template>
 
     <script>
@@ -196,42 +190,26 @@
             },
 
             _handleGetImagesRequest: function(e) {
-                this.onLoading();
                 this.images = [];
             },
             _handleGetImagesResponse: function(e) {
                 this.images = e.detail.response;
-                this.onLoaded();
             },
             _handleAddRequest: function(e) {
-                this.onLoading();
                 this.$.uploadingDialog.open();
             },
             _handleAddResponse: function(e) {
                 this.$.uploadingDialog.close();
                 this.refresh();
-                this.onLoaded();
             },
             _handleAddError: function(e) {
                 this.$.uploadingDialog.close();
-                this.onLoaded();
-            },
-            _handleSetMainImageRequest: function(e) {
-                this.onLoading();
             },
             _handleSetMainImageResponse: function(e) {
                 this.fire('image-list-main-image-changed');
-                this.onLoaded();
-            },
-            _handleDeleteRequest: function(e) {
-                this.onLoading();
             },
             _handleDeleteResponse: function(e) {
                 this.refresh();
-                this.onLoaded();
-            },
-            _onRequestError: function(e) {
-                this.onLoaded();
             }
         });
     </script>

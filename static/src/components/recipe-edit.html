@@ -37,34 +37,28 @@
             </div>
         </paper-card>
 
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
             headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
-            on-response="_handleGetRecipeResponse"
-            on-error="_handleGetRecipeError"></iron-ajax>
+            on-response="_handleGetRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             id="putAjax"
             url="/api/v1/recipes/[[recipeId]]"
             headers="[[ajaxHeaders]]"
             method="PUT"
             handle-as="json"
-            on-request="_handlePutPostRecipeRequest"
-            on-response="_handlePutRecipeResponse"
-            on-error="_handlePutPostRecipeError"></iron-ajax>
+            on-response="_handlePutRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             id="postAjax"
             url="/api/v1/recipes"
             headers="[[ajaxHeaders]]"
             method="POST"
             handle-as="json"
-            on-request="_handlePutPostRecipeRequest"
-            on-response="_handlePostRecipeResponse"
-            on-error="_handlePutPostRecipeError"></iron-ajax>
+            on-response="_handlePostRecipeResponse"></iron-ajax>
     </template>
 
     <script>
@@ -121,25 +115,16 @@
             },
 
             _handleGetRecipeRequest: function(e) {
-                this.onLoading();
                 if (this.recipeId) {
                     this.recipe = null;
                 }
             },
             _handleGetRecipeResponse: function(e) {
                 this.recipe = e.detail.response;
-                this.onLoaded();
-            },
-            _handleGetRecipeError: function(e) {
-                this.onLoaded();
-            },
-            _handlePutPostRecipeRequest: function(e) {
-                this.onLoading();
             },
             _handlePutRecipeResponse: function(e) {
                 this.fire("recipe-edit-save");
                 this.fire("recipes-changed");
-                this.onLoaded();
             },
             _handlePostRecipeResponse: function(e) {
                 var temp = document.createElement('a');
@@ -153,11 +138,7 @@
                 }
                 this.fire("recipe-edit-save", {redirectUrl: '/recipes/' + newRecipeId});
                 this.fire("recipes-changed");
-                this.onLoaded();
-            },
-            _handlePutPostRecipeError: function(e) {
-                this.onLoaded();
-            },
+            }
         });
     </script>
 </dom-module>

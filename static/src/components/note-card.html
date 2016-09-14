@@ -98,9 +98,7 @@
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handleDeleteRequest"
-            on-response="_handleDeleteResponse"
-            on-error="_handleDeleteError"></iron-ajax>
+            on-response="_handleDeleteResponse"></iron-ajax>
     </template>
 
     <script>
@@ -144,15 +142,8 @@
                 return note.modifiedAt !== note.createdAt;
             },
 
-            _handleDeleteRequest: function(e) {
-                this.onLoading();
-            },
             _handleDeleteResponse: function(e) {
                 this.fire("note-card-deleted");
-                this.onLoaded();
-            },
-            _handleDeleteError: function(e) {
-                this.onLoaded();
             }
         });
     </script>

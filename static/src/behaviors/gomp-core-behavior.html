@@ -28,12 +28,6 @@
         ready: function() {
             this.isReady = true;
         },
-        onLoading: function() {
-            this.fire('loading-started');
-        },
-        onLoaded: function() {
-            this.fire('loading-complete');
-        },
         _jwtTokenChanged: function(jwtToken) {
             this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
         },

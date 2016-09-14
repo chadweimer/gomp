@@ -239,6 +239,11 @@
                     reflectToAttribute: true,
                     notify: true,
                     observer: '_pageChanged'
+                },
+                loadingCount : {
+                    type: Number,
+                    notify: true,
+                    value: 0
                 }
             },
             observers: [
@@ -248,18 +253,17 @@
             listeners: {
                 'scroll-top': '_scrollToTop',
                 'home-list-link-clicked': '_onHomeLinkClicked',
-                'loading-started': '_loadingStarted',
-                'loading-complete': '_loadingComplete',
                 'iron-overlay-opened': '_patchOverlay',
                 'filterDialog.save': '_searchFiltersChanged',
                 'recipes-changed': '_recipesChanged',
                 'change-page': '_changePageRequested',
+                'iron-ajax-request': '_onAjaxRequest',
+                'iron-ajax-response': '_onAjaxResponse',
                 'iron-ajax-error': '_onAjaxError',
                 'authenticated': '_onAuthenticated'
             },
 
             ready: function() {
-                this.loadingCount = 0;
                 this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
             },
 
@@ -282,14 +286,21 @@
                 }
             },
             
-            _loadingStarted: function(e) {
+            _isLoading: function(loadingCount) {
+                return loadingCount != 0;
+            },
+            
+            _onAjaxRequest: function(e) {
                 this.loadingCount++;
             },
-            _loadingComplete: function(e) {
+            _onAjaxResponse: function(e) {
                 this.loadingCount--;
             },
-            _isLoading: function(loadingCount) {
-                return loadingCount > 0;
+            _onAjaxError: function(e) {
+                this.loadingCount--;
+                if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
+                    this._logout();
+                }
             },
 
             _routePageChanged: function(page) {
@@ -342,11 +353,6 @@
                 sessionStorage.clear();
                 this.ajaxHeaders = null;
                 this._changeRoute("/login");
-            },
-            _onAjaxError: function(e) {
-                if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
-                    this._logout();
-                }
             },
             _onSearch: function(e) {
                 this.search = e.target.query.trim();

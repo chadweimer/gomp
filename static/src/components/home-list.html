@@ -89,8 +89,7 @@
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipesRequest"
-            on-response="_handleGetRecipesResponse"
-            on-error="_handleGetRecipesError"></iron-ajax>
+            on-response="_handleGetRecipesResponse"></iron-ajax>
     </template>
 
     <script>
@@ -127,17 +126,12 @@
                 this.$.recipesAjax.generateRequest();
             },
             _handleGetRecipesRequest: function(e) {
-                this.onLoading();
                 this.total = 0;
                 this.recipes = [];
             },
             _handleGetRecipesResponse: function(e) {
                 this.total = e.detail.response.total;
                 this.recipes = e.detail.response.recipes;
-                this.onLoaded();
-            },
-            _handleGetRecipesError: function(e) {
-                this.onLoaded();
             },
             _onLinkTapped: function(e) {
                 e.preventDefault();

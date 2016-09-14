@@ -64,8 +64,7 @@
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetSuggestedTagsRequest"
-            on-response="_handleGetSuggestedTagsResponse"
-            on-error="_handleGetSuggestedTagsError"></iron-ajax>
+            on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
     </template>
 
     <script>
@@ -126,15 +125,10 @@
                 this.remove(e.model.item);
             },
             _handleGetSuggestedTagsRequest: function(e) {
-                this.onLoading();
+                this.suggestedTags = [];
             },
             _handleGetSuggestedTagsResponse: function(e) {
                 this.suggestedTags = e.detail.response;
-                this.onLoaded();
-            },
-            _handleGetSuggestedTagsError: function(e) {
-                this.suggestedTags = e.detail.response;
-                this.onLoaded();
             }
         });
     </script>

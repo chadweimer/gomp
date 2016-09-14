@@ -59,33 +59,27 @@
             </div>
         </paper-dialog>
 
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/notes"
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetRequest"
-            on-response="_handleGetResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handleGetResponse"></iron-ajax>
         <iron-ajax bubbles
             id="postNoteAjax"
             url="/api/v1/notes"
             method="POST"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handleRequest"
-            on-response="_handlePostNoteResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handlePostNoteResponse"></iron-ajax>
         <iron-ajax bubbles
             id="putNoteAjax"
             url="/api/v1/notes/[[noteId]]"
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handleRequest"
-            on-response="_handlePutNoteResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handlePutNoteResponse"></iron-ajax>
     </template>
 
     <script>
@@ -142,26 +136,16 @@
             },
 
             _handleGetRequest: function(e) {
-                this.onLoading();
                 this.notes = [];
             },
             _handleGetResponse: function(e) {
                 this.notes = e.detail.response;
-                this.onLoaded();
             },
             _handlePostNoteResponse: function(e) {
                 this.refresh();
-                this.onLoaded();
             },
             _handlePutNoteResponse: function(e) {
                 this.refresh();
-                this.onLoaded();
-            },
-            _handleRequest: function(e) {
-                this.onLoading();
-            },
-            _handleError: function(e) {
-                this.onLoaded();
             }
         });
     </script>

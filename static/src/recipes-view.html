@@ -118,9 +118,7 @@
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handleRequest"
-            on-response="_handleDeleteRecipeResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handleDeleteRecipeResponse"></iron-ajax>
     </template>
 
     <script>
@@ -225,13 +223,6 @@
             _handleDeleteRecipeResponse: function(e) {
                 this.fire("recipes-changed");
                 this.fire("change-page", "/search");
-                this.onLoaded();
-            },
-            _handleRequest: function(e) {
-                this.onLoading();
-            },
-            _handleError: function(e) {
-                this.onLoaded();
             }
 
         });

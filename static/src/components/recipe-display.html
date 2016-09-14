@@ -82,16 +82,14 @@
             </div>
         </paper-card>
 
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
             headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
-            on-response="_handleGetRecipeResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handleGetRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             auto
             id="mainImageAjax"
@@ -99,17 +97,14 @@
             headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetMainImageRequest"
-            on-response="_handleGetMainImageResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handleGetMainImageResponse"></iron-ajax>
         <iron-ajax bubbles
             id="rateAjax"
             url="/api/v1/recipes/[[recipeId]]/rating"
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-request="_handlePutRecipeRatingRequest"
-            on-response="_handlePutRecipeRatingResponse"
-            on-error="_handleError"></iron-ajax>
+            on-response="_handlePutRecipeRatingResponse"></iron-ajax>
     </template>
 
     <script>
@@ -141,29 +136,19 @@
             },
 
             _handleGetRecipeRequest: function(e) {
-                this.onLoading();
                 this.recipe = null;
             },
             _handleGetRecipeResponse: function(e) {
                 this.recipe = e.detail.response;
-                this.onLoaded();
             },
             _handleGetMainImageRequest: function(e) {
-                this.onLoading();
                 this.mainImage = null;
             },
             _handleGetMainImageResponse: function(e) {
                 this.mainImage = e.detail.response;
-                this.onLoaded();
-            },
-            _handlePutRecipeRatingRequest: function(e) {
-                this.onLoading();
             },
             _handlePutRecipeRatingResponse: function(e) {
                 this.set("recipe.averageRating", parseFloat(e.target.body));
-            },
-            _handleError: function(e) {
-                this.onLoaded();
             }
         });
     </script>
