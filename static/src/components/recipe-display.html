@@ -104,7 +104,8 @@
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handlePutRecipeRatingResponse"></iron-ajax>
+            on-response="_handlePutRecipeRatingResponse"
+            on-error="_handlePutRecipeRatingError"></iron-ajax>
     </template>
 
     <script>
@@ -149,6 +150,10 @@
             },
             _handlePutRecipeRatingResponse: function(e) {
                 this.set("recipe.averageRating", parseFloat(e.target.body));
+                this.fire('show-toast', {message: "Rating changed."});
+            },
+            _handlePutRecipeRatingError: function(e) {
+                this.fire('show-toast', {message: "Changing rating failed!"});
             }
         });
     </script>
