@@ -14,6 +14,7 @@
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
 <link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
 
 <dom-module id="gomp-app">
@@ -191,6 +192,8 @@
             </app-header-layout>
         </app-drawer-layout>
 
+        <paper-toast id="toast" class="fit-bottom"></paper-toast>
+
         <app-localstorage-document key="q" data="{{search}}" session-only></app-localstorage-document>
         <app-localstorage-document key="tags" data="{{searchTags}}" session-only></app-localstorage-document>
         <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
@@ -260,7 +263,8 @@
                 'iron-ajax-request': '_onAjaxRequest',
                 'iron-ajax-response': '_onAjaxResponse',
                 'iron-ajax-error': '_onAjaxError',
-                'authenticated': '_onAuthenticated'
+                'authenticated': '_onAuthenticated',
+                'show-toast': '_onShowToast'
             },
 
             ready: function() {
@@ -289,7 +293,7 @@
             _isLoading: function(loadingCount) {
                 return loadingCount != 0;
             },
-            
+
             _onAjaxRequest: function(e) {
                 this.loadingCount++;
             },
@@ -301,6 +305,11 @@
                 if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
                     this._logout();
                 }
+            },
+
+            _onShowToast: function(e) {
+                this.$.toast.text = e.detail.message;
+                this.$.toast.open();
             },
 
             _routePageChanged: function(page) {

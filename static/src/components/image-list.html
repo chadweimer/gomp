@@ -125,13 +125,15 @@
             method="PUT"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleSetMainImageResponse"></iron-ajax>
+            on-response="_handleSetMainImageResponse"
+            on-error="_handleSetMainImageError"></iron-ajax>
         <iron-ajax bubbles
             id="deleteAjax"
             method="DELETE"
             headers="[[ajaxHeaders]]"
             handle-as="json"
-            on-response="_handleDeleteResponse"></iron-ajax>
+            on-response="_handleDeleteResponse"
+            on-error="_handleDeleteError"></iron-ajax>
     </template>
 
     <script>
@@ -201,15 +203,25 @@
             _handleAddResponse: function(e) {
                 this.$.uploadingDialog.close();
                 this.refresh();
+                this.fire('show-toast', {message: "Upload complete."});
             },
             _handleAddError: function(e) {
                 this.$.uploadingDialog.close();
+                this.fire('show-toast', {message: "Upload failed!"});
             },
             _handleSetMainImageResponse: function(e) {
                 this.fire('image-list-main-image-changed');
+                this.fire('show-toast', {message: "Main picture changed."});
+            },
+            _handleSetMainImageError: function(e) {
+                this.fire('show-toast', {message: "Changing main picture failed!"});
             },
             _handleDeleteResponse: function(e) {
                 this.refresh();
+                this.fire('show-toast', {message: "Picture deleted."});
+            },
+            _handleDeleteError: function(e) {
+                this.fire('show-toast', {message: "Deleting picture failed!"});
             }
         });
     </script>

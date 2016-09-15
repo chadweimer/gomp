@@ -143,9 +143,17 @@
             },
             _handlePostNoteResponse: function(e) {
                 this.refresh();
+                this.fire('show-toast', {message: "Note created."});
+            },
+            _handlePostNoteError: function(e) {
+                this.fire('show-toast', {message: "Creating note failed!"});
             },
             _handlePutNoteResponse: function(e) {
                 this.refresh();
+                this.fire('show-toast', {message: "Note updated."});
+            },
+            _handlePutNoteError: function(e) {
+                this.fire('show-toast', {message: "Updating note failed!"});
             }
         });
     </script>
