@@ -116,7 +116,8 @@
                     </app-toolbar>
                     <app-toolbar hidden$="[[!jwtToken]]">
                         <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
-                        <div main-title><span class="hide-on-small-only">[[title]]</span></div>
+                        <a href="/" class="hide-on-small-only">[[title]]</a>
+                        <div main-title></div>
                         <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                         <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                         <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
