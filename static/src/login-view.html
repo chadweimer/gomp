@@ -110,7 +110,7 @@
                 localStorage.setItem("username", this.username);
                 localStorage.setItem("jwtToken", e.detail.response.token);
                 this.fire('authenticated', e.detail.response.token);
-                this.fire("change-page", "/");
+                this.fire("change-page", "/home");
             },
             handlePostAuthError : function() {
                 this.password = '';

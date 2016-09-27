@@ -104,7 +104,7 @@
             <app-drawer id="drawer" swipe-open>
                 <app-toolbar><span>[[title]]</span></app-toolbar>
                 <iron-selector selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
-                    <a name="home" href="/"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
+                    <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
                     <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" item-icon></iron-icon> Recipes</paper-icon-item></a>
                     <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item></a>
                 </iron-selector>
@@ -117,7 +117,7 @@
                     <app-toolbar hidden$="[[!jwtToken]]">
                         <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                         <div main-title><span class="hide-on-small-only">[[title]]</span></div>
-                        <a href="/"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
+                        <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                         <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                         <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
                         
@@ -182,7 +182,7 @@
                     <div class="indented" hidden$="[[!jwtToken]]">
                         <h4>Links</h4>
                         <ul>
-                            <li><a href="/">Home</a></li>
+                            <li><a href="/home">Home</a></li>
                             <li><a href="/search">Recipes</a></li>
                             <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
                         </ul>
@@ -316,11 +316,9 @@
                 this.page = page || 'home';
             },
             _pageChanged: function(page) {
-                if (!this._verifyIsAuthenticated()) {
-                    return;
+                if (this._verifyIsAuthenticated()) {
+                    this.$.tagsAjax.generateRequest();
                 }
-
-                this.$.tagsAjax.generateRequest();
 
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl(page + '-view.html');
@@ -349,11 +347,11 @@
             _verifyIsAuthenticated: function() {
                 this.jwtToken = localStorage.getItem("jwtToken");
                 // Redirect to login if necessary
-                if (this.route.path !== '/login') {
-                    if (this.jwtToken === null) {
+                if (this.jwtToken === null) {
+                    if (this.route.path !== '/login') {
                         this._logout();
-                        return false;
                     }
+                    return false;
                 }
                 return true;
             },
