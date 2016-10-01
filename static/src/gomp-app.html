@@ -300,9 +300,15 @@
             },
             _onAjaxResponse: function(e) {
                 this.loadingCount--;
+                if (this.loadingCount < 0) {
+                    this.loadingCount = 0;
+                }
             },
             _onAjaxError: function(e) {
                 this.loadingCount--;
+                if (this.loadingCount < 0) {
+                    this.loadingCount = 0;
+                }
                 if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
                     this._logout();
                 }
