@@ -1,0 +1,230 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial.html">
+<link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
+<link rel="import" href="components/image-list.html">
+<link rel="import" href="components/note-list.html">
+<link rel="import" href="components/recipe-display.html">
+<link rel="import" href="components/recipe-edit.html">
+
+<dom-module id="recipes-view">
+    <template>
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+            }
+            .container {
+                padding: 8px;
+            }
+            #confirmDeleteDialog {
+                --confirmation-dialog-title-color: var(--paper-red-500);
+            }
+            paper-fab-speed-dial-action.green {
+                --paper-fab-speed-dial-action-background: var(--paper-green-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-green-900);
+            }
+            paper-fab-speed-dial-action.red {
+                --paper-fab-speed-dial-action-background: var(--paper-red-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-red-900);
+            }
+            paper-fab-speed-dial-action.amber {
+                --paper-fab-speed-dial-action-background: var(--paper-amber-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-amber-900);
+            }
+            paper-fab-speed-dial-action.teal {
+                --paper-fab-speed-dial-action-background: var(--paper-teal-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-teal-900);
+            }
+            paper-fab-speed-dial-action.blue {
+                --paper-fab-speed-dial-action-background: var(--paper-blue-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-blue-900);
+            }
+            .tab-container {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
+            .tab {
+                margin: 8px;
+            }
+            @media screen and (min-width: 993px) {
+                .tab {
+                    width: calc(50% - 16px);
+                }
+                paper-dialog {
+                    width: 33%;
+                }
+            }
+            @media screen and (min-width: 601px) and (max-width: 992px) {
+                .tab {
+                    width: calc(100% - 16px);
+                }
+                paper-dialog {
+                    width: 75%;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                .tab {
+                    width: calc(100% - 16px);
+                }
+                paper-dialog {
+                    width: 100%;
+                }
+            }
+        </style>
+
+        <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}"></app-route>
+
+        <div class="container">
+            <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]" hidden$="[[editing]]"></recipe-display>
+            <div class="tab-container" hidden$="[[editing]]">
+                <div id="images" class="tab">
+                    <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
+                </div>
+                <div id="notes" class="tab">
+                    <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
+                </div>
+            </div>
+            <div hidden$="[[!editing]]">
+                <h3>Edit Recipe</h3>
+                <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]"></recipe-edit>
+            </div>
+        </div>
+        <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]">
+            <a href="/create"><paper-fab-speed-dial-action id="newButton" class="green" icon="icons:add">New</paper-fab-speed-dial-action></a>
+            <paper-fab-speed-dial-action id="deleteButton" class="red" icon="icons:delete">Delete</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="editButton" class="amber" icon="icons:create">Edit</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="addImageButton" class="teal" icon="image:add-a-photo">Upload Picture</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action id="addNoteButton" class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
+        </paper-fab-speed-dial>
+
+        <confirmation-dialog
+            id="confirmDeleteDialog"
+            icon="delete"
+            title="Delete Recipe?"
+            message="Are you sure you want to delete this recipe?"></confirmation-dialog>
+
+        <iron-ajax bubbles
+            id="deleteAjax"
+            url="/api/v1/recipes/[[recipeId]]"
+            method="DELETE"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleDeleteRecipeResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'recipes-view',
+            behaviors: [GompCoreBehavior],
+
+            properties: {
+                route: {
+                    type: Object,
+                    notify: true
+                },
+                recipeId: {
+                    type: String,
+                    notify: true
+                },
+                editing: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                }
+            },
+            observers: [
+                '_recipeIdChanged(routeData.recipeId)'
+            ],
+            listeners: {
+                'newButton.tap': '_newButtonTapped',
+                'deleteButton.tap': '_deleteButtonTapped',
+                'editButton.tap': '_editButtonTapped',
+                'addImageButton.tap': '_addImageButtonTapped',
+                'addNoteButton.tap': '_addNoteButtonTapped',
+                'image-list-main-image-changed': '_mainImageChanged',
+                'recipeEdit.recipe-edit-cancel': '_editCanceled',
+                'recipeEdit.recipe-edit-save': '_editSaved',
+                'confirmDeleteDialog.confirmed': '_deleteRecipe'
+            },
+
+            refresh: function() {
+                this.$.recipeDisplay.refresh();
+                this.$.imageList.refresh();
+                this.$.noteList.refresh();
+            },
+
+            _isActiveChanged: function(active) {
+                // Always exit edit mode when we change screens
+                this.editing = false;
+            },
+
+            _recipeIdChanged: function(recipeId) {
+                this.recipeId = recipeId;
+            },
+
+            _newButtonTapped: function(e) {
+                this.$.actions.close();
+            },
+            _deleteButtonTapped: function(e) {
+                e.preventDefault();
+
+                this.$.confirmDeleteDialog.open();
+                this.$.actions.close();
+            },
+            _deleteRecipe: function(e) {
+                this.$.deleteAjax.generateRequest();
+            },
+            _editButtonTapped: function(e) {
+                e.preventDefault();
+
+                this.$.actions.close();
+                this.$.recipeEdit.refresh();
+                this.editing = true;
+            },
+            _editCanceled: function(e) {
+                this.editing = false;
+                this.refresh();
+            },
+            _editSaved: function(e) {
+                this.editing = false;
+                this.refresh();
+            },
+
+            _addImageButtonTapped: function(e) {
+                e.preventDefault();
+
+                this.$.actions.close();
+                this.$.imageList.add();
+            },
+
+            _addNoteButtonTapped: function(e) {
+                e.preventDefault();
+                
+                this.$.actions.close();
+                this.$.noteList.add();
+            },
+
+            _mainImageChanged: function(e) {
+                this.$.recipeDisplay.refresh({onlyMainImage: true});
+                this.fire("recipes-changed");
+                this.fire("scroll-top");
+            },
+
+            _handleDeleteRecipeResponse: function(e) {
+                this.fire("recipes-changed");
+                this.fire("change-page", "/search");
+            }
+
+        });
+    </script>
+</dom-module>

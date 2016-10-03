@@ -1,0 +1,160 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
+<link rel="import" href="note-card.html">
+
+<dom-module id="note-list">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            note-card {
+                margin: 5px;
+            }
+            header {
+                font-size: 1.5em;
+            }
+            paper-divider {
+                width: 100%;
+            }
+            #confirmDeleteDialog h2 {
+                color: red;
+            }
+            #noteDialog h2 {
+                color: var(--paper-blue-500);
+            }
+            @media screen and (min-width: 993px) {
+                paper-dialog {
+                    width: 33%;
+                }
+            }
+            @media screen and (min-width: 601px) and (max-width: 992px) {
+                paper-dialog {
+                    width: 75%;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                paper-dialog {
+                    width: 100%;
+                }
+            }
+        </style>
+
+        <header>Notes</header>
+        <paper-divider></paper-divider>
+        <template is="dom-repeat" items="[[notes]]">
+            <note-card jwt-token="[[jwtToken]]" note="[[item]]"></note-card>
+        </template>
+
+        <paper-dialog id="noteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h2>
+            <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm>Save</paper-button>
+            </div>
+        </paper-dialog>
+
+        <iron-ajax bubbles auto
+            id="getAjax"
+            url="/api/v1/recipes/[[recipeId]]/notes"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleGetRequest"
+            on-response="_handleGetResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="postNoteAjax"
+            url="/api/v1/notes"
+            method="POST"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePostNoteResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="putNoteAjax"
+            url="/api/v1/notes/[[noteId]]"
+            method="PUT"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handlePutNoteResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'note-list',
+            behaviors: [GompCoreBehavior],
+
+            properties: {
+                recipeId: {
+                    type: String,
+                    notify: true
+                }
+            },
+            listeners: {
+                'note-card-deleted': '_noteDeleted',
+                'noteDialog.iron-overlay-closed': '_noteDialogClosed',
+                'note-card-edit': '_editNoteTapped',
+            },
+
+            refresh: function() {
+                this.$.getAjax.generateRequest();
+            },
+            add: function() {
+                this.noteId = null;
+                this.noteText = '';
+                this.$.noteDialog.open();
+            },
+
+            _noteDialogClosed: function(e) {
+                if (e.detail.confirmed) {
+                    if (this.noteId) {
+                        this.$.putNoteAjax.body = JSON.stringify({
+                            "id": this.noteId,
+                            "recipeId": parseInt(this.recipeId, 10),
+                            "text": this.noteText
+                        });
+                        this.$.putNoteAjax.generateRequest();
+                    } else {
+                        this.$.postNoteAjax.body = JSON.stringify({"recipeId": parseInt(this.recipeId, 10), "text": this.noteText });
+                        this.$.postNoteAjax.generateRequest();
+                    }
+                }
+            },
+            _editNoteTapped: function (e) {
+                e.preventDefault();
+                
+                this.noteId = e.target.note.id;
+                this.noteText = e.target.note.text;
+                this.$.noteDialog.open();
+            },
+            _noteDeleted: function(e) {
+                this.refresh();
+            },
+
+            _handleGetRequest: function(e) {
+                this.notes = [];
+            },
+            _handleGetResponse: function(e) {
+                this.notes = e.detail.response;
+            },
+            _handlePostNoteResponse: function(e) {
+                this.refresh();
+                this.fire('show-toast', {message: "Note created."});
+            },
+            _handlePostNoteError: function(e) {
+                this.fire('show-toast', {message: "Creating note failed!"});
+            },
+            _handlePutNoteResponse: function(e) {
+                this.refresh();
+                this.fire('show-toast', {message: "Note updated."});
+            },
+            _handlePutNoteError: function(e) {
+                this.fire('show-toast', {message: "Updating note failed!"});
+            }
+        });
+    </script>
+</dom-module>

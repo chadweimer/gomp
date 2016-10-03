@@ -1,0 +1,121 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
+<dom-module id="login-view">
+    <template>
+        <style>
+            :host {
+                display: block;
+                padding: 8px;
+            }
+            .container {
+                @apply(--layout-horizontal);
+                @apply(--layout-center-justified);
+            }
+            .error {
+                color: red;
+            }
+            @media screen and (min-width: 601px) {
+                paper-card {
+                    width: 50%;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                paper-card {
+                    width: 100%;
+                }
+            }
+        </style>
+        <div class="container">
+            <paper-card heading="Login">
+                <div class="card-content">
+                    <paper-input id="username" name="username" value="{{username}}" label="Username" required autofocus autocomplete></paper-input>
+                    <paper-input id="password" name="password" value="{{password}}" label="Password" type="password" required></paper-input>
+                    <div class="error">[[errorMessage]]</div>
+                </div>
+                <div class="card-actions">
+                    <paper-button id="loginButton">Login</paper-button>
+                </div>
+            </paper-card>
+        </div>
+
+        <iron-ajax bubbles
+            id="authAjax"
+            url="/api/v1/auth"
+            method="POST"
+            handle-as="json"
+            on-request="handlePostAuthRequest"
+            on-response="handlePostAuthResponse"
+            on-error="handlePostAuthError"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'login-view',
+            behaviors: [GompCoreBehavior],
+
+            properties: {
+                username: {
+                    type: String,
+                    notify: true
+                },
+                password: {
+                    type: String,
+                    notify: true
+                },
+                errorMessage: {
+                    type: String,
+                    notify: true
+                }
+            },
+
+            listeners: {
+                'loginButton.tap': 'onLoginTapped',
+                'username.keydown': 'onInputKeydown',
+                'password.keydown': 'onInputKeydown'
+            },
+
+            _isActiveChanged: function(isActive) {
+                if (isActive) {
+                    this.username = '';
+                    this.password = '';
+                    this.errorMessage = '';
+                }
+            },
+
+            onLoginTapped: function(e) {
+                e.preventDefault();
+                
+                this.$.authAjax.body = JSON.stringify({"username":this.username, "password": this.password});
+                this.$.authAjax.generateRequest();
+            },
+
+            onInputKeydown: function(e) {
+                if (e.keyCode === 13) {
+                    this.$.loginButton.click();
+                }
+            },
+
+            handlePostAuthRequest: function(e) {
+                this.errorMessage = '';
+            },
+            handlePostAuthResponse: function(e) {
+                localStorage.setItem("username", this.username);
+                localStorage.setItem("jwtToken", e.detail.response.token);
+                this.fire('authenticated', e.detail.response.token);
+                this.fire("change-page", "/home");
+            },
+            handlePostAuthError : function() {
+                this.password = '';
+                this.errorMessage = "Login failed. Check your username and password and try again.";
+            }
+        });
+    </script>
+</dom-module>

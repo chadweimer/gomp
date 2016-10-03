@@ -1,0 +1,17 @@
+{
+    "shell": "src/gomp-app.html",
+    "sources": [
+        "src/**/*",
+        "*"
+    ],
+    "fragments": [
+        "src/home-view.html",
+        "src/login-view.html",
+        "src/recipes-view.html",
+        "src/create-view.html",
+        "src/search-view.html"
+    ],
+    "includeDependencies": [
+        "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+    ]
+}

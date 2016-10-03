@@ -1,0 +1,71 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-styles/color.html">
+
+<dom-module id="confirmation-dialog">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            h2 {
+                color: var(--confirmation-dialog-title-color, --paper-blue-500);
+            }
+        </style>
+
+        <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+            <h2><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h2>
+            <p>[[message]]</p>
+            <div class="buttons">
+                <paper-button id="dismissButton" dialog-dismiss>No</paper-button>
+                <paper-button id="confirmButton" dialog-confirm>Yes</paper-button>
+            </div>
+        </paper-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'confirmation-dialog',
+
+            properties: {
+                icon: {
+                    type: String,
+                    value: "help"
+                },
+                title: {
+                    type: String,
+                    value: "Are you sure?"
+                },
+                message: {
+                    type: String,
+                    value: "Are you sure you want to perform the requested operation?"
+                }
+            },
+
+            listeners: {
+                'dismissButton.tap': '_onDismissButtonTapped',
+                'confirmButton.tap': '_onConfirmButtonTapped'
+            },
+
+            open: function() {
+                this.$.dialog.open();
+            },
+
+            _onDismissButtonTapped: function(e) {
+                e.preventDefault();
+
+                this.fire("dismissed");
+            },
+            _onConfirmButtonTapped: function(e) {
+                e.preventDefault();
+                
+                this.fire("confirmed");
+            }
+        });
+    </script>
+</dom-module>

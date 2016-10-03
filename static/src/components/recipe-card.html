@@ -1,0 +1,57 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+
+<link rel="import" href="star-rating.html">
+
+<dom-module id="recipe-card">
+    <template>
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+                cursor: pointer;
+                
+                --paper-card-header: {
+                    height: var(--recipe-card-header-height, 75%);
+                }
+                --paper-card: {
+                    width: 100%;
+                    height: var(--recipe-card-height, 250px);
+                }
+                --star-rating-size: 16px;
+            }
+            paper-card:hover{
+                @apply(--shadow-elevation-6dp);
+            }
+            .truncate {
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        </style>
+        
+        <a href="/recipes/[[recipe.id]]">
+            <paper-card image="[[recipe.mainImage.thumbnailUrl]]">
+                <div class="card-content">
+                    <span class="truncate">[[recipe.name]]</span>
+                    <star-rating value="[[recipe.averageRating]]"></star-rating>
+                </div>
+            </paper-card>
+        </a>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'recipe-card',
+
+            properties: {
+                recipe: {
+                    type: Object,
+                    notify: true
+                }
+            }
+        });
+    </script>
+</dom-module>

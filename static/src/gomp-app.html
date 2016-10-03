@@ -1,0 +1,421 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
+<link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-styles/default-theme.html">
+
+<dom-module id="gomp-app">
+    <template>
+        <style>
+            :root {
+                --primary-color: var(--paper-blue-500);
+                --accent-color: var(--paper-red-500);
+                --light-accent-color: var(--paper-red-300);
+                --dark-accent-color: var(--paper-red-700);
+            }
+            :host {
+                display: block;
+                @apply(--layout-fullbleed);
+            }
+            iron-pages > :not(.iron-selected) {
+                pointer-events: none;
+            }
+
+            app-toolbar {
+                background: var(--primary-color);
+                color: white;
+            }
+            app-toolbar a {
+                color: #ffffff;
+            }
+            paper-progress {
+                width: 100%;
+            }
+            main {
+                @apply(--layout-flex);
+            }
+            footer {
+                color: white;
+                background: var(--paper-grey-500);
+                line-height: 24px;
+            }
+            footer a {
+                color: white;
+            }
+            footer .copyright {
+                background: var(--paper-grey-600);
+                padding-top: 10px;
+                padding-bottom: 10px;
+                font-weight: lighter;
+                font-size: 0.8em;
+            }
+            app-drawer a {
+                display: block;
+            }
+            app-drawer a.iron-selected {
+                background: var(--light-accent-color);
+                color: white;
+            }
+            @media screen and (min-width: 993px) {
+                .hide-on-large-only {
+                    display: none;
+                }
+            }
+            @media screen and (max-width: 992px) {
+                .hide-on-med-and-down {
+                    display: none;
+                }
+            }
+            @media screen and (min-width: 601px) {
+                .indented {
+                    padding-left: 150px;
+                    padding-right: 150px;
+                }
+            }
+            @media screen and (max-width: 600px) {
+                .hide-on-small-only {
+                    display: none;
+                }
+                .indented {
+                    padding-left: 15px;
+                    padding-right: 15px;
+                }
+            }
+        </style>
+
+        <app-location route="{{route}}"></app-location>
+        <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+        <app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control>
+
+        <app-drawer-layout force-narrow fullbleed>
+            <app-drawer id="drawer" swipe-open>
+                <app-toolbar><span>[[title]]</span></app-toolbar>
+                <iron-selector selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
+                    <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
+                    <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" item-icon></iron-icon> Recipes</paper-icon-item></a>
+                    <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item></a>
+                </iron-selector>
+            </app-drawer>
+            <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
+                <app-header reveals shadow>
+                    <app-toolbar hidden$="[[jwtToken]]">
+                        <div main-title>[[title]]</div>
+                    </app-toolbar>
+                    <app-toolbar hidden$="[[!jwtToken]]">
+                        <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
+                        <a href="/" class="hide-on-small-only">[[title]]</a>
+                        <div main-title></div>
+                        <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
+                        <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                        <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                        
+                        <paper-search-bar
+                            icon="search"
+                            query="[[search]]"
+                            nr-selected-filters="[[selectedSearchFiltersCount]]"
+                            on-paper-search-search="_onSearch"
+                            on-paper-search-clear="_onSearch"
+                            on-paper-search-filter="_onFilter"></paper-search-bar>
+                        <paper-filter-dialog
+                            id="filterDialog"
+                            filters="[[searchFilters]]"
+                            selected-filters="{{selectedSearchFilters}}"
+                            save-button="Apply">
+                    </app-toolbar>
+
+                    <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]"></paper-progress>
+                </app-header>
+
+                <main>
+                    <iron-pages selected="[[page]]" attr-for-selected="name">
+                        <home-view
+                            name="home"
+                            jwt-token="[[jwtToken]]"
+                            is-active="[[_isActive(page, 'home')]]"
+                            title="[[homeTitle]]"
+                            image="[[homeImage]]"></home-view>
+
+                        <search-view
+                            id="searchView"
+                            name="search"
+                            jwt-token="[[jwtToken]]"
+                            is-active="[[_isActive(page, 'search')]]"
+                            search="{{search}}"
+                            search-tags="{{searchTags}}"
+                            sort-by="{{sortBy}}"
+                            sort-dir="{{sortDir}}"
+                            view-mode="{{viewMode}}"></search-view>
+
+                        <recipes-view
+                            name="recipes"
+                            jwt-token="[[jwtToken]]"
+                            is-active="[[_isActive(page, 'recipes')]]"
+                            route="[[subroute]]"></recipes-view>
+
+                        <create-view
+                            name="create"
+                            jwt-token="[[jwtToken]]"
+                            is-active="[[_isActive(page, 'create')]]"></create-view>
+
+                        <login-view
+                            name="login"
+                            jwt-token="[[jwtToken]]"
+                            is-active="[[_isActive(page, 'login')]]"></login-view>
+
+                        <status-404-view name="status-404"></status-404-view>
+                    </iron-pages>
+                </main>
+
+                <footer>
+                    <div class="indented" hidden$="[[!jwtToken]]">
+                        <h4>Links</h4>
+                        <ul>
+                            <li><a href="/home">Home</a></li>
+                            <li><a href="/search">Recipes</a></li>
+                            <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
+                        </ul>
+                    </div>
+                    <div class="copyright indented">Copyright &copy; 2016 Chad Weimer</div>
+                </footer>
+            </app-header-layout>
+        </app-drawer-layout>
+
+        <paper-toast id="toast" class="fit-bottom"></paper-toast>
+
+        <app-localstorage-document key="q" data="{{search}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="tags" data="{{searchTags}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
+        <iron-ajax bubbles
+            id="tagsAjax"
+            url="/api/v1/tags"
+            headers="[[ajaxHeaders]]"
+            params='{"sort": "tag", "dir": "asc", "count": 100000}'
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetTagsResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'gomp-app',
+
+            properties: {
+                jwtToken: {
+                    type: String,
+                    notify: true,
+                    observer: '_jwtTokenChanged'
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    notify: true,
+                    value: null
+                },
+                title: {
+                    type: String,
+                    value: 'Go Meal Planner'
+                },
+                homeTitle: {
+                    type: String,
+                    value: 'Go Meal Planner'
+                },
+                homeImage: {
+                    type: String,
+                    value: ''
+                },
+                page: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true,
+                    observer: '_pageChanged'
+                },
+                loadingCount : {
+                    type: Number,
+                    notify: true,
+                    value: 0
+                }
+            },
+            observers: [
+                '_routePageChanged(routeData.page)',
+                '_searchTagsChanged(searchTags)'
+            ],
+            listeners: {
+                'scroll-top': '_scrollToTop',
+                'home-list-link-clicked': '_onHomeLinkClicked',
+                'iron-overlay-opened': '_patchOverlay',
+                'filterDialog.save': '_searchFiltersChanged',
+                'recipes-changed': '_recipesChanged',
+                'change-page': '_changePageRequested',
+                'iron-ajax-request': '_onAjaxRequest',
+                'iron-ajax-response': '_onAjaxResponse',
+                'iron-ajax-error': '_onAjaxError',
+                'authenticated': '_onAuthenticated',
+                'show-toast': '_onShowToast'
+            },
+
+            ready: function() {
+                this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
+            },
+
+            _onAuthenticated: function(e) {
+                // This is a workaround for a race condition  during login
+                this.jwtToken = e.detail;
+            },
+            _jwtTokenChanged: function(jwtToken) {
+                this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
+            },
+
+            // https://github.com/PolymerElements/paper-dialog/issues/7
+            _patchOverlay: function (e) {
+                if (e.target.withBackdrop) {
+                    if (e.target.localName === "paper-dialog") {
+                        e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
+                    } else if (e.target.localName === "paper-fab-speed-dial-overlay") {
+                        e.target.parentNode.parentNode.insertBefore(e.target.backdropElement, e.target.parentNode);
+                    }
+                }
+            },
+            
+            _isLoading: function(loadingCount) {
+                return loadingCount != 0;
+            },
+
+            _onAjaxRequest: function(e) {
+                this.loadingCount++;
+            },
+            _onAjaxResponse: function(e) {
+                this.loadingCount--;
+                if (this.loadingCount < 0) {
+                    this.loadingCount = 0;
+                }
+            },
+            _onAjaxError: function(e) {
+                this.loadingCount--;
+                if (this.loadingCount < 0) {
+                    this.loadingCount = 0;
+                }
+                if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
+                    this._logout();
+                }
+            },
+
+            _onShowToast: function(e) {
+                this.$.toast.text = e.detail.message;
+                this.$.toast.open();
+            },
+
+            _routePageChanged: function(page) {
+                this.page = page || 'home';
+            },
+            _pageChanged: function(page) {
+                if (this._verifyIsAuthenticated()) {
+                    this.$.tagsAjax.generateRequest();
+                }
+
+                // Load page import on demand. Show 404 page if fails
+                var resolvedPageUrl = this.resolveUrl(page + '-view.html');
+                this.importHref(resolvedPageUrl, null, this._show404, true);
+
+                // Make sure to close the drawer
+                this.$.drawer.close();
+            },
+            _show404: function() {
+                this.page = "status-404";
+            },
+            _changePageRequested: function(e) {
+                this._changeRoute(e.detail);
+            },
+            _changeRoute: function(path) {
+                this.set("route.path", path);
+            },
+            _scrollToTop: function() {
+                this.$.scrollControl.scroll(0, 0);
+            },
+            _onLogoutTapped: function(e) {
+                e.preventDefault();
+                
+                this._logout();
+            },
+            _verifyIsAuthenticated: function() {
+                this.jwtToken = localStorage.getItem("jwtToken");
+                // Redirect to login if necessary
+                if (this.jwtToken === null) {
+                    if (this.route.path !== '/login') {
+                        this._logout();
+                    }
+                    return false;
+                }
+                return true;
+            },
+            _logout: function() {
+                localStorage.clear();
+                sessionStorage.clear();
+                this.ajaxHeaders = null;
+                this._changeRoute("/login");
+            },
+            _onSearch: function(e) {
+                this.search = e.target.query.trim();
+                this._changeRoute("/search");
+            },
+            _onFilter: function() {
+                this.$.filterDialog.open();
+            },
+            _onHomeLinkClicked: function(e) {
+                this.search = '';
+                this.searchTags = e.detail.tags;
+                this._changeRoute("/search");
+            },
+            _isActive: function(currentPage, pageToCheck) {
+                return currentPage === pageToCheck;
+            },
+            _handleGetTagsResponse: function(e) {
+                var tags = e.detail.response;
+
+                var filters = [];
+                var tagFilter = { id: "tags", name: "Tags", values: [] };
+                filters.push(tagFilter);
+                tags.forEach(function(tag) {
+                    tagFilter.values.push({ id: tag, name: tag});
+                });
+
+                this.searchFilters = filters;
+            },
+            _searchFiltersChanged: function(e) {
+                if (this.selectedSearchFilters.tags) {
+                    this.searchTags = this.selectedSearchFilters.tags;
+                } else {
+                    this.searchTags = [];
+                }
+                this._changeRoute("/search");
+            },
+            _searchTagsChanged: function(tags) {
+                if (!this.selectedSearchFilters) {
+                    this.selectedSearchFilters = {};
+                }
+                this.set("selectedSearchFilters.tags", tags);
+                this.selectedSearchFiltersCount = tags.length;
+            },
+
+            _recipesChanged: function(e) {
+                if (this.$.searchView.refresh) {
+                    this.$.searchView.refresh();
+                }
+            }
+        });
+    </script>
+</dom-module>

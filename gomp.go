@@ -23,7 +23,6 @@ func main() {
 	}
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
-		Layout: "shared/layout",
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 			"HomeTitle":        func() string { return cfg.HomeTitle },
@@ -38,9 +37,16 @@ func main() {
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
+	apiHandler := api.NewHandler(cfg, model)
+	staticHandler := newUIHandler(cfg, renderer)
+
 	mainMux := http.NewServeMux()
-	mainMux.Handle("/api/", api.NewHandler(cfg, model))
-	mainMux.Handle("/", newUIHandler(cfg, renderer))
+	mainMux.Handle("/api/", apiHandler)
+	mainMux.Handle("/static/", staticHandler)
+	mainMux.Handle("/uploads/", staticHandler)
+	mainMux.Handle("/", http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		renderer.HTML(resp, http.StatusOK, "index", nil)
+	}))
 	n.UseHandler(mainMux)
 
 	log.Printf("Starting server on port :%d", cfg.Port)

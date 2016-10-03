@@ -1,0 +1,155 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
+<dom-module id="note-card">
+    <template>
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+
+                --paper-card: {
+                    width: 100%;
+                }
+            }
+            paper-card:hover {
+                @apply(--shadow-elevation-6dp);
+            }
+            .note-header {
+                margin-bottom: 0.5em;
+            }
+            .note-content {
+                margin: 0.75em;
+                white-space: pre-wrap;
+            }
+            .note-footer {
+                margin-top: 0.5em;
+            }
+            #modified-date {
+                @apply(--layout-horizontal);
+                @apply(--layout-end-justified);
+            }
+            .date {
+                color: var(--secondary-text-color);
+                font-size: 0.7em;
+                font-weight: lighter;
+            }
+            paper-menu-button {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+            .amber {
+                color: var(--paper-amber-500);
+            }
+            .red {
+                color: var(--paper-red-500);
+            }
+            #confirmDeleteDialog {
+                --confirmation-dialog-title-color: var(--paper-red-500);
+            }
+        </style>
+        
+        <paper-card>
+            <div class="card-content">
+                <div class="note-header">
+                    <iron-icon icon="communication:comment"></iron-icon>
+                    <span class="date">[[_formatDate(note.createdAt)]]</span>
+                    <paper-menu-button id="noteMenu" horizontal-align="right">
+                        <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
+                        <paper-menu class="dropdown-content">
+                            <paper-item><a id="edit" href="#!"><iron-icon class="amber" icon="icons:create"></iron-icon> Edit</a></paper-item>
+                            <paper-item><a id="delete" href="#!"><iron-icon class="red" icon="icons:delete"></iron-icon> Delete</a></paper-item>
+                        </paper-menu>
+                    </paper-menu-button>
+                </div>
+                <paper-divider></paper-divider>
+                <p class="note-content">[[note.text]]</p>
+                <paper-divider hidden$="[[!_showModifiedDate(note)]]"></paper-divider>
+                <div id="modified-date" class="note-footer" hidden$="[[!_showModifiedDate(note)]]">
+                    <span class="date">[[_formatDate(note.modifiedAt)]]</span>
+                </div>
+            </div>
+        </paper-card>
+
+        <confirmation-dialog
+            id="confirmDeleteDialog"
+            icon="delete"
+            title="Delete Note?"
+            message="Are you sure you want to delete this note?"></confirmation-dialog>
+
+        <iron-ajax bubbles
+            id="deleteAjax"
+            url="/api/v1/notes/[[note.id]]"
+            method="DELETE"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-response="_handleDeleteResponse"
+            on-error="_handleDeleteError"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'note-card',
+            behaviors: [GompCoreBehavior],
+
+            properties: {
+                note: {
+                    type: Object,
+                    notify: true
+                }
+            },
+            listeners: {
+                'edit.tap': '_editTapped',
+                'delete.tap': '_deleteTapped',
+                'confirmDeleteDialog.confirmed': '_deleteNote'
+            },
+
+            _editTapped: function(e) {
+                e.preventDefault();
+
+                e.target.closest("#noteMenu").close();
+                this.fire('note-card-edit');
+            },
+            _deleteTapped: function(e) {
+                e.preventDefault();
+
+                e.target.closest("#noteMenu").close();
+                this.$.confirmDeleteDialog.open();
+            },
+            _deleteNote: function(e) {
+                this.$.deleteAjax.generateRequest();
+            },
+
+            _formatDate: function(dateStr) {
+                return new Date(dateStr).toLocaleString();
+            },
+            _showModifiedDate: function(note) {
+                return note.modifiedAt !== note.createdAt;
+            },
+
+            _handleDeleteResponse: function(e) {
+                this.fire("note-card-deleted");
+                this.fire('show-toast', {message: "Note deleted."});
+            },
+            _handleDeleteError: function(e) {
+                this.fire('show-toast', {message: "Deleting note failed!"});
+            }
+        });
+    </script>
+</dom-module>

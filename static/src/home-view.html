@@ -1,0 +1,95 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
+<link rel="import" href="components/home-list.html">
+
+<dom-module id="home-view">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            section {
+                padding: 8px;
+            }
+            header {
+                text-align: center;
+            }
+            img.responsive {
+                max-width: 100%;
+                height: auto;
+            }
+            paper-fab.green {
+                --paper-fab-background: var(--paper-green-500);
+                --paper-fab-keyboard-focus-background: var(--paper-green-900);
+                position: fixed;
+                bottom: 16px;
+                right: 16px;
+            }
+        </style>
+        <section>
+            <header>
+                <h1>[[title]]</h1>
+                <img class="responsive" hidden$="[[!image]]" src="[[image]]"/>
+            </header>
+            <home-list id="allRecipes" jwt-token="[[jwtToken]]"></home-list>
+            <home-list id="beefRecipes" jwt-token="[[jwtToken]]" title="Beef" tags='["beef","steak"]'></home-list>
+            <home-list id="poultryRecipes" jwt-token="[[jwtToken]]" title="Poultry" tags='["chicken","turkey","poultry"]'></home-list>
+            <home-list id="seafoodRecipes" jwt-token="[[jwtToken]]" title="Seafood" tags='["seafood","fish"]'></home-list>
+            <home-list id="porkRecipes" jwt-token="[[jwtToken]]" title="Pork" tags='["pork"]'></home-list>
+            <home-list id="pastaRecipes" jwt-token="[[jwtToken]]" title="Pasta" tags='["pasta"]'></home-list>
+            <home-list id="vegetarianRecipes" jwt-token="[[jwtToken]]" title="Vegetarian" tags='["vegetarian"]'></home-list>
+            <home-list id="sideRecipes" jwt-token="[[jwtToken]]" title="Sides" tags='["side","sides"]'></home-list>
+            <home-list id="drinkRecipes" jwt-token="[[jwtToken]]" title="Drinks" tags='["drink","cocktail"]'></home-list>
+        </section>
+
+        <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'home-view',
+            behaviors: [GompCoreBehavior],
+
+            properties: {
+                title: {
+                    type: String,
+                    notify: true,
+                    value: "Go Meal Planner"
+                },
+                image: {
+                    type: String,
+                    notify: true
+                }
+            },
+
+            ready: function() {
+                if (this.isActive) {
+                    this._refreshLists();
+                }
+            },
+
+            _isActiveChanged: function(isActive) {
+                if (isActive && this.isReady) {
+                    this._refreshLists();
+                }
+            },
+
+            _refreshLists: function() {
+                this.$.allRecipes.refresh();
+                this.$.beefRecipes.refresh();
+                this.$.poultryRecipes.refresh();
+                this.$.porkRecipes.refresh();
+                this.$.seafoodRecipes.refresh();
+                this.$.pastaRecipes.refresh();
+                this.$.vegetarianRecipes.refresh();
+                this.$.sideRecipes.refresh();
+                this.$.drinkRecipes.refresh();
+            }
+
+        });
+    </script>
+</dom-module>

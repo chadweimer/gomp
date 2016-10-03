@@ -1,0 +1,136 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input-container.html">
+
+<link rel="import" href="../behaviors/gomp-core-behavior.html">
+
+<dom-module id="tag-input">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            input {
+                text-transform: lowercase;
+                width: auto !important;
+                padding-left: 0.5em;
+            }
+            .tag {
+                margin: 4px;
+                padding-right: 6px;
+                cursor: pointer;
+                @apply(layout-horizontal);
+            }
+            .tag iron-icon {
+                --iron-icon-height: 20px;
+                --iron-icon-width: 20px;
+                color: var(--disabled-text-color);
+            }
+            .tag-add {
+                background-color: var(--paper-green-100);
+            }
+            .tag-add[selectable]:hover {
+                color: white !important;
+                background-color: var(--paper-green-600);
+            }
+            .tag-add iron-icon {
+                color: var(--paper-green-400);
+            }
+            </style>
+
+            <paper-input-container always-float-label="true">
+                <label>Tags</label>
+                <template is="dom-repeat" items=[[tags]]>
+                    <paper-chip class="tag" selectable>[[item]] <iron-icon icon="icons:cancel" on-tap="_onTagRemoveTapped"></iron-icon></paper-chip>
+                </template>
+                <input is="iron-input" id="input" placeholder="+tag"></input>
+            </paper-input-container>
+            <paper-input-container always-float-label="true">
+                <label>Suggested Tags</label>
+                <template is="dom-repeat" items=[[suggestedTags]]>
+                    <paper-chip class="tag tag-add" on-tap="_onSuggestedTagTapped" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                </template>
+                <input type="hidden">
+            </paper-input-container>
+            
+        <iron-ajax bubbles
+            id="getSuggestedTagsAjax"
+            url="/api/v1/tags"
+            method="GET"
+            params='{"sort": "frequency", "dir": "desc", "count": 12}'
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleGetSuggestedTagsRequest"
+            on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'tag-input',
+            behaviors: [GompCoreBehavior],
+
+            properties: {
+                tags: {
+                    type: Array,
+                    notify: true,
+                    value: []
+                }
+            },
+            listeners: {
+                'input.keydown': '_onInputKeydown'
+            },
+
+            refresh: function() {
+                this.$.getSuggestedTagsAjax.generateRequest();
+            },
+            add: function(tag) {
+                // Add the new tag if it's not already present
+                var tagIndex = this.tags.indexOf(tag);
+                if (tagIndex == -1) {
+                    this.push("tags", tag);
+                }
+            },
+            remove: function(tag) {
+                // Remove the tag if it's present
+                var tagIndex = this.tags.indexOf(tag);
+                if (tagIndex > -1) {
+                    this.splice("tags", tagIndex, 1);
+                }
+            },
+
+            _onSuggestedTagTapped: function(e) {
+                e.preventDefault();
+
+                this.add(e.model.item);
+                
+                // Remove the tag from the suggestion list
+                var suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
+                if (suggestedTagIndex > -1) {
+                    this.splice("suggestedTags", suggestedTagIndex, 1);
+                }
+            },
+            _onInputKeydown: function(e) {
+                if (e.keyCode === 13) {
+                    this.add(e.target.value.toLowerCase());
+                    e.target.value = '';
+                }
+            },
+            _onTagRemoveTapped: function(e) {
+                e.preventDefault();
+
+                this.remove(e.model.item);
+            },
+            _handleGetSuggestedTagsRequest: function(e) {
+                this.suggestedTags = [];
+            },
+            _handleGetSuggestedTagsResponse: function(e) {
+                this.suggestedTags = e.detail.response;
+            }
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,45 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="behaviors/gomp-core-behavior.html">
+
+<link rel="import" href="components/recipe-edit.html">
+
+<dom-module id="create-view">
+    <template>
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+            }
+            article {
+                padding: 8px;
+            }
+        </style>
+
+        <article>
+            <h3>New Recipe</h3>
+            <recipe-edit id="recipeEdit" jwt-token="[[jwtToken]]" is-active="[[isActive]]"></recipe-edit>
+        </article>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'create-view',
+            behaviors: [GompCoreBehavior],
+
+            listeners: {
+                'recipeEdit.recipe-edit-cancel': '_editCanceled',
+                'recipeEdit.recipe-edit-save': '_editSaved'
+            },
+
+            _editCanceled: function(e) {
+                this.fire("change-page", "/search");
+            },
+            _editSaved: function(e) {
+                this.fire("change-page", e.detail.redirectUrl);
+            }
+
+        });
+    </script>
+</dom-module>
