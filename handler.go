@@ -22,10 +22,6 @@ func (fs justFilesFilesystem) Open(name string) (http.File, error) {
 	}
 
 	stat, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-	
 	if stat.IsDir() {
 		return nil, os.ErrPermission
 	}
