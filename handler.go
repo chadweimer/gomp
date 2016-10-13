@@ -18,11 +18,13 @@ type justFilesFilesystem struct {
 func (fs justFilesFilesystem) Open(name string) (http.File, error) {
 	f, err := fs.fs.Open(name)
 	if err != nil {
+		fmt.Printf("Error opening file %s. Error = %s", name, err.Error())
 		return nil, err
 	}
 
 	stat, err := f.Stat()
 	if stat.IsDir() {
+		fmt.Printf("%s is a directory.", name)
 		return nil, os.ErrPermission
 	}
 
