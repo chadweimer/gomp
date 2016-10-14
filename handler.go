@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/upload"
@@ -24,12 +25,12 @@ func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
 
 	h.uiMux = httprouter.New()
 	if cfg.IsDevelopment {
-		h.uiMux.ServeFiles("/static/*filepath", http.Dir("static"))
+		h.uiMux.ServeFiles("/static/*filepath", justFilesFileSystem{http.Dir("static")})
 	} else {
-		h.uiMux.ServeFiles("/static/*filepath", http.Dir("static/build/bundled"))
+		h.uiMux.ServeFiles("/static/*filepath", justFilesFileSystem{http.Dir("static/build/bundled")})
 	}
 	if h.cfg.UploadDriver == "fs" {
-		h.uiMux.ServeFiles("/uploads/*filepath", http.Dir(h.cfg.UploadPath))
+		h.uiMux.ServeFiles("/uploads/*filepath", justFilesFileSystem{http.Dir(h.cfg.UploadPath)})
 	} else if h.cfg.UploadDriver == "s3" {
 		h.uiMux.GET("/uploads/*filepath", upload.HandleS3Uploads(h.cfg.UploadPath))
 	}
@@ -55,4 +56,26 @@ func (h uiHandler) handlePanic(resp http.ResponseWriter, req *http.Request, data
 
 func (h uiHandler) showError(resp http.ResponseWriter, status int, data interface{}) {
 	h.HTML(resp, status, fmt.Sprintf("status/%d", status), data)
+}
+
+type justFilesFileSystem struct {
+	fs http.FileSystem
+}
+
+func (fs justFilesFileSystem) Open(name string) (http.File, error) {
+	f, err := fs.fs.Open(name)
+	if err != nil {
+		return nil, err
+	}
+
+	stat, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	if stat.IsDir() {
+		return nil, os.ErrPermission
+	}
+
+	return f, nil
 }
