@@ -36,7 +36,7 @@ Currently only PostgreSQL is supported.
 
 ## Credits
 
-See [Godeps/Godeps.json](Godeps/Godeps.json)
+See [Godeps/Godeps.json](Godeps/Godeps.json) and [static/bower.json](static/bower.json)
 
 ## License
 
