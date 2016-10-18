@@ -122,6 +122,7 @@
                         <paper-menu class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
                             <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" item-icon></iron-icon> Name</paper-icon-item>
                             <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" item-icon></iron-icon> Rating</paper-icon-item>
+							<paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" item-icon></iron-icon> Random<paper-icon-item>
                         </paper-menu>
                     </paper-submenu>
                     <paper-submenu opened>
@@ -322,6 +323,13 @@
                 this.sortDir = "desc";
                 this.$.settingsDrawer.close();
             },
+			_onRandomSortTapped: function(e) {
+				e.preventDefault();
+
+				this.sortBy = "random";
+				this.sortDir = "asc";
+				this.$.settingsDrawer.close();
+			},
             _onAscSortTapped: function(e) {
                 e.preventDefault();
 
