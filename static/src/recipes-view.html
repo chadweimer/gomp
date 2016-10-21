@@ -218,12 +218,12 @@
 
             _mainImageChanged: function(e) {
                 this.$.recipeDisplay.refresh({onlyMainImage: true});
-                this.fire("recipes-changed");
+                this.fire("recipes-modified");
                 this.fire("scroll-top");
             },
 
             _handleDeleteRecipeResponse: function(e) {
-                this.fire("recipes-changed");
+                this.fire("recipes-modified");
                 this.fire("change-page", "/search");
             }
 

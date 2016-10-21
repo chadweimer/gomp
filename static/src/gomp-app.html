@@ -261,7 +261,7 @@
                 'home-list-link-clicked': '_onHomeLinkClicked',
                 'iron-overlay-opened': '_patchOverlay',
                 'filterDialog.save': '_searchFiltersChanged',
-                'recipes-changed': '_recipesChanged',
+                'recipes-modified': '_recipesModified',
                 'change-page': '_changePageRequested',
                 'iron-ajax-request': '_onAjaxRequest',
                 'iron-ajax-response': '_onAjaxResponse',
@@ -413,7 +413,7 @@
                 this.selectedSearchFiltersCount = tags.length;
             },
 
-            _recipesChanged: function(e) {
+            _recipesModified: function(e) {
                 if (this.$.searchView.refresh) {
                     this.$.searchView.refresh();
                 }
