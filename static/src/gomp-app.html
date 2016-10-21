@@ -284,12 +284,8 @@
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
             _patchOverlay: function (e) {
-                if (e.target.withBackdrop) {
-                    if (e.target.localName === "paper-dialog") {
-                        e.target.parentNode.insertBefore(e.target.backdropElement, e.target);
-                    } else if (e.target.localName === "paper-fab-speed-dial-overlay") {
-                        e.target.parentNode.parentNode.insertBefore(e.target.backdropElement, e.target.parentNode);
-                    }
+                if (e.path[0].withBackdrop) {
+                    e.path[0].parentNode.insertBefore(e.path[0].backdropElement, e.path[0]);
                 }
             },
             
