@@ -90,6 +90,9 @@
             },
             add: function(tag) {
                 // Add the new tag if it's not already present
+                if (this.tags === null) {
+                    this.tags = [];
+                }
                 var tagIndex = this.tags.indexOf(tag);
                 if (tagIndex == -1) {
                     this.push("tags", tag);
