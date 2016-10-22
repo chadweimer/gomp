@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // Config contains the application configuration settings
@@ -28,7 +29,7 @@ type Config struct {
 	IsDevelopment bool
 
 	// SecretKey is used for session authentication. Recommended to be 32 or 64 ASCII characters.
-	SecretKey string
+	SecureKeys []string
 
 	// ApplicationTitle is used where the application name (title) is displayed on screen.
 	ApplicationTitle string
@@ -59,7 +60,7 @@ func Load(path string) *Config {
 		UploadDriver:           "fs",
 		UploadPath:             filepath.Join("data", "uploads"),
 		IsDevelopment:          false,
-		SecretKey:              "Secret123",
+		SecureKeys:             nil,
 		ApplicationTitle:       "GOMP: Go Meal Planner",
 		HomeTitle:              "",
 		HomeImage:              "",
@@ -73,7 +74,7 @@ func Load(path string) *Config {
 	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
 	loadEnv("GOMP_UPLOAD_PATH", &c.UploadPath)
 	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
-	loadEnv("GOMP_SECRET_KEY", &c.SecretKey)
+	loadEnv("SECURE_KEY", &c.SecureKeys)
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
 	loadEnv("GOMP_HOME_TITLE", &c.HomeTitle)
 	loadEnv("GOMP_HOME_IMAGE", &c.HomeImage)
@@ -86,7 +87,7 @@ func Load(path string) *Config {
 		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
 		log.Printf("[config] UploadPath=%s", c.UploadPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
-		log.Printf("[config] SecretKey=%s", c.SecretKey)
+		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
 		log.Printf("[config] HomeTitle=%s", c.HomeTitle)
 		log.Printf("[config] HomeImage=%s", c.HomeImage)
@@ -112,8 +113,8 @@ func (c *Config) Validate() error {
 		return errors.New("UPLOAD_PATH must be specified")
 	}
 
-	if c.SecretKey == "" {
-		return errors.New("GOMP_SECRET_KEY must be specified")
+	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
+		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
 	}
 
 	if c.ApplicationTitle == "" {
@@ -145,6 +146,8 @@ func loadEnv(name string, dest interface{}) {
 		switch dest := dest.(type) {
 		case *string:
 			*dest = envStr
+		case *[]string:
+			*dest = strings.Split(envStr, ",")
 		case *int:
 			if *dest, err = strconv.Atoi(envStr); err != nil {
 				log.Fatalf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",

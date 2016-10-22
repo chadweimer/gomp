@@ -27,13 +27,13 @@
     "GOMP_HOME_TITLE": {
       "required": true
     },
-    "GOMP_SECRET_KEY": {
-      "required": true
-    },
     "GOMP_UPLOAD_DRIVER": {
       "required": true
     },
     "GOMP_UPLOAD_PATH": {
+      "required": true
+    },
+    "SECURE_KEY": {
       "required": true
     }
   },
