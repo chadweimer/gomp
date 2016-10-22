@@ -28,7 +28,7 @@ type Config struct {
 	// not be desirable in a production environment.
 	IsDevelopment bool
 
-	// SecureKey is used for session authentication. Recommended to be 32 or 64 ASCII characters.
+	// SecureKeys is used for session authentication. Recommended to be 32 or 64 ASCII characters.
 	// Multiple keys can be separated by commas.
 	SecureKeys []string
 
