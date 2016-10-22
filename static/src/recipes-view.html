@@ -15,9 +15,11 @@
 <link rel="import" href="components/recipe-display.html">
 <link rel="import" href="components/recipe-edit.html">
 
+<link rel="import" href="shared-styles.html">
+
 <dom-module id="recipes-view">
     <template>
-        <style>
+        <style include="shared-styles">
             :host {
                 display: block;
                 color: var(--primary-text-color);
@@ -216,12 +218,12 @@
 
             _mainImageChanged: function(e) {
                 this.$.recipeDisplay.refresh({onlyMainImage: true});
-                this.fire("recipes-changed");
+                this.fire("recipes-modified");
                 this.fire("scroll-top");
             },
 
             _handleDeleteRecipeResponse: function(e) {
-                this.fire("recipes-changed");
+                this.fire("recipes-modified");
                 this.fire("change-page", "/search");
             }
 

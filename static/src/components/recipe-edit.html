@@ -9,9 +9,11 @@
 
 <link rel="import" href="tag-input.html">
 
+<link rel="import" href="../shared-styles.html">
+
 <dom-module id="recipe-edit">
     <template>
-        <style>
+        <style include="shared-styles">
             :host {
                 display: block;
 
@@ -132,7 +134,7 @@
             },
             _handlePutRecipeResponse: function(e) {
                 this.fire("recipe-edit-save");
-                this.fire("recipes-changed");
+                this.fire("recipes-modified");
             },
             _handlePostRecipeResponse: function(e) {
                 var temp = document.createElement('a');
@@ -145,7 +147,7 @@
                     newRecipeId = parseInt(newRecipeIdMatch[1], 10);
                 }
                 this.fire("recipe-edit-save", {redirectUrl: '/recipes/' + newRecipeId});
-                this.fire("recipes-changed");
+                this.fire("recipes-modified");
             }
         });
     </script>
