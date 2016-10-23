@@ -129,8 +129,8 @@
             _editNoteTapped: function (e) {
                 e.preventDefault();
                 
-                this.noteId = e.target.note.id;
-                this.noteText = e.target.note.text;
+                this.noteId = e.path[0].note.id;
+                this.noteText = e.path[0].note.text;
                 this.$.noteDialog.open();
             },
             _noteDeleted: function(e) {
