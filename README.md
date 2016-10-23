@@ -19,7 +19,7 @@ The following table summarizes the available configuration settings, which are s
 | GOMP\_UPLOAD\_DRIVER     | string   | fs                    |
 | GOMP\_UPLOAD\_PATH       | string   | data                  |
 | GOMP\_IS_DEVELOPMENT     | '0', '1' | 0                     |
-| GOMP\_SECRET\_KEY        | string   | Secret123             |
+| SECURE\_KEY              | []string | &lt;nil&gt;           |
 | GOMP\_APPLICATION\_TITLE | string   | GOMP: Go Meal Planner |
 | DATABASE_DRIVER          | string   | postgres              |
 | DATABASE\_URL            | string   | &lt;empty&gt;         |

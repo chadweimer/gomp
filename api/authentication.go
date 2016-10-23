@@ -38,7 +38,8 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 		IssuedAt:  time.Now().Unix(),
 		Subject:   strconv.FormatInt(user.ID, 10),
 	})
-	tokenStr, err := token.SignedString([]byte(h.cfg.SecretKey))
+	// Always sign using the 0'th key
+	tokenStr, err := token.SignedString([]byte(h.cfg.SecureKeys[0]))
 	if err != nil {
 		writeServerErrorToResponse(resp, err)
 	}
@@ -61,18 +62,25 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 		}
 
 		tokenStr := authHeaderParts[1]
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			if token.Method != jwt.SigningMethodHS256 {
-				return nil, errors.New("Incorrect signing method")
-			}
 
-			return []byte(h.cfg.SecretKey), nil
-		})
-		if err != nil || !token.Valid {
-			writeUnauthorizedErrorToResponse(resp, err)
-			return
+		// Try each key when validating the token
+		var lastErr error
+		for _, key := range h.cfg.SecureKeys {
+			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+				if token.Method != jwt.SigningMethodHS256 {
+					return nil, errors.New("Incorrect signing method")
+				}
+
+				return []byte(key), nil
+			})
+
+			if err == nil && token.Valid {
+				handler(resp, req, p)
+				return
+			}
+			lastErr = err
 		}
 
-		handler(resp, req, p)
+		writeUnauthorizedErrorToResponse(resp, lastErr)
 	}
 }
