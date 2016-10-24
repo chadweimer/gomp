@@ -13,7 +13,7 @@ func (h apiHandler) getTags(resp http.ResponseWriter, req *http.Request, p httpr
 	sortDir := getParam(req.URL.Query(), "dir")
 	count, err := strconv.ParseInt(getParam(req.URL.Query(), "count"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -25,9 +25,9 @@ func (h apiHandler) getTags(resp http.ResponseWriter, req *http.Request, p httpr
 
 	tags, err := h.model.Search.FindTags(filter)
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	writeJSONToResponse(resp, tags)
+	h.JSON(resp, http.StatusOK, tags)
 }
