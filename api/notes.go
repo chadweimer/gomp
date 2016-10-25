@@ -12,28 +12,28 @@ import (
 func (h apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	notes, err := h.model.Notes.List(recipeID)
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	writeJSONToResponse(resp, notes)
+	h.JSON(resp, http.StatusOK, notes)
 }
 
 func (h apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.model.Notes.Create(&note); err != nil {
-		writeServerErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -44,23 +44,23 @@ func (h apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p http
 func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if note.ID != noteID {
-		writeClientErrorToResponse(resp, errMismatchedNoteID)
+		h.JSON(resp, http.StatusBadRequest, errMismatchedNoteID.Error())
 		return
 	}
 
 	if err := h.model.Notes.Update(&note); err != nil {
-		writeServerErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -70,12 +70,12 @@ func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httpr
 func (h apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
 	if err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := h.model.Notes.Delete(noteID); err != nil {
-		writeServerErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
 

@@ -23,6 +23,8 @@ func main() {
 	}
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
+		IndentJSON: true,
+
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 			"HomeTitle":        func() string { return cfg.HomeTitle },
@@ -37,7 +39,7 @@ func main() {
 	}
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	apiHandler := api.NewHandler(cfg, model)
+	apiHandler := api.NewHandler(renderer, cfg, model)
 	staticHandler := newUIHandler(cfg, renderer)
 
 	mainMux := http.NewServeMux()

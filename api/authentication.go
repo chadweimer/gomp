@@ -23,13 +23,13 @@ type authenticateResponse struct {
 func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var authRequest authenticateRequest
 	if err := readJSONFromRequest(req, &authRequest); err != nil {
-		writeClientErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	user, err := h.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
-		writeUnauthorizedErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusUnauthorized, err.Error())
 		return
 	}
 
@@ -41,23 +41,23 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 	// Always sign using the 0'th key
 	tokenStr, err := token.SignedString([]byte(h.cfg.SecureKeys[0]))
 	if err != nil {
-		writeServerErrorToResponse(resp, err)
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
 	}
 
-	writeJSONToResponse(resp, authenticateResponse{Token: tokenStr})
+	h.JSON(resp, http.StatusOK, authenticateResponse{Token: tokenStr})
 }
 
 func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
-			writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header missing"))
+			h.JSON(resp, http.StatusUnauthorized, "Authorization header missing")
 			return
 		}
 
 		authHeaderParts := strings.Split(authHeader, " ")
 		if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
-			writeUnauthorizedErrorToResponse(resp, errors.New("Authorization header must be in the form 'Bearer {token}'"))
+			h.JSON(resp, http.StatusUnauthorized, "Authorization header must be in the form 'Bearer {token}'")
 			return
 		}
 
@@ -81,6 +81,6 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 			lastErr = err
 		}
 
-		writeUnauthorizedErrorToResponse(resp, lastErr)
+		h.JSON(resp, http.StatusUnauthorized, lastErr.Error())
 	}
 }
