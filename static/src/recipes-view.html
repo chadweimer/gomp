@@ -153,7 +153,9 @@
                 'editButton.tap': '_editButtonTapped',
                 'addImageButton.tap': '_addImageButtonTapped',
                 'addNoteButton.tap': '_addNoteButtonTapped',
-                'image-list-main-image-changed': '_mainImageChanged',
+                'image-list-main-image-changed': '_refreshMainImage',
+                'image-list-image-added': '_refreshMainImage',
+                'image-list-image-deleted': '_refreshMainImage',
                 'recipeEdit.recipe-edit-cancel': '_editCanceled',
                 'recipeEdit.recipe-edit-save': '_editSaved',
                 'confirmDeleteDialog.confirmed': '_deleteRecipe'
@@ -216,10 +218,9 @@
                 this.$.noteList.add();
             },
 
-            _mainImageChanged: function(e) {
+            _refreshMainImage: function(e) {
                 this.$.recipeDisplay.refresh({onlyMainImage: true});
                 this.fire("recipes-modified");
-                this.fire("scroll-top");
             },
 
             _handleDeleteRecipeResponse: function(e) {
