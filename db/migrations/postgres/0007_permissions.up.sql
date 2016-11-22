@@ -15,13 +15,16 @@ INSERT INTO app_role (name) VALUES('Administrator');
 INSERT INTO app_role (name) VALUES('Editor');
 INSERT INTO app_role (name) VALUES('Viewer');
 
--- Create a new admin user with password 'password'.
--- This can be deleted after creating/assigning a real admin.
-INSERT INTO app_user (username, password_hash)
-VALUES('admin@example.com', '$2a$06$CHCGJ/vKVC4/txqvCp/3IO1MdPJosLr3gV1phWI6VRedk.W29AH3e');
-
 -- Default all existing users to Editor,
 -- since that matches what they would have before roles.
 INSERT INTO user_roles (user_id, role_id) (
     SELECT id, (SELECT id FROM app_role WHERE name = 'Editor') FROM app_user
+);
+
+-- Create a new admin user with password 'password'.
+-- This can be deleted after creating/assigning a real admin.
+INSERT INTO app_user (username, password_hash)
+VALUES('admin@example.com', '$2a$06$CHCGJ/vKVC4/txqvCp/3IO1MdPJosLr3gV1phWI6VRedk.W29AH3e');
+INSERT INTO user_roles (user_id, role_id) (
+    SELECT id, (SELECT id FROM app_role WHERE name = 'Administrator') FROM app_user WHERE username = 'admin@example.com'
 );
