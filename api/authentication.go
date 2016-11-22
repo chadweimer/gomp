@@ -74,7 +74,13 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 				return []byte(key), nil
 			})
 
+			claims, ok := token.Claims.(jwt.StandardClaims)
+			if !ok {
+				h.JSON(resp, http.StatusUnauthorized, "Invalid claims")
+				return
+			}
 			if err == nil && token.Valid {
+				p = append(p, httprouter.Param{Key: "AuthUserID", Value: claims.Subject})
 				handler(resp, req, p)
 				return
 			}
