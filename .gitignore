@@ -10,6 +10,7 @@ _test
 bower_components/
 node_modules/
 build/
+/vendor/
 
 # Architecture specific extensions/prefixes
 *.[568vq]
