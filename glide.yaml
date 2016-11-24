@@ -1,0 +1,81 @@
+package: github.com/chadweimer/gomp
+import:
+- package: github.com/aws/aws-sdk-go
+  version: 8a2306a0e7d8d4095e5f1beee530ceaee6e7d609
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - private/endpoints
+  - private/protocol
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - private/waiter
+  - service/s3
+  - vendor/github.com/go-ini/ini
+  - vendor/github.com/jmespath/go-jmespath
+  - aws/credentials/stscreds
+  - service/sts
+- package: github.com/dgrijalva/jwt-go
+  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+- package: github.com/disintegration/imaging
+  version: 5b7e22645c93e3f3911b36b7d66bf8799f3eddfd
+- package: github.com/jmoiron/sqlx
+  version: 05b81a7d5d38058e42148dc01f17daf4acba4640
+  subpackages:
+  - reflectx
+- package: github.com/julienschmidt/httprouter
+  version: 4563b0ba73e4db6c6423b60a26f3cadd2e9a1ec9
+- package: github.com/lib/pq
+  version: ae8357db35d721c58dcdc911318b55bef6b1b001
+  subpackages:
+  - oid
+- package: github.com/mattes/migrate
+  version: ce1b59bb819416ca67422929b1cb48bb342720b6
+  subpackages:
+  - driver
+  - driver/postgres
+  - file
+  - migrate
+  - migrate/direction
+  - pipe
+- package: github.com/phyber/negroni-gzip
+  version: 13f05ed68248e012fcc773ecd829abcc0bb3abd8
+  subpackages:
+  - gzip
+- package: github.com/rwcarlsen/goexif
+  version: 709fab3d192d7c62f86043caff1e7e3fb0f42bd8
+  subpackages:
+  - exif
+  - tiff
+- package: github.com/urfave/negroni
+  version: 65de9fa027ca75ff3964c5410774ac45692ce94c
+- package: golang.org/x/crypto
+  version: ca7e7f10cb9fd9c1a6ff7f60436c086d73714180
+  subpackages:
+  - bcrypt
+  - blowfish
+- package: golang.org/x/image
+  version: 93fad3647fcda43e12f413a6dd7568896dc06ba9
+  subpackages:
+  - bmp
+  - tiff
+  - tiff/lzw
+- package: gopkg.in/tylerb/graceful.v1
+  version: ^1.2.13
+- package: gopkg.in/unrolled/render.v1
+  version: 526faf80cd4b305bb8134abea8d20d5ced74faa6
