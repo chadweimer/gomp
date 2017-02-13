@@ -52,7 +52,7 @@ WORKDIR /opt/gomp
 
 VOLUME /var/app/gomp/data
 
-RUN curl https://glide.sh/get | sh \
+RUN curl "https://glide.sh/get" | sh \
   && glide install \
   && go build \
   && npm install
