@@ -46,7 +46,7 @@ COPY go-wrapper /usr/local/bin/
 
 ENV PORT 5000
 
-COPY . /opt/gomp
+COPY ../ /opt/gomp
 WORKDIR /opt/gomp
 
 VOLUME /var/app/gomp/data
