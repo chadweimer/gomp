@@ -51,7 +51,10 @@ WORKDIR /opt/gomp
 
 VOLUME /var/app/gomp/data
 
-RUN go build && npm install
+RUN curl https://glide.sh/get | sh \
+  && glide install \
+  && go build \
+  && npm install
 
 EXPOSE 5000
 ENTRYPOINT ["gomp"]
