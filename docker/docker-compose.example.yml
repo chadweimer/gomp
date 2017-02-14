@@ -3,7 +3,7 @@ gomp:
   links:
     - gomp-db:gomp-db
   environment:
-    - DATABASE_URL=postgres://dbuser:dbpassword@gomp-db/gomp
+    - DATABASE_URL=postgres://dbuser:dbpassword@gomp-db/gomp?sslmode=disable
     - GOMP_UPLOAD_PATH=/data/uploads
     - SECURE_KEY=UpdateMe
   volumes:
