@@ -8,6 +8,8 @@ gomp:
     - SECURE_KEY=UpdateMe
   volumes:
     - /path/to/data:/var/app/gomp/data
+  ports:
+    - 5000:5000
 
 gomp-db:
   image: postgres:alpine
