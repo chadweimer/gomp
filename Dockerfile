@@ -37,7 +37,7 @@ ENV PORT 5000
 COPY . $GOPATH/src/github.com/chadweimer/gomp
 WORKDIR $GOPATH/src/github.com/chadweimer/gomp
 
-ENV PATH $GOPATH/src/github.com/chadweimer/gomp/node_modules/.bin
+ENV PATH $GOPATH/src/github.com/chadweimer/gomp/node_modules/.bin:$PATH
 
 VOLUME /var/app/gomp/data
 
