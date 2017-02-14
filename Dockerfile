@@ -41,7 +41,8 @@ ENV PATH $GOPATH/src/github.com/chadweimer/gomp/node_modules/.bin:$PATH
 
 VOLUME /var/app/gomp/data
 
-RUN curl "https://glide.sh/get" | sh \
+RUN echo '{ "allow_root": true }' > /root/.bowerrc \
+  && curl "https://glide.sh/get" | sh \
   && glide install \
   && go build \
   && npm install
