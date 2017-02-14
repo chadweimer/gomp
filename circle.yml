@@ -5,7 +5,7 @@ machine:
 dependencies:
   override:
     - docker info
-    - docker build --rm=false -t cwmr/gomp docker
+    - docker build --rm=false -t cwmr/gomp .
 
 deployment:
   hub:

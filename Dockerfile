@@ -34,7 +34,7 @@ RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-
 
 ENV PORT 5000
 
-COPY ../ /opt/gomp
+COPY . /opt/gomp
 WORKDIR /opt/gomp
 
 VOLUME /var/app/gomp/data
