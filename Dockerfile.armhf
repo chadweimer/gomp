@@ -1,4 +1,4 @@
-FROM armhf/golang
+FROM armhf/golang:1.6
 MAINTAINER ch@dweimer.com
 
 # FROM armhf/node:7.5.0
@@ -47,4 +47,4 @@ RUN curl "https://glide.sh/get" | sh \
   && npm install
 
 EXPOSE 5000
-ENTRYPOINT ["gomp"]
+ENTRYPOINT ["./gomp"]

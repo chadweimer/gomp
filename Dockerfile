@@ -47,4 +47,4 @@ RUN curl "https://glide.sh/get" | sh \
   && npm install
 
 EXPOSE 5000
-ENTRYPOINT ["gomp"]
+ENTRYPOINT ["./gomp"]
