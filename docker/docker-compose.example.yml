@@ -4,7 +4,7 @@ gomp:
     - gomp-db:gomp-db
   environment:
     - DATABASE_URL=postgres://dbuser:dbpassword@gomp-db/gomp?sslmode=disable
-    - GOMP_UPLOAD_PATH=/data/uploads
+    - GOMP_UPLOAD_PATH=/var/app/gomp/data/uploads
     - SECURE_KEY=UpdateMe
   volumes:
     - /path/to/data:/var/app/gomp/data
