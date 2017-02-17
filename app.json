@@ -12,9 +12,6 @@
     "AWS_SECRET_ACCESS_KEY": {
       "required": true
     },
-    "DATABASE_DRIVER": {
-      "required": true
-    },
     "DATABASE_URL": {
       "required": true
     },
