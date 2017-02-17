@@ -45,11 +45,7 @@ RUN echo '{ "allow_root": true }' > /root/.bowerrc \
   && curl "https://glide.sh/get" | sh \
   && glide install \
   && go build \
-  && npm install \
-  && cd static \
-  && bower install \
-  && polymer build \
-  && cd ..
+  && npm install --unsafe-perm
 
 EXPOSE 5000
 ENTRYPOINT ["./gomp"]

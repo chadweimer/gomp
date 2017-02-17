@@ -5,8 +5,6 @@ machine:
 dependencies:
   pre:
     - docker build --rm=false -t cwmr/gomp .
-  post:
-    - cd static && bower install && polymer build
 
 deployment:
   hub:
