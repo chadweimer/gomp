@@ -1,4 +1,4 @@
-FROM armhf/golang:1.6
+FROM cwmr/golang-armhf
 MAINTAINER ch@dweimer.com
 
 # FROM armhf/node:7.5.0
