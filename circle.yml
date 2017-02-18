@@ -1,0 +1,14 @@
+machine:
+  services:
+    - docker
+    
+dependencies:
+  pre:
+    - docker build --rm=false -t cwmr/gomp .
+
+deployment:
+  hub:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - docker push cwmr/gomp

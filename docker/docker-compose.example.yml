@@ -1,0 +1,21 @@
+gomp:
+  image: cwmr/gomp
+  links:
+    - gomp-db:gomp-db
+  environment:
+    - DATABASE_URL=postgres://dbuser:dbpassword@gomp-db/gomp?sslmode=disable
+    - GOMP_UPLOAD_PATH=/var/app/gomp/data/uploads
+    - SECURE_KEY=UpdateMe
+  volumes:
+    - /path/to/data:/var/app/gomp/data
+  ports:
+    - 5000:5000
+
+gomp-db:
+  image: postgres:alpine
+  environment:
+    - POSTGRES_PASSWORD=dbpassword
+    - POSTGRES_USER=dbuser
+    - POSTGRES_DB=gomp
+  volumes:
+    - /path/to/db:/var/lib/postgresql/data
