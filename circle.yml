@@ -4,11 +4,17 @@ machine:
     
 dependencies:
   pre:
-    - docker build --rm=false -t cwmr/gomp:dev .
+    - docker build --rm=false -t cwmr/gomp:latest .
 
 deployment:
-  hub:
-    branch: feature/default-user
+  master:
+    branch: master
     commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - docker push cwmr/gomp:latest
+  feature:
+    branch: /feature\/.*/
+    commands:
+      - docker tag cwmr/gomp:latest cwmr/gomp:dev
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASSWORD
       - docker push cwmr/gomp:dev
