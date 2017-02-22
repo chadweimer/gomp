@@ -3,33 +3,7 @@
   "scripts": {
   },
   "env": {
-    "AWS_ACCESS_KEY_ID": {
-      "required": true
-    },
-    "AWS_REGION": {
-      "required": true
-    },
-    "AWS_SECRET_ACCESS_KEY": {
-      "required": true
-    },
-    "DATABASE_URL": {
-      "required": true
-    },
-    "GOMP_APPLICATION_TITLE": {
-      "required": true
-    },
-    "GOMP_HOME_IMAGE": {
-      "required": true
-    },
-    "GOMP_HOME_TITLE": {
-      "required": true
-    },
-    "GOMP_UPLOAD_DRIVER": {
-      "required": true
-    },
-    "GOMP_UPLOAD_PATH": {
-      "required": true
-    },
+    "NPM_CONFIG_PRODUCTION": "false",
     "SECURE_KEY": {
       "required": true
     }
@@ -40,6 +14,7 @@
     }
   },
   "addons": [
+    "heroku-postgresql:hobby-dev",
     "librato",
     "papertrail"
   ],
