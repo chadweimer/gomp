@@ -8,9 +8,9 @@ ENV NODE_VERSION 7.5.0
 RUN adduser -D -u 1000 node \
     && apk add --no-cache \
         libstdc++ \
+        curl \
     && apk add --no-cache --virtual .build-deps \
         binutils-gold \
-        curl \
         g++ \
         gcc \
         gnupg \
