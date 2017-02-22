@@ -4,11 +4,11 @@ machine:
     
 dependencies:
   pre:
-    - docker build --rm=false -t cwmr/gomp .
+    - docker build --rm=false -t cwmr/gomp:dev .
 
 deployment:
   hub:
-    branch: master
+    branch: feature/default-user
     commands:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASSWORD
-      - docker push cwmr/gomp
+      - docker push cwmr/gomp:dev
