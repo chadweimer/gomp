@@ -1,6 +1,8 @@
 FROM golang:1.7.5-alpine
 MAINTAINER ch@dweimer.com
 
+RUN apk add --no-cache git
+
 # FROM node:7.5.0-alpine
 ENV NPM_CONFIG_LOGLEVEL info
 ENV NODE_VERSION 7.5.0
