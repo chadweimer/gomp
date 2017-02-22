@@ -1,5 +1,6 @@
 gomp:
   image: cwmr/gomp
+  container_name: gomp
   links:
     - gomp-db:gomp-db
   environment:
@@ -13,6 +14,7 @@ gomp:
 
 gomp-db:
   image: postgres:alpine
+  container_name: gomp-db
   environment:
     - POSTGRES_PASSWORD=dbpassword
     - POSTGRES_USER=dbuser
