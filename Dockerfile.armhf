@@ -14,7 +14,7 @@ RUN echo '{ "allow_root": true }' > /root/.bowerrc \
   && apk add --no-cache --virtual .build-deps curl git nodejs \
   && curl "https://glide.sh/get" | sh \
   && glide install \
-  && go build \
+  && go build -v \
   && npm install --unsafe-perm \
   && npm prune --unsafe-perm --production \
   && apk del .build-deps
