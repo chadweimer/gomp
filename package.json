@@ -1,7 +1,7 @@
 {
   "name": "gomp",
   "description": "Go Meal Planner: A web-based recipe book",
-  "dependencies": {
+  "devDependencies": {
     "bower": "^1.7.9",
     "polymer-cli": "^0.16.0"
   },
