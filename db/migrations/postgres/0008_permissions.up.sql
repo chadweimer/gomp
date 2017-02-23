@@ -25,7 +25,7 @@ INSERT INTO user_roles (user_id, role_id) (
 -- This can be deleted after creating/assigning a real admin.
 INSERT INTO app_user (username, password_hash)
 SELECT 'admin@example.com', '$2a$08$1C0IMQAwkxLQcYvL/03jpuwOZjyF/6BCXgxHhkoarRoVp1wmiGwAS'
-WHERE NOT EXIST (SELECT id FROM app_user WHERE username = 'admin@example.com');
+WHERE NOT EXISTS (SELECT id FROM app_user WHERE username = 'admin@example.com');
 INSERT INTO user_roles (user_id, role_id) (
     SELECT id, (SELECT id FROM app_role WHERE name = 'Administrator') FROM app_user WHERE username = 'admin@example.com'
 );
