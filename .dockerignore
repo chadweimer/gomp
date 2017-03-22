@@ -1,0 +1,4 @@
+vendor/*
+static/bower_components/*
+static/build/*
+gomp
