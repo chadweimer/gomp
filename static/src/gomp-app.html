@@ -16,6 +16,7 @@
 <link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
 
 <link rel="import" href="shared-styles.html">
 
@@ -41,7 +42,10 @@
                 color: white;
             }
             app-toolbar a {
-                color: #ffffff;
+                color: white;
+            }
+            paper-search-bar {
+                color: var(--light-theme-text-color);
             }
             paper-progress {
                 width: 100%;
@@ -135,7 +139,7 @@
                             id="filterDialog"
                             filters="[[searchFilters]]"
                             selected-filters="{{selectedSearchFilters}}"
-                            save-button="Apply">
+                            save-button="Apply"></paper-filter-dialog>
                     </app-toolbar>
 
                     <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]"></paper-progress>
