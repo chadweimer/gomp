@@ -44,7 +44,7 @@ script:
       #docker push cwmr/gomp:$TAG
       docker push cwmr/gomp:dev
       docker push cwmr/gomp:dev-armhf
-    elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    else
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker tag cwmr/gomp:latest cwmr/gomp:dev
       docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
