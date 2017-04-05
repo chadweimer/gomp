@@ -3,7 +3,7 @@ machine:
     - docker
     
 dependencies:
-  pre:
+  post:
     - docker build --rm=false -t cwmr/gomp:latest .
 
 deployment:
