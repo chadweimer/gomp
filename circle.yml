@@ -5,6 +5,7 @@ machine:
 dependencies:
   pre:
     # Pull down vendored dependencies
+    - mkdir -p $GOPATH/bin
     - curl "https://glide.sh/get" | sh
     - glide install
     # Build polymer UI
