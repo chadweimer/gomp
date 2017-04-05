@@ -1,14 +1,13 @@
 machine:
   services:
     - docker
-  environment:
-    PATH: "${PATH}:${GOPATH}/bin"
     
 dependencies:
   pre:
     # Pull down vendored dependencies
-    - mkdir -p $GOPATH/bin
-    - curl "https://glide.sh/get" | sh
+    - sudo add-apt-repository ppa:masterminds/glide -y
+    - sudo apt-get update
+    - sudo apt-get install glide -y
     - glide install
     # Build polymer UI
     - npm install
