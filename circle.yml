@@ -3,8 +3,23 @@ machine:
     - docker
     
 dependencies:
-  post:
-    - docker build --rm=false -t cwmr/gomp:latest .
+  pre:
+    # Pull down vendored dependencies
+    - curl "https://glide.sh/get" | sh
+    - glide install
+    # Build polymer UI
+    - npm install
+  override:
+    # prepare qemu
+    - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
+    # Build go server for amd64
+    - GOOS=linux GOARCH=amd64 go build -o gomp-linux-amd64
+    - docker build -t cwmr/gomp:latest .
+
+    # Build go server for armhf
+    - GOOS=linux GOARCH=arm go build -o gomp-linux-arm
+    - docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
 
 deployment:
   master:
