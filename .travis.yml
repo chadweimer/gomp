@@ -21,12 +21,12 @@ install:
   - npm install
 
 script:
-  # prepare qemu
-  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-
   # Build go server for amd64
   - GOOS=linux GOARCH=amd64 go build -o build/gomp-linux-amd64
   - docker build -t cwmr/gomp:latest .
+
+  # prepare qemu
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
   # Build go server for armhf
   - GOOS=linux GOARCH=arm go build -o build/gomp-linux-arm
