@@ -22,11 +22,11 @@ script:
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
   # Build go server for amd64
-  - GOOS=linux GOARCH=amd64 go build -o gomp-linux-amd64
+  - GOOS=linux GOARCH=amd64 go build -o build/gomp-linux-amd64
   - docker build -t cwmr/gomp:latest .
 
   # Build go server for armhf
-  - GOOS=linux GOARCH=arm go build -o gomp-linux-arm
+  - GOOS=linux GOARCH=arm go build -o build/gomp-linux-arm
   - docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
 
   # test image

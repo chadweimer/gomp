@@ -5,7 +5,7 @@ ENV PORT 5000
 
 WORKDIR /var/app/gomp
 
-COPY gomp-linux-amd64 ./gomp
+COPY build/gomp-linux-amd64 ./gomp
 COPY db/ ./db/
 COPY static/ ./static/
 COPY templates/ ./templates/
