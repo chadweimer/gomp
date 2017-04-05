@@ -1,4 +1,4 @@
-FROM cwmr/golang-armhf:alpine
+FROM cwmr/golang-armhf
 MAINTAINER ch@dweimer.com
 
 ENV PORT 5000
