@@ -40,8 +40,14 @@ script:
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       #TAG=$(grep "ENV GOLANG_VERSION" Dockerfile | awk 'NF>1{print $NF}')
-      #docker tag cwmr/golang-armhf:latest cwmr/golang-armhf:$TAG
-      #docker push cwmr/golang-armhf:$TAG
-      docker push cwmr/gomp:latest
-      docker push cwmr/gomp:armhf
+      #docker tag cwmr/gomp:latest cwmr/gomp:$TAG
+      #docker push cwmr/gomp:$TAG
+      docker push cwmr/gomp:dev
+      docker push cwmr/gomp:dev-armhf
+    elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+      docker tag cwmr/gomp:latest cwmr/gomp:dev
+      docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
+      docker push cwmr/gomp:dev
+      docker push cwmr/gomp:dev-armhf
     fi
