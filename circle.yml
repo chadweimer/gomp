@@ -1,6 +1,8 @@
 machine:
   services:
     - docker
+  environment:
+    PATH: "${PATH}:${GOPATH}/bin"
     
 dependencies:
   pre:
