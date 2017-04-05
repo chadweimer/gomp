@@ -22,7 +22,7 @@ install:
 
 script:
   # Build go server for amd64
-  - GOOS=linux GOARCH=amd64 go build -o build/gomp-linux-amd64
+  - go build -o build/gomp-linux-amd64
   - docker build -t cwmr/gomp:latest .
 
   # prepare qemu
