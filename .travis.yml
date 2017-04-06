@@ -24,15 +24,17 @@ script:
 
 after_success:
   - >
+    docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      #TAG=$(grep "ENV GOLANG_VERSION" Dockerfile | awk 'NF>1{print $NF}')
-      #docker tag cwmr/gomp:latest cwmr/gomp:$TAG
-      #docker push cwmr/gomp:$TAG
       docker push cwmr/gomp:latest
       docker push cwmr/gomp:armhf
+      if [ "$TRAVIS_TAG" != ""]
+        docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
+        docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
+        docker push cwmr/gomp:$TRAVIS_TAG
+        docker push cwmr/gomp:$TRAVIS_TAG-armhf
+      fi
     else
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker tag cwmr/gomp:latest cwmr/gomp:dev
       docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
       docker push cwmr/gomp:dev
