@@ -5,10 +5,8 @@ ENV PORT 5000
 
 WORKDIR /var/app/gomp
 
-COPY build/gomp-linux-arm ./gomp
-COPY db/ ./db/
-COPY static/ ./static/
-COPY templates/ ./templates/
+
+COPY build/armhf/ ./
 
 VOLUME /var/app/gomp/data
 

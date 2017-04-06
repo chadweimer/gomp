@@ -10,16 +10,14 @@ language: go
 
 addons:
   apt:
+    sources:
+      - sourceline: 'ppa:masterminds/glide'
     packages:
       - nodejs
-
-install:
-  # Pull down vendored dependencies
-  - curl "https://glide.sh/get" | sh
+      - glide
 
 script:
-  - make all
-  - make docker
+  - make deps build docker
 
   # test image
   #- docker run cwmr/gomp:latest ???
