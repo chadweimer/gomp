@@ -11,28 +11,15 @@ language: go
 addons:
   apt:
     packages:
-      - curl
-      - git
       - nodejs
 
 install:
   # Pull down vendored dependencies
   - curl "https://glide.sh/get" | sh
-  - glide install
-  # Build polymer UI
-  - npm install
 
 script:
-  # prepare qemu
-  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-
-  # Build go server for amd64
-  - GOOS=linux GOARCH=amd64 go build -o build/gomp-linux-amd64
-  - docker build -t cwmr/gomp:latest .
-
-  # Build go server for armhf
-  - GOOS=linux GOARCH=arm go build -o build/gomp-linux-arm
-  - docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
+  - make all
+  - make docker
 
   # test image
   #- docker run cwmr/gomp:latest ???
