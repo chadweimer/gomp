@@ -23,14 +23,13 @@ deps:
 .PHONY: build
 build:
 	GOOS=linux GOARCH=amd64 go build -v -o $(BUILD_DIR_AMD64)/gomp
-	cp db/ $(BUILD_DIR_AMD64)/db/
-	cp static/ $(BUILD_DIR_AMD64)/static/
-	cp templates/ $(BUILD_DIR_AMD64)/templates/
-
+	cp -R db $(BUILD_DIR_AMD64)
+	cp -R static $(BUILD_DIR_AMD64)
+	cp -R templates $(BUILD_DIR_AMD64)
 	GOOS=linux GOARCH=arm go build -v -o $(BUILD_DIR_ARMHF)/gomp
-	cp db/ $(BUILD_DIR_ARMHF)/db/
-	cp static/ $(BUILD_DIR_ARMHF)/static/
-	cp templates/ $(BUILD_DIR_ARMHF)/templates/
+	cp -R db $(BUILD_DIR_ARMHF)
+	cp -R static $(BUILD_DIR_ARMHF)
+	cp -R templates $(BUILD_DIR_ARMHF)
 
 .PHONY: docker
 docker:

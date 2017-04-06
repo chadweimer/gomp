@@ -22,7 +22,7 @@ script:
   # test image
   #- docker run cwmr/gomp:latest ???
 
-  # push image
+after_success:
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
