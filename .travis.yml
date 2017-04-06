@@ -1,25 +1,55 @@
 sudo: required
 
+notifications:
+  email: false
+  
 services:
   - docker
 
-language: bash
+language: go
+
+addons:
+  apt:
+    packages:
+      - curl
+      - git
+      - nodejs
+
+install:
+  # Pull down vendored dependencies
+  - curl "https://glide.sh/get" | sh
+  - glide install
+  # Build polymer UI
+  - npm install
 
 script:
   # prepare qemu
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-  # build image
+
+  # Build go server for amd64
+  - GOOS=linux GOARCH=amd64 go build -o build/gomp-linux-amd64
   - docker build -t cwmr/gomp:latest .
-  #- docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
+
+  # Build go server for armhf
+  - GOOS=linux GOARCH=arm go build -o build/gomp-linux-arm
+  - docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
+
   # test image
   #- docker run cwmr/gomp:latest ???
+
   # push image
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       #TAG=$(grep "ENV GOLANG_VERSION" Dockerfile | awk 'NF>1{print $NF}')
-      #docker tag cwmr/golang-armhf:latest cwmr/golang-armhf:$TAG
-      #docker push cwmr/golang-armhf:$TAG
-      docker push cwmr/gomp:latest
-      #docker push cwmr/gomp:armhf
+      #docker tag cwmr/gomp:latest cwmr/gomp:$TAG
+      #docker push cwmr/gomp:$TAG
+      docker push cwmr/gomp:dev
+      docker push cwmr/gomp:dev-armhf
+    else
+      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+      docker tag cwmr/gomp:latest cwmr/gomp:dev
+      docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
+      docker push cwmr/gomp:dev
+      docker push cwmr/gomp:dev-armhf
     fi

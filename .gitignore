@@ -36,9 +36,9 @@ _testmain.go
 .idea/
 
 # Ignore the main build output
+build/
 gomp
 gomp.exe
 gomp*.zip
 gomp*.tar.gz
 debug
-
