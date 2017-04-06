@@ -44,8 +44,8 @@ script:
       #TAG=$(grep "ENV GOLANG_VERSION" Dockerfile | awk 'NF>1{print $NF}')
       #docker tag cwmr/gomp:latest cwmr/gomp:$TAG
       #docker push cwmr/gomp:$TAG
-      docker push cwmr/gomp:dev
-      docker push cwmr/gomp:dev-armhf
+      docker push cwmr/gomp:latest
+      docker push cwmr/gomp:armhf
     else
       docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker tag cwmr/gomp:latest cwmr/gomp:dev
