@@ -5,7 +5,7 @@ ENV PORT 5000
 
 WORKDIR /var/app/gomp
 
-COPY build/amd64/ ./
+COPY build/linux/amd64/ ./
 
 VOLUME /var/app/gomp/data
 
