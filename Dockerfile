@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:3.5
 MAINTAINER ch@dweimer.com
 
 ENV PORT 5000
