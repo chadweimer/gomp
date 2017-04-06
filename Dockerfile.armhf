@@ -1,4 +1,4 @@
-FROM hypriot/rpi-alpine
+FROM hypriot/rpi-alpine:3.5
 MAINTAINER ch@dweimer.com
 
 ENV PORT 5000
