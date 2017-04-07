@@ -23,6 +23,9 @@ script:
   #- docker run cwmr/gomp:latest ???
 
 after_success:
+  - echo $TRAVIS_BRANCH
+  - echo $TRAVIS_TAG
+  - echo $TRAVIS_PULL_REQUEST
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - >
     if [ "$TRAVIS_BRANCH" == "master" ]; then
