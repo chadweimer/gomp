@@ -28,7 +28,7 @@ after_success:
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker push cwmr/gomp:latest
       docker push cwmr/gomp:armhf
-      if [ "$TRAVIS_TAG" != ""]
+      if [ "$TRAVIS_TAG" != ""]; then
         docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
         docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
         docker push cwmr/gomp:$TRAVIS_TAG
