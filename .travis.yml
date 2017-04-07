@@ -25,27 +25,14 @@ script:
 after_success:
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - >
-    if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      docker push cwmr/gomp:latest
-      docker push cwmr/gomp:armhf
-    elif [ "$TRAVIS_TAG" != ""]; then
-      docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
-      docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
-      docker push cwmr/gomp:$TRAVIS_TAG
-      docker push cwmr/gomp:$TRAVIS_TAG-armhf
-    else
-      docker tag cwmr/gomp:latest cwmr/gomp:dev
-      docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
-      docker push cwmr/gomp:dev
-      docker push cwmr/gomp:dev-armhf
+    if [ "$TRAVIS_BRANCH" == "master" ]; then
+      if[ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+        docker push cwmr/gomp:latest
+        docker push cwmr/gomp:armhf
+      else
+        docker tag cwmr/gomp:latest cwmr/gomp:dev
+        docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
+        docker push cwmr/gomp:dev
+        docker push cwmr/gomp:dev-armhf
+      fi
     fi
-deploy:
-  provider: releases
-  api_key:
-    secure: YT3gWpDUAq0WxrO5mMKmhNUKTmjny0R0AfN8DZG+1RGu3mVtxLnZA3fc7eZQtAwRaLomP3zBwqfmwH6sMOyK55ghEoxwDb2CnCMah1mjUGrJ2Sk719ugWkgPUAlAWLQE3gRGKZTpKvFv0oMNHsOPEVFWTFSkn3Y5pLJ/LqNPBw9eYTCyjs1i9RrgHXkBSt88bw/NknvmA1UDR2VUocStBLjD3aTGPoBw2Rx$
-  file_glob: true
-  file: build/*.gz
-  skip_cleanup: true
-  on:
-    repo: chadweimer/gomp
-    tags: true
