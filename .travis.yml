@@ -10,46 +10,43 @@ language: go
 
 addons:
   apt:
+    sources:
+      - sourceline: 'ppa:masterminds/glide'
     packages:
-      - curl
-      - git
       - nodejs
-
-install:
-  # Pull down vendored dependencies
-  - curl "https://glide.sh/get" | sh
-  - glide install
-  # Build polymer UI
-  - npm install
+      - glide
 
 script:
-  # prepare qemu
-  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
-
-  # Build go server for amd64
-  - GOOS=linux GOARCH=amd64 go build -o build/gomp-linux-amd64
-  - docker build -t cwmr/gomp:latest .
-
-  # Build go server for armhf
-  - GOOS=linux GOARCH=arm go build -o build/gomp-linux-arm
-  - docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
+  - make deps build docker
 
   # test image
   #- docker run cwmr/gomp:latest ???
 
-  # push image
+after_success:
+  - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
-      #TAG=$(grep "ENV GOLANG_VERSION" Dockerfile | awk 'NF>1{print $NF}')
-      #docker tag cwmr/gomp:latest cwmr/gomp:$TAG
-      #docker push cwmr/gomp:$TAG
       docker push cwmr/gomp:latest
       docker push cwmr/gomp:armhf
+      if [ "$TRAVIS_TAG" != ""]; then
+        docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
+        docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
+        docker push cwmr/gomp:$TRAVIS_TAG
+        docker push cwmr/gomp:$TRAVIS_TAG-armhf
+      fi
     else
-      docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
       docker tag cwmr/gomp:latest cwmr/gomp:dev
       docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
       docker push cwmr/gomp:dev
       docker push cwmr/gomp:dev-armhf
     fi
+deploy:
+  provider: releases
+  api_key:
+    secure: YT3gWpDUAq0WxrO5mMKmhNUKTmjny0R0AfN8DZG+1RGu3mVtxLnZA3fc7eZQtAwRaLomP3zBwqfmwH6sMOyK55ghEoxwDb2CnCMah1mjUGrJ2Sk719ugWkgPUAlAWLQE3gRGKZTpKvFv0oMNHsOPEVFWTFSkn3Y5pLJ/LqNPBw9eYTCyjs1i9RrgHXkBSt88bw/NknvmA1UDR2VUocStBLjD3aTGPoBw2Rx$
+  file_glob: true
+  file: build/*.gz
+  skip_cleanup: true
+  on:
+    repo: chadweimer/gomp
+    tags: true
