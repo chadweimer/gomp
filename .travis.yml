@@ -28,12 +28,11 @@ after_success:
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker push cwmr/gomp:latest
       docker push cwmr/gomp:armhf
-      if [ "$TRAVIS_TAG" != ""]; then
-        docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
-        docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
-        docker push cwmr/gomp:$TRAVIS_TAG
-        docker push cwmr/gomp:$TRAVIS_TAG-armhf
-      fi
+    elif [ "$TRAVIS_TAG" != ""]; then
+      docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
+      docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
+      docker push cwmr/gomp:$TRAVIS_TAG
+      docker push cwmr/gomp:$TRAVIS_TAG-armhf
     else
       docker tag cwmr/gomp:latest cwmr/gomp:dev
       docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
