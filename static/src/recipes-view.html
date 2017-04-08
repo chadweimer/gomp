@@ -127,25 +127,27 @@
         Polymer({
 
             is: 'recipes-view',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 route: {
                     type: Object,
-                    notify: true
+                    notify: true,
                 },
                 recipeId: {
                     type: String,
-                    notify: true
+                    notify: true,
                 },
                 editing: {
                     type: Boolean,
                     notify: true,
-                    value: false
-                }
+                    value: false,
+                },
             },
             observers: [
-                '_recipeIdChanged(routeData.recipeId)'
+                '_recipeIdChanged(routeData.recipeId)',
             ],
             listeners: {
                 'newButton.tap': '_newButtonTapped',
@@ -158,7 +160,7 @@
                 'image-list-image-deleted': '_refreshMainImage',
                 'recipeEdit.recipe-edit-cancel': '_editCanceled',
                 'recipeEdit.recipe-edit-save': '_editSaved',
-                'confirmDeleteDialog.confirmed': '_deleteRecipe'
+                'confirmDeleteDialog.confirmed': '_deleteRecipe',
             },
 
             refresh: function() {
@@ -213,20 +215,20 @@
 
             _addNoteButtonTapped: function(e) {
                 e.preventDefault();
-                
+
                 this.$.actions.close();
                 this.$.noteList.add();
             },
 
             _refreshMainImage: function(e) {
-                this.$.recipeDisplay.refresh({onlyMainImage: true});
-                this.fire("recipes-modified");
+                this.$.recipeDisplay.refresh({onlyMainImage: true,});
+                this.fire('recipes-modified');
             },
 
             _handleDeleteRecipeResponse: function(e) {
-                this.fire("recipes-modified");
-                this.fire("change-page", "/search");
-            }
+                this.fire('recipes-modified');
+                this.fire('change-page', '/search');
+            },
 
         });
     </script>

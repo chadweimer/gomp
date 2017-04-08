@@ -127,7 +127,7 @@
                         <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                         <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                         <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
-                        
+
                         <paper-search-bar
                             icon="search"
                             query="[[search]]"
@@ -225,40 +225,40 @@
                 jwtToken: {
                     type: String,
                     notify: true,
-                    observer: '_jwtTokenChanged'
+                    observer: '_jwtTokenChanged',
                 },
                 ajaxHeaders: {
                     type: Object,
                     notify: true,
-                    value: null
+                    value: null,
                 },
                 title: {
                     type: String,
-                    value: 'Go Meal Planner'
+                    value: 'Go Meal Planner',
                 },
                 homeTitle: {
                     type: String,
-                    value: 'Go Meal Planner'
+                    value: 'Go Meal Planner',
                 },
                 homeImage: {
                     type: String,
-                    value: ''
+                    value: '',
                 },
                 page: {
                     type: String,
                     reflectToAttribute: true,
                     notify: true,
-                    observer: '_pageChanged'
+                    observer: '_pageChanged',
                 },
                 loadingCount : {
                     type: Number,
                     notify: true,
-                    value: 0
-                }
+                    value: 0,
+                },
             },
             observers: [
                 '_routePageChanged(routeData.page)',
-                '_searchTagsChanged(searchTags)'
+                '_searchTagsChanged(searchTags)',
             ],
             listeners: {
                 'scroll-top': '_scrollToTop',
@@ -271,7 +271,7 @@
                 'iron-ajax-response': '_onAjaxResponse',
                 'iron-ajax-error': '_onAjaxError',
                 'authenticated': '_onAuthenticated',
-                'show-toast': '_onShowToast'
+                'show-toast': '_onShowToast',
             },
 
             ready: function() {
@@ -283,7 +283,7 @@
                 this.jwtToken = e.detail;
             },
             _jwtTokenChanged: function(jwtToken) {
-                this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
+                this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken,};
             },
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
@@ -292,9 +292,9 @@
                     e.path[0].parentNode.insertBefore(e.path[0].backdropElement, e.path[0]);
                 }
             },
-            
+
             _isLoading: function(loadingCount) {
-                return loadingCount != 0;
+                return loadingCount !== 0;
             },
 
             _onAjaxRequest: function(e) {
@@ -337,24 +337,24 @@
                 this.$.drawer.close();
             },
             _show404: function() {
-                this.page = "status-404";
+                this.page = 'status-404';
             },
             _changePageRequested: function(e) {
                 this._changeRoute(e.detail);
             },
             _changeRoute: function(path) {
-                this.set("route.path", path);
+                this.set('route.path', path);
             },
             _scrollToTop: function() {
                 this.$.scrollControl.scroll(0, 0);
             },
             _onLogoutTapped: function(e) {
                 e.preventDefault();
-                
+
                 this._logout();
             },
             _verifyIsAuthenticated: function() {
-                this.jwtToken = localStorage.getItem("jwtToken");
+                this.jwtToken = localStorage.getItem('jwtToken');
                 // Redirect to login if necessary
                 if (this.jwtToken === null) {
                     if (this.route.path !== '/login') {
@@ -368,11 +368,11 @@
                 localStorage.clear();
                 sessionStorage.clear();
                 this.ajaxHeaders = null;
-                this._changeRoute("/login");
+                this._changeRoute('/login');
             },
             _onSearch: function(e) {
                 this.search = e.target.query.trim();
-                this._changeRoute("/search");
+                this._changeRoute('/search');
             },
             _onFilter: function() {
                 this.$.filterDialog.open();
@@ -380,7 +380,7 @@
             _onHomeLinkClicked: function(e) {
                 this.search = '';
                 this.searchTags = e.detail.tags;
-                this._changeRoute("/search");
+                this._changeRoute('/search');
             },
             _isActive: function(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
@@ -389,10 +389,10 @@
                 var tags = e.detail.response;
 
                 var filters = [];
-                var tagFilter = { id: "tags", name: "Tags", values: [] };
+                var tagFilter = { id: 'tags', name: 'Tags', values: [], };
                 filters.push(tagFilter);
                 tags.forEach(function(tag) {
-                    tagFilter.values.push({ id: tag, name: tag});
+                    tagFilter.values.push({ id: tag, name: tag,});
                 });
 
                 this.searchFilters = filters;
@@ -403,13 +403,13 @@
                 } else {
                     this.searchTags = [];
                 }
-                this._changeRoute("/search");
+                this._changeRoute('/search');
             },
             _searchTagsChanged: function(tags) {
                 if (!this.selectedSearchFilters) {
                     this.selectedSearchFilters = {};
                 }
-                this.set("selectedSearchFilters.tags", tags);
+                this.set('selectedSearchFilters.tags', tags);
                 this.selectedSearchFiltersCount = tags.length;
             },
 
@@ -417,7 +417,7 @@
                 if (this.$.searchView.refresh) {
                     this.$.searchView.refresh();
                 }
-            }
+            },
         });
     </script>
 </dom-module>

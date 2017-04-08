@@ -1,4 +1,4 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+'<link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -146,14 +146,14 @@
                     <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                 </div>
                 <div class="outterContainer">
-                    <template is="dom-if"" if="[[_isViewMode(viewMode, 'full')]]" restamp>
+                    <template is="dom-if" if="[[_isViewMode(viewMode, 'full')]]" restamp>
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
                                 <recipe-card recipe="[[item]]"></recipe-card>
                             </div>
                         </template>
                     </template>
-                    <template is="dom-if"" if="[[_isViewMode(viewMode, 'compact')]]" restamp>
+                    <template is="dom-if" if="[[_isViewMode(viewMode, 'compact')]]" restamp>
                         <template is="dom-repeat" items="[[_columnize(recipes, 3)]]" as="inner">
                             <div class="recipeContainer">
                                 <template is="dom-repeat" items="[[inner]]" as="recipe">
@@ -193,63 +193,65 @@
         Polymer({
 
             is: 'search-view',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 pageNum: {
                     type: Number,
                     value: 1,
                     notify: true,
-                    observer: '_pageNumChanged'
+                    observer: '_pageNumChanged',
                 },
                 numPages: {
                     type: Number,
                     value: 0,
-                    notify: true
+                    notify: true,
                 },
                 search: {
                     type: String,
                     value: '',
                     notify: true,
-                    observer: '_searchChanged'
+                    observer: '_searchChanged',
                 },
                 searchTags: {
                     type: Array,
                     value: [],
                     notify: true,
-                    observer: '_searchChanged'
+                    observer: '_searchChanged',
                 },
                 sortBy: {
                     type: String,
                     value: 'name',
                     notify: true,
-                    observer: '_searchChanged'
+                    observer: '_searchChanged',
                 },
                 sortDir: {
                     type: String,
                     value: 'asc',
                     notify: true,
-                    observer: '_searchChanged'
+                    observer: '_searchChanged',
                 },
                 viewMode: {
                     type: String,
                     value: 'full',
                     notify: true,
-                    observer: '_searchChanged'
+                    observer: '_searchChanged',
                 },
                 recipes: {
                     type: Array,
                     value: [],
-                    notify: true
+                    notify: true,
                 },
                 totalRecipeCount: {
                     type: Number,
                     value: 0,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
             observers: [
-                '_updatePagination(recipes, totalRecipeCount)'
+                '_updatePagination(recipes, totalRecipeCount)',
             ],
 
             ready: function() {
@@ -266,12 +268,12 @@
 
             refresh: function() {
                 this.$.recipesAjax.params = {
-                    "q": this.search,
-                    "tags[]": this.searchTags,
-                    "sort": this.sortBy,
-                    "dir": this.sortDir,
-                    "page": this.pageNum,
-                    "count": this._getRecipeCount()
+                    'q': this.search,
+                    'tags[]': this.searchTags,
+                    'sort': this.sortBy,
+                    'dir': this.sortDir,
+                    'page': this.pageNum,
+                    'count': this._getRecipeCount(),
                 };
             },
 
@@ -282,7 +284,7 @@
                 return 18;
             },
 
-            _handleGetRecipesRequest: function(request) {
+            _handleGetRecipesRequest: function() {
                 this.fire('loading-started');
                 this.fire('scroll-top');
             },
@@ -302,46 +304,46 @@
             _onFullViewTapped: function(e) {
                 e.preventDefault();
 
-                this.viewMode = "full";
+                this.viewMode = 'full';
                 this.$.settingsDrawer.close();
             },
             _onCompactViewTapped: function(e) {
                 e.preventDefault();
 
-                this.viewMode = "compact";
+                this.viewMode = 'compact';
                 this.$.settingsDrawer.close();
             },
             _onNameSortTapped: function(e) {
                 e.preventDefault();
 
-                this.sortBy = "name";
-                this.sortDir = "asc";
+                this.sortBy = 'name';
+                this.sortDir = 'asc';
                 this.$.settingsDrawer.close();
             },
             _onRatingSortTapped: function(e) {
                 e.preventDefault();
 
-                this.sortBy = "rating";
-                this.sortDir = "desc";
+                this.sortBy = 'rating';
+                this.sortDir = 'desc';
                 this.$.settingsDrawer.close();
             },
-			_onRandomSortTapped: function(e) {
-				e.preventDefault();
+            _onRandomSortTapped: function(e) {
+                e.preventDefault();
 
-				this.sortBy = "random";
-				this.sortDir = "asc";
-				this.$.settingsDrawer.close();
-			},
+                this.sortBy = 'random';
+                this.sortDir = 'asc';
+                this.$.settingsDrawer.close();
+            },
             _onAscSortTapped: function(e) {
                 e.preventDefault();
 
-                this.sortDir = "asc";
+                this.sortDir = 'asc';
                 this.$.settingsDrawer.close();
             },
             _onDescSortTapped: function(e) {
                 e.preventDefault();
 
-                this.sortDir = "desc";
+                this.sortDir = 'desc';
                 this.$.settingsDrawer.close();
             },
 
@@ -349,12 +351,14 @@
                 return viewMode === expected;
             },
             _columnize: function(items, numSplits) {
-                var splitCount = Math.ceil(items.length / numSplits)
+                var splitCount = Math.ceil(items.length / numSplits);
 
-                var newArrays = [[]];
-                var index = 0
+                var newArrays = [
+                  [],
+                ];
+                var index = 0;
 
-                for (i = 0; i < items.length; i++) {
+                for (var i = 0; i < items.length; i++) {
                     if (i >= (index + 1) * splitCount) {
                         newArrays.push([]);
                         index++;
@@ -366,7 +370,7 @@
             },
             _isNullOrEmpty: function(val) {
                 return val === null || val === '';
-            }
+            },
         });
     </script>
 </dom-module>

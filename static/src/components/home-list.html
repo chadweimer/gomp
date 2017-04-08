@@ -70,7 +70,7 @@
                 }
             }
         </style>
-        
+
         <article>
             <header>[[title]]</header>
             <div class="outterContainer">
@@ -98,30 +98,33 @@
         Polymer({
 
             is: 'home-list',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 title: {
                     type: String,
                     notify: true,
-                    value: "Recipes"
+                    value: 'Recipes',
                 },
                 tags: {
                     type: Array,
                     notify: true,
                     value: [],
-                    observer: '_tagsChanged'
-                }
+                    observer: '_tagsChanged',
+                },
             },
 
             _tagsChanged: function() {
                 this.$.recipesAjax.params = {
-                    "q":"",
-                    "tags[]": this.tags,
-                    "sort": "random",
-                    "dir": "asc",
-                    "page": 1,
-                    "count": 6};
+                    'q':'',
+                    'tags[]': this.tags,
+                    'sort': 'random',
+                    'dir': 'asc',
+                    'page': 1,
+                    'count': 6,
+                };
             },
 
             refresh: function() {
@@ -137,9 +140,9 @@
             },
             _onLinkTapped: function(e) {
                 e.preventDefault();
-                
-                this.fire("home-list-link-clicked", {tags: this.tags});
-            }
+
+                this.fire('home-list-link-clicked', {tags: this.tags,});
+            },
 
         });
     </script>

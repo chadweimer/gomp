@@ -67,17 +67,19 @@
         Polymer({
 
             is: 'recipe-edit',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 recipeId: {
                     type: String,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
             listeners: {
                 'cancelButton.tap': '_cancelButtonTapped',
-                'saveButton.tap': '_saveButtonTapped'
+                'saveButton.tap': '_saveButtonTapped',
             },
 
             ready: function() {
@@ -99,7 +101,7 @@
                         directions: '',
                         nutrition: '',
                         sourceUrl: '',
-                        tags: []
+                        tags: [],
                     };
                 }
                 if (isActive && this.isReady) {
@@ -110,7 +112,7 @@
             _cancelButtonTapped: function(e) {
                 e.preventDefault();
 
-                this.fire("recipe-edit-cancel");
+                this.fire('recipe-edit-cancel');
             },
             _saveButtonTapped: function(e) {
                 e.preventDefault();
@@ -133,8 +135,8 @@
                 this.recipe = e.detail.response;
             },
             _handlePutRecipeResponse: function(e) {
-                this.fire("recipe-edit-save");
-                this.fire("recipes-modified");
+                this.fire('recipe-edit-save');
+                this.fire('recipes-modified');
             },
             _handlePostRecipeResponse: function(e) {
                 var temp = document.createElement('a');
@@ -146,9 +148,9 @@
                 if (newRecipeIdMatch) {
                     newRecipeId = parseInt(newRecipeIdMatch[1], 10);
                 }
-                this.fire("recipe-edit-save", {redirectUrl: '/recipes/' + newRecipeId});
-                this.fire("recipes-modified");
-            }
+                this.fire('recipe-edit-save', {redirectUrl: '/recipes/' + newRecipeId,});
+                this.fire('recipes-modified');
+            },
         });
     </script>
 </dom-module>

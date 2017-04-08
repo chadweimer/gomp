@@ -54,18 +54,20 @@
         Polymer({
 
             is: 'home-view',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 title: {
                     type: String,
                     notify: true,
-                    value: "Go Meal Planner"
+                    value: 'Go Meal Planner',
                 },
                 image: {
                     type: String,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
 
             ready: function() {
@@ -90,7 +92,7 @@
                 this.$.vegetarianRecipes.refresh();
                 this.$.sideRecipes.refresh();
                 this.$.drinkRecipes.refresh();
-            }
+            },
 
         });
     </script>

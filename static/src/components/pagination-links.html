@@ -18,7 +18,7 @@
                 background: var(--light-accent-color);
             }
         </style>
-        
+
         <paper-button id="first" raised on-tap="_goFirst">|&lt;</paper-button>
         <paper-button id="prev" raised on-tap="_goPrev">&lt;</paper-button>
         <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
@@ -29,42 +29,43 @@
     <script>
       Polymer({
 
-        is: 'pagination-links',
+          is: 'pagination-links',
 
-        properties: {
-          pageNum: {
-            type: Number,
-            value: 1,
-            notify: true
+          properties: {
+              pageNum: {
+                  type: Number,
+                  value: 1,
+                  notify: true,
+              },
+              numPages: {
+                  type: Number,
+                  value: 10,
+                  notify: true,
+              },
           },
-          numPages: {
-            type: Number,
-            value: 10,
-            notify: true
-          },
-        },
-        observers: [
-            '_pagesChanged(pageNum, numPages)'
-        ],
+          observers: [
+              '_pagesChanged(pageNum, numPages)',
+          ],
 
-        _pagesChanged: function() {
-            this.$.first.disabled = this.pageNum == 1;
-            this.$.prev.disabled = this.pageNum == 1;
-            this.$.next.disabled = this.pageNum == this.numPages;
-            this.$.last.disabled = this.pageNum == this.numPages;
-        },
-        _goFirst: function(e) {
-            this.pageNum = 1;;
-        },
-        _goPrev: function(e) {
-            this.pageNum--;
-        },
-        _goNext: function(e) {
-            this.pageNum++;
-        },
-        _goLast: function(e) {
-            this.pageNum = this.numPages;
-        },
+          _pagesChanged: function() {
+              this.$.first.disabled = this.pageNum === 1;
+              this.$.prev.disabled = this.pageNum === 1;
+              this.$.next.disabled = this.pageNum === this.numPages;
+              this.$.last.disabled = this.pageNum === this.numPages;
+          },
+          _goFirst: function(e) {
+              this.pageNum = 1;
+          },
+          _goPrev: function(e) {
+              this.pageNum--;
+          },
+          _goNext: function(e) {
+              this.pageNum++;
+          },
+          _goLast: function(e) {
+              this.pageNum = this.numPages;
+          },
+
       });
     </script>
 </dom-module>

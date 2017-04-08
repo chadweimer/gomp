@@ -4,24 +4,24 @@
             isReady: {
                 type: Boolean,
                 value: false,
-                notify: true
+                notify: true,
             },
             isActive: {
                 type: Boolean,
                 value: false,
                 notify: true,
                 reflectToAttribute: true,
-                observer: '_isActiveChanged'
+                observer: '_isActiveChanged',
             },
             jwtToken: {
                 type: String,
                 notify: true,
-                observer: '_jwtTokenChanged'
+                observer: '_jwtTokenChanged',
             },
             ajaxHeaders: {
                 type: Object,
                 notify: true,
-                value: {}
+                value: {},
             },
         },
 
@@ -29,7 +29,7 @@
             this.isReady = true;
         },
         _jwtTokenChanged: function(jwtToken) {
-            this.ajaxHeaders = {"Authorization": "Bearer " + jwtToken};
+            this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken,};
         },
     };
 </script>
