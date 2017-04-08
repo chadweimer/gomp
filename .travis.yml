@@ -2,7 +2,7 @@ sudo: required
 
 notifications:
   email: false
-  
+
 services:
   - docker
 
@@ -15,6 +15,7 @@ addons:
     packages:
       - nodejs
       - glide
+      - zip
 
 script:
   - make deps build docker
@@ -44,8 +45,9 @@ deploy:
   provider: releases
   api_key: "$GITHUB_OAUTH_TOKEN"
   file_glob: true
-  file: build/*.gz
+  file:
+    - build/*.tar.gz
+    - build/*.zip
   skip_cleanup: true
   on:
     tags: true
-  

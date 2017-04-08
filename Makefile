@@ -47,7 +47,7 @@ build: build-windows-amd64
 	cp -R db $(BUILD_DIR)/windows/amd64
 	cp -R static $(BUILD_DIR)/windows/amd64
 	cp -R templates $(BUILD_DIR)/windows/amd64
-	tar -C $(BUILD_DIR)/windows/amd64 -zcvf $(BUILD_DIR)/gomp-windows-amd64.tar.gz .
+	cd build/windows/amd64 && zip -r ../../gomp-windows-amd64.zip * && cd ../../
 
 .PHONY: docker
 docker:
