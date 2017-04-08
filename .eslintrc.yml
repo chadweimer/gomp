@@ -1,9 +1,11 @@
 plugins:
   - html
 
-ecmaFeatures:
-  modules: true
-  jsx: true
+parseOptions:
+  sourceType: "module"
+  ecmaFeatures:
+    jsx: true
+  ecmaVersion: 6
 
 env:
   amd: true
