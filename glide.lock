@@ -1,8 +1,8 @@
-hash: d412727edffe3771c341090f54617f8c77626e963f02b45ef2915449fd2669ba
-updated: 2016-11-24T01:11:49.04570571-06:00
+hash: 2c7503c1b6e41bd8926ac3f7069338a343694c66e60addce7bd11cff1ba771d9
+updated: 2017-04-08T22:22:51.987436717-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 8a2306a0e7d8d4095e5f1beee530ceaee6e7d609
+  version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
   subpackages:
   - aws
   - aws/awserr
@@ -16,6 +16,7 @@ imports:
   - aws/credentials/stscreds
   - aws/defaults
   - aws/ec2metadata
+  - aws/endpoints
   - aws/request
   - aws/session
   - aws/signer/v4
@@ -32,9 +33,9 @@ imports:
   - vendor/github.com/go-ini/ini
   - vendor/github.com/jmespath/go-jmespath
 - name: github.com/dgrijalva/jwt-go
-  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+  version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/disintegration/imaging
-  version: 5b7e22645c93e3f3911b36b7d66bf8799f3eddfd
+  version: ac27d1805a555e1754fa177216ee07f4e63c30b5
 - name: github.com/go-ini/ini
   version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
 - name: github.com/jmespath/go-jmespath
@@ -81,7 +82,7 @@ imports:
   - tiff
   - tiff/lzw
 - name: gopkg.in/tylerb/graceful.v1
-  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
+  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
 - name: gopkg.in/unrolled/render.v1
   version: 526faf80cd4b305bb8134abea8d20d5ced74faa6
 testImports: []

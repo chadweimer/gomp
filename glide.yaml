@@ -1,7 +1,7 @@
 package: github.com/chadweimer/gomp
 import:
 - package: github.com/aws/aws-sdk-go
-  version: 8a2306a0e7d8d4095e5f1beee530ceaee6e7d609
+  version: ^1.8.0
   subpackages:
   - aws
   - aws/awserr
@@ -31,9 +31,9 @@ import:
   - aws/credentials/stscreds
   - service/sts
 - package: github.com/dgrijalva/jwt-go
-  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+  version: ^3.0.0
 - package: github.com/disintegration/imaging
-  version: 5b7e22645c93e3f3911b36b7d66bf8799f3eddfd
+  version: ^1.1.0
 - package: github.com/jmoiron/sqlx
   version: 05b81a7d5d38058e42148dc01f17daf4acba4640
   subpackages:
