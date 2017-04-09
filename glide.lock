@@ -1,5 +1,5 @@
-hash: 51a7106a6eef91ddd07e84c18895f7ba9f6419a29274e2e83ae095c6cd841cc8
-updated: 2017-04-09T05:57:22.338391945Z
+hash: 69f938f992c9fb27e165f234680dc3469c8a1ae0ea8cf8fae8b216589cc8da06
+updated: 2017-04-09T16:45:45.007753561Z
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
@@ -68,6 +68,8 @@ imports:
   subpackages:
   - exif
   - tiff
+- name: github.com/unrolled/render
+  version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
@@ -83,6 +85,4 @@ imports:
   - tiff/lzw
 - name: gopkg.in/tylerb/graceful.v1
   version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
-- name: gopkg.in/unrolled/render.v1
-  version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
 testImports: []

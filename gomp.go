@@ -13,7 +13,7 @@ import (
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
 	"gopkg.in/tylerb/graceful.v1"
-	"gopkg.in/unrolled/render.v1"
+	"github.com/unrolled/render"
 )
 
 func main() {

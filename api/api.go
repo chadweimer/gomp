@@ -7,11 +7,10 @@ import (
 	"net/http"
 	"net/url"
 
-	render "gopkg.in/unrolled/render.v1"
-
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/julienschmidt/httprouter"
+        "github.com/unrolled/render"
 )
 
 // ---- Begin Standard Errors ----
