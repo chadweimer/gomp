@@ -1,5 +1,5 @@
-hash: 2c7503c1b6e41bd8926ac3f7069338a343694c66e60addce7bd11cff1ba771d9
-updated: 2017-04-08T22:22:51.987436717-07:00
+hash: 51a7106a6eef91ddd07e84c18895f7ba9f6419a29274e2e83ae095c6cd841cc8
+updated: 2017-04-09T05:57:22.338391945Z
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
@@ -41,13 +41,13 @@ imports:
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/jmoiron/sqlx
-  version: 05b81a7d5d38058e42148dc01f17daf4acba4640
+  version: 8ed836a8adb659e8492bcaa49e0880bb84075fe2
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
-  version: 4563b0ba73e4db6c6423b60a26f3cadd2e9a1ec9
+  version: 8a45e95fc75cb77048068a62daed98cc22fdac7c
 - name: github.com/lib/pq
-  version: ae8357db35d721c58dcdc911318b55bef6b1b001
+  version: 472a0745531a17dbac346e828b4c60e73ddff30c
   subpackages:
   - oid
 - name: github.com/mattes/migrate
@@ -64,19 +64,19 @@ imports:
   subpackages:
   - gzip
 - name: github.com/rwcarlsen/goexif
-  version: 709fab3d192d7c62f86043caff1e7e3fb0f42bd8
+  version: 41dad3aa083329f3f672b7095a9ea8a0c384bbe8
   subpackages:
   - exif
   - tiff
 - name: github.com/urfave/negroni
-  version: 65de9fa027ca75ff3964c5410774ac45692ce94c
+  version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: ca7e7f10cb9fd9c1a6ff7f60436c086d73714180
+  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: 93fad3647fcda43e12f413a6dd7568896dc06ba9
+  version: fb59e5ba1052c469714bd4e918e7d8360aaa9642
   subpackages:
   - bmp
   - tiff
@@ -84,5 +84,5 @@ imports:
 - name: gopkg.in/tylerb/graceful.v1
   version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
 - name: gopkg.in/unrolled/render.v1
-  version: 526faf80cd4b305bb8134abea8d20d5ced74faa6
+  version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
 testImports: []
