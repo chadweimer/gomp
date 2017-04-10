@@ -1,14 +1,13 @@
 FROM hypriot/rpi-alpine:3.5
 MAINTAINER ch@dweimer.com
 
-ENV PORT 5000
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /var/app/gomp
-
-
 COPY build/linux/armhf/ ./
-
 VOLUME /var/app/gomp/data
 
+ENV PORT 5000
 EXPOSE 5000
+
 ENTRYPOINT ["./gomp"]
