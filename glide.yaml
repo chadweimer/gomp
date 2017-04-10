@@ -75,7 +75,5 @@ import:
   - bmp
   - tiff
   - tiff/lzw
-- package: gopkg.in/tylerb/graceful.v1
-  version: ^1.2.13
 - package: github.com/unrolled/render
   version: master

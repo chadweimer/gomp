@@ -1,5 +1,5 @@
-hash: 69f938f992c9fb27e165f234680dc3469c8a1ae0ea8cf8fae8b216589cc8da06
-updated: 2017-04-09T16:45:45.007753561Z
+hash: 8db56b61aadfbd260bdeb798ee613df4a61b551779b5e5bacafb864de10a50cd
+updated: 2017-04-10T01:00:11.576180147Z
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
@@ -45,9 +45,9 @@ imports:
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
-  version: 8a45e95fc75cb77048068a62daed98cc22fdac7c
+  version: 6f3f3919c8781ce5c0509c83fffc887a7830c938
 - name: github.com/lib/pq
-  version: 472a0745531a17dbac346e828b4c60e73ddff30c
+  version: 2704adc878c21e1329f46f6e56a1c387d788ff94
   subpackages:
   - oid
 - name: github.com/mattes/migrate
@@ -60,7 +60,7 @@ imports:
   - migrate/direction
   - pipe
 - name: github.com/phyber/negroni-gzip
-  version: 13f05ed68248e012fcc773ecd829abcc0bb3abd8
+  version: 8118ae63850fee22b2fe43cea81d3bc149774503
   subpackages:
   - gzip
 - name: github.com/rwcarlsen/goexif
@@ -73,16 +73,14 @@ imports:
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
+  version: 6022e334c1a8cce46fb30629dc30e835faa3844d
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: fb59e5ba1052c469714bd4e918e7d8360aaa9642
+  version: 84a65118940ed74c8e841be84d3e502c29eff703
   subpackages:
   - bmp
   - tiff
   - tiff/lzw
-- name: gopkg.in/tylerb/graceful.v1
-  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
 testImports: []

@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/chadweimer/gomp/api"
@@ -12,7 +16,6 @@ import (
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/urfave/negroni"
-	"gopkg.in/tylerb/graceful.v1"
 	"github.com/unrolled/render"
 )
 
@@ -51,12 +54,26 @@ func main() {
 	}))
 	n.UseHandler(mainMux)
 
+	// subscribe to SIGINT signals
+	stopChan := make(chan os.Signal)
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+
 	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
 	}
-	graceful.Run(fmt.Sprintf(":%d", cfg.Port), timeout, n)
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: n}
+
+	go func() {
+		srv.ListenAndServe()
+	}()
+
+	<-stopChan
+	log.Print("Shutting down server...")
+
+	ctx,_ := context.WithTimeout(context.Background(), timeout)
+	srv.Shutdown(ctx)
 
 	// Make sure to close the database connection
 	model.TearDown()
