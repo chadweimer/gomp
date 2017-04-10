@@ -8,6 +8,9 @@ services:
 
 language: go
 
+go:
+  - 1.8
+
 addons:
   apt:
     sources:
