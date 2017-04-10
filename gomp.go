@@ -15,8 +15,8 @@ import (
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/phyber/negroni-gzip/gzip"
-	"github.com/urfave/negroni"
 	"github.com/unrolled/render"
+	"github.com/urfave/negroni"
 )
 
 func main() {
@@ -72,7 +72,7 @@ func main() {
 	<-stopChan
 	log.Print("Shutting down server...")
 
-	ctx,_ := context.WithTimeout(context.Background(), timeout)
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 	srv.Shutdown(ctx)
 
 	// Make sure to close the database connection
