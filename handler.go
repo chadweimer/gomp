@@ -9,7 +9,7 @@ import (
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/julienschmidt/httprouter"
-	"gopkg.in/unrolled/render.v1"
+	"github.com/unrolled/render"
 )
 
 type uiHandler struct {

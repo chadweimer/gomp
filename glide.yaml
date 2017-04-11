@@ -1,7 +1,7 @@
 package: github.com/chadweimer/gomp
 import:
 - package: github.com/aws/aws-sdk-go
-  version: 8a2306a0e7d8d4095e5f1beee530ceaee6e7d609
+  version: ^1.8.0
   subpackages:
   - aws
   - aws/awserr
@@ -31,21 +31,21 @@ import:
   - aws/credentials/stscreds
   - service/sts
 - package: github.com/dgrijalva/jwt-go
-  version: 24c63f56522a87ec5339cc3567883f1039378fdb
+  version: ^3.0.0
 - package: github.com/disintegration/imaging
-  version: 5b7e22645c93e3f3911b36b7d66bf8799f3eddfd
+  version: ^1.1.0
 - package: github.com/jmoiron/sqlx
-  version: 05b81a7d5d38058e42148dc01f17daf4acba4640
+  version: master
   subpackages:
   - reflectx
 - package: github.com/julienschmidt/httprouter
-  version: 4563b0ba73e4db6c6423b60a26f3cadd2e9a1ec9
+  version: master
 - package: github.com/lib/pq
-  version: ae8357db35d721c58dcdc911318b55bef6b1b001
+  version: master
   subpackages:
   - oid
 - package: github.com/mattes/migrate
-  version: ce1b59bb819416ca67422929b1cb48bb342720b6
+  version: ^1.3.0
   subpackages:
   - driver
   - driver/postgres
@@ -54,28 +54,26 @@ import:
   - migrate/direction
   - pipe
 - package: github.com/phyber/negroni-gzip
-  version: 13f05ed68248e012fcc773ecd829abcc0bb3abd8
+  version: master
   subpackages:
   - gzip
 - package: github.com/rwcarlsen/goexif
-  version: 709fab3d192d7c62f86043caff1e7e3fb0f42bd8
+  version: master
   subpackages:
   - exif
   - tiff
 - package: github.com/urfave/negroni
-  version: 65de9fa027ca75ff3964c5410774ac45692ce94c
+  version: master
 - package: golang.org/x/crypto
-  version: ca7e7f10cb9fd9c1a6ff7f60436c086d73714180
+  version: master
   subpackages:
   - bcrypt
   - blowfish
 - package: golang.org/x/image
-  version: 93fad3647fcda43e12f413a6dd7568896dc06ba9
+  version: master
   subpackages:
   - bmp
   - tiff
   - tiff/lzw
-- package: gopkg.in/tylerb/graceful.v1
-  version: ^1.2.13
-- package: gopkg.in/unrolled/render.v1
-  version: 526faf80cd4b305bb8134abea8d20d5ced74faa6
+- package: github.com/unrolled/render
+  version: master
