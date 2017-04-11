@@ -28,19 +28,21 @@
         Polymer({
 
             is: 'create-view',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             listeners: {
                 'recipeEdit.recipe-edit-cancel': '_editCanceled',
-                'recipeEdit.recipe-edit-save': '_editSaved'
+                'recipeEdit.recipe-edit-save': '_editSaved',
             },
 
             _editCanceled: function(e) {
-                this.fire("change-page", "/search");
+                this.fire('change-page', '/search');
             },
             _editSaved: function(e) {
-                this.fire("change-page", e.detail.redirectUrl);
-            }
+                this.fire('change-page', e.detail.redirectUrl);
+            },
 
         });
     </script>

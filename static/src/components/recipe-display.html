@@ -52,7 +52,7 @@
             <div class="card-content">
                 <star-rating value="[[recipe.averageRating]]"></star-rating>
                 <h2>
-                    <a target="_blank" href="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
                 </h2>
                 <section hidden$="{{!recipe.servingSize}}">
@@ -114,16 +114,18 @@
         Polymer({
 
             is: 'recipe-display',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 recipeId: {
                     type: String,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
             listeners: {
-                'star-rating-selected': '_starRatingSelected'
+                'star-rating-selected': '_starRatingSelected',
             },
 
             refresh: function(options) {
@@ -151,12 +153,12 @@
                 this.mainImage = e.detail.response;
             },
             _handlePutRecipeRatingResponse: function(e) {
-                this.set("recipe.averageRating", parseFloat(e.target.body));
-                this.fire('show-toast', {message: "Rating changed."});
+                this.set('recipe.averageRating', parseFloat(e.target.body));
+                this.fire('show-toast', {message: 'Rating changed.',});
             },
             _handlePutRecipeRatingError: function(e) {
-                this.fire('show-toast', {message: "Changing rating failed!"});
-            }
+                this.fire('show-toast', {message: 'Changing rating failed!',});
+            },
         });
     </script>
 </dom-module>

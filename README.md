@@ -1,4 +1,4 @@
-[![CircleCI](https://img.shields.io/circleci/project/chadweimer/gomp.svg?style=flat-square&label=circleci)](https://circleci.com/gh/chadweimer/gomp)
+[![TravisCI](https://img.shields.io/travis/chadweimer/gomp.svg?style=flat-square&label=travisci)](https://travis-ci.org/chadweimer/gomp)
 [![Code Climate](https://img.shields.io/codeclimate/github/chadweimer/gomp.svg?style=flat-square)](https://codeclimate.com/github/chadweimer/gomp)
 [![Closed Pull Requests](https://img.shields.io/github/issues-pr-closed-raw/chadweimer/gomp.svg?style=flat-square)](https://github.com/chadweimer/gomp/pulls)
 [![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg?style=flat-square)](https://github.com/chadweimer/gomp/releases)
@@ -35,4 +35,4 @@ Currently only PostgreSQL is supported.
 
 ## Credits
 
-See [Godeps/Godeps.json](Godeps/Godeps.json) and [static/bower.json](static/bower.json)
+See [glide.yaml](glide.yyaml) and [static/bower.json](static/bower.json)

@@ -45,7 +45,7 @@
                 color: var(--paper-yellow-500) !important;
             }
         </style>
-        
+
         <iron-icon icon="icons:star" class="whole" data-rating="5"></iron-icon>
         <iron-icon icon="icons:star" class="half" data-rating="4.5"></iron-icon>
         <iron-icon icon="icons:star" class="whole" data-rating="4"></iron-icon>
@@ -68,13 +68,13 @@
                     type: Number,
                     notify: true,
                     value: 0,
-                    observer: '_valueChanged'
-                }
+                    observer: '_valueChanged',
+                },
             },
 
             ready: function() {
                 var self = this;
-                var stars = Polymer.dom(this.root).querySelectorAll("iron-icon");
+                var stars = Polymer.dom(this.root).querySelectorAll('iron-icon');
                 stars.forEach(function(star) {
                     self.listen(star, 'tap', '_starTapped');
                 });
@@ -82,15 +82,15 @@
 
             _valueChanged: function(newValue, oldValue) {
                 if (newValue !== 0 && !newValue) {
-                    return
+                    return;
                 }
 
-                var stars = Polymer.dom(this.root).querySelectorAll("iron-icon");
+                var stars = Polymer.dom(this.root).querySelectorAll('iron-icon');
                 stars.forEach(function(star) {
                     if (star.dataset.rating === newValue.toString()) {
-                        star.classList.add("active");
+                        star.classList.add('active');
                     } else {
-                        star.classList.remove("active");
+                        star.classList.remove('active');
                     }
                 });
             },
@@ -98,8 +98,8 @@
             _starTapped: function(e) {
                 e.preventDefault();
 
-                this.fire("star-rating-selected", {rating: e.target.dataset.rating});
-            }
+                this.fire('star-rating-selected', {rating: e.target.dataset.rating,});
+            },
         });
     </script>
 </dom-module>

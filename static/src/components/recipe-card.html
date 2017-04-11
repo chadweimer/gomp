@@ -12,7 +12,7 @@
                 display: block;
                 color: var(--primary-text-color);
                 cursor: pointer;
-                
+
                 --paper-card-header: {
                     height: var(--recipe-card-header-height, 75%);
                 }
@@ -32,8 +32,8 @@
                 text-overflow: ellipsis;
             }
         </style>
-        
-        <a href="/recipes/[[recipe.id]]">
+
+        <a href$="/recipes/[[recipe.id]]">
             <paper-card image="[[recipe.mainImage.thumbnailUrl]]">
                 <div class="card-content">
                     <span class="truncate">[[recipe.name]]</span>
@@ -51,9 +51,9 @@
             properties: {
                 recipe: {
                     type: Object,
-                    notify: true
-                }
-            }
+                    notify: true,
+                },
+            },
         });
     </script>
 </dom-module>

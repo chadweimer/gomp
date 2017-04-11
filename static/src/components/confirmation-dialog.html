@@ -37,21 +37,21 @@
             properties: {
                 icon: {
                     type: String,
-                    value: "help"
+                    value: 'help',
                 },
                 title: {
                     type: String,
-                    value: "Are you sure?"
+                    value: 'Are you sure?',
                 },
                 message: {
                     type: String,
-                    value: "Are you sure you want to perform the requested operation?"
-                }
+                    value: 'Are you sure you want to perform the requested operation?',
+                },
             },
 
             listeners: {
                 'dismissButton.tap': '_onDismissButtonTapped',
-                'confirmButton.tap': '_onConfirmButtonTapped'
+                'confirmButton.tap': '_onConfirmButtonTapped',
             },
 
             open: function() {
@@ -61,13 +61,13 @@
             _onDismissButtonTapped: function(e) {
                 e.preventDefault();
 
-                this.fire("dismissed");
+                this.fire('dismissed');
             },
             _onConfirmButtonTapped: function(e) {
                 e.preventDefault();
-                
-                this.fire("confirmed");
-            }
+
+                this.fire('confirmed');
+            },
         });
     </script>
 </dom-module>

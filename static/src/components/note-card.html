@@ -65,7 +65,7 @@
                 --confirmation-dialog-title-color: var(--paper-red-500);
             }
         </style>
-        
+
         <paper-card>
             <div class="card-content">
                 <div class="note-header">
@@ -108,30 +108,32 @@
         Polymer({
 
             is: 'note-card',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 note: {
                     type: Object,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
             listeners: {
                 'edit.tap': '_editTapped',
                 'delete.tap': '_deleteTapped',
-                'confirmDeleteDialog.confirmed': '_deleteNote'
+                'confirmDeleteDialog.confirmed': '_deleteNote',
             },
 
             _editTapped: function(e) {
                 e.preventDefault();
 
-                e.target.closest("#noteMenu").close();
+                e.target.closest('#noteMenu').close();
                 this.fire('note-card-edit');
             },
             _deleteTapped: function(e) {
                 e.preventDefault();
 
-                e.target.closest("#noteMenu").close();
+                e.target.closest('#noteMenu').close();
                 this.$.confirmDeleteDialog.open();
             },
             _deleteNote: function(e) {
@@ -146,12 +148,12 @@
             },
 
             _handleDeleteResponse: function(e) {
-                this.fire("note-card-deleted");
-                this.fire('show-toast', {message: "Note deleted."});
+                this.fire('note-card-deleted');
+                this.fire('show-toast', {message: 'Note deleted.',});
             },
             _handleDeleteError: function(e) {
-                this.fire('show-toast', {message: "Deleting note failed!"});
-            }
+                this.fire('show-toast', {message: 'Deleting note failed!',});
+            },
         });
     </script>
 </dom-module>

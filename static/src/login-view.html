@@ -61,27 +61,29 @@
         Polymer({
 
             is: 'login-view',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 username: {
                     type: String,
-                    notify: true
+                    notify: true,
                 },
                 password: {
                     type: String,
-                    notify: true
+                    notify: true,
                 },
                 errorMessage: {
                     type: String,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
 
             listeners: {
                 'loginButton.tap': 'onLoginTapped',
                 'username.keydown': 'onInputKeydown',
-                'password.keydown': 'onInputKeydown'
+                'password.keydown': 'onInputKeydown',
             },
 
             _isActiveChanged: function(isActive) {
@@ -94,8 +96,8 @@
 
             onLoginTapped: function(e) {
                 e.preventDefault();
-                
-                this.$.authAjax.body = JSON.stringify({"username":this.username, "password": this.password});
+
+                this.$.authAjax.body = JSON.stringify({'username':this.username, 'password': this.password,});
                 this.$.authAjax.generateRequest();
             },
 
@@ -109,15 +111,15 @@
                 this.errorMessage = '';
             },
             handlePostAuthResponse: function(e) {
-                localStorage.setItem("username", this.username);
-                localStorage.setItem("jwtToken", e.detail.response.token);
+                localStorage.setItem('username', this.username);
+                localStorage.setItem('jwtToken', e.detail.response.token);
                 this.fire('authenticated', e.detail.response.token);
-                this.fire("change-page", "/home");
+                this.fire('change-page', '/home');
             },
             handlePostAuthError : function() {
                 this.password = '';
-                this.errorMessage = "Login failed. Check your username and password and try again.";
-            }
+                this.errorMessage = 'Login failed. Check your username and password and try again.';
+            },
         });
     </script>
 </dom-module>

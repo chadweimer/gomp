@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/chadweimer/gomp/modules/conf"
 	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/julienschmidt/httprouter"
-	"gopkg.in/unrolled/render.v1"
+	"github.com/unrolled/render"
 )
 
 type uiHandler struct {
@@ -63,6 +64,8 @@ type justFilesFileSystem struct {
 }
 
 func (fs justFilesFileSystem) Open(name string) (http.File, error) {
+	name = strings.TrimPrefix(name, "/")
+
 	f, err := fs.fs.Open(name)
 	if err != nil {
 		return nil, err

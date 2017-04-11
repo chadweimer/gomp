@@ -1,23 +1,15 @@
-FROM golang:alpine
+FROM alpine:3.5
 MAINTAINER ch@dweimer.com
 
-ENV PORT 5000
+RUN apk add --no-cache ca-certificates \
+  && mkdir /lib64 \
+  && ln -s /lib/ld-musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 
-COPY . $GOPATH/src/github.com/chadweimer/gomp
-WORKDIR $GOPATH/src/github.com/chadweimer/gomp
-
-ENV PATH $GOPATH/src/github.com/chadweimer/gomp/node_modules/.bin:$PATH
-
+WORKDIR /var/app/gomp
+COPY build/linux/amd64/ ./
 VOLUME /var/app/gomp/data
 
-RUN echo '{ "allow_root": true }' > /root/.bowerrc \
-  && apk add --no-cache --virtual .build-deps curl git nodejs \
-  && curl "https://glide.sh/get" | sh \
-  && glide install \
-  && go build -v \
-  && npm install --unsafe-perm \
-  && npm prune --unsafe-perm --production \
-  && apk del .build-deps
-
+ENV PORT 5000
 EXPOSE 5000
+
 ENTRYPOINT ["./gomp"]

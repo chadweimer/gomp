@@ -3,6 +3,7 @@ package upload
 import (
 	"bytes"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -146,6 +147,7 @@ func HandleS3Uploads(bucket string) httprouter.Handle {
 			s3err, ok := err.(awserr.Error)
 			// 304 code is expected
 			if ok && s3err.Code() != "NotModified" {
+				log.Print(s3err.Error())
 				http.Error(resp, s3err.Message(), http.StatusInternalServerError)
 				return
 			}

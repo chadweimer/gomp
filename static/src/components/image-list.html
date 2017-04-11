@@ -142,18 +142,20 @@
         Polymer({
 
             is: 'image-list',
-            behaviors: [GompCoreBehavior],
+            behaviors: [
+                GompCoreBehavior,
+            ],
 
             properties: {
                 recipeId: {
                     type: String,
-                    notify: true
-                }
+                    notify: true,
+                },
             },
             listeners: {
                 'addDialog.iron-overlay-closed': '_addDialogClosed',
                 'confirmMainImageDialog.confirmed': '_setMainImage',
-                'confirmDeleteDialog.confirmed': '_deleteImage'
+                'confirmDeleteDialog.confirmed': '_deleteImage',
             },
 
             refresh: function() {
@@ -173,7 +175,7 @@
             _setMainImageTapped: function(e) {
                 e.preventDefault();
 
-                e.target.closest("#imageMenu").close();
+                e.target.closest('#imageMenu').close();
                 this.$.confirmMainImageDialog.dataId = e.target.dataId;
                 this.$.confirmMainImageDialog.open();
             },
@@ -183,13 +185,13 @@
             },
             _deleteTapped: function(e) {
                 e.preventDefault();
-                
-                e.target.closest("#imageMenu").close();
+
+                e.target.closest('#imageMenu').close();
                 this.$.confirmDeleteDialog.dataId = e.target.dataId;
                 this.$.confirmDeleteDialog.open();
             },
             _deleteImage: function(e) {
-                this.$.deleteAjax.url = "/api/v1/images/" + e.target.dataId;
+                this.$.deleteAjax.url = '/api/v1/images/' + e.target.dataId;
                 this.$.deleteAjax.generateRequest();
             },
 
@@ -206,27 +208,27 @@
                 this.$.uploadingDialog.close();
                 this.refresh();
                 this.fire('image-list-image-added');
-                this.fire('show-toast', {message: "Upload complete."});
+                this.fire('show-toast', {message: 'Upload complete.',});
             },
             _handleAddError: function(e) {
                 this.$.uploadingDialog.close();
-                this.fire('show-toast', {message: "Upload failed!"});
+                this.fire('show-toast', {message: 'Upload failed!',});
             },
             _handleSetMainImageResponse: function(e) {
                 this.fire('image-list-main-image-changed');
-                this.fire('show-toast', {message: "Main picture changed."});
+                this.fire('show-toast', {message: 'Main picture changed.',});
             },
             _handleSetMainImageError: function(e) {
-                this.fire('show-toast', {message: "Changing main picture failed!"});
+                this.fire('show-toast', {message: 'Changing main picture failed!',});
             },
             _handleDeleteResponse: function(e) {
                 this.refresh();
                 this.fire('image-list-image-deleted');
-                this.fire('show-toast', {message: "Picture deleted."});
+                this.fire('show-toast', {message: 'Picture deleted.',});
             },
             _handleDeleteError: function(e) {
-                this.fire('show-toast', {message: "Deleting picture failed!"});
-            }
+                this.fire('show-toast', {message: 'Deleting picture failed!',});
+            },
         });
     </script>
 </dom-module>

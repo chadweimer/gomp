@@ -7,6 +7,10 @@ engines:
       - javascript
   eslint:
     enabled: true
+    config:
+      extensions:
+        - .js
+        - .html
   fixme:
     enabled: true
   gofmt:
@@ -22,7 +26,11 @@ ratings:
   - "**.js"
   - "**.jsx"
   - "**.go"
+  - "**.html"
 exclude_paths:
+- build/
 - db/
+- node_modules/
+- static/build/
+- static/bower_components/
 - vendor/
-- GoDeps/

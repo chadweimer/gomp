@@ -1,0 +1,40 @@
+plugins:
+  - html
+env:
+  browser: true
+  es6: true
+  serviceworker: true
+  amd: true
+  webextensions: true
+extends: 'eslint:recommended'
+parserOptions:
+  sourceType: module
+  ecmaVersion: 7
+rules:
+  indent:
+    - error
+    - 4
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - error
+    - single
+  semi:
+    - error
+    - always
+  no-undef:
+    - off
+  no-unused-vars:
+    - off
+  eqeqeq:
+    - error
+  no-else-return:
+    - error
+  no-multi-spaces:
+    - error
+  camelcase:
+    - error
+  comma-dangle:
+    - error
+    - always
