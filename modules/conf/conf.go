@@ -35,10 +35,7 @@ type Config struct {
 	// ApplicationTitle is used where the application name (title) is displayed on screen.
 	ApplicationTitle string
 
-	// HomeTitle is an optional heading displayed at the top of the gome screen.
-	HomeTitle string
-
-	// HomeImage is an optional heading image displayed beneath the HomeTitle.
+	// HomeImage is an optional heading image displayed beneath the Title.
 	HomeImage string
 
 	// DatabaseDriver gets which database/sql driver to use.
@@ -63,7 +60,6 @@ func Load(path string) *Config {
 		IsDevelopment:          false,
 		SecureKeys:             nil,
 		ApplicationTitle:       "GOMP: Go Meal Planner",
-		HomeTitle:              "",
 		HomeImage:              "",
 		DatabaseDriver:         "postgres",
 		DatabaseURL:            "",
@@ -77,7 +73,6 @@ func Load(path string) *Config {
 	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
-	loadEnv("GOMP_HOME_TITLE", &c.HomeTitle)
 	loadEnv("GOMP_HOME_IMAGE", &c.HomeImage)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
@@ -90,7 +85,6 @@ func Load(path string) *Config {
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
-		log.Printf("[config] HomeTitle=%s", c.HomeTitle)
 		log.Printf("[config] HomeImage=%s", c.HomeImage)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)

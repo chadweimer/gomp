@@ -30,7 +30,6 @@ func main() {
 
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-			"HomeTitle":        func() string { return cfg.HomeTitle },
 			"HomeImage":        func() string { return cfg.HomeImage },
 		}},
 	})
