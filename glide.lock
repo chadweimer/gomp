@@ -1,8 +1,8 @@
 hash: 8db56b61aadfbd260bdeb798ee613df4a61b551779b5e5bacafb864de10a50cd
-updated: 2017-04-10T01:00:11.576180147Z
+updated: 2017-04-12T06:10:06.592036536Z
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
+  version: 7be45195c3af1b54a609812f90c05a7e492e2491
   subpackages:
   - aws
   - aws/awserr
@@ -73,12 +73,12 @@ imports:
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: 6022e334c1a8cce46fb30629dc30e835faa3844d
+  version: 9ef620b9ca2f82b55030ffd4f41327fa9e77a92c
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: 84a65118940ed74c8e841be84d3e502c29eff703
+  version: 7c3fafc74fb3a4a5e096c9557559d927f5098947
   subpackages:
   - bmp
   - tiff

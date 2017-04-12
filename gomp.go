@@ -65,9 +65,9 @@ func main() {
 	}
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: n}
 
-	go func() {
+//	go func() {
 		srv.ListenAndServe()
-	}()
+//	}()
 
 	<-stopChan
 	log.Print("Shutting down server...")
