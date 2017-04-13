@@ -30,7 +30,6 @@ func main() {
 
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-			"HomeTitle":        func() string { return cfg.HomeTitle },
 			"HomeImage":        func() string { return cfg.HomeImage },
 		}},
 	})
@@ -58,23 +57,22 @@ func main() {
 	stopChan := make(chan os.Signal)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	log.Printf("Starting server on port :%d", cfg.Port)
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: n}
+	go srv.ListenAndServe()
 
-	go func() {
-		srv.ListenAndServe()
-	}()
-
+	// Wait for a stop signal
 	<-stopChan
 	log.Print("Shutting down server...")
 
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	// Shutdown the http server and close the database connection
 	srv.Shutdown(ctx)
-
-	// Make sure to close the database connection
 	model.TearDown()
 }

@@ -151,7 +151,7 @@
                             name="home"
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'home')]]"
-                            title$="[[homeTitle]]"
+                            title$="[[title]]"
                             image="[[homeImage]]"></home-view>
 
                         <search-view
@@ -233,10 +233,6 @@
                     value: null,
                 },
                 title: {
-                    type: String,
-                    value: 'Go Meal Planner',
-                },
-                homeTitle: {
                     type: String,
                     value: 'Go Meal Planner',
                 },
