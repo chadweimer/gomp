@@ -14,6 +14,7 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
@@ -42,12 +43,14 @@ func main() {
 	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	apiHandler := api.NewHandler(renderer, cfg, model)
-	staticHandler := newUIHandler(cfg, renderer)
+	//staticHandler := newUIHandler(cfg, renderer)
 
 	mainMux := http.NewServeMux()
 	mainMux.Handle("/api/", apiHandler)
-	mainMux.Handle("/static/", staticHandler)
-	mainMux.Handle("/uploads/", staticHandler)
+	mainMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(justFilesFileSystem{http.Dir("static")})))
+	mainMux.Handle("/uploads/", http.StripPrefix("/uploads/", upload.HandleS3Uploads2(cfg.UploadPath)))
+	//mainMux.Handle("/static/", staticHandler)
+	//mainMux.Handle("/uploads/", staticHandler)
 	mainMux.Handle("/", http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		renderer.HTML(resp, http.StatusOK, "index", nil)
 	}))
