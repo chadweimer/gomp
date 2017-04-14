@@ -1,8 +1,8 @@
-hash: 8db56b61aadfbd260bdeb798ee613df4a61b551779b5e5bacafb864de10a50cd
-updated: 2017-04-10T01:00:11.576180147Z
+hash: 4a1daf20190c5e330e69bd9502273e8c3451eab6f8f098c82e75be2e01472371
+updated: 2017-04-14T12:14:19.446052-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
+  version: 7be45195c3af1b54a609812f90c05a7e492e2491
   subpackages:
   - aws
   - aws/awserr
@@ -41,7 +41,7 @@ imports:
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/jmoiron/sqlx
-  version: 8ed836a8adb659e8492bcaa49e0880bb84075fe2
+  version: 3564e3a314b957a161fefa0e7aea85b4d741c94e
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
@@ -59,10 +59,6 @@ imports:
   - migrate
   - migrate/direction
   - pipe
-- name: github.com/phyber/negroni-gzip
-  version: 8118ae63850fee22b2fe43cea81d3bc149774503
-  subpackages:
-  - gzip
 - name: github.com/rwcarlsen/goexif
   version: 41dad3aa083329f3f672b7095a9ea8a0c384bbe8
   subpackages:
@@ -73,12 +69,12 @@ imports:
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: 6022e334c1a8cce46fb30629dc30e835faa3844d
+  version: cbc3d0884eac986df6e78a039b8792e869bff863
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: 84a65118940ed74c8e841be84d3e502c29eff703
+  version: 7c3fafc74fb3a4a5e096c9557559d927f5098947
   subpackages:
   - bmp
   - tiff

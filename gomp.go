@@ -14,7 +14,6 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
@@ -39,7 +38,6 @@ func main() {
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
-	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	apiHandler := api.NewHandler(renderer, cfg, model)
 	staticHandler := newUIHandler(cfg, renderer)
