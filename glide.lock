@@ -1,5 +1,5 @@
-hash: 8db56b61aadfbd260bdeb798ee613df4a61b551779b5e5bacafb864de10a50cd
-updated: 2017-04-14T11:52:33.4342776-07:00
+hash: 4a1daf20190c5e330e69bd9502273e8c3451eab6f8f098c82e75be2e01472371
+updated: 2017-04-14T12:14:19.446052-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 7be45195c3af1b54a609812f90c05a7e492e2491
@@ -59,10 +59,6 @@ imports:
   - migrate
   - migrate/direction
   - pipe
-- name: github.com/phyber/negroni-gzip
-  version: 8118ae63850fee22b2fe43cea81d3bc149774503
-  subpackages:
-  - gzip
 - name: github.com/rwcarlsen/goexif
   version: 41dad3aa083329f3f672b7095a9ea8a0c384bbe8
   subpackages:

@@ -172,58 +172,6 @@ func HandleS3Uploads(bucket string) httprouter.Handle {
 		http.ServeContent(resp, req, filePath, *getResp.LastModified, bytes.NewReader(buf))
 	}
 }
-func HandleS3Uploads2(bucket string) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
-		filePath := req.URL.Path
-		// if the path is '/', move along because we'll just get bucket information
-		if filePath == "/" {
-			http.NotFound(resp, req)
-			return
-		}
-
-		svc := s3.New(session.New())
-
-		// Build the GetObject request, passing along conditional GET parameters
-		getReq := s3.GetObjectInput{
-			Bucket: &bucket,
-			Key:    &filePath,
-		}
-		passThroughReqHeaders(&getReq, req.Header)
-
-		// Make the request and check the error
-		getResp, err := svc.GetObject(&getReq)
-		if getResp != nil && getResp.Body != nil {
-			defer getResp.Body.Close()
-		}
-		if err != nil {
-			log.Print(err.Error())
-			if reqerr, ok := err.(awserr.RequestFailure); ok {
-				if reqerr.StatusCode() == http.StatusNotFound {
-					http.Error(resp, reqerr.Message(), http.StatusNotFound)
-					return
-				}
-				if reqerr.StatusCode() != http.StatusNotModified {
-					http.Error(resp, reqerr.Message(), http.StatusInternalServerError)
-					return
-				}
-			}
-		}
-
-		var buf []byte
-		// If we got content, read it, including associated headers
-		if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
-			buf, err = ioutil.ReadAll(getResp.Body)
-			if err != nil {
-				http.Error(resp, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-		passThroughRespHeaders(getResp, resp.Header())
-
-		// Serve up the file to the client
-		http.ServeContent(resp, req, filePath, *getResp.LastModified, bytes.NewReader(buf))
-	}
-}
 
 func passThroughReqHeaders(getReq *s3.GetObjectInput, reqHeader http.Header) {
 	if ifModSince, err := time.Parse(http.TimeFormat, reqHeader.Get("If-Modified-Since")); err == nil {

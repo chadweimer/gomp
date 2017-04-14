@@ -38,15 +38,12 @@ func main() {
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
-	//n.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	apiHandler := api.NewHandler(renderer, cfg, model)
 	staticHandler := newUIHandler(cfg, renderer)
 
 	mainMux := http.NewServeMux()
 	mainMux.Handle("/api/", apiHandler)
-	//mainMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(justFilesFileSystem{http.Dir("static")})))
-	//mainMux.Handle("/uploads/", http.StripPrefix("/uploads/", upload.HandleS3Uploads2(cfg.UploadPath)))
 	mainMux.Handle("/static/", staticHandler)
 	mainMux.Handle("/uploads/", staticHandler)
 	mainMux.Handle("/", http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {

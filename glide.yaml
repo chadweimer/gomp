@@ -53,10 +53,6 @@ import:
   - migrate
   - migrate/direction
   - pipe
-- package: github.com/phyber/negroni-gzip
-  version: master
-  subpackages:
-  - gzip
 - package: github.com/rwcarlsen/goexif
   version: master
   subpackages:
