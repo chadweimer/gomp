@@ -1,5 +1,5 @@
 hash: 8db56b61aadfbd260bdeb798ee613df4a61b551779b5e5bacafb864de10a50cd
-updated: 2017-04-14T09:31:16.5797567-07:00
+updated: 2017-04-14T11:52:33.4342776-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
   version: 7be45195c3af1b54a609812f90c05a7e492e2491
@@ -41,7 +41,7 @@ imports:
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/jmoiron/sqlx
-  version: 8ed836a8adb659e8492bcaa49e0880bb84075fe2
+  version: 3564e3a314b957a161fefa0e7aea85b4d741c94e
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
@@ -60,7 +60,7 @@ imports:
   - migrate/direction
   - pipe
 - name: github.com/phyber/negroni-gzip
-  version: 13f05ed68248e012fcc773ecd829abcc0bb3abd8
+  version: 8118ae63850fee22b2fe43cea81d3bc149774503
   subpackages:
   - gzip
 - name: github.com/rwcarlsen/goexif
@@ -73,7 +73,7 @@ imports:
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: 9ef620b9ca2f82b55030ffd4f41327fa9e77a92c
+  version: cbc3d0884eac986df6e78a039b8792e869bff863
   subpackages:
   - bcrypt
   - blowfish
