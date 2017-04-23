@@ -19,6 +19,9 @@ addons:
       - glide
       - zip
 
+env:
+  - TRAVIS_NODE_VERSION="6"
+
 script:
   - make deps build docker
 
