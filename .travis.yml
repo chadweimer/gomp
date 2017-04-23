@@ -16,7 +16,6 @@ addons:
     sources:
       - sourceline: 'ppa:masterminds/glide'
     packages:
-      - nodejs
       - glide
       - zip
 
