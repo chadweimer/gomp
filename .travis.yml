@@ -21,8 +21,7 @@ addons:
 
 script:
   - . $HOME/.nvm/nvm.sh
-  - nvm install --lts
-  - nvm use --lts
+  - nvm install
   - make deps build docker
   # test image
   #- docker run cwmr/gomp:latest ???
