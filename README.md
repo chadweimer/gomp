@@ -35,4 +35,4 @@ Currently only PostgreSQL is supported.
 
 ## Credits
 
-See [glide.yaml](glide.yyaml) and [static/bower.json](static/bower.json)
+See [glide.yaml](glide.yaml) and [static/bower.json](static/bower.json)
