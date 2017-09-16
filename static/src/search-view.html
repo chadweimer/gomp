@@ -10,8 +10,7 @@
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../bower_components/paper-menu/paper-submenu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 
 <link rel="import" href="behaviors/gomp-core-behavior.html">
 
@@ -114,30 +113,24 @@
                 <!-- This is here simly to be a spacer since this shows behind the app toolbar -->
                 <app-toolbar></app-toolbar>
 
-                <paper-menu multi>
-                    <paper-submenu opened>
+                <paper-listbox>
                         <paper-item class="menu-trigger">View</paper-item>
-                        <paper-menu class="menu-content" selected="[[viewMode]]" attr-for-selected="name" fallback-selection="full">
+                        <paper-listbox class="menu-content" selected="[[viewMode]]" attr-for-selected="name" fallback-selection="full">
                             <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" item-icon></iron-icon> Full</paper-icon-item>
                             <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" item-icon></iron-icon> Compact</paper-icon-item>
-                        </paper-menu>
-                    </paper-submenu>
-                    <paper-submenu opened>
+                        </paper-listbox>
                         <paper-item class="menu-trigger">Sort</paper-item>
-                        <paper-menu class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
+                        <paper-listbox class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
                             <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" item-icon></iron-icon> Name</paper-icon-item>
                             <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" item-icon></iron-icon> Rating</paper-icon-item>
 							<paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" item-icon></iron-icon> Random<paper-icon-item>
-                        </paper-menu>
-                    </paper-submenu>
-                    <paper-submenu opened>
+                        </paper-listbox>
                         <paper-item class="menu-trigger">Order</paper-item>
-                        <paper-menu class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="name">
+                        <paper-listbox class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="name">
                             <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" item-icon></iron-icon> ASC</paper-icon-item>
                             <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" item-icon></iron-icon> DESC</paper-icon-item>
-                        </paper-menu>
-                    </paper-submenu>
-                </paper-menu>
+                        </paper-listbox>
+                </paper-listbox>
             </app-drawer>
 
             <div class="section">

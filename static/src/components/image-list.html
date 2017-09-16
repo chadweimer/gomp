@@ -9,7 +9,7 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
@@ -69,10 +69,10 @@
             <div>
                 <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                     <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
-                    <paper-menu class="dropdown-content">
+                    <paper-listbox class="dropdown-content">
                         <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon class="blue" icon="image:photo-library"></iron-icon> Set as main picture</a></paper-item>
                         <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon class="red" icon="icons:delete"></iron-icon> Delete</a></paper-item>
-                    </paper-menu>
+                    </paper-listbox>
                 </paper-menu-button>
             </div>
         </template>

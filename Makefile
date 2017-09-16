@@ -16,7 +16,7 @@ all: clean deps build
 .PHONY: deps
 deps:
 	glide install
-	npm install
+	yarn install
 
 .PHONY: build-dev
 build-dev:
