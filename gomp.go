@@ -26,6 +26,7 @@ func main() {
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
 		IndentJSON: true,
+		Directory:  "static",
 
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
