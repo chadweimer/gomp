@@ -30,6 +30,7 @@ _testmain.go
 *.prof
 
 .env
+docker-compose.yml
 
 # IDE files
 .vscode/
