@@ -1,8 +1,8 @@
 hash: 4a1daf20190c5e330e69bd9502273e8c3451eab6f8f098c82e75be2e01472371
-updated: 2017-04-14T12:14:19.446052-07:00
+updated: 2017-09-16T11:56:30.991492898-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 7be45195c3af1b54a609812f90c05a7e492e2491
+  version: 88849eea79e8e48241987b1f0a11a7a0dcbb7716
   subpackages:
   - aws
   - aws/awserr
@@ -20,6 +20,7 @@ imports:
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/shareddefaults
   - private/endpoints
   - private/protocol
   - private/protocol/query
@@ -35,23 +36,23 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/disintegration/imaging
-  version: ac27d1805a555e1754fa177216ee07f4e63c30b5
+  version: a5858022df0e1734a59f973fffe3f87b51c087ed
 - name: github.com/go-ini/ini
   version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/jmoiron/sqlx
-  version: 3564e3a314b957a161fefa0e7aea85b4d741c94e
+  version: 8ed836a8adb659e8492bcaa49e0880bb84075fe2
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
-  version: 6f3f3919c8781ce5c0509c83fffc887a7830c938
+  version: 8a45e95fc75cb77048068a62daed98cc22fdac7c
 - name: github.com/lib/pq
-  version: 2704adc878c21e1329f46f6e56a1c387d788ff94
+  version: 472a0745531a17dbac346e828b4c60e73ddff30c
   subpackages:
   - oid
 - name: github.com/mattes/migrate
-  version: ce1b59bb819416ca67422929b1cb48bb342720b6
+  version: afc973c4e5a6b746217c2d3950fcd110ed1ba349
   subpackages:
   - driver
   - driver/postgres
@@ -65,18 +66,25 @@ imports:
   - exif
   - tiff
 - name: github.com/unrolled/render
-  version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
+  version: a0ec58421ddf111bd7efd3b7087399ca7d5da2f1
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: cbc3d0884eac986df6e78a039b8792e869bff863
+  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: 7c3fafc74fb3a4a5e096c9557559d927f5098947
+  version: c0851fbc5b9272dd7d08a021e9e3d2a21027b51f
   subpackages:
   - bmp
   - tiff
   - tiff/lzw
+- name: gopkg.in/mattes/migrate.v1
+  version: afc973c4e5a6b746217c2d3950fcd110ed1ba349
+  subpackages:
+  - driver
+  - file
+  - migrate/direction
+  - pipe
 testImports: []
