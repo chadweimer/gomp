@@ -149,18 +149,19 @@
             observers: [
                 '_recipeIdChanged(routeData.recipeId)',
             ],
-            listeners: {
-                'newButton.tap': '_newButtonTapped',
-                'deleteButton.tap': '_deleteButtonTapped',
-                'editButton.tap': '_editButtonTapped',
-                'addImageButton.tap': '_addImageButtonTapped',
-                'addNoteButton.tap': '_addNoteButtonTapped',
-                'image-list-main-image-changed': '_refreshMainImage',
-                'image-list-image-added': '_refreshMainImage',
-                'image-list-image-deleted': '_refreshMainImage',
-                'recipeEdit.recipe-edit-cancel': '_editCanceled',
-                'recipeEdit.recipe-edit-save': '_editSaved',
-                'confirmDeleteDialog.confirmed': '_deleteRecipe',
+
+            ready: function() {
+                this.$.newButton.addEventListener('tap', e => {this._newButtonTapped(e)});
+                this.$.editButton.addEventListener('tap', e => {this._editButtonTapped(e)});
+                this.$.deleteButton.addEventListener('tap', e => {this._deleteButtonTapped(e)});
+                this.$.addImageButton.addEventListener('tap', e => {this._addImageButtonTapped(e)});
+                this.$.addNoteButton.addEventListener('tap', e => {this._addNoteButtonTapped(e)});
+                this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => {this._editCanceled(e)});
+                this.$.recipeEdit.addEventListener('recipe-edit-save', e => {this._editSaved(e)});
+                this.addEventListener('confirmed', e => {this._deleteRecipe(e)});
+                this.addEventListener('image-list-main-image-changed', e => {this._refreshMainImage(e)});
+                this.addEventListener('image-list-image-added', e => {this._refreshMainImage(e)});
+                this.addEventListener('image-list-image-deleted', e => {this._refreshMainImage(e)});
             },
 
             refresh: function() {
