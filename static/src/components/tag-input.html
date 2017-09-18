@@ -45,18 +45,18 @@
             </style>
 
             <paper-input-container always-float-label="true">
-                <label>Tags</label>
+                <label slot="label">Tags</label>
                 <template is="dom-repeat" items=[[tags]]>
                     <paper-chip class="tag" selectable>[[item]] <iron-icon icon="icons:cancel" on-tap="_onTagRemoveTapped"></iron-icon></paper-chip>
                 </template>
-                <input is="iron-input" id="input" placeholder="+tag"></input>
+                <input is="iron-input" id="input" slot="input" placeholder="+tag"></input>
             </paper-input-container>
             <paper-input-container always-float-label="true">
-                <label>Suggested Tags</label>
+                <label slot="label">Suggested Tags</label>
                 <template is="dom-repeat" items=[[suggestedTags]]>
                     <paper-chip class="tag tag-add" on-tap="_onSuggestedTagTapped" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
                 </template>
-                <input type="hidden">
+                <input type="hidden" slot="input">
             </paper-input-container>
 
         <iron-ajax bubbles
