@@ -32,9 +32,9 @@
                 GompCoreBehavior,
             ],
 
-            listeners: {
-                'recipeEdit.recipe-edit-cancel': '_editCanceled',
-                'recipeEdit.recipe-edit-save': '_editSaved',
+            ready: function() {
+                this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => this._editCanceled(e));
+                this.$.recipeEdit.addEventListener('recipe-edit-save', e => this._editSaved(e));
             },
 
             _editCanceled: function(e) {
