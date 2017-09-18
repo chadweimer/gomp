@@ -31,7 +31,7 @@
             }
             :host {
                 display: block;
-                @apply(--layout-fullbleed);
+                @apply --layout-fullbleed;
             }
             iron-pages > :not(.iron-selected) {
                 pointer-events: none;
@@ -49,12 +49,16 @@
             }
             paper-filter-dialog {
                 --paper-filter-toolbar-background: var(--primary-color);
+                --paper-filter-toolbar: {
+                    background: var(--primary-color);
+                    color: white;
+                }
             }
             paper-progress {
                 width: 100%;
             }
             main {
-                @apply(--layout-flex);
+                @apply --layout-flex;
             }
             footer {
                 color: white;
