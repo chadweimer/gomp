@@ -68,8 +68,8 @@
             </div>
             <div>
                 <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
-                    <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
-                    <paper-listbox class="dropdown-content">
+                    <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                    <paper-listbox slot="dropdown-content">
                         <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon class="blue" icon="image:photo-library"></iron-icon> Set as main picture</a></paper-item>
                         <paper-item><a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon class="red" icon="icons:delete"></iron-icon> Delete</a></paper-item>
                     </paper-listbox>

@@ -72,8 +72,8 @@
                     <iron-icon icon="communication:comment"></iron-icon>
                     <span class="date">[[_formatDate(note.createdAt)]]</span>
                     <paper-menu-button id="noteMenu" horizontal-align="right">
-                        <paper-icon-button icon="icons:more-vert" class="dropdown-trigger"></paper-icon-button>
-                        <paper-listbox class="dropdown-content">
+                        <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                        <paper-listbox slot="dropdown-content">
                             <paper-item><a id="edit" href="#!"><iron-icon class="amber" icon="icons:create"></iron-icon> Edit</a></paper-item>
                             <paper-item><a id="delete" href="#!"><iron-icon class="red" icon="icons:delete"></iron-icon> Delete</a></paper-item>
                         </paper-listbox>

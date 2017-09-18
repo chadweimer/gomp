@@ -117,27 +117,34 @@
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header reveals shadow>
-                    <app-toolbar>
-                        <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
-                        <a href="/" class="hide-on-small-only">[[title]]</a>
-                        <div main-title></div>
-                        <a href="/home" hidden$="[[!jwtToken]]"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
-                        <a href="/search" hidden$="[[!jwtToken]]"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
-                        <a href="#!" hidden$="[[!jwtToken]]" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                    <div hidden$="[[jwtToken]]">
+                        <app-toolbar> 
+                            <div main-title>[[title]]</div> 
+                        </app-toolbar>
+                    </div>
+                    <div hidden$="[[!jwtToken]]">
+                        <app-toolbar>
+                            <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
+                            <a href="/" class="hide-on-small-only">[[title]]</a>
+                            <div main-title></div>
+                            <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
+                            <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                            <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                        <paper-search-bar
-                            icon="search"
-                            query="[[search]]"
-                            nr-selected-filters="[[selectedSearchFiltersCount]]"
-                            on-paper-search-search="_onSearch"
-                            on-paper-search-clear="_onSearch"
-                            on-paper-search-filter="_onFilter"></paper-search-bar>
-                        <paper-filter-dialog
-                            id="filterDialog"
-                            filters="[[searchFilters]]"
-                            selected-filters="{{selectedSearchFilters}}"
-                            save-button="Apply"></paper-filter-dialog>
-                    </app-toolbar>
+                            <paper-search-bar
+                                icon="search"
+                                query="[[search]]"
+                                nr-selected-filters="[[selectedSearchFiltersCount]]"
+                                on-paper-search-search="_onSearch"
+                                on-paper-search-clear="_onSearch"
+                                on-paper-search-filter="_onFilter"></paper-search-bar>
+                            <paper-filter-dialog
+                                id="filterDialog"
+                                filters="[[searchFilters]]"
+                                selected-filters="{{selectedSearchFilters}}"
+                                save-button="Apply"></paper-filter-dialog>
+                        </app-toolbar>
+                    </div>
 
                     <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]"></paper-progress>
                 </app-header>
