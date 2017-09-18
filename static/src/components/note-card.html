@@ -118,10 +118,11 @@
                     notify: true,
                 },
             },
-            listeners: {
-                'edit.tap': '_editTapped',
-                'delete.tap': '_deleteTapped',
-                'confirmDeleteDialog.confirmed': '_deleteNote',
+            
+            ready: function() {
+                this.$.edit.addEventListener('tap', e => this._editTapped(e));
+                this.$.delete.addEventListener('tap', e => this._deleteTapped(e));
+                this.$.confirmDeleteDialog.addEventListener('confirmed', e => this._deleteNote(e));
             },
 
             _editTapped: function(e) {

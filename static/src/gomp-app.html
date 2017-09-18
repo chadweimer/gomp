@@ -256,22 +256,20 @@
                 '_routePageChanged(routeData.page)',
                 '_searchTagsChanged(searchTags)',
             ],
-            listeners: {
-                'scroll-top': '_scrollToTop',
-                'home-list-link-clicked': '_onHomeLinkClicked',
-                'iron-overlay-opened': '_patchOverlay',
-                'filterDialog.save': '_searchFiltersChanged',
-                'recipes-modified': '_recipesModified',
-                'change-page': '_changePageRequested',
-                'iron-ajax-request': '_onAjaxRequest',
-                'iron-ajax-response': '_onAjaxResponse',
-                'iron-ajax-error': '_onAjaxError',
-                'authenticated': '_onAuthenticated',
-                'show-toast': '_onShowToast',
-            },
 
             ready: function() {
                 this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
+                this.addEventListener('scroll-top', e => this._scrollToTop(e));
+                this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
+                this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
+                this.addEventListener('recipes-modified', e => this._recipesModified(e));
+                this.addEventListener('change-page', e => this._changePageRequested(e));
+                this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
+                this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
+                this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
+                this.addEventListener('authenticated', e => this._onAuthenticated(e));
+                this.addEventListener('show-toast', e => this._onShowToast(e));
+                this.$.filterDialog.addEventListener('save', e => this._searchFiltersChanged(e));
             },
 
             _onAuthenticated: function(e) {

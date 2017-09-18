@@ -85,8 +85,9 @@
                     value: [],
                 },
             },
-            listeners: {
-                'input.keydown': '_onInputKeydown',
+            
+            ready: function() {
+                this.$.input.addEventListener('keydown', e => this._onInputKeydown(e));
             },
 
             refresh: function() {

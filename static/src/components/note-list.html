@@ -98,10 +98,11 @@
                     notify: true,
                 },
             },
-            listeners: {
-                'note-card-deleted': '_noteDeleted',
-                'noteDialog.iron-overlay-closed': '_noteDialogClosed',
-                'note-card-edit': '_editNoteTapped',
+            
+            ready: function() {
+                this.addEventListener('note-card-deleted', e => this._noteDeleted(e));
+                this.$.noteDialog.addEventListener('iron-overlay-closed', e => this._noteDialogClosed(e));
+                this.addEventListener('note-card-edit', e => this._editNoteTapped(e));
             },
 
             refresh: function() {

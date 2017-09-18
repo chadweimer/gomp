@@ -80,10 +80,10 @@
                 },
             },
 
-            listeners: {
-                'loginButton.tap': 'onLoginTapped',
-                'username.keydown': 'onInputKeydown',
-                'password.keydown': 'onInputKeydown',
+            ready: function() {
+                this.$.loginButton.addEventListener('tap', e => this.onLoginTapped(e));
+                this.$.username.addEventListener('keydown', e => this.onInputKeydown(e));
+                this.$.password.addEventListener('keydown', e => this.onInputKeydown(e));
             },
 
             _isActiveChanged: function(isActive) {

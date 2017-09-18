@@ -86,13 +86,15 @@
         <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}"></app-route>
 
         <div class="container">
-            <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]" hidden$="[[editing]]"></recipe-display>
-            <div class="tab-container" hidden$="[[editing]]">
-                <div id="images" class="tab">
-                    <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
-                </div>
-                <div id="notes" class="tab">
-                    <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
+            <div hidden$="[[editing]]">
+                <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]"></recipe-display>
+                <div class="tab-container">
+                    <div id="images" class="tab">
+                        <image-list id="imageList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></image-list>
+                    </div>
+                    <div id="notes" class="tab">
+                        <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
+                    </div>
                 </div>
             </div>
             <div hidden$="[[!editing]]">
@@ -151,17 +153,17 @@
             ],
 
             ready: function() {
-                this.$.newButton.addEventListener('tap', e => {this._newButtonTapped(e)});
-                this.$.editButton.addEventListener('tap', e => {this._editButtonTapped(e)});
-                this.$.deleteButton.addEventListener('tap', e => {this._deleteButtonTapped(e)});
-                this.$.addImageButton.addEventListener('tap', e => {this._addImageButtonTapped(e)});
-                this.$.addNoteButton.addEventListener('tap', e => {this._addNoteButtonTapped(e)});
-                this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => {this._editCanceled(e)});
-                this.$.recipeEdit.addEventListener('recipe-edit-save', e => {this._editSaved(e)});
-                this.addEventListener('confirmed', e => {this._deleteRecipe(e)});
-                this.addEventListener('image-list-main-image-changed', e => {this._refreshMainImage(e)});
-                this.addEventListener('image-list-image-added', e => {this._refreshMainImage(e)});
-                this.addEventListener('image-list-image-deleted', e => {this._refreshMainImage(e)});
+                this.$.newButton.addEventListener('tap', e => this._newButtonTapped(e));
+                this.$.editButton.addEventListener('tap', e => this._editButtonTapped(e));
+                this.$.deleteButton.addEventListener('tap', e => this._deleteButtonTapped(e));
+                this.$.addImageButton.addEventListener('tap', e => this._addImageButtonTapped(e));
+                this.$.addNoteButton.addEventListener('tap', e => this._addNoteButtonTapped(e));
+                this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => this._editCanceled(e));
+                this.$.recipeEdit.addEventListener('recipe-edit-save', e => this._editSaved(e));
+                this.addEventListener('confirmed', e => this._deleteRecipe(e));
+                this.addEventListener('image-list-main-image-changed', e => this._refreshMainImage(e));
+                this.addEventListener('image-list-image-added', e => this._refreshMainImage(e));
+                this.addEventListener('image-list-image-deleted', e => this._refreshMainImage(e));
             },
 
             refresh: function() {

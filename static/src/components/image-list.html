@@ -152,10 +152,10 @@
                     notify: true,
                 },
             },
-            listeners: {
-                'addDialog.iron-overlay-closed': '_addDialogClosed',
-                'confirmMainImageDialog.confirmed': '_setMainImage',
-                'confirmDeleteDialog.confirmed': '_deleteImage',
+            ready: function() {
+                this.$.addDialog.addEventListener('iron-overlay-closed', e => this._addDialogClosed(e));
+                this.$.confirmMainImageDialog.addEventListener('confirmed', e => this._setMainImage(e));
+                this.$.confirmDeleteDialog.addEventListener('confirmed', e => this._deleteImage(e));
             },
 
             refresh: function() {

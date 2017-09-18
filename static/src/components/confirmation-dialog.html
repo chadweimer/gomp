@@ -49,9 +49,9 @@
                 },
             },
 
-            listeners: {
-                'dismissButton.tap': '_onDismissButtonTapped',
-                'confirmButton.tap': '_onConfirmButtonTapped',
+            ready: function () {
+                this.$.dismissButton.addEventListener('tap', e => this._onDismissButtonTapped(e));
+                this.$.confirmButton.addEventListener('tap', e => this._onConfirmButtonTapped(e));
             },
 
             open: function() {
