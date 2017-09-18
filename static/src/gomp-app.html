@@ -104,7 +104,7 @@
 
         <app-location route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
-        <app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control>
+        <!--app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control-->
 
         <app-drawer-layout force-narrow fullbleed>
             <app-drawer id="drawer" slot="drawer" swipe-open>
@@ -262,7 +262,7 @@
             ],
 
             ready: function() {
-                this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
+                //this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
                 this.addEventListener('scroll-top', e => this._scrollToTop(e));
                 this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
                 this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
@@ -344,7 +344,7 @@
                 this.set('route.path', path);
             },
             _scrollToTop: function() {
-                this.$.scrollControl.scroll(0, 0);
+                //this.$.scrollControl.scroll(0, 0);
             },
             _onLogoutTapped: function(e) {
                 e.preventDefault();
