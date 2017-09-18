@@ -160,7 +160,7 @@
                 this.$.addNoteButton.addEventListener('tap', e => this._addNoteButtonTapped(e));
                 this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => this._editCanceled(e));
                 this.$.recipeEdit.addEventListener('recipe-edit-save', e => this._editSaved(e));
-                this.addEventListener('confirmed', e => this._deleteRecipe(e));
+                this.$.confirmDeleteDialog.addEventListener('confirmed', e => this._deleteRecipe(e));
                 this.addEventListener('image-list-main-image-changed', e => this._refreshMainImage(e));
                 this.addEventListener('image-list-image-added', e => this._refreshMainImage(e));
                 this.addEventListener('image-list-image-deleted', e => this._refreshMainImage(e));
