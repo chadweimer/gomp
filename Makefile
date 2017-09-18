@@ -30,14 +30,14 @@ build-linux-amd64:
 	GOOS=linux GOARCH=amd64 go build -v -o $(BUILD_DIR)/linux/amd64/gomp
 	cp -R db $(BUILD_DIR)/linux/amd64
 	cp -R static $(BUILD_DIR)/linux/amd64
-	tar -C $(BUILD_DIR)/linux/amd64 -zcvf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
+	tar -C $(BUILD_DIR)/linux/amd64 -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
 
 .PHONY: build-linux-armhf
 build-linux-armhf:
 	GOOS=linux GOARCH=arm go build -v -o $(BUILD_DIR)/linux/armhf/gomp
 	cp -R db $(BUILD_DIR)/linux/armhf
 	cp -R static $(BUILD_DIR)/linux/armhf
-	tar -C $(BUILD_DIR)/linux/armhf -zcvf $(BUILD_DIR)/gomp-linux-armhf.tar.gz .
+	tar -C $(BUILD_DIR)/linux/armhf -zcf $(BUILD_DIR)/gomp-linux-armhf.tar.gz .
 
 .PHONY: build-windows-amd64
 build: build-windows-amd64
