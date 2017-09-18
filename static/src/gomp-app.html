@@ -107,7 +107,7 @@
         <app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control>
 
         <app-drawer-layout force-narrow fullbleed>
-            <app-drawer id="drawer" swipe-open>
+            <app-drawer id="drawer" slot="drawer" swipe-open>
                 <app-toolbar><span>[[title]]</span></app-toolbar>
                 <iron-selector selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
                     <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
@@ -117,16 +117,13 @@
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header reveals shadow>
-                    <app-toolbar hidden$="[[jwtToken]]">
-                        <div main-title>[[title]]</div>
-                    </app-toolbar>
-                    <app-toolbar hidden$="[[!jwtToken]]">
+                    <app-toolbar>
                         <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                         <a href="/" class="hide-on-small-only">[[title]]</a>
                         <div main-title></div>
-                        <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
-                        <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
-                        <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                        <a href="/home" hidden$="[[!jwtToken]]"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
+                        <a href="/search" hidden$="[[!jwtToken]]"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                        <a href="#!" hidden$="[[!jwtToken]]" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
                         <paper-search-bar
                             icon="search"
