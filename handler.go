@@ -28,8 +28,7 @@ func newUIHandler(cfg *conf.Config, renderer *render.Render) http.Handler {
 	if cfg.IsDevelopment {
 		h.uiMux.ServeFiles("/static/*filepath", justFilesFileSystem{http.Dir("static")})
 	} else {
-		h.uiMux.ServeFiles("/static/*filepath", 
-justFilesFileSystem{http.Dir("static/build/default")})
+		h.uiMux.ServeFiles("/static/*filepath", justFilesFileSystem{http.Dir("static/build/default")})
 	}
 	if h.cfg.UploadDriver == "fs" {
 		h.uiMux.ServeFiles("/uploads/*filepath", justFilesFileSystem{http.Dir(h.cfg.UploadPath)})
