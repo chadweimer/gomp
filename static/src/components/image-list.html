@@ -58,6 +58,9 @@
                 bottom: 5px;
                 margin-right: -45px;
             }
+            paper-icon-item {
+                cursor: pointer;
+            }
         </style>
 
         <header>Pictures</header>
@@ -70,8 +73,8 @@
                 <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                     <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                     <paper-listbox slot="dropdown-content">
-                        <a href="#!" data-id="[[item.id]]" on-tap="_setMainImageTapped"><paper-icon-item><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item></a>
-                        <a href="#!" data-id="[[item.id]]" on-tap="_deleteTapped"><paper-icon-item><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item></a>
+                        <paper-icon-item data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
+                        <paper-icon-item data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                     </paper-listbox>
                 </paper-menu-button>
             </div>
