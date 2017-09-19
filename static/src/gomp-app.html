@@ -149,7 +149,8 @@
                                 id="filterDialog"
                                 filters="[[searchFilters]]"
                                 selected-filters="{{selectedSearchFilters}}"
-                                save-button="Apply"></paper-filter-dialog>
+                                save-button="Apply"
+                                on-save="_searchFiltersChanged"></paper-filter-dialog>
                         </app-toolbar>
                     </div>
 
@@ -280,7 +281,6 @@
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
                 this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
-                this.$.filterDialog.addEventListener('save', e => this._searchFiltersChanged(e));
             },
 
             _onAuthenticated: function(e) {

@@ -20,7 +20,11 @@
 
         <article>
             <h3>New Recipe</h3>
-            <recipe-edit id="recipeEdit" jwt-token="[[jwtToken]]" is-active="[[isActive]]"></recipe-edit>
+            <recipe-edit
+                jwt-token="[[jwtToken]]"
+                is-active="[[isActive]]"
+                on-recipe-edit-cancel="_editCanceled"
+                on-recipe-edit-save="_editSaved"></recipe-edit>
         </article>
     </template>
 
@@ -31,11 +35,6 @@
             behaviors: [
                 GompCoreBehavior,
             ],
-
-            ready: function() {
-                this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => this._editCanceled(e));
-                this.$.recipeEdit.addEventListener('recipe-edit-save', e => this._editSaved(e));
-            },
 
             _editCanceled: function(e) {
                 this.fire('change-page', '/search');

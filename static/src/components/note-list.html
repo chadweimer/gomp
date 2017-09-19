@@ -52,7 +52,12 @@
             <note-card jwt-token="[[jwtToken]]" note="[[item]]"></note-card>
         </template>
 
-        <paper-dialog id="noteDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+        <paper-dialog
+            id="noteDialog"
+            entry-animation="scale-up-animation"
+            exit-animation="fade-out-animation"
+            on-iron-overlay-closed="_noteDialogClosed"
+            with-backdrop>
             <h2><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h2>
             <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
             <div class="buttons">
@@ -101,7 +106,6 @@
             
             ready: function() {
                 this.addEventListener('note-card-deleted', e => this._noteDeleted(e));
-                this.$.noteDialog.addEventListener('iron-overlay-closed', e => this._noteDialogClosed(e));
                 this.addEventListener('note-card-edit', e => this._editNoteTapped(e));
             },
 

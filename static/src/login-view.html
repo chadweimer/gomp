@@ -37,12 +37,12 @@
         <div class="container">
             <paper-card heading="Login">
                 <div class="card-content">
-                    <paper-input id="username" name="username" value="{{username}}" label="Email" required autofocus autocomplete></paper-input>
-                    <paper-input id="password" name="password" value="{{password}}" label="Password" type="password" required></paper-input>
+                    <paper-input name="username" value="{{username}}" label="Email" on-keydown="onInputKeydown" required autofocus autocomplete></paper-input>
+                    <paper-input name="password" value="{{password}}" label="Password" type="password" on-keydown="onInputKeydown" required></paper-input>
                     <div class="error">[[errorMessage]]</div>
                 </div>
                 <div class="card-actions">
-                    <paper-button id="loginButton">Login</paper-button>
+                    <paper-button id="loginButton" on-tap="onLoginTapped">Login</paper-button>
                 </div>
             </paper-card>
         </div>
@@ -78,12 +78,6 @@
                     type: String,
                     notify: true,
                 },
-            },
-
-            ready: function() {
-                this.$.loginButton.addEventListener('tap', e => this.onLoginTapped(e));
-                this.$.username.addEventListener('keydown', e => this.onInputKeydown(e));
-                this.$.password.addEventListener('keydown', e => this.onInputKeydown(e));
             },
 
             _isActiveChanged: function(isActive) {

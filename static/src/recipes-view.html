@@ -99,22 +99,28 @@
             </div>
             <div hidden$="[[!editing]]">
                 <h3>Edit Recipe</h3>
-                <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]"></recipe-edit>
+                <recipe-edit
+                    id="recipeEdit"
+                    recipe-id="[[recipeId]]"
+                    jwt-token="[[jwtToken]]"
+                    on-recipe-edit-cancel="_editCanceled"
+                    on-recipe-edit-save="_editSaved"></recipe-edit>
             </div>
         </div>
         <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]" with-backdrop>
-            <a href="/create"><paper-fab-speed-dial-action id="newButton" class="green" icon="icons:add">New</paper-fab-speed-dial-action></a>
-            <paper-fab-speed-dial-action id="deleteButton" class="red" icon="icons:delete">Delete</paper-fab-speed-dial-action>
-            <paper-fab-speed-dial-action id="editButton" class="amber" icon="icons:create">Edit</paper-fab-speed-dial-action>
-            <paper-fab-speed-dial-action id="addImageButton" class="teal" icon="image:add-a-photo">Upload Picture</paper-fab-speed-dial-action>
-            <paper-fab-speed-dial-action id="addNoteButton" class="blue" icon="editor:insert-comment">Add Note</paper-fab-speed-dial-action>
+            <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
+            <paper-fab-speed-dial-action class="red" icon="icons:delete" on-tap="_deleteButtonTapped">Delete</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="amber" icon="icons:create" on-tap="_editButtonTapped">Edit</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-tap="_addImageButtonTapped">Upload Picture</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-tap="_addNoteButtonTapped">Add Note</paper-fab-speed-dial-action>
         </paper-fab-speed-dial>
 
         <confirmation-dialog
             id="confirmDeleteDialog"
             icon="delete"
             title="Delete Recipe?"
-            message="Are you sure you want to delete this recipe?"></confirmation-dialog>
+            message="Are you sure you want to delete this recipe?"
+            on-confirmed="_deleteRecipe"></confirmation-dialog>
 
         <iron-ajax bubbles
             id="deleteAjax"
@@ -153,14 +159,6 @@
             ],
 
             ready: function() {
-                this.$.newButton.addEventListener('tap', e => this._newButtonTapped(e));
-                this.$.editButton.addEventListener('tap', e => this._editButtonTapped(e));
-                this.$.deleteButton.addEventListener('tap', e => this._deleteButtonTapped(e));
-                this.$.addImageButton.addEventListener('tap', e => this._addImageButtonTapped(e));
-                this.$.addNoteButton.addEventListener('tap', e => this._addNoteButtonTapped(e));
-                this.$.recipeEdit.addEventListener('recipe-edit-cancel', e => this._editCanceled(e));
-                this.$.recipeEdit.addEventListener('recipe-edit-save', e => this._editSaved(e));
-                this.$.confirmDeleteDialog.addEventListener('confirmed', e => this._deleteRecipe(e));
                 this.addEventListener('image-list-main-image-changed', e => this._refreshMainImage(e));
                 this.addEventListener('image-list-image-added', e => this._refreshMainImage(e));
                 this.addEventListener('image-list-image-deleted', e => this._refreshMainImage(e));

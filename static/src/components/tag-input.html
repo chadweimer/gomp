@@ -51,7 +51,7 @@
                         <paper-chip class="tag" selectable>[[item]] <iron-icon icon="icons:cancel" on-tap="_onTagRemoveTapped"></iron-icon></paper-chip>
                     </template>
                 </div>
-                <input is="iron-input" id="input" slot="input" placeholder="+tag"></input>
+                <input is="iron-input" id="input" slot="input" placeholder="+tag" on-keydown="_onInputKeydown"></input>
             </paper-input-container>
             <paper-input-container always-float-label="true">
                 <label slot="label">Suggested Tags</label>
@@ -88,10 +88,6 @@
                     notify: true,
                     value: [],
                 },
-            },
-            
-            ready: function() {
-                this.$.input.addEventListener('keydown', e => this._onInputKeydown(e));
             },
 
             refresh: function() {
