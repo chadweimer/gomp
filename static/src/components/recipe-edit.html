@@ -25,17 +25,17 @@
 
         <paper-card>
             <div class="card-content">
-                <paper-input label="Name" value="{{recipe.name}}"></paper-input>
-                <paper-textarea label="Serving Size" value="{{recipe.servingSize}}"></paper-textarea>
-                <paper-textarea label="Ingredients" value="{{recipe.ingredients}}"></paper-textarea>
-                <paper-textarea label="Directions" value="{{recipe.directions}}"></paper-textarea>
-                <paper-textarea label="Nutrition" value="{{recipe.nutritionInfo}}"></paper-textarea>
-                <paper-input label="Source" value="{{recipe.sourceUrl}}"></paper-input>
+                <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
+                <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
+                <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
+                <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
+                <paper-textarea label="Nutrition" always-float-label value="{{recipe.nutritionInfo}}"></paper-textarea>
+                <paper-input label="Source" always-float-label value="{{recipe.sourceUrl}}"></paper-input>
                 <tag-input id="tagsInput" tags="{{recipe.tags}}" jwt-token="[[jwtToken]]"></tag-input>
             </div>
             <div class="card-actions">
-                <paper-button id="cancelButton">Cancel</paper-button>
-                <paper-button id="saveButton">Save</paper-button>
+                <paper-button on-tap="_cancelButtonTapped">Cancel</paper-button>
+                <paper-button on-tap="_saveButtonTapped">Save</paper-button>
             </div>
         </paper-card>
 
@@ -77,11 +77,7 @@
                     notify: true,
                 },
             },
-            listeners: {
-                'cancelButton.tap': '_cancelButtonTapped',
-                'saveButton.tap': '_saveButtonTapped',
-            },
-
+            
             ready: function() {
                 if (this.isActive) {
                     this.$.tagsInput.refresh();

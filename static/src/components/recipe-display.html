@@ -124,8 +124,10 @@
                     notify: true,
                 },
             },
-            listeners: {
-                'star-rating-selected': '_starRatingSelected',
+            
+            
+            ready: function() {
+                this.addEventListener('star-rating-selected', e => this._starRatingSelected(e));
             },
 
             refresh: function(options) {

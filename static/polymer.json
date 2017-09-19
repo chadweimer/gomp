@@ -1,4 +1,5 @@
 {
+    "entrypoint": "index.tmpl",
     "shell": "src/gomp-app.html",
     "sources": [
         "src/**/*",
@@ -11,7 +12,7 @@
         "src/create-view.html",
         "src/search-view.html"
     ],
-    "includeDependencies": [
-        "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+    "extraDependencies": [
+        "bower_components/webcomponentsjs/webcomponents-lite.js"
     ]
 }
