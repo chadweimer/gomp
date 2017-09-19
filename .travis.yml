@@ -16,13 +16,13 @@ addons:
     sources:
       - sourceline: 'ppa:masterminds/glide'
     packages:
-      - nodejs
       - glide
       - zip
 
 script:
+  - . $HOME/.nvm/nvm.sh
+  - nvm install
   - make deps build docker
-
   # test image
   #- docker run cwmr/gomp:latest ???
 

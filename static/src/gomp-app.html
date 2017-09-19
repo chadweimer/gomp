@@ -23,7 +23,7 @@
 <dom-module id="gomp-app">
     <template>
         <style include="shared-styles">
-            :root {
+            :host > * {
                 --primary-color: var(--paper-blue-500);
                 --accent-color: var(--paper-red-500);
                 --light-accent-color: var(--paper-red-300);
@@ -31,7 +31,7 @@
             }
             :host {
                 display: block;
-                @apply(--layout-fullbleed);
+                @apply --layout-fullbleed;
             }
             iron-pages > :not(.iron-selected) {
                 pointer-events: none;
@@ -47,11 +47,18 @@
             paper-search-bar {
                 color: var(--light-theme-text-color);
             }
+            paper-filter-dialog {
+                --paper-filter-toolbar-background: var(--primary-color);
+                --paper-filter-toolbar: {
+                    background: var(--primary-color);
+                    color: white;
+                }
+            }
             paper-progress {
                 width: 100%;
             }
             main {
-                @apply(--layout-flex);
+                @apply --layout-flex;
             }
             footer {
                 color: white;
@@ -104,43 +111,47 @@
 
         <app-location route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
-        <app-scrollpos-control id="scrollControl" selected="{{page}}"></app-scrollpos-control>
 
         <app-drawer-layout force-narrow fullbleed>
-            <app-drawer id="drawer" swipe-open>
+            <app-drawer id="drawer" slot="drawer" swipe-open>
                 <app-toolbar><span>[[title]]</span></app-toolbar>
                 <iron-selector selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
-                    <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
-                    <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" item-icon></iron-icon> Recipes</paper-icon-item></a>
-                    <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item></a>
+                    <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" slot="item-icon"></iron-icon> Home</paper-icon-item></a>
+                    <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" slot="item-icon"></iron-icon> Recipes</paper-icon-item></a>
+                    <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" slot="item-icon"></iron-icon> Logout</paper-icon-item></a>
                 </iron-selector>
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
-                <app-header reveals shadow>
-                    <app-toolbar hidden$="[[jwtToken]]">
-                        <div main-title>[[title]]</div>
-                    </app-toolbar>
-                    <app-toolbar hidden$="[[!jwtToken]]">
-                        <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
-                        <a href="/" class="hide-on-small-only">[[title]]</a>
-                        <div main-title></div>
-                        <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
-                        <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
-                        <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                <app-header id="mainHeader" slot="header" reveals shadow>
+                    <div hidden$="[[jwtToken]]">
+                        <app-toolbar> 
+                            <div main-title>[[title]]</div> 
+                        </app-toolbar>
+                    </div>
+                    <div hidden$="[[!jwtToken]]">
+                        <app-toolbar>
+                            <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
+                            <a href="/" class="hide-on-small-only">[[title]]</a>
+                            <div main-title></div>
+                            <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
+                            <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                            <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                        <paper-search-bar
-                            icon="search"
-                            query="[[search]]"
-                            nr-selected-filters="[[selectedSearchFiltersCount]]"
-                            on-paper-search-search="_onSearch"
-                            on-paper-search-clear="_onSearch"
-                            on-paper-search-filter="_onFilter"></paper-search-bar>
-                        <paper-filter-dialog
-                            id="filterDialog"
-                            filters="[[searchFilters]]"
-                            selected-filters="{{selectedSearchFilters}}"
-                            save-button="Apply"></paper-filter-dialog>
-                    </app-toolbar>
+                            <paper-search-bar
+                                icon="search"
+                                query="[[search]]"
+                                nr-selected-filters="[[selectedSearchFiltersCount]]"
+                                on-paper-search-search="_onSearch"
+                                on-paper-search-clear="_onSearch"
+                                on-paper-search-filter="_onFilter"></paper-search-bar>
+                            <paper-filter-dialog
+                                id="filterDialog"
+                                filters="[[searchFilters]]"
+                                selected-filters="{{selectedSearchFilters}}"
+                                save-button="Apply"
+                                on-save="_searchFiltersChanged"></paper-filter-dialog>
+                        </app-toolbar>
+                    </div>
 
                     <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]"></paper-progress>
                 </app-header>
@@ -151,7 +162,7 @@
                             name="home"
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'home')]]"
-                            title$="[[homeTitle]]"
+                            title$="[[title]]"
                             image="[[homeImage]]"></home-view>
 
                         <search-view
@@ -236,10 +247,6 @@
                     type: String,
                     value: 'Go Meal Planner',
                 },
-                homeTitle: {
-                    type: String,
-                    value: 'Go Meal Planner',
-                },
                 homeImage: {
                     type: String,
                     value: '',
@@ -260,22 +267,18 @@
                 '_routePageChanged(routeData.page)',
                 '_searchTagsChanged(searchTags)',
             ],
-            listeners: {
-                'scroll-top': '_scrollToTop',
-                'home-list-link-clicked': '_onHomeLinkClicked',
-                'iron-overlay-opened': '_patchOverlay',
-                'filterDialog.save': '_searchFiltersChanged',
-                'recipes-modified': '_recipesModified',
-                'change-page': '_changePageRequested',
-                'iron-ajax-request': '_onAjaxRequest',
-                'iron-ajax-response': '_onAjaxResponse',
-                'iron-ajax-error': '_onAjaxError',
-                'authenticated': '_onAuthenticated',
-                'show-toast': '_onShowToast',
-            },
 
             ready: function() {
-                this.$.scrollControl.scrollTarget = this.$.mainPanel.$.contentContainer;
+                this.addEventListener('scroll-top', e => this._scrollToTop(e));
+                this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
+                this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
+                this.addEventListener('recipes-modified', e => this._recipesModified(e));
+                this.addEventListener('change-page', e => this._changePageRequested(e));
+                this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
+                this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
+                this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
+                this.addEventListener('authenticated', e => this._onAuthenticated(e));
+                this.addEventListener('show-toast', e => this._onShowToast(e));
             },
 
             _onAuthenticated: function(e) {
@@ -346,7 +349,7 @@
                 this.set('route.path', path);
             },
             _scrollToTop: function() {
-                this.$.scrollControl.scroll(0, 0);
+                this.$.mainHeader.scroll(0, 0);
             },
             _onLogoutTapped: function(e) {
                 e.preventDefault();

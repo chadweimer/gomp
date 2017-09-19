@@ -14,7 +14,6 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/phyber/negroni-gzip/gzip"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
@@ -27,10 +26,10 @@ func main() {
 	model := models.New(cfg)
 	renderer := render.New(render.Options{
 		IndentJSON: true,
+		Directory:  "static",
 
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-			"HomeTitle":        func() string { return cfg.HomeTitle },
 			"HomeImage":        func() string { return cfg.HomeImage },
 		}},
 	})
@@ -40,7 +39,6 @@ func main() {
 	if cfg.IsDevelopment {
 		n.Use(negroni.NewLogger())
 	}
-	n.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	apiHandler := api.NewHandler(renderer, cfg, model)
 	staticHandler := newUIHandler(cfg, renderer)
@@ -58,23 +56,22 @@ func main() {
 	stopChan := make(chan os.Signal)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Printf("Starting server on port :%d", cfg.Port)
 	timeout := 10 * time.Second
 	if cfg.IsDevelopment {
 		timeout = 1 * time.Second
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	log.Printf("Starting server on port :%d", cfg.Port)
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: n}
+	go srv.ListenAndServe()
 
-	go func() {
-		srv.ListenAndServe()
-	}()
-
+	// Wait for a stop signal
 	<-stopChan
 	log.Print("Shutting down server...")
 
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	// Shutdown the http server and close the database connection
 	srv.Shutdown(ctx)
-
-	// Make sure to close the database connection
 	model.TearDown()
 }

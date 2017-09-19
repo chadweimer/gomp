@@ -25,7 +25,7 @@
                 margin: 4px;
                 padding-right: 6px;
                 cursor: pointer;
-                @apply(layout-horizontal);
+                @apply layout-horizontal;
             }
             .tag iron-icon {
                 --iron-icon-height: 20px;
@@ -45,18 +45,22 @@
             </style>
 
             <paper-input-container always-float-label="true">
-                <label>Tags</label>
-                <template is="dom-repeat" items=[[tags]]>
-                    <paper-chip class="tag" selectable>[[item]] <iron-icon icon="icons:cancel" on-tap="_onTagRemoveTapped"></iron-icon></paper-chip>
-                </template>
-                <input is="iron-input" id="input" placeholder="+tag"></input>
+                <label slot="label">Tags</label>
+                <div slot="prefix">
+                    <template is="dom-repeat" items="[[tags]]">
+                        <paper-chip class="tag" selectable>[[item]] <iron-icon icon="icons:cancel" on-tap="_onTagRemoveTapped"></iron-icon></paper-chip>
+                    </template>
+                </div>
+                <input is="iron-input" id="input" slot="input" placeholder="+tag" on-keydown="_onInputKeydown"></input>
             </paper-input-container>
             <paper-input-container always-float-label="true">
-                <label>Suggested Tags</label>
-                <template is="dom-repeat" items=[[suggestedTags]]>
-                    <paper-chip class="tag tag-add" on-tap="_onSuggestedTagTapped" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
-                </template>
-                <input type="hidden">
+                <label slot="label">Suggested Tags</label>
+                <div slot="prefix">
+                    <template is="dom-repeat" items="[[suggestedTags]]">
+                        <paper-chip class="tag tag-add" on-tap="_onSuggestedTagTapped" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                    </template>
+                </div>
+                <input type="hidden" slot="input">
             </paper-input-container>
 
         <iron-ajax bubbles
@@ -84,9 +88,6 @@
                     notify: true,
                     value: [],
                 },
-            },
-            listeners: {
-                'input.keydown': '_onInputKeydown',
             },
 
             refresh: function() {

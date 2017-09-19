@@ -22,8 +22,8 @@
             <h2><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h2>
             <p>[[message]]</p>
             <div class="buttons">
-                <paper-button id="dismissButton" dialog-dismiss>No</paper-button>
-                <paper-button id="confirmButton" dialog-confirm>Yes</paper-button>
+                <paper-button on-tap="_onDismissButtonTapped" dialog-dismiss>No</paper-button>
+                <paper-button on-tap="_onConfirmButtonTapped" dialog-confirm>Yes</paper-button>
             </div>
         </paper-dialog>
 
@@ -47,11 +47,6 @@
                     type: String,
                     value: 'Are you sure you want to perform the requested operation?',
                 },
-            },
-
-            listeners: {
-                'dismissButton.tap': '_onDismissButtonTapped',
-                'confirmButton.tap': '_onConfirmButtonTapped',
             },
 
             open: function() {

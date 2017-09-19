@@ -1,8 +1,8 @@
-hash: 8db56b61aadfbd260bdeb798ee613df4a61b551779b5e5bacafb864de10a50cd
-updated: 2017-04-10T01:00:11.576180147Z
+hash: 4a1daf20190c5e330e69bd9502273e8c3451eab6f8f098c82e75be2e01472371
+updated: 2017-09-16T11:56:30.991492898-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 200fde3f632bb9f036ec0b8cb29fbc8588155ea5
+  version: 88849eea79e8e48241987b1f0a11a7a0dcbb7716
   subpackages:
   - aws
   - aws/awserr
@@ -20,6 +20,7 @@ imports:
   - aws/request
   - aws/session
   - aws/signer/v4
+  - internal/shareddefaults
   - private/endpoints
   - private/protocol
   - private/protocol/query
@@ -35,7 +36,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/disintegration/imaging
-  version: ac27d1805a555e1754fa177216ee07f4e63c30b5
+  version: a5858022df0e1734a59f973fffe3f87b51c087ed
 - name: github.com/go-ini/ini
   version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
 - name: github.com/jmespath/go-jmespath
@@ -45,13 +46,13 @@ imports:
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
-  version: 6f3f3919c8781ce5c0509c83fffc887a7830c938
+  version: 8a45e95fc75cb77048068a62daed98cc22fdac7c
 - name: github.com/lib/pq
-  version: 2704adc878c21e1329f46f6e56a1c387d788ff94
+  version: 472a0745531a17dbac346e828b4c60e73ddff30c
   subpackages:
   - oid
 - name: github.com/mattes/migrate
-  version: ce1b59bb819416ca67422929b1cb48bb342720b6
+  version: afc973c4e5a6b746217c2d3950fcd110ed1ba349
   subpackages:
   - driver
   - driver/postgres
@@ -59,28 +60,31 @@ imports:
   - migrate
   - migrate/direction
   - pipe
-- name: github.com/phyber/negroni-gzip
-  version: 8118ae63850fee22b2fe43cea81d3bc149774503
-  subpackages:
-  - gzip
 - name: github.com/rwcarlsen/goexif
   version: 41dad3aa083329f3f672b7095a9ea8a0c384bbe8
   subpackages:
   - exif
   - tiff
 - name: github.com/unrolled/render
-  version: 50716a0a853771bb36bfce61a45cdefdb98c2e6e
+  version: a0ec58421ddf111bd7efd3b7087399ca7d5da2f1
 - name: github.com/urfave/negroni
   version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
 - name: golang.org/x/crypto
-  version: 6022e334c1a8cce46fb30629dc30e835faa3844d
+  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: 84a65118940ed74c8e841be84d3e502c29eff703
+  version: c0851fbc5b9272dd7d08a021e9e3d2a21027b51f
   subpackages:
   - bmp
   - tiff
   - tiff/lzw
+- name: gopkg.in/mattes/migrate.v1
+  version: afc973c4e5a6b746217c2d3950fcd110ed1ba349
+  subpackages:
+  - driver
+  - file
+  - migrate/direction
+  - pipe
 testImports: []

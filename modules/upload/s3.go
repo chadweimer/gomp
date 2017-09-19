@@ -144,12 +144,16 @@ func HandleS3Uploads(bucket string) httprouter.Handle {
 			defer getResp.Body.Close()
 		}
 		if err != nil {
-			s3err, ok := err.(awserr.Error)
-			// 304 code is expected
-			if ok && s3err.Code() != "NotModified" {
-				log.Print(s3err.Error())
-				http.Error(resp, s3err.Message(), http.StatusInternalServerError)
-				return
+			log.Print(err.Error())
+			if reqerr, ok := err.(awserr.RequestFailure); ok {
+				if reqerr.StatusCode() == http.StatusNotFound {
+					http.Error(resp, reqerr.Message(), http.StatusNotFound)
+					return
+				}
+				if reqerr.StatusCode() != http.StatusNotModified {
+					http.Error(resp, reqerr.Message(), http.StatusInternalServerError)
+					return
+				}
 			}
 		}
 
