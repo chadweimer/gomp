@@ -117,9 +117,9 @@
             <app-drawer id="drawer" slot="drawer" swipe-open>
                 <app-toolbar><span>[[title]]</span></app-toolbar>
                 <iron-selector selected="[[page]]" attr-for-selected="name" fallback-selection="search" role="navigation">
-                    <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" item-icon></iron-icon> Home</paper-icon-item></a>
-                    <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" item-icon></iron-icon> Recipes</paper-icon-item></a>
-                    <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" item-icon></iron-icon> Logout</paper-icon-item></a>
+                    <a name="home" href="/home"><paper-icon-item><iron-icon icon="home" slot="item-icon"></iron-icon> Home</paper-icon-item></a>
+                    <a name="search" href="/search"><paper-icon-item><iron-icon icon="view-list" slot="item-icon"></iron-icon> Recipes</paper-icon-item></a>
+                    <a name="logout" href="#!" on-tap="_onLogoutTapped"><paper-icon-item name="logout"><iron-icon icon="exit-to-app" slot="item-icon"></iron-icon> Logout</paper-icon-item></a>
                 </iron-selector>
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
