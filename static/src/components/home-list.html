@@ -138,7 +138,7 @@
             _onLinkTapped(e) {
                 e.preventDefault();
 
-                this.dispatchEvent(new CustomEvent('home-list-link-clicked', {detail: {tags: this.tags}}));
+                this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
             }
 
         };
