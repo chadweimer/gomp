@@ -1,4 +1,4 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
@@ -12,6 +12,9 @@
         <style include="shared-styles">
             :host {
                 display: block;
+            }
+            :host[hidden] {
+                display: none !important;
             }
             h2 {
                 color: var(--confirmation-dialog-title-color, --paper-blue-500);
@@ -30,39 +33,40 @@
     </template>
 
     <script>
-        Polymer({
+        class ConfirmationDialog extends Polymer.Element {
+            static get is() { return 'confirmation-dialog'; }
+            static get properties() {
+                return {
+                    icon: {
+                        type: String,
+                        value: 'help',
+                    },
+                    title: {
+                        type: String,
+                        value: 'Are you sure?',
+                    },
+                    message: {
+                        type: String,
+                        value: 'Are you sure you want to perform the requested operation?',
+                    },
+                };
+            }
 
-            is: 'confirmation-dialog',
-
-            properties: {
-                icon: {
-                    type: String,
-                    value: 'help',
-                },
-                title: {
-                    type: String,
-                    value: 'Are you sure?',
-                },
-                message: {
-                    type: String,
-                    value: 'Are you sure you want to perform the requested operation?',
-                },
-            },
-
-            open: function() {
+            open() {
                 this.$.dialog.open();
-            },
+            }
 
-            _onDismissButtonTapped: function(e) {
+            _onDismissButtonTapped(e) {
                 e.preventDefault();
 
-                this.fire('dismissed');
-            },
-            _onConfirmButtonTapped: function(e) {
+                this.dispatchEvent(new CustomEvent('dismissed'));
+            }
+            _onConfirmButtonTapped(e) {
                 e.preventDefault();
 
-                this.fire('confirmed');
-            },
-        });
+                this.dispatchEvent(new CustomEvent('confirmed'));
+            }
+        }
+        window.customElements.define(ConfirmationDialog.is, ConfirmationDialog);
     </script>
 </dom-module>
