@@ -1,0 +1,46 @@
+<script>
+    /**
+    * Base behavior behind most of the elements in the application.
+    *
+    * @polymerBehavior
+    */
+    GompCoreMixin = (superClass) => class extends superClass {
+        static get properties() {
+            return {
+                isReady: {
+                    type: Boolean,
+                    value: false,
+                    notify: true,
+                },
+                isActive: {
+                    type: Boolean,
+                    value: false,
+                    notify: true,
+                    reflectToAttribute: true,
+                    observer: '_isActiveChanged',
+                },
+                jwtToken: {
+                    type: String,
+                    notify: true,
+                    observer: '_jwtTokenChanged',
+                },
+                ajaxHeaders: {
+                    type: Object,
+                    notify: true,
+                    value: function() { return {}; },
+                },
+            };
+        }
+
+        ready() {
+            super.ready();
+
+            this.isReady = true;
+        }
+
+        _isActiveChanged(isActive) { }
+        _jwtTokenChanged(jwtToken) {
+            this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken,};
+        }
+    };
+</script>
