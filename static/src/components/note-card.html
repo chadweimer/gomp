@@ -1,4 +1,5 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
@@ -13,7 +14,7 @@
 <link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -109,50 +110,49 @@
     </template>
 
     <script>
-        Polymer({
+        class NoteCard extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'note-card'; }
+            static get properties() {
+                return {
+                    note: {
+                        type: Object,
+                        notify: true,
+                    },
+                };
+            }
 
-            is: 'note-card',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                note: {
-                    type: Object,
-                    notify: true,
-                },
-            },
-
-            _editTapped: function(e) {
+            _editTapped(e) {
                 e.preventDefault();
 
                 e.target.closest('#noteMenu').close();
-                this.fire('note-card-edit');
-            },
-            _deleteTapped: function(e) {
+                this.dispatchEvent(new CustomEvent('note-card-edit'));
+            }
+            _deleteTapped(e) {
                 e.preventDefault();
 
                 e.target.closest('#noteMenu').close();
                 this.$.confirmDeleteDialog.open();
-            },
-            _deleteNote: function(e) {
+            }
+            _deleteNote(e) {
                 this.$.deleteAjax.generateRequest();
-            },
+            }
 
-            _formatDate: function(dateStr) {
+            _formatDate(dateStr) {
                 return new Date(dateStr).toLocaleString();
-            },
-            _showModifiedDate: function(note) {
+            }
+            _showModifiedDate(note) {
                 return note.modifiedAt !== note.createdAt;
-            },
+            }
 
-            _handleDeleteResponse: function(e) {
-                this.fire('note-card-deleted');
-                this.fire('show-toast', {message: 'Note deleted.',});
-            },
-            _handleDeleteError: function(e) {
-                this.fire('show-toast', {message: 'Deleting note failed!',});
-            },
-        });
+            _handleDeleteResponse(e) {
+                this.dispatchEvent(new CustomEvent('note-card-deleted'));
+                this.showToast('Note deleted.');
+            }
+            _handleDeleteError(e) {
+                this.showToast('Deleting note failed!');
+            }
+        }
+        
+        window.customElements.define(NoteCard.is, NoteCard);
     </script>
 </dom-module>

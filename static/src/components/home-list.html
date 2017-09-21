@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
@@ -95,7 +96,7 @@
     </template>
 
     <script>
-        class HomeList extends GompCoreMixin(Polymer.Element) {
+        class HomeList extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
             static get is() { return 'home-list'; }
             static get properties() {
                 return {

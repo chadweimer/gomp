@@ -27,7 +27,7 @@
                 ajaxHeaders: {
                     type: Object,
                     notify: true,
-                    value: function() { return {}; },
+                    value: () => {},
                 },
             };
         }
@@ -36,6 +36,10 @@
             super.ready();
 
             this.isReady = true;
+        }
+
+        showToast(message) {
+            this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message: message}}));
         }
 
         _isActiveChanged(isActive) { }
