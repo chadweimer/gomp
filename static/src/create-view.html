@@ -1,6 +1,7 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 
-<link rel="import" href="behaviors/gomp-core-behavior.html">
+<link rel="import" href="mixins/gomp-core-mixin.html">
 
 <link rel="import" href="components/recipe-edit.html">
 
@@ -29,20 +30,17 @@
     </template>
 
     <script>
-        Polymer({
+        class CreateView extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'create-view'; }
 
-            is: 'create-view',
-            behaviors: [
-                GompCoreBehavior,
-            ],
+            _editCanceled(e) {
+                this.dispatchEvent(new CustomEvent('change-page', {detail: {url: '/search'}}));
+            }
+            _editSaved(e) {
+                this.dispatchEvent(new CustomEvent('change-page', {detail: {url: e.detail.redirectUrl}}));
+            }
+        }
 
-            _editCanceled: function(e) {
-                this.fire('change-page', '/search');
-            },
-            _editSaved: function(e) {
-                this.fire('change-page', e.detail.redirectUrl);
-            },
-
-        });
+        window.customElements.define(CreateView.is, CreateView);
     </script>
 </dom-module>

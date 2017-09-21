@@ -1,8 +1,9 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="note-card.html">
 
@@ -90,35 +91,33 @@
     </template>
 
     <script>
-        Polymer({
-
-            is: 'note-list',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                recipeId: {
-                    type: String,
-                    notify: true,
-                },
-            },
+        class NoteList extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'note-list'; }
+            static get properties() {
+                return {
+                    recipeId: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
             
-            ready: function() {
+            ready() {
+                super.ready();
+
                 this.addEventListener('note-card-deleted', e => this._noteDeleted(e));
                 this.addEventListener('note-card-edit', e => this._editNoteTapped(e));
-            },
-
-            refresh: function() {
+            }
+            refresh() {
                 this.$.getAjax.generateRequest();
-            },
-            add: function() {
+            }
+            add() {
                 this.noteId = null;
                 this.noteText = '';
                 this.$.noteDialog.open();
-            },
+            }
 
-            _noteDialogClosed: function(e) {
+            _noteDialogClosed(e) {
                 if (e.detail.confirmed) {
                     if (this.noteId) {
                         this.$.putNoteAjax.body = JSON.stringify({
@@ -128,42 +127,44 @@
                         });
                         this.$.putNoteAjax.generateRequest();
                     } else {
-                        this.$.postNoteAjax.body = JSON.stringify({'recipeId': parseInt(this.recipeId, 10), 'text': this.noteText, });
+                        this.$.postNoteAjax.body = JSON.stringify({
+                            'recipeId': parseInt(this.recipeId, 10),
+                            'text': this.noteText,
+                        });
                         this.$.postNoteAjax.generateRequest();
                     }
                 }
-            },
-            _editNoteTapped: function (e) {
+            }
+            _editNoteTapped(e) {
                 e.preventDefault();
 
                 this.noteId = e.path[0].note.id;
                 this.noteText = e.path[0].note.text;
                 this.$.noteDialog.open();
-            },
-            _noteDeleted: function(e) {
+            }
+            _noteDeleted(e) {
                 this.refresh();
-            },
-
-            _handleGetRequest: function(e) {
+            }
+            _handleGetRequest(e) {
                 this.notes = [];
-            },
-            _handleGetResponse: function(e) {
+            }
+            _handleGetResponse(e) {
                 this.notes = e.detail.response;
-            },
-            _handlePostNoteResponse: function(e) {
+            }
+            _handlePostNoteResponse(e) {
                 this.refresh();
-                this.fire('show-toast', {message: 'Note created.',});
-            },
-            _handlePostNoteError: function(e) {
-                this.fire('show-toast', {message: 'Creating note failed!',});
-            },
-            _handlePutNoteResponse: function(e) {
+                this.showToast('Note created.');
+            }
+            _handlePostNoteError(e) {
+                this.showToast('Creating note failed!');
+            }
+            _handlePutNoteResponse(e) {
                 this.refresh();
-                this.fire('show-toast', {message: 'Note updated.',});
-            },
-            _handlePutNoteError: function(e) {
-                this.fire('show-toast', {message: 'Updating note failed!',});
-            },
-        });
+                this.showToast('Note updated.');
+            }
+            _handlePutNoteError(e) {
+                this.showToast('Updating note failed!');
+            }
+        }
     </script>
 </dom-module>
