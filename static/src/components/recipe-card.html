@@ -1,8 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
-
-<link rel="import" href="star-rating.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -38,7 +37,7 @@
             <paper-card image="[[recipe.mainImage.thumbnailUrl]]">
                 <div class="card-content">
                     <span class="truncate">[[recipe.name]]</span>
-                    <star-rating value="[[recipe.averageRating]]"></star-rating>
+                    <iron-star-rating value="[[recipe.averageRating]]"></iron-star-rating>
                 </div>
             </paper-card>
         </a>

@@ -2,14 +2,13 @@
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
-
-<link rel="import" href="star-rating.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -42,7 +41,7 @@
                 height: 64px;
                 border-radius: 32px;
             }
-            star-rating {
+            iron-star-rating {
                 position: absolute;
                 top: 5px;
                 right: 5px;
@@ -51,7 +50,7 @@
 
         <paper-card>
             <div class="card-content">
-                <star-rating value="[[recipe.averageRating]]"></star-rating>
+                <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
                 <h2>
                     <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
@@ -121,12 +120,6 @@
                         notify: true,
                     },
                 };
-            }
-            
-            ready() {
-                super.ready();
-                
-                this.addEventListener('star-rating-selected', e => this._starRatingSelected(e));
             }
 
             refresh(options) {
