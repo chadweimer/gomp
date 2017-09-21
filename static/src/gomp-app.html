@@ -400,7 +400,7 @@
                 var tagFilter = {id: 'tags', name: 'Tags', values: []};
                 filters.push(tagFilter);
                 tags.forEach(function(tag) {
-                    tagFilter.values.push({ id: tag, name: tag,});
+                    tagFilter.values.push({id: tag, name: tag});
                 });
 
                 this.searchFilters = filters;
