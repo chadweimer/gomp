@@ -223,7 +223,7 @@
             }
             _handleDeleteRecipeResponse(e) {
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-                this.dispatchEvent(new CustomEvent('change-page', {detail: {url: '/search'}}));
+                this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
             }
         }
 

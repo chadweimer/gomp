@@ -348,7 +348,7 @@
                 this.page = 'status-404';
             }
             _changePageRequested(e) {
-                this._changeRoute(e.detail);
+                this._changeRoute(e.detail.url);
             }
             _changeRoute(path) {
                 this.set('route.path', path);

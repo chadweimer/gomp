@@ -34,10 +34,10 @@
             static get is() { return 'create-view'; }
 
             _editCanceled(e) {
-                this.dispatchEvent(new CustomEvent('change-page', {detail: {url: '/search'}}));
+                this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
             }
             _editSaved(e) {
-                this.dispatchEvent(new CustomEvent('change-page', {detail: {url: e.detail.redirectUrl}}));
+                this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: e.detail.redirectUrl}}));
             }
         }
 

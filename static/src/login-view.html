@@ -104,7 +104,7 @@
                 localStorage.setItem('username', this.username);
                 localStorage.setItem('jwtToken', e.detail.response.token);
                 this.dispatchEvent(new CustomEvent('authenticated', {detail: {jwtToken: e.detail.response.token}}));
-                this.dispatchEvent(new CustomEvent('change-page', {detail: {url: '/home'}}));
+                this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
             }
             _handlePostAuthError () {
                 this.password = '';
