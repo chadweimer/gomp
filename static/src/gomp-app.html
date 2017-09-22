@@ -339,13 +339,10 @@
 
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl(page + '-view.html');
-                Polymer.importHref(resolvedPageUrl, null, this._show404, true);
+                Polymer.importHref(resolvedPageUrl, null, () => this.page = 'status-404', true);
 
                 // Make sure to close the drawer
                 this.$.drawer.close();
-            }
-            _show404() {
-                this.page = 'status-404';
             }
             _changePageRequested(e) {
                 this._changeRoute(e.detail.url);
