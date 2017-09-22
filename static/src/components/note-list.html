@@ -50,7 +50,11 @@
         <header>Notes</header>
         <paper-divider></paper-divider>
         <template is="dom-repeat" items="[[notes]]">
-            <note-card jwt-token="[[jwtToken]]" note="[[item]]"></note-card>
+            <note-card
+                jwt-token="[[jwtToken]]"
+                note="[[item]]"
+                on-note-card-edit="_editNoteTapped"
+                on-note-card-deleted="_noteDeleted"></note-card>
         </template>
 
         <paper-dialog
@@ -102,12 +106,6 @@
                 };
             }
             
-            ready() {
-                super.ready();
-
-                this.addEventListener('note-card-deleted', e => this._noteDeleted(e));
-                this.addEventListener('note-card-edit', e => this._editNoteTapped(e));
-            }
             refresh() {
                 this.$.getAjax.generateRequest();
             }
