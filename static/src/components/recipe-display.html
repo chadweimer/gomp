@@ -1,14 +1,14 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
-
-<link rel="import" href="star-rating.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -30,7 +30,7 @@
             }
             label {
                 color: var(--secondary-text-color);
-                font-size: 0.7em;
+                font-size: 0.8em;
                 font-weight: lighter;
             }
             .plain-text {
@@ -41,7 +41,7 @@
                 height: 64px;
                 border-radius: 32px;
             }
-            star-rating {
+            iron-star-rating {
                 position: absolute;
                 top: 5px;
                 right: 5px;
@@ -50,7 +50,7 @@
 
         <paper-card>
             <div class="card-content">
-                <star-rating value="[[recipe.averageRating]]"></star-rating>
+                <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
                 <h2>
                     <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
@@ -111,56 +111,50 @@
     </template>
 
     <script>
-        Polymer({
+        class RecipeDisplay extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'recipe-display'; }
+            static get properties() {
+                return {
+                    recipeId: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
 
-            is: 'recipe-display',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                recipeId: {
-                    type: String,
-                    notify: true,
-                },
-            },
-            
-            
-            ready: function() {
-                this.addEventListener('star-rating-selected', e => this._starRatingSelected(e));
-            },
-
-            refresh: function(options) {
+            refresh(options) {
                 if (!options || !options.onlyMainImage) {
                     this.$.getAjax.generateRequest();
                 }
                 this.$.mainImageAjax.generateRequest();
-            },
+            }
 
-            _starRatingSelected: function(e) {
+            _starRatingSelected(e) {
                 this.$.rateAjax.body = e.detail.rating;
                 this.$.rateAjax.generateRequest();
-            },
+            }
 
-            _handleGetRecipeRequest: function(e) {
+            _handleGetRecipeRequest(e) {
                 this.recipe = null;
-            },
-            _handleGetRecipeResponse: function(e) {
+            }
+            _handleGetRecipeResponse(e) {
                 this.recipe = e.detail.response;
-            },
-            _handleGetMainImageRequest: function(e) {
+            }
+            _handleGetMainImageRequest(e) {
                 this.mainImage = null;
-            },
-            _handleGetMainImageResponse: function(e) {
+            }
+            _handleGetMainImageResponse(e) {
                 this.mainImage = e.detail.response;
-            },
-            _handlePutRecipeRatingResponse: function(e) {
+            }
+            _handlePutRecipeRatingResponse(e) {
                 this.set('recipe.averageRating', parseFloat(e.target.body));
-                this.fire('show-toast', {message: 'Rating changed.',});
-            },
-            _handlePutRecipeRatingError: function(e) {
-                this.fire('show-toast', {message: 'Changing rating failed!',});
-            },
-        });
+                this.showToast('Rating changed.');
+            }
+            _handlePutRecipeRatingError(e) {
+                this.showToast('Changing rating failed!');
+            }
+        }
+
+        window.customElements.define(RecipeDisplay.is, RecipeDisplay);
     </script>
 </dom-module>

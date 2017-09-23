@@ -11,7 +11,7 @@ clean:
 	rm -rf $(BUILD_DIR) $(VENDOR_DIR) $(NODE_MODULES_DIR) $(BOWER_COMPONENTS_DIR) $(POLYMER_BUILD_DIR)
 
 .PHONY: all
-all: clean deps build
+all: clean deps build docker
 
 .PHONY: deps
 deps:

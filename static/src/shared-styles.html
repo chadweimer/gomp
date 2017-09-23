@@ -1,45 +1,27 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
 
 <!-- shared styles for all views -->
 <dom-module id="shared-styles">
     <template>
         <style>
-            /* [paper-font=display2] */
             h1 {
-                font-size: 45px;
-                font-weight: 400;
-                letter-spacing: -.018em;
-                line-height: 48px;
+                @apply --paper-font-display2;
             }
-
-            /* [paper-font=display1] */
             h2 {
-                font-size: 34px;
-                font-weight: 400;
-                letter-spacing: -.01em;
-                line-height: 40px;
+                @apply --paper-font-display1;
             }
-
-            /* [paper-font=headline] */
             h3 {
-                font-size: 24px;
-                font-weight: 400;
-                letter-spacing: -.012em;
-                line-height: 32px;
+                @apply --paper-font-title;
             }
-
-            /* [paper-font=subhead] */
             h4 {
-                font-size: 16px;
-                font-weight: 400;
-                line-height: 24px;
+                @apply --paper-font-headline;
             }
-
-            /* [paper-font=body2] */
-            h5, h6 {
-                font-size: 14px;
-                font-weight: 500;
-                line-height: 24px;
+            h5 {
+                @apply --paper-font-subhead;
+            }
+            h6 {
+                @apply --paper-font-body2;
             }
 
             a {

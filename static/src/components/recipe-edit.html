@@ -1,11 +1,12 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="tag-input.html">
 
@@ -64,31 +65,30 @@
     </template>
 
     <script>
-        Polymer({
-
-            is: 'recipe-edit',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                recipeId: {
-                    type: String,
-                    notify: true,
-                },
-            },
+        class RecipeEdit extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'recipe-edit'; }
+            static get properties() {
+                return {
+                    recipeId: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
             
-            ready: function() {
+            ready() {
+                super.ready();
+
                 if (this.isActive) {
                     this.$.tagsInput.refresh();
                 }
-            },
-
-            refresh: function() {
+            }
+            refresh() {
                 this.$.getAjax.generateRequest();
                 this.$.tagsInput.refresh();
-            },
-            _isActiveChanged: function(isActive) {
+            }
+
+            _isActiveChanged(isActive) {
                 if (!this.recipeId) {
                     this.recipe = {
                         name: '',
@@ -103,14 +103,13 @@
                 if (isActive && this.isReady) {
                     this.$.tagsInput.refresh();
                 }
-            },
-
-            _cancelButtonTapped: function(e) {
+            }
+            _cancelButtonTapped(e) {
                 e.preventDefault();
 
-                this.fire('recipe-edit-cancel');
-            },
-            _saveButtonTapped: function(e) {
+                this.dispatchEvent(new CustomEvent('recipe-edit-cancel'));
+            }
+            _saveButtonTapped(e) {
                 e.preventDefault();
 
                 if (this.recipeId) {
@@ -120,21 +119,20 @@
                     this.$.postAjax.body = JSON.stringify(this.recipe);
                     this.$.postAjax.generateRequest();
                 }
-            },
-
-            _handleGetRecipeRequest: function(e) {
+            }
+            _handleGetRecipeRequest(e) {
                 if (this.recipeId) {
                     this.recipe = null;
                 }
-            },
-            _handleGetRecipeResponse: function(e) {
+            }
+            _handleGetRecipeResponse(e) {
                 this.recipe = e.detail.response;
-            },
-            _handlePutRecipeResponse: function(e) {
-                this.fire('recipe-edit-save');
-                this.fire('recipes-modified');
-            },
-            _handlePostRecipeResponse: function(e) {
+            }
+            _handlePutRecipeResponse(e) {
+                this.dispatchEvent(new CustomEvent('recipe-edit-save'));
+                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+            }
+            _handlePostRecipeResponse(e) {
                 var temp = document.createElement('a');
                 temp.href = e.detail.xhr.getResponseHeader('Location');
                 var path = temp.pathname;
@@ -144,9 +142,11 @@
                 if (newRecipeIdMatch) {
                     newRecipeId = parseInt(newRecipeIdMatch[1], 10);
                 }
-                this.fire('recipe-edit-save', {redirectUrl: '/recipes/' + newRecipeId,});
-                this.fire('recipes-modified');
-            },
-        });
+                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: '/recipes/' + newRecipeId}}));
+                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+            }
+        }
+
+        window.customElements.define(RecipeEdit.is, RecipeEdit);
     </script>
 </dom-module>

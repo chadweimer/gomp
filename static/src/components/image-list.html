@@ -1,4 +1,5 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
@@ -13,7 +14,7 @@
 <link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="confirmation-dialog.html">
 
@@ -149,91 +150,90 @@
     </template>
 
     <script>
-        Polymer({
+        class ImageList extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'image-list'; }
+            static get properties() {
+                return {
+                    recipeId: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
 
-            is: 'image-list',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                recipeId: {
-                    type: String,
-                    notify: true,
-                },
-            },
-
-            refresh: function() {
+            refresh() {
                 this.$.getAjax.generateRequest();
-            },
+            }
 
-            add: function() {
+            add() {
                 this.$.addDialog.open();
-            },
+            }
 
-            _addDialogClosed: function(e) {
+            _addDialogClosed(e) {
                 if (e.detail.confirmed) {
                     this.$.addAjax.body = new FormData(this.$.addForm);
                     this.$.addAjax.generateRequest();
                 }
-            },
-            _setMainImageTapped: function(e) {
+            }
+            _setMainImageTapped(e) {
                 e.preventDefault();
 
                 e.target.closest('#imageMenu').close();
                 this.$.confirmMainImageDialog.dataId = e.target.dataId;
                 this.$.confirmMainImageDialog.open();
-            },
-            _setMainImage: function(e) {
+            }
+            _setMainImage(e) {
                 this.$.setMainImageAjax.body = parseInt(e.target.dataId, 10);
                 this.$.setMainImageAjax.generateRequest();
-            },
-            _deleteTapped: function(e) {
+            }
+            _deleteTapped(e) {
                 e.preventDefault();
 
                 e.target.closest('#imageMenu').close();
                 this.$.confirmDeleteDialog.dataId = e.target.dataId;
                 this.$.confirmDeleteDialog.open();
-            },
-            _deleteImage: function(e) {
+            }
+            _deleteImage(e) {
                 this.$.deleteAjax.url = '/api/v1/images/' + e.target.dataId;
                 this.$.deleteAjax.generateRequest();
-            },
+            }
 
-            _handleGetImagesRequest: function(e) {
+            _handleGetImagesRequest(e) {
                 this.images = [];
-            },
-            _handleGetImagesResponse: function(e) {
+            }
+            _handleGetImagesResponse(e) {
                 this.images = e.detail.response;
-            },
-            _handleAddRequest: function(e) {
+            }
+            _handleAddRequest(e) {
                 this.$.uploadingDialog.open();
-            },
-            _handleAddResponse: function(e) {
+            }
+            _handleAddResponse(e) {
                 this.$.uploadingDialog.close();
                 this.refresh();
-                this.fire('image-list-image-added');
-                this.fire('show-toast', {message: 'Upload complete.',});
-            },
-            _handleAddError: function(e) {
+                this.dispatchEvent(new CustomEvent('image-added'));
+                this.showToast('Upload complete.');
+            }
+            _handleAddError(e) {
                 this.$.uploadingDialog.close();
-                this.fire('show-toast', {message: 'Upload failed!',});
-            },
-            _handleSetMainImageResponse: function(e) {
-                this.fire('image-list-main-image-changed');
-                this.fire('show-toast', {message: 'Main picture changed.',});
-            },
-            _handleSetMainImageError: function(e) {
-                this.fire('show-toast', {message: 'Changing main picture failed!',});
-            },
-            _handleDeleteResponse: function(e) {
+                this.showToast('Upload failed!');
+            }
+            _handleSetMainImageResponse(e) {
+                this.dispatchEvent(new CustomEvent('main-image-changed'));
+                this.showToast('Main picture changed.');
+            }
+            _handleSetMainImageError(e) {
+                this.showToast('Changing main picture failed!');
+            }
+            _handleDeleteResponse(e) {
                 this.refresh();
-                this.fire('image-list-image-deleted');
-                this.fire('show-toast', {message: 'Picture deleted.',});
-            },
-            _handleDeleteError: function(e) {
-                this.fire('show-toast', {message: 'Deleting picture failed!',});
-            },
-        });
+                this.dispatchEvent(new CustomEvent('image-deleted'));
+                this.showToast('Picture deleted.');
+            }
+            _handleDeleteError(e) {
+                this.showToast('Deleting picture failed!');
+            }
+        }
+
+        window.customElements.define(ImageList.is, ImageList);
     </script>
 </dom-module>

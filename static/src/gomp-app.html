@@ -1,4 +1,5 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/app-layout/app-layout.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
@@ -28,6 +29,7 @@
                 --accent-color: var(--paper-red-500);
                 --light-accent-color: var(--paper-red-300);
                 --dark-accent-color: var(--paper-red-700);
+                @apply --paper-font-body1;
             }
             :host {
                 display: block;
@@ -73,7 +75,7 @@
                 padding-top: 10px;
                 padding-bottom: 10px;
                 font-weight: lighter;
-                font-size: 0.8em;
+                font-size: 0.9em;
             }
             app-drawer a {
                 display: block;
@@ -228,47 +230,51 @@
     </template>
 
     <script>
-        Polymer({
+        class GompApp extends Polymer.GestureEventListeners(Polymer.Element) {
+            static get is() { return 'gomp-app'; }
+            static get properties() {
+                return {
+                    jwtToken: {
+                        type: String,
+                        notify: true,
+                        observer: '_jwtTokenChanged',
+                    },
+                    ajaxHeaders: {
+                        type: Object,
+                        notify: true,
+                        value: null,
+                    },
+                    title: {
+                        type: String,
+                        value: 'Go Meal Planner',
+                    },
+                    homeImage: {
+                        type: String,
+                        value: '',
+                    },
+                    page: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                        observer: '_pageChanged',
+                    },
+                    loadingCount : {
+                        type: Number,
+                        notify: true,
+                        value: 0,
+                    },
+                };
+            }
+            static get observers() {
+                return [
+                    '_routePageChanged(routeData.page)',
+                    '_searchTagsChanged(searchTags)',
+                ];
+            }
 
-            is: 'gomp-app',
+            ready() {
+                super.ready();
 
-            properties: {
-                jwtToken: {
-                    type: String,
-                    notify: true,
-                    observer: '_jwtTokenChanged',
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    notify: true,
-                    value: null,
-                },
-                title: {
-                    type: String,
-                    value: 'Go Meal Planner',
-                },
-                homeImage: {
-                    type: String,
-                    value: '',
-                },
-                page: {
-                    type: String,
-                    reflectToAttribute: true,
-                    notify: true,
-                    observer: '_pageChanged',
-                },
-                loadingCount : {
-                    type: Number,
-                    notify: true,
-                    value: 0,
-                },
-            },
-            observers: [
-                '_routePageChanged(routeData.page)',
-                '_searchTagsChanged(searchTags)',
-            ],
-
-            ready: function() {
                 this.addEventListener('scroll-top', e => this._scrollToTop(e));
                 this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
                 this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
@@ -279,37 +285,37 @@
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
                 this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
-            },
+            }
 
-            _onAuthenticated: function(e) {
+            _onAuthenticated(e) {
                 // This is a workaround for a race condition  during login
-                this.jwtToken = e.detail;
-            },
-            _jwtTokenChanged: function(jwtToken) {
-                this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken,};
-            },
+                this.jwtToken = e.detail.jwtToken;
+            }
+            _jwtTokenChanged(jwtToken) {
+                this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken};
+            }
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
-            _patchOverlay: function (e) {
+            _patchOverlay(e) {
                 if (e.path[0].withBackdrop) {
                     e.path[0].parentNode.insertBefore(e.path[0].backdropElement, e.path[0]);
                 }
-            },
+            }
 
-            _isLoading: function(loadingCount) {
+            _isLoading(loadingCount) {
                 return loadingCount !== 0;
-            },
+            }
 
-            _onAjaxRequest: function(e) {
+            _onAjaxRequest(e) {
                 this.loadingCount++;
-            },
-            _onAjaxResponse: function(e) {
+            }
+            _onAjaxResponse(e) {
                 this.loadingCount--;
                 if (this.loadingCount < 0) {
                     this.loadingCount = 0;
                 }
-            },
-            _onAjaxError: function(e) {
+            }
+            _onAjaxError(e) {
                 this.loadingCount--;
                 if (this.loadingCount < 0) {
                     this.loadingCount = 0;
@@ -317,46 +323,43 @@
                 if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
                     this._logout();
                 }
-            },
+            }
 
-            _onShowToast: function(e) {
+            _onShowToast(e) {
                 this.$.toast.text = e.detail.message;
                 this.$.toast.open();
-            },
+            }
 
-            _routePageChanged: function(page) {
+            _routePageChanged(page) {
                 this.page = page || 'home';
-            },
-            _pageChanged: function(page) {
+            }
+            _pageChanged(page) {
                 if (this._verifyIsAuthenticated()) {
                     this.$.tagsAjax.generateRequest();
                 }
 
                 // Load page import on demand. Show 404 page if fails
                 var resolvedPageUrl = this.resolveUrl(page + '-view.html');
-                this.importHref(resolvedPageUrl, null, this._show404, true);
+                Polymer.importHref(resolvedPageUrl, null, () => this.page = 'status-404', true);
 
                 // Make sure to close the drawer
                 this.$.drawer.close();
-            },
-            _show404: function() {
-                this.page = 'status-404';
-            },
-            _changePageRequested: function(e) {
-                this._changeRoute(e.detail);
-            },
-            _changeRoute: function(path) {
+            }
+            _changePageRequested(e) {
+                this._changeRoute(e.detail.url);
+            }
+            _changeRoute(path) {
                 this.set('route.path', path);
-            },
-            _scrollToTop: function() {
+            }
+            _scrollToTop() {
                 this.$.mainHeader.scroll(0, 0);
-            },
-            _onLogoutTapped: function(e) {
+            }
+            _onLogoutTapped(e) {
                 e.preventDefault();
 
                 this._logout();
-            },
-            _verifyIsAuthenticated: function() {
+            }
+            _verifyIsAuthenticated() {
                 this.jwtToken = localStorage.getItem('jwtToken');
                 // Redirect to login if necessary
                 if (this.jwtToken === null) {
@@ -366,61 +369,63 @@
                     return false;
                 }
                 return true;
-            },
-            _logout: function() {
+            }
+            _logout() {
                 localStorage.clear();
                 sessionStorage.clear();
                 this.ajaxHeaders = null;
                 this._changeRoute('/login');
-            },
-            _onSearch: function(e) {
+            }
+            _onSearch(e) {
                 this.search = e.target.query.trim();
                 this._changeRoute('/search');
-            },
-            _onFilter: function() {
+            }
+            _onFilter() {
                 this.$.filterDialog.open();
-            },
-            _onHomeLinkClicked: function(e) {
+            }
+            _onHomeLinkClicked(e) {
                 this.search = '';
                 this.searchTags = e.detail.tags;
                 this._changeRoute('/search');
-            },
-            _isActive: function(currentPage, pageToCheck) {
+            }
+            _isActive(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
-            },
-            _handleGetTagsResponse: function(e) {
+            }
+            _handleGetTagsResponse(e) {
                 var tags = e.detail.response;
 
                 var filters = [];
-                var tagFilter = { id: 'tags', name: 'Tags', values: [], };
+                var tagFilter = {id: 'tags', name: 'Tags', values: []};
                 filters.push(tagFilter);
                 tags.forEach(function(tag) {
-                    tagFilter.values.push({ id: tag, name: tag,});
+                    tagFilter.values.push({id: tag, name: tag});
                 });
 
                 this.searchFilters = filters;
-            },
-            _searchFiltersChanged: function(e) {
+            }
+            _searchFiltersChanged(e) {
                 if (this.selectedSearchFilters.tags) {
                     this.searchTags = this.selectedSearchFilters.tags;
                 } else {
                     this.searchTags = [];
                 }
                 this._changeRoute('/search');
-            },
-            _searchTagsChanged: function(tags) {
+            }
+            _searchTagsChanged(tags) {
                 if (!this.selectedSearchFilters) {
                     this.selectedSearchFilters = {};
                 }
                 this.set('selectedSearchFilters.tags', tags);
                 this.selectedSearchFiltersCount = tags.length;
-            },
+            }
 
-            _recipesModified: function(e) {
+            _recipesModified(e) {
                 if (this.$.searchView.refresh) {
                     this.$.searchView.refresh();
                 }
-            },
-        });
+            }
+        }
+
+        window.customElements.define(GompApp.is, GompApp);
     </script>
 </dom-module>

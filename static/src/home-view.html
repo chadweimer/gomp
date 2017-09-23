@@ -1,7 +1,8 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 
-<link rel="import" href="behaviors/gomp-core-behavior.html">
+<link rel="import" href="mixins/gomp-core-mixin.html">
 
 <link rel="import" href="components/home-list.html">
 
@@ -51,38 +52,37 @@
     </template>
 
     <script>
-        Polymer({
+        class HomeView extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'home-view'; }
+            static get properties() {
+                return {
+                    title: {
+                        type: String,
+                        notify: true,
+                        value: 'Go Meal Planner',
+                    },
+                    image: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
 
-            is: 'home-view',
-            behaviors: [
-                GompCoreBehavior,
-            ],
+            ready() {
+                super.ready();
 
-            properties: {
-                title: {
-                    type: String,
-                    notify: true,
-                    value: 'Go Meal Planner',
-                },
-                image: {
-                    type: String,
-                    notify: true,
-                },
-            },
-
-            ready: function() {
                 if (this.isActive) {
                     this._refreshLists();
                 }
-            },
+            }
 
-            _isActiveChanged: function(isActive) {
+            _isActiveChanged(isActive) {
                 if (isActive && this.isReady) {
                     this._refreshLists();
                 }
-            },
+            }
 
-            _refreshLists: function() {
+            _refreshLists() {
                 this.$.allRecipes.refresh();
                 this.$.beefRecipes.refresh();
                 this.$.poultryRecipes.refresh();
@@ -92,8 +92,9 @@
                 this.$.vegetarianRecipes.refresh();
                 this.$.sideRecipes.refresh();
                 this.$.drinkRecipes.refresh();
-            },
+            }
+        }
 
-        });
+        window.customElements.define(HomeView.is, HomeView);
     </script>
 </dom-module>
