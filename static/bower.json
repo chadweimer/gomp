@@ -23,7 +23,8 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
     "paper-password-input": "Collaborne/paper-password-input#^2.0.0",
     "paper-tags-input": "chadweimer/paper-tags-input#^2.0.0",
-    "iron-star-rating": "chadweimer/iron-star-rating#^2.0.0"
+    "iron-star-rating": "chadweimer/iron-star-rating#^2.0.0",
+    "paper-drawer": "Collaborne/paper-drawer#^2.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",
