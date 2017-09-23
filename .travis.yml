@@ -1,3 +1,4 @@
+dist: trusty
 sudo: required
 
 notifications:
@@ -10,7 +11,14 @@ language: go
 
 go:
   - 1.8
-
+  
+jdk:
+  - oraclejdk8
+  
+cache:
+  directories:
+    - '$HOME/.sonar/cache'
+    
 addons:
   apt:
     sources:
@@ -18,8 +26,15 @@ addons:
     packages:
       - glide
       - zip
+  sonarcloud:
+    organization: "chadweimer-github"
+    branches:
+      - master
+    token:
+      secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
 
 script:
+  - sonar-scanner
   - . $HOME/.nvm/nvm.sh
   - nvm install
   - make deps build docker

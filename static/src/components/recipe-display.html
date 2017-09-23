@@ -52,7 +52,7 @@
             <div class="card-content">
                 <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
                 <h2>
-                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
                 </h2>
                 <section hidden$="{{!recipe.servingSize}}">
