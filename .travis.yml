@@ -1,4 +1,4 @@
-Dist: trusty
+dist: trusty
 sudo: required
 
 notifications:
