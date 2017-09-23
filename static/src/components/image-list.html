@@ -210,7 +210,7 @@
             _handleAddResponse(e) {
                 this.$.uploadingDialog.close();
                 this.refresh();
-                this.dispatchEvent(new CustomEvent('image-list-image-added'));
+                this.dispatchEvent(new CustomEvent('image-added'));
                 this.showToast('Upload complete.');
             }
             _handleAddError(e) {
@@ -218,7 +218,7 @@
                 this.showToast('Upload failed!');
             }
             _handleSetMainImageResponse(e) {
-                this.dispatchEvent(new CustomEvent('image-list-main-image-changed'));
+                this.dispatchEvent(new CustomEvent('main-image-changed'));
                 this.showToast('Main picture changed.');
             }
             _handleSetMainImageError(e) {
@@ -226,7 +226,7 @@
             }
             _handleDeleteResponse(e) {
                 this.refresh();
-                this.dispatchEvent(new CustomEvent('image-list-image-deleted'));
+                this.dispatchEvent(new CustomEvent('image-deleted'));
                 this.showToast('Picture deleted.');
             }
             _handleDeleteError(e) {
