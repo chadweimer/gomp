@@ -156,7 +156,7 @@
                                 <template is="dom-repeat" items="[[inner]]" as="recipe">
                                     <a href="/recipes/[[recipe.id]]">
                                         <div class="compact-recipe">
-                                            <img src="[[recipe.mainImage.thumbnailUrl]]" class="avatar" hidden$="[[_isNullOrEmpty(recipe.mainImage.thumbnailUrl)]]">
+                                            <img src="[[recipe.mainImage.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[_isNullOrEmpty(recipe.mainImage.thumbnailUrl)]]">
                                             <span class="avatar" hidden$="[[!_isNullOrEmpty(recipe.mainImage.thumbnailUrl)]]"></span>
                                             <span>[[recipe.name]]</span>
                                         </div>
