@@ -1,4 +1,4 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 
 <link rel="import" href="../shared-styles.html">
@@ -8,6 +8,9 @@
         <style include="shared-styles">
             :host {
                 display: block;
+            }
+            :host[hidden] {
+                display: none !important;
             }
             paper-button {
                 font-weight: 600;
@@ -27,45 +30,48 @@
     </template>
 
     <script>
-      Polymer({
+      class PaginationLinks extends Polymer.Element {
+          static get is() { return 'pagination-links'; }
+          static get properties() {
+              return {
+                  pageNum: {
+                      type: Number,
+                      value: 1,
+                      notify: true,
+                  },
+                  numPages: {
+                      type: Number,
+                      value: 10,
+                      notify: true,
+                  },
+              };
+          }
+          static get observers() {
+              return [
+                  '_pagesChanged(pageNum, numPages)',
+              ];
+          }
 
-          is: 'pagination-links',
-
-          properties: {
-              pageNum: {
-                  type: Number,
-                  value: 1,
-                  notify: true,
-              },
-              numPages: {
-                  type: Number,
-                  value: 10,
-                  notify: true,
-              },
-          },
-          observers: [
-              '_pagesChanged(pageNum, numPages)',
-          ],
-
-          _pagesChanged: function() {
+          _pagesChanged() {
               this.$.first.disabled = this.pageNum === 1;
               this.$.prev.disabled = this.pageNum === 1;
               this.$.next.disabled = this.pageNum === this.numPages;
               this.$.last.disabled = this.pageNum === this.numPages;
-          },
-          _goFirst: function(e) {
+          }
+          _goFirst(e) {
               this.pageNum = 1;
-          },
-          _goPrev: function(e) {
+          }
+          _goPrev(e) {
               this.pageNum--;
-          },
-          _goNext: function(e) {
+          }
+          _goNext(e) {
               this.pageNum++;
-          },
-          _goLast: function(e) {
+          }
+          _goLast(e) {
               this.pageNum = this.numPages;
-          },
+          }
 
-      });
+      }
+      window.customElements.define(PaginationLinks.is, PaginationLinks);
     </script>
 </dom-module>

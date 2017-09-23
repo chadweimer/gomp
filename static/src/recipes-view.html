@@ -1,4 +1,5 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
@@ -8,7 +9,7 @@
 <link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 
-<link rel="import" href="behaviors/gomp-core-behavior.html">
+<link rel="import" href="mixins/gomp-core-mixin.html">
 
 <link rel="import" href="components/image-list.html">
 <link rel="import" href="components/note-list.html">
@@ -98,7 +99,7 @@
                 </div>
             </div>
             <div hidden$="[[!editing]]">
-                <h3>Edit Recipe</h3>
+                <h4>Edit Recipe</h4>
                 <recipe-edit
                     id="recipeEdit"
                     recipe-id="[[recipeId]]"
@@ -132,105 +133,100 @@
     </template>
 
     <script>
-        Polymer({
+        class RecipesView extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'recipes-view'; }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                        notify: true,
+                    },
+                    recipeId: {
+                        type: String,
+                        notify: true,
+                    },
+                    editing: {
+                        type: Boolean,
+                        notify: true,
+                        value: false,
+                    },
+                };
+            }
+            static get observers() {
+                return [
+                    '_recipeIdChanged(routeData.recipeId)',
+                ];
+            }
 
-            is: 'recipes-view',
-            behaviors: [
-                GompCoreBehavior,
-            ],
+            ready() {
+                super.ready();
 
-            properties: {
-                route: {
-                    type: Object,
-                    notify: true,
-                },
-                recipeId: {
-                    type: String,
-                    notify: true,
-                },
-                editing: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                },
-            },
-            observers: [
-                '_recipeIdChanged(routeData.recipeId)',
-            ],
-
-            ready: function() {
                 this.addEventListener('image-list-main-image-changed', e => this._refreshMainImage(e));
                 this.addEventListener('image-list-image-added', e => this._refreshMainImage(e));
                 this.addEventListener('image-list-image-deleted', e => this._refreshMainImage(e));
-            },
-
-            refresh: function() {
+            }
+            refresh() {
                 this.$.recipeDisplay.refresh();
                 this.$.imageList.refresh();
                 this.$.noteList.refresh();
-            },
+            }
 
-            _isActiveChanged: function(active) {
+            _isActiveChanged(active) {
                 // Always exit edit mode when we change screens
                 this.editing = false;
-            },
-
-            _recipeIdChanged: function(recipeId) {
+            }
+            _recipeIdChanged(recipeId) {
                 this.recipeId = recipeId;
-            },
-
-            _newButtonTapped: function(e) {
+            }
+            _newButtonTapped(e) {
                 this.$.actions.close();
-            },
-            _deleteButtonTapped: function(e) {
+            }
+            _deleteButtonTapped(e) {
                 e.preventDefault();
 
                 this.$.confirmDeleteDialog.open();
                 this.$.actions.close();
-            },
-            _deleteRecipe: function(e) {
+            }
+            _deleteRecipe(e) {
                 this.$.deleteAjax.generateRequest();
-            },
-            _editButtonTapped: function(e) {
+            }
+            _editButtonTapped(e) {
                 e.preventDefault();
 
                 this.$.actions.close();
                 this.$.recipeEdit.refresh();
                 this.editing = true;
-            },
-            _editCanceled: function(e) {
+            }
+            _editCanceled(e) {
                 this.editing = false;
                 this.refresh();
-            },
-            _editSaved: function(e) {
+            }
+            _editSaved(e) {
                 this.editing = false;
                 this.refresh();
-            },
-
-            _addImageButtonTapped: function(e) {
+            }
+            _addImageButtonTapped(e) {
                 e.preventDefault();
 
                 this.$.actions.close();
                 this.$.imageList.add();
-            },
-
-            _addNoteButtonTapped: function(e) {
+            }
+            _addNoteButtonTapped(e) {
                 e.preventDefault();
 
                 this.$.actions.close();
                 this.$.noteList.add();
-            },
+            }
+            _refreshMainImage(e) {
+                this.$.recipeDisplay.refresh({onlyMainImage: true});
+                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+            }
+            _handleDeleteRecipeResponse(e) {
+                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+                this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+            }
+        }
 
-            _refreshMainImage: function(e) {
-                this.$.recipeDisplay.refresh({onlyMainImage: true,});
-                this.fire('recipes-modified');
-            },
-
-            _handleDeleteRecipeResponse: function(e) {
-                this.fire('recipes-modified');
-                this.fire('change-page', '/search');
-            },
-
-        });
+        window.customElements.define(RecipesView.is, RecipesView);
     </script>
 </dom-module>

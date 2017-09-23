@@ -37,4 +37,4 @@ rules:
     - error
   comma-dangle:
     - error
-    - always
+    - only-multiline

@@ -1,12 +1,14 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../../bower_components/paper-tags-input/paper-tags-input.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -16,48 +18,33 @@
             :host {
                 display: block;
             }
-            input {
-                text-transform: lowercase;
-                width: auto !important;
-                padding-left: 0.5em;
+            :host[hidden] {
+                display: none !important;
             }
-            .tag {
+            iron-icon {
+                --iron-icon-height: 20px;
+                --iron-icon-width: 20px;
+                color: var(--paper-green-400);
+            }
+            paper-chip {
                 margin: 4px;
                 padding-right: 6px;
                 cursor: pointer;
                 @apply layout-horizontal;
-            }
-            .tag iron-icon {
-                --iron-icon-height: 20px;
-                --iron-icon-width: 20px;
-                color: var(--disabled-text-color);
-            }
-            .tag-add {
                 background-color: var(--paper-green-100);
             }
-            .tag-add[selectable]:hover {
+            paper-chip[selectable]:hover {
                 color: white !important;
                 background-color: var(--paper-green-600);
             }
-            .tag-add iron-icon {
-                color: var(--paper-green-400);
-            }
             </style>
 
-            <paper-input-container always-float-label="true">
-                <label slot="label">Tags</label>
-                <div slot="prefix">
-                    <template is="dom-repeat" items="[[tags]]">
-                        <paper-chip class="tag" selectable>[[item]] <iron-icon icon="icons:cancel" on-tap="_onTagRemoveTapped"></iron-icon></paper-chip>
-                    </template>
-                </div>
-                <input is="iron-input" id="input" slot="input" placeholder="+tag" on-keydown="_onInputKeydown"></input>
-            </paper-input-container>
+            <paper-tags-input id="tags" tags="{{tags}}"></paper-tags-input>
             <paper-input-container always-float-label="true">
                 <label slot="label">Suggested Tags</label>
                 <div slot="prefix">
                     <template is="dom-repeat" items="[[suggestedTags]]">
-                        <paper-chip class="tag tag-add" on-tap="_onSuggestedTagTapped" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                        <paper-chip on-tap="_onSuggestedTagTapped" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
                     </template>
                 </div>
                 <input type="hidden" slot="input">
@@ -75,70 +62,41 @@
     </template>
 
     <script>
-        Polymer({
+        class TagInput extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'tag-input'; }
+            static get properties() {
+                return {
+                    tags: {
+                        type: Array,
+                        notify: true,
+                        value: [],
+                    },
+                };
+            }
 
-            is: 'tag-input',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                tags: {
-                    type: Array,
-                    notify: true,
-                    value: [],
-                },
-            },
-
-            refresh: function() {
+            refresh() {
                 this.$.getSuggestedTagsAjax.generateRequest();
-            },
-            add: function(tag) {
-                // Add the new tag if it's not already present
-                if (this.tags === null) {
-                    this.tags = [];
-                }
-                var tagIndex = this.tags.indexOf(tag);
-                if (tagIndex === -1) {
-                    this.push('tags', tag);
-                }
-            },
-            remove: function(tag) {
-                // Remove the tag if it's present
-                var tagIndex = this.tags.indexOf(tag);
-                if (tagIndex > -1) {
-                    this.splice('tags', tagIndex, 1);
-                }
-            },
+            }
 
-            _onSuggestedTagTapped: function(e) {
+            _onSuggestedTagTapped(e) {
                 e.preventDefault();
 
-                this.add(e.model.item);
+                this.$.tags.add(e.model.item);
 
                 // Remove the tag from the suggestion list
                 var suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
                 if (suggestedTagIndex > -1) {
                     this.splice('suggestedTags', suggestedTagIndex, 1);
                 }
-            },
-            _onInputKeydown: function(e) {
-                if (e.keyCode === 13) {
-                    this.add(e.target.value.toLowerCase());
-                    e.target.value = '';
-                }
-            },
-            _onTagRemoveTapped: function(e) {
-                e.preventDefault();
-
-                this.remove(e.model.item);
-            },
-            _handleGetSuggestedTagsRequest: function(e) {
+            }
+            _handleGetSuggestedTagsRequest(e) {
                 this.suggestedTags = [];
-            },
-            _handleGetSuggestedTagsResponse: function(e) {
+            }
+            _handleGetSuggestedTagsResponse(e) {
                 this.suggestedTags = e.detail.response;
-            },
-        });
+            }
+        }
+
+        window.customElements.define(TagInput.is, TagInput);
     </script>
 </dom-module>

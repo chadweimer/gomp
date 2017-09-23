@@ -1,7 +1,8 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
-<link rel="import" href="../behaviors/gomp-core-behavior.html">
+<link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="recipe-card.html">
 
@@ -17,7 +18,7 @@
                 margin-top: 1em;
             }
             header {
-                font-size: 1.33em;
+                font-size: 1.5em;
             }
             .outterContainer {
                 @apply --layout-horizontal;
@@ -37,7 +38,7 @@
                 --recipe-card-height: 150px;
                 --recipe-card-header-height: 65%;
                 --recpe-card-rating-size: 12px;
-                font-size: 0.8em;
+                font-size: 0.9em;
             }
             a {
                 float: right;
@@ -95,28 +96,25 @@
     </template>
 
     <script>
-        Polymer({
+        class HomeList extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'home-list'; }
+            static get properties() {
+                return {
+                    title: {
+                        type: String,
+                        notify: true,
+                        value: 'Recipes',
+                    },
+                    tags: {
+                        type: Array,
+                        notify: true,
+                        value: [],
+                        observer: '_tagsChanged',
+                    },
+                };
+            }
 
-            is: 'home-list',
-            behaviors: [
-                GompCoreBehavior,
-            ],
-
-            properties: {
-                title: {
-                    type: String,
-                    notify: true,
-                    value: 'Recipes',
-                },
-                tags: {
-                    type: Array,
-                    notify: true,
-                    value: [],
-                    observer: '_tagsChanged',
-                },
-            },
-
-            _tagsChanged: function() {
+            _tagsChanged() {
                 this.$.recipesAjax.params = {
                     'q':'',
                     'tags[]': this.tags,
@@ -125,25 +123,27 @@
                     'page': 1,
                     'count': 6,
                 };
-            },
+            }
 
-            refresh: function() {
+            refresh() {
                 this.$.recipesAjax.generateRequest();
-            },
-            _handleGetRecipesRequest: function(e) {
+            }
+            _handleGetRecipesRequest(e) {
                 this.total = 0;
                 this.recipes = [];
-            },
-            _handleGetRecipesResponse: function(e) {
+            }
+            _handleGetRecipesResponse(e) {
                 this.total = e.detail.response.total;
                 this.recipes = e.detail.response.recipes;
-            },
-            _onLinkTapped: function(e) {
+            }
+            _onLinkTapped(e) {
                 e.preventDefault();
 
-                this.fire('home-list-link-clicked', {tags: this.tags,});
-            },
+                this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
+            }
 
-        });
+        }
+
+        window.customElements.define(HomeList.is, HomeList);
     </script>
 </dom-module>
