@@ -30,7 +30,6 @@ addons:
     organization: "chadweimer-github"
     branches:
       - master
-      - feature/SonarQube
     token:
       secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
 
