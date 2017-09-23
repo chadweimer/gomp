@@ -35,10 +35,10 @@ addons:
       secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
 
 script:
+  - sonar-scanner
   - . $HOME/.nvm/nvm.sh
   - nvm install
   - make deps build docker
-  - sonar-scanner
   # test image
   #- docker run cwmr/gomp:latest ???
 
