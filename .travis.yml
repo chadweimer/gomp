@@ -37,7 +37,7 @@ script:
   - sonar-scanner
   - . $HOME/.nvm/nvm.sh
   - nvm install
-  - make deps build docker
+  - make
   # test image
   #- docker run cwmr/gomp:latest ???
 

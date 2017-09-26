@@ -1,0 +1,72 @@
+BUILD_DIR=build
+VENDOR_DIR=vendor
+NODE_MODULES_DIR=node_modules
+BOWER_COMPONENTS_DIR=static\bower_components
+POLYMER_BUILD_DIR=static\build
+
+.PHONY: all
+all: build-all docker
+
+.PHONY: clean
+clean:
+	set GOOS=linux
+	set GOARCH=amd64
+	go clean -i .\...
+	set GOOS=linux
+	set GOARCH=arm
+	go clean -i .\...
+	set GOOS=linux
+	set GOARCH=amd64
+	go clean -i .\...
+	IF EXIST $(BUILD_DIR) rd /s /q $(BUILD_DIR)
+	IF EXIST $(VENDOR_DIR) rd /s /q $(VENDOR_DIR)
+	IF EXIST $(NODE_MODULES_DIR) rd /s /q $(NODE_MODULES_DIR)
+	IF EXIST $(BOWER_COMPONENTS_DIR) rd /s /q $(BOWER_COMPONENTS_DIR)
+	IF EXIST $(POLYMER_BUILD_DIR) rd /s /q $(POLYMER_BUILD_DIR)
+
+.PHONY: deps
+deps: clean
+	glide.exe --quiet install
+	yarn install --silent
+
+.PHONY: build-dev
+build-dev:
+	go build -v
+
+.PHONY: build-all
+build-all: build-linux-amd64 build-linux-armhf build-windows-amd64
+
+.PHONY: build-linux-amd64
+build-linux-amd64: deps clean
+	set GOOS=linux
+	set GOARCH=amd64
+	go build -o $(BUILD_DIR)\linux\amd64\gomp
+	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\amd64\db
+	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\amd64\static
+	7z.exe a -ttar $(BUILD_DIR)\gomp-linux-amd64.tar $(BUILD_DIR)\linux\amd64\*
+	7z.exe a -tgzip $(BUILD_DIR)\gomp-linux-amd64.tar.gz $(BUILD_DIR)\gomp-linux-amd64.tar
+
+.PHONY: build-linux-armhf
+build-linux-armhf: deps clean
+	set GOOS=linux
+	set GOARCH=arm
+	go build -o $(BUILD_DIR)\linux\armhf\gomp
+	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\armhf\db
+	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\armhf\static
+	7z.exe a -ttar $(BUILD_DIR)\gomp-linux-armhf.tar $(BUILD_DIR)\linux\armhf\*
+	7z.exe a -tgzip $(BUILD_DIR)\gomp-linux-armhf.tar.gz $(BUILD_DIR)\gomp-linux-armhf.tar
+
+.PHONY: build-windows-amd64
+build-windows-amd64: deps clean
+	set GOOS=linux
+	set GOARCH=amd64
+	go build -o $(BUILD_DIR)\windows\amd64\gomp
+	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\windows\amd64\db
+	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\windows\amd64\static
+	7z.exe a -tzip $(BUILD_DIR)\gomp-windows-amd64.zip $(BUILD_DIR)\windows\amd64\*
+
+.PHONY: docker
+docker: build-linux-amd64 build-linux-armhf
+	docker run --rm --privileged multiarch/qemu-user-static:register --reset
+	docker build -t cwmr/gomp:latest .
+	docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .

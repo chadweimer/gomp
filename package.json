@@ -6,7 +6,7 @@
     "polymer-cli": "^1.0.0"
   },
   "scripts": {
-    "postinstall": "cd static && ../node_modules/bower/bin/bower install --quiet && ../node_modules/polymer-cli/bin/polymer.js build --preset es6-unbundled"
+    "postinstall": "cd static && ../node_modules/.bin/bower install --quiet && ../node_modules/.bin/polymer build --preset es6-unbundled"
   },
   "cacheDirectories": [
     "static/bower_components"
