@@ -1,8 +1,8 @@
-BUILD_DIR=build
-VENDOR_DIR=vendor
-NODE_MODULES_DIR=node_modules
-BOWER_COMPONENTS_DIR=static\bower_components
-POLYMER_BUILD_DIR=static\build
+BUILD_DIR=.\build
+VENDOR_DIR=.\vendor
+NODE_MODULES_DIR=.\node_modules
+BOWER_COMPONENTS_DIR=.\static\bower_components
+POLYMER_BUILD_DIR=.\static\build
 
 .PHONY: all
 all: build-all docker
@@ -43,8 +43,7 @@ build-linux-amd64: deps clean
 	go build -o $(BUILD_DIR)\linux\amd64\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\amd64\db
 	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\amd64\static
-	7z.exe a -ttar $(BUILD_DIR)\gomp-linux-amd64.tar $(BUILD_DIR)\linux\amd64\*
-	7z.exe a -tgzip $(BUILD_DIR)\gomp-linux-amd64.tar.gz $(BUILD_DIR)\gomp-linux-amd64.tar
+	7z.exe a dummy -ttar -so $(BUILD_DIR)\linux\amd64\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-amd64.tar.gz
 
 .PHONY: build-linux-armhf
 build-linux-armhf: deps clean
@@ -53,8 +52,7 @@ build-linux-armhf: deps clean
 	go build -o $(BUILD_DIR)\linux\armhf\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\armhf\db
 	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\armhf\static
-	7z.exe a -ttar $(BUILD_DIR)\gomp-linux-armhf.tar $(BUILD_DIR)\linux\armhf\*
-	7z.exe a -tgzip $(BUILD_DIR)\gomp-linux-armhf.tar.gz $(BUILD_DIR)\gomp-linux-armhf.tar
+	7z.exe a dummy -ttar -so $(BUILD_DIR)\linux\armhf\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-armhf.tar.gz
 
 .PHONY: build-windows-amd64
 build-windows-amd64: deps clean
