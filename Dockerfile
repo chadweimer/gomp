@@ -1,5 +1,5 @@
 FROM alpine:3.5
-MAINTAINER ch@dweimer.com
+LABEL maintainer="ch@dweimer.com"
 
 RUN apk add --no-cache ca-certificates \
   && mkdir /lib64 \
