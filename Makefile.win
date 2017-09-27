@@ -1,0 +1,90 @@
+BUILD_DIR=build
+VENDOR_DIR=vendor
+NODE_MODULES_DIR=node_modules
+BOWER_COMPONENTS_DIR=static\bower_components
+POLYMER_BUILD_DIR=static\build
+
+.PHONY: rebuild
+rebuild: clean build
+
+.PHONY: reinstall
+reinstall: uninstall install
+
+.PHONY: install
+install:
+	glide --quiet install
+	yarn install --silent
+
+.PHONY: uninstall
+uninstall:
+	IF EXIST $(VENDOR_DIR) rd /s /q $(VENDOR_DIR)
+	IF EXIST $(NODE_MODULES_DIR) rd /s /q $(NODE_MODULES_DIR)
+	IF EXIST $(BOWER_COMPONENTS_DIR) rd /s /q $(BOWER_COMPONENTS_DIR)
+
+.PHONY: build
+build: build-linux-amd64 build-linux-armhf build-windows-amd64
+
+.PHONY: clean
+clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
+	IF EXIST $(POLYMER_BUILD_DIR) rd /s /q $(POLYMER_BUILD_DIR)
+
+.PHONY: prebuild
+prebuild:
+	pushd .\static & ..\$(NODE_MODULES_DIR)\.bin\polymer build --preset es6-unbundled & popd
+
+.PHONY: clean-linux-amd64
+clean-linux-amd64:
+	set GOOS=linux
+	set GOARCH=amd64
+	go clean -i .\...
+	IF EXIST $(BUILD_DIR)\linux\amd64 rd /s /q $(BUILD_DIR)\linux\amd64
+	del $(BUILD_DIR)\gomp-linux-amd64.tar.gz
+
+.PHONY: build-linux-amd64
+build-linux-amd64: prebuild
+	set GOOS=linux
+	set GOARCH=amd64
+	go build -o $(BUILD_DIR)\linux\amd64\gomp
+	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\amd64\db
+	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\amd64\static
+	7z.exe a dummy -ttar -so .\$(BUILD_DIR)\linux\amd64\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-amd64.tar.gz
+
+.PHONY: clean-linux-armhf
+clean-linux-armhf:
+	set GOOS=linux
+	set GOARCH=arm
+	go clean -i .\...
+	IF EXIST $(BUILD_DIR)\linux\armhf rd /s /q $(BUILD_DIR)\linux\armhf
+	del $(BUILD_DIR)\gomp-linux-armhf.tar.gz
+
+.PHONY: build-linux-armhf
+build-linux-armhf: prebuild
+	set GOOS=linux
+	set GOARCH=arm
+	go build -o $(BUILD_DIR)\linux\armhf\gomp
+	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\armhf\db
+	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\armhf\static
+	7z.exe a dummy -ttar -so .\$(BUILD_DIR)\linux\armhf\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-armhf.tar.gz
+
+.PHONY: clean-windows-amd64
+clean-windows-amd64:
+	set GOOS=windows
+	set GOARCH=amd64
+	go clean -i .\...
+	IF EXIST $(BUILD_DIR)\windows\amd64 rd /s /q $(BUILD_DIR)\windows\amd64
+	del $(BUILD_DIR)\gomp-windows-amd64.zip
+
+.PHONY: build-windows-amd64
+build-windows-amd64: prebuild
+	set GOOS=windows
+	set GOARCH=amd64
+	go build -o $(BUILD_DIR)\windows\amd64\gomp
+	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\windows\amd64\db
+	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\windows\amd64\static
+	7z.exe a -tzip $(BUILD_DIR)\gomp-windows-amd64.zip .\$(BUILD_DIR)\windows\amd64\*
+
+.PHONY: docker
+docker: build-linux-amd64 build-linux-armhf
+	docker run --rm --privileged multiarch/qemu-user-static:register --reset
+	docker build -t cwmr/gomp:latest .
+	docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
