@@ -69,7 +69,7 @@ build-windows-amd64: prebuild
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	cp -R db $(BUILD_DIR)/windows/amd64
 	cp -R static $(BUILD_DIR)/windows/amd64
-	cd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd ../../../
+	cd build/windows/amd64; zip -rq ../../gomp-windows-amd64.zip *; cd ../../../
 
 .PHONY: docker
 docker: build-linux-amd64 build-linux-armhf
