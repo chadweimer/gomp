@@ -101,11 +101,11 @@ func (c *Config) Validate() error {
 	}
 
 	if c.UploadDriver != "fs" && c.UploadDriver != "s3" {
-		return errors.New("UPLOAD_DRIVER must be one of ('fs', 's3')")
+		return errors.New("GOMP_UPLOAD_DRIVER must be one of ('fs', 's3')")
 	}
 
 	if c.UploadPath == "" {
-		return errors.New("UPLOAD_PATH must be specified")
+		return errors.New("GOMP_UPLOAD_PATH must be specified")
 	}
 
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
