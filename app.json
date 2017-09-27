@@ -3,6 +3,7 @@
   "scripts": {
   },
   "env": {
+    "GOMP_IS_DEVELOPMENT": "1",
     "NPM_CONFIG_PRODUCTION": "false",
     "SECURE_KEY": {
       "required": true
