@@ -20,6 +20,7 @@ cache:
   directories:
     - '$HOME/.sonar/cache'
     - '$HOME/.cache/bower'
+    - '$HOME/.glide/cache'
     
 addons:
   apt:
