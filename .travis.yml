@@ -35,10 +35,10 @@ addons:
     token:
       secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
 
-before_install:
-  - sonar-scanner
-
 install:
+  # Put this here temporarily so it happens before npm and bower
+  # components are installed. Better way would be in test/build, with file exclusions.
+  - sonar-scanner
   - . $HOME/.nvm/nvm.sh
   - nvm install
   - make install
