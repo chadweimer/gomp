@@ -30,7 +30,7 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	pushd .\static & ..\$(NODE_MODULES_DIR)\.bin\polymer build --preset es6-unbundled & popd
+	pushd ./static & ../$(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled & popd
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
