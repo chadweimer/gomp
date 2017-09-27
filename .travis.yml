@@ -16,8 +16,10 @@ jdk:
   - oraclejdk8
   
 cache:
+  yarn: true
   directories:
     - '$HOME/.sonar/cache'
+    - '$HOME/.cache/bower'
     
 addons:
   apt:
@@ -33,11 +35,16 @@ addons:
     token:
       secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
 
-script:
+before_install:
   - sonar-scanner
+
+install:
   - . $HOME/.nvm/nvm.sh
   - nvm install
-  - make
+  - make install
+
+script:
+  make build docker
   # test image
   #- docker run cwmr/gomp:latest ???
 
