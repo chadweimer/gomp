@@ -30,7 +30,7 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	pushd ./static & ../$(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled & popd
+	cd static & ../$(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled & cd ../
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
@@ -69,7 +69,7 @@ build-windows-amd64: prebuild
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	cp -R db $(BUILD_DIR)/windows/amd64
 	cp -R static $(BUILD_DIR)/windows/amd64
-	pushd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && popd
+	cd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd ../../../
 
 .PHONY: docker
 docker: build-linux-amd64 build-linux-armhf
