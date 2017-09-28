@@ -46,7 +46,7 @@ build-linux-amd64: prebuild
 	set GOARCH=amd64
 	go build -o $(BUILD_DIR)\linux\amd64\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\amd64\db
-	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\amd64\static
+	xcopy /Q /R /Y /S /E /I static\build\es6-unbundled $(BUILD_DIR)\linux\amd64\static
 	7z.exe a dummy -ttar -so .\$(BUILD_DIR)\linux\amd64\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-amd64.tar.gz
 
 .PHONY: clean-linux-armhf
@@ -63,7 +63,7 @@ build-linux-armhf: prebuild
 	set GOARCH=arm
 	go build -o $(BUILD_DIR)\linux\armhf\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\armhf\db
-	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\linux\armhf\static
+	xcopy /Q /R /Y /S /E /I static\build\es6-unbundled $(BUILD_DIR)\linux\armhf\static
 	7z.exe a dummy -ttar -so .\$(BUILD_DIR)\linux\armhf\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-armhf.tar.gz
 
 .PHONY: clean-windows-amd64
@@ -80,7 +80,7 @@ build-windows-amd64: prebuild
 	set GOARCH=amd64
 	go build -o $(BUILD_DIR)\windows\amd64\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\windows\amd64\db
-	xcopy /Q /R /Y /S /E /I static $(BUILD_DIR)\windows\amd64\static
+	xcopy /Q /R /Y /S /E /I static\build\es6-unbundled $(BUILD_DIR)\windows\amd64\static
 	7z.exe a -tzip $(BUILD_DIR)\gomp-windows-amd64.zip .\$(BUILD_DIR)\windows\amd64\*
 
 .PHONY: docker
