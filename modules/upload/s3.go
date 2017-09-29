@@ -2,7 +2,7 @@ package upload
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -19,6 +19,19 @@ import (
 // S3Driver is an implementation of Driver that uses the Amazon S3.
 type S3Driver struct {
 	cfg *conf.Config
+}
+
+type readSizer struct {
+	io.Reader
+	size int64
+}
+
+func (r readSizer) Seek(offset int64, whence int) (int64, error) {
+	if whence == io.SeekEnd {
+		return r.size, nil
+	}
+
+	return 0, nil
 }
 
 // NewS3Driver constucts a S3Driver.
@@ -157,19 +170,17 @@ func HandleS3Uploads(bucket string) httprouter.Handle {
 			}
 		}
 
-		var buf []byte
+		var readSeeker io.ReadSeeker
 		// If we got content, read it, including associated headers
 		if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
-			buf, err = ioutil.ReadAll(getResp.Body)
-			if err != nil {
-				http.Error(resp, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			readSeeker = readSizer{getResp.Body, *getResp.ContentLength}
+		} else {
+			readSeeker = readSizer{getResp.Body, 0}
 		}
 		passThroughRespHeaders(getResp, resp.Header())
 
 		// Serve up the file to the client
-		http.ServeContent(resp, req, filePath, *getResp.LastModified, bytes.NewReader(buf))
+		http.ServeContent(resp, req, filePath, *getResp.LastModified, readSeeker)
 	}
 }
 
