@@ -26,7 +26,8 @@ func main() {
 	if err := cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}
-	model := models.New(cfg)
+	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
+	model := models.New(cfg, upl)
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
@@ -52,11 +53,7 @@ func main() {
 	mainMux.Handler("POST", "/api/*apipath", apiHandler)
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
 	mainMux.ServeFiles("/static/*filepath", justFilesFileSystem{http.Dir("static")})
-	if cfg.UploadDriver == "fs" {
-		mainMux.ServeFiles("/uploads/*filepath", justFilesFileSystem{http.Dir(cfg.UploadPath)})
-	} else if cfg.UploadDriver == "s3" {
-		mainMux.GET("/uploads/*filepath", upload.HandleS3Uploads(cfg.UploadPath))
-	}
+	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		renderer.HTML(resp, http.StatusOK, "index", nil)
 	})

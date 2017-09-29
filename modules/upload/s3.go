@@ -6,48 +6,45 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/julienschmidt/httprouter"
 )
 
 // S3Driver is an implementation of Driver that uses the Amazon S3.
-type S3Driver struct {
-	cfg *conf.Config
+type s3Driver struct {
+	bucket string
 }
 
 // NewS3Driver constucts a S3Driver.
-func NewS3Driver(cfg *conf.Config) S3Driver {
-	return S3Driver{cfg: cfg}
+func newS3Driver(bucket string) s3Driver {
+	return s3Driver{bucket: bucket}
 }
 
 // Save creates or overrites a file with the provided binary data.
-func (u S3Driver) Save(filePath string, data []byte) error {
+func (u s3Driver) Save(filePath string, data []byte) error {
 	svc := s3.New(session.New())
 
-	bucket := u.cfg.UploadPath
 	key := filepath.ToSlash(filePath)
 	contentType := http.DetectContentType(data)
 	_, err := svc.PutObject(&s3.PutObjectInput{
 		Body:        bytes.NewReader(data),
 		ContentType: &contentType,
-		Bucket:      &bucket,
+		Bucket:      &u.bucket,
 		Key:         &key,
 	})
 	return err
 }
 
 // Delete deletes the file with the specified key, if it exists.
-func (u S3Driver) Delete(key string) error {
+func (u s3Driver) Delete(key string) error {
 	svc := s3.New(session.New())
 
-	bucket := u.cfg.UploadPath
+	bucket := u.bucket
 	key = filepath.ToSlash(key)
 
 	_, err := svc.DeleteObject(&s3.DeleteObjectInput{
@@ -58,14 +55,13 @@ func (u S3Driver) Delete(key string) error {
 }
 
 // DeleteAll deletes all files with the specified key prefix.
-func (u S3Driver) DeleteAll(keyPrefix string) error {
+func (u s3Driver) DeleteAll(keyPrefix string) error {
 	svc := s3.New(session.New())
 
-	bucket := u.cfg.UploadPath
 	keyPrefix = filepath.ToSlash(keyPrefix)
 
 	listOutput, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: &bucket,
+		Bucket: &u.bucket,
 		Prefix: &keyPrefix,
 	})
 	if err != nil {
@@ -73,7 +69,7 @@ func (u S3Driver) DeleteAll(keyPrefix string) error {
 	}
 	for _, object := range listOutput.Contents {
 		_, err := svc.DeleteObject(&s3.DeleteObjectInput{
-			Bucket: &bucket,
+			Bucket: &u.bucket,
 			Key:    object.Key,
 		})
 		if err != nil {
@@ -84,113 +80,40 @@ func (u S3Driver) DeleteAll(keyPrefix string) error {
 	return nil
 }
 
-// List retrieves information about all uploaded files with the specified key prefix.
-func (u S3Driver) List(keyPrefix string) ([]FileInfo, error) {
+func (u s3Driver) Open(name string) (http.File, error) {
+	// if the path is '/', move along because we'll just get bucket information
+	if name == "/" {
+		return nil, os.ErrNotExist
+	}
+
 	svc := s3.New(session.New())
 
-	var fileInfos []FileInfo
-	bucket := u.cfg.UploadPath
-	prefix := filepath.ToSlash(filepath.Join(keyPrefix, "images"))
+	// Build the GetObject request, passing along conditional GET parameters
+	getReq := s3.GetObjectInput{
+		Bucket: &u.bucket,
+		Key:    &name,
+	}
 
-	listOutput, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{
-		Bucket: &bucket,
-		Prefix: &prefix,
-	})
+	// Make the request and check the error
+	getResp, err := svc.GetObject(&getReq)
 	if err != nil {
-		return fileInfos, err
-	}
-
-	for _, object := range listOutput.Contents {
-		urlSegments := strings.Split(*object.Key, "/")
-		name := urlSegments[len(urlSegments)-1]
-		origURL := "/uploads/" + *object.Key
-
-		thumbKey := strings.Replace(*object.Key, "/images/", "/thumbs/", 1)
-		thumbURL := "/uploads/" + thumbKey
-
-		fileInfo := FileInfo{
-			Name:         name,
-			URL:          origURL,
-			ThumbnailURL: thumbURL,
-		}
-		fileInfos = append(fileInfos, fileInfo)
-	}
-
-	return fileInfos, nil
-}
-
-// HandleS3Uploads returns a handler that serves static files from Amazon S3.
-// If the file does not exist on the S3, a 404 is returned.
-func HandleS3Uploads(bucket string) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		filePath := p.ByName("filepath")
-		// if the path is '/', move along because we'll just get bucket information
-		if filePath == "/" {
-			http.NotFound(resp, req)
-			return
-		}
-
-		svc := s3.New(session.New())
-
-		// Build the GetObject request, passing along conditional GET parameters
-		getReq := s3.GetObjectInput{
-			Bucket: &bucket,
-			Key:    &filePath,
-		}
-		passThroughReqHeaders(&getReq, req.Header)
-
-		// Make the request and check the error
-		getResp, err := svc.GetObject(&getReq)
-		if getResp != nil && getResp.Body != nil {
-			defer getResp.Body.Close()
-		}
-		if err != nil {
-			log.Print(err.Error())
-			if reqerr, ok := err.(awserr.RequestFailure); ok {
-				if reqerr.StatusCode() == http.StatusNotFound {
-					http.Error(resp, reqerr.Message(), http.StatusNotFound)
-					return
-				}
-				if reqerr.StatusCode() != http.StatusNotModified {
-					http.Error(resp, reqerr.Message(), http.StatusInternalServerError)
-					return
-				}
+		log.Print(err.Error())
+		if reqerr, ok := err.(awserr.RequestFailure); ok {
+			if reqerr.StatusCode() == http.StatusNotFound {
+				// TODO: Log original error
+				return nil, os.ErrNotExist
 			}
 		}
+	}
 
-		var readSeeker io.ReadSeeker
-		// If we got content, read it, including associated headers
-		if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
-			readSeeker = newLazyReadSeeker(getResp.Body, *getResp.ContentLength)
-		} else {
-			readSeeker = newLazyReadSeeker(getResp.Body, 0)
-		}
-		passThroughRespHeaders(getResp, resp.Header())
-
-		// Serve up the file to the client
-		http.ServeContent(resp, req, filePath, *getResp.LastModified, readSeeker)
+	var readSeeker io.ReadSeeker
+	// If we got content, read it, including associated headers
+	if getResp.ContentLength != nil && *getResp.ContentLength > 0 {
+		readSeeker = newLazyReadSeeker(getResp.Body, *getResp.ContentLength)
+	} else {
+		readSeeker = newLazyReadSeeker(getResp.Body, 0)
 	}
-}
-
-func passThroughReqHeaders(getReq *s3.GetObjectInput, reqHeader http.Header) {
-	if ifModSince, err := time.Parse(http.TimeFormat, reqHeader.Get("If-Modified-Since")); err == nil {
-		getReq.IfModifiedSince = &ifModSince
-	}
-	if ifNoneMatch := reqHeader.Get("If-None-Match"); ifNoneMatch != "" {
-		getReq.IfNoneMatch = &ifNoneMatch
-	}
-}
-
-func passThroughRespHeaders(getResp *s3.GetObjectOutput, respHeader http.Header) {
-	if getResp.ContentType != nil && *getResp.ContentType != "" {
-		respHeader.Set("Content-Type", *getResp.ContentType)
-	}
-	if getResp.ContentEncoding != nil && *getResp.ContentEncoding != "" {
-		respHeader.Set("Content-Encoding", *getResp.ContentEncoding)
-	}
-	if getResp.ETag != nil && *getResp.ETag != "" {
-		respHeader.Set("ETag", *getResp.ETag)
-	}
+	return s3File{key: name, obj: getResp, ReadSeeker: readSeeker}, nil
 }
 
 // LazyReadSeeker supports on-demand converting an io.Reader into an io.ReadSeeker.
@@ -269,4 +192,59 @@ func (r *lazyReadSeeker) upconvert(seed []byte) {
 	}
 	buffer.Write(remaining)
 	r.readSeeker = bytes.NewReader(buffer.Bytes())
+}
+
+type s3File struct {
+	io.ReadSeeker
+	key string
+	obj *s3.GetObjectOutput
+}
+
+func (f s3File) Close() error {
+	if f.obj.Body != nil {
+		return f.obj.Body.Close()
+	}
+
+	return nil
+}
+
+func (f s3File) Readdir(count int) ([]os.FileInfo, error) {
+	return []os.FileInfo{}, nil
+}
+
+func (f s3File) Stat() (os.FileInfo, error) {
+	return s3FileInfo{obj: f.obj, key: f.key}, nil
+}
+
+type s3FileInfo struct {
+	key string
+	obj *s3.GetObjectOutput
+}
+
+func (f s3FileInfo) Name() string {
+	return f.key
+}
+
+func (f s3FileInfo) Size() int64 {
+	if f.obj.ContentLength == nil {
+		return 0
+	}
+
+	return *f.obj.ContentLength
+}
+
+func (f s3FileInfo) Mode() os.FileMode {
+	return os.ModePerm
+}
+
+func (f s3FileInfo) ModTime() time.Time {
+	return *f.obj.LastModified
+}
+
+func (f s3FileInfo) IsDir() bool {
+	return false
+}
+
+func (f s3FileInfo) Sys() interface{} {
+	return f.obj
 }

@@ -1,28 +1,26 @@
 package upload
 
 import (
-	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
-
-	"github.com/chadweimer/gomp/modules/conf"
 )
 
 // FileSystemDriver is an implementation of Driver that uses the local file system.
-type FileSystemDriver struct {
-	cfg *conf.Config
+type fileSystemDriver struct {
+	rootPath string
+	fs       http.FileSystem
 }
 
 // NewFileSystemDriver constucts a FileSystemDriver.
-func NewFileSystemDriver(cfg *conf.Config) FileSystemDriver {
-	return FileSystemDriver{cfg: cfg}
+func newFileSystemDriver(rootPath string) fileSystemDriver {
+	return fileSystemDriver{rootPath: rootPath, fs: http.Dir(rootPath)}
 }
 
 // Save creates or overrites a file with the provided binary data.
-func (u FileSystemDriver) Save(filePath string, data []byte) error {
+func (u fileSystemDriver) Save(filePath string, data []byte) error {
 	// First prepend the base UploadPath
-	filePath = filepath.Join(u.cfg.UploadPath, filePath)
+	filePath = filepath.Join(u.rootPath, filePath)
 
 	dir := filepath.Dir(filePath)
 	err := os.MkdirAll(dir, os.ModePerm)
@@ -41,57 +39,33 @@ func (u FileSystemDriver) Save(filePath string, data []byte) error {
 }
 
 // Delete deletes the file at the specified path, if it exists.
-func (u FileSystemDriver) Delete(filePath string) error {
+func (u fileSystemDriver) Delete(filePath string) error {
 	// First prepend the base UploadPath
-	filePath = filepath.Join(u.cfg.UploadPath, filePath)
+	filePath = filepath.Join(u.rootPath, filePath)
 
 	return os.Remove(filePath)
 }
 
 // DeleteAll deletes all files at or under the specified directory path.
-func (u FileSystemDriver) DeleteAll(dirPath string) error {
+func (u fileSystemDriver) DeleteAll(dirPath string) error {
 	// First prepend the base UploadPath
-	dirPath = filepath.Join(u.cfg.UploadPath, dirPath)
+	dirPath = filepath.Join(u.rootPath, dirPath)
 
 	return os.RemoveAll(dirPath)
 }
 
-// List retrieves information about all uploaded files under the specified directory.
-func (u FileSystemDriver) List(dirPath string) ([]FileInfo, error) {
-	var fileInfos []FileInfo
-
-	// First prepend the base UploadPath
-	origDirPath := filepath.Join(u.cfg.UploadPath, dirPath, "images")
-	if _, err := os.Stat(origDirPath); os.IsNotExist(err) {
-		return fileInfos, nil
-	}
-
-	files, err := ioutil.ReadDir(origDirPath)
+func (u fileSystemDriver) Open(name string) (http.File, error) {
+	file, err := u.fs.Open(name)
 	if err != nil {
-		return fileInfos, err
+		return nil, err
+	}
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
 	}
 
-	for _, file := range files {
-		if !file.IsDir() {
-			name := file.Name()
-			origPath := filepath.Join(origDirPath, file.Name())
-			thumbPath := filepath.Join(u.cfg.UploadPath, dirPath, "thumbs", file.Name())
-
-			fileInfo := FileInfo{
-				Name: name,
-				URL:  u.convertPathToURL(origPath),
-			}
-			if _, err := os.Stat(thumbPath); err == nil {
-				fileInfo.ThumbnailURL = u.convertPathToURL(thumbPath)
-			}
-			fileInfos = append(fileInfos, fileInfo)
-		}
+	if !stat.IsDir() {
+		return file, nil
 	}
-
-	return fileInfos, nil
-}
-
-func (u FileSystemDriver) convertPathToURL(path string) string {
-	fullFilePath := filepath.Join("/uploads", strings.TrimPrefix(path, u.cfg.UploadPath))
-	return filepath.ToSlash(fullFilePath)
+	return nil, os.ErrNotExist
 }
