@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -52,7 +51,7 @@ func main() {
 	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
 	mainMux.Handler("POST", "/api/*apipath", apiHandler)
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", justFilesFileSystem{http.Dir("static")})
+	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		renderer.HTML(resp, http.StatusOK, "index", nil)
@@ -81,28 +80,4 @@ func main() {
 	// Shutdown the http server and close the database connection
 	srv.Shutdown(ctx)
 	model.TearDown()
-}
-
-type justFilesFileSystem struct {
-	fs http.FileSystem
-}
-
-func (fs justFilesFileSystem) Open(name string) (http.File, error) {
-	name = strings.TrimPrefix(name, "/")
-
-	f, err := fs.fs.Open(name)
-	if err != nil {
-		return nil, err
-	}
-
-	stat, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	if stat.IsDir() {
-		return nil, os.ErrPermission
-	}
-
-	return f, nil
 }
