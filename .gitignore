@@ -7,11 +7,12 @@
 # Folders
 _obj
 _test
-bower_components/
-node_modules/
-build/
-/vendor/
-.glide/
+/client/bower_components/
+/client/node_modules/
+/build/
+/client/build/
+/server/vendor/
+/server/.glide/
 
 # Architecture specific extensions/prefixes
 *.[568vq]

@@ -1,8 +1,9 @@
-BUILD_DIR=build
-VENDOR_DIR=vendor
-NODE_MODULES_DIR=node_modules
-BOWER_COMPONENTS_DIR=static/bower_components
-POLYMER_BUILD_DIR=static/build
+CURRENT_DIR=$(shell pwd)
+BUILD_DIR=$(CURRENT_DIR)/build
+VENDOR_DIR=$(CURRENT_DIR)/server/vendor
+NODE_MODULES_DIR=$(CURRENT_DIR)/client/node_modules
+BOWER_COMPONENTS_DIR=$(CURRENT_DIR)/client/bower_components
+POLYMER_BUILD_DIR=$(CURRENT_DIR)/client/build
 
 .DEFAULT_GOAL := rebuild
 
@@ -14,8 +15,8 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
-	glide --quiet install
-	yarn install --silent
+	cd server && glide --quiet install && cd ../
+	cd client && yarn install --silent && cd ../
 
 .PHONY: uninstall
 uninstall:
@@ -30,17 +31,17 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	cd static && ../$(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled && cd ../
+	cd client && $(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled && cd ../
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
-	GOOS=linux GOARCH=amd64 go clean -i ./...
+	cd server && GOOS=linux GOARCH=amd64 go clean -i ./... && cd ../
 	rm -rf $(BUILD_DIR)/linux/amd64
 	rm -f $(BUILD_DIR)/gomp-linux-amd64.tar.gz
 
 .PHONY: build-linux-amd64
 build-linux-amd64: prebuild
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/linux/amd64/gomp
+	cd server && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/linux/amd64/gomp && cd ../
 	mkdir -p $(BUILD_DIR)/linux/amd64/db && cp -R db/* $(BUILD_DIR)/linux/amd64/db
 	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/static
 	tar -C $(BUILD_DIR)/linux/amd64 -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
