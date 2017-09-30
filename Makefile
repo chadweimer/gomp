@@ -48,28 +48,28 @@ build-linux-amd64: prebuild
 
 .PHONY: clean-linux-armhf
 clean-linux-armhf:
-	GOOS=linux GOARCH=armhf go clean -i ./...
+	cd server && GOOS=linux GOARCH=armhf go clean -i ./... && cd ../
 	rm -rf $(BUILD_DIR)/linux/armhf
 	rm -f $(BUILD_DIR)/gomp-linux-armhf.tar.gz
 
 .PHONY: build-linux-armhf
 build-linux-armhf: prebuild
-	GOOS=linux GOARCH=arm go build -o $(BUILD_DIR)/linux/armhf/gomp
-	mkdir -p $(BUILD_DIR)/linux/armhf/db && cp -R db/* $(BUILD_DIR)/linux/armhf/db
-	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/armhf/static
+	cd server && GOOS=linux GOARCH=arm go build -o $(BUILD_DIR)/linux/armhf/gomp && cd ../
+	mkdir -p $(BUILD_DIR)/linux/armhf/db && cp -R server/db/* $(BUILD_DIR)/linux/armhf/db
+	mkdir -p $(BUILD_DIR)/linux/armhf/client && cp -R client/build/es6-unbundled/* $(BUILD_DIR)/linux/armhf/client
 	tar -C $(BUILD_DIR)/linux/armhf -zcf $(BUILD_DIR)/gomp-linux-armhf.tar.gz .
 
 .PHONY: clean-windows-amd64
 clean-windows-amd64:
-	GOOS=windows GOARCH=amd64 go clean -i ./...
+	cd server && GOOS=windows GOARCH=amd64 go clean -i ./... && cd ../
 	rm -rf $(BUILD_DIR)/windows/amd64
 	rm -f $(BUILD_DIR)/gomp-windows-amd64.zip
 
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
-	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R db/* $(BUILD_DIR)/windows/amd64/db
-	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/static
+	cd server && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp && cd ../
+	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R server/db/* $(BUILD_DIR)/windows/amd64/db
+	mkdir -p $(BUILD_DIR)/windows/amd64/client && cp -R client/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/client
 	cd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd ../../../
 
 .PHONY: docker
