@@ -6,8 +6,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/server/modules/conf"
+	"github.com/chadweimer/gomp/server/modules/upload"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattes/migrate/migrate"
 

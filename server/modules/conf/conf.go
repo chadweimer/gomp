@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/server/modules/upload"
 )
 
 // Config contains the application configuration settings

@@ -42,8 +42,8 @@ clean-linux-amd64:
 .PHONY: build-linux-amd64
 build-linux-amd64: prebuild
 	cd server && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/linux/amd64/gomp && cd ../
-	mkdir -p $(BUILD_DIR)/linux/amd64/db && cp -R db/* $(BUILD_DIR)/linux/amd64/db
-	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/static
+	mkdir -p $(BUILD_DIR)/linux/amd64/db && cp -R server/db/* $(BUILD_DIR)/linux/amd64/db
+	mkdir -p $(BUILD_DIR)/linux/amd64/client && cp -R client/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/client
 	tar -C $(BUILD_DIR)/linux/amd64 -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
 
 .PHONY: clean-linux-armhf
