@@ -5,6 +5,14 @@ import (
 	"net/http"
 )
 
+const (
+	// FileSystemDriver is the name to use for the file system driver
+	FileSystemDriver = "fs"
+
+	// S3Driver is the name to use for the Amazon S3 driver
+	S3Driver = "s3"
+)
+
 // Driver represents an abstraction layer for handling file uploads
 type Driver interface {
 	http.FileSystem
@@ -16,10 +24,10 @@ type Driver interface {
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
 func CreateDriver(driver string, path string) Driver {
 	switch driver {
-	case "fs":
+	case FileSystemDriver:
 		return newFileSystemDriver(path)
-	case "s3":
-		return newS3Driver(path)
+	case S3Driver:
+		return s3Driver{path}
 	}
 
 	log.Fatalf("Invalid UploadDriver '%s' specified", driver)
