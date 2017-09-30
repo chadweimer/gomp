@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -28,24 +27,6 @@ type Recipe struct {
 
 // Recipes represents a collection of Recipe objects
 type Recipes []Recipe
-
-func (m *RecipeModel) migrate(tx *sqlx.Tx) error {
-	if m.Model.currentDbVersion >= 3 && m.Model.previousDbVersion < 3 {
-		recipes := new(Recipes)
-		if err := m.db.Select(recipes, "SELECT id FROM recipe"); err != nil {
-			return err
-		}
-
-		for _, recipe := range *recipes {
-			log.Printf("[migrate] Processing recipe %d", recipe.ID)
-			if err := m.Model.Images.migrateImages(recipe.ID, tx); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
 
 // Create stores the recipe in the database as a new record using
 // a dedicated transation that is committed if there are not errors.

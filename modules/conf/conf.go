@@ -2,12 +2,15 @@ package conf
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/chadweimer/gomp/modules/upload"
 )
 
 // Config contains the application configuration settings
@@ -100,8 +103,8 @@ func (c *Config) Validate() error {
 		return errors.New("PORT must be a positive integer")
 	}
 
-	if c.UploadDriver != "fs" && c.UploadDriver != "s3" {
-		return errors.New("GOMP_UPLOAD_DRIVER must be one of ('fs', 's3')")
+	if c.UploadDriver != upload.FileSystemDriver && c.UploadDriver != upload.S3Driver {
+		return fmt.Errorf("GOMP_UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver)
 	}
 
 	if c.UploadPath == "" {

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/modules/upload"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattes/migrate/migrate"
 
@@ -39,7 +40,7 @@ type Model struct {
 }
 
 // New constructs a new Model object
-func New(cfg *conf.Config) *Model {
+func New(cfg *conf.Config, upl upload.Driver) *Model {
 	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal("Failed to migrate database.", err)
@@ -60,14 +61,9 @@ func New(cfg *conf.Config) *Model {
 	m.Recipes = &RecipeModel{Model: m}
 	m.Tags = &TagModel{Model: m}
 	m.Notes = &NoteModel{Model: m}
-	m.Images = NewRecipeImageModel(m)
+	m.Images = &RecipeImageModel{Model: m, upl: upl}
 	m.Users = &UserModel{Model: m}
 	m.Search = &SearchModel{Model: m}
-
-	err = m.postMigrate()
-	if err != nil {
-		log.Fatal("Failed to run post-migration steps on database.", err)
-	}
 
 	return m
 }
@@ -129,14 +125,4 @@ func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error)
 	}
 
 	return previousDbVersion, newDbVersion, nil
-}
-
-func (m *Model) postMigrate() error {
-	if m.previousDbVersion == m.currentDbVersion {
-		return nil
-	}
-
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.Recipes.migrate(tx)
-	})
 }

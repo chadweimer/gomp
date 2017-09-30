@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -36,42 +35,6 @@ type RecipeImage struct {
 
 // RecipeImages represents a collection of RecipeImage objects
 type RecipeImages []RecipeImage
-
-// NewRecipeImageModel constructs a RecipeImageModel
-func NewRecipeImageModel(model *Model) *RecipeImageModel {
-	var upl upload.Driver
-	if model.cfg.UploadDriver == "fs" {
-		upl = upload.NewFileSystemDriver(model.cfg)
-	} else if model.cfg.UploadDriver == "s3" {
-		upl = upload.NewS3Driver(model.cfg)
-	} else {
-		log.Fatalf("Invalid UploadDriver '%s' specified", model.cfg.UploadDriver)
-	}
-
-	return &RecipeImageModel{Model: model, upl: upl}
-}
-
-func (m *RecipeImageModel) migrateImages(recipeID int64, tx *sqlx.Tx) error {
-	files, err := m.upl.List(getDirPathForRecipe(recipeID))
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		log.Printf("[migrate] Processing file %s", file.URL)
-		image := &RecipeImage{
-			RecipeID:     recipeID,
-			Name:         file.Name,
-			URL:          file.URL,
-			ThumbnailURL: file.ThumbnailURL,
-		}
-		if err := m.createImpl(image, tx); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 // Create saves the image using the backing upload.Driver and creates
 // an associated record in the database using a dedicated transation
