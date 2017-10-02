@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/chadweimer/gomp/server/models"
 	"github.com/chadweimer/gomp/server/conf"
+	"github.com/chadweimer/gomp/server/models"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 )
