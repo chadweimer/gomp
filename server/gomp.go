@@ -13,8 +13,8 @@ import (
 
 	"github.com/chadweimer/gomp/server/api"
 	"github.com/chadweimer/gomp/server/models"
-	"github.com/chadweimer/gomp/server/modules/conf"
-	"github.com/chadweimer/gomp/server/modules/upload"
+	"github.com/chadweimer/gomp/server/conf"
+	"github.com/chadweimer/gomp/server/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
