@@ -70,7 +70,7 @@ build-windows-amd64: prebuild
 	cd server && GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp && cd ../
 	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R server/db/* $(BUILD_DIR)/windows/amd64/db
 	mkdir -p $(BUILD_DIR)/windows/amd64/client && cp -R client/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/client
-	cd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd ../../../
+	cd $(BUILD_DIR)/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd ../../../
 
 .PHONY: docker
 docker: build-linux-amd64 build-linux-armhf

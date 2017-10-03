@@ -1,0 +1,8 @@
+
+vendor/
+.glide/
+
+# Ignore the main build output
+gomp
+gomp.exe
+debug
