@@ -1,8 +1,10 @@
 BUILD_DIR=$(MAKEDIR)\build
-VENDOR_DIR=$(MAKEDIR)\server\vendor
-NODE_MODULES_DIR=$(MAKEDIR)\client\node_modules
-BOWER_COMPONENTS_DIR=$(MAKEDIR)\client\bower_components
-POLYMER_BUILD_DIR=$(MAKEDIR)\client\build
+BACKEND_DIR=$(MAKEDIR)/backend
+FRONTEND_DIR=$(MAKEDIR)/frontend
+VENDOR_DIR=$(BACKEND_DIR)\vendor
+NODE_MODULES_DIR=$(FRONTEND_DIR)\node_modules
+BOWER_COMPONENTS_DIR=$(FRONTEND_DIR)\bower_components
+POLYMER_BUILD_DIR=$(FRONTEND_DIR)\build
 
 .PHONY: rebuild
 rebuild: clean build
@@ -12,8 +14,8 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
-	pushd .\server & glide --quiet install & popd
-	pushd .\client & yarn install --silent & popd
+	pushd $(BACKEND_DIR) & glide --quiet install & popd
+	pushd $(FRONTEND_DIR) & yarn install --silent & popd
 
 .PHONY: uninstall
 uninstall:
@@ -30,13 +32,13 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	pushd .\client & $(NODE_MODULES_DIR)\.bin\polymer build --preset es6-unbundled & popd
+	pushd $(FRONTEND_DIR) & $(NODE_MODULES_DIR)\.bin\polymer build --preset es6-unbundled & popd
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
 	set GOOS=linux
 	set GOARCH=amd64
-	pushd .\server & go clean -i .\... & popd
+	pushd $(BACKEND_DIR) & go clean -i .\... & popd
 	IF EXIST $(BUILD_DIR)\linux\amd64 rd /s /q $(BUILD_DIR)\linux\amd64
 	del $(BUILD_DIR)\gomp-linux-amd64.tar.gz
 
@@ -44,16 +46,16 @@ clean-linux-amd64:
 build-linux-amd64: prebuild
 	set GOOS=linux
 	set GOARCH=amd64
-	pushd .\server & go build -o $(BUILD_DIR)\linux\amd64\gomp & popd
-	xcopy /Q /R /Y /S /E /I server\db $(BUILD_DIR)\linux\amd64\db
-	xcopy /Q /R /Y /S /E /I client\build\es6-unbundled $(BUILD_DIR)\linux\amd64\client
+	pushd $(BACKEND_DIR) & go build -o $(BUILD_DIR)\linux\amd64\gomp & popd
+	xcopy /Q /R /Y /S /E /I $(BACKEND_DIR)\db $(BUILD_DIR)\linux\amd64\db
+	xcopy /Q /R /Y /S /E /I $(FRONTEND_DIR)\build\es6-unbundled $(BUILD_DIR)\linux\amd64\static
 	7z.exe a dummy -ttar -so $(BUILD_DIR)\linux\amd64\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-amd64.tar.gz
 
 .PHONY: clean-linux-armhf
 clean-linux-armhf:
 	set GOOS=linux
 	set GOARCH=arm
-	pushd .\server & go clean -i .\... & popd
+	pushd $(BACKEND_DIR) & go clean -i .\... & popd
 	IF EXIST $(BUILD_DIR)\linux\armhf rd /s /q $(BUILD_DIR)\linux\armhf
 	del $(BUILD_DIR)\gomp-linux-armhf.tar.gz
 
@@ -61,16 +63,16 @@ clean-linux-armhf:
 build-linux-armhf: prebuild
 	set GOOS=linux
 	set GOARCH=arm
-	pushd .\server & go build -o $(BUILD_DIR)\linux\armhf\gomp & popd
-	xcopy /Q /R /Y /S /E /I server\db $(BUILD_DIR)\linux\armhf\db
-	xcopy /Q /R /Y /S /E /I client\build\es6-unbundled $(BUILD_DIR)\linux\armhf\client
+	pushd $(BACKEND_DIR) & go build -o $(BUILD_DIR)\linux\armhf\gomp & popd
+	xcopy /Q /R /Y /S /E /I $(BACKEND_DIR)\db $(BUILD_DIR)\linux\armhf\db
+	xcopy /Q /R /Y /S /E /I $(FRONTEND_DIR)\build\es6-unbundled $(BUILD_DIR)\linux\armhf\static
 	7z.exe a dummy -ttar -so $(BUILD_DIR)\linux\armhf\* | 7z.exe a -tgzip -si $(BUILD_DIR)\gomp-linux-armhf.tar.gz
 
 .PHONY: clean-windows-amd64
 clean-windows-amd64:
 	set GOOS=windows
 	set GOARCH=amd64
-	pushd .\server & go clean -i .\... & popd
+	pushd $(BACKEND_DIR) & go clean -i .\... & popd
 	IF EXIST $(BUILD_DIR)\windows\amd64 rd /s /q $(BUILD_DIR)\windows\amd64
 	del $(BUILD_DIR)\gomp-windows-amd64.zip
 
@@ -78,9 +80,9 @@ clean-windows-amd64:
 build-windows-amd64: prebuild
 	set GOOS=windows
 	set GOARCH=amd64
-	pushd .\server & go build -o $(BUILD_DIR)\windows\amd64\gomp & popd
-	xcopy /Q /R /Y /S /E /I server\db $(BUILD_DIR)\windows\amd64\db
-	xcopy /Q /R /Y /S /E /I client\build\es6-unbundled $(BUILD_DIR)\windows\amd64\client
+	pushd $(BACKEND_DIR) & go build -o $(BUILD_DIR)\windows\amd64\gomp & popd
+	xcopy /Q /R /Y /S /E /I $(BACKEND_DIR)\db $(BUILD_DIR)\windows\amd64\db
+	xcopy /Q /R /Y /S /E /I $(FRONTEND_DIR)\build\es6-unbundled $(BUILD_DIR)\windows\amd64\static
 	7z.exe a -tzip $(BUILD_DIR)\gomp-windows-amd64.zip $(BUILD_DIR)\windows\amd64\*
 
 .PHONY: docker

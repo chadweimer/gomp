@@ -11,10 +11,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/chadweimer/gomp/server/api"
-	"github.com/chadweimer/gomp/server/conf"
-	"github.com/chadweimer/gomp/server/models"
-	"github.com/chadweimer/gomp/server/upload"
+	"github.com/chadweimer/gomp/backend/api"
+	"github.com/chadweimer/gomp/backend/conf"
+	"github.com/chadweimer/gomp/backend/models"
+	"github.com/chadweimer/gomp/backend/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
@@ -30,7 +30,7 @@ func main() {
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
-		Directory:     "client",
+		Directory:     "static",
 
 		Funcs: []template.FuncMap{map[string]interface{}{
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
@@ -51,7 +51,7 @@ func main() {
 	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
 	mainMux.Handler("POST", "/api/*apipath", apiHandler)
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("client")))
+	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		renderer.HTML(resp, http.StatusOK, "index", nil)
