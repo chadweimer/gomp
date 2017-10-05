@@ -206,7 +206,7 @@
                             <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
                         </ul>
                     </div>
-                    <div class="copyright indented">Copyright &copy; 2016 Chad Weimer</div>
+                    <div class="copyright indented">Copyright &copy; 2017 Chad Weimer</div>
                 </footer>
             </app-header-layout>
         </app-drawer-layout>
@@ -226,6 +226,12 @@
             method="GET"
             handle-as="json"
             on-response="_handleGetTagsResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="appSettingsAjax"
+            url="/api/v1/app/settings"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetAppSettingsResponse"></iron-ajax>
     </template>
 
     <script>
@@ -243,14 +249,14 @@
                         notify: true,
                         value: null,
                     },
-                    title: {
-                        type: String,
-                        value: 'Go Meal Planner',
-                    },
-                    homeImage: {
-                        type: String,
-                        value: '',
-                    },
+                    // title: {
+                    //     type: String,
+                    //     value: 'Go Meal Planner',
+                    // },
+                    // homeImage: {
+                    //     type: String,
+                    //     value: '',
+                    // },
                     page: {
                         type: String,
                         reflectToAttribute: true,
@@ -283,6 +289,8 @@
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
                 this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
+
+                this.$.appSettingsAjax.generateRequest();
             }
 
             _onAuthenticated(e) {
@@ -401,6 +409,10 @@
                 }
 
                 this.searchFilters = filters;
+            }
+            _handleGetAppSettingsResponse(e) {
+                this.title = e.detail.response.title;
+                this.homeImage = e.detail.response.home_image_url;
             }
             _searchFiltersChanged(e) {
                 if (this.selectedSearchFilters.tags) {

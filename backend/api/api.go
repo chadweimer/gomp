@@ -39,6 +39,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, model *models.Model) 
 
 	h.apiMux = httprouter.New()
 	h.apiMux.POST("/api/v1/auth", h.postAuthenticate)
+	h.apiMux.GET("/api/v1/app/settings", h.getAppSettings)
 	h.apiMux.GET("/api/v1/recipes", h.requireAuthentication(h.getRecipes))
 	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.postRecipe))
 	h.apiMux.GET("/api/v1/recipes/:recipeID", h.requireAuthentication(h.getRecipe))
