@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/backend/upload"
 	"github.com/disintegration/imaging"
 	"github.com/jmoiron/sqlx"
 	"github.com/rwcarlsen/goexif/exif"

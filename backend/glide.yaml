@@ -1,4 +1,4 @@
-package: github.com/chadweimer/gomp
+package: github.com/chadweimer/gomp/backend
 import:
 - package: github.com/aws/aws-sdk-go
   version: ^1.8.0

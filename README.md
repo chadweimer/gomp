@@ -33,6 +33,26 @@ Valid Values: Any valid port number.
 
 Currently only PostgreSQL is supported.
 
+## Building
+
+### Installing Dependencies
+
+```bash
+make [re]install
+```
+
+### Compiling
+
+```bash
+make [re]build
+```
+
+### Docker Images
+
+```bash
+make docker
+```
+
 ## Credits
 
-See [glide.yaml](glide.yaml) and [static/bower.json](static/bower.json)
+See [package.json](frontend/package.json), [glide.yaml](backend/glide.yaml) and [bower.json](frontend/bower.json)

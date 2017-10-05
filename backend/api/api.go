@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/backend/conf"
+	"github.com/chadweimer/gomp/backend/models"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 )
@@ -39,6 +39,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, model *models.Model) 
 
 	h.apiMux = httprouter.New()
 	h.apiMux.POST("/api/v1/auth", h.postAuthenticate)
+	h.apiMux.GET("/api/v1/app/settings", h.getAppSettings)
 	h.apiMux.GET("/api/v1/recipes", h.requireAuthentication(h.getRecipes))
 	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.postRecipe))
 	h.apiMux.GET("/api/v1/recipes/:recipeID", h.requireAuthentication(h.getRecipe))

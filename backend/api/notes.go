@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/backend/models"
 	"github.com/julienschmidt/httprouter"
 )
 

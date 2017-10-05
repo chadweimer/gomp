@@ -7,11 +7,7 @@
 # Folders
 _obj
 _test
-bower_components/
-node_modules/
-build/
-/vendor/
-.glide/
+/build/
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -36,8 +32,3 @@ docker-compose.yml
 .vscode/
 /.idea/
 .idea/
-
-# Ignore the main build output
-gomp
-gomp.exe
-debug

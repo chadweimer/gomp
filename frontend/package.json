@@ -6,9 +6,9 @@
     "polymer-cli": "^1.0.0"
   },
   "scripts": {
-    "postinstall": "cd static && ../node_modules/.bin/bower install --quiet"
+    "postinstall": "./node_modules/.bin/bower install --quiet"
   },
   "cacheDirectories": [
-    "static/bower_components"
+    "bower_components"
   ]
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -11,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/chadweimer/gomp/api"
-	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/backend/api"
+	"github.com/chadweimer/gomp/backend/conf"
+	"github.com/chadweimer/gomp/backend/models"
+	"github.com/chadweimer/gomp/backend/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
@@ -30,12 +29,6 @@ func main() {
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
-		Directory:     "static",
-
-		Funcs: []template.FuncMap{map[string]interface{}{
-			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-			"HomeImage":        func() string { return cfg.HomeImage },
-		}},
 	})
 
 	n := negroni.New()
@@ -53,8 +46,8 @@ func main() {
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
 	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
-	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		renderer.HTML(resp, http.StatusOK, "index", nil)
+	mainMux.NotFound = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		http.ServeFile(w, req, "static/index.html")
 	})
 	n.UseHandler(mainMux)
 

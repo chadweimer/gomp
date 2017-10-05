@@ -1,8 +1,8 @@
-hash: 4a1daf20190c5e330e69bd9502273e8c3451eab6f8f098c82e75be2e01472371
-updated: 2017-09-16T11:56:30.991492898-07:00
+hash: 86d80d452da24e64516e5a964e53876ff0f6515b9b3b4bcb85e29e88813cc47e
+updated: 2017-10-04T21:10:17.394872395-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 88849eea79e8e48241987b1f0a11a7a0dcbb7716
+  version: b489cce1dd1ada60f519fe0dc70c096379a42214
   subpackages:
   - aws
   - aws/awserr
@@ -36,7 +36,7 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/disintegration/imaging
-  version: a5858022df0e1734a59f973fffe3f87b51c087ed
+  version: c3956f26e8f5f2370428d573648fedc717fbe51e
 - name: github.com/go-ini/ini
   version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
 - name: github.com/jmespath/go-jmespath
