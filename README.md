@@ -55,4 +55,4 @@ make docker
 
 ## Credits
 
-See [package.json](package.json), [glide.yaml](backend/glide.yaml) and [bower.json](frontend/bower.json)
+See [package.json](frontend/package.json), [glide.yaml](backend/glide.yaml) and [bower.json](frontend/bower.json)
