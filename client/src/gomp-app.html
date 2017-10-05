@@ -389,14 +389,16 @@
                 return currentPage === pageToCheck;
             }
             _handleGetTagsResponse(e) {
-                var tags = e.detail.response;
-
                 var filters = [];
                 var tagFilter = {id: 'tags', name: 'Tags', values: []};
                 filters.push(tagFilter);
-                tags.forEach(function(tag) {
-                    tagFilter.values.push({id: tag, name: tag});
-                });
+
+                var tags = e.detail.response;
+                if (tags) {
+                    tags.forEach(function(tag) {
+                        tagFilter.values.push({id: tag, name: tag});
+                    });
+                }
 
                 this.searchFilters = filters;
             }
