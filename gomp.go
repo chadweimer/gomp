@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/api"
+	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
