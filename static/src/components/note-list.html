@@ -61,8 +61,7 @@
             id="noteDialog"
             entry-animation="scale-up-animation"
             exit-animation="fade-out-animation"
-            on-iron-overlay-closed="_noteDialogClosed"
-            with-backdrop>
+            on-iron-overlay-closed="_noteDialogClosed">
             <h2><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h2>
             <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
             <div class="buttons">
