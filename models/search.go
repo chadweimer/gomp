@@ -64,7 +64,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 		search = "%" + filter.Query + "%"
 	}
 	partialStmt := "FROM recipe AS r " +
-		"WHERE (r.name ILIKE ? OR r.Ingredients ILIKE ? OR r.directions ILIKE ? OR EXISTS (SELECT 1 FROM recipe_tag as t WHERE t.recipe_id = r.id AND t.tag ILIKE ?))"
+		"WHERE (r.name ILIKE ? OR r.Ingredients ILIKE ? OR EXISTS (SELECT 1 FROM recipe_step as s WHERE s.recipe_id = r.id AND s.directions ILIKE ?) OR EXISTS (SELECT 1 FROM recipe_tag as t WHERE t.recipe_id = r.id AND t.tag ILIKE ?))"
 	if len(filter.Tags) > 0 {
 		partialStmt += " AND EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))"
 	}
@@ -87,7 +87,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 
 	offset := filter.Count * (filter.Page - 1)
 	selectStmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, (SELECT s.directions FROM recipe_step AS s WHERE s.recipe_id = r.id ORDER BY s.step_number ASC LIMIT 1) as directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
 		partialStmt
 	switch filter.SortBy {
 	case SortRecipeByID:

@@ -6,8 +6,8 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/chadweimer/gomp/modules/conf"
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/conf"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/jmoiron/sqlx"
 	"github.com/mattes/migrate/migrate"
 
@@ -31,12 +31,13 @@ type Model struct {
 	previousDbVersion uint64
 	currentDbVersion  uint64
 
-	Recipes *RecipeModel
-	Tags    *TagModel
-	Notes   *NoteModel
-	Images  *RecipeImageModel
-	Users   *UserModel
-	Search  *SearchModel
+	Recipes     *RecipeModel
+	RecipeSteps *RecipeStepModel
+	Tags        *TagModel
+	Notes       *NoteModel
+	Images      *RecipeImageModel
+	Users       *UserModel
+	Search      *SearchModel
 }
 
 // New constructs a new Model object
@@ -59,6 +60,7 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 		currentDbVersion:  newDbVersion,
 	}
 	m.Recipes = &RecipeModel{Model: m}
+	m.RecipeSteps = &RecipeStepModel{Model: m}
 	m.Tags = &TagModel{Model: m}
 	m.Notes = &NoteModel{Model: m}
 	m.Images = &RecipeImageModel{Model: m, upl: upl}

@@ -1,8 +1,10 @@
-BUILD_DIR=build
-VENDOR_DIR=vendor
-NODE_MODULES_DIR=node_modules
-BOWER_COMPONENTS_DIR=static/bower_components
-POLYMER_BUILD_DIR=static/build
+ROOT_DIR=$(shell pwd)
+BUILD_DIR=$(ROOT_DIR)/build
+VENDOR_DIR=$(ROOT_DIR)/vendor
+NODE_MODULES_DIR=$(ROOT_DIR)/node_modules
+STATIC_DIR=$(ROOT_DIR)/static
+BOWER_COMPONENTS_DIR=$(STATIC_DIR)/bower_components
+POLYMER_BUILD_DIR=$(STATIC_DIR)/build
 
 .DEFAULT_GOAL := rebuild
 
@@ -30,7 +32,7 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	cd static && ../$(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled && cd ../
+	cd $(STATIC_DIR) && $(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled && cd $(ROOT_DIR)
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
@@ -42,7 +44,7 @@ clean-linux-amd64:
 build-linux-amd64: prebuild
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/linux/amd64/gomp
 	mkdir -p $(BUILD_DIR)/linux/amd64/db && cp -R db/* $(BUILD_DIR)/linux/amd64/db
-	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/static
+	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R $(STATIC_DIR)/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/static
 	tar -C $(BUILD_DIR)/linux/amd64 -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
 
 .PHONY: clean-linux-armhf
@@ -55,7 +57,7 @@ clean-linux-armhf:
 build-linux-armhf: prebuild
 	GOOS=linux GOARCH=arm go build -o $(BUILD_DIR)/linux/armhf/gomp
 	mkdir -p $(BUILD_DIR)/linux/armhf/db && cp -R db/* $(BUILD_DIR)/linux/armhf/db
-	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/armhf/static
+	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R $(STATIC_DIR)/build/es6-unbundled/* $(BUILD_DIR)/linux/armhf/static
 	tar -C $(BUILD_DIR)/linux/armhf -zcf $(BUILD_DIR)/gomp-linux-armhf.tar.gz .
 
 .PHONY: clean-windows-amd64
@@ -66,10 +68,10 @@ clean-windows-amd64:
 
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
+	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R db/* $(BUILD_DIR)/windows/amd64/db
-	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/static
-	cd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd ../../../
+	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R $(STATIC_DIR)/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/static
+	cd $(BUILD_DIR)/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip * && cd $(ROOT_DIR)
 
 .PHONY: docker
 docker: build-linux-amd64 build-linux-armhf
