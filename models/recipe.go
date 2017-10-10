@@ -39,11 +39,21 @@ func (m *RecipeModel) Create(recipe *Recipe) error {
 // CreateTx stores the recipe in the database as a new record using
 // the specified transaction.
 func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
-	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, source_url) " +
+		"VALUES ($1, $2, $3, $4, $5) RETURNING id"
 
 	err := tx.Get(recipe, stmt,
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.SourceURL)
+	if err != nil {
+		return err
+	}
+
+	recipeStep := &RecipeStep{
+		RecipeID:   recipe.ID,
+		Number:     1,
+		Directions: recipe.Directions,
+	}
+	err = m.RecipeSteps.CreateTx(recipeStep, tx)
 	if err != nil {
 		return err
 	}
@@ -62,7 +72,7 @@ func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	stmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
 		"FROM recipe AS r WHERE r.id = $1"
 	recipe := new(Recipe)
 	err := m.db.Get(recipe, stmt, id)
@@ -71,6 +81,12 @@ func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	} else if err != nil {
 		return nil, err
 	}
+
+	steps, err := m.RecipeSteps.List(id)
+	if err != nil {
+		return nil, err
+	}
+	recipe.Directions = (*steps)[0].Directions
 
 	tags, err := m.Tags.List(id)
 	if err != nil {
@@ -95,9 +111,24 @@ func (m *RecipeModel) Update(recipe *Recipe) error {
 func (m *RecipeModel) UpdateTx(recipe *Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
-			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6 "+
-			"WHERE id = $7",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL, recipe.ID)
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, source_url = $5 "+
+			"WHERE id = $6",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.SourceURL, recipe.ID)
+	if err != nil {
+		return err
+	}
+
+	// Deleting and recreating seems inefficent. Maybe make this smarter.
+	err = m.RecipeSteps.DeleteAllTx(recipe.ID, tx)
+	if err != nil {
+		return err
+	}
+	recipeStep := &RecipeStep{
+		RecipeID:   recipe.ID,
+		Number:     1,
+		Directions: recipe.Directions,
+	}
+	err = m.RecipeSteps.CreateTx(recipeStep, tx)
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,7 @@ CREATE TABLE recipe_step (
     step_number INTEGER NOT NULL,
     directions TEXT NOT NULL,
     UNIQUE (recipe_id, step_number),
-    FOREIGN KEY(recipe_id) REFERENCES recipe(id)
+    FOREIGN KEY(recipe_id) REFERENCES recipe(id) ON DELETE CASCADE
 );
 CREATE INDEX recipe_step_directions_idx ON recipe_step(directions);
 
