@@ -296,7 +296,7 @@
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
             _patchOverlay(e) {
-                var path = e.path || (e.composedPath && e.composedPath())
+                var path = e.path || (e.composedPath && e.composedPath());
                 if (path) {
                     var overlay = path[0];
                     if (overlay.withBackdrop) {
