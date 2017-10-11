@@ -276,6 +276,7 @@
 
                 this.addEventListener('scroll-top', e => this._scrollToTop(e));
                 this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
+                this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
                 this.addEventListener('recipes-modified', e => this._recipesModified(e));
                 this.addEventListener('change-page', e => this._changePageRequested(e));
                 this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
@@ -291,6 +292,17 @@
             }
             _jwtTokenChanged(jwtToken) {
                 this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken};
+            }
+
+            // https://github.com/PolymerElements/paper-dialog/issues/7
+            _patchOverlay(e) {
+                var path = e.path || (e.composedPath && e.composedPath())
+                if (path) {
+                    var overlay = path[0];
+                    if (overlay.withBackdrop) {
+                        overlay.parentNode.insertBefore(overlay.backdropElement, overlay);
+                    }
+                }
             }
 
             _isLoading(loadingCount) {

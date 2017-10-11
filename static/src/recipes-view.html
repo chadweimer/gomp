@@ -114,7 +114,7 @@
                     on-recipe-edit-save="_editSaved"></recipe-edit>
             </div>
         </div>
-        <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]">
+        <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]" with-backdrop>
             <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
             <paper-fab-speed-dial-action class="red" icon="icons:delete" on-tap="_deleteButtonTapped">Delete</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="amber" icon="icons:create" on-tap="_editButtonTapped">Edit</paper-fab-speed-dial-action>
