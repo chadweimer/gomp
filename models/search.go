@@ -56,82 +56,59 @@ type TagsFilter struct {
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error) {
-	var total int64
-	var err error
-
-	fromStmt := "FROM recipe AS r"
-
-	queryStmt := ""
-	queryArgs := make([]interface{}, 0)
-	if filter.Query != "" {
-		var err error
-		queryStmt, queryArgs, err = sqlx.In("to_tsvector('english', r.name || ' ' || r.ingredients || ' ' || r.directions) @@ plainto_tsquery(?)", filter.Query)
-		if err != nil {
-			return nil, 0, err
-		}
-	}
-
-	tagsStmt := ""
-	tagsArgs := make([]interface{}, 0)
-	if len(filter.Tags) > 0 {
-		tagsStmt, tagsArgs, err = sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", filter.Tags)
-		if err != nil {
-			return nil, 0, err
-		}
-	}
-
 	whereStmt := ""
-	whereArgs := append(queryArgs, tagsArgs...)
-	if queryStmt != "" {
-		whereStmt += " WHERE " + queryStmt
-	}
-	if tagsStmt != "" {
-		if whereStmt == "" {
-			whereStmt += " WHERE " + tagsStmt
-		} else {
-			whereStmt += " AND " + tagsStmt
-		}
+	whereArgs := make([]interface{}, 0)
+
+	if filter.Query != "" {
+		whereStmt += " WHERE to_tsvector('english', r.name || ' ' || r.ingredients || ' ' || r.directions) @@ plainto_tsquery(?)"
+		whereArgs = append(whereArgs, filter.Query)
 	}
 
-	countStmt := m.db.Rebind("SELECT count(r.id) " + fromStmt + whereStmt)
+	if len(filter.Tags) > 0 {
+		tagsStmt, tagsArgs, err := sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", filter.Tags)
+		if err != nil {
+			return nil, 0, err
+		}
+		if whereStmt == "" {
+			whereStmt += " WHERE "
+		} else {
+			whereStmt += " AND "
+		}
+		whereStmt += tagsStmt
+		whereArgs = append(whereArgs, tagsArgs...)
+	}
+
+	var total int64
+	countStmt := m.db.Rebind("SELECT count(r.id) FROM recipe AS r" + whereStmt)
 	if err := m.db.Get(&total, countStmt, whereArgs...); err != nil {
 		return nil, 0, err
 	}
 
 	offset := filter.Count * (filter.Page - 1)
 
-	var orderStmt string
-	var orderArgs []interface{}
+	orderStmt := " ORDER BY "
 	switch filter.SortBy {
 	case SortRecipeByID:
-		orderStmt += " ORDER BY r.id"
+		orderStmt += "r.id"
 	case SortRecipeByRating:
-		orderStmt += " ORDER BY avg_rating"
+		orderStmt += "avg_rating"
 	case SortByRandom:
-		orderStmt += " ORDER BY RANDOM()"
+		orderStmt += "RANDOM()"
 	case SortRecipeByName:
 		fallthrough
 	default:
-		orderStmt += " ORDER BY r.name"
+		orderStmt += "r.name"
 	}
-	switch filter.SortDir {
-	case SortDirDesc:
+	if filter.SortDir == SortDirDesc {
 		orderStmt += " DESC"
-	case SortDirAsc:
-		fallthrough
-	default:
-		orderStmt += " ASC"
 	}
 	orderStmt += " LIMIT ? OFFSET ?"
-	orderStmt, orderArgs, err = sqlx.In(orderStmt, filter.Count, offset)
-	if err != nil {
-		return nil, 0, err
-	}
 
 	selectStmt := m.db.Rebind("SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
-		fromStmt + whereStmt + orderStmt)
-	selectArgs := append(whereArgs, orderArgs...)
+		"FROM recipe AS r" +
+		whereStmt + orderStmt)
+	selectArgs := append(whereArgs, filter.Count, offset)
 	rows, err := m.db.Query(selectStmt, selectArgs...)
 	if err != nil {
 		return nil, 0, err
@@ -143,7 +120,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 		recipe := Recipe{
 			MainImage: RecipeImage{},
 		}
-		err = rows.Scan(
+		err := rows.Scan(
 			&recipe.ID,
 			&recipe.Name,
 			&recipe.ServingSize,
@@ -167,21 +144,23 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 
 // FindTags retrieves all tags matching the specified search filter and within the range specified.
 func (m *SearchModel) FindTags(filter TagsFilter) (*[]string, error) {
-	selectStmt := "SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag"
+	selectStmt := "SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY "
 	switch filter.SortBy {
-	case SortTagByText:
-		selectStmt += " ORDER BY tag"
 	case SortTagByFrequency:
-		selectStmt += " ORDER BY dups"
+		selectStmt += "dups"
 	case SortByRandom:
-		selectStmt += " ORDER BY RANDOM()"
+		selectStmt += "RANDOM()"
+	case SortTagByText:
+		fallthrough
+	default:
+		selectStmt += "tag"
 	}
 	if filter.SortDir == SortDirDesc {
 		selectStmt += " DESC"
 	}
-	selectStmt += " LIMIT $1"
-	rows, err := m.db.Query(
-		selectStmt, filter.Count)
+	selectStmt += " LIMIT ?"
+	selectStmt = m.db.Rebind(selectStmt)
+	rows, err := m.db.Query(selectStmt, filter.Count)
 	if err != nil {
 		return nil, err
 	}
