@@ -34,8 +34,11 @@
             paper-divider {
                 width: 100%;
             }
-            #addDialog h2 {
+            #addDialog h3 {
                 color: var(--paper-teal-500);
+            }
+            #addDialog h3 > span {
+                padding-left: 0.25em;
             }
             #confirmMainImageDialog {
                 --confirmation-dialog-title-color: var(--paper-blue-500);
@@ -87,7 +90,7 @@
             exit-animation="fade-out-animation"
             on-iron-overlay-closed="_addDialogClosed"
             with-backdrop>
-            <h2><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h2>
+            <h3><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
             <p>Browse for a picture to upload to this recipe.<p>
             <form id="addForm" enctype="multipart/form-data">
                 <input is="paper-input" name="file_content" type="file" required></input>
@@ -98,10 +101,10 @@
             </form>
         </paper-dialog>
         <paper-dialog id="uploadingDialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <h2>
+            <h3>
                 <paper-spinner active></paper-spinner>
                 Uploading
-            </h2>
+            </h3>
         </paper-dialog>
 
         <confirmation-dialog

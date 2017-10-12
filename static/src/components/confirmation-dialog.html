@@ -17,13 +17,16 @@
             :host[hidden] {
                 display: none !important;
             }
-            h2 {
+            h3 {
                 color: var(--confirmation-dialog-title-color, --paper-blue-500);
+            }
+            h3 > span {
+                padding-left: 0.25em;
             }
         </style>
 
         <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
-            <h2><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h2>
+            <h3><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h3>
             <p>[[message]]</p>
             <div class="buttons">
                 <paper-button on-tap="_onDismissButtonTapped" dialog-dismiss>No</paper-button>
