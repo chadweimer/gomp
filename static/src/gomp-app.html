@@ -226,6 +226,13 @@
             method="GET"
             handle-as="json"
             on-response="_handleGetTagsResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="userSettingsAjax"
+            url="/api/v1/users/current/settings"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetUserSettingsResponse"></iron-ajax>
     </template>
 
     <script>
@@ -339,6 +346,7 @@
             _pageChanged(page) {
                 if (this._verifyIsAuthenticated()) {
                     this.$.tagsAjax.generateRequest();
+                    this.$.userSettingsAjax.generateRequest();
                 }
 
                 // Load page import on demand. Show 404 page if fails
@@ -411,6 +419,12 @@
                 });
 
                 this.searchFilters = filters;
+            }
+            _handleGetUserSettingsResponse(e) {
+                var userSettings = e.detail.response;
+
+                this.title = userSettings.homeTitle;
+                this.homeImage = userSettings.homeImageUrl;
             }
             _searchFiltersChanged(e) {
                 if (this.selectedSearchFilters.tags) {

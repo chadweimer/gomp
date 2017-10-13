@@ -55,6 +55,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, model *models.Model) 
 	h.apiMux.PUT("/api/v1/notes/:noteID", h.requireAuthentication(h.putNote))
 	h.apiMux.DELETE("/api/v1/notes/:noteID", h.requireAuthentication(h.deleteNote))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
+	h.apiMux.GET("/api/v1/users/:userID/settings", h.requireAuthentication(h.getUserSettings))
 	h.apiMux.NotFound = http.HandlerFunc(h.notFound)
 
 	return &h
