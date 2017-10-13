@@ -90,9 +90,8 @@ func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p htt
 	}
 
 	// Generate a unique name for the image
-	uuid := uuid.NewV4()
 	imageExt := filepath.Ext(fileHeader.Filename)
-	imageName := uuid.String() + imageExt
+	imageName := uuid.NewV4().String() + imageExt
 
 	imageInfo := &models.RecipeImage{
 		RecipeID: recipeID,
