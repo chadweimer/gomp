@@ -99,7 +99,7 @@ docker-linux-armhf: build-linux-armhf
 	docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
 
 .PHONY: docker
-docker: build-linux-amd64 build-linux-armhf
+docker: docker-linux-amd64 docker-linux-armhf
 
 .PHONY: archive
 archive:

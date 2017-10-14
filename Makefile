@@ -46,6 +46,9 @@ build-linux-amd64: prebuild
 	mkdir -p $(BUILD_DIR)/linux/amd64/db && cp -R db/* $(BUILD_DIR)/linux/amd64/db
 	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/static
 
+.PHONY: rebuild-linux-amd64
+rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
+
 .PHONY: clean-linux-armhf
 clean-linux-armhf: preclean
 	GOOS=linux GOARCH=armhf go clean -i ./...
@@ -56,6 +59,9 @@ build-linux-armhf: prebuild
 	GOOS=linux GOARCH=arm go build -o $(BUILD_DIR)/linux/armhf/gomp
 	mkdir -p $(BUILD_DIR)/linux/armhf/db && cp -R db/* $(BUILD_DIR)/linux/armhf/db
 	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/armhf/static
+
+.PHONY: rebuild-linux-armhf
+rebuild-linux-armhf: clean-linux-armhf build-linux-armhf
 
 .PHONY: clean-windows-amd64
 clean-windows-amd64: preclean
@@ -68,6 +74,9 @@ build-windows-amd64: prebuild
 	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R db/* $(BUILD_DIR)/windows/amd64/db
 	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/static
 
+.PHONY: rebuild-windows-amd64
+rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64
+
 .PHONY: docker-linux-amd64
 docker-linux-amd64: build-linux-amd64
 	docker build -t cwmr/gomp:latest .
@@ -78,7 +87,7 @@ docker-linux-armhf: build-linux-armhf
 	docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
 
 .PHONY: docker
-docker: build-linux-amd64 build-linux-armhf
+docker: docker-linux-amd64 docker-linux-armhf
 
 .PHONY: archive
 archive:

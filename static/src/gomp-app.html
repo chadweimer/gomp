@@ -119,6 +119,7 @@
                     <paper-drawer-icon-item icon="icons:home" on-tap="_onHomeTapped">Home</paper-drawer-icon-item>
                     <paper-drawer-icon-item icon="icons:view-list" on-tap="_onRecipesTapped">Recipes</paper-drawer-icon-item>
                     <paper-drawer-divider></paper-drawer-divider>
+                    <paper-drawer-icon-item icon="icons:settings" on-tap="_onSettingsTapped">Settings</paper-drawer-icon-item>
                     <paper-drawer-icon-item icon="icons:exit-to-app" on-tap="_onLogoutTapped">Logout</paper-drawer-icon-item>
                 </paper-drawer>
             </app-drawer>
@@ -186,6 +187,11 @@
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'create')]]"></create-view>
 
+						<settings-view
+							name="settings"
+							jwt-token="[[jwtToken]]"
+							is-active="[[_isActive(page, 'settings')]]"></settings-view>
+
                         <login-view
                             name="login"
                             jwt-token="[[jwtToken]]"
@@ -201,6 +207,7 @@
                         <ul>
                             <li><a href="/home">Home</a></li>
                             <li><a href="/search">Recipes</a></li>
+                            <li><a href="/settings">Settings</a></li>
                             <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
                         </ul>
                     </div>
@@ -356,6 +363,9 @@
             }
             _onRecipesTapped(e) {
                 this._changeRoute('/search');
+            }
+            _onSettingsTapped(e) {
+                this._changeRoute('/settings');
             }
             _onLogoutTapped(e) {
                 e.preventDefault();

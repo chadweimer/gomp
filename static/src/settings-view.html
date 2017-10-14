@@ -1,0 +1,94 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="mixins/gomp-core-mixin.html">
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="settings-view">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+            section {
+                padding: 8px;
+            }
+            header {
+                text-align: center;
+            }
+            img.responsive {
+                max-width: 100%;
+                height: auto;
+            }
+            paper-fab.green {
+                --paper-fab-background: var(--paper-green-500);
+                --paper-fab-keyboard-focus-background: var(--paper-green-900);
+                position: fixed;
+                bottom: 16px;
+                right: 16px;
+            }
+        </style>
+        <section>
+            <header>
+                <h1 hidden$="[[!title]]">[[title]]</h1>
+                <img alt="Home Image" class="responsive" hidden$="[[!image]]" src="[[image]]"/>
+            </header>
+        </section>
+
+        <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+
+        <iron-ajax bubbles
+            id="userSettingsAjax"
+            url="/api/v1/users/current/settings"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetUserSettingsResponse"></iron-ajax>
+    </template>
+
+    <script>
+        class SettingsView extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+            static get is() { return 'settings-view'; }
+            static get properties() {
+                return {
+                    title: {
+                        type: String,
+                        notify: true,
+                    },
+                    image: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
+
+            ready() {
+                super.ready();
+
+                if (this.isActive) {
+                    this._refresh();
+                }
+            }
+
+            _isActiveChanged(isActive) {
+                if (isActive && this.isReady) {
+                    this._refresh();
+                }
+            }
+            _handleGetUserSettingsResponse(e) {
+                var userSettings = e.detail.response;
+
+                this.title = userSettings.homeTitle;
+                this.image = userSettings.homeImageUrl;
+            }
+
+            _refresh() {
+                this.$.userSettingsAjax.generateRequest();
+            }
+        }
+
+        window.customElements.define(SettingsView.is, SettingsView);
+    </script>
+</dom-module>
