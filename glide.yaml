@@ -73,3 +73,5 @@ import:
   - tiff/lzw
 - package: github.com/unrolled/render
   version: master
+- package: github.com/satori/go.uuid
+  version: ^1.1.0

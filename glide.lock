@@ -1,8 +1,8 @@
-hash: 4a1daf20190c5e330e69bd9502273e8c3451eab6f8f098c82e75be2e01472371
-updated: 2017-09-16T11:56:30.991492898-07:00
+hash: 1391043ca8e51ef1d5c419db730317f3eacfca1584b55cdc4edb4f9d6bfd8ad4
+updated: 2017-10-12T11:33:19.7393498-07:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: 88849eea79e8e48241987b1f0a11a7a0dcbb7716
+  version: 64850c09d35fc1dc005ca76c13fed9382e34e7e3
   subpackages:
   - aws
   - aws/awserr
@@ -36,19 +36,19 @@ imports:
 - name: github.com/dgrijalva/jwt-go
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/disintegration/imaging
-  version: a5858022df0e1734a59f973fffe3f87b51c087ed
+  version: b085d8f4ea6f229d5fe9c273aa008c3e39b4e324
 - name: github.com/go-ini/ini
   version: 2ba15ac2dc9cdf88c110ec2dc0ced7fa45f5678c
 - name: github.com/jmespath/go-jmespath
   version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
 - name: github.com/jmoiron/sqlx
-  version: 8ed836a8adb659e8492bcaa49e0880bb84075fe2
+  version: d9bd385d68c068f1fabb5057e3dedcbcbb039d0f
   subpackages:
   - reflectx
 - name: github.com/julienschmidt/httprouter
-  version: 8a45e95fc75cb77048068a62daed98cc22fdac7c
+  version: 975b5c4c7c21c0e3d2764200bf2aa8e34657ae6e
 - name: github.com/lib/pq
-  version: 472a0745531a17dbac346e828b4c60e73ddff30c
+  version: b77235e3890a962fe8a6f8c4c7198679ca7814e7
   subpackages:
   - oid
 - name: github.com/mattes/migrate
@@ -65,17 +65,19 @@ imports:
   subpackages:
   - exif
   - tiff
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/unrolled/render
-  version: a0ec58421ddf111bd7efd3b7087399ca7d5da2f1
+  version: 32bf1ea2a39e4e796d9040b5cf235258cee978c1
 - name: github.com/urfave/negroni
-  version: c0db5feaa33826cd5117930c8f4ee5c0f565eec6
+  version: ccc4a14984828dcb944e6f17fa4a967b18624f2b
 - name: golang.org/x/crypto
-  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
+  version: 847319b7fc94cab682988f93da778204da164588
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/image
-  version: c0851fbc5b9272dd7d08a021e9e3d2a21027b51f
+  version: e20db36d77bd0cb36cea8fe49d5c37d82d21591f
   subpackages:
   - bmp
   - tiff

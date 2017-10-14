@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -87,9 +89,13 @@ func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p htt
 		return
 	}
 
+	// Generate a unique name for the image
+	imageExt := filepath.Ext(fileHeader.Filename)
+	imageName := uuid.NewV4().String() + imageExt
+
 	imageInfo := &models.RecipeImage{
 		RecipeID: recipeID,
-		Name:     fileHeader.Filename,
+		Name:     imageName,
 	}
 	err = h.model.Images.Create(imageInfo, uploadedFileData)
 	if err != nil {
