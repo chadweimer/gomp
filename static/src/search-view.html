@@ -8,6 +8,9 @@
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-drawer/paper-drawer.html">
+<link rel="import" href="../bower_components/paper-drawer/paper-drawer-divider.html">
+<link rel="import" href="../bower_components/paper-drawer/paper-drawer-subheader.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
@@ -115,33 +118,35 @@
 
         <app-drawer-layout force-narrow>
             <app-drawer id="settingsDrawer" align="right" slot="drawer">
-                <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
-                <app-toolbar></app-toolbar>
+                <paper-drawer>
+                    <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
+                    <app-toolbar></app-toolbar>
 
-                <paper-listbox>
-                    <paper-item class="menu-trigger">View</paper-item>
+                    <paper-drawer-subheader>View</paper-drawer-subheader>
                     <paper-listbox class="menu-content" selected="[[viewMode]]" attr-for-selected="name" fallback-selection="full">
                         <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
                         <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                     </paper-listbox>
-                    <paper-item class="menu-trigger">Sort</paper-item>
+                    <paper-drawer-divider></paper-drawer-divider>
+                    <paper-drawer-subheader>Sort</paper-drawer-subheader>
                     <paper-listbox class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
                         <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
                         <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
                         <paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
                     </paper-listbox>
-                    <paper-item class="menu-trigger">Order</paper-item>
-                    <paper-listbox class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="name">
+                    <paper-drawer-divider></paper-drawer-divider>
+                    <paper-drawer-subheader>Order</paper-drawer-subheader>
+                    <paper-listbox class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="asc">
                         <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
                         <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
                     </paper-listbox>
-                </paper-listbox>
+                </paper-drawer>
             </app-drawer>
 
             <div class="section">
                 <div>
                     <span>[[totalRecipeCount]] results</span>
-                    <iron-icon id="settingsIcon" icon="icons:settings" drawer-toggle></iron-icon>
+                    <iron-icon id="settingsIcon" icon="icons:sort" drawer-toggle></iron-icon>
                 </div>
                 <div class="pagination">
                     <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
