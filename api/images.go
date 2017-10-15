@@ -69,7 +69,7 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 
 	resp.WriteHeader(http.StatusNoContent)
 }
-func (h apiHandler) postImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.JSON(resp, http.StatusBadRequest, err.Error())

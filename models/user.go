@@ -1,6 +1,9 @@
 package models
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/jmoiron/sqlx"
+	"golang.org/x/crypto/bcrypt"
+)
 
 // UserModel provides functionality to edit and authenticate users.
 type UserModel struct {
@@ -56,4 +59,26 @@ func (m *UserModel) ReadSettings(id int64) (*UserSettings, error) {
 	}
 
 	return userSettings, nil
+}
+
+// UpdateSettings stores the specified user settings in the database by updating the
+// existing record using a dedicated transation that is committed if there are not errors.
+func (m *UserModel) UpdateSettings(settings *UserSettings) error {
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.UpdateSettingsTx(settings, tx)
+	})
+}
+
+// UpdateSettingsTx stores the specified user settings in the database by updating the
+// existing record using the specified transaction.
+func (m *UserModel) UpdateSettingsTx(settings *UserSettings, tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		"UPDATE app_user_settings "+
+			"SET home_title = $1, home_image_url = $2 WHERE user_id = $3",
+		settings.HomeTitle, settings.HomeImageURL, settings.UserID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

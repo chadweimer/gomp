@@ -1,6 +1,13 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 
 <link rel="import" href="mixins/gomp-core-mixin.html">
 
@@ -11,15 +18,17 @@
         <style include="shared-styles">
             :host {
                 display: block;
+
+                --paper-card: {
+                    width: 100%;
+                }
             }
-            section {
-                padding: 8px;
-            }
-            header {
-                text-align: center;
+            .container {
+                padding: 10px;
             }
             img.responsive {
                 max-width: 100%;
+                max-height: 20em;
                 height: auto;
             }
             paper-fab.green {
@@ -29,23 +38,73 @@
                 bottom: 16px;
                 right: 16px;
             }
+            @media screen and (min-width: 993px) {
+                .container {
+                    width: 50%;
+                    margin: auto;
+                }
+            }
+            @media screen and (min-width: 601px) and (max-width: 992px) {
+                .container {
+                    width: 75%;
+                    margin: auto;
+                }
+            }
+            @media screen and (max-width: 600px) {
+            }
         </style>
-        <section>
-            <header>
-                <h1 hidden$="[[!title]]">[[title]]</h1>
-                <img alt="Home Image" class="responsive" hidden$="[[!image]]" src="[[image]]"/>
-            </header>
-        </section>
+        <div class="container">
+            <paper-card>
+                <div class="card-content">
+                    <h3>Home Settings</h3>
+                    <paper-input label="Title" always-float-label value="{{homeTitle}}">
+                        <paper-icon-button slot="suffix" icon="icons:save" on-tap="_saveButtonTapped"></paper-icon-button>
+                    </paper-input>
+                    <form id="homeImageForm" enctype="multipart/form-data">
+                        <paper-input-container always-float-label>
+                            <label slot="label">Image</label>
+                            <iron-input slot="input">
+                                <input id="homeImageFile" name="file_content" type="file"></input>
+                            </iron-input>
+                            <paper-icon-button slot="suffix" icon="icons:file-upload" on-tap="_uploadButtonTapped"></paper-icon-button>
+                          </paper-input-container>
+                    </form>
+                    <img alt="Home Image" src="[[homeImageUrl]]" class="responsive" hidden$="[[!homeImageUrl]]">
+                </div>
+            </paper-card>
+        </div>
+        <paper-dialog id="uploadingDialog" with-backdrop>
+            <h3>
+                <paper-spinner active></paper-spinner>
+                Uploading
+            </h3>
+        </paper-dialog>
 
         <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
         <iron-ajax bubbles
-            id="userSettingsAjax"
+            id="getAjax"
             url="/api/v1/users/current/settings"
             headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
-            on-response="_handleGetUserSettingsResponse"></iron-ajax>
+            on-response="_handleGetResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="putAjax"
+            url="/api/v1/users/current/settings"
+            headers="[[ajaxHeaders]]"
+            method="PUT"
+            handle-as="json"
+            on-response="_handlePutResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="postImageAjax"
+            url="/api/v1/uploads"
+            method="POST"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handlePostImageRequest"
+            on-response="_handlePostImageResponse",
+            on-error="_handlePostImageError"></iron-ajax>
     </template>
 
     <script>
@@ -53,11 +112,11 @@
             static get is() { return 'settings-view'; }
             static get properties() {
                 return {
-                    title: {
+                    homeTitle: {
                         type: String,
                         notify: true,
                     },
-                    image: {
+                    homeImageUrl: {
                         type: String,
                         notify: true,
                     },
@@ -72,20 +131,60 @@
                 }
             }
 
+            _saveButtonTapped(e) {
+                e.preventDefault();
+
+                this.$.putAjax.body = JSON.stringify({
+                    "homeTitle": this.homeTitle,
+                    "homeImageUrl": this.homeImageUrl,
+                });
+                this.$.putAjax.generateRequest();
+            }
+            _uploadButtonTapped(e) {
+                e.preventDefault();
+
+                this.$.postImageAjax.body = new FormData(this.$.homeImageForm);
+                this.$.postImageAjax.generateRequest();
+            }
+
             _isActiveChanged(isActive) {
+                this.$.homeImageFile.value = null;
                 if (isActive && this.isReady) {
                     this._refresh();
                 }
             }
-            _handleGetUserSettingsResponse(e) {
+            _handleGetResponse(e) {
                 var userSettings = e.detail.response;
 
-                this.title = userSettings.homeTitle;
-                this.image = userSettings.homeImageUrl;
+                this.homeTitle = userSettings.homeTitle;
+                this.homeImageUrl = userSettings.homeImageUrl;
+            }
+            _handlePutResponse(e) {
+                this._refresh();
+                this.showToast('Settings changed.');
+            }
+            _handlePostImageRequest(e) {
+                this.$.uploadingDialog.open();
+            }
+            _handlePostImageResponse(e, req) {
+                this.$.uploadingDialog.close();
+                this.$.homeImageFile.value = null;
+                this.showToast('Upload complete.');
+
+                var location = req.xhr.getResponseHeader("Location");
+                this.$.putAjax.body = JSON.stringify({
+                    "homeTitle": this.homeTitle,
+                    "homeImageUrl": location,
+                });
+                this.$.putAjax.generateRequest();
+            }
+            _handlePostImageError(e) {
+                this.$.uploadingDialog.close();
+                this.showToast('Upload failed!');
             }
 
             _refresh() {
-                this.$.userSettingsAjax.generateRequest();
+                this.$.getAjax.generateRequest();
             }
         }
 

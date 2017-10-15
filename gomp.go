@@ -44,7 +44,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, model)
+	apiHandler := api.NewHandler(renderer, cfg, upl, model)
 
 	mainMux := httprouter.New()
 	mainMux.Handler("GET", "/api/*apipath", apiHandler)
