@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-icon-button.html">
@@ -7,6 +8,7 @@
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-password-input/paper-password-input.html">
 <link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 
 <link rel="import" href="mixins/gomp-core-mixin.html">
@@ -38,6 +40,9 @@
                 bottom: 16px;
                 right: 16px;
             }
+            paper-button > span {
+                margin-left: 0.5em;
+            }
             @media screen and (min-width: 993px) {
                 .container {
                     width: 50%;
@@ -53,6 +58,23 @@
             @media screen and (max-width: 600px) {
             }
         </style>
+        <div class="container">
+            <paper-card>
+                <div class="card-content">
+                    <h3>Security Settings</h3>
+                    <paper-input label="Username" value="[[username]]" always-float-label readonly></paper-input>
+                    <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label></paper-password-input>
+                    <paper-password-input label="New Password" value="{{newPassword}}" always-float-label></paper-password-input>
+                    <paper-password-input label="Repeat New Password" value="{{repeatPassword}}" always-float-label></paper-password-input>
+                </div>
+                <div class="card-actions">
+                    <paper-button on-tap="_updatePasswordTapped">
+                        <iron-icon icon="icons:lock-outline"></iron-icon>
+                        <span>Update Password</span>
+                    <paper-button>
+                </div>
+            </paper-card>
+        </div>
         <div class="container">
             <paper-card>
                 <div class="card-content">
@@ -83,19 +105,35 @@
         <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
         <iron-ajax bubbles
-            id="getAjax"
+            id="getUserAjax"
+            url="/api/v1/users/current"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetUserResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="putPasswordAjax"
+            url="/api/v1/users/current/password"
+            headers="[[ajaxHeaders]]"
+            method="PUT"
+            handle-as="json"
+            on-response="_handlePutPasswordResponse",
+            on-error="_handlePutPasswordError"></iron-ajax>
+        <iron-ajax bubbles
+            id="getSettingsAjax"
             url="/api/v1/users/current/settings"
             headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
-            on-response="_handleGetResponse"></iron-ajax>
+            on-response="_handleGetSettingsResponse"></iron-ajax>
         <iron-ajax bubbles
-            id="putAjax"
+            id="putSettingsAjax"
             url="/api/v1/users/current/settings"
             headers="[[ajaxHeaders]]"
             method="PUT"
             handle-as="json"
-            on-response="_handlePutResponse"></iron-ajax>
+            on-response="_handlePutSettingsResponse",
+            on-error="_handlePutSettingsError"></iron-ajax>
         <iron-ajax bubbles
             id="postImageAjax"
             url="/api/v1/uploads"
@@ -110,18 +148,6 @@
     <script>
         class SettingsView extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
             static get is() { return 'settings-view'; }
-            static get properties() {
-                return {
-                    homeTitle: {
-                        type: String,
-                        notify: true,
-                    },
-                    homeImageUrl: {
-                        type: String,
-                        notify: true,
-                    },
-                };
-            }
 
             ready() {
                 super.ready();
@@ -131,14 +157,28 @@
                 }
             }
 
+            _updatePasswordTapped(e) {
+                e.preventDefault();
+
+                if (this.newPassword != this.repeatPassword) {
+                    this.showToast('Passwords don\'t match.');
+                    return
+                }
+
+                this.$.putPasswordAjax.body = JSON.stringify({
+                    "currentPassword": this.currentPassword,
+                    "newPassword": this.newPassword
+                });
+                this.$.putPasswordAjax.generateRequest();
+            }
             _saveButtonTapped(e) {
                 e.preventDefault();
 
-                this.$.putAjax.body = JSON.stringify({
+                this.$.putSettingsAjax.body = JSON.stringify({
                     "homeTitle": this.homeTitle,
                     "homeImageUrl": this.homeImageUrl,
                 });
-                this.$.putAjax.generateRequest();
+                this.$.putSettingsAjax.generateRequest();
             }
             _uploadButtonTapped(e) {
                 e.preventDefault();
@@ -149,19 +189,38 @@
 
             _isActiveChanged(isActive) {
                 this.$.homeImageFile.value = null;
+                this.currentPassword = null;
+                this.newPassword = null;
+                this.repeatPassword = null;
+                
                 if (isActive && this.isReady) {
                     this._refresh();
                 }
             }
-            _handleGetResponse(e) {
+            
+            _handleGetUserResponse(e) {
+                var user = e.detail.response;
+
+                this.username = user.username;
+            }
+            _handlePutPasswordResponse(e) {
+                this.showToast('Password updated.');
+            }
+            _handlePutPasswordError(e) {
+                this.showToast('Password update failed!');
+            }
+            _handleGetSettingsResponse(e) {
                 var userSettings = e.detail.response;
 
                 this.homeTitle = userSettings.homeTitle;
                 this.homeImageUrl = userSettings.homeImageUrl;
             }
-            _handlePutResponse(e) {
+            _handlePutSettingsResponse(e) {
                 this._refresh();
                 this.showToast('Settings changed.');
+            }
+            _handlePutSettingsError(e) {
+                this.showToast('Updating settings failed!');
             }
             _handlePostImageRequest(e) {
                 this.$.uploadingDialog.open();
@@ -172,11 +231,11 @@
                 this.showToast('Upload complete.');
 
                 var location = req.xhr.getResponseHeader("Location");
-                this.$.putAjax.body = JSON.stringify({
+                this.$.putSettingsAjax.body = JSON.stringify({
                     "homeTitle": this.homeTitle,
                     "homeImageUrl": location,
                 });
-                this.$.putAjax.generateRequest();
+                this.$.putSettingsAjax.generateRequest();
             }
             _handlePostImageError(e) {
                 this.$.uploadingDialog.close();
@@ -184,7 +243,8 @@
             }
 
             _refresh() {
-                this.$.getAjax.generateRequest();
+                this.$.getUserAjax.generateRequest();
+                this.$.getSettingsAjax.generateRequest();
             }
         }
 

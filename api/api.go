@@ -58,6 +58,8 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.PUT("/api/v1/notes/:noteID", h.requireAuthentication(h.putNote))
 	h.apiMux.DELETE("/api/v1/notes/:noteID", h.requireAuthentication(h.deleteNote))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
+	h.apiMux.GET("/api/v1/users/:userID", h.requireAuthentication(h.getUser))
+	h.apiMux.PUT("/api/v1/users/:userID/password", h.requireAuthentication(h.putUserPassword))
 	h.apiMux.GET("/api/v1/users/:userID/settings", h.requireAuthentication(h.getUserSettings))
 	h.apiMux.PUT("/api/v1/users/:userID/settings", h.requireAuthentication(h.putUserSettings))
 	h.apiMux.POST("/api/v1/uploads", h.requireAuthentication(h.postUpload))
