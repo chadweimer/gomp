@@ -22,12 +22,7 @@ The following table summarizes the available configuration settings, which are s
 | GOMP\_APPLICATION\_TITLE | string   | GOMP: Go Meal Planner |
 | DATABASE_DRIVER          | string   | postgres              |
 | DATABASE\_URL            | string   | &lt;empty&gt;         |
-
-### Port
-
-Port gets the port number under which the site is being hosted.
-
-Valid Values: Any valid port number.
+| DATABASE_MAX_CONNS       | uint     | 0                     |
 
 ## Database Support
 
