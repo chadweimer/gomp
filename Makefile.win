@@ -33,7 +33,7 @@ preclean:
 
 .PHONY: prebuild
 prebuild:
-	pushd .\static & ..\$(NODE_MODULES_DIR)\.bin\polymer build --preset es6-unbundled & popd
+	pushd .\static & ..\$(NODE_MODULES_DIR)\.bin\polymer build & popd
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64: preclean
@@ -48,7 +48,7 @@ build-linux-amd64: prebuild
 	set GOARCH=amd64
 	go build -o $(BUILD_DIR)\linux\amd64\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\amd64\db
-	xcopy /Q /R /Y /S /E /I static\build\es6-unbundled $(BUILD_DIR)\linux\amd64\static
+	xcopy /Q /R /Y /S /E /I static\build\default $(BUILD_DIR)\linux\amd64\static
 
 .PHONY: rebuild-linux-amd64
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
@@ -66,7 +66,7 @@ build-linux-armhf: prebuild
 	set GOARCH=arm
 	go build -o $(BUILD_DIR)\linux\armhf\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\linux\armhf\db
-	xcopy /Q /R /Y /S /E /I static\build\es6-unbundled $(BUILD_DIR)\linux\armhf\static
+	xcopy /Q /R /Y /S /E /I static\build\default $(BUILD_DIR)\linux\armhf\static
 
 .PHONY: rebuild-linux-armhf
 rebuild-linux-armhf: clean-linux-armhf build-linux-armhf
@@ -84,7 +84,7 @@ build-windows-amd64: prebuild
 	set GOARCH=amd64
 	go build -o $(BUILD_DIR)\windows\amd64\gomp
 	xcopy /Q /R /Y /S /E /I db $(BUILD_DIR)\windows\amd64\db
-	xcopy /Q /R /Y /S /E /I static\build\es6-unbundled $(BUILD_DIR)\windows\amd64\static
+	xcopy /Q /R /Y /S /E /I static\build\default $(BUILD_DIR)\windows\amd64\static
 
 .PHONY: rebuild-windows-amd64
 rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64

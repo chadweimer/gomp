@@ -33,7 +33,7 @@ preclean:
 
 .PHONY: prebuild
 prebuild:
-	cd static && ../$(NODE_MODULES_DIR)/.bin/polymer build --preset es6-unbundled && cd ../
+	cd static && ../$(NODE_MODULES_DIR)/.bin/polymer build && cd ../
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64: preclean
@@ -44,7 +44,7 @@ clean-linux-amd64: preclean
 build-linux-amd64: prebuild
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/linux/amd64/gomp
 	mkdir -p $(BUILD_DIR)/linux/amd64/db && cp -R db/* $(BUILD_DIR)/linux/amd64/db
-	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/amd64/static
+	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/linux/amd64/static
 
 .PHONY: rebuild-linux-amd64
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
@@ -58,7 +58,7 @@ clean-linux-armhf: preclean
 build-linux-armhf: prebuild
 	GOOS=linux GOARCH=arm go build -o $(BUILD_DIR)/linux/armhf/gomp
 	mkdir -p $(BUILD_DIR)/linux/armhf/db && cp -R db/* $(BUILD_DIR)/linux/armhf/db
-	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/linux/armhf/static
+	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/default/* $(BUILD_DIR)/linux/armhf/static
 
 .PHONY: rebuild-linux-armhf
 rebuild-linux-armhf: clean-linux-armhf build-linux-armhf
@@ -72,7 +72,7 @@ clean-windows-amd64: preclean
 build-windows-amd64: prebuild
 	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R db/* $(BUILD_DIR)/windows/amd64/db
-	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/es6-unbundled/* $(BUILD_DIR)/windows/amd64/static
+	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/windows/amd64/static
 
 .PHONY: rebuild-windows-amd64
 rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64

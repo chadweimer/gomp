@@ -6,13 +6,18 @@
         "*"
     ],
     "fragments": [
+        "src/create-view.html",
         "src/home-view.html",
         "src/login-view.html",
         "src/recipes-view.html",
-        "src/create-view.html",
-        "src/search-view.html"
+        "src/search-view.html",
+        "src/settings-view.html"
     ],
     "extraDependencies": [
-        "bower_components/webcomponentsjs/webcomponents-lite.js"
-    ]
+        "bower_components/webcomponentsjs/webcomponents-loader.js"
+    ],
+    "builds": [{
+        "name": "default",
+        "preset": "es6-unbundled"
+    }]
 }
