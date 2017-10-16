@@ -26,9 +26,6 @@ build: build-linux-amd64 build-linux-armhf build-windows-amd64
 
 .PHONY: clean
 clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
-
-.PHONY: preclean
-preclean:
 	rm -rf $(POLYMER_BUILD_DIR)
 
 .PHONY: prebuild
@@ -36,7 +33,7 @@ prebuild:
 	cd static && ../$(NODE_MODULES_DIR)/.bin/polymer build && cd ../
 
 .PHONY: clean-linux-amd64
-clean-linux-amd64: preclean
+clean-linux-amd64:
 	GOOS=linux GOARCH=amd64 go clean -i ./...
 	rm -rf $(BUILD_DIR)/linux/amd64
 
@@ -50,7 +47,7 @@ build-linux-amd64: prebuild
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
 
 .PHONY: clean-linux-armhf
-clean-linux-armhf: preclean
+clean-linux-armhf:
 	GOOS=linux GOARCH=armhf go clean -i ./...
 	rm -rf $(BUILD_DIR)/linux/armhf
 
@@ -64,7 +61,7 @@ build-linux-armhf: prebuild
 rebuild-linux-armhf: clean-linux-armhf build-linux-armhf
 
 .PHONY: clean-windows-amd64
-clean-windows-amd64: preclean
+clean-windows-amd64:
 	GOOS=windows GOARCH=amd64 go clean -i ./...
 	rm -rf $(BUILD_DIR)/windows/amd64
 
