@@ -10,8 +10,8 @@ import (
 )
 
 type getRecipesResponse struct {
-	Recipes *models.Recipes `json:"recipes"`
-	Total   int64           `json:"total"`
+	Recipes *[]models.RecipeCompact `json:"recipes"`
+	Total   int64                   `json:"total"`
 }
 
 func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {

@@ -13,20 +13,16 @@ type RecipeModel struct {
 
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID            int64       `json:"id" db:"id"`
-	Name          string      `json:"name" db:"name"`
-	ServingSize   string      `json:"servingSize" db:"serving_size"`
-	NutritionInfo string      `json:"nutritionInfo" db:"nutrition_info"`
-	Ingredients   string      `json:"ingredients" db:"ingredients"`
-	Directions    string      `json:"directions" db:"directions"`
-	SourceURL     string      `json:"sourceUrl" db:"source_url"`
-	AvgRating     float64     `json:"averageRating" db:"avg_rating"`
-	MainImage     RecipeImage `json:"mainImage"`
-	Tags          []string    `json:"tags"`
+	ID            int64    `json:"id" db:"id"`
+	Name          string   `json:"name" db:"name"`
+	ServingSize   string   `json:"servingSize" db:"serving_size"`
+	NutritionInfo string   `json:"nutritionInfo" db:"nutrition_info"`
+	Ingredients   string   `json:"ingredients" db:"ingredients"`
+	Directions    string   `json:"directions" db:"directions"`
+	SourceURL     string   `json:"sourceUrl" db:"source_url"`
+	AvgRating     float64  `json:"averageRating" db:"avg_rating"`
+	Tags          []string `json:"tags"`
 }
-
-// Recipes represents a collection of Recipe objects
-type Recipes []Recipe
 
 // Create stores the recipe in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
