@@ -21,9 +21,9 @@ type User struct {
 
 // UserSettings represents the settings for an individual user
 type UserSettings struct {
-	UserID       int64  `json:"userId" db:"user_id"`
-	HomeTitle    string `json:"homeTitle" db:"home_title"`
-	HomeImageURL string `json:"homeImageUrl" db:"home_image_url"`
+	UserID       int64   `json:"userId" db:"user_id"`
+	HomeTitle    *string `json:"homeTitle" db:"home_title"`
+	HomeImageURL *string `json:"homeImageUrl" db:"home_image_url"`
 }
 
 // Authenticate verifies the username and password combination match an existing user
@@ -89,6 +89,11 @@ func (m *UserModel) ReadSettings(id int64) (*UserSettings, error) {
 
 	if err := m.db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
 		return nil, err
+	}
+
+	// Default to the application title if the user hasn't set their own
+	if userSettings.HomeTitle == nil {
+		userSettings.HomeTitle = &m.cfg.ApplicationTitle
 	}
 
 	return userSettings, nil
