@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chadweimer/gomp/modules/upload"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/disintegration/imaging"
 	"github.com/jmoiron/sqlx"
 	"github.com/rwcarlsen/goexif/exif"
@@ -32,9 +32,6 @@ type RecipeImage struct {
 	CreatedAt    time.Time `json:"createdAt" db:"created_at"`
 	ModifiedAt   time.Time `json:"modifiedAt" db:"modified_at"`
 }
-
-// RecipeImages represents a collection of RecipeImage objects
-type RecipeImages []RecipeImage
 
 // Create saves the image using the backing upload.Driver and creates
 // an associated record in the database using a dedicated transation
@@ -181,16 +178,16 @@ func (m *RecipeImageModel) UpdateMainImageTx(image *RecipeImage, tx *sqlx.Tx) er
 	return err
 }
 
-// List returns a RecipeImages slice that contains data for all images
+// List returns a RecipeImage slice that contains data for all images
 // attached to the specified recipe.
-func (m *RecipeImageModel) List(recipeID int64) (*RecipeImages, error) {
-	images := new(RecipeImages)
+func (m *RecipeImageModel) List(recipeID int64) (*[]RecipeImage, error) {
+	var images []RecipeImage
 
-	if err := m.db.Select(images, "SELECT * FROM recipe_image WHERE recipe_id = $1 ORDER BY created_at ASC", recipeID); err != nil {
+	if err := m.db.Select(&images, "SELECT * FROM recipe_image WHERE recipe_id = $1 ORDER BY created_at ASC", recipeID); err != nil {
 		return nil, err
 	}
 
-	return images, nil
+	return &images, nil
 }
 
 // Delete removes the specified image from the backing store and database

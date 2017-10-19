@@ -20,9 +20,6 @@ type Note struct {
 	ModifiedAt time.Time `json:"modifiedAt" db:"modified_at"`
 }
 
-// Notes represents a collection of Note objects
-type Notes []Note
-
 // Create stores the note in the database as a new record using
 // a dedicated transation that is committed if there are not errors.
 func (m *NoteModel) Create(note *Note) error {
@@ -90,12 +87,12 @@ func (m *NoteModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 }
 
 // List retrieves all notes associated with the recipe with the specified id.
-func (m *NoteModel) List(recipeID int64) (*Notes, error) {
-	notes := new(Notes)
+func (m *NoteModel) List(recipeID int64) (*[]Note, error) {
+	var notes []Note
 
-	if err := m.db.Select(notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeID); err != nil {
+	if err := m.db.Select(&notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeID); err != nil {
 		return nil, err
 	}
 
-	return notes, nil
+	return &notes, nil
 }

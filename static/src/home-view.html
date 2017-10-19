@@ -21,6 +21,7 @@
                 text-align: center;
             }
             img.responsive {
+                max-height: 20em;
                 max-width: 100%;
                 height: auto;
             }
@@ -34,7 +35,7 @@
         </style>
         <section>
             <header>
-                <h1>[[title]]</h1>
+                <h1 hidden$="[[!title]]">[[title]]</h1>
                 <img alt="Home Image" class="responsive" hidden$="[[!image]]" src="[[image]]"/>
             </header>
             <home-list id="allRecipes" jwt-token="[[jwtToken]]"></home-list>
@@ -49,6 +50,14 @@
         </section>
 
         <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+
+        <iron-ajax bubbles
+            id="userSettingsAjax"
+            url="/api/v1/users/current/settings"
+            headers="[[ajaxHeaders]]"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetUserSettingsResponse"></iron-ajax>
     </template>
 
     <script>
@@ -59,7 +68,6 @@
                     title: {
                         type: String,
                         notify: true,
-                        value: 'Go Meal Planner',
                     },
                     image: {
                         type: String,
@@ -72,17 +80,23 @@
                 super.ready();
 
                 if (this.isActive) {
-                    this._refreshLists();
+                    this._refresh();
                 }
             }
 
             _isActiveChanged(isActive) {
                 if (isActive && this.isReady) {
-                    this._refreshLists();
+                    this._refresh();
                 }
             }
+            _handleGetUserSettingsResponse(e) {
+                var userSettings = e.detail.response;
 
-            _refreshLists() {
+                this.title = userSettings.homeTitle;
+                this.image = userSettings.homeImageUrl;
+            }
+
+            _refresh() {
                 this.$.allRecipes.refresh();
                 this.$.beefRecipes.refresh();
                 this.$.poultryRecipes.refresh();
@@ -92,6 +106,7 @@
                 this.$.vegetarianRecipes.refresh();
                 this.$.sideRecipes.refresh();
                 this.$.drinkRecipes.refresh();
+                this.$.userSettingsAjax.generateRequest();
             }
         }
 

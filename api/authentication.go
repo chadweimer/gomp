@@ -66,7 +66,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 		// Try each key when validating the token
 		var lastErr error
 		for _, key := range h.cfg.SecureKeys {
-			token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 				if token.Method != jwt.SigningMethodHS256 {
 					return nil, errors.New("Incorrect signing method")
 				}
@@ -75,12 +75,32 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 			})
 
 			if err == nil && token.Valid {
-				handler(resp, req, p)
-				return
+				claims := token.Claims.(*jwt.StandardClaims)
+				if err = h.verifyUserExists(claims); err == nil {
+					// Add the user's ID to the list of params
+					p = append(p, httprouter.Param{Key: "CurrentUserID", Value: claims.Subject})
+
+					handler(resp, req, p)
+					return
+				}
 			}
 			lastErr = err
 		}
 
 		h.JSON(resp, http.StatusUnauthorized, lastErr.Error())
 	}
+}
+
+func (h apiHandler) verifyUserExists(claims *jwt.StandardClaims) error {
+	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
+	if err != nil {
+		return errors.New("invalid claims")
+	}
+
+	// Verify this is a valid user in the DB
+	if _, err = h.model.Users.Read(userID); err != nil {
+		return errors.New("invalid claims")
+	}
+
+	return nil
 }

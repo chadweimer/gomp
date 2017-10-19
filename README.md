@@ -23,12 +23,6 @@ The following table summarizes the available configuration settings, which are s
 | DATABASE_DRIVER          | string   | postgres              |
 | DATABASE\_URL            | string   | &lt;empty&gt;         |
 
-### Port
-
-Port gets the port number under which the site is being hosted.
-
-Valid Values: Any valid port number.
-
 ## Database Support
 
 Currently only PostgreSQL is supported.

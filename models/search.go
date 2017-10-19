@@ -54,8 +54,21 @@ type TagsFilter struct {
 	Count   int64  `json:"count"`
 }
 
+// RecipeCompact is the primary model class for bulk recipe retrieval
+type RecipeCompact struct {
+	ID            int64   `json:"id" db:"id"`
+	Name          string  `json:"name" db:"name"`
+	ServingSize   string  `json:"servingSize" db:"serving_size"`
+	NutritionInfo string  `json:"nutritionInfo" db:"nutrition_info"`
+	Ingredients   string  `json:"ingredients" db:"ingredients"`
+	Directions    string  `json:"directions" db:"directions"`
+	SourceURL     string  `json:"sourceUrl" db:"source_url"`
+	AvgRating     float64 `json:"averageRating" db:"avg_rating"`
+	ThumbnailURL  string  `json:"thumbnailUrl" db:"thumbnail_url"`
+}
+
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
-func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error) {
+func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
 	whereStmt := ""
 	whereArgs := make([]interface{}, 0)
 
@@ -105,37 +118,14 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*Recipes, int64, error)
 	orderStmt += " LIMIT ? OFFSET ?"
 
 	selectStmt := m.db.Rebind("SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '')" +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
 		"FROM recipe AS r" +
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)
-	rows, err := m.db.Query(selectStmt, selectArgs...)
+
+	var recipes []RecipeCompact
+	err := m.db.Select(&recipes, selectStmt, selectArgs...)
 	if err != nil {
-		return nil, 0, err
-	}
-	defer rows.Close()
-
-	var recipes Recipes
-	for rows.Next() {
-		recipe := Recipe{
-			MainImage: RecipeImage{},
-		}
-		err := rows.Scan(
-			&recipe.ID,
-			&recipe.Name,
-			&recipe.ServingSize,
-			&recipe.NutritionInfo,
-			&recipe.Ingredients,
-			&recipe.Directions,
-			&recipe.AvgRating,
-			&recipe.MainImage.ThumbnailURL)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		recipes = append(recipes, recipe)
-	}
-	if err := rows.Err(); err != nil {
 		return nil, 0, err
 	}
 

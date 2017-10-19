@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/modules/conf"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 )
@@ -24,16 +25,18 @@ type apiHandler struct {
 	*render.Render
 
 	cfg    *conf.Config
+	upl    upload.Driver
 	model  *models.Model
 	apiMux *httprouter.Router
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(renderer *render.Render, cfg *conf.Config, model *models.Model) http.Handler {
+func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, model *models.Model) http.Handler {
 	h := apiHandler{
 		Render: renderer,
 
 		cfg:   cfg,
+		upl:   upl,
 		model: model,
 	}
 
@@ -48,13 +51,18 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, model *models.Model) 
 	h.apiMux.GET("/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.getRecipeMainImage))
 	h.apiMux.PUT("/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.putRecipeMainImage))
 	h.apiMux.GET("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.getRecipeImages))
-	h.apiMux.POST("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.postImage))
+	h.apiMux.POST("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.postRecipeImage))
 	h.apiMux.GET("/api/v1/recipes/:recipeID/notes", h.requireAuthentication(h.getRecipeNotes))
 	h.apiMux.DELETE("/api/v1/images/:imageID", h.requireAuthentication(h.deleteImage))
 	h.apiMux.POST("/api/v1/notes", h.requireAuthentication(h.postNote))
 	h.apiMux.PUT("/api/v1/notes/:noteID", h.requireAuthentication(h.putNote))
 	h.apiMux.DELETE("/api/v1/notes/:noteID", h.requireAuthentication(h.deleteNote))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
+	h.apiMux.GET("/api/v1/users/:userID", h.requireAuthentication(h.getUser))
+	h.apiMux.PUT("/api/v1/users/:userID/password", h.requireAuthentication(h.putUserPassword))
+	h.apiMux.GET("/api/v1/users/:userID/settings", h.requireAuthentication(h.getUserSettings))
+	h.apiMux.PUT("/api/v1/users/:userID/settings", h.requireAuthentication(h.putUserSettings))
+	h.apiMux.POST("/api/v1/uploads", h.requireAuthentication(h.postUpload))
 	h.apiMux.NotFound = http.HandlerFunc(h.notFound)
 
 	return &h

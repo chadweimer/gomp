@@ -119,6 +119,7 @@
                     <paper-drawer-icon-item icon="icons:home" on-tap="_onHomeTapped">Home</paper-drawer-icon-item>
                     <paper-drawer-icon-item icon="icons:view-list" on-tap="_onRecipesTapped">Recipes</paper-drawer-icon-item>
                     <paper-drawer-divider></paper-drawer-divider>
+                    <paper-drawer-icon-item icon="icons:settings" on-tap="_onSettingsTapped">Settings</paper-drawer-icon-item>
                     <paper-drawer-icon-item icon="icons:exit-to-app" on-tap="_onLogoutTapped">Logout</paper-drawer-icon-item>
                 </paper-drawer>
             </app-drawer>
@@ -136,6 +137,7 @@
                             <div main-title></div>
                             <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                             <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                            <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
                             <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
                             <paper-search-bar
@@ -162,9 +164,7 @@
                         <home-view
                             name="home"
                             jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'home')]]"
-                            title$="[[title]]"
-                            image="[[homeImage]]"></home-view>
+                            is-active="[[_isActive(page, 'home')]]"></home-view>
 
                         <search-view
                             id="searchView"
@@ -188,6 +188,11 @@
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'create')]]"></create-view>
 
+                        <settings-view
+                            name="settings"
+                            jwt-token="[[jwtToken]]"
+                            is-active="[[_isActive(page, 'settings')]]"></settings-view>
+
                         <login-view
                             name="login"
                             jwt-token="[[jwtToken]]"
@@ -203,10 +208,11 @@
                         <ul>
                             <li><a href="/home">Home</a></li>
                             <li><a href="/search">Recipes</a></li>
+                            <li><a href="/settings">Settings</a></li>
                             <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
                         </ul>
                     </div>
-                    <div class="copyright indented">Copyright &copy; 2016 Chad Weimer</div>
+                    <div class="copyright indented">Copyright &copy; 2016-2017 Chad Weimer</div>
                 </footer>
             </app-header-layout>
         </app-drawer-layout>
@@ -246,10 +252,6 @@
                     title: {
                         type: String,
                         value: 'Go Meal Planner',
-                    },
-                    homeImage: {
-                        type: String,
-                        value: '',
                     },
                     page: {
                         type: String,
@@ -363,6 +365,9 @@
             _onRecipesTapped(e) {
                 this._changeRoute('/search');
             }
+            _onSettingsTapped(e) {
+                this._changeRoute('/settings');
+            }
             _onLogoutTapped(e) {
                 e.preventDefault();
 
@@ -406,9 +411,11 @@
                 var filters = [];
                 var tagFilter = {id: 'tags', name: 'Tags', values: []};
                 filters.push(tagFilter);
-                tags.forEach(function(tag) {
-                    tagFilter.values.push({id: tag, name: tag});
-                });
+                if (tags) {
+                    tags.forEach(function(tag) {
+                        tagFilter.values.push({id: tag, name: tag});
+                    });
+                }
 
                 this.searchFilters = filters;
             }

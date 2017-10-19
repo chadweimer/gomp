@@ -65,6 +65,9 @@ after_success:
       docker push cwmr/gomp:$TRAVIS_TAG-armhf
     fi
 
+before_deploy:
+  - make archive
+
 deploy:
   provider: releases
   api_key: "$GITHUB_OAUTH_TOKEN"
