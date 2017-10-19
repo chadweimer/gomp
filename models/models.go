@@ -50,7 +50,6 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 	if err != nil {
 		log.Fatal("Failed to open database.", err)
 	}
-	db.SetMaxOpenConns(cfg.DatabaseMaxConnections)
 
 	m := &Model{
 		cfg:               cfg,
