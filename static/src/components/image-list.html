@@ -93,7 +93,12 @@
             <h3><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
             <p>Browse for a picture to upload to this recipe.<p>
             <form id="addForm" enctype="multipart/form-data">
-                <input is="paper-input" name="file_content" type="file" accept=".jpg,.jpeg,.png" required></input>
+                <paper-input-container always-float-label>
+                    <label slot="label">Picture</label>
+                    <iron-input slot="input">
+                        <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required></input>
+                    </iron-input>
+                </paper-input-container>
                 <div class="buttons">
                     <paper-button dialog-dismiss>Cancel</paper-button>
                     <paper-button dialog-confirm>Upload</paper-button>
