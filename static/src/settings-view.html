@@ -160,14 +160,14 @@
             _updatePasswordTapped(e) {
                 e.preventDefault();
 
-                if (this.newPassword != this.repeatPassword) {
+                if (this.newPassword !== this.repeatPassword) {
                     this.showToast('Passwords don\'t match.');
-                    return
+                    return;
                 }
 
                 this.$.putPasswordAjax.body = JSON.stringify({
-                    "currentPassword": this.currentPassword,
-                    "newPassword": this.newPassword
+                    'currentPassword': this.currentPassword,
+                    'newPassword': this.newPassword
                 });
                 this.$.putPasswordAjax.generateRequest();
             }
@@ -175,8 +175,8 @@
                 e.preventDefault();
 
                 this.$.putSettingsAjax.body = JSON.stringify({
-                    "homeTitle": this.homeTitle,
-                    "homeImageUrl": this.homeImageUrl,
+                    'homeTitle': this.homeTitle,
+                    'homeImageUrl': this.homeImageUrl,
                 });
                 this.$.putSettingsAjax.generateRequest();
             }
@@ -230,10 +230,10 @@
                 this.$.homeImageFile.value = null;
                 this.showToast('Upload complete.');
 
-                var location = req.xhr.getResponseHeader("Location");
+                var location = req.xhr.getResponseHeader('Location');
                 this.$.putSettingsAjax.body = JSON.stringify({
-                    "homeTitle": this.homeTitle,
-                    "homeImageUrl": location,
+                    'homeTitle': this.homeTitle,
+                    'homeImageUrl': location,
                 });
                 this.$.putSettingsAjax.generateRequest();
             }
