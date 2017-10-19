@@ -75,18 +75,32 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 			})
 
 			if err == nil && token.Valid {
-				// TODO: Verify this is a valid user in the DB
-
-				// Add the user's ID to the list of params
 				claims := token.Claims.(*jwt.StandardClaims)
-				p = append(p, httprouter.Param{Key: "CurrentUserID", Value: claims.Subject})
+				if err = h.verifyUserExists(claims); err == nil {
+					// Add the user's ID to the list of params
+					p = append(p, httprouter.Param{Key: "CurrentUserID", Value: claims.Subject})
 
-				handler(resp, req, p)
-				return
+					handler(resp, req, p)
+					return
+				}
 			}
 			lastErr = err
 		}
 
 		h.JSON(resp, http.StatusUnauthorized, lastErr.Error())
 	}
+}
+
+func (h apiHandler) verifyUserExists(claims *jwt.StandardClaims) error {
+	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
+	if err != nil {
+		return errors.New("invalid claims")
+	}
+
+	// Verify this is a valid user in the DB
+	if _, err = h.model.Users.Read(userID); err != nil {
+		return errors.New("invalid claims")
+	}
+
+	return nil
 }
