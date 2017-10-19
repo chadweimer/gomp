@@ -57,12 +57,7 @@
                 on-note-card-deleted="_noteDeleted"></note-card>
         </template>
 
-        <paper-dialog
-            id="noteDialog"
-            entry-animation="scale-up-animation"
-            exit-animation="fade-out-animation"
-            on-iron-overlay-closed="_noteDialogClosed"
-            with-backdrop>
+        <paper-dialog id="noteDialog" on-iron-overlay-closed="_noteDialogClosed" with-backdrop>
             <h3><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h3>
             <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
             <div class="buttons">
