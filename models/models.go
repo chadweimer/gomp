@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/upload"
@@ -41,14 +42,26 @@ type Model struct {
 
 // New constructs a new Model object
 func New(cfg *conf.Config, upl upload.Driver) *Model {
-	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
-	if err != nil {
-		log.Fatal("Failed to migrate database.", err)
+	// In docker, on first bring up, the DB takes a little while.
+	// Let's try a few times to establish connection before giving up.
+	const maxAttempts = 20
+	var db *sqlx.DB
+	var err error
+	for i := 1; i <= maxAttempts; i++ {
+		db, err = sqlx.Connect(cfg.DatabaseDriver, cfg.DatabaseURL)
+		if err != nil {
+			if i < maxAttempts {
+				log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
+				time.Sleep(500 * time.Millisecond)
+			} else {
+				log.Fatalf("Failed to open database on attempt %d: '%+v'. Giving up.", i, err)
+			}
+		}
 	}
 
-	db, err := sqlx.Connect(cfg.DatabaseDriver, cfg.DatabaseURL)
+	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal("Failed to open database.", err)
+		log.Fatal("Failed to migrate database", err)
 	}
 
 	m := &Model{
