@@ -14,15 +14,25 @@
                 cursor: pointer;
 
                 --paper-card-header: {
-                    height: var(--recipe-card-header-height, 75%);
+                    height: 75%;
+
+                    @apply --recipe-card-header;
+                }
+                --paper-card-header-image: {
+                    top: -100px;
+                }
+                --paper-card-content: {
+                    @apply --recipe-card-content;
                 }
                 --paper-card: {
                     width: 100%;
-                    height: var(--recipe-card-height, 250px);
+                    height: 250px;
+                    
+                    @apply --recipe-card;
                 }
-                --star-rating-size: 16px;
+                --star-rating-size: var(--recipe-card-rating-size, 18px);
             }
-            paper-card:hover{
+            paper-card:hover {
                 @apply --shadow-elevation-6dp;
             }
             .truncate {
