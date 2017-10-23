@@ -83,7 +83,7 @@
             handle-as="json"
             on-request="_handleAddImageRequest"
             on-response="_handleAddImageResponse",
-            on-error="_handleAddImageError"></iron-ajax>
+            on-error="_handleAddImageResponse"></iron-ajax>
     </template>
 
     <script>
@@ -111,6 +111,7 @@
             }
 
             _isActiveChanged(isActive) {
+                this.newRecipeId = NaN;
                 this.$.mainImage.value = null;
                 if (!this.recipeId) {
                     this.recipe = {
@@ -152,8 +153,7 @@
                 this.recipe = e.detail.response;
             }
             _handlePutRecipeResponse(e) {
-                this.dispatchEvent(new CustomEvent('recipe-edit-save'));
-                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+                this._onSaveComplete();
             }
             _handlePostRecipeResponse(e) {
                 var temp = document.createElement('a');
@@ -170,8 +170,7 @@
                     this.$.addImageAjax.body = new FormData(this.$.mainImageForm);
                     this.$.addImageAjax.generateRequest();
                 } else {
-                    this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: '/recipes/' + this.newRecipeId}}));
-                    this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+                    this._onSaveComplete();
                 }
             }
             _handleAddImageRequest(e) {
@@ -179,12 +178,10 @@
             }
             _handleAddImageResponse(e) {
                 this.$.uploadingDialog.close();
-                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: '/recipes/' + this.newRecipeId}}));
-                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+                this._onSaveComplete();
             }
-            _handleAddImageError(e) {
-                this.$.uploadingDialog.close();
-                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: '/recipes/' + this.newRecipeId}}));
+            _onSaveComplete() {
+                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId} : null}));
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
             }
         }
