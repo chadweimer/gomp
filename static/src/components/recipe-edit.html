@@ -3,8 +3,10 @@
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
@@ -27,6 +29,14 @@
         <paper-card>
             <div class="card-content">
                 <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
+                <form id="mainImageForm" enctype="multipart/form-data">
+                    <paper-input-container hidden$="[[recipeId]]" always-float-label>
+                        <label slot="label">Picture</label>
+                        <iron-input slot="input">
+                            <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png"></input>
+                        </iron-input>
+                    </paper-input-container>
+                </form>
                 <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
                 <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
                 <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
@@ -39,6 +49,9 @@
                 <paper-button on-tap="_saveButtonTapped">Save</paper-button>
             </div>
         </paper-card>
+        <paper-dialog id="uploadingDialog" with-backdrop>
+            <h3><paper-spinner active></paper-spinner>Uploading</h3>
+        </paper-dialog>
 
         <iron-ajax bubbles auto
             id="getAjax"
@@ -62,6 +75,15 @@
             method="POST"
             handle-as="json"
             on-response="_handlePostRecipeResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="addImageAjax"
+            url="/api/v1/recipes/[[newRecipeId]]/images"
+            method="POST"
+            headers="[[ajaxHeaders]]"
+            handle-as="json"
+            on-request="_handleAddImageRequest"
+            on-response="_handleAddImageResponse",
+            on-error="_handleAddImageResponse"></iron-ajax>
     </template>
 
     <script>
@@ -89,6 +111,8 @@
             }
 
             _isActiveChanged(isActive) {
+                this.newRecipeId = NaN;
+                this.$.mainImage.value = null;
                 if (!this.recipeId) {
                     this.recipe = {
                         name: '',
@@ -129,20 +153,35 @@
                 this.recipe = e.detail.response;
             }
             _handlePutRecipeResponse(e) {
-                this.dispatchEvent(new CustomEvent('recipe-edit-save'));
-                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+                this._onSaveComplete();
             }
             _handlePostRecipeResponse(e) {
                 var temp = document.createElement('a');
                 temp.href = e.detail.xhr.getResponseHeader('Location');
                 var path = temp.pathname;
 
-                var newRecipeId = NaN;
+                this.newRecipeId = NaN;
                 var newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
                 if (newRecipeIdMatch) {
-                    newRecipeId = parseInt(newRecipeIdMatch[1], 10);
+                    this.newRecipeId = parseInt(newRecipeIdMatch[1], 10);
                 }
-                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: '/recipes/' + newRecipeId}}));
+
+                if (this.$.mainImage.value) {
+                    this.$.addImageAjax.body = new FormData(this.$.mainImageForm);
+                    this.$.addImageAjax.generateRequest();
+                } else {
+                    this._onSaveComplete();
+                }
+            }
+            _handleAddImageRequest(e) {
+                this.$.uploadingDialog.open();
+            }
+            _handleAddImageResponse(e) {
+                this.$.uploadingDialog.close();
+                this._onSaveComplete();
+            }
+            _onSaveComplete() {
+                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId} : null}));
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
             }
         }

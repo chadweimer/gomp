@@ -6,6 +6,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
@@ -84,12 +85,7 @@
             </div>
         </template>
 
-        <paper-dialog
-            id="addDialog"
-            entry-animation="scale-up-animation"
-            exit-animation="fade-out-animation"
-            on-iron-overlay-closed="_addDialogClosed"
-            with-backdrop>
+        <paper-dialog id="addDialog" on-iron-overlay-closed="_addDialogClosed" with-backdrop>
             <h3><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
             <p>Browse for a picture to upload to this recipe.<p>
             <form id="addForm" enctype="multipart/form-data">
@@ -99,17 +95,14 @@
                         <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required></input>
                     </iron-input>
                 </paper-input-container>
-                <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Upload</paper-button>
-                </div>
             </form>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Cancel</paper-button>
+                <paper-button dialog-confirm>Upload</paper-button>
+            </div>
         </paper-dialog>
         <paper-dialog id="uploadingDialog" with-backdrop>
-            <h3>
-                <paper-spinner active></paper-spinner>
-                Uploading
-            </h3>
+            <h3><paper-spinner active></paper-spinner>Uploading</h3>
         </paper-dialog>
 
         <confirmation-dialog
