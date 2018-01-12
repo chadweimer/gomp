@@ -3,47 +3,21 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = [
-    "aws",
-    "aws/awserr",
-    "aws/awsutil",
-    "aws/client",
-    "aws/client/metadata",
-    "aws/corehandlers",
-    "aws/credentials",
-    "aws/credentials/ec2rolecreds",
-    "aws/credentials/endpointcreds",
-    "aws/credentials/stscreds",
-    "aws/defaults",
-    "aws/ec2metadata",
-    "aws/endpoints",
-    "aws/request",
-    "aws/session",
-    "aws/signer/v4",
-    "internal/shareddefaults",
-    "private/protocol",
-    "private/protocol/query",
-    "private/protocol/query/queryutil",
-    "private/protocol/rest",
-    "private/protocol/restxml",
-    "private/protocol/xml/xmlutil",
-    "service/s3",
-    "service/sts"
-  ]
-  revision = "64850c09d35fc1dc005ca76c13fed9382e34e7e3"
-  version = "v1.12.9"
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sts"]
+  revision = "726cba4d63d34a7055809986b7942c3eae6c4eb2"
+  version = "v1.12.60"
 
 [[projects]]
   name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
-  revision = "d2709f9f1f31ebcda9651b03077758c1f3a0018c"
-  version = "v3.0.0"
+  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
+  version = "v3.1.0"
 
 [[projects]]
   name = "github.com/disintegration/imaging"
   packages = ["."]
-  revision = "b085d8f4ea6f229d5fe9c273aa008c3e39b4e324"
-  version = "v1.2.3"
+  revision = "1884593a19ddc6f2ea050403430d02c1d0fc1283"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/go-ini/ini"
@@ -59,90 +33,66 @@
 [[projects]]
   branch = "master"
   name = "github.com/jmoiron/sqlx"
-  packages = [
-    ".",
-    "reflectx"
-  ]
-  revision = "d9bd385d68c068f1fabb5057e3dedcbcbb039d0f"
+  packages = [".","reflectx"]
+  revision = "de8647470aafe4854c976707c431dbe1eb2822c6"
 
 [[projects]]
   branch = "master"
   name = "github.com/julienschmidt/httprouter"
   packages = ["."]
-  revision = "975b5c4c7c21c0e3d2764200bf2aa8e34657ae6e"
+  revision = "e1b9828bc9e5904baec057a154c09ca40fe7fae0"
 
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [
-    ".",
-    "oid"
-  ]
-  revision = "b77235e3890a962fe8a6f8c4c7198679ca7814e7"
+  packages = [".","oid"]
+  revision = "83612a56d3dd153a94a629cd64925371c9adad78"
 
 [[projects]]
   name = "github.com/mattes/migrate"
-  packages = [
-    "driver/postgres",
-    "migrate"
-  ]
+  packages = ["driver/postgres","migrate"]
   revision = "afc973c4e5a6b746217c2d3950fcd110ed1ba349"
   version = "v1.3.2"
 
 [[projects]]
   branch = "master"
   name = "github.com/rwcarlsen/goexif"
-  packages = [
-    "exif",
-    "tiff"
-  ]
+  packages = ["exif","tiff"]
   revision = "41dad3aa083329f3f672b7095a9ea8a0c384bbe8"
 
 [[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
-  revision = "879c5887cd475cd7864858769793b2ceb0d44feb"
-  version = "v1.1.0"
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/unrolled/render"
   packages = ["."]
-  revision = "32bf1ea2a39e4e796d9040b5cf235258cee978c1"
+  revision = "65450fb6b2d3595beca39f969c411db8f8d5c806"
 
 [[projects]]
   branch = "master"
   name = "github.com/urfave/negroni"
   packages = ["."]
-  revision = "ccc4a14984828dcb944e6f17fa4a967b18624f2b"
+  revision = "ff85fb036d90eda8518001242fcded1024e05c98"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = [
-    "bcrypt",
-    "blowfish"
-  ]
-  revision = "847319b7fc94cab682988f93da778204da164588"
+  packages = ["bcrypt","blowfish"]
+  revision = "5f55bce93ad2c89f411e009659bb1fd83da36e7b"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/image"
-  packages = [
-    "bmp",
-    "tiff",
-    "tiff/lzw"
-  ]
-  revision = "e20db36d77bd0cb36cea8fe49d5c37d82d21591f"
+  packages = ["bmp","tiff","tiff/lzw"]
+  revision = "12117c17ca67ffa1ce22e9409f3b0b0a93ac08c7"
 
 [[projects]]
   name = "gopkg.in/mattes/migrate.v1"
-  packages = [
-    "driver",
-    "file",
-    "migrate/direction",
-    "pipe"
-  ]
+  packages = ["driver","file","migrate/direction","pipe"]
   revision = "afc973c4e5a6b746217c2d3950fcd110ed1ba349"
   version = "v1.3.2"
 
