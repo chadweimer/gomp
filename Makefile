@@ -14,7 +14,7 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
-	glide --quiet install
+	dep ensure
 	yarn install --silent
 
 .PHONY: uninstall
