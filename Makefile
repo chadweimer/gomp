@@ -48,7 +48,7 @@ rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
 
 .PHONY: clean-linux-armhf
 clean-linux-armhf:
-	GOOS=linux GOARCH=armhf go clean -i ./...
+	GOOS=linux GOARCH=arm go clean -i ./...
 	rm -rf $(BUILD_DIR)/linux/armhf
 
 .PHONY: build-linux-armhf
