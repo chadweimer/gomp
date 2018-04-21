@@ -54,21 +54,26 @@ script:
   #- docker run cwmr/gomp:latest ???
 
 after_success:
+  - wget -O manifest-tool https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
+  - chmod +x ./manifest-tool
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      docker push cwmr/gomp:latest
-      docker push cwmr/gomp:armhf
+      docker push cwmr/gomp:amd64
+      docker push cwmr/gomp:arm
+      ./manifest-tool push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:ARCH --target cwmr/gomp:latest
     elif [ -z "$TRAVIS_TAG" ]; then
-      docker tag cwmr/gomp:latest cwmr/gomp:dev
-      docker tag cwmr/gomp:armhf cwmr/gomp:dev-armhf
-      docker push cwmr/gomp:dev
-      docker push cwmr/gomp:dev-armhf
+      docker tag cwmr/gomp:amd64 cwmr/gomp:dev-amd64
+      docker tag cwmr/gomp:arm cwmr/gomp:dev-arm
+      docker push cwmr/gomp:dev-amd64
+      docker push cwmr/gomp:dev-arm
+      ./manifest-tool push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:dev-ARCH --target cwmr/gomp:dev
     else
-      docker tag cwmr/gomp:latest cwmr/gomp:$TRAVIS_TAG
-      docker tag cwmr/gomp:armhf cwmr/gomp:$TRAVIS_TAG-armhf
-      docker push cwmr/gomp:$TRAVIS_TAG
-      docker push cwmr/gomp:$TRAVIS_TAG-armhf
+      docker tag cwmr/gomp:amd64 cwmr/gomp:$TRAVIS_TAG-amd64
+      docker tag cwmr/gomp:arm cwmr/gomp:$TRAVIS_TAG-arm
+      docker push cwmr/gomp:$TRAVIS_TAG-amd64
+      docker push cwmr/gomp:$TRAVIS_TAG-arm
+      ./manifest-tool push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:$TRAVIS_TAG-ARCH --target cwmr/gomp:$TRAVIS_TAG
     fi
 
 before_deploy:

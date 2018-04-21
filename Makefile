@@ -76,12 +76,12 @@ rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64
 
 .PHONY: docker-linux-amd64
 docker-linux-amd64: build-linux-amd64
-	docker build -t cwmr/gomp:latest .
+	docker build -t cwmr/gomp:amd64 .
 
 .PHONY: docker-linux-armhf
 docker-linux-armhf: build-linux-armhf
 	docker run --rm --privileged multiarch/qemu-user-static:register --reset
-	docker build -t cwmr/gomp:armhf -f Dockerfile.armhf .
+	docker build -t cwmr/gomp:arm -f Dockerfile.armhf .
 
 .PHONY: docker
 docker: docker-linux-amd64 docker-linux-armhf
