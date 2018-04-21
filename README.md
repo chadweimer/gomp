@@ -1,5 +1,5 @@
 [![TravisCI](https://img.shields.io/travis/chadweimer/gomp.svg?style=flat-square&label=travisci)](https://travis-ci.org/chadweimer/gomp)
-[![Code Climate](https://img.shields.io/codeclimate/github/chadweimer/gomp.svg?style=flat-square)](https://codeclimate.com/github/chadweimer/gomp)
+[![Code Climate](https://img.shields.io/codeclimate/maintainability/chadweimer/gomp.svg?style=flat-square)](https://codeclimate.com/github/chadweimer/gomp)
 [![Closed Pull Requests](https://img.shields.io/github/issues-pr-closed-raw/chadweimer/gomp.svg?style=flat-square)](https://github.com/chadweimer/gomp/pulls)
 [![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg?style=flat-square)](https://github.com/chadweimer/gomp/releases)
 [![license](https://img.shields.io/github/license/chadweimer/gomp.svg?style=flat-square)](LICENSE)
@@ -49,4 +49,4 @@ make docker
 
 ## Credits
 
-See [package.json](package.json), [glide.yaml](glide.yaml) and [bower.json](static/bower.json)
+See [package.json](package.json), [Gopkg.toml](Gopkg.toml) and [bower.json](static/bower.json)
