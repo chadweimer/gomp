@@ -13,7 +13,7 @@ reinstall: uninstall install
 .PHONY: install
 install:
 	dep ensure
-	yarn install --silent
+	npm install --silent
 
 .PHONY: uninstall
 uninstall:
@@ -30,7 +30,7 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	pushd .\static & ..\$(NODE_MODULES_DIR)\.bin\polymer build & popd
+	npm run build
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
