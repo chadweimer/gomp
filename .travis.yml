@@ -20,10 +20,10 @@ cache:
   directories:
     - '$HOME/.sonar/cache'
     - '$HOME/.cache/bower'
-    - '$HOME/.glide/cache'
+    - '$HOME/.npm/_cacache'
 
 env:
-  - DEP_VERSION="0.3.2"
+  - DEP_VERSION="0.4.1"
     
 addons:
   apt:
