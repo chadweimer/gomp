@@ -1,7 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
@@ -131,8 +136,8 @@
             _editNoteTapped(e) {
                 e.preventDefault();
 
-                this.noteId = e.path[0].note.id;
-                this.noteText = e.path[0].note.text;
+                this.noteId = e.target.note.id;
+                this.noteText = e.target.note.text;
                 this.$.noteDialog.open();
             }
             _noteDeleted(e) {
