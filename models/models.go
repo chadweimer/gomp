@@ -9,12 +9,12 @@ import (
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/upload"
+	"github.com/golang-migrate/migrate/migrate"
 	"github.com/jmoiron/sqlx"
-	"github.com/mattes/migrate/migrate"
 
 	// postgres database driver
+	_ "github.com/golang-migrate/migrate/driver/postgres"
 	_ "github.com/lib/pq"
-	_ "github.com/mattes/migrate/driver/postgres"
 )
 
 // ---- Begin Standard Errors ----
