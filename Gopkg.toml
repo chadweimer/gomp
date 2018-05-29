@@ -45,7 +45,7 @@
   name = "github.com/lib/pq"
 
 [[constraint]]
-  name = "github.com/mattes/migrate"
+  name = "github.com/golang-migrate/migrate"
   version = "1.3.0"
 
 [[constraint]]
