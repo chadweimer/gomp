@@ -21,7 +21,7 @@ import (
 )
 
 func main() {
-	cfg := conf.Load("conf/app.json")
+	cfg := conf.Load()
 	if err := cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}

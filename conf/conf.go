@@ -48,7 +48,7 @@ type Config struct {
 }
 
 // Load reads the configuration file from the specified path
-func Load(path string) *Config {
+func Load() *Config {
 	c := Config{
 		Port:             4000,
 		UploadDriver:     "fs",
