@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -36,6 +37,8 @@ func main() {
 			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
 		}},
 	})
+	apiHandler := api.NewHandler(renderer, cfg, upl, model)
+	staticFs := http.FileServer(upload.NewJustFilesFileSystem(http.Dir("static")))
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
@@ -43,18 +46,25 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, model)
-
 	mainMux := httprouter.New()
 	mainMux.Handler("GET", "/api/*apipath", apiHandler)
 	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
 	mainMux.Handler("POST", "/api/*apipath", apiHandler)
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
+
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		if strings.HasPrefix(req.URL.Path, "/static") {
+			if _, err := os.Stat(req.URL.Path); !os.IsNotExist(err) {
+				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/static")
+				staticFs.ServeHTTP(resp, req)
+				return
+			}
+		}
+
 		renderer.HTML(resp, http.StatusOK, "index", nil)
 	})
+
 	n.UseHandler(mainMux)
 
 	// subscribe to SIGINT signals
