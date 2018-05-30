@@ -55,7 +55,8 @@ func main() {
 
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if strings.HasPrefix(req.URL.Path, "/static/") {
-			if _, err := os.Stat(req.URL.Path); !os.IsNotExist(err) {
+			possiblePath := strings.TrimPrefix(req.URL.Path, "/")
+			if _, err := os.Stat(possiblePath); !os.IsNotExist(err) {
 				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/static/")
 				staticFs.ServeHTTP(resp, req)
 				return
