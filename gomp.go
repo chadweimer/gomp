@@ -54,9 +54,9 @@ func main() {
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		if strings.HasPrefix(req.URL.Path, "/static") {
+		if strings.HasPrefix(req.URL.Path, "/static/") {
 			if _, err := os.Stat(req.URL.Path); !os.IsNotExist(err) {
-				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/static")
+				req.URL.Path = strings.TrimPrefix(req.URL.Path, "/static/")
 				staticFs.ServeHTTP(resp, req)
 				return
 			}
