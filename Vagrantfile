@@ -8,13 +8,8 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/go/src/github.com/chadweimer/gomp"
 
-  config.vm.provider "virtualbox" do |vb|
-    vb.gui = true
-    vb.memory = "4096"
-
-    # Prevent cloudimg-console.log from being written
-    vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
-  end
+  # Let git know who we are
+  config.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig", run: "always"
 
   # Install docker in the guest
   config.vm.provision "docker" do |d|
@@ -43,4 +38,12 @@ Vagrant.configure("2") do |config|
 
   # Reboot so that we get the GUI on the first up
   config.vm.provision :reload
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+    vb.memory = "4096"
+
+    # Prevent cloudimg-console.log from being written
+    vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
+  end
 end
