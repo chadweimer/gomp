@@ -155,7 +155,7 @@
                     <template is="dom-if" if="[[_isViewMode(viewMode, 'full')]]" restamp>
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
-                                <recipe-card recipe="[[item]]"></recipe-card>
+                                <recipe-card recipe="[[item]]" jwt-token="[[jwtToken]]"></recipe-card>
                             </div>
                         </template>
                     </template>
