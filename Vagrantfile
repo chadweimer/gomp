@@ -2,8 +2,6 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/bionic64"
   config.vm.box_url = "https://app.vagrantup.com/ubuntu/boxes/bionic64"
 
@@ -11,21 +9,35 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/go/src/github.com/chadweimer/gomp"
 
   config.vm.provider "virtualbox" do |vb|
-    # Display the VirtualBox GUI when booting the machine
     vb.gui = true
+    vb.memory = "4096"
 
-    # Customize the amount of memory on the VM:
-    vb.memory = "1024"
+    # Prevent cloudimg-console.log from being written
+    vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
   end
 
+  # Install docker in the guest
   config.vm.provision "docker" do |d|
   end
-  config.vm.provision "shell", inline: <<-SHELL
-    apt update
-    apt install -y git golang go-dep nodejs npm make
 
-    chown -R vagrant:vagrant /go
-    export GOPATH=/go
-    echo "export GOPATH=$GOPATH" >> .bashrc
+  # Custom provisioning
+  config.vm.provision "shell", inline: <<-SHELL
+    # Add the Microsoft package repo
+    curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg
+    sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+
+    # Install necessary packages
+    apt update
+    apt install -y git golang go-dep nodejs npm make code xubuntu-core virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
+
+    # Set up the go environment
+    chown -R $USER:$USER /go
+    echo "export GOPATH=/go" >> .bashrc
+
+    # Allow our user to interact with docker engine
+    usermod -aG docker $USER
   SHELL
+
+  # Reboot so that we get the GUI on the first up
+  config.vm.provision :reload
 end
