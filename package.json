@@ -3,7 +3,8 @@
   "description": "Go Meal Planner: A web-based recipe book",
   "devDependencies": {
     "bower": "^1.7.9",
-    "polymer-cli": "^1.0.0"
+    "polymer-cli": "^1.0.0",
+    "eslint": "^4.0.0"
   },
   "scripts": {
     "postinstall": "cd static && bower install --quiet",

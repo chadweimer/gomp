@@ -12,6 +12,7 @@ node_modules/
 build/
 /vendor/
 .glide/
+.vagrant/
 
 # Architecture specific extensions/prefixes
 *.[568vq]
