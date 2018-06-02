@@ -32,10 +32,13 @@ Vagrant.configure("2") do |config|
 
     # Set up the go environment
     chown -R vagrant:vagrant /go
-    echo "export GOPATH=/go" >> .bashrc
+    echo "export GOPATH=/go" | tee -a .bashrc
 
     # Allow our user to interact with docker engine
     usermod -aG docker vagrant
+
+    # Increase the amount of inotify watchers
+    echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf && sysctl -p
   SHELL
 
   # Reboot so that we get the GUI on the first up
