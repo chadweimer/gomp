@@ -8,6 +8,8 @@
 		"christian-kohler.npm-intellisense",
 		"polymer.polymer-ide",
 		"jonwolfe.language-polymer",
-		"bbenoist.vagrant"
+		"bbenoist.vagrant",
+		"PeterJausovec.vscode-docker",
+		"justinribeiro.polymer2snippets"
 	]
 }
