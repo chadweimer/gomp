@@ -31,11 +31,11 @@ Vagrant.configure("2") do |config|
     apt install -y git golang go-dep nodejs npm make code xubuntu-core virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
 
     # Set up the go environment
-    chown -R $USER:$USER /go
+    chown -R vagrant:vagrant /go
     echo "export GOPATH=/go" >> .bashrc
 
     # Allow our user to interact with docker engine
-    usermod -aG docker $USER
+    usermod -aG docker vagrant
   SHELL
 
   # Reboot so that we get the GUI on the first up
