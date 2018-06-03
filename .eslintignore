@@ -1,7 +1,7 @@
 **/*{.,-}min.js
 build/*
 db/*
-node_modules/*
+static/node_modules/*
 static/build/*
 static/bower_components/*
 vendor/*
