@@ -149,6 +149,7 @@
             _handlePutRecipeRatingResponse(e) {
                 this.set('recipe.averageRating', parseFloat(e.target.body));
                 this.showToast('Rating changed.');
+                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
             }
             _handlePutRecipeRatingError(e) {
                 this.showToast('Changing rating failed!');
