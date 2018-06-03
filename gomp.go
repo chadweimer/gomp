@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -30,11 +29,6 @@ func main() {
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
-		Directory:     "static",
-
-		Funcs: []template.FuncMap{map[string]interface{}{
-			"ApplicationTitle": func() string { return cfg.ApplicationTitle },
-		}},
 	})
 
 	n := negroni.New()
@@ -53,7 +47,7 @@ func main() {
 	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		renderer.HTML(resp, http.StatusOK, "index", nil)
+		http.ServeFile(resp, req, "static/index.html")
 	})
 	n.UseHandler(mainMux)
 

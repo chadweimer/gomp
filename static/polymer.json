@@ -1,5 +1,5 @@
 {
-    "entrypoint": "index.tmpl",
+    "entrypoint": "index.html",
     "shell": "src/gomp-app.html",
     "sources": [
         "src/**/*",
