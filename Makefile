@@ -1,6 +1,6 @@
 BUILD_DIR=build
 VENDOR_DIR=vendor
-NODE_MODULES_DIR=node_modules
+NODE_MODULES_DIR=static/node_modules
 BOWER_COMPONENTS_DIR=static/bower_components
 POLYMER_BUILD_DIR=static/build
 
@@ -15,7 +15,7 @@ reinstall: uninstall install
 .PHONY: install
 install:
 	dep ensure
-	npm install --silent
+	cd static && npm install --silent
 
 .PHONY: uninstall
 uninstall:
@@ -30,7 +30,7 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	npm run build
+	cd static && npm run build
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
