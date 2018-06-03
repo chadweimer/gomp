@@ -7,10 +7,10 @@
     "eslint": "^4.0.0"
   },
   "scripts": {
-    "postinstall": "cd static && bower install --quiet",
-    "build": "cd static && polymer build"
+    "postinstall": "bower install --quiet",
+    "build": "polymer build"
   },
   "cacheDirectories": [
-    "static/bower_components"
+    "bower_components"
   ]
 }
