@@ -225,6 +225,13 @@
         <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
         <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
         <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
+        
+        <iron-ajax bubbles
+            id="appConfigAjax"
+            url="/api/v1/app/configuration"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetAppConfigurationResponse"></iron-ajax>
         <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
@@ -252,7 +259,8 @@
                     },
                     title: {
                         type: String,
-                        value: 'Go Meal Planner',
+                        value: 'GOMP: Go Meal Planner',
+                        observer: '_titleChanged',
                     },
                     page: {
                         type: String,
@@ -287,6 +295,8 @@
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
                 this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
+
+                this.$.appConfigAjax.generateRequest();
             }
 
             _onAuthenticated(e) {
@@ -295,6 +305,12 @@
             }
             _jwtTokenChanged(jwtToken) {
                 this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken};
+            }
+
+            _titleChanged(title) {
+                document.title = title;
+                document.querySelector('meta[name="application-name"]').setAttribute('content', title);
+                document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', title);
             }
 
             // https://github.com/PolymerElements/paper-dialog/issues/7
@@ -405,6 +421,9 @@
             }
             _isActive(currentPage, pageToCheck) {
                 return currentPage === pageToCheck;
+            }
+            _handleGetAppConfigurationResponse(e) {
+                this.title = e.detail.response.title;
             }
             _handleGetTagsResponse(e) {
                 var tags = e.detail.response;

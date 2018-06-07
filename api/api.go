@@ -41,6 +41,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	}
 
 	h.apiMux = httprouter.New()
+	h.apiMux.GET("/api/v1/app/configuration", h.getAppConfiguration)
 	h.apiMux.POST("/api/v1/auth", h.postAuthenticate)
 	h.apiMux.GET("/api/v1/recipes", h.requireAuthentication(h.getRecipes))
 	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.postRecipe))

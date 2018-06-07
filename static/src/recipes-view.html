@@ -184,6 +184,10 @@
             _isActiveChanged(active) {
                 // Always exit edit mode when we change screens
                 this.editing = false;
+
+                if (active) {
+                    this.refresh();
+                }
             }
             _recipeIdChanged(recipeId) {
                 this.recipeId = recipeId;
