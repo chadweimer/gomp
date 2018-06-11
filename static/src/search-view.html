@@ -311,37 +311,22 @@
             _onNameSortTapped(e) {
                 e.preventDefault();
 
-                // Don't use this.set() since it will raise multiple events
-                this.search.sortBy = 'name';
-                this.search.sortDir = 'asc';
-
-                // Raise a single change event
-                this.notifyPath('search');
-
+                this.set('search.sortBy', 'name');
+                this.set('search.sortDir', 'asc');
                 this.$.settingsDrawer.close();
             }
             _onRatingSortTapped(e) {
                 e.preventDefault();
 
-                // Don't use this.set() since it will raise multiple events
-                this.search.sortBy = 'rating';
-                this.search.sortDir = 'desc';
-
-                // Raise a single change event
-                this.notifyPath('search');
-
+                this.set('search.sortBy', 'rating');
+                this.set('search.sortDir', 'desc');
                 this.$.settingsDrawer.close();
             }
             _onRandomSortTapped(e) {
                 e.preventDefault();
 
-                // Don't use this.set() since it will raise multiple events
-                this.search.sortBy = 'random';
-                this.search.sortDir = 'asc';
-
-                // Raise a single change event
-                this.notifyPath('search');
-
+                this.set('search.sortBy', 'random');
+                this.set('search.sortDir', 'asc');
                 this.$.settingsDrawer.close();
             }
             _onAscSortTapped(e) {

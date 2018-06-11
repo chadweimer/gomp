@@ -410,14 +410,9 @@
                 this.$.filterDialog.open();
             }
             _onHomeLinkClicked(e) {
-                // Don't use this.set() since it will raise multiple events
-                this.search.query = '';
-                this.search.fields = [];
-                this.search.tags = e.detail.tags;
-
-                // Raise a single change event
-                this.notifyPath('search');
-
+                this.set('search.query', '');
+                this.set('search.fields', []);
+                this.set('search.tags', e.detail.tags);
                 this._changeRoute('/search');
             }
             _isActive(currentPage, pageToCheck) {
@@ -448,21 +443,16 @@
                 this.searchFilters = filters;
             }
             _searchFiltersChanged(e) {
-                // Don't use this.set() since it will raise multiple events
                 if (this.selectedSearchFilters.fields) {
-                    this.search.fields = this.selectedSearchFilters.fields;
+                    this.set('search.fields', this.selectedSearchFilters.fields);
                 } else {
-                    this.search.fields = [];
+                    this.set('search.fields', []);
                 }
                 if (this.selectedSearchFilters.tags) {
-                    this.search.tags = this.selectedSearchFilters.tags;
+                    this.set('search.tags', this.selectedSearchFilters.tags);
                 } else {
-                    this.search.tags = [];
+                    this.set('search.tags', []);
                 }
-
-                // Raise a single change event
-                this.notifyPath('search');
-
                 this._changeRoute('/search');
             }
             _searchFieldsChanged(fields) {
