@@ -80,10 +80,10 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	// Build up the string of fields for use in the tsvector
 	fieldStr := ""
 	for _, field := range allFields {
-		if fieldStr != "" {
-			fieldStr += " || ' ' || "
-		}
 		if containsString(filterFields, field) {
+			if fieldStr != "" {
+				fieldStr += " || ' ' || "
+			}
 			fieldStr += "r." + field
 		}
 	}

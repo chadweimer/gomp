@@ -141,9 +141,9 @@ func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error)
 
 func containsString(arr []string, str string) bool {
 	for _, a := range arr {
-	   if a == str {
-		  return true
-	   }
+		if a == str {
+			return true
+		}
 	}
 	return false
  }
