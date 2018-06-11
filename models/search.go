@@ -70,24 +70,21 @@ type RecipeCompact struct {
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
-	fields := filter.Fields
-	fieldStr := ""
-	if fields == nil || len(fields) == 0 {
-		fields = []string{"name", "ingredients", "directions"}
+	// If the filter didn't specify the fields to search on, use all of them
+	allFields := []string{"name", "ingredients", "directions"}
+	filterFields := filter.Fields
+	if filterFields == nil || len(filterFields) == 0 {
+		filterFields = allFields
 	}
-	for _, field := range fields {
+
+	// Build up the string of fields for use in the tsvector
+	fieldStr := ""
+	for _, field := range allFields {
 		if fieldStr != "" {
 			fieldStr += " || ' ' || "
 		}
-		switch field {
-		case "ingredients":
-			fieldStr += "r.ingredients"
-		case "directions":
-			fieldStr += "r.directions"
-		case "name":
-			fallthrough
-		default:
-			fieldStr += "r.name"
+		if containsString(filterFields, field) {
+			fieldStr += "r." + field
 		}
 	}
 
