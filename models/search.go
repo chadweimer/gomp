@@ -77,7 +77,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	// If the filter didn't specify the fields to search on, use all of them
 	filterFields := filter.Fields
 	if filterFields == nil || len(filterFields) == 0 {
-		filterFields = SupportedFields
+		filterFields = SupportedFields[:]
 	}
 
 	// Build up the string of fields for use in the tsvector
