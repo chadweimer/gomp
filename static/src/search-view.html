@@ -129,14 +129,14 @@
                     </paper-listbox>
                     <paper-drawer-divider></paper-drawer-divider>
                     <paper-drawer-subheader>Sort</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
+                    <paper-listbox class="menu-content" selected="[[search.sortBy]]" attr-for-selected="name" fallback-selection="name">
                         <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
                         <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
                         <paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
                     </paper-listbox>
                     <paper-drawer-divider></paper-drawer-divider>
                     <paper-drawer-subheader>Order</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="asc">
+                    <paper-listbox class="menu-content" selected="[[search.sortDir]]" attr-for-selected="name" fallback-selection="asc">
                         <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
                         <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
                     </paper-listbox>
@@ -212,32 +212,14 @@
                         notify: true,
                     },
                     search: {
-                        type: String,
-                        value: '',
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    searchFields: {
-                        type: Array,
-                        value: [],
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    searchTags: {
-                        type: Array,
-                        value: [],
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    sortBy: {
-                        type: String,
-                        value: 'name',
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    sortDir: {
-                        type: String,
-                        value: 'asc',
+                        type: Object,
+                        value: {
+                            query: '',
+                            fields: [],
+                            tags: [],
+                            sortBy: 'name',
+                            sortDir: 'asc',
+                        },
                         notify: true,
                         observer: '_searchChanged',
                     },
@@ -262,6 +244,7 @@
             static get observers() {
                 return [
                     '_updatePagination(recipes, totalRecipeCount)',
+                    '_searchChanged(search.*)',
                 ];
             }
 
@@ -272,11 +255,11 @@
             }
             refresh() {
                 this.$.recipesAjax.params = {
-                    'q': this.search,
-                    'fields[]': this.searchFields,
-                    'tags[]': this.searchTags,
-                    'sort': this.sortBy,
-                    'dir': this.sortDir,
+                    'q': this.search.query,
+                    'fields[]': this.search.fields,
+                    'tags[]': this.search.tags,
+                    'sort': this.search.sortBy,
+                    'dir': this.search.sortDir,
                     'page': this.pageNum,
                     'count': this._getRecipeCount(),
                 };
@@ -328,34 +311,49 @@
             _onNameSortTapped(e) {
                 e.preventDefault();
 
-                this.sortBy = 'name';
-                this.sortDir = 'asc';
+                // Don't use this.set() since it will raise multiple events
+                this.search.sortBy = 'name';
+                this.search.sortDir = 'asc';
+
+                // Raise a single change event
+                this.notifyPath('search');
+
                 this.$.settingsDrawer.close();
             }
             _onRatingSortTapped(e) {
                 e.preventDefault();
 
-                this.sortBy = 'rating';
-                this.sortDir = 'desc';
+                // Don't use this.set() since it will raise multiple events
+                this.search.sortBy = 'rating';
+                this.search.sortDir = 'desc';
+
+                // Raise a single change event
+                this.notifyPath('search');
+
                 this.$.settingsDrawer.close();
             }
             _onRandomSortTapped(e) {
                 e.preventDefault();
 
-                this.sortBy = 'random';
-                this.sortDir = 'asc';
+                // Don't use this.set() since it will raise multiple events
+                this.search.sortBy = 'random';
+                this.search.sortDir = 'asc';
+
+                // Raise a single change event
+                this.notifyPath('search');
+
                 this.$.settingsDrawer.close();
             }
             _onAscSortTapped(e) {
                 e.preventDefault();
 
-                this.sortDir = 'asc';
+                this.set('search.sortDir', 'asc');
                 this.$.settingsDrawer.close();
             }
             _onDescSortTapped(e) {
                 e.preventDefault();
 
-                this.sortDir = 'desc';
+                this.set('search.sortDir', 'desc');
                 this.$.settingsDrawer.close();
             }
 

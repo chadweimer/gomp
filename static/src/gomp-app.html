@@ -143,7 +143,7 @@
 
                             <paper-search-bar
                                 icon="search"
-                                query="[[search]]"
+                                query="[[search.query]]"
                                 nr-selected-filters="[[selectedSearchFiltersCount]]"
                                 on-paper-search-search="_onSearch"
                                 on-paper-search-clear="_onSearch"
@@ -173,10 +173,6 @@
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'search')]]"
                             search="{{search}}"
-                            search-fields="{{searchFields}}"
-                            search-tags="{{searchTags}}"
-                            sort-by="{{sortBy}}"
-                            sort-dir="{{sortDir}}"
                             view-mode="{{viewMode}}"></search-view>
 
                         <recipes-view
@@ -221,11 +217,7 @@
 
         <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
-        <app-localstorage-document key="q" data="{{search}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="fields" data="{{searchFields}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="tags" data="{{searchTags}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="search" data="{{search}}" session-only></app-localstorage-document>
         <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
 
         <iron-ajax bubbles
@@ -280,8 +272,8 @@
             static get observers() {
                 return [
                     '_routePageChanged(routeData.page)',
-                    '_searchFieldsChanged(searchFields)',
-                    '_searchTagsChanged(searchTags)',
+                    '_searchFieldsChanged(search.fields)',
+                    '_searchTagsChanged(search.tags)',
                 ];
             }
 
@@ -411,16 +403,21 @@
                 this._changeRoute('/login');
             }
             _onSearch(e) {
-                this.search = e.target.query.trim();
+                this.set('search.query', e.target.query.trim());
                 this._changeRoute('/search');
             }
             _onFilter() {
                 this.$.filterDialog.open();
             }
             _onHomeLinkClicked(e) {
-                this.search = '';
-                this.searchFields = [];
-                this.searchTags = e.detail.tags;
+                // Don't use this.set() since it will raise multiple events
+                this.search.query = '';
+                this.search.fields = [];
+                this.search.tags = e.detail.tags;
+
+                // Raise a single change event
+                this.notifyPath('search');
+
                 this._changeRoute('/search');
             }
             _isActive(currentPage, pageToCheck) {
@@ -451,16 +448,21 @@
                 this.searchFilters = filters;
             }
             _searchFiltersChanged(e) {
+                // Don't use this.set() since it will raise multiple events
                 if (this.selectedSearchFilters.fields) {
-                    this.searchFields = this.selectedSearchFilters.fields;
+                    this.search.fields = this.selectedSearchFilters.fields;
                 } else {
-                    this.searchFields = [];
+                    this.search.fields = [];
                 }
                 if (this.selectedSearchFilters.tags) {
-                    this.searchTags = this.selectedSearchFilters.tags;
+                    this.search.tags = this.selectedSearchFilters.tags;
                 } else {
-                    this.searchTags = [];
+                    this.search.tags = [];
                 }
+
+                // Raise a single change event
+                this.notifyPath('search');
+
                 this._changeRoute('/search');
             }
             _searchFieldsChanged(fields) {
