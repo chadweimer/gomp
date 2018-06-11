@@ -16,6 +16,7 @@ type getRecipesResponse struct {
 
 func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	query := getParam(req.URL.Query(), "q")
+	fields := getParams(req.URL.Query(), "fields[]")
 	tags := getParams(req.URL.Query(), "tags[]")
 	sortBy := getParam(req.URL.Query(), "sort")
 	sortDir := getParam(req.URL.Query(), "dir")
@@ -32,6 +33,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 
 	filter := models.RecipesFilter{
 		Query:   query,
+		Fields:  fields,
 		Tags:    tags,
 		SortBy:  sortBy,
 		SortDir: sortDir,

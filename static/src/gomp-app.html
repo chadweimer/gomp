@@ -173,6 +173,7 @@
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'search')]]"
                             search="{{search}}"
+                            search-fields="{{searchFields}}"
                             search-tags="{{searchTags}}"
                             sort-by="{{sortBy}}"
                             sort-dir="{{sortDir}}"
@@ -221,11 +222,12 @@
         <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
         <app-localstorage-document key="q" data="{{search}}" session-only></app-localstorage-document>
+        <app-localstorage-document key="fields" data="{{searchFields}}" session-only></app-localstorage-document>
         <app-localstorage-document key="tags" data="{{searchTags}}" session-only></app-localstorage-document>
         <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
         <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
         <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
-        
+
         <iron-ajax bubbles
             id="appConfigAjax"
             url="/api/v1/app/configuration"
@@ -278,6 +280,7 @@
             static get observers() {
                 return [
                     '_routePageChanged(routeData.page)',
+                    '_searchFieldsChanged(searchFields)',
                     '_searchTagsChanged(searchTags)',
                 ];
             }
@@ -416,6 +419,7 @@
             }
             _onHomeLinkClicked(e) {
                 this.search = '';
+                this.searchFields = [];
                 this.searchTags = e.detail.tags;
                 this._changeRoute('/search');
             }
@@ -429,6 +433,13 @@
                 var tags = e.detail.response;
 
                 var filters = [];
+
+                var fieldFilter = {id: "fields", name: "Search Fields", values: []};
+                fieldFilter.values.push({id: "name", name: "Name"});
+                fieldFilter.values.push({id: "ingredients", name: "Ingredients"});
+                fieldFilter.values.push({id: "directions", name: "Directions"});
+                filters.push(fieldFilter);
+
                 var tagFilter = {id: 'tags', name: 'Tags', values: []};
                 filters.push(tagFilter);
                 if (tags) {
@@ -440,6 +451,11 @@
                 this.searchFilters = filters;
             }
             _searchFiltersChanged(e) {
+                if (this.selectedSearchFilters.fields) {
+                    this.searchFields = this.selectedSearchFilters.fields;
+                } else {
+                    this.searchFields = [];
+                }
                 if (this.selectedSearchFilters.tags) {
                     this.searchTags = this.selectedSearchFilters.tags;
                 } else {
@@ -447,11 +463,18 @@
                 }
                 this._changeRoute('/search');
             }
+            _searchFieldsChanged(fields) {
+                if (!this.selectedSearchFilters) {
+                    this.selectedSearchFilters = {};
+                }
+                this.set('selectedSearchFilters.fields', fields);
+            }
             _searchTagsChanged(tags) {
                 if (!this.selectedSearchFilters) {
                     this.selectedSearchFilters = {};
                 }
                 this.set('selectedSearchFilters.tags', tags);
+                // Only use tags for the number of selected filters
                 this.selectedSearchFiltersCount = tags.length;
             }
 

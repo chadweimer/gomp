@@ -40,6 +40,7 @@ type SearchModel struct {
 // RecipesFilter is the primary model class for recipe search
 type RecipesFilter struct {
 	Query   string   `json:"query"`
+	Fields  []string `json:"fields"`
 	Tags    []string `json:"tags"`
 	SortBy  string   `json:"sortBy"`
 	SortDir string   `json:"sortDir"`
@@ -69,11 +70,31 @@ type RecipeCompact struct {
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
+	fields := filter.Fields
+	fieldStr := ""
+	if fields == nil || len(fields) == 0 {
+		fields = []string{"name", "ingredients", "directions"}
+	}
+	for i, field := range fields {
+		if fieldStr != "" {
+			fieldStr += " || ' ' || "
+		}
+		switch field {
+		case "ingredients":
+			fieldStr += "r.ingredients"
+		case "directions":
+			fieldStr += "r.directions"
+		case "name":
+			fallthrough
+		default:
+			fieldStr += "r.name"
+		}
+	}
+
 	whereStmt := ""
 	whereArgs := make([]interface{}, 0)
-
 	if filter.Query != "" {
-		whereStmt += " WHERE to_tsvector('english', r.name || ' ' || r.ingredients || ' ' || r.directions) @@ plainto_tsquery(?)"
+		whereStmt += " WHERE to_tsvector('english', " + fieldStr + ") @@ plainto_tsquery(?)"
 		whereArgs = append(whereArgs, filter.Query)
 	}
 

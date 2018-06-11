@@ -217,6 +217,12 @@
                         notify: true,
                         observer: '_searchChanged',
                     },
+                    searchFields: {
+                        type: Array,
+                        value: [],
+                        notify: true,
+                        observer: '_searchChanged',
+                    },
                     searchTags: {
                         type: Array,
                         value: [],
@@ -267,6 +273,7 @@
             refresh() {
                 this.$.recipesAjax.params = {
                     'q': this.search,
+                    'fields[]': this.searchFields,
                     'tags[]': this.searchTags,
                     'sort': this.sortBy,
                     'dir': this.sortDir,
