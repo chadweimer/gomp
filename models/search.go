@@ -75,7 +75,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	if fields == nil || len(fields) == 0 {
 		fields = []string{"name", "ingredients", "directions"}
 	}
-	for i, field := range fields {
+	for _, field := range fields {
 		if fieldStr != "" {
 			fieldStr += " || ' ' || "
 		}
