@@ -32,6 +32,10 @@ const (
 	SortDirDesc string = "desc"
 )
 
+// SupportedFields defines an array of field names that can be used
+// in RecipesFilter.Fields
+var SupportedFields = [...]string{"name", "ingredients", "directions"}
+
 // SearchModel provides functionality to search recipes.
 type SearchModel struct {
 	*Model
@@ -71,15 +75,14 @@ type RecipeCompact struct {
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
 	// If the filter didn't specify the fields to search on, use all of them
-	allFields := []string{"name", "ingredients", "directions"}
 	filterFields := filter.Fields
 	if filterFields == nil || len(filterFields) == 0 {
-		filterFields = allFields
+		filterFields = SupportedFields
 	}
 
 	// Build up the string of fields for use in the tsvector
 	fieldStr := ""
-	for _, field := range allFields {
+	for _, field := range SupportedFields {
 		if containsString(filterFields, field) {
 			if fieldStr != "" {
 				fieldStr += " || ' ' || "
