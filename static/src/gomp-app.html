@@ -161,39 +161,33 @@
                 </app-header>
 
                 <main>
-                    <iron-pages selected="[[page]]" attr-for-selected="name">
+                    <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active">
                         <home-view
                             name="home"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'home')]]"></home-view>
+                            jwt-token="[[jwtToken]]"></home-view>
 
                         <search-view
                             id="searchView"
                             name="search"
                             jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'search')]]"
                             search="{{search}}"></search-view>
 
                         <recipes-view
                             name="recipes"
                             jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'recipes')]]"
                             route="[[subroute]]"></recipes-view>
 
                         <create-view
                             name="create"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'create')]]"></create-view>
+                            jwt-token="[[jwtToken]]"></create-view>
 
                         <settings-view
                             name="settings"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'settings')]]"></settings-view>
+                            jwt-token="[[jwtToken]]"></settings-view>
 
                         <login-view
                             name="login"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'login')]]"></login-view>
+                            jwt-token="[[jwtToken]]"></login-view>
 
                         <status-404-view name="status-404"></status-404-view>
                     </iron-pages>
@@ -421,9 +415,6 @@
                 this.set('search.fields', []);
                 this.set('search.tags', e.detail.tags);
                 this._changeRoute('/search');
-            }
-            _isActive(currentPage, pageToCheck) {
-                return currentPage === pageToCheck;
             }
             _handleGetAppConfigurationResponse(e) {
                 this.title = e.detail.response.title;
