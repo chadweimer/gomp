@@ -56,7 +56,6 @@
         <paper-divider></paper-divider>
         <template is="dom-repeat" items="[[notes]]">
             <note-card
-                jwt-token="[[jwtToken]]"
                 note="[[item]]"
                 on-note-card-edit="_editNoteTapped"
                 on-note-card-deleted="_noteDeleted"></note-card>
@@ -74,7 +73,6 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/notes"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetRequest"
             on-response="_handleGetResponse"></iron-ajax>
@@ -82,14 +80,12 @@
             id="postNoteAjax"
             url="/api/v1/notes"
             method="POST"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handlePostNoteResponse"></iron-ajax>
         <iron-ajax bubbles
             id="putNoteAjax"
             url="/api/v1/notes/[[noteId]]"
             method="PUT"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handlePutNoteResponse"></iron-ajax>
     </template>
@@ -105,7 +101,7 @@
                     },
                 };
             }
-            
+
             refresh() {
                 this.$.getAjax.generateRequest();
             }

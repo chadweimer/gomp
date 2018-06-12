@@ -123,20 +123,20 @@
                     <app-toolbar></app-toolbar>
 
                     <paper-drawer-subheader>View</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[viewMode]]" attr-for-selected="name" fallback-selection="full">
+                    <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
                         <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
                         <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                     </paper-listbox>
                     <paper-drawer-divider></paper-drawer-divider>
                     <paper-drawer-subheader>Sort</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[sortBy]]" attr-for-selected="name" fallback-selection="name">
+                    <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
                         <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
                         <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
                         <paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
                     </paper-listbox>
                     <paper-drawer-divider></paper-drawer-divider>
                     <paper-drawer-subheader>Order</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[sortDir]]" attr-for-selected="name" fallback-selection="asc">
+                    <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">
                         <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
                         <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
                     </paper-listbox>
@@ -152,14 +152,14 @@
                     <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                 </div>
                 <div class="outterContainer">
-                    <template is="dom-if" if="[[_isViewMode(viewMode, 'full')]]" restamp>
+                    <template is="dom-if" if="[[_areEqual(searchSettings.viewMode, 'full')]]" restamp>
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
-                                <recipe-card recipe="[[item]]" jwt-token="[[jwtToken]]"></recipe-card>
+                                <recipe-card recipe="[[item]]"></recipe-card>
                             </div>
                         </template>
                     </template>
-                    <template is="dom-if" if="[[_isViewMode(viewMode, 'compact')]]" restamp>
+                    <template is="dom-if" if="[[_areEqual(searchSettings.viewMode, 'compact')]]" restamp>
                         <template is="dom-repeat" items="[[_columnize(recipes, 3)]]" as="inner">
                             <div class="recipeContainer">
                                 <template is="dom-repeat" items="[[inner]]" as="recipe">
@@ -182,11 +182,11 @@
             <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
         </app-drawer-layout>
 
+        <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only></app-localstorage-document>
         <iron-ajax bubbles
             auto
             id="recipesAjax"
             url="/api/v1/recipes"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipesRequest"
@@ -212,32 +212,17 @@
                         notify: true,
                     },
                     search: {
-                        type: String,
-                        value: '',
+                        type: Object,
                         notify: true,
                         observer: '_searchChanged',
                     },
-                    searchTags: {
-                        type: Array,
-                        value: [],
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    sortBy: {
-                        type: String,
-                        value: 'name',
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    sortDir: {
-                        type: String,
-                        value: 'asc',
-                        notify: true,
-                        observer: '_searchChanged',
-                    },
-                    viewMode: {
-                        type: String,
-                        value: 'full',
+                    searchSettings: {
+                        type: Object,
+                        value: {
+                            sortBy: 'name',
+                            sortDir: 'asc',
+                            viewMode: 'full',
+                        },
                         notify: true,
                         observer: '_searchChanged',
                     },
@@ -256,6 +241,8 @@
             static get observers() {
                 return [
                     '_updatePagination(recipes, totalRecipeCount)',
+                    '_searchChanged(search.*)',
+                    '_searchChanged(searchSettings.*)',
                 ];
             }
 
@@ -266,10 +253,11 @@
             }
             refresh() {
                 this.$.recipesAjax.params = {
-                    'q': this.search,
-                    'tags[]': this.searchTags,
-                    'sort': this.sortBy,
-                    'dir': this.sortDir,
+                    'q': this.search.query,
+                    'fields[]': this.search.fields,
+                    'tags[]': this.search.tags,
+                    'sort': this.searchSettings.sortBy,
+                    'dir': this.searchSettings.sortDir,
                     'page': this.pageNum,
                     'count': this._getRecipeCount(),
                 };
@@ -283,7 +271,7 @@
                 this.refresh();
             }
             _getRecipeCount() {
-                if (this.viewMode === 'compact') {
+                if (this.searchSettings.viewMode === 'compact') {
                     return 60;
                 }
                 return 18;
@@ -309,51 +297,51 @@
             _onFullViewTapped(e) {
                 e.preventDefault();
 
-                this.viewMode = 'full';
+                this.set('searchSettings.viewMode', 'full');
                 this.$.settingsDrawer.close();
             }
             _onCompactViewTapped(e) {
                 e.preventDefault();
 
-                this.viewMode = 'compact';
+                this.set('searchSettings.viewMode', 'compact');
                 this.$.settingsDrawer.close();
             }
             _onNameSortTapped(e) {
                 e.preventDefault();
 
-                this.sortBy = 'name';
-                this.sortDir = 'asc';
+                this.set('searchSettings.sortBy', 'name');
+                this.set('searchSettings.sortDir', 'asc');
                 this.$.settingsDrawer.close();
             }
             _onRatingSortTapped(e) {
                 e.preventDefault();
 
-                this.sortBy = 'rating';
-                this.sortDir = 'desc';
+                this.set('searchSettings.sortBy', 'rating');
+                this.set('searchSettings.sortDir', 'desc');
                 this.$.settingsDrawer.close();
             }
             _onRandomSortTapped(e) {
                 e.preventDefault();
 
-                this.sortBy = 'random';
-                this.sortDir = 'asc';
+                this.set('searchSettings.sortBy', 'random');
+                this.set('searchSettings.sortDir', 'asc');
                 this.$.settingsDrawer.close();
             }
             _onAscSortTapped(e) {
                 e.preventDefault();
 
-                this.sortDir = 'asc';
+                this.set('searchSettings.sortDir', 'asc');
                 this.$.settingsDrawer.close();
             }
             _onDescSortTapped(e) {
                 e.preventDefault();
 
-                this.sortDir = 'desc';
+                this.set('searchSettings.sortDir', 'desc');
                 this.$.settingsDrawer.close();
             }
 
-            _isViewMode(viewMode, expected) {
-                return viewMode === expected;
+            _areEqual(a, b) {
+                return a === b;
             }
             _columnize(items, numSplits) {
                 var splitCount = Math.ceil(items.length / numSplits);

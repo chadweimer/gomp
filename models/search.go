@@ -32,6 +32,10 @@ const (
 	SortDirDesc string = "desc"
 )
 
+// SupportedFields defines an array of field names that can be used
+// in RecipesFilter.Fields
+var SupportedFields = [...]string{"name", "ingredients", "directions"}
+
 // SearchModel provides functionality to search recipes.
 type SearchModel struct {
 	*Model
@@ -40,6 +44,7 @@ type SearchModel struct {
 // RecipesFilter is the primary model class for recipe search
 type RecipesFilter struct {
 	Query   string   `json:"query"`
+	Fields  []string `json:"fields"`
 	Tags    []string `json:"tags"`
 	SortBy  string   `json:"sortBy"`
 	SortDir string   `json:"sortDir"`
@@ -69,11 +74,27 @@ type RecipeCompact struct {
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
+	// If the filter didn't specify the fields to search on, use all of them
+	filterFields := filter.Fields
+	if filterFields == nil || len(filterFields) == 0 {
+		filterFields = SupportedFields[:]
+	}
+
+	// Build up the string of fields for use in the tsvector
+	fieldStr := ""
+	for _, field := range SupportedFields {
+		if containsString(filterFields, field) {
+			if fieldStr != "" {
+				fieldStr += " || ' ' || "
+			}
+			fieldStr += "r." + field
+		}
+	}
+
 	whereStmt := ""
 	whereArgs := make([]interface{}, 0)
-
 	if filter.Query != "" {
-		whereStmt += " WHERE to_tsvector('english', r.name || ' ' || r.ingredients || ' ' || r.directions) @@ plainto_tsquery(?)"
+		whereStmt += " WHERE to_tsvector('english', " + fieldStr + ") @@ plainto_tsquery(?)"
 		whereArgs = append(whereArgs, filter.Query)
 	}
 

@@ -143,7 +143,7 @@
 
                             <paper-search-bar
                                 icon="search"
-                                query="[[search]]"
+                                query="[[search.query]]"
                                 nr-selected-filters="[[selectedSearchFiltersCount]]"
                                 on-paper-search-search="_onSearch"
                                 on-paper-search-clear="_onSearch"
@@ -161,44 +161,13 @@
                 </app-header>
 
                 <main>
-                    <iron-pages selected="[[page]]" attr-for-selected="name">
-                        <home-view
-                            name="home"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'home')]]"></home-view>
-
-                        <search-view
-                            id="searchView"
-                            name="search"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'search')]]"
-                            search="{{search}}"
-                            search-tags="{{searchTags}}"
-                            sort-by="{{sortBy}}"
-                            sort-dir="{{sortDir}}"
-                            view-mode="{{viewMode}}"></search-view>
-
-                        <recipes-view
-                            name="recipes"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'recipes')]]"
-                            route="[[subroute]]"></recipes-view>
-
-                        <create-view
-                            name="create"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'create')]]"></create-view>
-
-                        <settings-view
-                            name="settings"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'settings')]]"></settings-view>
-
-                        <login-view
-                            name="login"
-                            jwt-token="[[jwtToken]]"
-                            is-active="[[_isActive(page, 'login')]]"></login-view>
-
+                    <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active">
+                        <home-view name="home"></home-view>
+                        <search-view id="searchView" name="search" search="{{search}}"></search-view>
+                        <recipes-view name="recipes" route="[[subroute]]"></recipes-view>
+                        <create-view name="create"></create-view>
+                        <settings-view name="settings"></settings-view>
+                        <login-view name="login"></login-view>
                         <status-404-view name="status-404"></status-404-view>
                     </iron-pages>
                 </main>
@@ -220,12 +189,8 @@
 
         <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
-        <app-localstorage-document key="q" data="{{search}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="tags" data="{{searchTags}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="sort" data="{{sortBy}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="dir" data="{{sortDir}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
-        
+        <app-localstorage-document key="search" data="{{search}}" session-only></app-localstorage-document>
+
         <iron-ajax bubbles
             id="appConfigAjax"
             url="/api/v1/app/configuration"
@@ -235,7 +200,6 @@
         <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
-            headers="[[ajaxHeaders]]"
             params='{"sort": "tag", "dir": "asc", "count": 100000}'
             method="GET"
             handle-as="json"
@@ -250,12 +214,6 @@
                     jwtToken: {
                         type: String,
                         notify: true,
-                        observer: '_jwtTokenChanged',
-                    },
-                    ajaxHeaders: {
-                        type: Object,
-                        notify: true,
-                        value: null,
                     },
                     title: {
                         type: String,
@@ -273,38 +231,45 @@
                         notify: true,
                         value: 0,
                     },
+                    search: {
+                        type: Object,
+                        value: {
+                            query: '',
+                            fields: [],
+                            tags: [],
+                        },
+                        notify: true,
+                    },
                 };
             }
             static get observers() {
                 return [
                     '_routePageChanged(routeData.page)',
-                    '_searchTagsChanged(searchTags)',
+                    '_searchFieldsChanged(search.fields)',
+                    '_searchTagsChanged(search.tags)',
                 ];
             }
 
             ready() {
-                super.ready();
-
                 this.addEventListener('scroll-top', e => this._scrollToTop(e));
                 this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
                 this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
                 this.addEventListener('recipes-modified', e => this._recipesModified(e));
                 this.addEventListener('change-page', e => this._changePageRequested(e));
+                this.addEventListener('iron-ajax-presend', e => this._onAjaxPresend(e));
                 this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
                 this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
                 this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
 
+                super.ready();
                 this.$.appConfigAjax.generateRequest();
             }
 
             _onAuthenticated(e) {
                 // This is a workaround for a race condition  during login
                 this.jwtToken = e.detail.jwtToken;
-            }
-            _jwtTokenChanged(jwtToken) {
-                this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken};
             }
 
             _titleChanged(title) {
@@ -328,6 +293,9 @@
                 return loadingCount !== 0;
             }
 
+            _onAjaxPresend(e) {
+                e.detail.options.headers = {'Authorization': 'Bearer ' + this.jwtToken};
+            }
             _onAjaxRequest(e) {
                 this.loadingCount++;
             }
@@ -404,23 +372,21 @@
             _logout() {
                 localStorage.clear();
                 sessionStorage.clear();
-                this.ajaxHeaders = null;
+                this.jwtToken = null;
                 this._changeRoute('/login');
             }
             _onSearch(e) {
-                this.search = e.target.query.trim();
+                this.set('search.query', e.target.query.trim());
                 this._changeRoute('/search');
             }
             _onFilter() {
                 this.$.filterDialog.open();
             }
             _onHomeLinkClicked(e) {
-                this.search = '';
-                this.searchTags = e.detail.tags;
+                this.set('search.query', '');
+                this.set('search.fields', []);
+                this.set('search.tags', e.detail.tags);
                 this._changeRoute('/search');
-            }
-            _isActive(currentPage, pageToCheck) {
-                return currentPage === pageToCheck;
             }
             _handleGetAppConfigurationResponse(e) {
                 this.title = e.detail.response.title;
@@ -429,6 +395,13 @@
                 var tags = e.detail.response;
 
                 var filters = [];
+
+                var fieldFilter = {id: 'fields', name: 'Search Fields', values: []};
+                fieldFilter.values.push({id: 'name', name: 'Name'});
+                fieldFilter.values.push({id: 'ingredients', name: 'Ingredients'});
+                fieldFilter.values.push({id: 'directions', name: 'Directions'});
+                filters.push(fieldFilter);
+
                 var tagFilter = {id: 'tags', name: 'Tags', values: []};
                 filters.push(tagFilter);
                 if (tags) {
@@ -440,18 +413,30 @@
                 this.searchFilters = filters;
             }
             _searchFiltersChanged(e) {
-                if (this.selectedSearchFilters.tags) {
-                    this.searchTags = this.selectedSearchFilters.tags;
+                if (this.selectedSearchFilters.fields) {
+                    this.set('search.fields', this.selectedSearchFilters.fields);
                 } else {
-                    this.searchTags = [];
+                    this.set('search.fields', []);
+                }
+                if (this.selectedSearchFilters.tags) {
+                    this.set('search.tags', this.selectedSearchFilters.tags);
+                } else {
+                    this.set('search.tags', []);
                 }
                 this._changeRoute('/search');
+            }
+            _searchFieldsChanged(fields) {
+                if (!this.selectedSearchFilters) {
+                    this.selectedSearchFilters = {};
+                }
+                this.set('selectedSearchFilters.fields', fields);
             }
             _searchTagsChanged(tags) {
                 if (!this.selectedSearchFilters) {
                     this.selectedSearchFilters = {};
                 }
                 this.set('selectedSearchFilters.tags', tags);
+                // Only use tags for the number of selected filters
                 this.selectedSearchFiltersCount = tags.length;
             }
 

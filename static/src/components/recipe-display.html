@@ -87,7 +87,6 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
@@ -96,7 +95,6 @@
             auto
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetMainImageRequest"
             on-response="_handleGetMainImageResponse"></iron-ajax>
@@ -104,7 +102,6 @@
             id="rateAjax"
             url="/api/v1/recipes/[[recipeId]]/rating"
             method="PUT"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handlePutRecipeRatingResponse"
             on-error="_handlePutRecipeRatingError"></iron-ajax>

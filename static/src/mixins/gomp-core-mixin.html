@@ -20,16 +20,6 @@
                     reflectToAttribute: true,
                     observer: '_isActiveChanged',
                 },
-                jwtToken: {
-                    type: String,
-                    notify: true,
-                    observer: '_jwtTokenChanged',
-                },
-                ajaxHeaders: {
-                    type: Object,
-                    notify: true,
-                    value: () => {},
-                },
             };
         }
 
@@ -44,8 +34,5 @@
         }
 
         _isActiveChanged(isActive) { }
-        _jwtTokenChanged(jwtToken) {
-            this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken};
-        }
     };
 </script>

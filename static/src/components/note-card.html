@@ -104,7 +104,6 @@
             id="deleteAjax"
             url="/api/v1/notes/[[note.id]]"
             method="DELETE"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handleDeleteResponse"
             on-error="_handleDeleteError"></iron-ajax>
@@ -153,7 +152,7 @@
                 this.showToast('Deleting note failed!');
             }
         }
-        
+
         window.customElements.define(NoteCard.is, NoteCard);
     </script>
 </dom-module>

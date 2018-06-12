@@ -104,14 +104,12 @@
         <iron-ajax bubbles
             id="getUserAjax"
             url="/api/v1/users/current"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-response="_handleGetUserResponse"></iron-ajax>
         <iron-ajax bubbles
             id="putPasswordAjax"
             url="/api/v1/users/current/password"
-            headers="[[ajaxHeaders]]"
             method="PUT"
             handle-as="json"
             on-response="_handlePutPasswordResponse",
@@ -119,14 +117,12 @@
         <iron-ajax bubbles
             id="getSettingsAjax"
             url="/api/v1/users/current/settings"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-response="_handleGetSettingsResponse"></iron-ajax>
         <iron-ajax bubbles
             id="putSettingsAjax"
             url="/api/v1/users/current/settings"
-            headers="[[ajaxHeaders]]"
             method="PUT"
             handle-as="json"
             on-response="_handlePutSettingsResponse",
@@ -135,7 +131,6 @@
             id="postImageAjax"
             url="/api/v1/uploads"
             method="POST"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handlePostImageRequest"
             on-response="_handlePostImageResponse",
@@ -189,12 +184,12 @@
                 this.currentPassword = null;
                 this.newPassword = null;
                 this.repeatPassword = null;
-                
+
                 if (isActive && this.isReady) {
                     this._refresh();
                 }
             }
-            
+
             _handleGetUserResponse(e) {
                 var user = e.detail.response;
 
