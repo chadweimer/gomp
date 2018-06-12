@@ -295,7 +295,7 @@
             }
 
             _onAjaxPresend(e) {
-               e.options.headers = {'Authorization': 'Bearer ' + this.jwtToken};
+                e.detail.options.headers = {'Authorization': 'Bearer ' + this.jwtToken};
             }
             _onAjaxRequest(e) {
                 this.loadingCount++;
