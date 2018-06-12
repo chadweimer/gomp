@@ -172,8 +172,7 @@
                             name="search"
                             jwt-token="[[jwtToken]]"
                             is-active="[[_isActive(page, 'search')]]"
-                            search="{{search}}"
-                            view-mode="{{viewMode}}"></search-view>
+                            search="{{search}}"></search-view>
 
                         <recipes-view
                             name="recipes"
@@ -218,7 +217,6 @@
         <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
         <app-localstorage-document key="search" data="{{search}}" session-only></app-localstorage-document>
-        <app-localstorage-document key="view" data="{{viewMode}}" session-only></app-localstorage-document>
 
         <iron-ajax bubbles
             id="appConfigAjax"
@@ -266,6 +264,15 @@
                         type: Number,
                         notify: true,
                         value: 0,
+                    },
+                    search: {
+                        type: Object,
+                        value: {
+                            query: '',
+                            fields: [],
+                            tags: [],
+                        },
+                        notify: true,
                     },
                 };
             }
