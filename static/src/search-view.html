@@ -155,7 +155,7 @@
                     <template is="dom-if" if="[[_areEqual(searchSettings.viewMode, 'full')]]" restamp>
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
-                                <recipe-card recipe="[[item]]" jwt-token="[[jwtToken]]"></recipe-card>
+                                <recipe-card recipe="[[item]]"></recipe-card>
                             </div>
                         </template>
                     </template>
@@ -187,7 +187,6 @@
             auto
             id="recipesAjax"
             url="/api/v1/recipes"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipesRequest"

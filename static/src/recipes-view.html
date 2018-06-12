@@ -99,19 +99,18 @@
 
         <div class="container">
             <div hidden$="[[editing]]">
-                <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" jwt-token="[[jwtToken]]"></recipe-display>
+                <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]"></recipe-display>
                 <div class="tab-container">
                     <div id="images" class="tab">
                         <image-list
                             id="imageList"
-                            jwt-token="[[jwtToken]]"
                             recipe-id="[[recipeId]]"
                             on-image-added="_refreshMainImage"
                             on-image-deleted="_refreshMainImage"
                             on-main-image-changed="_refreshMainImage"></image-list>
                     </div>
                     <div id="notes" class="tab">
-                        <note-list id="noteList" jwt-token="[[jwtToken]]" recipe-id="[[recipeId]]"></note-list>
+                        <note-list id="noteList" recipe-id="[[recipeId]]"></note-list>
                     </div>
                 </div>
             </div>
@@ -120,7 +119,6 @@
                 <recipe-edit
                     id="recipeEdit"
                     recipe-id="[[recipeId]]"
-                    jwt-token="[[jwtToken]]"
                     on-recipe-edit-cancel="_editCanceled"
                     on-recipe-edit-save="_editSaved"></recipe-edit>
             </div>
@@ -144,7 +142,6 @@
             id="deleteAjax"
             url="/api/v1/recipes/[[recipeId]]"
             method="DELETE"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handleDeleteRecipeResponse"></iron-ajax>
     </template>

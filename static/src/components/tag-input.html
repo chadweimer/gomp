@@ -55,7 +55,6 @@
             url="/api/v1/tags"
             method="GET"
             params='{"sort": "frequency", "dir": "desc", "count": 12}'
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleGetSuggestedTagsRequest"
             on-response="_handleGetSuggestedTagsResponse"></iron-ajax>

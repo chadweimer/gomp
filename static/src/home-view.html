@@ -38,15 +38,15 @@
                 <h1 hidden$="[[!title]]">[[title]]</h1>
                 <img alt="Home Image" class="responsive" hidden$="[[!image]]" src="[[image]]"/>
             </header>
-            <home-list id="allRecipes" jwt-token="[[jwtToken]]"></home-list>
-            <home-list id="beefRecipes" jwt-token="[[jwtToken]]" title="Beef" tags='["beef","steak"]'></home-list>
-            <home-list id="poultryRecipes" jwt-token="[[jwtToken]]" title="Poultry" tags='["chicken","turkey","poultry"]'></home-list>
-            <home-list id="seafoodRecipes" jwt-token="[[jwtToken]]" title="Seafood" tags='["seafood","fish"]'></home-list>
-            <home-list id="porkRecipes" jwt-token="[[jwtToken]]" title="Pork" tags='["pork"]'></home-list>
-            <home-list id="pastaRecipes" jwt-token="[[jwtToken]]" title="Pasta" tags='["pasta"]'></home-list>
-            <home-list id="vegetarianRecipes" jwt-token="[[jwtToken]]" title="Vegetarian" tags='["vegetarian"]'></home-list>
-            <home-list id="sideRecipes" jwt-token="[[jwtToken]]" title="Sides" tags='["side","sides"]'></home-list>
-            <home-list id="drinkRecipes" jwt-token="[[jwtToken]]" title="Drinks" tags='["drink","cocktail"]'></home-list>
+            <home-list id="allRecipes"></home-list>
+            <home-list id="beefRecipes" title="Beef" tags='["beef","steak"]'></home-list>
+            <home-list id="poultryRecipes" title="Poultry" tags='["chicken","turkey","poultry"]'></home-list>
+            <home-list id="seafoodRecipes" title="Seafood" tags='["seafood","fish"]'></home-list>
+            <home-list id="porkRecipes" title="Pork" tags='["pork"]'></home-list>
+            <home-list id="pastaRecipes" title="Pasta" tags='["pasta"]'></home-list>
+            <home-list id="vegetarianRecipes" title="Vegetarian" tags='["vegetarian"]'></home-list>
+            <home-list id="sideRecipes" title="Sides" tags='["side","sides"]'></home-list>
+            <home-list id="drinkRecipes" title="Drinks" tags='["drink","cocktail"]'></home-list>
         </section>
 
         <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
@@ -54,7 +54,6 @@
         <iron-ajax bubbles
             id="userSettingsAjax"
             url="/api/v1/users/current/settings"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-response="_handleGetUserSettingsResponse"></iron-ajax>

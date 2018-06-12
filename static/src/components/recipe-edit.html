@@ -42,7 +42,7 @@
                 <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
                 <paper-textarea label="Nutrition" always-float-label value="{{recipe.nutritionInfo}}"></paper-textarea>
                 <paper-input label="Source" always-float-label value="{{recipe.sourceUrl}}"></paper-input>
-                <tag-input id="tagsInput" tags="{{recipe.tags}}" jwt-token="[[jwtToken]]"></tag-input>
+                <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
             </div>
             <div class="card-actions">
                 <paper-button on-tap="_cancelButtonTapped">Cancel</paper-button>
@@ -56,7 +56,6 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
-            headers="[[ajaxHeaders]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
@@ -64,14 +63,12 @@
         <iron-ajax bubbles
             id="putAjax"
             url="/api/v1/recipes/[[recipeId]]"
-            headers="[[ajaxHeaders]]"
             method="PUT"
             handle-as="json"
             on-response="_handlePutRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             id="postAjax"
             url="/api/v1/recipes"
-            headers="[[ajaxHeaders]]"
             method="POST"
             handle-as="json"
             on-response="_handlePostRecipeResponse"></iron-ajax>
@@ -79,7 +76,6 @@
             id="addImageAjax"
             url="/api/v1/recipes/[[newRecipeId]]/images"
             method="POST"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-request="_handleAddImageRequest"
             on-response="_handleAddImageResponse",
@@ -97,7 +93,7 @@
                     },
                 };
             }
-            
+
             ready() {
                 super.ready();
 

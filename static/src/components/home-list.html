@@ -84,7 +84,7 @@
             <div class="outterContainer">
                 <template is="dom-repeat" items="[[recipes]]">
                     <div class="recipeContainer">
-                        <recipe-card recipe="[[item]]" jwt-token="[[jwtToken]]"></recipe-card>
+                        <recipe-card recipe="[[item]]"></recipe-card>
                     </div>
                 </template>
             </div>
@@ -94,7 +94,6 @@
         <iron-ajax bubbles
             id="recipesAjax"
             url="/api/v1/recipes"
-            headers="[[ajaxHeaders]]"
             params='{"q":"", "tags": [], "sort": "random", "dir": "asc", "page": 1, "count": 6}'
             method="GET"
             handle-as="json"

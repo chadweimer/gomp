@@ -162,33 +162,12 @@
 
                 <main>
                     <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active">
-                        <home-view
-                            name="home"
-                            jwt-token="[[jwtToken]]"></home-view>
-
-                        <search-view
-                            id="searchView"
-                            name="search"
-                            jwt-token="[[jwtToken]]"
-                            search="{{search}}"></search-view>
-
-                        <recipes-view
-                            name="recipes"
-                            jwt-token="[[jwtToken]]"
-                            route="[[subroute]]"></recipes-view>
-
-                        <create-view
-                            name="create"
-                            jwt-token="[[jwtToken]]"></create-view>
-
-                        <settings-view
-                            name="settings"
-                            jwt-token="[[jwtToken]]"></settings-view>
-
-                        <login-view
-                            name="login"
-                            jwt-token="[[jwtToken]]"></login-view>
-
+                        <home-view name="home"></home-view>
+                        <search-view id="searchView" name="search" search="{{search}}"></search-view>
+                        <recipes-view name="recipes" route="[[subroute]]"></recipes-view>
+                        <create-view name="create"></create-view>
+                        <settings-view name="settings"></settings-view>
+                        <login-view name="login"></login-view>
                         <status-404-view name="status-404"></status-404-view>
                     </iron-pages>
                 </main>
@@ -221,7 +200,6 @@
         <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
-            headers="[[ajaxHeaders]]"
             params='{"sort": "tag", "dir": "asc", "count": 100000}'
             method="GET"
             handle-as="json"
@@ -236,12 +214,6 @@
                     jwtToken: {
                         type: String,
                         notify: true,
-                        observer: '_jwtTokenChanged',
-                    },
-                    ajaxHeaders: {
-                        type: Object,
-                        notify: true,
-                        value: null,
                     },
                     title: {
                         type: String,
@@ -286,6 +258,7 @@
                 this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
                 this.addEventListener('recipes-modified', e => this._recipesModified(e));
                 this.addEventListener('change-page', e => this._changePageRequested(e));
+                this.addEventListener('iron-ajax-presend', e => this._onAjaxPresend(e));
                 this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
                 this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
@@ -298,9 +271,6 @@
             _onAuthenticated(e) {
                 // This is a workaround for a race condition  during login
                 this.jwtToken = e.detail.jwtToken;
-            }
-            _jwtTokenChanged(jwtToken) {
-                this.ajaxHeaders = {'Authorization': 'Bearer ' + jwtToken};
             }
 
             _titleChanged(title) {
@@ -324,6 +294,9 @@
                 return loadingCount !== 0;
             }
 
+            _onAjaxPresend(e) {
+               e.options.headers = {'Authorization': 'Bearer ' + this.jwtToken};
+            }
             _onAjaxRequest(e) {
                 this.loadingCount++;
             }
@@ -400,7 +373,7 @@
             _logout() {
                 localStorage.clear();
                 sessionStorage.clear();
-                this.ajaxHeaders = null;
+                this.jwtToken = null;
                 this._changeRoute('/login');
             }
             _onSearch(e) {

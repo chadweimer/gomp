@@ -58,7 +58,6 @@
             id="rateAjax"
             url="/api/v1/recipes/[[recipe.id]]/rating"
             method="PUT"
-            headers="[[ajaxHeaders]]"
             handle-as="json"
             on-response="_handlePutRecipeRatingResponse"
             on-error="_handlePutRecipeRatingError"></iron-ajax>
