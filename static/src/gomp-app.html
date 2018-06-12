@@ -251,8 +251,6 @@
             }
 
             ready() {
-                super.ready();
-
                 this.addEventListener('scroll-top', e => this._scrollToTop(e));
                 this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
                 this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
@@ -265,6 +263,7 @@
                 this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
 
+                super.ready();
                 this.$.appConfigAjax.generateRequest();
             }
 
