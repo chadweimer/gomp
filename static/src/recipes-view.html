@@ -46,6 +46,10 @@
                 --paper-fab-speed-dial-action-background: var(--paper-amber-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-amber-900);
             }
+            paper-fab-speed-dial-action.indigo {
+                --paper-fab-speed-dial-action-background: var(--paper-indigo-500);
+                --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-indigo-900);
+            }
             paper-fab-speed-dial-action.teal {
                 --paper-fab-speed-dial-action-background: var(--paper-teal-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-teal-900);
@@ -127,6 +131,7 @@
             <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
             <paper-fab-speed-dial-action class="red" icon="icons:delete" on-tap="_deleteButtonTapped">Delete</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="amber" icon="icons:create" on-tap="_editButtonTapped">Edit</paper-fab-speed-dial-action>
+            <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-tap="_addLinkButtonTapped">Link to Another Recipe</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-tap="_addImageButtonTapped">Upload Picture</paper-fab-speed-dial-action>
             <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-tap="_addNoteButtonTapped">Add Note</paper-fab-speed-dial-action>
         </paper-fab-speed-dial>
@@ -215,6 +220,9 @@
             _editSaved(e) {
                 this.editing = false;
                 this.refresh();
+            }
+            _addLinkButtonTapped(e) {
+
             }
             _addImageButtonTapped(e) {
                 e.preventDefault();
