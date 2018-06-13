@@ -88,9 +88,11 @@
                 var recipes = e.detail.response.recipes;
 
                 var suggestions = [];
-                recipes.forEach(function(recipe) {
-                    suggestions.push({value: recipe.id, value: recipe.name});
-                });
+                if (recipes) {
+                    recipes.forEach(function(recipe) {
+                        suggestions.push({value: recipe.id, text: recipe.name});
+                    });
+                }
                 this.$.recipeSearcher.suggestions(suggestions);
             }
         }
