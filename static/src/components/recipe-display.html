@@ -91,8 +91,7 @@
             handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"></iron-ajax>
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
             handle-as="json"
