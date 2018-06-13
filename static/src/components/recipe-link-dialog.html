@@ -39,7 +39,7 @@
 
         <paper-dialog id="dialog" on-iron-overlay-closed="_onDialogClosed" with-backdrop>
             <h3><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
-            <paper-autocomplete id="recipeSearcher" label="Find Recipe" remote-source min-length="3"></paper-autocomplete>
+            <paper-autocomplete id="recipeSearcher" label="Find Recipe" min-length="2" remote-source show-results-on-focus required></paper-autocomplete>
             <div class="buttons">
                 <paper-button dialog-dismiss>Cancel</paper-button>
                 <paper-button dialog-confirm>Add</paper-button>
@@ -58,6 +58,13 @@
     <script>
         class RecipeLinkDialog extends Polymer.GestureEventListeners(Polymer.Element) {
             static get is() { return 'recipe-link-dialog'; }
+            static get properties() {
+                return {
+                    recipeId: {
+                        type: String,
+                    },
+                };
+            }
 
             ready() {
                 this.addEventListener('autocomplete-change', e => this._onAutocompleteChange(e));
@@ -65,6 +72,8 @@
                 super.ready();
             }
             open() {
+                this.$.recipeSearcher.suggestions([]);
+                this.$.recipeSearcher.clear();
                 this.$.dialog.open();
             }
 
