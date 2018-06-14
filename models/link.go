@@ -46,8 +46,8 @@ func (m *RecipeLinkModel) List(recipeID int64) (*[]RecipeCompact, error) {
 
 	selectStmt := "SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
-		"FROM recipe AS r" +
-		"WHERE r.id IN (SELECT l.dest_recipe_id FROM recipe_link as l WHERE l.recipe_id = $1)" +
+		"FROM recipe AS r " +
+		"WHERE r.id IN (SELECT l.dest_recipe_id FROM recipe_link as l WHERE l.recipe_id = $1) " +
 		"ORDER BY r.name ASC"
 	if err := m.db.Select(&recipes, selectStmt, recipeID); err != nil {
 		return nil, err
