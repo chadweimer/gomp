@@ -143,6 +143,7 @@
         </div>
         <recipe-link-dialog
             id="recipeLinkDialog"
+            recipe-id="[[recipeId]]"
             on-link-added="_onLinkAdded"></recipe-link-dialog>
         <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]" with-backdrop>
             <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
