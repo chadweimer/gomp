@@ -99,10 +99,7 @@
             }
             _onDialogClosed(e) {
                 if (e.detail.confirmed) {
-                    this.$.postLinkAjax.body = JSON.stringify({
-                        'recipeId': parseInt(this.recipeId, 10),
-                        'destRecipeId': this.$.recipeSearcher.value,
-                    });
+                    this.$.postLinkAjax.body = JSON.stringify(this.$.recipeSearcher.value);
                     this.$.postLinkAjax.generateRequest();
                 }
             }
