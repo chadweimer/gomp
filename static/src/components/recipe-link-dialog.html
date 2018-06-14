@@ -46,17 +46,24 @@
             </div>
         </paper-dialog>
 
-        <iron-ajax bubbles auto
+        <iron-ajax bubbles
             id="recipesAjax"
             url="/api/v1/recipes"
             method="GET"
             handle-as="json"
             on-response="_handleGetRecipesResponse"
             debounce-duration="100"></iron-ajax>
+        <iron-ajax bubbles
+            id="postLinkAjax"
+            url="/api/v1/recipes/[[recipeId]]/links"
+            method="POST"
+            handle-as="json"
+            on-response="_handlePostLinkResponse"
+            on-error="_handlePostLinkError"></iron-ajax>
     </template>
 
     <script>
-        class RecipeLinkDialog extends Polymer.GestureEventListeners(Polymer.Element) {
+        class RecipeLinkDialog extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
             static get is() { return 'recipe-link-dialog'; }
             static get properties() {
                 return {
@@ -91,6 +98,11 @@
             }
             _onDialogClosed(e) {
                 if (e.detail.confirmed) {
+                    this.$.postLinkAjax.body = JSON.stringify({
+                        'recipeId': parseInt(this.recipeId, 10),
+                        'destRecipeId': this.$.recipeSearcher.value,
+                    });
+                    this.$.postLinkAjax.generateRequest();
                 }
             }
             _handleGetRecipesResponse(e) {
@@ -103,6 +115,12 @@
                     });
                 }
                 this.$.recipeSearcher.suggestions(suggestions);
+            }
+            _handlePostLinkResponse(e) {
+                this.showToast('Link created.');
+            }
+            _handlePostLinkError(e) {
+                this.showToast('Creating link failed!');
             }
         }
 

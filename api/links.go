@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -16,7 +15,7 @@ func (h apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	recipes, err := h.model.Links.ListLinks(recipeID)
+	recipes, err := h.model.Links.List(recipeID)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
