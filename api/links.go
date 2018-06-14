@@ -26,7 +26,7 @@ func (h apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request, 
 }
 
 func (h apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID")), 10, 64)
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return
