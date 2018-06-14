@@ -5,7 +5,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-autocomplete/paper-autocomplete.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
@@ -14,15 +14,6 @@
 <dom-module id="recipe-link-dialog">
     <template>
         <style include="shared-styles">
-            :host {
-                display: block;
-            }
-            header {
-                font-size: 1.5em;
-            }
-            paper-divider {
-                width: 100%;
-            }
             paper-dialog h3 {
                 color: var(--paper-indigo-500);
             }
@@ -46,11 +37,12 @@
             }
         </style>
 
-        <paper-dialog on-iron-overlay-closed="_onDialogClosed" with-backdrop>
-            <!-- TODO: Show recipe matches as user types -->
+        <paper-dialog id="dialog" on-iron-overlay-closed="_onDialogClosed" with-backdrop>
+            <h3><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
+           <paper-autocomplete id="recipeSearcher" label="Find Recipe" min-length="2" remote-source required></paper-autocomplete>
             <div class="buttons">
                 <paper-button dialog-dismiss>Cancel</paper-button>
-                <paper-button dialog-confirm>Save</paper-button>
+                <paper-button dialog-confirm>Add</paper-button>
             </div>
         </paper-dialog>
 
@@ -59,33 +51,58 @@
             url="/api/v1/recipes"
             method="GET"
             handle-as="json"
-            on-request="_handleGetRecipesRequest"
             on-response="_handleGetRecipesResponse"
-            on-error="_handleGetRecipesError"
             debounce-duration="100"></iron-ajax>
     </template>
 
     <script>
-        class RecipeLinkDialog extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
+        class RecipeLinkDialog extends Polymer.GestureEventListeners(Polymer.Element) {
             static get is() { return 'recipe-link-dialog'; }
             static get properties() {
                 return {
                     recipeId: {
                         type: String,
-                        notify: true,
                     },
                 };
             }
 
+            ready() {
+                this.addEventListener('autocomplete-change', e => this._onAutocompleteChange(e));
+
+                super.ready();
+            }
+            open() {
+                this.$.recipeSearcher.suggestions([]);
+                this.$.recipeSearcher.clear();
+                this.$.dialog.open();
+            }
+
+            _onAutocompleteChange(e) {
+                var query = e.detail.text;
+                this.$.recipesAjax.params = {
+                    'q': query,
+                    'fields[]': ["name"],
+                    'tags[]': [],
+                    'sort': 'name',
+                    'dir': 'asc',
+                    'page': 1,
+                    'count': 20,
+                };
+            }
             _onDialogClosed(e) {
                 if (e.detail.confirmed) {
                 }
             }
-            _handleGetRecipesRequest(e) {
-            }
             _handleGetRecipesResponse(e) {
-            }
-            _handleGetRecipesError(e) {
+                var recipes = e.detail.response.recipes;
+
+                var suggestions = [];
+                if (recipes) {
+                    recipes.forEach(function(recipe) {
+                        suggestions.push({value: recipe.id, text: recipe.name});
+                    });
+                }
+                this.$.recipeSearcher.suggestions(suggestions);
             }
         }
 

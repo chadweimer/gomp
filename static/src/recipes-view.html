@@ -15,6 +15,7 @@
 <link rel="import" href="components/note-list.html">
 <link rel="import" href="components/recipe-display.html">
 <link rel="import" href="components/recipe-edit.html">
+<link rel="import" href="components/recipe-link-dialog.html">
 
 <link rel="import" href="shared-styles.html">
 
@@ -127,6 +128,7 @@
                     on-recipe-edit-save="_editSaved"></recipe-edit>
             </div>
         </div>
+        <recipe-link-dialog id="recipeLinkDialog"></recipe-link-dialog>
         <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]" with-backdrop>
             <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
             <paper-fab-speed-dial-action class="red" icon="icons:delete" on-tap="_deleteButtonTapped">Delete</paper-fab-speed-dial-action>
@@ -222,7 +224,7 @@
                 this.refresh();
             }
             _addLinkButtonTapped(e) {
-
+                this.$.recipeLinkDialog.open();;
             }
             _addImageButtonTapped(e) {
                 e.preventDefault();
