@@ -117,6 +117,7 @@
                 this.$.recipeSearcher.suggestions(suggestions);
             }
             _handlePostLinkResponse(e) {
+                this.dispatchEvent(new CustomEvent('link-added'));
                 this.showToast('Link created.');
             }
             _handlePostLinkError(e) {

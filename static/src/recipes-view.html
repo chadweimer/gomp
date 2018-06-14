@@ -35,6 +35,9 @@
             #actions {
                 --paper-fab-speed-dial-position: fixed;
             }
+            #linksDisplay {
+                margin-top: 10px;
+            }
             paper-fab-speed-dial-action.green {
                 --paper-fab-speed-dial-action-background: var(--paper-green-500);
                 --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-green-900);
@@ -105,6 +108,16 @@
         <div class="container">
             <div hidden$="[[editing]]">
                 <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]"></recipe-display>
+                <paper-card id="linksDisplay">
+                    <div class="card-content">
+                        <h3>Related Recipes</h3>
+                        <section>
+                            <template is="dom-repeat" items="[[links]]">
+                                <p class="section"><a href="/recipes/[[item.id]]">[[item.name]]</a></p>
+                            </template>
+                        </section>
+                    </div>
+                </paper-card>
                 <div class="tab-container">
                     <div id="images" class="tab">
                         <image-list
@@ -128,7 +141,9 @@
                     on-recipe-edit-save="_editSaved"></recipe-edit>
             </div>
         </div>
-        <recipe-link-dialog id="recipeLinkDialog"></recipe-link-dialog>
+        <recipe-link-dialog
+            id="recipeLinkDialog"
+            on-link-added="_onLinkAdded"></recipe-link-dialog>
         <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden$="[[editing]]" with-backdrop>
             <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
             <paper-fab-speed-dial-action class="red" icon="icons:delete" on-tap="_deleteButtonTapped">Delete</paper-fab-speed-dial-action>
@@ -151,6 +166,12 @@
             method="DELETE"
             handle-as="json"
             on-response="_handleDeleteRecipeResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="getLinksAjax"
+            url="/api/v1/recipes/[[recipeId]]/links"
+            method="GET"
+            handle-as="json"
+            on-response="_handleGetLinksResponse"></iron-ajax>
     </template>
 
     <script>
@@ -181,6 +202,7 @@
 
             refresh() {
                 this.$.recipeDisplay.refresh();
+                this.$.getLinksAjax.generateRequest();
                 this.$.imageList.refresh();
                 this.$.noteList.refresh();
             }
@@ -242,9 +264,15 @@
                 this.$.recipeDisplay.refresh({onlyMainImage: true});
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
             }
+            _onLinkAdded(e) {
+                this.$.getLinksAjax.generateRequest();
+            }
             _handleDeleteRecipeResponse(e) {
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
                 this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+            }
+            _handleGetLinksResponse(e) {
+                this.links = e.detail.response;
             }
         }
 
