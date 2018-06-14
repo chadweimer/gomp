@@ -149,20 +149,3 @@ func (m *RecipeModel) SetRating(id int64, rating float64) error {
 	}
 	return err
 }
-
-// CreateLink stores a link between 2 recipes in the database as a new record
-// using a dedicated transation that is committed if there are not errors.
-func (m *RecipeModel) CreateLink(recipe *Recipe) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.CreateTx(recipe, tx)
-	})
-}
-
-// CreateLinkTx stores a link between 2 recipes in the database as a new record
-// using the specified transaction.
-func (m *RecipeModel) CreateLinkTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
-	stmt := "INSERT INTO recipe_link (source_recipe_id, dest_recipe_id) VALUES ($1, $2)"
-
-	_, err := tx.Exec(stmt, recipeID, destRecipeID)
-	return err
-}
