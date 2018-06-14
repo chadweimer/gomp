@@ -41,7 +41,7 @@ func (m *RecipeLinkModel) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) er
 }
 
 // List retrieves all recipes linked to recipe with the specified id.
-func (m *RecipeModel) List(recipeID int64) (*[]RecipeCompact, error) {
+func (m *RecipeLinkModel) List(recipeID int64) (*[]RecipeCompact, error) {
 	var recipes []RecipeCompact
 
 	selectStmt := "SELECT " +
