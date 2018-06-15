@@ -277,16 +277,15 @@
             }
 
             _handleGetRecipesRequest() {
-                this.dispatchEvent(new CustomEvent('loading-started', {bubbles: true, composed: true}));
                 this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
             }
             _handleGetRecipesResponse(request) {
                 this.recipes = request.detail.response.recipes;
                 this.totalRecipeCount = request.detail.response.total;
-                this.dispatchEvent(new CustomEvent('loading-complete', {bubbles: true, composed: true}));
             }
             _handleGetRecipesError () {
-                this.dispatchEvent(new CustomEvent('loading-complete', {bubbles: true, composed: true}));
+                this.recipes = [];
+                this.totalRecipeCount = 0;
             }
 
             _updatePagination(recipes, total) {
