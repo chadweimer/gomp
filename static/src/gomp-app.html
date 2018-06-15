@@ -355,7 +355,7 @@
             }
             _verifyIsAuthenticated() {
                 // Redirect to login if necessary
-                if (!_isAuthenticated()) {
+                if (!this._isAuthenticated()) {
                     if (this.route.path !== '/login') {
                         this._logout();
                     }
