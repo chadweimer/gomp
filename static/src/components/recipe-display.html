@@ -90,14 +90,14 @@
             </div>
         </paper-card>
 
-        <iron-ajax bubbles auto
+        <iron-ajax bubbles
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
             method="GET"
             handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"></iron-ajax>
-        <iron-ajax bubbles auto
+        <iron-ajax bubbles
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
             handle-as="json"
@@ -110,7 +110,7 @@
             handle-as="json"
             on-response="_handlePutRecipeRatingResponse"
             on-error="_handlePutRecipeRatingError"></iron-ajax>
-        <iron-ajax bubbles auto
+        <iron-ajax bubbles
             id="getLinksAjax"
             url="/api/v1/recipes/[[recipeId]]/links"
             method="GET"
@@ -126,6 +126,7 @@
                     recipeId: {
                         type: String,
                         notify: true,
+                        observer: '_onRecipeIdChanged',
                     },
                 };
             }
@@ -139,6 +140,12 @@
                 }
                 if (!options || options.mainImage) {
                     this.$.mainImageAjax.generateRequest();
+                }
+            }
+
+            _onRecipeIdChanged(recipeId) {
+                if (recipeId) {
+                    this.refresh();
                 }
             }
 
