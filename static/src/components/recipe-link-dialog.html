@@ -39,7 +39,7 @@
 
         <paper-dialog id="dialog" on-iron-overlay-closed="_onDialogClosed" with-backdrop>
             <h3><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
-            <paper-autocomplete id="recipeSearcher" label="Find Recipe" min-length="2" remote-source show-results-on-focus required></paper-autocomplete>
+            <paper-autocomplete id="recipeSearcher" label="Find Recipe" remote-source show-results-on-focus required></paper-autocomplete>
             <div class="buttons">
                 <paper-button dialog-dismiss>Cancel</paper-button>
                 <paper-button dialog-confirm>Add</paper-button>
@@ -74,6 +74,7 @@
 
             ready() {
                 this.addEventListener('autocomplete-change', e => this._onAutocompleteChange(e));
+                this.addEventListener('autocomplete-selected', e => this._onAutocompleteSelected(e));
 
                 super.ready();
             }
@@ -84,21 +85,27 @@
             }
 
             _onAutocompleteChange(e) {
-                var query = e.detail.text;
-                this.$.recipesAjax.params = {
-                    'q': query,
-                    'fields[]': ['name'],
-                    'tags[]': [],
-                    'sort': 'name',
-                    'dir': 'asc',
-                    'page': 1,
-                    'count': 20,
-                };
-                this.$.recipesAjax.generateRequest();
+                this.selectedRecipeId = null;
+                var value = e.detail.text;
+                if (value && value.length >= 2) {
+                    this.$.recipesAjax.params = {
+                        'q': value,
+                        'fields[]': ['name'],
+                        'tags[]': [],
+                        'sort': 'name',
+                        'dir': 'asc',
+                        'page': 1,
+                        'count': 20,
+                    };
+                    this.$.recipesAjax.generateRequest();
+                }
+            }
+            _onAutocompleteSelected(e) {
+                this.selectedRecipeId = e.detail.value;
             }
             _onDialogClosed(e) {
-                if (e.detail.confirmed) {
-                    this.$.postLinkAjax.body = JSON.stringify(this.$.recipeSearcher.value);
+                if (this.selectedRecipeId && e.detail.confirmed) {
+                    this.$.postLinkAjax.body = JSON.stringify(this.selectedRecipeId);
                     this.$.postLinkAjax.generateRequest();
                 }
             }
