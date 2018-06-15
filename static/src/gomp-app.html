@@ -189,6 +189,7 @@
 
         <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
+        <app-localstorage-document key="jwtToken" data="{{jwtToken}}"></app-localstorage-document>
         <app-localstorage-document key="search" data="{{search}}" session-only></app-localstorage-document>
 
         <iron-ajax bubbles
@@ -268,7 +269,7 @@
             }
 
             _onAuthenticated(e) {
-                // This is a workaround for a race condition  during login
+                // This is a workaround for a race condition during login
                 this.jwtToken = e.detail.jwtToken;
             }
 
@@ -359,9 +360,8 @@
                 this._logout();
             }
             _verifyIsAuthenticated() {
-                this.jwtToken = localStorage.getItem('jwtToken');
                 // Redirect to login if necessary
-                if (this.jwtToken === null) {
+                if (!this.jwtToken) {
                     if (this.route.path !== '/login') {
                         this._logout();
                     }
