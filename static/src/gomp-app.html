@@ -194,15 +194,11 @@
         <iron-ajax bubbles
             id="appConfigAjax"
             url="/api/v1/app/configuration"
-            method="GET"
-            handle-as="json"
             on-response="_handleGetAppConfigurationResponse"></iron-ajax>
         <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
             params='{"sort": "tag", "dir": "asc", "count": 100000}'
-            method="GET"
-            handle-as="json"
             on-response="_handleGetTagsResponse"></iron-ajax>
     </template>
 

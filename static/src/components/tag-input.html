@@ -52,9 +52,7 @@
         <iron-ajax bubbles
             id="getSuggestedTagsAjax"
             url="/api/v1/tags"
-            method="GET"
             params='{"sort": "frequency", "dir": "desc", "count": 12}'
-            handle-as="json"
             on-request="_handleGetSuggestedTagsRequest"
             on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
     </template>

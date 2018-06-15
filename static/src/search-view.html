@@ -186,8 +186,6 @@
         <iron-ajax bubbles auto
             id="recipesAjax"
             url="/api/v1/recipes"
-            method="GET"
-            handle-as="json"
             on-request="_handleGetRecipesRequest"
             on-response="_handleGetRecipesResponse"
             on-error="_handleGetRecipesError"

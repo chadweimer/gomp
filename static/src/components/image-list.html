@@ -122,14 +122,12 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
-            handle-as="json"
             on-request="_handleGetImagesRequest"
             on-response="_handleGetImagesResponse"></iron-ajax>
         <iron-ajax bubbles
             id="addAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
             method="POST"
-            handle-as="json"
             on-request="_handleAddRequest"
             on-response="_handleAddResponse"
             on-error="_handleAddError"></iron-ajax>
@@ -137,13 +135,11 @@
             id="setMainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
             method="PUT"
-            handle-as="json"
             on-response="_handleSetMainImageResponse"
             on-error="_handleSetMainImageError"></iron-ajax>
         <iron-ajax bubbles
             id="deleteAjax"
             method="DELETE"
-            handle-as="json"
             on-response="_handleDeleteResponse"
             on-error="_handleDeleteError"></iron-ajax>
     </template>
