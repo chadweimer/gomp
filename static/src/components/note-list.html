@@ -99,12 +99,15 @@
                 return {
                     recipeId: {
                         type: String,
-                        notify: true,
                     },
                 };
             }
 
             refresh() {
+                if (!this.recipeId) {
+                    return;
+                }
+
                 this.$.getAjax.generateRequest();
             }
             add() {
