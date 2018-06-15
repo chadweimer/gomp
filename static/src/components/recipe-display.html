@@ -6,7 +6,6 @@
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
-<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
@@ -55,7 +54,7 @@
                     <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
                 </h2>
-                <section hidden$="{{!recipe.servingSize}}">
+                <section hidden$="[[!recipe.servingSize]]">
                     <label>Serving Size</label>
                     <p class="plain-text">[[recipe.servingSize]]</p>
                     <paper-divider></paper-divider>
@@ -70,14 +69,21 @@
                     <p class="plain-text">[[recipe.directions]]</p>
                     <paper-divider></paper-divider>
                 </section>
-                <section hidden$="{{!recipe.nutritionInfo}}">
+                <section hidden$="[[!recipe.nutritionInfo]]">
                     <label>Nutrition</label>
                     <p class="plain-text">[[recipe.nutritionInfo]]</p>
                     <paper-divider></paper-divider>
                 </section>
-                <section hidden$="{{!recipe.sourceUrl}}">
+                <section hidden$="[[!recipe.sourceUrl]]">
                     <label>Source</label>
                     <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                    <paper-divider></paper-divider>
+                </section>
+                <section hidden$="[[_isEmpty(links)]]">
+                    <label>Related Recipes</label>
+                    <template is="dom-repeat" items="[[links]]">
+                        <p class="section"><a href="/recipes/[[item.id]]">[[item.name]]</a></p>
+                    </template>
                     <paper-divider></paper-divider>
                 </section>
                 <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
@@ -125,11 +131,19 @@
             }
 
             refresh(options) {
-                if (!options || !options.onlyMainImage) {
+                if (!options || options.recipe) {
                     this.$.getAjax.generateRequest();
+                }
+                if (!options || options.links) {
                     this.$.getLinksAjax.generateRequest();
                 }
-                this.$.mainImageAjax.generateRequest();
+                if (!options || options.mainImage) {
+                    this.$.mainImageAjax.generateRequest();
+                }
+            }
+
+            _isEmpty(arr) {
+                return !Array.isArray(arr) || !arr.length;
             }
 
             _starRatingSelected(e) {

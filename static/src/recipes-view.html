@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
@@ -7,7 +8,6 @@
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial.html">
 <link rel="import" href="../bower_components/paper-fab-speed-dial/paper-fab-speed-dial-action.html">
-<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 
 <link rel="import" href="mixins/gomp-core-mixin.html">
 
@@ -112,16 +112,6 @@
         <div class="container">
             <div hidden$="[[editing]]">
                 <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]"></recipe-display>
-                <paper-card id="linksDisplay">
-                    <div class="card-content">
-                        <h3>Related Recipes</h3>
-                        <section>
-                            <template is="dom-repeat" items="[[links]]">
-                                <p class="section"><a href="/recipes/[[item.id]]">[[item.name]]</a></p>
-                            </template>
-                        </section>
-                    </div>
-                </paper-card>
                 <div class="tab-container">
                     <div id="images" class="tab">
                         <image-list
@@ -260,11 +250,11 @@
                 this.$.noteList.add();
             }
             _refreshMainImage(e) {
-                this.$.recipeDisplay.refresh({onlyMainImage: true});
+                this.$.recipeDisplay.refresh({mainImage: true});
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
             }
             _onLinkAdded(e) {
-                this.$.recipeDisplay.refresh();
+                this.$.recipeDisplay.refresh({links: true});
             }
             _handleDeleteRecipeResponse(e) {
                 this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
