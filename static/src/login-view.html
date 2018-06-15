@@ -101,7 +101,7 @@
                 this.errorMessage = '';
             }
             _handlePostAuthResponse(e) {
-                this.dispatchEvent(new CustomEvent('authenticated', {bubbles: true, composed: true, detail: {jwtToken: e.detail.response.token}}));
+                localStorage.setItem('jwtToken', e.detail.response.token);
                 this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
             }
             _handlePostAuthError () {

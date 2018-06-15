@@ -126,12 +126,12 @@
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header id="mainHeader" slot="header" reveals shadow>
-                    <div hidden$="[[jwtToken]]">
+                    <div hidden$="[[_isAuthenticated()]]">
                         <app-toolbar>
                             <div main-title>[[title]]</div>
                         </app-toolbar>
                     </div>
-                    <div hidden$="[[!jwtToken]]">
+                    <div hidden$="[[!_isAuthenticated()]]">
                         <app-toolbar>
                             <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                             <a href="/" class="hide-on-small-only">[[title]]</a>
@@ -173,7 +173,7 @@
                 </main>
 
                 <footer>
-                    <div class="indented" hidden$="[[!jwtToken]]">
+                    <div class="indented" hidden$="[[!_isAuthenticated()]]">
                         <h4>Links</h4>
                         <ul>
                             <li><a href="/home">Home</a></li>
@@ -189,7 +189,6 @@
 
         <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
-        <app-localstorage-document key="jwtToken" data="{{jwtToken}}"></app-localstorage-document>
         <app-localstorage-document key="search" data="{{search}}" session-only></app-localstorage-document>
 
         <iron-ajax bubbles
@@ -212,10 +211,6 @@
             static get is() { return 'gomp-app'; }
             static get properties() {
                 return {
-                    jwtToken: {
-                        type: String,
-                        notify: true,
-                    },
                     title: {
                         type: String,
                         value: 'GOMP: Go Meal Planner',
@@ -261,16 +256,10 @@
                 this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
                 this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
-                this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
 
                 super.ready();
                 this.$.appConfigAjax.generateRequest();
-            }
-
-            _onAuthenticated(e) {
-                // This is a workaround for a race condition during login
-                this.jwtToken = e.detail.jwtToken;
             }
 
             _titleChanged(title) {
@@ -295,7 +284,8 @@
             }
 
             _onAjaxPresend(e) {
-                e.detail.options.headers = {'Authorization': 'Bearer ' + this.jwtToken};
+                var jwtToken = localStorage.getItem('jwtToken');
+                e.detail.options.headers = {'Authorization': 'Bearer ' + jwtToken};
             }
             _onAjaxRequest(e) {
                 this.loadingCount++;
@@ -359,9 +349,13 @@
 
                 this._logout();
             }
+            _isAuthenticated() {
+                var jwtToken = localStorage.getItem('jwtToken');
+                return jwtToken !== null;
+            }
             _verifyIsAuthenticated() {
                 // Redirect to login if necessary
-                if (!this.jwtToken) {
+                if (!_isAuthenticated()) {
                     if (this.route.path !== '/login') {
                         this._logout();
                     }
@@ -372,7 +366,6 @@
             _logout() {
                 localStorage.clear();
                 sessionStorage.clear();
-                this.jwtToken = null;
                 this._changeRoute('/login');
             }
             _onSearch(e) {
