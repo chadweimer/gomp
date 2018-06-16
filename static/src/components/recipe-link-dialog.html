@@ -49,7 +49,7 @@
                 required></paper-autocomplete>
             <div class="buttons">
                 <paper-button dialog-dismiss>Cancel</paper-button>
-                <paper-button disabled="[[_shouldPreventAdd(selectedRecipeId)]]" dialog-confirm>Add</paper-button>
+                <paper-button disabled="[[_shouldPreventAdd(_selectedRecipeId)]]" dialog-confirm>Add</paper-button>
             </div>
         </paper-dialog>
 
@@ -73,6 +73,10 @@
                     recipeId: {
                         type: String,
                     },
+                    _selectedRecipeId: {
+                        type: Number,
+                        value: null,
+                    },
                 };
             }
 
@@ -83,7 +87,7 @@
             }
 
             _onAutocompleteChange(e) {
-                this.selectedRecipeId = null;
+                this._selectedRecipeId = null;
                 var value = e.detail.text;
                 if (value && value.length >= 2) {
                     this.$.recipesAjax.params = {
@@ -99,11 +103,11 @@
                 }
             }
             _onAutocompleteSelected(e) {
-                this.selectedRecipeId = e.detail.value;
+                this._selectedRecipeId = e.detail.value;
             }
             _onDialogClosed(e) {
                 if (e.detail.confirmed) {
-                    this.$.postLinkAjax.body = JSON.stringify(this.selectedRecipeId);
+                    this.$.postLinkAjax.body = JSON.stringify(this._selectedRecipeId);
                     this.$.postLinkAjax.generateRequest();
                 }
             }
