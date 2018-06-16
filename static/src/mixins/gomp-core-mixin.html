@@ -32,6 +32,9 @@
         showToast(message) {
             this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message: message}}));
         }
+        _isNullOrEmpty(val) {
+            return val === null || val === '';
+        }
 
         _isActiveChanged(isActive) { }
     };

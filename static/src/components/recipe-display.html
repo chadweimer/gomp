@@ -40,6 +40,23 @@
                 height: 64px;
                 border-radius: 32px;
             }
+            .recipe-link {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .link-avatar {
+                display: inline-block;
+                width: 24px;
+                height: 24px;
+                border: 1px solid rgba(0, 0, 0, 0.25);
+                border-radius: 12px;
+                vertical-align: middle;
+                margin: 2px;
+            }
+            .link-avatar[hidden] {
+                display: none !important;
+            }
             iron-star-rating {
                 position: absolute;
                 top: 5px;
@@ -82,7 +99,13 @@
                 <section hidden$="[[_isEmpty(links)]]">
                     <label>Related Recipes</label>
                     <template is="dom-repeat" items="[[links]]">
-                        <p class="section"><a href="/recipes/[[item.id]]">[[item.name]]</a></p>
+                        <a href="/recipes/[[item.id]]">
+                            <div class="recipe-link">
+                                <img src="[[item.thumbnailUrl]]" alt="Main Image" class="link-avatar" hidden$="[[_isNullOrEmpty(item.thumbnailUrl)]]">
+                                <span class="link-avatar" hidden$="[[!_isNullOrEmpty(item.thumbnailUrl)]]"></span>
+                                <span>[[item.name]]</span>
+                            </div>
+                        </a>
                     </template>
                     <paper-divider></paper-divider>
                 </section>
