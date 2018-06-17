@@ -9,18 +9,16 @@
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
 <link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
 <link rel="import" href="../bower_components/paper-styles/paper-styles.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-icon-item.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-title.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-divider.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="shared-styles.html">
 
@@ -61,9 +59,6 @@
             }
             paper-progress {
                 width: 100%;
-            }
-            paper-drawer {
-                --paper-drawer-title-background-color: var(--primary-color);
             }
             main {
                 @apply --layout-flex;
@@ -115,14 +110,32 @@
 
         <app-drawer-layout force-narrow fullbleed>
             <app-drawer id="drawer" slot="drawer" swipe-open>
-                <paper-drawer>
-                    <paper-drawer-title photo="/static/android-chrome-192x192.png" name="[[title]]" on-tap="_onHomeTapped"></paper-drawer-title>
-                    <paper-drawer-icon-item icon="icons:home" on-tap="_onHomeTapped">Home</paper-drawer-icon-item>
-                    <paper-drawer-icon-item icon="icons:view-list" on-tap="_onRecipesTapped">Recipes</paper-drawer-icon-item>
-                    <paper-drawer-divider></paper-drawer-divider>
-                    <paper-drawer-icon-item icon="icons:settings" on-tap="_onSettingsTapped">Settings</paper-drawer-icon-item>
-                    <paper-drawer-icon-item icon="icons:exit-to-app" on-tap="_onLogoutTapped">Logout</paper-drawer-icon-item>
-                </paper-drawer>
+                <app-toolbar>[[title]]</app-toolbar>
+                <a href="/home" tabindex="-1">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:home" slot="item-icon"></iron-icon>
+                        Home
+                    </paper-icon-item>
+                </a>
+                <a href="/search" tabindex="-1">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
+                        Recipes
+                    </paper-icon-item>
+                </a>
+                <paper-divider></paper-divider>
+                <a href="/settings" tabindex="-1">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:settings" slot="item-icon"></iron-icon>
+                        Settings
+                    </paper-icon-item>
+                </a>
+                <a href="#!" tabindex="-1" on-tap="_onLogoutTapped">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
+                        Logout
+                    </paper-icon-item>
+                </a>
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header id="mainHeader" slot="header" reveals shadow>

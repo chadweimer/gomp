@@ -24,7 +24,6 @@
     "paper-password-input": "Collaborne/paper-password-input#^2.0.0",
     "paper-tags-input": "chadweimer/paper-tags-input#^2.0.0",
     "iron-star-rating": "chadweimer/iron-star-rating#^2.0.0",
-    "paper-drawer": "Collaborne/paper-drawer#^2.0.0",
     "paper-autocomplete": "ellipticaljs/paper-autocomplete#^3.0.0"
   },
   "devDependencies": {
