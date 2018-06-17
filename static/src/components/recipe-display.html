@@ -1,9 +1,11 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
 
@@ -40,24 +42,32 @@
                 height: 64px;
                 border-radius: 32px;
             }
-            .recipe-link {
+            .link {
                 margin: 5px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .link-avatar {
-                display: inline-block;
-                width: 24px;
-                height: 24px;
-                border: 1px solid rgba(0, 0, 0, 0.25);
-                border-radius: 12px;
                 vertical-align: middle;
-                margin: 2px;
+                padding-right: 6px;
+                padding-left: 0px;
+                overflow: hidden;
             }
-            .link-avatar[hidden] {
+            .link-image {
+                width: 32px;
+                height: 32px;
+                border-radius: 0 50% 50% 0;
+                vertical-align: middle;
+                margin-right: 4px;
+                background: white;
+            }
+            .link-image[hidden] {
                 display: none !important;
             }
+			.link .delete {
+				--iron-icon-height: 20px;
+				--iron-icon-width: 20px;
+				color: var(--disabled-text-color);
+                position: relative;
+                top: 6px;
+                float: right;
+			}
             iron-star-rating {
                 position: absolute;
                 top: 5px;
@@ -100,13 +110,16 @@
                 <section hidden$="[[_isEmpty(links)]]">
                     <label>Related Recipes</label>
                     <template is="dom-repeat" items="[[links]]">
-                        <a href="/recipes/[[item.id]]">
-                            <div class="recipe-link">
-                                <img src="[[item.thumbnailUrl]]" alt="Main Image" class="link-avatar" hidden$="[[_isNullOrEmpty(item.thumbnailUrl)]]">
-                                <span class="link-avatar" hidden$="[[!_isNullOrEmpty(item.thumbnailUrl)]]"></span>
-                                <span>[[item.name]]</span>
-                            </div>
-                        </a>
+                        <div>
+                            <paper-chip class="link" selectable>
+                                <iron-icon icon="icons:cancel" class="delete" on-tap="_onRemoveLinkTapped"></iron-icon>
+                                <a href="/recipes/[[item.id]]">
+                                    <img src="[[item.thumbnailUrl]]" class="link-image" hidden$="[[_isNullOrEmpty(item.thumbnailUrl)]]">
+                                    <span class="link-image" hidden$="[[!_isNullOrEmpty(item.thumbnailUrl)]]"></span>
+                                    <span>[[item.name]]</span>
+                                </a>
+                            </paper-chip>
+                        </div>
                     </template>
                     <paper-divider></paper-divider>
                 </section>
@@ -134,6 +147,11 @@
             id="getLinksAjax"
             url="/api/v1/recipes/[[recipeId]]/links"
             on-response="_handleGetLinksResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="deleteLinkAjax"
+            method="DEELTE"
+            on-response="_handleDeleteLinkResponse"
+            on-error="_handleDeleteLinkError"></iron-ajax>
     </template>
 
     <script>
@@ -172,6 +190,13 @@
                 this.$.rateAjax.generateRequest();
             }
 
+            _onRemoveLinkTapped(e) {
+                e.preventDefault();
+
+                this.$.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.model.item.id;
+                this.$.deleteLinkAjax.generateRequest();
+            }
+
             _handleGetRecipeRequest(e) {
                 this.recipe = null;
             }
@@ -194,6 +219,12 @@
             }
             _handleGetLinksResponse(e) {
                 this.links = e.detail.response;
+            }
+            _handleDeleteLinkResponse(e) {
+                this.refresh({links: true})
+            }
+            _handleDeleteLinkError(e) {
+                this.showToast('Removing link failed!');
             }
         }
 
