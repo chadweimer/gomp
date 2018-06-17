@@ -73,21 +73,20 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/notes"
-            handle-as="json"
             on-request="_handleGetRequest"
             on-response="_handleGetResponse"></iron-ajax>
         <iron-ajax bubbles
             id="postNoteAjax"
             url="/api/v1/notes"
             method="POST"
-            handle-as="json"
-            on-response="_handlePostNoteResponse"></iron-ajax>
+            on-response="_handlePostNoteResponse"
+            on-error="_handlePostNoteError"></iron-ajax>
         <iron-ajax bubbles
             id="putNoteAjax"
             url="/api/v1/notes/[[noteId]]"
             method="PUT"
-            handle-as="json"
-            on-response="_handlePutNoteResponse"></iron-ajax>
+            on-response="_handlePutNoteResponse"
+            on-error="_handlePutNoteError"></iron-ajax>
     </template>
 
     <script>
@@ -97,12 +96,15 @@
                 return {
                     recipeId: {
                         type: String,
-                        notify: true,
                     },
                 };
             }
 
             refresh() {
+                if (!this.recipeId) {
+                    return;
+                }
+
                 this.$.getAjax.generateRequest();
             }
             add() {

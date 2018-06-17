@@ -9,18 +9,16 @@
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-search/paper-search-bar.html">
 <link rel="import" href="../bower_components/paper-search/paper-filter-dialog.html">
-<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-styles/default-theme.html">
 <link rel="import" href="../bower_components/paper-styles/paper-styles.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-icon-item.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-title.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-divider.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="shared-styles.html">
 
@@ -61,9 +59,6 @@
             }
             paper-progress {
                 width: 100%;
-            }
-            paper-drawer {
-                --paper-drawer-title-background-color: var(--primary-color);
             }
             main {
                 @apply --layout-flex;
@@ -115,23 +110,41 @@
 
         <app-drawer-layout force-narrow fullbleed>
             <app-drawer id="drawer" slot="drawer" swipe-open>
-                <paper-drawer>
-                    <paper-drawer-title photo="/static/android-chrome-192x192.png" name="[[title]]" on-tap="_onHomeTapped"></paper-drawer-title>
-                    <paper-drawer-icon-item icon="icons:home" on-tap="_onHomeTapped">Home</paper-drawer-icon-item>
-                    <paper-drawer-icon-item icon="icons:view-list" on-tap="_onRecipesTapped">Recipes</paper-drawer-icon-item>
-                    <paper-drawer-divider></paper-drawer-divider>
-                    <paper-drawer-icon-item icon="icons:settings" on-tap="_onSettingsTapped">Settings</paper-drawer-icon-item>
-                    <paper-drawer-icon-item icon="icons:exit-to-app" on-tap="_onLogoutTapped">Logout</paper-drawer-icon-item>
-                </paper-drawer>
+                <app-toolbar>[[title]]</app-toolbar>
+                <a href="/home" tabindex="-1">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:home" slot="item-icon"></iron-icon>
+                        Home
+                    </paper-icon-item>
+                </a>
+                <a href="/search" tabindex="-1">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
+                        Recipes
+                    </paper-icon-item>
+                </a>
+                <paper-divider></paper-divider>
+                <a href="/settings" tabindex="-1">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:settings" slot="item-icon"></iron-icon>
+                        Settings
+                    </paper-icon-item>
+                </a>
+                <a href="#!" tabindex="-1" on-tap="_onLogoutTapped">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
+                        Logout
+                    </paper-icon-item>
+                </a>
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header id="mainHeader" slot="header" reveals shadow>
-                    <div hidden$="[[jwtToken]]">
+                    <div hidden$="[[_isAuthenticated]]">
                         <app-toolbar>
                             <div main-title>[[title]]</div>
                         </app-toolbar>
                     </div>
-                    <div hidden$="[[!jwtToken]]">
+                    <div hidden$="[[!_isAuthenticated]]">
                         <app-toolbar>
                             <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                             <a href="/" class="hide-on-small-only">[[title]]</a>
@@ -157,7 +170,7 @@
                         </app-toolbar>
                     </div>
 
-                    <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]"></paper-progress>
+                    <paper-progress indeterminate hidden$="[[!loadingCount]]"></paper-progress>
                 </app-header>
 
                 <main>
@@ -173,7 +186,7 @@
                 </main>
 
                 <footer>
-                    <div class="indented" hidden$="[[!jwtToken]]">
+                    <div class="indented" hidden$="[[!_isAuthenticated]]">
                         <h4>Links</h4>
                         <ul>
                             <li><a href="/home">Home</a></li>
@@ -194,15 +207,11 @@
         <iron-ajax bubbles
             id="appConfigAjax"
             url="/api/v1/app/configuration"
-            method="GET"
-            handle-as="json"
             on-response="_handleGetAppConfigurationResponse"></iron-ajax>
         <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
             params='{"sort": "tag", "dir": "asc", "count": 100000}'
-            method="GET"
-            handle-as="json"
             on-response="_handleGetTagsResponse"></iron-ajax>
     </template>
 
@@ -211,10 +220,6 @@
             static get is() { return 'gomp-app'; }
             static get properties() {
                 return {
-                    jwtToken: {
-                        type: String,
-                        notify: true,
-                    },
                     title: {
                         type: String,
                         value: 'GOMP: Go Meal Planner',
@@ -222,13 +227,10 @@
                     },
                     page: {
                         type: String,
-                        reflectToAttribute: true,
-                        notify: true,
                         observer: '_pageChanged',
                     },
                     loadingCount : {
                         type: Number,
-                        notify: true,
                         value: 0,
                     },
                     search: {
@@ -260,16 +262,10 @@
                 this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
                 this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
-                this.addEventListener('authenticated', e => this._onAuthenticated(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
 
                 super.ready();
                 this.$.appConfigAjax.generateRequest();
-            }
-
-            _onAuthenticated(e) {
-                // This is a workaround for a race condition  during login
-                this.jwtToken = e.detail.jwtToken;
             }
 
             _titleChanged(title) {
@@ -289,12 +285,9 @@
                 }
             }
 
-            _isLoading(loadingCount) {
-                return loadingCount !== 0;
-            }
-
             _onAjaxPresend(e) {
-                e.detail.options.headers = {'Authorization': 'Bearer ' + this.jwtToken};
+                var jwtToken = localStorage.getItem('jwtToken');
+                e.detail.options.headers = {'Authorization': 'Bearer ' + jwtToken};
             }
             _onAjaxRequest(e) {
                 this.loadingCount++;
@@ -358,10 +351,14 @@
 
                 this._logout();
             }
+            _getIsAuthenticated() {
+                var jwtToken = localStorage.getItem('jwtToken');
+                return jwtToken !== null;
+            }
             _verifyIsAuthenticated() {
-                this.jwtToken = localStorage.getItem('jwtToken');
+                this._isAuthenticated = this._getIsAuthenticated();
                 // Redirect to login if necessary
-                if (this.jwtToken === null) {
+                if (!this._isAuthenticated) {
                     if (this.route.path !== '/login') {
                         this._logout();
                     }
@@ -372,7 +369,6 @@
             _logout() {
                 localStorage.clear();
                 sessionStorage.clear();
-                this.jwtToken = null;
                 this._changeRoute('/login');
             }
             _onSearch(e) {

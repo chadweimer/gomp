@@ -1,14 +1,18 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
-<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
+
+<link rel="import" href="confirmation-dialog.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -36,15 +40,24 @@
             .plain-text {
                 white-space: pre-wrap;
             }
-            .avatar {
+            .main-image {
                 width: 64px;
                 height: 64px;
-                border-radius: 32px;
+                border-radius: 50%;
+            }
+            .avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                border: 1px solid rgba(0, 0, 0, 0.25);
             }
             iron-star-rating {
                 position: absolute;
                 top: 5px;
                 right: 5px;
+            }
+            #confirmDeleteLinkDialog {
+                --confirmation-dialog-title-color: var(--paper-red-500);
             }
         </style>
 
@@ -52,10 +65,10 @@
             <div class="card-content">
                 <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
                 <h2>
-                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="main-image" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
                 </h2>
-                <section hidden$="{{!recipe.servingSize}}">
+                <section hidden$="[[!recipe.servingSize]]">
                     <label>Serving Size</label>
                     <p class="plain-text">[[recipe.servingSize]]</p>
                     <paper-divider></paper-divider>
@@ -70,41 +83,67 @@
                     <p class="plain-text">[[recipe.directions]]</p>
                     <paper-divider></paper-divider>
                 </section>
-                <section hidden$="{{!recipe.nutritionInfo}}">
+                <section hidden$="[[!recipe.nutritionInfo]]">
                     <label>Nutrition</label>
                     <p class="plain-text">[[recipe.nutritionInfo]]</p>
                     <paper-divider></paper-divider>
                 </section>
-                <section hidden$="{{!recipe.sourceUrl}}">
+                <section hidden$="[[!recipe.sourceUrl]]">
                     <label>Source</label>
                     <p class="section"><a target="_blank" href$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                    <paper-divider></paper-divider>
+                </section>
+                <section hidden$="[[_isEmpty(links)]]">
+                    <label>Related Recipes</label>
+                    <template is="dom-repeat" items="[[links]]">
+                        <paper-icon-item>
+                            <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
+                            <paper-item-body>
+                                <a href="/recipes/[[item.id]]">
+                                    [[item.name]]
+                                </a>
+                            </paper-item-body>
+                            <iron-icon icon="icons:cancel" on-tap="_onRemoveLinkTapped"></iron-icon>
+                        </paper-icon-item>
+                    </template>
                     <paper-divider></paper-divider>
                 </section>
                 <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
             </div>
         </paper-card>
 
+        <confirmation-dialog
+            id="confirmDeleteLinkDialog"
+            icon="delete"
+            title="Delete Link?"
+            message="Are you sure you want to delete this link?"
+            on-confirmed="_deleteLink"></confirmation-dialog>
+
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
-            method="GET"
-            handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"></iron-ajax>
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="mainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
-            handle-as="json"
             on-request="_handleGetMainImageRequest"
             on-response="_handleGetMainImageResponse"></iron-ajax>
         <iron-ajax bubbles
             id="rateAjax"
             url="/api/v1/recipes/[[recipeId]]/rating"
             method="PUT"
-            handle-as="json"
             on-response="_handlePutRecipeRatingResponse"
             on-error="_handlePutRecipeRatingError"></iron-ajax>
+        <iron-ajax bubbles auto
+            id="getLinksAjax"
+            url="/api/v1/recipes/[[recipeId]]/links"
+            on-response="_handleGetLinksResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="deleteLinkAjax"
+            method="DELETE"
+            on-response="_handleDeleteLinkResponse"
+            on-error="_handleDeleteLinkError"></iron-ajax>
     </template>
 
     <script>
@@ -114,21 +153,44 @@
                 return {
                     recipeId: {
                         type: String,
-                        notify: true,
                     },
                 };
             }
 
             refresh(options) {
-                if (!options || !options.onlyMainImage) {
+                if (!this.recipeId) {
+                    return;
+                }
+
+                if (!options || options.recipe) {
                     this.$.getAjax.generateRequest();
                 }
-                this.$.mainImageAjax.generateRequest();
+                if (!options || options.links) {
+                    this.$.getLinksAjax.generateRequest();
+                }
+                if (!options || options.mainImage) {
+                    this.$.mainImageAjax.generateRequest();
+                }
+            }
+
+            _isEmpty(arr) {
+                return !Array.isArray(arr) || !arr.length;
             }
 
             _starRatingSelected(e) {
                 this.$.rateAjax.body = e.detail.rating;
                 this.$.rateAjax.generateRequest();
+            }
+
+            _onRemoveLinkTapped(e) {
+                e.preventDefault();
+
+                this.$.confirmDeleteLinkDialog.dataId = e.model.item.id;
+                this.$.confirmDeleteLinkDialog.open();
+            }
+            _deleteLink(e) {
+                this.$.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.target.dataId;
+                this.$.deleteLinkAjax.generateRequest();
             }
 
             _handleGetRecipeRequest(e) {
@@ -150,6 +212,15 @@
             }
             _handlePutRecipeRatingError(e) {
                 this.showToast('Changing rating failed!');
+            }
+            _handleGetLinksResponse(e) {
+                this.links = e.detail.response;
+            }
+            _handleDeleteLinkResponse(e) {
+                this.refresh({links: true});
+            }
+            _handleDeleteLinkError(e) {
+                this.showToast('Removing link failed!');
             }
         }
 

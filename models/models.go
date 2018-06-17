@@ -36,6 +36,7 @@ type Model struct {
 	Tags    *TagModel
 	Notes   *NoteModel
 	Images  *RecipeImageModel
+	Links   *RecipeLinkModel
 	Users   *UserModel
 	Search  *SearchModel
 }
@@ -74,6 +75,7 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 	m.Tags = &TagModel{Model: m}
 	m.Notes = &NoteModel{Model: m}
 	m.Images = &RecipeImageModel{Model: m, upl: upl}
+	m.Links = &RecipeLinkModel{Model: m}
 	m.Users = &UserModel{Model: m}
 	m.Search = &SearchModel{Model: m}
 

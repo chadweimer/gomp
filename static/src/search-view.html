@@ -3,18 +3,18 @@
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-divider.html">
-<link rel="import" href="../bower_components/paper-drawer/paper-drawer-subheader.html">
+<link rel="import" href="../bower_components/paper-divider/paper-divider.html">
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
 
 <link rel="import" href="mixins/gomp-core-mixin.html">
 
@@ -64,28 +64,27 @@
             paper-icon-item {
                 cursor: pointer;
             }
-            .compact-recipe {
-                margin: 5px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
             .avatar {
-                display: inline-block;
                 width: 32px;
                 height: 32px;
                 border: 1px solid rgba(0, 0, 0, 0.25);
-                border-radius: 16px;
-                vertical-align: middle;
-                margin: 5px;
-            }
-            .avatar[hidden] {
-                display: none !important;
+                border-radius: 50%;
             }
             #settingsIcon {
                 cursor: pointer;
                 float: right;
                 color: var(--paper-grey-800);
+            }
+            .menu-label {
+                min-height: 48px;
+				height: 48px;
+				padding: 0 16px;
+				font-size: 14px !important;
+				color: var(--secondary-text-color);
+				@apply --paper-font-subhead;
+				@apply --layout-horizontal;
+				@apply --layout-center;
+				cursor: default;
             }
             @media screen and (min-width: 993px) {
                 .recipeContainer {
@@ -118,29 +117,27 @@
 
         <app-drawer-layout force-narrow>
             <app-drawer id="settingsDrawer" align="right" slot="drawer">
-                <paper-drawer>
-                    <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
-                    <app-toolbar></app-toolbar>
+                <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
+                <app-toolbar></app-toolbar>
 
-                    <paper-drawer-subheader>View</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
-                        <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
-                        <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
-                    </paper-listbox>
-                    <paper-drawer-divider></paper-drawer-divider>
-                    <paper-drawer-subheader>Sort</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
-                        <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
-                        <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
-                        <paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
-                    </paper-listbox>
-                    <paper-drawer-divider></paper-drawer-divider>
-                    <paper-drawer-subheader>Order</paper-drawer-subheader>
-                    <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">
-                        <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
-                        <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
-                    </paper-listbox>
-                </paper-drawer>
+                <label class="menu-label">View</label>
+                <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
+                    <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
+                    <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
+                </paper-listbox>
+                <paper-divider></paper-divider>
+                <label class="menu-label">Sort</label>
+                <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
+                    <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
+                    <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
+                    <paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
+                </paper-listbox>
+                <paper-divider></paper-divider>
+                <label class="menu-label">Order</label>
+                <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">
+                    <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
+                    <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
+                </paper-listbox>
             </app-drawer>
 
             <div class="section">
@@ -164,11 +161,10 @@
                             <div class="recipeContainer">
                                 <template is="dom-repeat" items="[[inner]]" as="recipe">
                                     <a href="/recipes/[[recipe.id]]">
-                                        <div class="compact-recipe">
-                                            <img src="[[recipe.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[_isNullOrEmpty(recipe.thumbnailUrl)]]">
-                                            <span class="avatar" hidden$="[[!_isNullOrEmpty(recipe.thumbnailUrl)]]"></span>
-                                            <span>[[recipe.name]]</span>
-                                        </div>
+                                       <paper-icon-item>
+                                           <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
+                                           [[recipe.name]]
+                                        </paper-icon-item>
                                     </a>
                                 </template>
                             </div>
@@ -183,12 +179,9 @@
         </app-drawer-layout>
 
         <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only></app-localstorage-document>
-        <iron-ajax bubbles
-            auto
+        <iron-ajax bubbles auto
             id="recipesAjax"
             url="/api/v1/recipes"
-            method="GET"
-            handle-as="json"
             on-request="_handleGetRecipesRequest"
             on-response="_handleGetRecipesResponse"
             on-error="_handleGetRecipesError"
@@ -278,16 +271,15 @@
             }
 
             _handleGetRecipesRequest() {
-                this.dispatchEvent(new CustomEvent('loading-started', {bubbles: true, composed: true}));
                 this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
             }
             _handleGetRecipesResponse(request) {
                 this.recipes = request.detail.response.recipes;
                 this.totalRecipeCount = request.detail.response.total;
-                this.dispatchEvent(new CustomEvent('loading-complete', {bubbles: true, composed: true}));
             }
             _handleGetRecipesError () {
-                this.dispatchEvent(new CustomEvent('loading-complete', {bubbles: true, composed: true}));
+                this.recipes = [];
+                this.totalRecipeCount = 0;
             }
 
             _updatePagination(recipes, total) {
@@ -360,9 +352,6 @@
                 }
 
                 return newArrays;
-            }
-            _isNullOrEmpty(val) {
-                return val === null || val === '';
             }
         }
 

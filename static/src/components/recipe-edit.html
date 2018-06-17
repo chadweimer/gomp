@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
@@ -56,27 +57,22 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
-            method="GET"
-            handle-as="json"
             on-request="_handleGetRecipeRequest"
             on-response="_handleGetRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             id="putAjax"
             url="/api/v1/recipes/[[recipeId]]"
             method="PUT"
-            handle-as="json"
             on-response="_handlePutRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             id="postAjax"
             url="/api/v1/recipes"
             method="POST"
-            handle-as="json"
             on-response="_handlePostRecipeResponse"></iron-ajax>
         <iron-ajax bubbles
             id="addImageAjax"
             url="/api/v1/recipes/[[newRecipeId]]/images"
             method="POST"
-            handle-as="json"
             on-request="_handleAddImageRequest"
             on-response="_handleAddImageResponse",
             on-error="_handleAddImageResponse"></iron-ajax>
@@ -89,7 +85,6 @@
                 return {
                     recipeId: {
                         type: String,
-                        notify: true,
                     },
                 };
             }
@@ -102,6 +97,10 @@
                 }
             }
             refresh() {
+                if (!this.recipeId) {
+                    return;
+                }
+
                 this.$.getAjax.generateRequest();
                 this.$.tagsInput.refresh();
             }

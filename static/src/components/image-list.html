@@ -1,11 +1,12 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
 <link rel="import" href="../../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
@@ -121,28 +122,24 @@
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
-            handle-as="json"
             on-request="_handleGetImagesRequest"
             on-response="_handleGetImagesResponse"></iron-ajax>
         <iron-ajax bubbles
             id="addAjax"
             url="/api/v1/recipes/[[recipeId]]/images"
             method="POST"
-            handle-as="json"
             on-request="_handleAddRequest"
-            on-response="_handleAddResponse",
+            on-response="_handleAddResponse"
             on-error="_handleAddError"></iron-ajax>
         <iron-ajax bubbles
             id="setMainImageAjax"
             url="/api/v1/recipes/[[recipeId]]/image"
             method="PUT"
-            handle-as="json"
             on-response="_handleSetMainImageResponse"
             on-error="_handleSetMainImageError"></iron-ajax>
         <iron-ajax bubbles
             id="deleteAjax"
             method="DELETE"
-            handle-as="json"
             on-response="_handleDeleteResponse"
             on-error="_handleDeleteError"></iron-ajax>
     </template>
@@ -154,12 +151,15 @@
                 return {
                     recipeId: {
                         type: String,
-                        notify: true,
                     },
                 };
             }
 
             refresh() {
+                if (!this.recipeId) {
+                    return;
+                }
+
                 this.$.getAjax.generateRequest();
             }
 

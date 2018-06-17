@@ -15,7 +15,7 @@
     "paper-search": "Collaborne/paper-search#^2.0.0",
     "paper-chip": "Collaborne/paper-chip#^2.0.0",
     "paper-divider": "wincinderith/paper-divider#^2.0.0",
-    "paper-fab-speed-dial": "chadweimer/paper-fab-speed-dial#^2.0.0",
+    "paper-fab-speed-dial": "Collaborne/paper-fab-speed-dial#^2.0.0",
     "paper-menu-button": "PolymerElements/paper-menu-button#^2.0.0",
     "app-layout": "PolymerElements/app-layout#^2.0.0",
     "app-storage": "PolymerElements/app-storage#^2.0.0",
@@ -24,7 +24,7 @@
     "paper-password-input": "Collaborne/paper-password-input#^2.0.0",
     "paper-tags-input": "chadweimer/paper-tags-input#^2.0.0",
     "iron-star-rating": "chadweimer/iron-star-rating#^2.0.0",
-    "paper-drawer": "Collaborne/paper-drawer#^2.0.0"
+    "paper-autocomplete": "ellipticaljs/paper-autocomplete#^3.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^2.0.0",

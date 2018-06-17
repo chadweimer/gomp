@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -94,12 +95,14 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 func (h apiHandler) verifyUserExists(claims *jwt.StandardClaims) error {
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
+		log.Printf("Invalid claims: '%+v'", err)
 		return errors.New("invalid claims")
 	}
 
 	// Verify this is a valid user in the DB
 	if _, err = h.model.Users.Read(userID); err != nil {
-		return errors.New("invalid claims")
+		log.Printf("Invalid user: '%+v'", err)
+		return errors.New("invalid user")
 	}
 
 	return nil
