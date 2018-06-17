@@ -11,6 +11,8 @@
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
+<link rel="import" href="confirmation-dialog.html">
+
 <link rel="import" href="../shared-styles.html">
 
 <dom-module id="recipe-display">
@@ -127,6 +129,13 @@
             </div>
         </paper-card>
 
+        <confirmation-dialog
+            id="confirmDeleteLinkDialog"
+            icon="delete"
+            title="Delete Link?"
+            message="Are you sure you want to delete this link?"
+            on-confirmed="_deleteLink"></confirmation-dialog>
+
         <iron-ajax bubbles auto
             id="getAjax"
             url="/api/v1/recipes/[[recipeId]]"
@@ -149,7 +158,7 @@
             on-response="_handleGetLinksResponse"></iron-ajax>
         <iron-ajax bubbles
             id="deleteLinkAjax"
-            method="DEELTE"
+            method="DELETE"
             on-response="_handleDeleteLinkResponse"
             on-error="_handleDeleteLinkError"></iron-ajax>
     </template>
@@ -193,7 +202,11 @@
             _onRemoveLinkTapped(e) {
                 e.preventDefault();
 
-                this.$.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.model.item.id;
+                this.$.confirmDeleteLinkDialog.dataId = e.target.model.id;
+                this.$.confirmDeleteLinkDialog.open();
+            }
+            _deleteLink(e) {
+                this.$.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.target.dataId;
                 this.$.deleteLinkAjax.generateRequest();
             }
 
@@ -221,7 +234,7 @@
                 this.links = e.detail.response;
             }
             _handleDeleteLinkResponse(e) {
-                this.refresh({links: true})
+                this.refresh({links: true});
             }
             _handleDeleteLinkError(e) {
                 this.showToast('Removing link failed!');
