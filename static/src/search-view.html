@@ -64,23 +64,11 @@
             paper-icon-item {
                 cursor: pointer;
             }
-            .compact-recipe {
-                margin: 5px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
             .avatar {
-                display: inline-block;
                 width: 32px;
                 height: 32px;
                 border: 1px solid rgba(0, 0, 0, 0.25);
-                border-radius: 16px;
-                vertical-align: middle;
-                margin: 5px;
-            }
-            .avatar[hidden] {
-                display: none !important;
+                border-radius: 50%;
             }
             #settingsIcon {
                 cursor: pointer;
@@ -164,11 +152,10 @@
                             <div class="recipeContainer">
                                 <template is="dom-repeat" items="[[inner]]" as="recipe">
                                     <a href="/recipes/[[recipe.id]]">
-                                        <div class="compact-recipe">
-                                            <img src="[[recipe.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[_isNullOrEmpty(recipe.thumbnailUrl)]]">
-                                            <span class="avatar" hidden$="[[!_isNullOrEmpty(recipe.thumbnailUrl)]]"></span>
-                                            <span>[[recipe.name]]</span>
-                                        </div>
+                                       <paper-icon-item>
+                                           <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
+                                           [[recipe.name]]
+                                        </paper-icon-item>
                                     </a>
                                 </template>
                             </div>

@@ -5,9 +5,10 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../../bower_components/paper-chip/paper-chip.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
@@ -39,38 +40,17 @@
             .plain-text {
                 white-space: pre-wrap;
             }
-            .avatar {
+            .main-image {
                 width: 64px;
                 height: 64px;
-                border-radius: 32px;
+                border-radius: 50%;
             }
-            .link {
-                margin: 5px;
-                vertical-align: middle;
-                padding-right: 6px;
-                padding-left: 0px;
-                overflow: hidden;
-            }
-            .link-image {
-                display: inline-block;
+            .avatar {
                 width: 32px;
                 height: 32px;
-                border-radius: 0 50% 50% 0;
-                vertical-align: middle;
-                margin-right: 4px;
-                background: white;
+                border-radius: 50%;
+                border: 1px solid rgba(0, 0, 0, 0.25);
             }
-            .link-image[hidden] {
-                display: none !important;
-            }
-			.link .delete {
-				--iron-icon-height: 20px;
-				--iron-icon-width: 20px;
-				color: var(--disabled-text-color);
-                position: relative;
-                top: 6px;
-                float: right;
-			}
             iron-star-rating {
                 position: absolute;
                 top: 5px;
@@ -85,7 +65,7 @@
             <div class="card-content">
                 <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
                 <h2>
-                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="avatar" hidden$="[[!mainImage.thumbnailUrl]]"></a>
+                    <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="main-image" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
                 </h2>
                 <section hidden$="[[!recipe.servingSize]]">
@@ -116,16 +96,15 @@
                 <section hidden$="[[_isEmpty(links)]]">
                     <label>Related Recipes</label>
                     <template is="dom-repeat" items="[[links]]">
-                        <div>
-                            <paper-chip class="link" selectable>
-                                <iron-icon icon="icons:cancel" class="delete" on-tap="_onRemoveLinkTapped"></iron-icon>
+                        <paper-icon-item>
+                            <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
+                            <paper-item-body>
                                 <a href="/recipes/[[item.id]]">
-                                    <img src="[[item.thumbnailUrl]]" class="link-image" hidden$="[[_isNullOrEmpty(item.thumbnailUrl)]]">
-                                    <span class="link-image" hidden$="[[!_isNullOrEmpty(item.thumbnailUrl)]]"></span>
-                                    <span>[[item.name]]</span>
+                                    [[item.name]]
                                 </a>
-                            </paper-chip>
-                        </div>
+                            <paper-item-body>
+                            <iron-icon icon="icons:cancel" on-tap="_onRemoveLinkTapped"></iron-icon>
+                        </paper-icon-item>
                     </template>
                     <paper-divider></paper-divider>
                 </section>
