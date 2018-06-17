@@ -203,7 +203,7 @@
             _onRemoveLinkTapped(e) {
                 e.preventDefault();
 
-                this.$.confirmDeleteLinkDialog.dataId = e.target.model.id;
+                this.$.confirmDeleteLinkDialog.dataId = e.model.item.id;
                 this.$.confirmDeleteLinkDialog.open();
             }
             _deleteLink(e) {
