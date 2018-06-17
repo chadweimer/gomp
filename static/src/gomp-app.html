@@ -126,12 +126,12 @@
             </app-drawer>
             <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
                 <app-header id="mainHeader" slot="header" reveals shadow>
-                    <div hidden$="[[_isAuthenticated()]]">
+                    <div hidden$="[[_isAuthenticated]]">
                         <app-toolbar>
                             <div main-title>[[title]]</div>
                         </app-toolbar>
                     </div>
-                    <div hidden$="[[!_isAuthenticated()]]">
+                    <div hidden$="[[!_isAuthenticated]]">
                         <app-toolbar>
                             <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                             <a href="/" class="hide-on-small-only">[[title]]</a>
@@ -157,7 +157,7 @@
                         </app-toolbar>
                     </div>
 
-                    <paper-progress indeterminate hidden$="[[!_isLoading(loadingCount)]]"></paper-progress>
+                    <paper-progress indeterminate hidden$="[[!loadingCount]]"></paper-progress>
                 </app-header>
 
                 <main>
@@ -173,7 +173,7 @@
                 </main>
 
                 <footer>
-                    <div class="indented" hidden$="[[!_isAuthenticated()]]">
+                    <div class="indented" hidden$="[[!_isAuthenticated]]">
                         <h4>Links</h4>
                         <ul>
                             <li><a href="/home">Home</a></li>
@@ -214,13 +214,10 @@
                     },
                     page: {
                         type: String,
-                        reflectToAttribute: true,
-                        notify: true,
                         observer: '_pageChanged',
                     },
                     loadingCount : {
                         type: Number,
-                        notify: true,
                         value: 0,
                     },
                     search: {
@@ -273,10 +270,6 @@
                         overlay.parentNode.insertBefore(overlay.backdropElement, overlay);
                     }
                 }
-            }
-
-            _isLoading(loadingCount) {
-                return loadingCount !== 0;
             }
 
             _onAjaxPresend(e) {
@@ -345,13 +338,14 @@
 
                 this._logout();
             }
-            _isAuthenticated() {
+            _getIsAuthenticated() {
                 var jwtToken = localStorage.getItem('jwtToken');
                 return jwtToken !== null;
             }
             _verifyIsAuthenticated() {
+                this._isAuthenticated = this._getIsAuthenticated();
                 // Redirect to login if necessary
-                if (!this._isAuthenticated()) {
+                if (!this._isAuthenticated) {
                     if (this.route.path !== '/login') {
                         this._logout();
                     }
