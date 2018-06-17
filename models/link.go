@@ -36,11 +36,10 @@ func (m *RecipeLinkModel) Delete(recipeID, destRecipeID int64) error {
 
 // DeleteTx removes the linked recipe from the database using the specified transaction.
 func (m *RecipeLinkModel) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
-	if _, err := tx.Exec("DELETE FROM recipe_link WHERE recipe_id = $1 AND dest_recipe_id = $2", recipeID, destRecipeID); err != nil {
-		return err
-	}
-
-	_, err := tx.Exec("DELETE FROM recipe_link WHERE recipe_id = $1 AND dest_recipe_id = $2", destRecipeID, recipeID)
+	_, err := tx.Exec(
+		"DELETE FROM recipe_link WHERE (recipe_id = $1 AND dest_recipe_id = $2) OR (recipe_id = $2 AND dest_recipe_id = $1)",
+		recipeID,
+		destRecipeID)
 	return err
 }
 
