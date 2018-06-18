@@ -44,7 +44,10 @@ func (m *UserModel) Authenticate(username, password string) (*User, error) {
 func (m *UserModel) Read(id int64) (*User, error) {
 	user := new(User)
 
-	if err := m.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id); err != nil {
+	err := m.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	} else if err != nil {
 		return nil, err
 	}
 
