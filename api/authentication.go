@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 )
@@ -68,7 +69,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 		var err error
 		var userID int64
 		for _, key := range h.cfg.SecureKeys {
-			userID, err = getUserIDFromToken(tokenStr, key)
+			userID, err = h.getUserIDFromToken(tokenStr, key)
 			if err == nil {
 				// We got the user from the token, so proceed
 				break;
@@ -87,14 +88,14 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 			h.JSON(resp, http.StatusInternalServerError, err.Error())
 		} else {
 			// Add the user's ID to the list of params
-			p = append(p, httprouter.Param{Key: "CurrentUserID", Value: strvonc.FormatInt(userID, 10)})
+			p = append(p, httprouter.Param{Key: "CurrentUserID", Value: strconv.FormatInt(userID, 10)})
 
 			handler(resp, req, p)
 		}
 	}
 }
 
-func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (userID int64, err error) {
+func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method != jwt.SigningMethodHS256 {
 			return nil, errors.New("Incorrect signing method")
@@ -121,13 +122,14 @@ func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (userID int6
 
 func (h apiHandler) verifyUserExists(userID int64) error {
 	// Verify this is a valid user in the DB
-	if _, err = h.model.Users.Read(userID); err != nil {
+	_, err := h.model.Users.Read(userID)
+	if err != nil {
 		if err == models.ErrNotFound {
 			return err
-		} else {
-			log.Printf("Error retrieving user info: '%+v'", err)
-			return errors.New("Error retrieving user info")
 		}
+
+		log.Printf("Error retrieving user info: '%+v'", err)
+		return errors.New("Error retrieving user info")
 	}
 
 	return nil
