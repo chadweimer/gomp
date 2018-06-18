@@ -86,6 +86,9 @@
 				@apply --layout-center;
 				cursor: default;
             }
+            .compact-rating {
+                --star-rating-size: 14px;
+            }
             @media screen and (min-width: 993px) {
                 .recipeContainer {
                     width: 33%;
@@ -122,7 +125,7 @@
 
                 <label class="menu-label">View</label>
                 <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
-                    <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
+                   <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
                     <paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                 </paper-listbox>
                 <paper-divider></paper-divider>
@@ -163,7 +166,10 @@
                                     <a href="/recipes/[[recipe.id]]">
                                        <paper-icon-item>
                                            <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                           [[recipe.name]]
+                                           <paper-item-body>
+                                               <div>[[recipe.name]]</div>
+                                               <div secondary><iron-star-rating value="[[recipe.averageRating]]" class="compact-rating"></iron-star-rating></div>
+                                           </paper-item-body>
                                         </paper-icon-item>
                                     </a>
                                 </template>
