@@ -13,6 +13,7 @@
 <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="../bower_components/paper-styles/paper-styles.html">
 
@@ -85,6 +86,9 @@
 				@apply --layout-horizontal;
 				@apply --layout-center;
 				cursor: default;
+            }
+            .compact-rating {
+                --star-rating-size: 14px;
             }
             @media screen and (min-width: 993px) {
                 .recipeContainer {
@@ -163,7 +167,10 @@
                                     <a href="/recipes/[[recipe.id]]">
                                        <paper-icon-item>
                                            <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                           [[recipe.name]]
+                                           <paper-item-body>
+                                               <div>[[recipe.name]]</div>
+                                               <div secondary><iron-star-rating value="[[recipe.averageRating]]" class="compact-rating"></iron-star-rating></div>
+                                           </paper-item-body>
                                         </paper-icon-item>
                                     </a>
                                 </template>
