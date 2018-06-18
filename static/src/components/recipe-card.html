@@ -1,9 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
-<link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 
 <link rel="import" href="../mixins/gomp-core-mixin.html">
+<link rel="import" href="recipe-rating.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -32,7 +32,7 @@
 
                     @apply --recipe-card;
                 }
-                --star-rating-size: var(--recipe-card-rating-size, 18px);
+                --recipe-rating-size: var(--recipe-card-rating-size, 18px);
             }
             paper-card:hover {
                 @apply --shadow-elevation-6dp;
@@ -49,17 +49,10 @@
             <paper-card image="[[recipe.thumbnailUrl]]">
                 <div class="card-content">
                     <span class="truncate">[[recipe.name]]</span>
-                    <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
+                    <recipe-rating recipe="{{recipe}}"></recipe-rating>
                 </div>
             </paper-card>
         </a>
-
-        <iron-ajax bubbles
-            id="rateAjax"
-            url="/api/v1/recipes/[[recipe.id]]/rating"
-            method="PUT"
-            on-response="_handlePutRecipeRatingResponse"
-            on-error="_handlePutRecipeRatingError"></iron-ajax>
     </template>
 
     <script>
@@ -72,18 +65,6 @@
                         notify: true,
                     },
                 };
-            }
-
-            _starRatingSelected(e) {
-                this.$.rateAjax.body = e.detail.rating;
-                this.$.rateAjax.generateRequest();
-            }
-            _handlePutRecipeRatingResponse(e) {
-                this.set('recipe.averageRating', parseFloat(e.target.body));
-                this.showToast('Rating changed.');
-            }
-            _handlePutRecipeRatingError(e) {
-                this.showToast('Changing rating failed!');
             }
         }
 

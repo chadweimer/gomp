@@ -21,6 +21,7 @@
 
 <link rel="import" href="components/recipe-card.html">
 <link rel="import" href="components/pagination-links.html">
+<link rel="import" href="components/recipe-rating.html">
 
 <link rel="import" href="shared-styles.html">
 
@@ -78,17 +79,17 @@
             }
             .menu-label {
                 min-height: 48px;
-				height: 48px;
-				padding: 0 16px;
-				font-size: 14px !important;
-				color: var(--secondary-text-color);
-				@apply --paper-font-subhead;
-				@apply --layout-horizontal;
-				@apply --layout-center;
-				cursor: default;
+                height: 48px;
+                padding: 0 16px;
+                font-size: 14px !important;
+                color: var(--secondary-text-color);
+                @apply --paper-font-subhead;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                cursor: default;
             }
             .compact-rating {
-                --star-rating-size: 14px;
+                --recipe-rating-size: 13px;
             }
             @media screen and (min-width: 993px) {
                 .recipeContainer {
@@ -169,7 +170,9 @@
                                            <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
                                            <paper-item-body>
                                                <div>[[recipe.name]]</div>
-                                               <div secondary><iron-star-rating value="[[recipe.averageRating]]" class="compact-rating"></iron-star-rating></div>
+                                               <div secondary>
+                                                    <recipe-rating recipe="{{recipe}}" class="compact-rating"></recipe-rating>
+                                                </div>
                                            </paper-item-body>
                                         </paper-icon-item>
                                     </a>

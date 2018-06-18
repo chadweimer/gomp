@@ -3,7 +3,6 @@
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-star-rating/iron-star-rating.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-chip/paper-chips-section.html">
 <link rel="import" href="../../bower_components/paper-divider/paper-divider.html">
@@ -13,6 +12,7 @@
 <link rel="import" href="../mixins/gomp-core-mixin.html">
 
 <link rel="import" href="confirmation-dialog.html">
+<link rel="import" href="recipe-rating.html">
 
 <link rel="import" href="../shared-styles.html">
 
@@ -51,7 +51,7 @@
                 border-radius: 50%;
                 border: 1px solid rgba(0, 0, 0, 0.25);
             }
-            iron-star-rating {
+            recipe-rating {
                 position: absolute;
                 top: 5px;
                 right: 5px;
@@ -63,7 +63,7 @@
 
         <paper-card>
             <div class="card-content">
-                <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
+                <recipe-rating recipe="{{recipe}}"></recipe-rating>
                 <h2>
                     <a target="_blank" href$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="main-image" hidden$="[[!mainImage.thumbnailUrl]]"></a>
                     [[recipe.name]]
@@ -99,9 +99,7 @@
                         <paper-icon-item>
                             <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                             <paper-item-body>
-                                <a href="/recipes/[[item.id]]">
-                                    [[item.name]]
-                                </a>
+                                <a href="/recipes/[[item.id]]">[[item.name]]</a>
                             </paper-item-body>
                             <iron-icon icon="icons:cancel" on-tap="_onRemoveLinkTapped"></iron-icon>
                         </paper-icon-item>
@@ -129,12 +127,6 @@
             url="/api/v1/recipes/[[recipeId]]/image"
             on-request="_handleGetMainImageRequest"
             on-response="_handleGetMainImageResponse"></iron-ajax>
-        <iron-ajax bubbles
-            id="rateAjax"
-            url="/api/v1/recipes/[[recipeId]]/rating"
-            method="PUT"
-            on-response="_handlePutRecipeRatingResponse"
-            on-error="_handlePutRecipeRatingError"></iron-ajax>
         <iron-ajax bubbles auto
             id="getLinksAjax"
             url="/api/v1/recipes/[[recipeId]]/links"
@@ -177,11 +169,6 @@
                 return !Array.isArray(arr) || !arr.length;
             }
 
-            _starRatingSelected(e) {
-                this.$.rateAjax.body = e.detail.rating;
-                this.$.rateAjax.generateRequest();
-            }
-
             _onRemoveLinkTapped(e) {
                 e.preventDefault();
 
@@ -204,14 +191,6 @@
             }
             _handleGetMainImageResponse(e) {
                 this.mainImage = e.detail.response;
-            }
-            _handlePutRecipeRatingResponse(e) {
-                this.set('recipe.averageRating', parseFloat(e.target.body));
-                this.showToast('Rating changed.');
-                this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-            }
-            _handlePutRecipeRatingError(e) {
-                this.showToast('Changing rating failed!');
             }
             _handleGetLinksResponse(e) {
                 this.links = e.detail.response;
