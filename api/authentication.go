@@ -72,7 +72,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 			userID, err = h.getUserIDFromToken(tokenStr, key)
 			if err == nil {
 				// We got the user from the token, so proceed
-				break;
+				break
 			}
 		}
 
