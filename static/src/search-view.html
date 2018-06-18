@@ -21,6 +21,7 @@
 
 <link rel="import" href="components/recipe-card.html">
 <link rel="import" href="components/pagination-links.html">
+<link rel="import" href="components/recipe-rating.html">
 
 <link rel="import" href="shared-styles.html">
 
@@ -169,7 +170,9 @@
                                            <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
                                            <paper-item-body>
                                                <div>[[recipe.name]]</div>
-                                               <div secondary><iron-star-rating value="[[recipe.averageRating]]" class="compact-rating"></iron-star-rating></div>
+                                               <div secondary>
+                                                    <recipe-rating recipe="{{recipe}}" class="compact-rating"></recipe-rating>
+                                                </div>
                                            </paper-item-body>
                                         </paper-icon-item>
                                     </a>
