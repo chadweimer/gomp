@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 )
@@ -65,44 +66,68 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 		tokenStr := authHeaderParts[1]
 
 		// Try each key when validating the token
-		var lastErr error
+		var err error
+		var userID int64
 		for _, key := range h.cfg.SecureKeys {
-			token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-				if token.Method != jwt.SigningMethodHS256 {
-					return nil, errors.New("Incorrect signing method")
-				}
-
-				return []byte(key), nil
-			})
-
-			if err == nil && token.Valid {
-				claims := token.Claims.(*jwt.StandardClaims)
-				if err = h.verifyUserExists(claims); err == nil {
-					// Add the user's ID to the list of params
-					p = append(p, httprouter.Param{Key: "CurrentUserID", Value: claims.Subject})
-
-					handler(resp, req, p)
-					return
-				}
+			userID, err = h.getUserIDFromToken(tokenStr, key)
+			if err == nil {
+				// We got the user from the token, so proceed
+				break
 			}
-			lastErr = err
 		}
 
-		h.JSON(resp, http.StatusUnauthorized, lastErr.Error())
+		if err != nil {
+			h.JSON(resp, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		err = h.verifyUserExists(userID)
+		if err == models.ErrNotFound {
+			h.JSON(resp, http.StatusUnauthorized, errors.New("Invalid user"))
+		} else if err != nil {
+			h.JSON(resp, http.StatusInternalServerError, err.Error())
+		} else {
+			// Add the user's ID to the list of params
+			p = append(p, httprouter.Param{Key: "CurrentUserID", Value: strconv.FormatInt(userID, 10)})
+
+			handler(resp, req, p)
+		}
 	}
 }
 
-func (h apiHandler) verifyUserExists(claims *jwt.StandardClaims) error {
+func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, errors.New("Incorrect signing method")
+		}
+
+		return []byte(key), nil
+	})
+	if err != nil || !token.Valid {
+		log.Printf("Invalid JWT token: '%+v'", err)
+		return -1, errors.New("Invalid token")
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
 		log.Printf("Invalid claims: '%+v'", err)
-		return errors.New("invalid claims")
+		return -1, errors.New("Invalid claims")
 	}
 
+	return userID, nil
+}
+
+func (h apiHandler) verifyUserExists(userID int64) error {
 	// Verify this is a valid user in the DB
-	if _, err = h.model.Users.Read(userID); err != nil {
-		log.Printf("Invalid user: '%+v'", err)
-		return errors.New("invalid user")
+	_, err := h.model.Users.Read(userID)
+	if err != nil {
+		if err == models.ErrNotFound {
+			return err
+		}
+
+		log.Printf("Error retrieving user info: '%+v'", err)
+		return errors.New("Error retrieving user info")
 	}
 
 	return nil
