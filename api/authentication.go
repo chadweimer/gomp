@@ -103,10 +103,8 @@ func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, erro
 
 		return []byte(key), nil
 	})
-	if err != nil {
-		return -1, err
-	}
-	if !token.Valid {
+	if err != nil || !token.Valid {
+		log.Printf("Invalid JWT token: '%+v'", err)
 		return -1, errors.New("Invalid token")
 	}
 
@@ -114,7 +112,7 @@ func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, erro
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
 		log.Printf("Invalid claims: '%+v'", err)
-		return -1, err
+		return -1, errors.New("Invalid claims")
 	}
 
 	return userID, nil
