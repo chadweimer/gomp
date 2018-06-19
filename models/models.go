@@ -61,6 +61,8 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 			log.Fatalf("Failed to open database on attempt %d: '%+v'. Giving up.", i, err)
 		}
 	}
+	// This is meant to mitigate connection drops
+	db.SetConnMaxLifetime(time.Minute * 15)
 
 	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
