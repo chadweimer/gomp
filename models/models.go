@@ -50,15 +50,19 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 	var err error
 	for i := 1; i <= maxAttempts; i++ {
 		db, err = sqlx.Connect(cfg.DatabaseDriver, cfg.DatabaseURL)
-		if err != nil {
-			if i < maxAttempts {
-				log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
-				time.Sleep(500 * time.Millisecond)
-			} else {
-				log.Fatalf("Failed to open database on attempt %d: '%+v'. Giving up.", i, err)
-			}
+		if err == nil {
+			break
+		}
+
+		if i < maxAttempts {
+			log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
+			time.Sleep(500 * time.Millisecond)
+		} else {
+			log.Fatalf("Failed to open database on attempt %d: '%+v'. Giving up.", i, err)
 		}
 	}
+	// This is meant to mitigate connection drops
+	db.SetConnMaxLifetime(time.Minute * 15)
 
 	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
 	if err != nil {
