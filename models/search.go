@@ -80,22 +80,24 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		filterFields = SupportedFields[:]
 	}
 
-	// Build up the string of fields for use in the tsvector
+	// Build up the string of fields to query against
 	fieldStr := ""
+	fieldArgs := make([]interface{}, 0)
 	for _, field := range SupportedFields {
 		if containsString(filterFields, field) {
 			if fieldStr != "" {
-				fieldStr += " || ' ' || "
+				fieldStr += " OR "
 			}
-			fieldStr += "r." + field
+			fieldStr += "to_tsvector('english', r." + field + ") @@ plainto_tsquery(?)"
+			fieldArgs = append(fieldArgs, filter.Query)
 		}
 	}
 
 	whereStmt := ""
 	whereArgs := make([]interface{}, 0)
 	if filter.Query != "" {
-		whereStmt += " WHERE to_tsvector('english', " + fieldStr + ") @@ plainto_tsquery(?)"
-		whereArgs = append(whereArgs, filter.Query)
+		whereStmt += " WHERE (" + fieldStr + ")"
+		whereArgs = append(whereArgs, fieldArgs)
 	}
 
 	if len(filter.Tags) > 0 {
