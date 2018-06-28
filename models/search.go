@@ -97,7 +97,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	whereArgs := make([]interface{}, 0)
 	if filter.Query != "" {
 		whereStmt += " WHERE (" + fieldStr + ")"
-		whereArgs = append(whereArgs, fieldArgs)
+		whereArgs = append(whereArgs, fieldArgs...)
 	}
 
 	if len(filter.Tags) > 0 {
