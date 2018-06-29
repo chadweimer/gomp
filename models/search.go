@@ -74,28 +74,30 @@ type RecipeCompact struct {
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
-	// If the filter didn't specify the fields to search on, use all of them
-	filterFields := filter.Fields
-	if filterFields == nil || len(filterFields) == 0 {
-		filterFields = SupportedFields[:]
-	}
-
-	// Build up the string of fields for use in the tsvector
-	fieldStr := ""
-	for _, field := range SupportedFields {
-		if containsString(filterFields, field) {
-			if fieldStr != "" {
-				fieldStr += " || ' ' || "
-			}
-			fieldStr += "r." + field
-		}
-	}
-
 	whereStmt := ""
 	whereArgs := make([]interface{}, 0)
 	if filter.Query != "" {
-		whereStmt += " WHERE to_tsvector('english', " + fieldStr + ") @@ plainto_tsquery(?)"
-		whereArgs = append(whereArgs, filter.Query)
+		// If the filter didn't specify the fields to search on, use all of them
+		filterFields := filter.Fields
+		if filterFields == nil || len(filterFields) == 0 {
+			filterFields = SupportedFields[:]
+		}
+
+		// Build up the string of fields to query against
+		fieldStr := ""
+		fieldArgs := make([]interface{}, 0)
+		for _, field := range SupportedFields {
+			if containsString(filterFields, field) {
+				if fieldStr != "" {
+					fieldStr += " OR "
+				}
+				fieldStr += "to_tsvector('english', r." + field + ") @@ plainto_tsquery(?)"
+				fieldArgs = append(fieldArgs, filter.Query)
+			}
+		}
+
+		whereStmt += " WHERE (" + fieldStr + ")"
+		whereArgs = append(whereArgs, fieldArgs...)
 	}
 
 	if len(filter.Tags) > 0 {
