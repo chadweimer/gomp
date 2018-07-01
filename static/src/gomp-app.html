@@ -130,6 +130,13 @@
                         Settings
                     </paper-icon-item>
                 </a>
+                <a href="/admin" tabindex="-1" hidden$="[[!_getIsAdmin(userAccessLevel)]]">
+                    <paper-icon-item tabindex="-1">
+                        <iron-icon icon="icons:lock" slot="item-icon"></iron-icon>
+                        Admin
+                    </paper-icon-item>
+                </a>
+                <paper-divider></paper-divider>
                 <a href="#!" tabindex="-1" on-tap="_onLogoutTapped">
                     <paper-icon-item tabindex="-1">
                         <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
@@ -152,6 +159,7 @@
                             <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                             <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                             <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
+                            <a href="/admin" hidden$="[[!_getIsAdmin(userAccessLevel)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                             <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
                             <paper-search-bar
@@ -192,6 +200,7 @@
                             <li><a href="/home">Home</a></li>
                             <li><a href="/search">Recipes</a></li>
                             <li><a href="/settings">Settings</a></li>
+                            <li><a href="/admin" hidden$="[[!_getIsAdmin(userAccessLevel)]]">Admin</a></li>
                             <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
                         </ul>
                     </div>
@@ -208,6 +217,10 @@
             id="appConfigAjax"
             url="/api/v1/app/configuration"
             on-response="_handleGetAppConfigurationResponse"></iron-ajax>
+        <iron-ajax bubbles
+            id="getCurrentUserAjax"
+            url="/api/v1/users/current"
+            on-response="_handleGetCurrentUserResponse"></iron-ajax>
         <iron-ajax bubbles
             id="tagsAjax"
             url="/api/v1/tags"
@@ -242,6 +255,11 @@
                         },
                         notify: true,
                     },
+                    userAccessLevel: {
+                        type: String,
+                        value: 'none',
+                        notify: true,
+                    }
                 };
             }
             static get observers() {
@@ -263,9 +281,11 @@
                 this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
                 this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
                 this.addEventListener('show-toast', e => this._onShowToast(e));
+                this.addEventListener('current-user-changed', e => this._onCurrentUserChanged(e));
 
                 super.ready();
                 this.$.appConfigAjax.generateRequest();
+                this._updateUserAccessLevel();
             }
 
             _titleChanged(title) {
@@ -351,9 +371,23 @@
 
                 this._logout();
             }
+
+            _onCurrentUserChanged(e) {
+                this._updateUserAccessLevel();
+            }
+            _updateUserAccessLevel() {
+                if (!this._getIsAuthenticated()) {
+                    this.userAccessLevel = 'none';
+                } else {
+                    this.$.getCurrentUserAjax.generateRequest();
+                }
+            }
+            _handleGetCurrentUserResponse(e) {
+                this.userAccessLevel = e.detail.response.accessLevel;
+            }
             _getIsAuthenticated() {
                 var jwtToken = localStorage.getItem('jwtToken');
-                return jwtToken !== null;
+                return !!jwtToken;
             }
             _verifyIsAuthenticated() {
                 this._isAuthenticated = this._getIsAuthenticated();
@@ -366,9 +400,17 @@
                 }
                 return true;
             }
+            _getIsAdmin(userAccessLevel) {
+                if (!userAccessLevel) {
+                    return false;
+                }
+
+                return userAccessLevel === 'admin';
+            }
             _logout() {
                 localStorage.clear();
                 sessionStorage.clear();
+                this._onCurrentUserChanged();
                 this._changeRoute('/login');
             }
             _onSearch(e) {

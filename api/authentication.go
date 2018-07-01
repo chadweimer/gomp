@@ -19,7 +19,8 @@ type authenticateRequest struct {
 }
 
 type authenticateResponse struct {
-	Token string `json:"token"`
+	Token string       `json:"token"`
+	User  *models.User `json:"user"`
 }
 
 func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -46,7 +47,7 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 	}
 
-	h.JSON(resp, http.StatusOK, authenticateResponse{Token: tokenStr})
+	h.JSON(resp, http.StatusOK, authenticateResponse{Token: tokenStr, User: user})
 }
 
 func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
