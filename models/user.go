@@ -17,14 +17,14 @@ type UserModel struct {
 type UserLevel string
 
 const (
-	// Admin represents an application-wide administator
-	Admin UserLevel = "admin"
+	// AdminUserLevel represents an application-wide administator
+	AdminUserLevel UserLevel = "admin"
 
-	// Editor represents a user that can add and editor recipes
-	Editor UserLevel = "editor"
+	// EditorUserLevel represents a user that can add and editor recipes
+	EditorUserLevel UserLevel = "editor"
 
-	// Reader represents a user that can only view recipes, but not make any changes
-	Reader UserLevel = "reader"
+	// ReaderUserLevel represents a user that can only view recipes, but not make any changes
+	ReaderUserLevel UserLevel = "reader"
 )
 
 // User represents an individual user
