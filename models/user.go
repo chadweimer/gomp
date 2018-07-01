@@ -13,11 +13,26 @@ type UserModel struct {
 	*Model
 }
 
+// UserLevel represents an enumeration of access levels that a user can have.
+type UserLevel string
+
+const (
+	// Admin represents an application-wide administator
+	Admin UserLevel = "admin"
+
+	// Editor represents a user that can add and editor recipes
+	Editor UserLevel = "editor"
+
+	// Reader represents a user that can only view recipes, but not make any changes
+	Reader UserLevel = "reader"
+)
+
 // User represents an individual user
 type User struct {
-	ID           int64  `json:"id" db:"id"`
-	Username     string `json:"username" db:"username"`
-	PasswordHash string `json:"-" db:"password_hash"`
+	ID           int64     `json:"id" db:"id"`
+	Username     string    `json:"username" db:"username"`
+	PasswordHash string    `json:"-" db:"password_hash"`
+	AccessLevel  UserLevel `json:"accessLevel" db:"access_level"`
 }
 
 // UserSettings represents the settings for an individual user

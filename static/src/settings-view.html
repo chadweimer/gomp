@@ -63,7 +63,8 @@
             <paper-card>
                 <div class="card-content">
                     <h3>Security Settings</h3>
-                    <paper-input label="Username" value="[[username]]" always-float-label disabled></paper-input>
+                    <paper-input label="Username" value="[[user.username]]" always-float-label disabled></paper-input>
+                    <paper-input label="Access Level" value="[[user.accessLevel]]" always-float-label disabled></paper-input>
                     <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label></paper-password-input>
                     <paper-password-input label="New Password" value="{{newPassword}}" always-float-label></paper-password-input>
                     <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label></paper-password-input>
@@ -185,9 +186,7 @@
             }
 
             _handleGetUserResponse(e) {
-                var user = e.detail.response;
-
-                this.username = user.username;
+                this.user = e.detail.response;
             }
             _handlePutPasswordResponse(e) {
                 this.showToast('Password updated.');
