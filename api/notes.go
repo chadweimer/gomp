@@ -55,7 +55,7 @@ func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httpr
 	}
 
 	if note.ID != noteID {
-		h.JSON(resp, http.StatusBadRequest, errMismatchedNoteID.Error())
+		h.JSON(resp, http.StatusBadRequest, errMismatchedID.Error())
 		return
 	}
 

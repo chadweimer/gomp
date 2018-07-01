@@ -57,6 +57,23 @@ func (m *UserModel) Authenticate(username, password string) (*User, error) {
 	return user, nil
 }
 
+// Create stores the user in the database as a new record using
+// a dedicated transation that is committed if there are not errors.
+func (m *UserModel) Create(user *User) error {
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.CreateTx(user, tx)
+	})
+}
+
+// CreateTx stores the user in the database as a new record using
+// the specified transaction.
+func (m *UserModel) CreateTx(user *User, tx *sqlx.Tx) error {
+	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
+		"VALUES ($1, $2, $3) RETURNING id"
+
+	return tx.Get(user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
+}
+
 func (m *UserModel) Read(id int64) (*User, error) {
 	user := new(User)
 
@@ -68,6 +85,22 @@ func (m *UserModel) Read(id int64) (*User, error) {
 	}
 
 	return user, nil
+}
+
+// Update stores the user in the database by updating the existing record with the specified
+// id using a dedicated transation that is committed if there are not errors.
+func (m *UserModel) Update(user *User) error {
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.UpdateTx(user, tx)
+	})
+}
+
+// UpdateTx stores the user in the database by updating the existing record with the specified
+// id using the specified transaction.
+func (m *UserModel) UpdateTx(user *User, tx *sqlx.Tx) error {
+	_, err := tx.Exec("UPDATE app_user SET username = $1, access_level = $2 WHERE ID = $3",
+		user.Username, user.AccessLevel, user.ID)
+	return err
 }
 
 // UpdatePassword updates the associated user's password, first verifying that the existing
@@ -138,6 +171,17 @@ func (m *UserModel) UpdateSettingsTx(settings *UserSettings, tx *sqlx.Tx) error 
 	}
 
 	return nil
+}
+
+// List retrieves all users in the database.
+func (m *UserModel) List() (*[]User, error) {
+	var users []User
+
+	if err := m.db.Select(&users, "SELECT * FROM app_user ORDER BY username ASC"); err != nil {
+		return nil, err
+	}
+
+	return &users, nil
 }
 
 func verifyPassword(user *User, password string) error {

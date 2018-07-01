@@ -16,8 +16,7 @@ import (
 
 // ---- Begin Standard Errors ----
 
-var errMismatchedNoteID = errors.New("The note id in the path does not match the one specified in the request body")
-var errMismatchedRecipeID = errors.New("The recipe id in the path does not match the one specified in the request body")
+var errMismatchedID = errors.New("The id in the path does not match the one specified in the request body")
 
 // ---- End Standard Errors ----
 
@@ -62,7 +61,10 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.PUT("/api/v1/notes/:noteID", h.requireAuthentication(h.putNote))
 	h.apiMux.DELETE("/api/v1/notes/:noteID", h.requireAuthentication(h.deleteNote))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
+	h.apiMux.GET("/api/v1/users", h.requireAuthentication(h.getUsers))
+	h.apiMux.POST("/api/v1/users", h.requireAuthentication(h.postUser))
 	h.apiMux.GET("/api/v1/users/:userID", h.requireAuthentication(h.getUser))
+	h.apiMux.PUT("/api/v1/users/:userID", h.requireAuthentication(h.putUser))
 	h.apiMux.PUT("/api/v1/users/:userID/password", h.requireAuthentication(h.putUserPassword))
 	h.apiMux.GET("/api/v1/users/:userID/settings", h.requireAuthentication(h.getUserSettings))
 	h.apiMux.PUT("/api/v1/users/:userID/settings", h.requireAuthentication(h.putUserSettings))
