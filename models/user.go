@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 
 	"github.com/jmoiron/sqlx"
@@ -37,6 +38,21 @@ type UserSettings struct {
 	UserID       int64   `json:"userId" db:"user_id"`
 	HomeTitle    *string `json:"homeTitle" db:"home_title"`
 	HomeImageURL *string `json:"homeImageUrl" db:"home_image_url"`
+}
+
+// Scan implements the sql.Scanner interface
+func (u *UserLevel) Scan(value interface{}) error {
+	asBytes, ok := value.([]byte)
+	if !ok {
+		return errors.New("Scan source is not []byte")
+	}
+	*u = UserLevel(string(asBytes))
+	return nil
+}
+
+// Value implements the sql/driver.Valuer interface
+func (u UserLevel) Value() (driver.Value, error) {
+	return string(u), nil
 }
 
 // Authenticate verifies the username and password combination match an existing user
