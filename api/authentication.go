@@ -79,6 +79,17 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 
 func (h apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		if err := h.verifyUserIsAdmin(req, p); err != nil {
+			h.JSON(resp, http.StatusForbidden, err.Error())
+			return
+		}
+
+		handler(resp, req, p)
+	}
+}
+
+func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		// Get the user from the request
 		userIDStr := p.ByName("userID")
 		// Get the user from the current session
@@ -95,17 +106,6 @@ func (h apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
 				h.JSON(resp, http.StatusForbidden, err.Error())
 				return
 			}
-		}
-
-		handler(resp, req, p)
-	}
-}
-
-func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		if err := h.verifyUserIsAdmin(req, p); err != nil {
-			h.JSON(resp, http.StatusForbidden, err.Error())
-			return
 		}
 
 		handler(resp, req, p)
