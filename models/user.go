@@ -22,9 +22,6 @@ const (
 
 	// EditorUserLevel represents a user that can add and editor recipes
 	EditorUserLevel UserLevel = "editor"
-
-	// ReaderUserLevel represents a user that can only view recipes, but not make any changes
-	ReaderUserLevel UserLevel = "reader"
 )
 
 // User represents an individual user

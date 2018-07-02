@@ -1,4 +1,4 @@
-CREATE TYPE user_level AS ENUM ('admin', 'editor', 'viewer');
+CREATE TYPE user_level AS ENUM ('admin', 'editor');
 
 ALTER TABLE app_user
 ADD COLUMN access_level user_level DEFAULT 'editor';
