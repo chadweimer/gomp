@@ -82,7 +82,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	}
 
 	// Then generate a thumbnail image
-	thumbImage := imaging.Thumbnail(image, 250, 250, imaging.Linear)
+	thumbImage := imaging.Thumbnail(image, 250, 250, imaging.Box)
 
 	// Use the EXIF data to determine the orientation of the original image.
 	// This data is lost when generating the thumbnail, so it's needed into
