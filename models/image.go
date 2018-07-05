@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -75,14 +76,26 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 		return "", "", errors.New("Attachment must be an image")
 	}
 
+	start := time.Now()
+
 	// First decode the image
 	image, err := imaging.Decode(bytes.NewReader(data))
+	if m.cfg.IsDevelopment {
+		log.Printf("Decoding original took %s", time.Since(start))
+	}
 	if err != nil {
 		return "", "", err
 	}
 
+	start = time.Now()
+
 	// Then generate a thumbnail image
 	thumbImage := imaging.Thumbnail(image, 250, 250, imaging.Box)
+	if m.cfg.IsDevelopment {
+		log.Printf("Generating thumbnail took %s", time.Since(start))
+	}
+
+	start = time.Now()
 
 	// Use the EXIF data to determine the orientation of the original image.
 	// This data is lost when generating the thumbnail, so it's needed into
@@ -104,26 +117,45 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 			}
 		}
 	}
+	if m.cfg.IsDevelopment {
+		log.Printf("Rotating thumbnail took %s", time.Since(start))
+	}
+
+	start = time.Now()
+
 	thumbBuf := new(bytes.Buffer)
 	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType))
+	if m.cfg.IsDevelopment {
+		log.Printf("Encoding thumbnail took %s", time.Since(start))
+	}
 	if err != nil {
 		return "", "", err
 	}
+
+	start = time.Now()
 
 	// Save the original image
 	origDir := getDirPathForImage(imageInfo.RecipeID)
 	origPath := filepath.Join(origDir, imageInfo.Name)
 	origURL := filepath.ToSlash(filepath.Join("/uploads/", origPath))
 	err = m.upl.Save(origPath, data)
+	if m.cfg.IsDevelopment {
+		log.Printf("Saving original took %s", time.Since(start))
+	}
 	if err != nil {
 		return "", "", err
 	}
+
+	start = time.Now()
 
 	// Save the thumbnail image
 	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
 	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
 	thumbURL := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
 	err = m.upl.Save(thumbPath, thumbBuf.Bytes())
+	if m.cfg.IsDevelopment {
+		log.Printf("Saving thumbnail took %s", time.Since(start))
+	}
 	if err != nil {
 		return "", "", err
 	}
