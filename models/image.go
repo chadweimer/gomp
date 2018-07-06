@@ -90,7 +90,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	start = time.Now()
 
 	// Then generate a thumbnail image
-	thumbImage := imaging.Thumbnail(image, 250, 250, imaging.Box)
+	thumbImage := imaging.Thumbnail(image, 400, 400, imaging.NearestNeighbor)
 	if m.cfg.IsDevelopment {
 		log.Printf("Generating thumbnail took %s", time.Since(start))
 	}
