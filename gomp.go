@@ -31,6 +31,13 @@ func main() {
 		IndentJSON:    true,
 	})
 
+	// Temporary: "Upgrade" all the thumbnails
+	if cfg.RegenerateThumbnails {
+		if err := model.Recipes.RegenerateAllThumbnails(); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	if cfg.IsDevelopment {

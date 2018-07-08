@@ -2,6 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"log"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -148,4 +150,46 @@ func (m *RecipeModel) SetRating(id int64, rating float64) error {
 			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
 	}
 	return err
+}
+
+// List retrieves all recipes.
+func (m *RecipeModel) List() (*[]RecipeCompact, error) {
+	var recipes []RecipeCompact
+
+	selectStmt := "SELECT r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url FROM recipe as r"
+	if err := m.db.Select(&recipes, selectStmt); err != nil {
+		return nil, err
+	}
+
+	return &recipes, nil
+}
+
+// RegenerateAllThumbnails re-creates the thumbnail images for all recipes.
+func (m *RecipeModel) RegenerateAllThumbnails() error {
+	start := time.Now()
+
+	log.Println("Regenerating all thumbnail images...")
+	recipes, err := m.List()
+	if err != nil {
+		return err
+	}
+
+	for _, recipe := range *recipes {
+		log.Printf("Processing recipe %d...", recipe.ID)
+		images, err := m.Images.List(recipe.ID)
+		if err != nil {
+			return err
+		}
+
+		for _, image := range *images {
+			log.Printf("Processing image %d - %s...", image.ID, image.Name)
+			err = m.Images.RegenerateThumbnail(&image)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	log.Printf("Regenerating thumbnail images completed in %s", time.Since(start))
+
+	return nil
 }
