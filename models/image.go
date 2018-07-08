@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"image"
+	"io"
+	"mime"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -81,32 +84,14 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 		return "", "", err
 	}
 
-	// Then generate a thumbnail image
-	thumbImage := imaging.Thumbnail(image, 500, 500, imaging.NearestNeighbor)
-
-	// Use the EXIF data to determine the orientation of the original image.
-	// This data is lost when generating the thumbnail, so it's needed into
-	// order to potentially explicitly rotate it.
+	// And get the exif data (to be used when generating the thumbnail)
 	exifData, err := exif.Decode(bytes.NewReader(data))
-	if err == nil {
-		orientationTag, err := exifData.Get(exif.Orientation)
-		if err == nil {
-			orientationVal, err := orientationTag.Int(0)
-			if err == nil {
-				switch orientationVal {
-				case 3:
-					thumbImage = imaging.Rotate180(thumbImage)
-				case 6:
-					thumbImage = imaging.Rotate270(thumbImage)
-				case 8:
-					thumbImage = imaging.Rotate90(thumbImage)
-				}
-			}
-		}
+	if err != nil {
+		return "", "", err
 	}
 
-	thumbBuf := new(bytes.Buffer)
-	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(80))
+	// Then generate a thumbnail image
+	thumbData, err := m.generateThumbnail(image, exifData, contentType)
 	if err != nil {
 		return "", "", err
 	}
@@ -124,12 +109,43 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
 	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
 	thumbURL := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
-	err = m.upl.Save(thumbPath, thumbBuf.Bytes())
+	err = m.upl.Save(thumbPath, thumbData)
 	if err != nil {
 		return "", "", err
 	}
 
 	return origURL, thumbURL, nil
+}
+
+func (m *RecipeImageModel) generateThumbnail(image image.Image, exifData *exif.Exif, contentType string) ([]byte, error) {
+	// Then generate a thumbnail image
+	thumbImage := imaging.Thumbnail(image, 500, 500, imaging.NearestNeighbor)
+
+	// Use the EXIF data to determine the orientation of the original image.
+	// This data is lost when generating the thumbnail, so it's needed into
+	// order to potentially explicitly rotate it.
+	orientationTag, err := exifData.Get(exif.Orientation)
+	if err == nil {
+		orientationVal, err := orientationTag.Int(0)
+		if err == nil {
+			switch orientationVal {
+			case 3:
+				thumbImage = imaging.Rotate180(thumbImage)
+			case 6:
+				thumbImage = imaging.Rotate270(thumbImage)
+			case 8:
+				thumbImage = imaging.Rotate90(thumbImage)
+			}
+		}
+	}
+
+	thumbBuf := new(bytes.Buffer)
+	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(80))
+	if err != nil {
+		return nil, err
+	}
+
+	return thumbBuf.Bytes(), nil
 }
 
 // ReadTx retrieves the information about the image from the database, if found,
@@ -256,12 +272,55 @@ func (m *RecipeImageModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	return err
 }
 
+// RegenerateThumbnail re-creates the thumbnail image for the associated image.
+func (m *RecipeImageModel) RegenerateThumbnail(imageInfo *RecipeImage) error {
+	// Open the original image
+	origDir := getDirPathForImage(imageInfo.RecipeID)
+	origPath := filepath.Join(origDir, imageInfo.Name)
+	origFile, err := m.upl.Open(origPath)
+	if err != nil {
+		return err
+	}
+
+	// Get the content type from the extension
+	contentType := getContentType(imageInfo.Name)
+
+	// First decode the image
+	image, err := imaging.Decode(origFile)
+	if err != nil {
+		return err
+	}
+	origFile.Seek(0, io.SeekStart)
+
+	// And get the exif data (to be used when generating the thumbnail)
+	exifData, err := exif.Decode(origFile)
+	if err != nil {
+		return err
+	}
+
+	// Then generate a thumbnail image
+	thumbData, err := m.generateThumbnail(image, exifData, contentType)
+	if err != nil {
+		return err
+	}
+
+	// Save the thumbnail image
+	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
+	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
+	return m.upl.Save(thumbPath, thumbData)
+}
+
 func isImageFile(data []byte) (bool, string) {
 	contentType := http.DetectContentType(data)
 	if strings.Index(contentType, "image/") != -1 {
 		return true, contentType
 	}
 	return false, ""
+}
+
+func getContentType(fileName string) string {
+	ext := filepath.Ext(fileName)
+	return mime.TypeByExtension(ext)
 }
 
 func getImageFormat(contentType string) imaging.Format {
