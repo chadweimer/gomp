@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"image"
-	"io"
-	"mime"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -272,55 +270,12 @@ func (m *RecipeImageModel) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	return err
 }
 
-// RegenerateThumbnail re-creates the thumbnail image for the associated image.
-func (m *RecipeImageModel) RegenerateThumbnail(imageInfo *RecipeImage) error {
-	// Open the original image
-	origDir := getDirPathForImage(imageInfo.RecipeID)
-	origPath := filepath.Join(origDir, imageInfo.Name)
-	origFile, err := m.upl.Open(origPath)
-	if err != nil {
-		return err
-	}
-
-	// Get the content type from the extension
-	contentType := getContentType(imageInfo.Name)
-
-	// First decode the image
-	image, err := imaging.Decode(origFile)
-	if err != nil {
-		return err
-	}
-	origFile.Seek(0, io.SeekStart)
-
-	// And get the exif data (to be used when generating the thumbnail)
-	exifData, err := exif.Decode(origFile)
-	if err != nil {
-		return err
-	}
-
-	// Then generate a thumbnail image
-	thumbData, err := m.generateThumbnail(image, exifData, contentType)
-	if err != nil {
-		return err
-	}
-
-	// Save the thumbnail image
-	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
-	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
-	return m.upl.Save(thumbPath, thumbData)
-}
-
 func isImageFile(data []byte) (bool, string) {
 	contentType := http.DetectContentType(data)
 	if strings.Index(contentType, "image/") != -1 {
 		return true, contentType
 	}
 	return false, ""
-}
-
-func getContentType(fileName string) string {
-	ext := filepath.Ext(fileName)
-	return mime.TypeByExtension(ext)
 }
 
 func getImageFormat(contentType string) imaging.Format {

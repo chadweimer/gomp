@@ -2,6 +2,8 @@ package models
 
 import (
 	"bytes"
+	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"path/filepath"
@@ -27,10 +29,8 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 
 // Model encapsulates the model layer of the application, including database access
 type Model struct {
-	cfg               *conf.Config
-	db                *sqlx.DB
-	previousDbVersion uint64
-	currentDbVersion  uint64
+	cfg *conf.Config
+	db  *sqlx.DB
 
 	Recipes *RecipeModel
 	Tags    *TagModel
@@ -64,16 +64,13 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	previousDbVersion, newDbVersion, err := migrateDatabase(cfg.DatabaseDriver, cfg.DatabaseURL)
-	if err != nil {
+	if err := migrateDatabase(db, cfg.DatabaseDriver, cfg.DatabaseURL); err != nil {
 		log.Fatal("Failed to migrate database", err)
 	}
 
 	m := &Model{
-		cfg:               cfg,
-		db:                db,
-		previousDbVersion: previousDbVersion,
-		currentDbVersion:  newDbVersion,
+		cfg: cfg,
+		db:  db,
 	}
 	m.Recipes = &RecipeModel{Model: m}
 	m.Tags = &TagModel{Model: m}
@@ -119,12 +116,25 @@ func (m *Model) tx(op func(*sqlx.Tx) error) error {
 	return tx.Commit()
 }
 
-func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error) {
+func migrateDatabase(db *sqlx.DB, databaseDriver, databaseURL string) error {
+	// Lock the database while we're migrating so that multiple instances
+	// don't attempt to migrate simultaneously. This requires the same connection
+	// to be used for both locking and unlocking.
+	conn, err := db.Conn(context.Background())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	// This should block until the lock has been acquired
+	if err := lock(conn); err != nil {
+		return err
+	}
+	defer unlock(conn)
+
 	migrationPath := filepath.Join("db", "migrations", databaseDriver)
 
-	previousDbVersion, err := migrate.Version(databaseURL, migrationPath)
-	if err != nil {
-		return 0, 0, err
+	if _, err := migrate.Version(databaseURL, migrationPath); err != nil {
+		return err
 	}
 
 	allErrs, ok := migrate.UpSync(databaseURL, migrationPath)
@@ -134,15 +144,23 @@ func migrateDatabase(databaseDriver, databaseURL string) (uint64, uint64, error)
 			errBuffer.WriteString(err.Error())
 		}
 
-		return 0, 0, errors.New(errBuffer.String())
+		return errors.New(errBuffer.String())
 	}
 
-	newDbVersion, err := migrate.Version(databaseURL, migrationPath)
-	if err != nil {
-		return 0, 0, err
-	}
+	_, err = migrate.Version(databaseURL, migrationPath)
+	return err
+}
 
-	return previousDbVersion, newDbVersion, nil
+func lock(conn *sql.Conn) error {
+	stmt := `SELECT pg_advisory_lock(1)`
+	_, err := conn.ExecContext(context.Background(), stmt)
+	return err
+}
+
+func unlock(conn *sql.Conn) error {
+	stmt := `SELECT pg_advisory_unlock(1)`
+	_, err := conn.ExecContext(context.Background(), stmt)
+	return err
 }
 
 func containsString(arr []string, str string) bool {
