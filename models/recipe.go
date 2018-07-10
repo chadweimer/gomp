@@ -2,8 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -162,34 +160,4 @@ func (m *RecipeModel) List() (*[]RecipeCompact, error) {
 	}
 
 	return &recipes, nil
-}
-
-// RegenerateAllThumbnails re-creates the thumbnail images for all recipes.
-func (m *RecipeModel) RegenerateAllThumbnails() error {
-	start := time.Now()
-
-	log.Println("Regenerating all thumbnail images...")
-	recipes, err := m.List()
-	if err != nil {
-		return err
-	}
-
-	for _, recipe := range *recipes {
-		log.Printf("Processing recipe %d...", recipe.ID)
-		images, err := m.Images.List(recipe.ID)
-		if err != nil {
-			return err
-		}
-
-		for _, image := range *images {
-			log.Printf("Processing image %d - %s...", image.ID, image.Name)
-			err = m.Images.RegenerateThumbnail(&image)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	log.Printf("Regenerating thumbnail images completed in %s", time.Since(start))
-
-	return nil
 }

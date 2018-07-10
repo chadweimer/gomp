@@ -45,11 +45,6 @@ type Config struct {
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
 	DatabaseURL string
-
-	// RegenerateThumbnails gets whether the application should re-generate all thumbnal
-	// images for each recipe on startup. This is here for a very special case to handle
-	// "upgrading" the thumbnail images after the release of v2.8.2 (larger thumbnails).
-	RegenerateThumbnails bool
 }
 
 // Load reads the configuration file from the specified path
@@ -74,7 +69,6 @@ func Load() *Config {
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
-	loadEnv("GOMP_REGENERATE_THUMBNAILS", &c.RegenerateThumbnails)
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
@@ -85,7 +79,6 @@ func Load() *Config {
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
-		log.Printf("[config] RegenerateThumbnails=%t", c.RegenerateThumbnails)
 	}
 
 	return &c
