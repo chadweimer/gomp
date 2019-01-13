@@ -10,7 +10,7 @@ services:
 language: go
 
 go:
-  - "1.10"
+  - "1.11"
   
 jdk:
   - oraclejdk8
@@ -23,7 +23,7 @@ cache:
     - '$HOME/.npm/_cacache'
 
 env:
-  - DEP_VERSION="0.4.1"
+  - GO111MODULE="on"
     
 addons:
   apt:
@@ -35,12 +35,6 @@ addons:
       - master
     token:
       secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
-
-before_install:
-  # Download the dep binary to bin folder in $GOPATH
-  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
-  # Make the dep binary executable
-  - chmod +x $GOPATH/bin/dep
 
 install:
   - . $HOME/.nvm/nvm.sh
