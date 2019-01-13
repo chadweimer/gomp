@@ -1,23 +1,30 @@
 {
     "entrypoint": "index.html",
-    "shell": "src/gomp-app.html",
+    "shell": "src/gomp-app.js",
     "sources": [
         "src/**/*",
         "*"
     ],
     "fragments": [
-        "src/create-view.html",
-        "src/home-view.html",
-        "src/login-view.html",
-        "src/recipes-view.html",
-        "src/search-view.html",
-        "src/settings-view.html"
+        "src/create-view.js",
+        "src/home-view.js",
+        "src/login-view.js",
+        "src/recipes-view.js",
+        "src/search-view.js",
+        "src/settings-view.js"
     ],
     "extraDependencies": [
-        "bower_components/webcomponentsjs/webcomponents-loader.js"
+        "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"
     ],
     "builds": [{
         "name": "default",
         "preset": "es6-unbundled"
-    }]
+    }],
+    "moduleResolution": "node",
+    "npm": true,
+    "lint": {
+      "rules": [
+        "polymer-3"
+      ]
+    }
 }

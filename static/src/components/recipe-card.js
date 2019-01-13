@@ -1,14 +1,13 @@
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
-<link rel="import" href="../../bower_components/paper-card/paper-card.html">
-
-<link rel="import" href="../mixins/gomp-core-mixin.html">
-<link rel="import" href="recipe-rating.html">
-
-<link rel="import" href="../shared-styles.html">
-
-<dom-module id="recipe-card">
-    <template>
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
+import '@polymer/paper-card/paper-card.js';
+import '../mixins/gomp-core-mixin.js';
+import './recipe-rating.js';
+import '../shared-styles.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+class RecipeCard extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+  static get template() {
+    return html`
         <style include="shared-styles">
             :host {
                 display: block;
@@ -45,7 +44,7 @@
             }
         </style>
 
-        <a href$="/recipes/[[recipe.id]]">
+        <a href\$="/recipes/[[recipe.id]]">
             <paper-card image="[[recipe.thumbnailUrl]]">
                 <div class="card-content">
                     <span class="truncate">[[recipe.name]]</span>
@@ -53,21 +52,18 @@
                 </div>
             </paper-card>
         </a>
-    </template>
+`;
+  }
 
-    <script>
-        class RecipeCard extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
-            static get is() { return 'recipe-card'; }
-            static get properties() {
-                return {
-                    recipe: {
-                        type: Object,
-                        notify: true,
-                    },
-                };
-            }
-        }
+  static get is() { return 'recipe-card'; }
+  static get properties() {
+      return {
+          recipe: {
+              type: Object,
+              notify: true,
+          },
+      };
+  }
+}
 
-        window.customElements.define(RecipeCard.is, RecipeCard);
-    </script>
-</dom-module>
+window.customElements.define(RecipeCard.is, RecipeCard);

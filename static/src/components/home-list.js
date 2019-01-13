@@ -1,15 +1,13 @@
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
-<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
-
-<link rel="import" href="../mixins/gomp-core-mixin.html">
-
-<link rel="import" href="recipe-card.html">
-
-<link rel="import" href="../shared-styles.html">
-
-<dom-module id="home-list">
-    <template>
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
+import '@polymer/iron-ajax/iron-ajax.js';
+import '../mixins/gomp-core-mixin.js';
+import './recipe-card.js';
+import '../shared-styles.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+class HomeList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+  static get template() {
+    return html`
         <style include="shared-styles">
             :host {
                 display: block;
@@ -91,63 +89,54 @@
             <a class="right" href="#!" on-tap="_onLinkTapped">[[title]] ([[total]]) &gt;&gt;</a>
         </article>
 
-        <iron-ajax bubbles
-            id="recipesAjax"
-            url="/api/v1/recipes"
-            params='{"q":"", "tags": [], "sort": "random", "dir": "asc", "page": 1, "count": 6}'
-            on-request="_handleGetRecipesRequest"
-            on-response="_handleGetRecipesResponse"></iron-ajax>
-    </template>
+        <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="_handleGetRecipesRequest" on-response="_handleGetRecipesResponse"></iron-ajax>
+`;
+  }
 
-    <script>
-        class HomeList extends GompCoreMixin(Polymer.GestureEventListeners(Polymer.Element)) {
-            static get is() { return 'home-list'; }
-            static get properties() {
-                return {
-                    title: {
-                        type: String,
-                        notify: true,
-                        value: 'Recipes',
-                    },
-                    tags: {
-                        type: Array,
-                        notify: true,
-                        value: [],
-                        observer: '_tagsChanged',
-                    },
-                };
-            }
+  static get is() { return 'home-list'; }
+  static get properties() {
+      return {
+          title: {
+              type: String,
+              notify: true,
+              value: 'Recipes',
+          },
+          tags: {
+              type: Array,
+              notify: true,
+              value: [],
+              observer: '_tagsChanged',
+          },
+      };
+  }
 
-            _tagsChanged() {
-                this.$.recipesAjax.params = {
-                    'q':'',
-                    'tags[]': this.tags,
-                    'sort': 'random',
-                    'dir': 'asc',
-                    'page': 1,
-                    'count': 6,
-                };
-            }
+  _tagsChanged() {
+      this.$.recipesAjax.params = {
+          'q':'',
+          'tags[]': this.tags,
+          'sort': 'random',
+          'dir': 'asc',
+          'page': 1,
+          'count': 6,
+      };
+  }
 
-            refresh() {
-                this.$.recipesAjax.generateRequest();
-            }
-            _handleGetRecipesRequest(e) {
-                this.total = 0;
-                this.recipes = [];
-            }
-            _handleGetRecipesResponse(e) {
-                this.total = e.detail.response.total;
-                this.recipes = e.detail.response.recipes;
-            }
-            _onLinkTapped(e) {
-                e.preventDefault();
+  refresh() {
+      this.$.recipesAjax.generateRequest();
+  }
+  _handleGetRecipesRequest(e) {
+      this.total = 0;
+      this.recipes = [];
+  }
+  _handleGetRecipesResponse(e) {
+      this.total = e.detail.response.total;
+      this.recipes = e.detail.response.recipes;
+  }
+  _onLinkTapped(e) {
+      e.preventDefault();
 
-                this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
-            }
+      this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
+  }
+}
 
-        }
-
-        window.customElements.define(HomeList.is, HomeList);
-    </script>
-</dom-module>
+window.customElements.define(HomeList.is, HomeList);
