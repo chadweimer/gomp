@@ -19,13 +19,6 @@ import '@cwmr/paper-search/paper-filter-dialog.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@polymer/paper-toast/paper-toast.js';
-import './home-view.js';
-import './search-view.js';
-import './recipes-view.js';
-import './create-view.js';
-import './settings-view.js';
-import './login-view.js';
-import './status-404-view.js';
 import './shared-styles.js';
 class GompApp extends GestureEventListeners(PolymerElement) {
   static get template() {
@@ -309,7 +302,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
       }
 
       // Load page import on demand. Show 404 page if fails
-      import(page + '-view.html').then(null, () => this.page = 'status-404');
+      import(page + '-view.js').then(null, () => this.page = 'status-404');
 
       // Make sure to close the drawer
       this.$.drawer.close();
