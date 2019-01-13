@@ -14,7 +14,6 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
-	dep ensure
 	cd static && npm install --silent
 
 .PHONY: uninstall
