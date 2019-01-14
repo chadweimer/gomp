@@ -1,8 +1,8 @@
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/paper-styles/paper-styles.js';
-const $_documentContainer = document.createElement('template');
+const $documentContainer = document.createElement('template');
 
-$_documentContainer.innerHTML = `<dom-module id="shared-styles">
+$documentContainer.innerHTML = `<dom-module id="shared-styles">
     <template>
         <style>
             h1 {
@@ -33,12 +33,5 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
     </template>
 </dom-module>`;
 
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild($documentContainer.content);
 
-/* shared styles for all views */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
-;
