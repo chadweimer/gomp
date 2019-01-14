@@ -34,7 +34,7 @@ class ConfirmationDialog extends GestureEventListeners(PolymerElement) {
                 </div>
             </paper-dialog>
 `;
-  }
+    }
 
     static get is() { return 'confirmation-dialog'; }
     static get properties() {
