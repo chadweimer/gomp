@@ -38,3 +38,5 @@ rules:
   comma-dangle:
     - error
     - only-multiline
+  max-lines-per-function:
+    - off
