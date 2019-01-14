@@ -339,7 +339,7 @@ class SearchView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         var splitCount = Math.ceil(items.length / numSplits);
 
         var newArrays = [
-          [],
+            [],
         ];
         var index = 0;
 
