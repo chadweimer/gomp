@@ -1,4 +1,4 @@
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -10,7 +10,6 @@ import '@polymer/paper-input/paper-textarea.js';
 import '../mixins/gomp-core-mixin.js';
 import './note-card.js';
 import '../shared-styles.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 class NoteList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
     static get template() {
         return html`

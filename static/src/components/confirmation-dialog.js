@@ -1,4 +1,4 @@
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -6,7 +6,6 @@ import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-styles/color.js';
 import '../shared-styles.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 class ConfirmationDialog extends GestureEventListeners(PolymerElement) {
     static get template() {
         return html`
