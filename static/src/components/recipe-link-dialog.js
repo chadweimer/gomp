@@ -5,7 +5,7 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-// import 'paper-autocomplete/paper-autocomplete.js';
+import '@cwmr/paper-autocomplete/paper-autocomplete.js';
 import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
 class RecipeLinkDialog extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
