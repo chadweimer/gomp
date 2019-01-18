@@ -162,7 +162,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
                     </app-header>
 
                     <main>
-                        <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" default-selected="status-404">
+                        <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home"></home-view>
                             <search-view id="searchView" name="search" search="{{search}}"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]"></recipes-view>
