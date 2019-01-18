@@ -1,7 +1,6 @@
 BUILD_DIR=build
 VENDOR_DIR=vendor
 NODE_MODULES_DIR=static/node_modules
-BOWER_COMPONENTS_DIR=static/bower_components
 POLYMER_BUILD_DIR=static/build
 
 .DEFAULT_GOAL := rebuild
@@ -18,7 +17,7 @@ install:
 
 .PHONY: uninstall
 uninstall:
-	rm -rf $(VENDOR_DIR) $(NODE_MODULES_DIR) $(BOWER_COMPONENTS_DIR)
+	rm -rf $(VENDOR_DIR) $(NODE_MODULES_DIR)
 
 .PHONY: build
 build: build-linux-amd64 build-linux-armhf build-windows-amd64

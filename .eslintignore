@@ -3,6 +3,5 @@ build/*
 db/*
 static/node_modules/*
 static/build/*
-static/bower_components/*
 static/service-worker.js
 vendor/*

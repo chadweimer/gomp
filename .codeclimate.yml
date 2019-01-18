@@ -32,5 +32,4 @@ exclude_paths:
 - db/
 - node_modules/
 - static/build/
-- static/bower_components/
 - vendor/
