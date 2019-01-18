@@ -287,48 +287,32 @@ class SearchView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
     }
 
     _onFullViewTapped(e) {
-        e.preventDefault();
-
-        this.set('searchSettings.viewMode', 'full');
-        this.$.settingsDrawer.close();
+        _onChangeSearchSettings(e, 'full', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
     _onCompactViewTapped(e) {
-        e.preventDefault();
-
-        this.set('searchSettings.viewMode', 'compact');
-        this.$.settingsDrawer.close();
+        _onChangeSearchSettings(e, 'compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
     _onNameSortTapped(e) {
-        e.preventDefault();
-
-        this.set('searchSettings.sortBy', 'name');
-        this.set('searchSettings.sortDir', 'asc');
-        this.$.settingsDrawer.close();
+        _onChangeSearchSettings(e, this.searchSettings.viewMode, 'name', 'asc');
     }
     _onRatingSortTapped(e) {
-        e.preventDefault();
-
-        this.set('searchSettings.sortBy', 'rating');
-        this.set('searchSettings.sortDir', 'desc');
-        this.$.settingsDrawer.close();
+        _onChangeSearchSettings(e, this.searchSettings.viewMode, 'rating', 'desc');
     }
     _onRandomSortTapped(e) {
-        e.preventDefault();
-
-        this.set('searchSettings.sortBy', 'random');
-        this.set('searchSettings.sortDir', 'asc');
-        this.$.settingsDrawer.close();
+        _onChangeSearchSettings(e, this.searchSettings.viewMode, 'random', 'asc');
     }
     _onAscSortTapped(e) {
-        e.preventDefault();
-
-        this.set('searchSettings.sortDir', 'asc');
-        this.$.settingsDrawer.close();
+        _onChangeSearchSettings(e, this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
     }
     _onDescSortTapped(e) {
+        _onChangeSearchSettings(e, this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
+    }
+    _onChangeSearchSettings(e, viewMode, sortBy, sortDir) {
         e.preventDefault();
 
-        this.set('searchSettings.sortDir', 'desc');
+        this.set('searchSettings.viewMode', viewMode);
+        this.set('searchSettings.sortBy', sortBy);
+        this.set('searchSettings.sortDir', sortDir);
         this.$.settingsDrawer.close();
     }
 
