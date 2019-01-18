@@ -183,7 +183,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
                                 <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
                             </ul>
                         </div>
-                        <div class="copyright indented">Copyright © 2016-2018 Chad Weimer</div>
+                        <div class="copyright indented">Copyright © 2016-2019 Chad Weimer</div>
                     </footer>
                 </app-header-layout>
             </app-drawer-layout>
