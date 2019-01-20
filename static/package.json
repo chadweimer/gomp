@@ -4,7 +4,6 @@
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-demo-helpers": "^3.0.0",
-    "eslint": "^4.0.0",
     "polymer-cli": "^1.9.0",
     "wct-browser-legacy": "^1.0.1",
     "web-animations-js": "^2.3.1"
@@ -19,7 +18,7 @@
     "supports-color": "3.1.2",
     "type-detect": "1.0.0"
   },
-  "main": "index.js",
+  "main": "index.html",
   "dependencies": {
     "@cwmr/iron-star-rating": "^3.0.0",
     "@cwmr/paper-autocomplete": "^4.0.0",
