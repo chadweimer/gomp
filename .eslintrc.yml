@@ -42,3 +42,5 @@ rules:
     - off
   max-statements:
     - off
+  max-lines:
+    - warn
