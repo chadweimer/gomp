@@ -1,9 +1,12 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
-import '../mixins/gomp-core-mixin.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import './recipe-card.js';
 import '../shared-styles.js';
-class HomeList extends GompCoreMixin(PolymerElement) {
+
+@customElement('home-list')
+export class HomeList extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -91,25 +94,16 @@ class HomeList extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'home-list'; }
-    static get properties() {
-        return {
-            title: {
-                type: String,
-                notify: true,
-                value: 'Recipes',
-            },
-            tags: {
-                type: Array,
-                notify: true,
-                value: [],
-                observer: '_tagsChanged',
-            },
-        };
-    }
+    @property({type: String, notify: true})
+    title = 'Recipes';
+    @property({type: Array, notify: true, observer: '_tagsChanged'})
+    tags = [];
+
+    total = 0;
+    recipes = [];
 
     _tagsChanged() {
-        this.$.recipesAjax.params = {
+        (<IronAjaxElement>this.$.recipesAjax).params = {
             'q':'',
             'tags[]': this.tags,
             'sort': 'random',
@@ -120,22 +114,20 @@ class HomeList extends GompCoreMixin(PolymerElement) {
     }
 
     refresh() {
-        this.$.recipesAjax.generateRequest();
+        (<IronAjaxElement>this.$.recipesAjax).generateRequest();
     }
-    _handleGetRecipesRequest(e) {
+    _handleGetRecipesRequest() {
         this.total = 0;
         this.recipes = [];
     }
-    _handleGetRecipesResponse(e) {
+    _handleGetRecipesResponse(e: CustomEvent) {
         this.total = e.detail.response.total;
         this.recipes = e.detail.response.recipes;
     }
-    _onLinkClicked(e) {
+    _onLinkClicked(e: Event) {
         // Don't nativate to "#!"
         e.preventDefault();
 
         this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
     }
 }
-
-window.customElements.define(HomeList.is, HomeList);

@@ -1,13 +1,16 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
-import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
+
+@customElement('recipe-link-dialog')
+export class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -48,30 +51,26 @@ class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'recipe-link-dialog'; }
-    static get properties() {
-        return {
-            recipeId: {
-                type: String,
-            },
-            _selectedRecipeId: {
-                type: Number,
-                value: null,
-            },
-        };
-    }
+    @property({type: String})
+    recipeId = '';
+    @property({type: Number})
+    _selectedRecipeId = -1;
 
     open() {
-        this.$.recipeSearcher.suggestions([]);
-        this.$.recipeSearcher.clear();
-        this.$.dialog.open();
+        let recipeSearcher = this.$.recipeSearcher as any;
+        recipeSearcher.suggestions([]);
+        recipeSearcher.clear();
+
+        let dialog = this.$.dialog as PaperDialogElement;
+        dialog.open();
     }
 
-    _onAutocompleteChange(e) {
-        this._selectedRecipeId = null;
-        var value = e.detail.text;
+    _onAutocompleteChange(e: CustomEvent) {
+        this._selectedRecipeId = -1;
+        let value = e.detail.text;
         if (value && value.length >= 2) {
-            this.$.recipesAjax.params = {
+            let recipesAjax = this.$.recipesAjax as IronAjaxElement;
+            recipesAjax.params = {
                 'q': value,
                 'fields[]': ['name'],
                 'tags[]': [],
@@ -80,39 +79,40 @@ class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
                 'page': 1,
                 'count': 20,
             };
-            this.$.recipesAjax.generateRequest();
+            recipesAjax.generateRequest();
         }
     }
-    _onAutocompleteSelected(e) {
+    _onAutocompleteSelected(e: CustomEvent) {
         this._selectedRecipeId = e.detail.value;
     }
-    _onDialogClosed(e) {
+    _onDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled) {
-            this.$.postLinkAjax.body = JSON.stringify(this._selectedRecipeId);
-            this.$.postLinkAjax.generateRequest();
+            let postLinkAjax = this.$.postLinkAjax as IronAjaxElement;
+            postLinkAjax.body = <any>JSON.stringify(this._selectedRecipeId);
+            postLinkAjax.generateRequest();
         }
     }
-    _shouldPreventAdd(selectedRecipeId) {
-        return !selectedRecipeId;
+    _shouldPreventAdd(selectedRecipeId: Number) {
+        return selectedRecipeId <= 0;
     }
-    _handleGetRecipesResponse(e) {
-        var recipes = e.detail.response.recipes;
+    _handleGetRecipesResponse(e: CustomEvent) {
+        let recipes = e.detail.response.recipes;
 
-        var suggestions = [];
+        let suggestions: Array<any> = [];
         if (recipes) {
-            recipes.forEach(function(recipe) {
+            recipes.forEach(function(recipe: any) {
                 suggestions.push({value: recipe.id, text: recipe.name});
             });
         }
-        this.$.recipeSearcher.suggestions(suggestions);
+
+        let recipeSearcher = this.$.recipeSearcher as any;
+        recipeSearcher.suggestions(suggestions);
     }
-    _handlePostLinkResponse(e) {
+    _handlePostLinkResponse() {
         this.dispatchEvent(new CustomEvent('link-added'));
         this.showToast('Link created.');
     }
-    _handlePostLinkError(e) {
+    _handlePostLinkError() {
         this.showToast('Creating link failed!');
     }
 }
-
-window.customElements.define(RecipeLinkDialog.is, RecipeLinkDialog);

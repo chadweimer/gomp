@@ -2,14 +2,17 @@
   "description": "Go Meal Planner: A web-based recipe book",
   "name": "gomp",
   "devDependencies": {
+    "@polymer/gen-typescript-declarations": "^1.6.0",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-demo-helpers": "^3.0.0",
     "polymer-cli": "^1.9.0",
+    "typescript": "^3.2.0",
     "wct-browser-legacy": "^1.0.1",
     "web-animations-js": "^2.3.1"
   },
   "scripts": {
-    "build": "polymer build"
+    "generate-types": "gen-typescript-declarations --deleteExisting --outDir . --verify",
+    "build": "tsc && polymer build"
   },
   "version": "3.0.0",
   "resolutions": {
@@ -31,6 +34,7 @@
     "@polymer/app-layout": "^3.0.0",
     "@polymer/app-route": "^3.0.0",
     "@polymer/app-storage": "^3.0.0",
+    "@polymer/decorators": "^3.0.0",
     "@polymer/iron-flex-layout": "^3.0.0",
     "@polymer/iron-pages": "^3.0.0",
     "@polymer/neon-animation": "^3.0.0",

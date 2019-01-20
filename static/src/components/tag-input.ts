@@ -1,13 +1,15 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import {customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-input/paper-input-container.js';
 import '@cwmr/paper-chip/paper-chip.js';
-import '@cwmr/paper-tags-input/paper-tags-input.js';
-import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class TagInput extends GompCoreMixin(PolymerElement) {
+
+@customElement('tag-input')
+export class TagInput extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -50,23 +52,19 @@ class TagInput extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'tag-input'; }
-    static get properties() {
-        return {
-            tags: {
-                type: Array,
-                notify: true,
-                value: [],
-            },
-        };
-    }
+    @property({type: Array, notify: true})
+    tags = [];
+
+    suggestedTags: String[] = [];
 
     refresh() {
-        this.$.getSuggestedTagsAjax.generateRequest();
+        let getSuggestedTagsAjax = this.$.getSuggestedTagsAjax as IronAjaxElement;
+        getSuggestedTagsAjax.generateRequest();
     }
 
-    _onSuggestedTagClicked(e) {
-        this.$.tags.add(e.model.item);
+    _onSuggestedTagClicked(e: any) {
+        let tagsElement = this.$.tags as any;
+        tagsElement.add(e.model.item);
 
         // Remove the tag from the suggestion list
         var suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
@@ -74,12 +72,10 @@ class TagInput extends GompCoreMixin(PolymerElement) {
             this.splice('suggestedTags', suggestedTagIndex, 1);
         }
     }
-    _handleGetSuggestedTagsRequest(e) {
+    _handleGetSuggestedTagsRequest() {
         this.suggestedTags = [];
     }
-    _handleGetSuggestedTagsResponse(e) {
+    _handleGetSuggestedTagsResponse(e: any) {
         this.suggestedTags = e.detail.response;
     }
 }
-
-window.customElements.define(TagInput.is, TagInput);
