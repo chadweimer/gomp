@@ -131,6 +131,9 @@ class HomeList extends GompCoreMixin(PolymerElement) {
         this.recipes = e.detail.response.recipes;
     }
     _onLinkClicked(e) {
+        // Don't nativate to "#!"
+        e.preventDefault();
+
         this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
     }
 }
