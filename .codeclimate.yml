@@ -1,5 +1,10 @@
----
-engines:
+version: "2"
+checks:
+  file-lines:
+    enabled: false
+  method-lines:
+    enabled: false
+plugins:
   duplication:
     enabled: true
     config:
