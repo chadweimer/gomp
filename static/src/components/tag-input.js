@@ -1,14 +1,13 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
-import '@cwmr/paper-chip/paper-chip.js';
 import '@polymer/paper-input/paper-input-container.js';
+import '@cwmr/paper-chip/paper-chip.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class TagInput extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class TagInput extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -41,7 +40,7 @@ class TagInput extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                     <label slot="label">Suggested Tags</label>
                     <div slot="prefix">
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-tap="_onSuggestedTagTapped" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                            <paper-chip on-click="_onSuggestedTagClicked" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
                         </template>
                     </div>
                     <input type="hidden" slot="input">
@@ -66,9 +65,7 @@ class TagInput extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         this.$.getSuggestedTagsAjax.generateRequest();
     }
 
-    _onSuggestedTagTapped(e) {
-        e.preventDefault();
-
+    _onSuggestedTagClicked(e) {
         this.$.tags.add(e.model.item);
 
         // Remove the tag from the suggestion list

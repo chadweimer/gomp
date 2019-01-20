@@ -1,10 +1,9 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@cwmr/iron-star-rating/iron-star-rating.js';
 import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class RecipeRating extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class RecipeRating extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">

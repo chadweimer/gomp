@@ -1,10 +1,9 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/paper-card/paper-card.js';
 import '../mixins/gomp-core-mixin.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
-class RecipeCard extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class RecipeCard extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">

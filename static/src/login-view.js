@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-button/paper-button.js';
@@ -8,7 +7,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import './mixins/gomp-core-mixin.js';
 import './shared-styles.js';
-class LoginView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class LoginView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -42,7 +41,7 @@ class LoginView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                      <div class="error">[[errorMessage]]</div>
                   </div>
                   <div class="card-actions">
-                      <paper-button id="loginButton" on-tap="_onLoginTapped">Login</paper-button>
+                      <paper-button id="loginButton" on-click="_onLoginClicked">Login</paper-button>
                   </div>
               </paper-card>
           </div>
@@ -76,9 +75,7 @@ class LoginView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
             this.errorMessage = '';
         }
     }
-    _onLoginTapped(e) {
-        e.preventDefault();
-
+    _onLoginClicked(e) {
         this.$.authAjax.body = JSON.stringify({'username': this.username, 'password': this.password});
         this.$.authAjax.generateRequest();
     }

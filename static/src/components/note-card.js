@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -15,7 +14,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class NoteCard extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class NoteCard extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -76,8 +75,8 @@ class NoteCard extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                       <paper-menu-button id="noteMenu" horizontal-align="right">
                           <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                           <paper-listbox slot="dropdown-content">
-                              <paper-icon-item on-tap="_editTapped"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                              <paper-icon-item on-tap="_deleteTapped"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                              <paper-icon-item on-click="_onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
+                              <paper-icon-item on-click="_onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                           </paper-listbox>
                       </paper-menu-button>
                   </div>
@@ -106,15 +105,11 @@ class NoteCard extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         };
     }
 
-    _editTapped(e) {
-        e.preventDefault();
-
+    _onEditClicked(e) {
         e.target.closest('#noteMenu').close();
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
-    _deleteTapped(e) {
-        e.preventDefault();
-
+    _onDeleteClicked(e) {
         e.target.closest('#noteMenu').close();
         this.$.confirmDeleteDialog.open();
     }

@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-button/paper-button.js';
@@ -11,7 +10,7 @@ import '@polymer/paper-spinner/paper-spinner.js';
 import '../mixins/gomp-core-mixin.js';
 import './tag-input.js';
 import '../shared-styles.js';
-class RecipeEdit extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class RecipeEdit extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -43,8 +42,8 @@ class RecipeEdit extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                   <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
               </div>
               <div class="card-actions">
-                  <paper-button on-tap="_cancelButtonTapped">Cancel</paper-button>
-                  <paper-button on-tap="_saveButtonTapped">Save</paper-button>
+                  <paper-button on-click="_onCancelButtonClicked">Cancel</paper-button>
+                  <paper-button on-click="_onSaveButtonClicked">Save</paper-button>
               </div>
           </paper-card>
           <paper-dialog id="uploadingDialog" with-backdrop="">
@@ -101,14 +100,10 @@ class RecipeEdit extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
             this.$.tagsInput.refresh();
         }
     }
-    _cancelButtonTapped(e) {
-        e.preventDefault();
-
+    _onCancelButtonClicked(e) {
         this.dispatchEvent(new CustomEvent('recipe-edit-cancel'));
     }
-    _saveButtonTapped(e) {
-        e.preventDefault();
-
+    _onSaveButtonClicked(e) {
         if (this.recipeId) {
             this.$.putAjax.body = JSON.stringify(this.recipe);
             this.$.putAjax.generateRequest();

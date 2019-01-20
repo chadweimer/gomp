@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-input/iron-input.js';
@@ -9,11 +8,11 @@ import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
-import '@cwmr/paper-password-input/paper-password-input.js';
 import '@polymer/paper-spinner/paper-spinner.js';
+import '@cwmr/paper-password-input/paper-password-input.js';
 import './mixins/gomp-core-mixin.js';
 import './shared-styles.js';
-class SettingsView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class SettingsView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -67,7 +66,7 @@ class SettingsView extends GompCoreMixin(GestureEventListeners(PolymerElement)) 
                       <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
                   </div>
                   <div class="card-actions">
-                      <paper-button on-tap="_updatePasswordTapped">
+                      <paper-button on-click="_onUpdatePasswordClicked">
                           <iron-icon icon="icons:lock-outline"></iron-icon>
                           <span>Update Password</span>
                       <paper-button>
@@ -79,7 +78,7 @@ class SettingsView extends GompCoreMixin(GestureEventListeners(PolymerElement)) 
                   <div class="card-content">
                       <h3>Home Settings</h3>
                       <paper-input label="Title" always-float-label="" value="{{homeTitle}}">
-                          <paper-icon-button slot="suffix" icon="icons:save" on-tap="_saveButtonTapped"></paper-icon-button>
+                          <paper-icon-button slot="suffix" icon="icons:save" on-click="_onSaveButtonClicked"></paper-icon-button>
                       </paper-input>
                       <form id="homeImageForm" enctype="multipart/form-data">
                           <paper-input-container always-float-label="">
@@ -87,7 +86,7 @@ class SettingsView extends GompCoreMixin(GestureEventListeners(PolymerElement)) 
                               <iron-input slot="input">
                                   <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
                               </iron-input>
-                              <paper-icon-button slot="suffix" icon="icons:file-upload" on-tap="_uploadButtonTapped"></paper-icon-button>
+                              <paper-icon-button slot="suffix" icon="icons:file-upload" on-click="_onUploadButtonClicked"></paper-icon-button>
                             </paper-input-container>
                       </form>
                       <img alt="Home Image" src="[[homeImageUrl]]" class="responsive" hidden\$="[[!homeImageUrl]]">
@@ -118,9 +117,7 @@ class SettingsView extends GompCoreMixin(GestureEventListeners(PolymerElement)) 
         }
     }
 
-    _updatePasswordTapped(e) {
-        e.preventDefault();
-
+    _onUpdatePasswordClicked(e) {
         if (this.newPassword !== this.repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
@@ -132,18 +129,14 @@ class SettingsView extends GompCoreMixin(GestureEventListeners(PolymerElement)) 
         });
         this.$.putPasswordAjax.generateRequest();
     }
-    _saveButtonTapped(e) {
-        e.preventDefault();
-
+    _onSaveButtonClicked(e) {
         this.$.putSettingsAjax.body = JSON.stringify({
             'homeTitle': this.homeTitle,
             'homeImageUrl': this.homeImageUrl,
         });
         this.$.putSettingsAjax.generateRequest();
     }
-    _uploadButtonTapped(e) {
-        e.preventDefault();
-
+    _onUploadButtonClicked(e) {
         this.$.postImageAjax.body = new FormData(this.$.homeImageForm);
         this.$.postImageAjax.generateRequest();
     }

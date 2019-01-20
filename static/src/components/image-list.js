@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -18,7 +17,7 @@ import '@polymer/paper-spinner/paper-spinner.js';
 import '../mixins/gomp-core-mixin.js';
 import './confirmation-dialog.js';
 import '../shared-styles.js';
-class ImageList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class ImageList extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -80,8 +79,8 @@ class ImageList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                   <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                       <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                       <paper-listbox slot="dropdown-content">
-                          <paper-icon-item data-id="[[item.id]]" on-tap="_setMainImageTapped"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
-                          <paper-icon-item data-id="[[item.id]]" on-tap="_deleteTapped"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                          <paper-icon-item data-id="[[item.id]]" on-click="_onSetMainImageClicked"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
+                          <paper-icon-item data-id="[[item.id]]" on-click="_onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                       </paper-listbox>
                   </paper-menu-button>
               </div>
@@ -139,14 +138,12 @@ class ImageList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
     }
 
     _addDialogClosed(e) {
-        if (e.detail.confirmed) {
+        if (!e.detail.canceled) {
             this.$.addAjax.body = new FormData(this.$.addForm);
             this.$.addAjax.generateRequest();
         }
     }
-    _setMainImageTapped(e) {
-        e.preventDefault();
-
+    _onSetMainImageClicked(e) {
         e.target.closest('#imageMenu').close();
         this.$.confirmMainImageDialog.dataId = e.target.dataId;
         this.$.confirmMainImageDialog.open();
@@ -155,9 +152,7 @@ class ImageList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         this.$.setMainImageAjax.body = parseInt(e.target.dataId, 10);
         this.$.setMainImageAjax.generateRequest();
     }
-    _deleteTapped(e) {
-        e.preventDefault();
-
+    _onDeleteClicked(e) {
         e.target.closest('#imageMenu').close();
         this.$.confirmDeleteDialog.dataId = e.target.dataId;
         this.$.confirmDeleteDialog.open();

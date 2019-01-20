@@ -1,9 +1,8 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import './mixins/gomp-core-mixin.js';
 import './components/recipe-edit.js';
 import './shared-styles.js';
-class CreateView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class CreateView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">

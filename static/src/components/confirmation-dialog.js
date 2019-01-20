@@ -1,12 +1,10 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-styles/color.js';
 import '../shared-styles.js';
-class ConfirmationDialog extends GestureEventListeners(PolymerElement) {
+class ConfirmationDialog extends PolymerElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -24,12 +22,12 @@ class ConfirmationDialog extends GestureEventListeners(PolymerElement) {
                 }
             </style>
 
-            <paper-dialog id="dialog" with-backdrop="">
+            <paper-dialog id="dialog" with-backdrop="" on-iron-overlay-closed="_onDialogClosed">
                 <h3><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h3>
                 <p>[[message]]</p>
                 <div class="buttons">
-                    <paper-button on-tap="_onDismissButtonTapped" dialog-dismiss="">No</paper-button>
-                    <paper-button on-tap="_onConfirmButtonTapped" dialog-confirm="">Yes</paper-button>
+                    <paper-button dialog-dismiss="">No</paper-button>
+                    <paper-button dialog-confirm="">Yes</paper-button>
                 </div>
             </paper-dialog>
 `;
@@ -57,15 +55,12 @@ class ConfirmationDialog extends GestureEventListeners(PolymerElement) {
         this.$.dialog.open();
     }
 
-    _onDismissButtonTapped(e) {
-        e.preventDefault();
-
-        this.dispatchEvent(new CustomEvent('dismissed'));
-    }
-    _onConfirmButtonTapped(e) {
-        e.preventDefault();
-
-        this.dispatchEvent(new CustomEvent('confirmed'));
+    _onDialogClosed(e) {
+        if (e.detail.canceled) {
+            this.dispatchEvent(new CustomEvent('dismissed'));
+        } else {
+            this.dispatchEvent(new CustomEvent('confirmed'));
+        }
     }
 }
 window.customElements.define(ConfirmationDialog.is, ConfirmationDialog);

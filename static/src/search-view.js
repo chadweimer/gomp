@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
@@ -9,19 +8,19 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-item-body.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-styles/paper-styles.js';
+import '@cwmr/paper-divider/paper-divider.js';
 import './mixins/gomp-core-mixin.js';
 import './components/recipe-card.js';
 import './components/pagination-links.js';
 import './components/recipe-rating.js';
 import './shared-styles.js';
-class SearchView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class SearchView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -124,21 +123,21 @@ class SearchView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
 
                   <label class="menu-label">View</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
-                      <paper-icon-item name="full" on-tap="_onFullViewTapped"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
-                     b<paper-icon-item name="compact" on-tap="_onCompactViewTapped"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
+                      <paper-icon-item name="full" on-click="_onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
+                     b<paper-icon-item name="compact" on-click="_onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                   </paper-listbox>
                   <paper-divider></paper-divider>
                   <label class="menu-label">Sort</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
-                      <paper-icon-item name="name" on-tap="_onNameSortTapped"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
-                      <paper-icon-item name="rating" on-tap="_onRatingSortTapped"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
-                      <paper-icon-item name="random" on-tap="_onRandomSortTapped"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
+                      <paper-icon-item name="name" on-click="_onNameSortClicked"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
+                      <paper-icon-item name="rating" on-click="_onRatingSortClicked"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
+                      <paper-icon-item name="random" on-click="_onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
                   </paper-icon-item></paper-icon-item></paper-listbox>
                   <paper-divider></paper-divider>
                   <label class="menu-label">Order</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">
-                      <paper-icon-item name="asc" on-tap="_onAscSortTapped"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
-                      <paper-icon-item name="desc" on-tap="_onDescSortTapped"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
+                      <paper-icon-item name="asc" on-click="_onAscSortClicked"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
+                      <paper-icon-item name="desc" on-click="_onDescSortClicked"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
                   </paper-listbox>
               </app-drawer>
 
@@ -286,30 +285,28 @@ class SearchView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         this.numPages = Math.ceil(total / this._getRecipeCount());
     }
 
-    _onFullViewTapped(e) {
+    _onFullViewClicked(e) {
         _onChangeSearchSettings(e, 'full', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
-    _onCompactViewTapped(e) {
+    _onCompactViewClicked(e) {
         _onChangeSearchSettings(e, 'compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
-    _onNameSortTapped(e) {
+    _onNameSortClicked(e) {
         _onChangeSearchSettings(e, this.searchSettings.viewMode, 'name', 'asc');
     }
-    _onRatingSortTapped(e) {
+    _onRatingSortClicked(e) {
         _onChangeSearchSettings(e, this.searchSettings.viewMode, 'rating', 'desc');
     }
-    _onRandomSortTapped(e) {
+    _onRandomSortClicked(e) {
         _onChangeSearchSettings(e, this.searchSettings.viewMode, 'random', 'asc');
     }
-    _onAscSortTapped(e) {
+    _onAscSortClicked(e) {
         _onChangeSearchSettings(e, this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
     }
-    _onDescSortTapped(e) {
+    _onDescSortClicked(e) {
         _onChangeSearchSettings(e, this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
     }
     _onChangeSearchSettings(e, viewMode, sortBy, sortDir) {
-        e.preventDefault();
-
         this.set('searchSettings.viewMode', viewMode);
         this.set('searchSettings.sortBy', sortBy);
         this.set('searchSettings.sortDir', sortDir);

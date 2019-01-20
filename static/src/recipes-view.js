@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -15,7 +14,7 @@ import './components/recipe-display.js';
 import './components/recipe-edit.js';
 import './components/recipe-link-dialog.js';
 import './shared-styles.js';
-class RecipesView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class RecipesView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -117,12 +116,12 @@ class RecipesView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                 </div>
             </div>
             <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
-                <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-tap="_newButtonTapped">New</paper-fab-speed-dial-action></a>
-                <paper-fab-speed-dial-action class="red" icon="icons:delete" on-tap="_deleteButtonTapped">Delete</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="amber" icon="icons:create" on-tap="_editButtonTapped">Edit</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-tap="_addLinkButtonTapped">Link to Another Recipe</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-tap="_addImageButtonTapped">Upload Picture</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-tap="_addNoteButtonTapped">Add Note</paper-fab-speed-dial-action>
+                <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="_onNewButtonClicked">New</paper-fab-speed-dial-action></a>
+                <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="_onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="_onEditButtonClicked">Edit</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="_onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="_onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-click="_onAddNoteButtonClicked">Add Note</paper-fab-speed-dial-action>
             </paper-fab-speed-dial>
 
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="_deleteRecipe"></confirmation-dialog>
@@ -173,21 +172,17 @@ class RecipesView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
     _recipeIdChanged(recipeId) {
         this.recipeId = recipeId;
     }
-    _newButtonTapped(e) {
+    _onNewButtonClicked(e) {
         this.$.actions.close();
     }
-    _deleteButtonTapped(e) {
-        e.preventDefault();
-
+    _onDeleteButtonClicked(e) {
         this.$.confirmDeleteDialog.open();
         this.$.actions.close();
     }
     _deleteRecipe(e) {
         this.$.deleteAjax.generateRequest();
     }
-    _editButtonTapped(e) {
-        e.preventDefault();
-
+    _onEditButtonClicked(e) {
         this.$.actions.close();
         this.$.recipeEdit.refresh();
         this.editing = true;
@@ -200,19 +195,15 @@ class RecipesView extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         this.editing = false;
         this.refresh();
     }
-    _addLinkButtonTapped(e) {
+    _onAddLinkButtonClicked(e) {
         this.$.recipeLinkDialog.open();
         this.$.actions.close();
     }
-    _addImageButtonTapped(e) {
-        e.preventDefault();
-
+    _onAddImageButtonClicked(e) {
         this.$.actions.close();
         this.$.imageList.add();
     }
-    _addNoteButtonTapped(e) {
-        e.preventDefault();
-
+    _onAddNoteButtonClicked(e) {
         this.$.actions.close();
         this.$.noteList.add();
     }

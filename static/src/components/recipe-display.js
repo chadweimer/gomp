@@ -1,18 +1,17 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-card/paper-card.js';
-import '@cwmr/paper-chip/paper-chips-section.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item-body.js';
+import '@cwmr/paper-chip/paper-chips-section.js';
+import '@cwmr/paper-divider/paper-divider.js';
 import '../mixins/gomp-core-mixin.js';
 import './confirmation-dialog.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
-class RecipeDisplay extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class RecipeDisplay extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -98,7 +97,7 @@ class RecipeDisplay extends GompCoreMixin(GestureEventListeners(PolymerElement))
                               <paper-item-body>
                                   <a href="/recipes/[[item.id]]">[[item.name]]</a>
                               </paper-item-body>
-                              <iron-icon icon="icons:cancel" on-tap="_onRemoveLinkTapped"></iron-icon>
+                              <iron-icon icon="icons:cancel" on-click="_onRemoveLinkClicked"></iron-icon>
                           </paper-icon-item>
                       </template>
                       <paper-divider></paper-divider>
@@ -145,9 +144,7 @@ class RecipeDisplay extends GompCoreMixin(GestureEventListeners(PolymerElement))
         return !Array.isArray(arr) || !arr.length;
     }
 
-    _onRemoveLinkTapped(e) {
-        e.preventDefault();
-
+    _onRemoveLinkClicked(e) {
         this.$.confirmDeleteLinkDialog.dataId = e.model.item.id;
         this.$.confirmDeleteLinkDialog.open();
     }

@@ -1,5 +1,5 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
+import {setPassiveTouchGestures} from '@polymer/polymer/lib/utils/settings.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-route/app-location.js';
@@ -20,7 +20,12 @@ import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@polymer/paper-toast/paper-toast.js';
 import './shared-styles.js';
-class GompApp extends GestureEventListeners(PolymerElement) {
+
+// Gesture events like tap and track generated from touch will not be
+// preventable, allowing for better scrolling performance.
+setPassiveTouchGestures(true);
+
+class GompApp extends PolymerElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -129,7 +134,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
                             Settings
                         </paper-icon-item>
                     </a>
-                    <a href="#!" tabindex="-1" on-tap="_onLogoutTapped">
+                    <a href="#!" tabindex="-1" on-click="_onLogoutClicked">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
                             Logout
@@ -151,7 +156,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
-                                <a href="#!" on-tap="_onLogoutTapped"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                                <a href="#!" on-click="_onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
                                 <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch" on-paper-search-filter="_onFilter"></paper-search-bar>
                                 <paper-filter-dialog id="filterDialog" filters="[[searchFilters]]" selected-filters="{{selectedSearchFilters}}" save-button="Apply" on-save="_searchFiltersChanged"></paper-filter-dialog>
@@ -180,7 +185,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
                                 <li><a href="/settings">Settings</a></li>
-                                <li><a href="#!" on-tap="_onLogoutTapped">Logout</a></li>
+                                <li><a href="#!" on-click="_onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
                         <div class="copyright indented">Copyright © 2016-2019 Chad Weimer</div>
@@ -338,18 +343,7 @@ class GompApp extends GestureEventListeners(PolymerElement) {
     _scrollToTop() {
         this.$.mainHeader.scroll(0, 0);
     }
-    _onHomeTapped(e) {
-        this._changeRoute('/home');
-    }
-    _onRecipesTapped(e) {
-        this._changeRoute('/search');
-    }
-    _onSettingsTapped(e) {
-        this._changeRoute('/settings');
-    }
-    _onLogoutTapped(e) {
-        e.preventDefault();
-
+    _onLogoutClicked(e) {
         this._logout();
     }
     _getIsAuthenticated() {

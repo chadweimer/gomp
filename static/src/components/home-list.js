@@ -1,10 +1,9 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '../mixins/gomp-core-mixin.js';
 import './recipe-card.js';
 import '../shared-styles.js';
-class HomeList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class HomeList extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -85,7 +84,7 @@ class HomeList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
                         </div>
                     </template>
                 </div>
-                <a class="right" href="#!" on-tap="_onLinkTapped">[[title]] ([[total]]) &gt;&gt;</a>
+                <a class="right" href="#!" on-click="_onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
             </article>
 
             <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="_handleGetRecipesRequest" on-response="_handleGetRecipesResponse"></iron-ajax>
@@ -131,9 +130,7 @@ class HomeList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
         this.total = e.detail.response.total;
         this.recipes = e.detail.response.recipes;
     }
-    _onLinkTapped(e) {
-        e.preventDefault();
-
+    _onLinkClicked(e) {
         this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
     }
 }

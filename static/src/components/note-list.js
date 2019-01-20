@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -10,7 +9,7 @@ import '@polymer/paper-input/paper-textarea.js';
 import '../mixins/gomp-core-mixin.js';
 import './note-card.js';
 import '../shared-styles.js';
-class NoteList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class NoteList extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -93,7 +92,7 @@ class NoteList extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
     }
 
     _noteDialogClosed(e) {
-        if (e.detail.confirmed) {
+        if (!e.detail.canceled) {
             if (this.noteId) {
                 this.$.putNoteAjax.body = JSON.stringify({
                     'id': this.noteId,

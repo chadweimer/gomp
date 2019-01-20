@@ -1,7 +1,7 @@
 import '@polymer/polymer/polymer-legacy.js';
 import '@polymer/paper-styles/paper-styles.js';
-const $documentContainer = document.createElement('template');
 
+const $documentContainer = document.createElement('template');
 $documentContainer.innerHTML = `<dom-module id="shared-styles">
     <template>
         <style>

@@ -1,5 +1,4 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { GestureEventListeners } from '@polymer/polymer/lib/mixins/gesture-event-listeners.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -8,7 +7,7 @@ import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
 import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class RecipeLinkDialog extends GompCoreMixin(GestureEventListeners(PolymerElement)) {
+class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -88,7 +87,7 @@ class RecipeLinkDialog extends GompCoreMixin(GestureEventListeners(PolymerElemen
         this._selectedRecipeId = e.detail.value;
     }
     _onDialogClosed(e) {
-        if (e.detail.confirmed) {
+        if (!e.detail.canceled) {
             this.$.postLinkAjax.body = JSON.stringify(this._selectedRecipeId);
             this.$.postLinkAjax.generateRequest();
         }
