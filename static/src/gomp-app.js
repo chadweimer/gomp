@@ -300,6 +300,11 @@ class GompApp extends PolymerElement {
 
     _routePageChanged(page) {
         this.page = page || 'home';
+
+        // Close a non-persistent drawer when the page & route are changed.
+        if (!this.$.drawer.persistent) {
+            this.$.drawer.close();
+        }
     }
     _pageChanged(page) {
         if (this._verifyIsAuthenticated()) {
@@ -330,9 +335,6 @@ class GompApp extends PolymerElement {
             import('./status-404-view.js');
             break;
         }
-
-        // Make sure to close the drawer
-        this.$.drawer.close();
     }
     _changePageRequested(e) {
         this._changeRoute(e.detail.url);
