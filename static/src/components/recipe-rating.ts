@@ -1,9 +1,12 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@cwmr/iron-star-rating/iron-star-rating.js';
-import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class RecipeRating extends GompCoreMixin(PolymerElement) {
+
+@customElement('recipe-rating')
+export class RecipeRating extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -18,28 +21,21 @@ class RecipeRating extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'recipe-rating'; }
-    static get properties() {
-        return {
-            recipe: {
-                type: Object,
-                notify: true,
-            },
-        };
-    }
+    @property({type: String, notify: true})
+    recipe = '';
 
-    _starRatingSelected(e) {
-        this.$.rateAjax.body = e.detail.rating;
-        this.$.rateAjax.generateRequest();
+    _starRatingSelected(e: CustomEvent) {
+        let rateAjax = this.$.rateAjax as IronAjaxElement;
+        rateAjax.body = e.detail.rating;
+        rateAjax.generateRequest();
     }
-    _handlePutRecipeRatingResponse(e) {
-        this.set('recipe.averageRating', parseFloat(e.target.body));
+    _handlePutRecipeRatingResponse(e: CustomEvent) {
+        let rateAjax = e.target as IronAjaxElement;
+        this.set('recipe.averageRating', parseFloat((<object>rateAjax.body).toString()));
         this.showToast('Rating changed.');
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
-    _handlePutRecipeRatingError(e) {
+    _handlePutRecipeRatingError() {
         this.showToast('Changing rating failed!');
     }
 }
-
-window.customElements.define(RecipeRating.is, RecipeRating);

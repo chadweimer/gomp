@@ -1,10 +1,12 @@
+import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
+
 /**
 * Base behavior behind most of the elements in the application.
 *
 * @polymer
 * @mixinFunction
 */
-GompCoreMixin = (superClass) => class extends superClass {
+export const GompCoreMixin = dedupingMixin((superClass) => class GompCoreMixin extends superClass {
     static get properties() {
         return {
             isReady: {
@@ -36,4 +38,4 @@ GompCoreMixin = (superClass) => class extends superClass {
     }
 
     _isActiveChanged(isActive) { }
-};
+});

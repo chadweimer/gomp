@@ -1,9 +1,12 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import {customElement, property } from '@polymer/decorators';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@polymer/paper-card/paper-card.js';
-import '../mixins/gomp-core-mixin.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
-class RecipeCard extends GompCoreMixin(PolymerElement) {
+
+@customElement('recipe-card')
+export class RecipeCard extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -53,15 +56,6 @@ class RecipeCard extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'recipe-card'; }
-    static get properties() {
-        return {
-            recipe: {
-                type: Object,
-                notify: true,
-            },
-        };
-    }
+    @property({type: String, notify: true})
+    recipe = '';
 }
-
-window.customElements.define(RecipeCard.is, RecipeCard);
