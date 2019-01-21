@@ -1,3 +1,4 @@
+'use strict'
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
