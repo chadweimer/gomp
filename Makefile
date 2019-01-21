@@ -25,6 +25,7 @@ build: build-linux-amd64 build-linux-armhf build-windows-amd64
 .PHONY: clean
 clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 	rm -rf $(POLYMER_BUILD_DIR)
+	cd static && npm run clean
 
 .PHONY: prebuild
 prebuild:
