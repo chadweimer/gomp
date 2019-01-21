@@ -1,12 +1,13 @@
 'use strict'
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import {setPassiveTouchGestures} from '@polymer/polymer/lib/utils/settings.js';
+import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
+import '@polymer/app-layout/app-drawer/app-drawer';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
@@ -14,15 +15,16 @@ import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-progress/paper-progress.js';
-import '@cwmr/paper-search/paper-search-bar.js';
-import '@cwmr/paper-search/paper-filter-dialog.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
+import '@polymer/paper-toast/paper-toast.js';
+import '@cwmr/paper-divider/paper-divider.js';
+import '@cwmr/paper-search/paper-search-bar.js';
+import '@cwmr/paper-search/paper-filter-dialog.js';
 import './shared-styles.js';
 
 // Gesture events like tap and track generated from touch will not be

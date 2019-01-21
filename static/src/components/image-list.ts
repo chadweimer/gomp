@@ -2,7 +2,10 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import { ConfirmationDialog } from './confirmation-dialog.js';
+import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/image-icons.js';
@@ -19,8 +22,6 @@ import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import './confirmation-dialog.js';
 import '../shared-styles.js';
-import { ConfirmationDialog } from './confirmation-dialog.js';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 
 @customElement('image-list')
 export class ImageList extends GompCoreMixin(PolymerElement) {

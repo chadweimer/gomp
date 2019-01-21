@@ -4,7 +4,9 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
 import { HomeList } from './components/home-list.js';
+import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-fab/paper-fab.js';
+import './components/home-list.js';
 import './shared-styles.js';
 
 @customElement('home-view')

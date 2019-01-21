@@ -3,6 +3,8 @@ import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import { ConfirmationDialog } from './confirmation-dialog.js';
+import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-card/paper-card.js';
@@ -10,9 +12,9 @@ import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item-body.js';
 import '@cwmr/paper-chip/paper-chips-section.js';
 import '@cwmr/paper-divider/paper-divider.js';
+import './confirmation-dialog.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
-import { ConfirmationDialog } from './confirmation-dialog.js';
 
 @customElement('recipe-display')
 export class RecipeDisplay extends GompCoreMixin(PolymerElement) {

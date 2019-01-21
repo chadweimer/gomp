@@ -9,6 +9,7 @@ import { NoteList } from './components/note-list.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { RecipeEdit } from './components/recipe-edit.js';
 import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
+import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
@@ -16,6 +17,12 @@ import '@polymer/iron-icons/editor-icons.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial-action.js';
+import './components/recipe-display.js';
+import './components/image-list.js';
+import './components/note-list.js';
+import './components/confirmation-dialog.js';
+import './components/recipe-edit.js';
+import './components/recipe-link-dialog.js';
 import './shared-styles.js';
 
 @customElement('recipes-view')

@@ -2,6 +2,7 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperButtonElement } from '@polymer/paper-button/paper-button.js';
+import '@polymer/paper-button/paper-button.js';
 import '../shared-styles.js';
 
 @customElement('pagination-links')

@@ -3,6 +3,7 @@ import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import '@polymer/iron-ajax/iron-ajax.js';
 import '@cwmr/iron-star-rating/iron-star-rating.js';
 import '../shared-styles.js';
 
