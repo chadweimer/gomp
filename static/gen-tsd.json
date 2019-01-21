@@ -2,7 +2,6 @@
     "excludeFiles": [
         "build/**/*.*",
         "node_modules/**/*.*",
-        "src/shared-styles.js",
         "*.*"
     ]
 }
