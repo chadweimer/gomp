@@ -1,5 +1,7 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/image-icons.js';
@@ -14,10 +16,13 @@ import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-spinner/paper-spinner.js';
-import '../mixins/gomp-core-mixin.js';
 import './confirmation-dialog.js';
 import '../shared-styles.js';
-class ImageList extends GompCoreMixin(PolymerElement) {
+import { ConfirmationDialog } from './confirmation-dialog.js';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+
+@customElement('image-list')
+export class ImageList extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -116,86 +121,85 @@ class ImageList extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'image-list'; }
-    static get properties() {
-        return {
-            recipeId: {
-                type: String,
-            },
-        };
-    }
+    @property({type: String})
+    recipeId: String = null;
+
+    images: Array<any> = [];
 
     refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        this.$.getAjax.generateRequest();
+        (<IronAjaxElement>this.$.getAjax).generateRequest();
     }
 
     add() {
-        this.$.addDialog.open();
+        (<PaperDialogElement>this.$.addDialog).open();
     }
 
-    _addDialogClosed(e) {
+    _addDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled) {
-            this.$.addAjax.body = new FormData(this.$.addForm);
-            this.$.addAjax.generateRequest();
+            let addAjax = this.$.addAjax as IronAjaxElement;
+            addAjax.body = new FormData(<HTMLFormElement>this.$.addForm);
+            addAjax.generateRequest();
         }
     }
-    _onSetMainImageClicked(e) {
+    _onSetMainImageClicked(e: any) {
         e.target.closest('#imageMenu').close();
-        this.$.confirmMainImageDialog.dataId = e.target.dataId;
-        this.$.confirmMainImageDialog.open();
+        let confirmMainImageDialog = this.$.confirmMainImageDialog as ConfirmationDialog;
+        confirmMainImageDialog.dataId = e.target.dataId;
+        confirmMainImageDialog.open();
     }
-    _setMainImage(e) {
-        this.$.setMainImageAjax.body = parseInt(e.target.dataId, 10);
-        this.$.setMainImageAjax.generateRequest();
+    _setMainImage(e: any) {
+        let setMainImageAjax = this.$.setMainImageAjax as IronAjaxElement;
+        setMainImageAjax.body = <any>parseInt(e.target.dataId, 10);
+        setMainImageAjax.generateRequest();
     }
-    _onDeleteClicked(e) {
+    _onDeleteClicked(e: any) {
         e.target.closest('#imageMenu').close();
-        this.$.confirmDeleteDialog.dataId = e.target.dataId;
-        this.$.confirmDeleteDialog.open();
+        let confirmDeleteDialog = this.$.confirmDeleteDialog as ConfirmationDialog;
+        confirmDeleteDialog.dataId = e.target.dataId;
+        confirmDeleteDialog.open();
     }
-    _deleteImage(e) {
-        this.$.deleteAjax.url = '/api/v1/images/' + e.target.dataId;
-        this.$.deleteAjax.generateRequest();
+    _deleteImage(e: any) {
+        let deleteAjax = this.$.deleteAjax as IronAjaxElement;
+        deleteAjax.url = '/api/v1/images/' + e.target.dataId;
+        deleteAjax.generateRequest();
     }
 
-    _handleGetImagesRequest(e) {
+    _handleGetImagesRequest() {
         this.images = [];
     }
-    _handleGetImagesResponse(e) {
+    _handleGetImagesResponse(e: CustomEvent) {
         this.images = e.detail.response;
     }
-    _handleAddRequest(e) {
-        this.$.uploadingDialog.open();
+    _handleAddRequest() {
+        (<PaperDialogElement>this.$.uploadingDialog).open();
     }
-    _handleAddResponse(e) {
-        this.$.uploadingDialog.close();
+    _handleAddResponse() {
+        (<PaperDialogElement>this.$.uploadingDialog).close();
         this.refresh();
         this.dispatchEvent(new CustomEvent('image-added'));
         this.showToast('Upload complete.');
     }
-    _handleAddError(e) {
-        this.$.uploadingDialog.close();
+    _handleAddError() {
+        (<PaperDialogElement>this.$.uploadingDialog).close();
         this.showToast('Upload failed!');
     }
-    _handleSetMainImageResponse(e) {
+    _handleSetMainImageResponse() {
         this.dispatchEvent(new CustomEvent('main-image-changed'));
         this.showToast('Main picture changed.');
     }
-    _handleSetMainImageError(e) {
+    _handleSetMainImageError() {
         this.showToast('Changing main picture failed!');
     }
-    _handleDeleteResponse(e) {
+    _handleDeleteResponse() {
         this.refresh();
         this.dispatchEvent(new CustomEvent('image-deleted'));
         this.showToast('Picture deleted.');
     }
-    _handleDeleteError(e) {
+    _handleDeleteError() {
         this.showToast('Deleting picture failed!');
     }
 }
-
-window.customElements.define(ImageList.is, ImageList);
