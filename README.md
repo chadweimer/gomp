@@ -50,4 +50,4 @@ make docker
 
 ## Credits
 
-See [package.json](package.json), [go.mod](go.mod) and [bower.json](static/bower.json)
+See [static/package.json](static/package.json) and [go.mod](go.mod)

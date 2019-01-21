@@ -1,5 +1,10 @@
----
-engines:
+version: "2"
+checks:
+  file-lines:
+    enabled: false
+  method-lines:
+    enabled: false
+plugins:
   duplication:
     enabled: true
     config:
@@ -32,5 +37,4 @@ exclude_paths:
 - db/
 - node_modules/
 - static/build/
-- static/bower_components/
 - vendor/

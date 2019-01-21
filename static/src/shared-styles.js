@@ -1,8 +1,8 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+import '@polymer/polymer/polymer-legacy.js';
+import '@polymer/paper-styles/paper-styles.js';
 
-<!-- shared styles for all views -->
-<dom-module id="shared-styles">
+const $documentContainer = document.createElement('template');
+$documentContainer.innerHTML = `<dom-module id="shared-styles">
     <template>
         <style>
             h1 {
@@ -31,4 +31,7 @@
             }
         </style>
     </template>
-</dom-module>
+</dom-module>`;
+
+document.head.appendChild($documentContainer.content);
+
