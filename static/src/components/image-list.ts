@@ -122,7 +122,7 @@ export class ImageList extends GompCoreMixin(PolymerElement) {
     }
 
     @property({type: String})
-    recipeId: String = null;
+    recipeId: String = '';
 
     images: Array<any> = [];
 
@@ -148,23 +148,23 @@ export class ImageList extends GompCoreMixin(PolymerElement) {
     _onSetMainImageClicked(e: any) {
         e.target.closest('#imageMenu').close();
         let confirmMainImageDialog = this.$.confirmMainImageDialog as ConfirmationDialog;
-        confirmMainImageDialog.dataId = e.target.dataId;
+        confirmMainImageDialog.dataset.id = e.target.dataset.id;
         confirmMainImageDialog.open();
     }
     _setMainImage(e: any) {
         let setMainImageAjax = this.$.setMainImageAjax as IronAjaxElement;
-        setMainImageAjax.body = <any>parseInt(e.target.dataId, 10);
+        setMainImageAjax.body = <any>parseInt(e.target.dataset.id, 10);
         setMainImageAjax.generateRequest();
     }
     _onDeleteClicked(e: any) {
         e.target.closest('#imageMenu').close();
         let confirmDeleteDialog = this.$.confirmDeleteDialog as ConfirmationDialog;
-        confirmDeleteDialog.dataId = e.target.dataId;
+        confirmDeleteDialog.dataset.id = e.target.dataset.id;
         confirmDeleteDialog.open();
     }
     _deleteImage(e: any) {
         let deleteAjax = this.$.deleteAjax as IronAjaxElement;
-        deleteAjax.url = '/api/v1/images/' + e.target.dataId;
+        deleteAjax.url = '/api/v1/images/' + e.target.dataset.id;
         deleteAjax.generateRequest();
     }
 
