@@ -1,9 +1,9 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import '../shared-styles.js';
 
 @customElement('confirmation-dialog')
@@ -17,10 +17,10 @@ export class ConfirmationDialog extends PolymerElement {
                 :host[hidden] {
                     display: none !important;
                 }
-                h3 {options
-                    options-title-color, --paper-blue-500);
+                h3 {
+                    color: var(--confirmation-dialog-title-color, --paper-blue-500);
                 }
-                h3 >options
+                h3 > span {
                     padding-left: 0.25em;
                 }
             </style>
