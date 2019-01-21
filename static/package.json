@@ -12,6 +12,7 @@
   },
   "scripts": {
     "generate-types": "gen-typescript-declarations --deleteExisting --outDir . --verify",
+    "clean": "tsc --build . --clean",
     "build": "tsc && polymer build"
   },
   "version": "3.0.0",
