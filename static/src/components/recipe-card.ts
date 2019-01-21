@@ -56,6 +56,6 @@ export class RecipeCard extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    @property({type: String, notify: true})
-    recipe = '';
+    @property({type: Object, notify: true})
+    recipe = null;
 }
