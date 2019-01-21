@@ -122,9 +122,9 @@ export class ImageList extends GompCoreMixin(PolymerElement) {
     }
 
     @property({type: String})
-    recipeId: String = '';
+    recipeId = '';
 
-    images: Array<any> = [];
+    images: any[] = [];
 
     refresh() {
         if (!this.recipeId) {

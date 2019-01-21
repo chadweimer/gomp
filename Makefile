@@ -29,7 +29,7 @@ clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
 
 .PHONY: prebuild
 prebuild:
-	cd static && npm run build
+	cd static && npm run generate-types && npm run build
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:

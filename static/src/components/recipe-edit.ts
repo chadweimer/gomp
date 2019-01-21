@@ -1,16 +1,20 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import { TagInput } from './tag-input.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-input/paper-textarea.js';
 import '@polymer/paper-spinner/paper-spinner.js';
-import '../mixins/gomp-core-mixin.js';
-import './tag-input.js';
 import '../shared-styles.js';
-class RecipeEdit extends GompCoreMixin(PolymerElement) {
+
+@customElement('recipe-edit')
+export class RecipeEdit extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -57,20 +61,17 @@ class RecipeEdit extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'recipe-edit'; }
-    static get properties() {
-        return {
-            recipeId: {
-                type: String,
-            },
-        };
-    }
+    @property({type: String})
+    recipeId: string|null = null;
+
+    newRecipeId = NaN;
+    recipe: object|null = null;
 
     ready() {
         super.ready();
 
         if (this.isActive) {
-            this.$.tagsInput.refresh();
+            (<TagInput>this.$.tagsInput).refresh();
         }
     }
     refresh() {
@@ -78,13 +79,13 @@ class RecipeEdit extends GompCoreMixin(PolymerElement) {
             return;
         }
 
-        this.$.getAjax.generateRequest();
-        this.$.tagsInput.refresh();
+        (<IronAjaxElement>this.$.getAjax).generateRequest();
+        (<TagInput>this.$.tagsInput).refresh();
     }
 
-    _isActiveChanged(isActive) {
+    _isActiveChanged(isActive: Boolean) {
         this.newRecipeId = NaN;
-        this.$.mainImage.value = null;
+        (<HTMLInputElement>this.$.mainImage).value = '';
         if (!this.recipeId) {
             this.recipe = {
                 name: '',
@@ -97,33 +98,35 @@ class RecipeEdit extends GompCoreMixin(PolymerElement) {
             };
         }
         if (isActive && this.isReady) {
-            this.$.tagsInput.refresh();
+            (<TagInput>this.$.tagsInput).refresh();
         }
     }
-    _onCancelButtonClicked(e) {
+    _onCancelButtonClicked() {
         this.dispatchEvent(new CustomEvent('recipe-edit-cancel'));
     }
-    _onSaveButtonClicked(e) {
+    _onSaveButtonClicked() {
         if (this.recipeId) {
-            this.$.putAjax.body = JSON.stringify(this.recipe);
-            this.$.putAjax.generateRequest();
+            let putAjax = this.$.putAjax as IronAjaxElement;
+            putAjax.body = <any>JSON.stringify(this.recipe);
+            putAjax.generateRequest();
         } else {
-            this.$.postAjax.body = JSON.stringify(this.recipe);
-            this.$.postAjax.generateRequest();
+            let postAjax = this.$.postAjax as IronAjaxElement;
+            postAjax.body = <any>JSON.stringify(this.recipe);
+            postAjax.generateRequest();
         }
     }
-    _handleGetRecipeRequest(e) {
+    _handleGetRecipeRequest() {
         if (this.recipeId) {
             this.recipe = null;
         }
     }
-    _handleGetRecipeResponse(e) {
+    _handleGetRecipeResponse(e: CustomEvent) {
         this.recipe = e.detail.response;
     }
-    _handlePutRecipeResponse(e) {
+    _handlePutRecipeResponse() {
         this._onSaveComplete();
     }
-    _handlePostRecipeResponse(e) {
+    _handlePostRecipeResponse(e: CustomEvent) {
         var temp = document.createElement('a');
         temp.href = e.detail.xhr.getResponseHeader('Location');
         var path = temp.pathname;
@@ -134,18 +137,19 @@ class RecipeEdit extends GompCoreMixin(PolymerElement) {
             this.newRecipeId = parseInt(newRecipeIdMatch[1], 10);
         }
 
-        if (this.$.mainImage.value) {
-            this.$.addImageAjax.body = new FormData(this.$.mainImageForm);
-            this.$.addImageAjax.generateRequest();
+        if ((<HTMLInputElement>this.$.mainImage).value) {
+            let addImageAjax = this.$.addImageAjax as IronAjaxElement;
+            addImageAjax.body = new FormData(<HTMLFormElement>this.$.mainImageForm);
+            addImageAjax.generateRequest();
         } else {
             this._onSaveComplete();
         }
     }
-    _handleAddImageRequest(e) {
-        this.$.uploadingDialog.open();
+    _handleAddImageRequest() {
+        (<PaperDialogElement>this.$.uploadingDialog).open();
     }
-    _handleAddImageResponse(e) {
-        this.$.uploadingDialog.close();
+    _handleAddImageResponse() {
+        (<PaperDialogElement>this.$.uploadingDialog).close();
         this._onSaveComplete();
     }
     _onSaveComplete() {
@@ -153,5 +157,3 @@ class RecipeEdit extends GompCoreMixin(PolymerElement) {
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
 }
-
-window.customElements.define(RecipeEdit.is, RecipeEdit);

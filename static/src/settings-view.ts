@@ -1,18 +1,22 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
-import './mixins/gomp-core-mixin.js';
 import './shared-styles.js';
-class SettingsView extends GompCoreMixin(PolymerElement) {
+
+@customElement('settings-view')
+export class SettingsView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -61,9 +65,9 @@ class SettingsView extends GompCoreMixin(PolymerElement) {
                   <div class="card-content">
                       <h3>Security Settings</h3>
                       <paper-input label="Username" value="[[username]]" always-float-label="" disabled=""></paper-input>
-                      <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
-                      <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
-                      <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
+                      <paper-password-input label="Current Password" value="{{_currentPassword}}" always-float-label=""></paper-password-input>
+                      <paper-password-input label="New Password" value="{{_newPassword}}" always-float-label=""></paper-password-input>
+                      <paper-password-input label="Confirm Password" value="{{_repeatPassword}}" always-float-label=""></paper-password-input>
                   </div>
                   <div class="card-actions">
                       <paper-button on-click="_onUpdatePasswordClicked">
@@ -77,7 +81,7 @@ class SettingsView extends GompCoreMixin(PolymerElement) {
               <paper-card>
                   <div class="card-content">
                       <h3>Home Settings</h3>
-                      <paper-input label="Title" always-float-label="" value="{{homeTitle}}">
+                      <paper-input label="Title" always-float-label="" value="{{_homeTitle}}">
                           <paper-icon-button slot="suffix" icon="icons:save" on-click="_onSaveButtonClicked"></paper-icon-button>
                       </paper-input>
                       <form id="homeImageForm" enctype="multipart/form-data">
@@ -89,7 +93,7 @@ class SettingsView extends GompCoreMixin(PolymerElement) {
                               <paper-icon-button slot="suffix" icon="icons:file-upload" on-click="_onUploadButtonClicked"></paper-icon-button>
                             </paper-input-container>
                       </form>
-                      <img alt="Home Image" src="[[homeImageUrl]]" class="responsive" hidden\$="[[!homeImageUrl]]">
+                      <img alt="Home Image" src="[[_homeImageUrl]]" class="responsive" hidden\$="[[!_homeImageUrl]]">
                   </div>
               </paper-card>
           </div>
@@ -107,7 +111,14 @@ class SettingsView extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'settings-view'; }
+    @property({type: String})
+    username = '';
+
+    private _currentPassword = '';
+    private _newPassword = '';
+    private _repeatPassword = '';
+    private _homeTitle = '';
+    private _homeImageUrl = '';
 
     ready() {
         super.ready();
@@ -117,89 +128,91 @@ class SettingsView extends GompCoreMixin(PolymerElement) {
         }
     }
 
-    _onUpdatePasswordClicked(e) {
-        if (this.newPassword !== this.repeatPassword) {
+    _onUpdatePasswordClicked() {
+        if (this._newPassword !== this._repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
         }
 
-        this.$.putPasswordAjax.body = JSON.stringify({
-            'currentPassword': this.currentPassword,
-            'newPassword': this.newPassword
+        let putPasswordAjax = this.$.putPasswordAjax as IronAjaxElement;
+        putPasswordAjax.body = <any>JSON.stringify({
+            'currentPassword': this._currentPassword,
+            'newPassword': this._newPassword
         });
-        this.$.putPasswordAjax.generateRequest();
+        putPasswordAjax.generateRequest();
     }
-    _onSaveButtonClicked(e) {
-        this.$.putSettingsAjax.body = JSON.stringify({
-            'homeTitle': this.homeTitle,
-            'homeImageUrl': this.homeImageUrl,
+    _onSaveButtonClicked() {
+        let putSettingsAjax = this.$.putSettingsAjax as IronAjaxElement;
+        putSettingsAjax.body = <any>JSON.stringify({
+            'homeTitle': this._homeTitle,
+            'homeImageUrl': this._homeImageUrl,
         });
-        this.$.putSettingsAjax.generateRequest();
+        putSettingsAjax.generateRequest();
     }
-    _onUploadButtonClicked(e) {
-        this.$.postImageAjax.body = new FormData(this.$.homeImageForm);
-        this.$.postImageAjax.generateRequest();
+    _onUploadButtonClicked() {
+        let postImageAjax = this.$.postImageAjax as IronAjaxElement;
+        postImageAjax.body = new FormData(<HTMLFormElement>this.$.homeImageForm);
+        postImageAjax.generateRequest();
     }
 
-    _isActiveChanged(isActive) {
-        this.$.homeImageFile.value = null;
-        this.currentPassword = null;
-        this.newPassword = null;
-        this.repeatPassword = null;
+    _isActiveChanged(isActive: Boolean) {
+        (<HTMLInputElement>this.$.homeImageFile).value = '';
+        this._currentPassword = '';
+        this._newPassword = '';
+        this._repeatPassword = '';
 
         if (isActive && this.isReady) {
             this._refresh();
         }
     }
 
-    _handleGetUserResponse(e) {
+    _handleGetUserResponse(e: CustomEvent) {
         var user = e.detail.response;
 
         this.username = user.username;
     }
-    _handlePutPasswordResponse(e) {
+    _handlePutPasswordResponse() {
         this.showToast('Password updated.');
     }
-    _handlePutPasswordError(e) {
+    _handlePutPasswordError() {
         this.showToast('Password update failed!');
     }
-    _handleGetSettingsResponse(e) {
+    _handleGetSettingsResponse(e: CustomEvent) {
         var userSettings = e.detail.response;
 
-        this.homeTitle = userSettings.homeTitle;
-        this.homeImageUrl = userSettings.homeImageUrl;
+        this._homeTitle = userSettings.homeTitle;
+        this._homeImageUrl = userSettings.homeImageUrl;
     }
-    _handlePutSettingsResponse(e) {
+    _handlePutSettingsResponse() {
         this._refresh();
         this.showToast('Settings changed.');
     }
-    _handlePutSettingsError(e) {
+    _handlePutSettingsError() {
         this.showToast('Updating settings failed!');
     }
-    _handlePostImageRequest(e) {
-        this.$.uploadingDialog.open();
+    _handlePostImageRequest() {
+        (<PaperDialogElement>this.$.uploadingDialog).open();
     }
-    _handlePostImageResponse(e, req) {
-        this.$.uploadingDialog.close();
-        this.$.homeImageFile.value = null;
+    _handlePostImageResponse(_e: CustomEvent, req: any) {
+        (<PaperDialogElement>this.$.uploadingDialog).close();
+        (<HTMLInputElement>this.$.homeImageFile).value = '';
         this.showToast('Upload complete.');
 
         var location = req.xhr.getResponseHeader('Location');
-        this.$.putSettingsAjax.body = JSON.stringify({
-            'homeTitle': this.homeTitle,
+        let putSettingsAjax = this.$.putSettingsAjax as IronAjaxElement;
+        putSettingsAjax.body = <any>JSON.stringify({
+            'homeTitle': this._homeTitle,
             'homeImageUrl': location,
         });
-        this.$.putSettingsAjax.generateRequest();
+        putSettingsAjax.generateRequest();
     }
-    _handlePostImageError(e) {
-        this.$.uploadingDialog.close();
+    _handlePostImageError() {
+        (<PaperDialogElement>this.$.uploadingDialog).close();
         this.showToast('Upload failed!');
     }
 
     _refresh() {
-        this.$.getUserAjax.generateRequest();
-        this.$.getSettingsAjax.generateRequest();
+        (<IronAjaxElement>this.$.getUserAjax).generateRequest();
+        (<IronAjaxElement>this.$.getSettingsAjax).generateRequest();
     }
 }
-
-window.customElements.define(SettingsView.is, SettingsView);

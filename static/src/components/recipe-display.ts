@@ -120,10 +120,10 @@ export class RecipeDisplay extends GompCoreMixin(PolymerElement) {
 
     @property({type: String})
     recipeId = '';
-    
+
     recipe: Object|null = null;
     mainImage: Object|null = null;
-    links: Array<any> = [];
+    links: any[] = [];
 
     refresh(options: any) {
         if (!this.recipeId) {
@@ -141,7 +141,7 @@ export class RecipeDisplay extends GompCoreMixin(PolymerElement) {
         }
     }
 
-    _isEmpty(arr: Array<any>) {
+    _isEmpty(arr: any[]) {
         return !Array.isArray(arr) || !arr.length;
     }
 

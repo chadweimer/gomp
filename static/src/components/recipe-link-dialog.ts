@@ -98,7 +98,7 @@ export class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
     _handleGetRecipesResponse(e: CustomEvent) {
         let recipes = e.detail.response.recipes;
 
-        let suggestions: Array<any> = [];
+        let suggestions: any[] = [];
         if (recipes) {
             recipes.forEach(function(recipe: any) {
                 suggestions.push({value: recipe.id, text: recipe.name});

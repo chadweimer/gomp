@@ -1,13 +1,18 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperButtonElement } from '@polymer/paper-button/paper-button.js';
+import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-input/paper-input.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
-import './mixins/gomp-core-mixin.js';
 import './shared-styles.js';
-class LoginView extends GompCoreMixin(PolymerElement) {
+
+@customElement('login-view')
+export class LoginView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -50,44 +55,34 @@ class LoginView extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'login-view'; }
-    static get properties() {
-        return {
-            username: {
-                type: String,
-                notify: true,
-            },
-            password: {
-                type: String,
-                notify: true,
-            },
-            errorMessage: {
-                type: String,
-                notify: true,
-            },
-        };
-    }
+    @property({type: String, notify: true})
+    username = '';
+    @property({type: String, notify: true})
+    password = '';
+    @property({type: String, notify: true})
+    errorMessage = '';
 
-    _isActiveChanged(isActive) {
+    _isActiveChanged(isActive: boolean) {
         if (isActive) {
             this.username = '';
             this.password = '';
             this.errorMessage = '';
         }
     }
-    _onLoginClicked(e) {
-        this.$.authAjax.body = JSON.stringify({'username': this.username, 'password': this.password});
-        this.$.authAjax.generateRequest();
+    _onLoginClicked() {
+        let authAjax = this.$.authAjax as IronAjaxElement;
+        authAjax.body = <any>JSON.stringify({'username': this.username, 'password': this.password});
+        authAjax.generateRequest();
     }
-    _onInputKeydown(e) {
+    _onInputKeydown(e: KeyboardEvent) {
         if (e.keyCode === 13) {
-            this.$.loginButton.click();
+            (<PaperButtonElement>this.$.loginButton).click();
         }
     }
-    _handlePostAuthRequest(e) {
+    _handlePostAuthRequest() {
         this.errorMessage = '';
     }
-    _handlePostAuthResponse(e) {
+    _handlePostAuthResponse(e: CustomEvent) {
         localStorage.setItem('jwtToken', e.detail.response.token);
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
     }
@@ -96,5 +91,3 @@ class LoginView extends GompCoreMixin(PolymerElement) {
         this.errorMessage = 'Login failed. Check your username and password and try again.';
     }
 }
-
-window.customElements.define(LoginView.is, LoginView);

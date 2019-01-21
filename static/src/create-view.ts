@@ -1,8 +1,11 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import './mixins/gomp-core-mixin.js';
+import { customElement } from '@polymer/decorators';
+import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
 import './components/recipe-edit.js';
 import './shared-styles.js';
-class CreateView extends GompCoreMixin(PolymerElement) {
+
+@customElement('create-view')
+export class CreateView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -22,14 +25,10 @@ class CreateView extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'create-view'; }
-
-    _editCanceled(e) {
+    _editCanceled() {
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
     }
-    _editSaved(e) {
+    _editSaved(e: CustomEvent) {
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: e.detail.redirectUrl}}));
     }
 }
-
-window.customElements.define(CreateView.is, CreateView);

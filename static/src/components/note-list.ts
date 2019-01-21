@@ -78,7 +78,7 @@ export class NoteList extends GompCoreMixin(PolymerElement) {
 
     noteId: Number|null = null;
     noteText = '';
-    notes: Array<any> = [];
+    notes: any[] = [];
 
     refresh() {
         if (!this.recipeId) {

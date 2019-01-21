@@ -1,9 +1,11 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/app-layout/app-drawer/app-drawer.js';
+import { customElement, property } from '@polymer/decorators';
+import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
 import '@polymer/app-layout/app-toolbar/app-toolbar.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
@@ -15,12 +17,13 @@ import '@polymer/paper-item/paper-item-body.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@cwmr/paper-divider/paper-divider.js';
-import './mixins/gomp-core-mixin.js';
 import './components/recipe-card.js';
 import './components/pagination-links.js';
 import './components/recipe-rating.js';
 import './shared-styles.js';
-class SearchView extends GompCoreMixin(PolymerElement) {
+
+@customElement('search-view')
+export class SearchView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -189,47 +192,27 @@ class SearchView extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'search-view'; }
-    static get properties() {
-        return {
-            pageNum: {
-                type: Number,
-                value: 1,
-                notify: true,
-                observer: '_pageNumChanged',
-            },
-            numPages: {
-                type: Number,
-                value: 0,
-                notify: true,
-            },
-            search: {
-                type: Object,
-                notify: true,
-                observer: '_searchChanged',
-            },
-            searchSettings: {
-                type: Object,
-                value: {
-                    sortBy: 'name',
-                    sortDir: 'asc',
-                    viewMode: 'full',
-                },
-                notify: true,
-                observer: '_searchChanged',
-            },
-            recipes: {
-                type: Array,
-                value: [],
-                notify: true,
-            },
-            totalRecipeCount: {
-                type: Number,
-                value: 0,
-                notify: true,
-            },
-        };
-    }
+    @property({type: Number, notify: true, observer: '_pageNumChanged'})
+    pageNum = 1;
+    @property({type: Number, notify: true})
+    numPages = 0;
+    @property({type: Object, notify: true, observer: '_searchChanged'})
+    search = {
+        query: '',
+        fields: <string[]>[],
+        tags: <string[]>[],
+    };
+    @property({type: Object, notify: true, observer: '_searchChanged'})
+    searchSettings = {
+        sortBy: 'name',
+        sortDir: 'asc',
+        viewMode: 'full',
+    };
+    @property({type: Array, notify: true})
+    recipes: any[] = [];
+    @property({type: Number, notify: true})
+    totalRecipeCount = 0;
+
     static get observers() {
         return [
             '_updatePagination(recipes, totalRecipeCount)',
@@ -244,7 +227,7 @@ class SearchView extends GompCoreMixin(PolymerElement) {
         this.refresh();
     }
     refresh() {
-        this.$.recipesAjax.params = {
+        (<IronAjaxElement>this.$.recipesAjax).params = {
             'q': this.search.query,
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
@@ -272,7 +255,7 @@ class SearchView extends GompCoreMixin(PolymerElement) {
     _handleGetRecipesRequest() {
         this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
     }
-    _handleGetRecipesResponse(request) {
+    _handleGetRecipesResponse(request: CustomEvent) {
         this.recipes = request.detail.response.recipes;
         this.totalRecipeCount = request.detail.response.total;
     }
@@ -281,50 +264,50 @@ class SearchView extends GompCoreMixin(PolymerElement) {
         this.totalRecipeCount = 0;
     }
 
-    _updatePagination(recipes, total) {
+    _updatePagination(_recipes: Object|null, total: number) {
         this.numPages = Math.ceil(total / this._getRecipeCount());
     }
 
-    _onFullViewClicked(e) {
-        _onChangeSearchSettings(e, 'full', this.searchSettings.sortBy, this.searchSettings.sortDir);
+    _onFullViewClicked() {
+        this._onChangeSearchSettings('full', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
-    _onCompactViewClicked(e) {
-        _onChangeSearchSettings(e, 'compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
+    _onCompactViewClicked() {
+        this._onChangeSearchSettings('compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
-    _onNameSortClicked(e) {
-        _onChangeSearchSettings(e, this.searchSettings.viewMode, 'name', 'asc');
+    _onNameSortClicked() {
+        this._onChangeSearchSettings(this.searchSettings.viewMode, 'name', 'asc');
     }
-    _onRatingSortClicked(e) {
-        _onChangeSearchSettings(e, this.searchSettings.viewMode, 'rating', 'desc');
+    _onRatingSortClicked() {
+        this._onChangeSearchSettings(this.searchSettings.viewMode, 'rating', 'desc');
     }
-    _onRandomSortClicked(e) {
-        _onChangeSearchSettings(e, this.searchSettings.viewMode, 'random', 'asc');
+    _onRandomSortClicked() {
+        this._onChangeSearchSettings(this.searchSettings.viewMode, 'random', 'asc');
     }
-    _onAscSortClicked(e) {
-        _onChangeSearchSettings(e, this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
+    _onAscSortClicked() {
+        this._onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
     }
-    _onDescSortClicked(e) {
-        _onChangeSearchSettings(e, this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
+    _onDescSortClicked() {
+        this._onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
     }
-    _onChangeSearchSettings(e, viewMode, sortBy, sortDir) {
+    _onChangeSearchSettings(viewMode: string, sortBy: string, sortDir: string) {
         this.set('searchSettings.viewMode', viewMode);
         this.set('searchSettings.sortBy', sortBy);
         this.set('searchSettings.sortDir', sortDir);
-        this.$.settingsDrawer.close();
+        (<AppDrawerElement>this.$.settingsDrawer).close();
     }
 
-    _areEqual(a, b) {
+    _areEqual(a: any, b: any) {
         return a === b;
     }
-    _columnize(items, numSplits) {
-        var splitCount = Math.ceil(items.length / numSplits);
+    _columnize(items: any[], numSplits: number) {
+        let splitCount = Math.ceil(items.length / numSplits);
 
-        var newArrays = [
+        let newArrays: any[] = [
             [],
         ];
-        var index = 0;
+        let index = 0;
 
-        for (var i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
             if (i >= (index + 1) * splitCount) {
                 newArrays.push([]);
                 index++;
@@ -335,5 +318,3 @@ class SearchView extends GompCoreMixin(PolymerElement) {
         return newArrays;
     }
 }
-
-window.customElements.define(SearchView.is, SearchView);

@@ -55,7 +55,7 @@ export class TagInput extends GompCoreMixin(PolymerElement) {
     @property({type: Array, notify: true})
     tags = [];
 
-    suggestedTags: String[] = [];
+    suggestedTags: string[] = [];
 
     refresh() {
         let getSuggestedTagsAjax = this.$.getSuggestedTagsAjax as IronAjaxElement;

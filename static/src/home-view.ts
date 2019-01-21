@@ -1,9 +1,13 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax';
+import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
+import { HomeList } from './components/home-list.js';
 import '@polymer/paper-fab/paper-fab.js';
-import './mixins/gomp-core-mixin.js';
-import './components/home-list.js';
 import './shared-styles.js';
-class HomeView extends GompCoreMixin(PolymerElement) {
+
+@customElement('home-view')
+export class HomeView extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -51,19 +55,10 @@ class HomeView extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'home-view'; }
-    static get properties() {
-        return {
-            title: {
-                type: String,
-                notify: true,
-            },
-            image: {
-                type: String,
-                notify: true,
-            },
-        };
-    }
+    @property({type: String, notify: true})
+    title = '';
+    @property({type: String, notify: true})
+    image = '';
 
     ready() {
         super.ready();
@@ -73,12 +68,12 @@ class HomeView extends GompCoreMixin(PolymerElement) {
         }
     }
 
-    _isActiveChanged(isActive) {
+    _isActiveChanged(isActive: boolean) {
         if (isActive && this.isReady) {
             this._refresh();
         }
     }
-    _handleGetUserSettingsResponse(e) {
+    _handleGetUserSettingsResponse(e: CustomEvent) {
         var userSettings = e.detail.response;
 
         this.title = userSettings.homeTitle;
@@ -86,17 +81,15 @@ class HomeView extends GompCoreMixin(PolymerElement) {
     }
 
     _refresh() {
-        this.$.allRecipes.refresh();
-        this.$.beefRecipes.refresh();
-        this.$.poultryRecipes.refresh();
-        this.$.porkRecipes.refresh();
-        this.$.seafoodRecipes.refresh();
-        this.$.pastaRecipes.refresh();
-        this.$.vegetarianRecipes.refresh();
-        this.$.sideRecipes.refresh();
-        this.$.drinkRecipes.refresh();
-        this.$.userSettingsAjax.generateRequest();
+        (<HomeList>this.$.allRecipes).refresh();
+        (<HomeList>this.$.beefRecipes).refresh();
+        (<HomeList>this.$.poultryRecipes).refresh();
+        (<HomeList>this.$.porkRecipes).refresh();
+        (<HomeList>this.$.seafoodRecipes).refresh();
+        (<HomeList>this.$.pastaRecipes).refresh();
+        (<HomeList>this.$.vegetarianRecipes).refresh();
+        (<HomeList>this.$.sideRecipes).refresh();
+        (<HomeList>this.$.drinkRecipes).refresh();
+        (<IronAjaxElement>this.$.userSettingsAjax).generateRequest();
     }
 }
-
-window.customElements.define(HomeView.is, HomeView);
