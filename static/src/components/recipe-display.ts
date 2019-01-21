@@ -1,5 +1,7 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-card/paper-card.js';
@@ -7,11 +9,12 @@ import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item-body.js';
 import '@cwmr/paper-chip/paper-chips-section.js';
 import '@cwmr/paper-divider/paper-divider.js';
-import '../mixins/gomp-core-mixin.js';
-import './confirmation-dialog.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
-class RecipeDisplay extends GompCoreMixin(PolymerElement) {
+import { ConfirmationDialog } from './confirmation-dialog.js';
+
+@customElement('recipe-display')
+export class RecipeDisplay extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -115,65 +118,63 @@ class RecipeDisplay extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'recipe-display'; }
-    static get properties() {
-        return {
-            recipeId: {
-                type: String,
-            },
-        };
-    }
+    @property({type: String})
+    recipeId = '';
+    
+    recipe: Object|null = null;
+    mainImage: Object|null = null;
+    links: Array<any> = [];
 
-    refresh(options) {
+    refresh(options: any) {
         if (!this.recipeId) {
             return;
         }
 
         if (!options || options.recipe) {
-            this.$.getAjax.generateRequest();
+            (<IronAjaxElement>this.$.getAjax).generateRequest();
         }
         if (!options || options.links) {
-            this.$.getLinksAjax.generateRequest();
+            (<IronAjaxElement>this.$.getLinksAjax).generateRequest();
         }
         if (!options || options.mainImage) {
-            this.$.mainImageAjax.generateRequest();
+            (<IronAjaxElement>this.$.mainImageAjax).generateRequest();
         }
     }
 
-    _isEmpty(arr) {
+    _isEmpty(arr: Array<any>) {
         return !Array.isArray(arr) || !arr.length;
     }
 
-    _onRemoveLinkClicked(e) {
-        this.$.confirmDeleteLinkDialog.dataId = e.model.item.id;
-        this.$.confirmDeleteLinkDialog.open();
+    _onRemoveLinkClicked(e: any) {
+        let confirmDeleteLinkDialog = this.$.confirmDeleteLinkDialog as ConfirmationDialog;
+        confirmDeleteLinkDialog.dataset.id = e.model.item.id;
+        confirmDeleteLinkDialog.open();
     }
-    _deleteLink(e) {
-        this.$.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.target.dataId;
-        this.$.deleteLinkAjax.generateRequest();
+    _deleteLink(e: any) {
+        let deleteLinkAjax = this.$.deleteLinkAjax as IronAjaxElement;
+        deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.target.dataset.id;
+        deleteLinkAjax.generateRequest();
     }
 
-    _handleGetRecipeRequest(e) {
+    _handleGetRecipeRequest() {
         this.recipe = null;
     }
-    _handleGetRecipeResponse(e) {
+    _handleGetRecipeResponse(e: CustomEvent) {
         this.recipe = e.detail.response;
     }
-    _handleGetMainImageRequest(e) {
+    _handleGetMainImageRequest() {
         this.mainImage = null;
     }
-    _handleGetMainImageResponse(e) {
+    _handleGetMainImageResponse(e: CustomEvent) {
         this.mainImage = e.detail.response;
     }
-    _handleGetLinksResponse(e) {
+    _handleGetLinksResponse(e: CustomEvent) {
         this.links = e.detail.response;
     }
-    _handleDeleteLinkResponse(e) {
+    _handleDeleteLinkResponse() {
         this.refresh({links: true});
     }
-    _handleDeleteLinkError(e) {
+    _handleDeleteLinkError() {
         this.showToast('Removing link failed!');
     }
 }
-
-window.customElements.define(RecipeDisplay.is, RecipeDisplay);

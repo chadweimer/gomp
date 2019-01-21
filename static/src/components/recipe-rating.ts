@@ -21,8 +21,8 @@ export class RecipeRating extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    @property({type: String, notify: true})
-    recipe = '';
+    @property({type: Object, notify: true})
+    recipe: Object|null = null;
 
     _starRatingSelected(e: CustomEvent) {
         let rateAjax = this.$.rateAjax as IronAjaxElement;

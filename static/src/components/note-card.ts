@@ -1,5 +1,8 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import {customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import { ConfirmationDialog } from './confirmation-dialog.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -7,14 +10,15 @@ import '@polymer/iron-icons/communication-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
-import '../mixins/gomp-core-mixin.js';
+import '@cwmr/paper-divider/paper-divider.js';
 import '../shared-styles.js';
-class NoteCard extends GompCoreMixin(PolymerElement) {
+
+@customElement('note-card')
+export class NoteCard extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -95,42 +99,33 @@ class NoteCard extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'note-card'; }
-    static get properties() {
-        return {
-            note: {
-                type: Object,
-                notify: true,
-            },
-        };
-    }
+    @property({type: Object, notify: true})
+    note: Object|null = null;
 
-    _onEditClicked(e) {
+    _onEditClicked(e: any) {
         e.target.closest('#noteMenu').close();
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
-    _onDeleteClicked(e) {
+    _onDeleteClicked(e: any) {
         e.target.closest('#noteMenu').close();
-        this.$.confirmDeleteDialog.open();
+        (<ConfirmationDialog>this.$.confirmDeleteDialog).open();
     }
-    _deleteNote(e) {
-        this.$.deleteAjax.generateRequest();
+    _deleteNote() {
+        (<IronAjaxElement>this.$.deleteAjax).generateRequest();
     }
 
-    _formatDate(dateStr) {
+    _formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleString();
     }
-    _showModifiedDate(note) {
+    _showModifiedDate(note: any) {
         return note.modifiedAt !== note.createdAt;
     }
 
-    _handleDeleteResponse(e) {
+    _handleDeleteResponse() {
         this.dispatchEvent(new CustomEvent('note-card-deleted'));
         this.showToast('Note deleted.');
     }
-    _handleDeleteError(e) {
+    _handleDeleteError() {
         this.showToast('Deleting note failed!');
     }
 }
-
-window.customElements.define(NoteCard.is, NoteCard);

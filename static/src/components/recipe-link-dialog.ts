@@ -54,7 +54,7 @@ export class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
     @property({type: String})
     recipeId = '';
     @property({type: Number})
-    _selectedRecipeId = -1;
+    _selectedRecipeId: Number|null = null;
 
     open() {
         let recipeSearcher = this.$.recipeSearcher as any;
@@ -66,7 +66,7 @@ export class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
     }
 
     _onAutocompleteChange(e: CustomEvent) {
-        this._selectedRecipeId = -1;
+        this._selectedRecipeId = null;
         let value = e.detail.text;
         if (value && value.length >= 2) {
             let recipesAjax = this.$.recipesAjax as IronAjaxElement;
@@ -93,7 +93,7 @@ export class RecipeLinkDialog extends GompCoreMixin(PolymerElement) {
         }
     }
     _shouldPreventAdd(selectedRecipeId: Number) {
-        return selectedRecipeId <= 0;
+        return selectedRecipeId === null;
     }
     _handleGetRecipesResponse(e: CustomEvent) {
         let recipes = e.detail.response.recipes;

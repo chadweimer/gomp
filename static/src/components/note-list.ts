@@ -1,15 +1,19 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import {customElement, property } from '@polymer/decorators';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-input/paper-textarea.js';
-import '../mixins/gomp-core-mixin.js';
 import './note-card.js';
 import '../shared-styles.js';
-class NoteList extends GompCoreMixin(PolymerElement) {
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+
+@customElement('note-list')
+export class NoteList extends GompCoreMixin(PolymerElement) {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -69,76 +73,74 @@ class NoteList extends GompCoreMixin(PolymerElement) {
 `;
     }
 
-    static get is() { return 'note-list'; }
-    static get properties() {
-        return {
-            recipeId: {
-                type: String,
-            },
-        };
-    }
+    @property({type: String})
+    recipeId = '';
+
+    noteId: Number|null = null;
+    noteText = '';
+    notes: Array<any> = [];
 
     refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        this.$.getAjax.generateRequest();
+        (<IronAjaxElement>this.$.getAjax).generateRequest();
     }
     add() {
         this.noteId = null;
         this.noteText = '';
-        this.$.noteDialog.open();
+        (<PaperDialogElement>this.$.noteDialog).open();
     }
 
-    _noteDialogClosed(e) {
+    _noteDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled) {
             if (this.noteId) {
-                this.$.putNoteAjax.body = JSON.stringify({
+                let putNoteAjax = this.$.putNoteAjax as IronAjaxElement;
+                putNoteAjax.body = <any>JSON.stringify({
                     'id': this.noteId,
                     'recipeId': parseInt(this.recipeId, 10),
                     'text': this.noteText,
                 });
-                this.$.putNoteAjax.generateRequest();
+                putNoteAjax.generateRequest();
             } else {
-                this.$.postNoteAjax.body = JSON.stringify({
+                let postNoteAjax = this.$.postNoteAjax as IronAjaxElement;
+                postNoteAjax.body = <any>JSON.stringify({
                     'recipeId': parseInt(this.recipeId, 10),
                     'text': this.noteText,
                 });
-                this.$.postNoteAjax.generateRequest();
+                postNoteAjax.generateRequest();
             }
         }
     }
-    _editNoteTapped(e) {
+    _editNoteTapped(e: any) {
         e.preventDefault();
 
         this.noteId = e.target.note.id;
         this.noteText = e.target.note.text;
-        this.$.noteDialog.open();
+        (<PaperDialogElement>this.$.noteDialog).open();
     }
-    _noteDeleted(e) {
+    _noteDeleted() {
         this.refresh();
     }
-    _handleGetRequest(e) {
+    _handleGetRequest() {
         this.notes = [];
     }
-    _handleGetResponse(e) {
+    _handleGetResponse(e: CustomEvent) {
         this.notes = e.detail.response;
     }
-    _handlePostNoteResponse(e) {
+    _handlePostNoteResponse() {
         this.refresh();
         this.showToast('Note created.');
     }
-    _handlePostNoteError(e) {
+    _handlePostNoteError() {
         this.showToast('Creating note failed!');
     }
-    _handlePutNoteResponse(e) {
+    _handlePutNoteResponse() {
         this.refresh();
         this.showToast('Note updated.');
     }
-    _handlePutNoteError(e) {
+    _handlePutNoteError() {
         this.showToast('Updating note failed!');
     }
 }
-
-window.customElements.define(NoteList.is, NoteList);
