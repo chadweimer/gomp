@@ -1,7 +1,0 @@
-{
-    "excludeFiles": [
-        "build/**/*.*",
-        "node_modules/**/*.*",
-        "*.*"
-    ]
-}
