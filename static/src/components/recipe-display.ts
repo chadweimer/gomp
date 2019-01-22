@@ -128,7 +128,7 @@ export class RecipeDisplay extends GompBaseElement {
     mainImage: Object|null = null;
     links: any[] = [];
 
-    refresh(options: any) {
+    refresh(options?: {recipe?: boolean, links?: boolean, mainImage?: boolean}) {
         if (!this.recipeId) {
             return;
         }
