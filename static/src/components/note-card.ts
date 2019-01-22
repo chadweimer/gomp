@@ -1,8 +1,8 @@
 'use strict'
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
-import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
@@ -21,7 +21,7 @@ import './confirmation-dialog.js';
 import '../shared-styles.js';
 
 @customElement('note-card')
-export class NoteCard extends GompCoreMixin(PolymerElement) {
+export class NoteCard extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">

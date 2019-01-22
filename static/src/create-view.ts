@@ -1,12 +1,12 @@
 'use strict'
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement } from '@polymer/decorators';
-import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
+import { GompBaseElement } from './common/gomp-base-element.js';
 import './components/recipe-edit.js';
 import './shared-styles.js';
 
 @customElement('create-view')
-export class CreateView extends GompCoreMixin(PolymerElement) {
+export class CreateView extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">

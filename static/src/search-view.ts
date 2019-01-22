@@ -1,9 +1,9 @@
 'use strict'
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
-import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
+import { GompBaseElement } from './common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -26,7 +26,7 @@ import './components/recipe-rating.js';
 import './shared-styles.js';
 
 @customElement('search-view')
-export class SearchView extends GompCoreMixin(PolymerElement) {
+export class SearchView extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">

@@ -1,8 +1,8 @@
 'use strict'
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
-import { GompCoreMixin } from './mixins/gomp-core-mixin.js';
+import { GompBaseElement } from './common/gomp-base-element.js';
 import { RecipeDisplay } from './components/recipe-display.js';
 import { ImageList } from './components/image-list.js';
 import { NoteList } from './components/note-list.js';
@@ -26,7 +26,7 @@ import './components/recipe-link-dialog.js';
 import './shared-styles.js';
 
 @customElement('recipes-view')
-export class RecipesView extends GompCoreMixin(PolymerElement) {
+export class RecipesView extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">

@@ -1,8 +1,8 @@
 'use strict'
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
-import { GompCoreMixin } from '../mixins/gomp-core-mixin.js';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -11,7 +11,7 @@ import '@cwmr/paper-chip/paper-chip.js';
 import '../shared-styles.js';
 
 @customElement('tag-input')
-export class TagInput extends GompCoreMixin(PolymerElement) {
+export class TagInput extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
