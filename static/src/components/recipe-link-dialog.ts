@@ -89,7 +89,7 @@ export class RecipeLinkDialog extends GompBaseElement {
         this._selectedRecipeId = e.detail.value;
     }
     _onDialogClosed(e: CustomEvent) {
-        if (!e.detail.canceled) {
+        if (!e.detail.canceled && e.detail.confirmed) {
             let postLinkAjax = this.$.postLinkAjax as IronAjaxElement;
             postLinkAjax.body = <any>JSON.stringify(this._selectedRecipeId);
             postLinkAjax.generateRequest();

@@ -141,7 +141,7 @@ export class ImageList extends GompBaseElement {
     }
 
     _addDialogClosed(e: CustomEvent) {
-        if (!e.detail.canceled) {
+        if (!e.detail.canceled && e.detail.confirmed) {
             let addAjax = this.$.addAjax as IronAjaxElement;
             addAjax.body = new FormData(<HTMLFormElement>this.$.addForm);
             addAjax.generateRequest();

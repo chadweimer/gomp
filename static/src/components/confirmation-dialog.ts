@@ -51,10 +51,10 @@ export class ConfirmationDialog extends PolymerElement {
     }
 
     _onDialogClosed(e: CustomEvent) {
-        if (e.detail.canceled) {
-            this.dispatchEvent(new CustomEvent('dismissed'));
-        } else {
+        if (!e.detail.canceled && e.detail.confirmed) {
             this.dispatchEvent(new CustomEvent('confirmed'));
+        } else {
+            this.dispatchEvent(new CustomEvent('dismissed'));
         }
     }
 }

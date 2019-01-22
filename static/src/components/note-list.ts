@@ -96,7 +96,7 @@ export class NoteList extends GompBaseElement {
     }
 
     _noteDialogClosed(e: CustomEvent) {
-        if (!e.detail.canceled) {
+        if (!e.detail.canceled && e.detail.confirmed) {
             if (this.noteId) {
                 let putNoteAjax = this.$.putNoteAjax as IronAjaxElement;
                 putNoteAjax.body = <any>JSON.stringify({
