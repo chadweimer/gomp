@@ -1,3 +1,4 @@
+'use strict'
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
 
