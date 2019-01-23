@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';

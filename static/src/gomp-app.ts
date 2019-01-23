@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { customElement, property } from '@polymer/decorators';

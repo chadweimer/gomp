@@ -1,6 +1,6 @@
-'use strict'
-import { html } from '@polymer/polymer/polymer-element.js';
+'use strict';
 import { customElement } from '@polymer/decorators';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import './components/recipe-edit.js';
 import './shared-styles.js';
@@ -26,10 +26,12 @@ export class CreateView extends GompBaseElement {
 `;
     }
 
-    _editCanceled() {
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+    protected _editCanceled() {
+        this.dispatchEvent(
+            new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
     }
-    _editSaved(e: CustomEvent) {
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: e.detail.redirectUrl}}));
+    protected _editSaved(e: CustomEvent) {
+        this.dispatchEvent(
+            new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: e.detail.redirectUrl}}));
     }
 }
