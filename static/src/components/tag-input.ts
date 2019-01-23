@@ -8,6 +8,7 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-input/paper-input-container.js';
 import '@cwmr/paper-chip/paper-chip.js';
+import '@cwmr/paper-tags-input/paper-tags-input.js';
 import '../shared-styles.js';
 
 @customElement('tag-input')

@@ -130,7 +130,7 @@ export class SearchView extends GompBaseElement {
                   <label class="menu-label">View</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
                       <paper-icon-item name="full" on-click="_onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
-                     b<paper-icon-item name="compact" on-click="_onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
+                      <paper-icon-item name="compact" on-click="_onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                   </paper-listbox>
                   <paper-divider></paper-divider>
                   <label class="menu-label">Sort</label>
