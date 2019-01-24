@@ -210,27 +210,27 @@ export class GompApp extends PolymerElement {
     }
 
     @property({type: String, observer: '_titleChanged'})
-    title = 'GOMP: Go Meal Planner';
+    public title = 'GOMP: Go Meal Planner';
     @property({type: String, observer: '_pageChanged'})
-    page = '';
+    protected page = '';
     @property({type: Number})
-    loadingCount = 0;
+    protected loadingCount = 0;
     @property({type: Object, notify: true})
-    search = {
+    protected search = {
         query: '',
-        fields: <string[]>[],
-        tags: <string[]>[],
+        fields: [] as string[],
+        tags: [] as string[],
     };
     @property({type: Array})
-    searchFilters: any[]|null|undefined = null;
+    protected searchFilters: any[]|null|undefined = null;
     @property({type: Number})
-    selectedSearchFiltersCount = 0;
+    protected selectedSearchFiltersCount = 0;
     @property({type: Boolean})
-    isAuthenticated = false;
-    @property({type: Array})
-    selectedSearchFilters = <any>[];
+    protected isAuthenticated = false;
     @property({type: Object})
-    route: {path: string}|null|undefined = null;
+    protected selectedSearchFilters: {fields?: [], tags?: []} = {};
+    @property({type: Object})
+    protected route: {path: string}|null|undefined = null;
 
     static get observers() {
         return [
@@ -240,59 +240,59 @@ export class GompApp extends PolymerElement {
         ];
     }
 
-    ready() {
+    public ready() {
         this.addEventListener('scroll-top', () => this._scrollToTop());
-        this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(<CustomEvent>e));
-        this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
+        this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this._onHomeLinkClicked(e));
+        this.addEventListener('iron-overlay-opened', (e) => this._patchOverlay(e));
         this.addEventListener('recipes-modified', () => this._recipesModified());
-        this.addEventListener('change-page', e => this._changePageRequested(<CustomEvent>e));
-        this.addEventListener('iron-ajax-presend', e => this._onAjaxPresend(<CustomEvent>e));
+        this.addEventListener('change-page', (e: CustomEvent) => this._changePageRequested(e));
+        this.addEventListener('iron-ajax-presend', (e: CustomEvent) => this._onAjaxPresend(e));
         this.addEventListener('iron-ajax-request', () => this._onAjaxRequest());
         this.addEventListener('iron-ajax-response', () => this._onAjaxResponse());
-        this.addEventListener('iron-ajax-error', e => this._onAjaxError(<CustomEvent>e));
-        this.addEventListener('show-toast', e => this._onShowToast(<CustomEvent>e));
+        this.addEventListener('iron-ajax-error', (e: CustomEvent) => this._onAjaxError(e));
+        this.addEventListener('show-toast', (e: CustomEvent) => this._onShowToast(e));
 
         super.ready();
-        (<IronAjaxElement>this.$.appConfigAjax).generateRequest();
+        (this.$.appConfigAjax as IronAjaxElement).generateRequest();
     }
 
-    _titleChanged(title: string) {
+    protected _titleChanged(title: string) {
         document.title = title;
-        let appName = document.querySelector('meta[name="application-name"]');
+        const appName = document.querySelector('meta[name="application-name"]');
         if (appName !== null) {
             appName.setAttribute('content', title);
         }
-        let appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+        const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
         if (appTitle !== null) {
             appTitle.setAttribute('content', title);
         }
     }
 
     // https://github.com/PolymerElements/paper-dialog/issues/7
-    _patchOverlay(e: any) {
-        var path = e.path || (e.composedPath && e.composedPath());
+    protected _patchOverlay(e: any) {
+        const path = e.path || (e.composedPath && e.composedPath());
         if (path) {
-            var overlay = path[0];
+            const overlay = path[0];
             if (overlay.withBackdrop) {
                 overlay.parentNode.insertBefore(overlay.backdropElement, overlay);
             }
         }
     }
 
-    _onAjaxPresend(e: CustomEvent) {
-        var jwtToken = localStorage.getItem('jwtToken');
-        e.detail.options.headers = {'Authorization': 'Bearer ' + jwtToken};
+    protected _onAjaxPresend(e: CustomEvent) {
+        const jwtToken = localStorage.getItem('jwtToken');
+        e.detail.options.headers = {Authorization: 'Bearer ' + jwtToken};
     }
-    _onAjaxRequest() {
+    protected _onAjaxRequest() {
         this.loadingCount++;
     }
-    _onAjaxResponse() {
+    protected _onAjaxResponse() {
         this.loadingCount--;
         if (this.loadingCount < 0) {
             this.loadingCount = 0;
         }
     }
-    _onAjaxError(e: CustomEvent) {
+    protected _onAjaxError(e: CustomEvent) {
         this.loadingCount--;
         if (this.loadingCount < 0) {
             this.loadingCount = 0;
@@ -302,24 +302,24 @@ export class GompApp extends PolymerElement {
         }
     }
 
-    _onShowToast(e: CustomEvent) {
-        let toast = this.$.toast as PaperToastElement;
+    protected _onShowToast(e: CustomEvent) {
+        const toast = this.$.toast as PaperToastElement;
         toast.text = e.detail.message;
         toast.open();
     }
 
-    _routePageChanged(page: string|null|undefined) {
+    protected _routePageChanged(page: string|null|undefined) {
         this.page = page || 'home';
 
         // Close a non-persistent drawer when the page & route are changed.
-        let drawer = this.$.drawer as AppDrawerElement;
+        const drawer = this.$.drawer as AppDrawerElement;
         if (!drawer.persistent) {
             drawer.close();
         }
     }
-    _pageChanged(page: string) {
+    protected _pageChanged(page: string) {
         if (this._verifyIsAuthenticated()) {
-            (<IronAjaxElement>this.$.tagsAjax).generateRequest();
+            (this.$.tagsAjax as IronAjaxElement).generateRequest();
         }
 
         // Load page import on demand. Show 404 page if fails
@@ -347,26 +347,26 @@ export class GompApp extends PolymerElement {
             break;
         }
     }
-    _changePageRequested(e: CustomEvent) {
+    protected _changePageRequested(e: CustomEvent) {
         this._changeRoute(e.detail.url);
     }
-    _changeRoute(path: string) {
+    protected _changeRoute(path: string) {
         this.set('route.path', path);
     }
-    _scrollToTop() {
+    protected _scrollToTop() {
         this.$.mainHeader.scroll(0, 0);
     }
-    _onLogoutClicked(e: Event) {
+    protected _onLogoutClicked(e: Event) {
         // Don't nativate to "#!"
         e.preventDefault();
 
         this._logout();
     }
-    _getIsAuthenticated() {
-        var jwtToken = localStorage.getItem('jwtToken');
+    protected _getIsAuthenticated() {
+        const jwtToken = localStorage.getItem('jwtToken');
         return jwtToken !== null;
     }
-    _verifyIsAuthenticated() {
+    protected _verifyIsAuthenticated() {
         this.isAuthenticated = this._getIsAuthenticated();
         // Redirect to login if necessary
         if (!this.isAuthenticated) {
@@ -377,49 +377,49 @@ export class GompApp extends PolymerElement {
         }
         return true;
     }
-    _logout() {
+    protected _logout() {
         localStorage.clear();
         sessionStorage.clear();
         this._changeRoute('/login');
     }
-    _onSearch(e: any) {
+    protected _onSearch(e: any) {
         this.set('search.query', e.target.query.trim());
         this._changeRoute('/search');
     }
-    _onFilter() {
-        (<any>this.$.filterDialog).open();
+    protected _onFilter() {
+        (this.$.filterDialog as any).open();
     }
-    _onHomeLinkClicked(e: CustomEvent) {
+    protected _onHomeLinkClicked(e: CustomEvent) {
         this.set('search.query', '');
         this.set('search.fields', []);
         this.set('search.tags', e.detail.tags);
         this._changeRoute('/search');
     }
-    _handleGetAppConfigurationResponse(e: CustomEvent) {
+    protected _handleGetAppConfigurationResponse(e: CustomEvent) {
         this.title = e.detail.response.title;
     }
-    _handleGetTagsResponse(e: CustomEvent) {
-        let tags = e.detail.response;
+    protected _handleGetTagsResponse(e: CustomEvent) {
+        const tags = e.detail.response;
 
-        let filters = <any>[];
+        const filters: any[] = [];
 
-        let fieldFilter = {id: 'fields', name: 'Search Fields', values: <any>[]};
+        const fieldFilter = {id: 'fields', name: 'Search Fields', values: [] as any[]};
         fieldFilter.values.push({id: 'name', name: 'Name'});
         fieldFilter.values.push({id: 'ingredients', name: 'Ingredients'});
         fieldFilter.values.push({id: 'directions', name: 'Directions'});
         filters.push(fieldFilter);
 
-        let tagFilter = {id: 'tags', name: 'Tags', values: <any>[]};
+        const tagFilter = {id: 'tags', name: 'Tags', values: [] as any[]};
         filters.push(tagFilter);
         if (tags) {
-            tags.forEach(function(tag: string) {
+            tags.forEach((tag: string) => {
                 tagFilter.values.push({id: tag, name: tag});
             });
         }
 
         this.searchFilters = filters;
     }
-    _searchFiltersChanged() {
+    protected _searchFiltersChanged() {
         if (this.selectedSearchFilters.fields) {
             this.set('search.fields', this.selectedSearchFilters.fields);
         } else {
@@ -432,13 +432,13 @@ export class GompApp extends PolymerElement {
         }
         this._changeRoute('/search');
     }
-    _searchFieldsChanged(fields: string[]) {
+    protected _searchFieldsChanged(fields: string[]) {
         if (!this.selectedSearchFilters) {
             this.selectedSearchFilters = {};
         }
         this.set('selectedSearchFilters.fields', fields);
     }
-    _searchTagsChanged(tags: string[]) {
+    protected _searchTagsChanged(tags: string[]) {
         if (!this.selectedSearchFilters) {
             this.selectedSearchFilters = {};
         }
@@ -447,9 +447,9 @@ export class GompApp extends PolymerElement {
         this.selectedSearchFiltersCount = tags.length;
     }
 
-    _recipesModified() {
+    protected _recipesModified() {
         // Use any, and not the real type, since we're using PRPL and don't want to import this staticly
-        let searchView = <any>this.$.searchView;
+        const searchView = this.$.searchView as any;
         if (searchView.refresh) {
             searchView.refresh();
         }
