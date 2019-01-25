@@ -124,8 +124,8 @@ export class RecipeDisplay extends GompBaseElement {
     @property({type: String})
     public recipeId = '';
 
-    protected recipe: Object|null = null;
-    protected mainImage: Object|null = null;
+    protected recipe: object|null = null;
+    protected mainImage: object|null = null;
     protected links: any[] = [];
 
     private get confirmDeleteLinkDialog(): ConfirmationDialog {

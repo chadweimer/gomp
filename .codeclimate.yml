@@ -4,6 +4,8 @@ checks:
     enabled: false
   method-lines:
     enabled: false
+  method-count:
+    enabled: false
 plugins:
   duplication:
     enabled: true
