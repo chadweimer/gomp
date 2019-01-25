@@ -49,46 +49,71 @@ export class RecipeEdit extends GompBaseElement {
                   <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
               </div>
               <div class="card-actions">
-                  <paper-button on-click="_onCancelButtonClicked">Cancel</paper-button>
-                  <paper-button on-click="_onSaveButtonClicked">Save</paper-button>
+                  <paper-button on-click="onCancelButtonClicked">Cancel</paper-button>
+                  <paper-button on-click="onSaveButtonClicked">Save</paper-button>
               </div>
           </paper-card>
           <paper-dialog id="uploadingDialog" with-backdrop="">
               <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
           </paper-dialog>
 
-          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="_handleGetRecipeRequest" on-response="_handleGetRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="_handlePutRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="postAjax" url="/api/v1/recipes" method="POST" on-response="_handlePostRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="_handleAddImageRequest" on-response="_handleAddImageResponse" ,="" on-error="_handleAddImageResponse"></iron-ajax>
+          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="handlePutRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="postAjax" url="/api/v1/recipes" method="POST" on-response="handlePostRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" ,="" on-error="handleAddImageResponse"></iron-ajax>
 `;
     }
 
     @property({type: String})
-    recipeId: string|null = null;
+    public recipeId: string|null = null;
 
-    newRecipeId = NaN;
-    recipe: object|null = null;
+    protected newRecipeId = NaN;
+    protected recipe: object|null = null;
 
-    ready() {
+    private get tagsInput(): TagInput {
+        return this.$.tagsInput as TagInput;
+    }
+    private get mainImage(): HTMLInputElement {
+        return this.$.mainImage as HTMLInputElement;
+    }
+    private get mainImageForm(): HTMLFormElement {
+        return this.$.mainImageForm as HTMLFormElement;
+    }
+    private get uploadingDialog(): PaperDialogElement {
+        return this.$.uploadingDialog as PaperDialogElement;
+    }
+    private get getAjax(): IronAjaxElement {
+        return this.$.getAjax as IronAjaxElement;
+    }
+    private get putAjax(): IronAjaxElement {
+        return this.$.putAjax as IronAjaxElement;
+    }
+    private get postAjax(): IronAjaxElement {
+        return this.$.postAjax as IronAjaxElement;
+    }
+    private get addImageAjax(): IronAjaxElement {
+        return this.$.addImageAjax as IronAjaxElement;
+    }
+
+    public ready() {
         super.ready();
 
         if (this.isActive) {
-            (<TagInput>this.$.tagsInput).refresh();
+            this.tagsInput.refresh();
         }
     }
-    refresh() {
+    public refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        (<IronAjaxElement>this.$.getAjax).generateRequest();
-        (<TagInput>this.$.tagsInput).refresh();
+        this.getAjax.generateRequest();
+        this.tagsInput.refresh();
     }
 
-    _isActiveChanged(isActive: Boolean) {
+    protected isActiveChanged(isActive: boolean) {
         this.newRecipeId = NaN;
-        (<HTMLInputElement>this.$.mainImage).value = '';
+        this.mainImage.value = '';
         if (!this.recipeId) {
             this.recipe = {
                 name: '',
@@ -101,61 +126,58 @@ export class RecipeEdit extends GompBaseElement {
             };
         }
         if (isActive && this.isReady) {
-            (<TagInput>this.$.tagsInput).refresh();
+            this.tagsInput.refresh();
         }
     }
-    _onCancelButtonClicked() {
+    protected onCancelButtonClicked() {
         this.dispatchEvent(new CustomEvent('recipe-edit-cancel'));
     }
-    _onSaveButtonClicked() {
+    protected onSaveButtonClicked() {
         if (this.recipeId) {
-            let putAjax = this.$.putAjax as IronAjaxElement;
-            putAjax.body = <any>JSON.stringify(this.recipe);
-            putAjax.generateRequest();
+            this.putAjax.body = JSON.stringify(this.recipe) as any;
+            this.putAjax.generateRequest();
         } else {
-            let postAjax = this.$.postAjax as IronAjaxElement;
-            postAjax.body = <any>JSON.stringify(this.recipe);
-            postAjax.generateRequest();
+            this.postAjax.body = JSON.stringify(this.recipe) as any;
+            this.postAjax.generateRequest();
         }
     }
-    _handleGetRecipeRequest() {
+    protected handleGetRecipeRequest() {
         if (this.recipeId) {
             this.recipe = null;
         }
     }
-    _handleGetRecipeResponse(e: CustomEvent) {
+    protected handleGetRecipeResponse(e: CustomEvent) {
         this.recipe = e.detail.response;
     }
-    _handlePutRecipeResponse() {
-        this._onSaveComplete();
+    protected handlePutRecipeResponse() {
+        this.onSaveComplete();
     }
-    _handlePostRecipeResponse(e: CustomEvent) {
-        var temp = document.createElement('a');
+    protected handlePostRecipeResponse(e: CustomEvent) {
+        const temp = document.createElement('a');
         temp.href = e.detail.xhr.getResponseHeader('Location');
-        var path = temp.pathname;
+        const path = temp.pathname;
 
         this.newRecipeId = NaN;
-        var newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
+        const newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
         if (newRecipeIdMatch) {
             this.newRecipeId = parseInt(newRecipeIdMatch[1], 10);
         }
 
-        if ((<HTMLInputElement>this.$.mainImage).value) {
-            let addImageAjax = this.$.addImageAjax as IronAjaxElement;
-            addImageAjax.body = new FormData(<HTMLFormElement>this.$.mainImageForm);
-            addImageAjax.generateRequest();
+        if (this.mainImage.value) {
+            this.addImageAjax.body = new FormData(this.mainImageForm);
+            this.addImageAjax.generateRequest();
         } else {
-            this._onSaveComplete();
+            this.onSaveComplete();
         }
     }
-    _handleAddImageRequest() {
-        (<PaperDialogElement>this.$.uploadingDialog).open();
+    protected handleAddImageRequest() {
+        this.uploadingDialog.open();
     }
-    _handleAddImageResponse() {
-        (<PaperDialogElement>this.$.uploadingDialog).close();
-        this._onSaveComplete();
+    protected handleAddImageResponse() {
+        this.uploadingDialog.close();
+        this.onSaveComplete();
     }
-    _onSaveComplete() {
+    protected onSaveComplete() {
         this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId} : null}));
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }

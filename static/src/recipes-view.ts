@@ -115,7 +115,7 @@ export class RecipesView extends GompBaseElement {
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]"></recipe-display>
                     <div class="tab-container">
                         <div id="images" class="tab">
-                            <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="_refreshMainImage" on-image-deleted="_refreshMainImage" on-main-image-changed="_refreshMainImage"></image-list>
+                            <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage"></image-list>
                         </div>
                         <div id="notes" class="tab">
                             <note-list id="noteList" recipe-id="[[recipeId]]"></note-list>
@@ -124,46 +124,71 @@ export class RecipesView extends GompBaseElement {
                 </div>
                 <div hidden\$="[[!editing]]">
                     <h4>Edit Recipe</h4>
-                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="_editCanceled" on-recipe-edit-save="_editSaved"></recipe-edit>
+                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
                 </div>
             </div>
             <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
-                <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="_onNewButtonClicked">New</paper-fab-speed-dial-action></a>
-                <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="_onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="_onEditButtonClicked">Edit</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="_onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="_onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-click="_onAddNoteButtonClicked">Add Note</paper-fab-speed-dial-action>
+                <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
+                <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-click="onAddNoteButtonClicked">Add Note</paper-fab-speed-dial-action>
             </paper-fab-speed-dial>
 
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="_deleteRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
-            <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="_onLinkAdded"></recipe-link-dialog>
+            <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
 
-            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="_handleDeleteRecipeResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
 `;
     }
 
     @property({type: Object, notify: true})
-    route: object = {};
+    public route: object = {};
     @property({type: String, notify: true})
-    recipeId = '';
+    public recipeId = '';
     @property({type: Boolean, notify: true})
-    editing = false;
+    public editing = false;
+
+    private get recipeDisplay(): RecipeDisplay {
+        return this.$.recipeDisplay as RecipeDisplay;
+    }
+    private get imageList(): ImageList {
+        return this.$.imageList as ImageList;
+    }
+    private get noteList(): NoteList {
+        return this.$.noteList as NoteList;
+    }
+    private get recipeEdit(): RecipeEdit {
+        return this.$.recipeEdit as RecipeEdit;
+    }
+    private get confirmDeleteDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteDialog as ConfirmationDialog;
+    }
+    private get recipeLinkDialog(): RecipeLinkDialog {
+        return this.$.recipeLinkDialog as RecipeLinkDialog;
+    }
+    private get actions(): any {
+        return this.$.actions as any;
+    }
+    private get deleteAjax(): IronAjaxElement {
+        return this.$.deleteAjax as IronAjaxElement;
+    }
 
     static get observers() {
         return [
-            '_recipeIdChanged(routeData.recipeId)',
+            'recipeIdChanged(routeData.recipeId)',
         ];
     }
 
-    refresh() {
-        (<RecipeDisplay>this.$.recipeDisplay).refresh(null);
-        (<ImageList>this.$.imageList).refresh();
-        (<NoteList>this.$.noteList).refresh();
+    public refresh() {
+        this.recipeDisplay.refresh(null);
+        this.imageList.refresh();
+        this.noteList.refresh();
     }
 
-    _isActiveChanged(isActive: boolean) {
+    protected isActiveChanged(isActive: boolean) {
         // Always exit edit mode when we change screens
         this.editing = false;
 
@@ -171,52 +196,52 @@ export class RecipesView extends GompBaseElement {
             this.refresh();
         }
     }
-    _recipeIdChanged(recipeId: string) {
+    protected recipeIdChanged(recipeId: string) {
         this.recipeId = recipeId;
     }
-    _onNewButtonClicked() {
-        (<any>this.$.actions).close();
+    protected onNewButtonClicked() {
+        this.actions.close();
     }
-    _onDeleteButtonClicked() {
-        (<ConfirmationDialog>this.$.confirmDeleteDialog).open();
-        (<any>this.$.actions).close();
+    protected onDeleteButtonClicked() {
+        this.confirmDeleteDialog.open();
+        this.actions.close();
     }
-    _deleteRecipe() {
-        (<IronAjaxElement>this.$.deleteAjax).generateRequest();
+    protected deleteRecipe() {
+        this.deleteAjax.generateRequest();
     }
-    _onEditButtonClicked() {
-        (<any>this.$.actions).close();
-        (<RecipeEdit>this.$.recipeEdit).refresh();
+    protected onEditButtonClicked() {
+        this.actions.close();
+        this.recipeEdit.refresh();
         this.editing = true;
     }
-    _editCanceled() {
+    protected editCanceled() {
         this.editing = false;
         this.refresh();
     }
-    _editSaved() {
+    protected editSaved() {
         this.editing = false;
         this.refresh();
     }
-    _onAddLinkButtonClicked() {
-        (<RecipeLinkDialog>this.$.recipeLinkDialog).open();
-        (<any>this.$.actions).close();
+    protected onAddLinkButtonClicked() {
+        this.recipeLinkDialog.open();
+        this.actions.close();
     }
-    _onAddImageButtonClicked() {
-        (<any>this.$.actions).close();
-        (<ImageList>this.$.imageList).add();
+    protected onAddImageButtonClicked() {
+        this.actions.close();
+        this.imageList.add();
     }
-    _onAddNoteButtonClicked() {
-        (<any>this.$.actions).close();
-        (<NoteList>this.$.noteList).add();
+    protected onAddNoteButtonClicked() {
+        this.actions.close();
+        this.noteList.add();
     }
-    _refreshMainImage() {
-        (<RecipeDisplay>this.$.recipeDisplay).refresh({mainImage: true});
+    protected refreshMainImage() {
+        this.recipeDisplay.refresh({mainImage: true});
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
-    _onLinkAdded() {
-        (<RecipeDisplay>this.$.recipeDisplay).refresh({links: true});
+    protected onLinkAdded() {
+        this.recipeDisplay.refresh({links: true});
     }
-    _handleDeleteRecipeResponse() {
+    protected handleDeleteRecipeResponse() {
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
     }

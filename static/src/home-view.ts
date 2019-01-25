@@ -54,45 +54,56 @@ export class HomeView extends GompBaseElement {
 
           <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-          <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="_handleGetUserSettingsResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
 `;
     }
 
     @property({type: String, notify: true})
-    title = '';
+    public title = '';
     @property({type: String, notify: true})
-    image = '';
+    public image = '';
 
-    ready() {
+    private get lists(): HomeList[] {
+        return [
+            this.$.allRecipes as HomeList,
+            this.$.beefRecipes as HomeList,
+            this.$.poultryRecipes as HomeList,
+            this.$.porkRecipes as HomeList,
+            this.$.seafoodRecipes as HomeList,
+            this.$.pastaRecipes as HomeList,
+            this.$.vegetarianRecipes as HomeList,
+            this.$.sideRecipes as HomeList,
+            this.$.drinkRecipes as HomeList,
+        ];
+    }
+    private get userSettingsAjax(): IronAjaxElement {
+        return this.$.userSettingsAjax as IronAjaxElement;
+    }
+
+    public ready() {
         super.ready();
 
         if (this.isActive) {
-            this._refresh();
+            this.refresh();
         }
     }
 
-    _isActiveChanged(isActive: boolean) {
+    protected isActiveChanged(isActive: boolean) {
         if (isActive && this.isReady) {
-            this._refresh();
+            this.refresh();
         }
     }
-    _handleGetUserSettingsResponse(e: CustomEvent) {
-        var userSettings = e.detail.response;
+    protected handleGetUserSettingsResponse(e: CustomEvent) {
+        const userSettings = e.detail.response;
 
         this.title = userSettings.homeTitle;
         this.image = userSettings.homeImageUrl;
     }
 
-    _refresh() {
-        (<HomeList>this.$.allRecipes).refresh();
-        (<HomeList>this.$.beefRecipes).refresh();
-        (<HomeList>this.$.poultryRecipes).refresh();
-        (<HomeList>this.$.porkRecipes).refresh();
-        (<HomeList>this.$.seafoodRecipes).refresh();
-        (<HomeList>this.$.pastaRecipes).refresh();
-        (<HomeList>this.$.vegetarianRecipes).refresh();
-        (<HomeList>this.$.sideRecipes).refresh();
-        (<HomeList>this.$.drinkRecipes).refresh();
-        (<IronAjaxElement>this.$.userSettingsAjax).generateRequest();
+    protected refresh() {
+        this.lists.forEach((list) => {
+            list.refresh();
+        });
+        this.userSettingsAjax.generateRequest();
     }
 }

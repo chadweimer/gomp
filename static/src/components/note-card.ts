@@ -78,57 +78,64 @@ export class NoteCard extends GompBaseElement {
               <div class="card-content">
                   <div class="note-header">
                       <iron-icon icon="communication:comment"></iron-icon>
-                      <span class="date">[[_formatDate(note.createdAt)]]</span>
+                      <span class="date">[[formatDate(note.createdAt)]]</span>
                       <paper-menu-button id="noteMenu" horizontal-align="right">
                           <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                           <paper-listbox slot="dropdown-content">
-                              <paper-icon-item on-click="_onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                              <paper-icon-item on-click="_onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                              <paper-icon-item on-click="onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
+                              <paper-icon-item on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                           </paper-listbox>
                       </paper-menu-button>
                   </div>
                   <paper-divider></paper-divider>
                   <p class="note-content">[[note.text]]</p>
-                  <paper-divider hidden\$="[[!_showModifiedDate(note)]]"></paper-divider>
-                  <div id="modified-date" class="note-footer" hidden\$="[[!_showModifiedDate(note)]]">
-                      <span class="date">[[_formatDate(note.modifiedAt)]]</span>
+                  <paper-divider hidden\$="[[!showModifiedDate(note)]]"></paper-divider>
+                  <div id="modified-date" class="note-footer" hidden\$="[[!showModifiedDate(note)]]">
+                      <span class="date">[[formatDate(note.modifiedAt)]]</span>
                   </div>
               </div>
           </paper-card>
 
-          <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="_deleteNote"></confirmation-dialog>
+          <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
 
-          <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="_handleDeleteResponse" on-error="_handleDeleteError"></iron-ajax>
+          <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 
     @property({type: Object, notify: true})
-    note: Object|null = null;
+    public note: object|null = null;
 
-    _onEditClicked(e: any) {
+    private get confirmDeleteDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteDialog as ConfirmationDialog;
+    }
+    private get deleteAjax(): IronAjaxElement {
+        return this.$.deleteAjax as IronAjaxElement;
+    }
+
+    protected onEditClicked(e: any) {
         e.target.closest('#noteMenu').close();
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
-    _onDeleteClicked(e: any) {
+    protected onDeleteClicked(e: any) {
         e.target.closest('#noteMenu').close();
-        (<ConfirmationDialog>this.$.confirmDeleteDialog).open();
+        this.confirmDeleteDialog.open();
     }
-    _deleteNote() {
-        (<IronAjaxElement>this.$.deleteAjax).generateRequest();
+    protected deleteNote() {
+        this.deleteAjax.generateRequest();
     }
 
-    _formatDate(dateStr: string) {
+    protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleString();
     }
-    _showModifiedDate(note: any) {
+    protected showModifiedDate(note: any) {
         return note.modifiedAt !== note.createdAt;
     }
 
-    _handleDeleteResponse() {
+    protected handleDeleteResponse() {
         this.dispatchEvent(new CustomEvent('note-card-deleted'));
         this.showToast('Note deleted.');
     }
-    _handleDeleteError() {
+    protected handleDeleteError() {
         this.showToast('Deleting note failed!');
     }
 }

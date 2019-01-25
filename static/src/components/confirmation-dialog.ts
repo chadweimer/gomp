@@ -20,14 +20,14 @@ export class ConfirmationDialog extends PolymerElement {
                     display: none !important;
                 }
                 h3 {
-                    color: var(--confirmation-dialog-title-color, --paper-blue-500);
+                    color: var(--confirmation-dialog-title-color, var(--paper-blue-500));
                 }
                 h3 > span {
                     padding-left: 0.25em;
                 }
             </style>
 
-            <paper-dialog id="dialog" with-backdrop="" on-iron-overlay-closed="_onDialogClosed">
+            <paper-dialog id="dialog" with-backdrop="" on-iron-overlay-closed="onDialogClosed">
                 <h3><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h3>
                 <p>[[message]]</p>
                 <div class="buttons">
@@ -39,18 +39,21 @@ export class ConfirmationDialog extends PolymerElement {
     }
 
     @property({type: String})
-    icon = 'help';
+    public icon = 'help';
     @property({type: String})
-    title = 'Are you sure?';
+    public title = 'Are you sure?';
     @property({type: String})
-    message = 'Are you sure you want to perform the requested operation?';
+    public message = 'Are you sure you want to perform the requested operation?';
 
-    open() {
-        let dialog = this.$.dialog as PaperDialogElement;
-        dialog.open();
+    private get dialog(): PaperDialogElement {
+        return this.$.dialog as PaperDialogElement;
     }
 
-    _onDialogClosed(e: CustomEvent) {
+    public open() {
+        this.dialog.open();
+    }
+
+    protected onDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
             this.dispatchEvent(new CustomEvent('confirmed'));
         } else {

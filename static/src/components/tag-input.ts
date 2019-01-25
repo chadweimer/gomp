@@ -45,40 +45,43 @@ export class TagInput extends GompBaseElement {
                     <label slot="label">Suggested Tags</label>
                     <div slot="prefix">
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-click="_onSuggestedTagClicked" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                            <paper-chip on-click="onSuggestedTagClicked" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
                         </template>
                     </div>
                     <input type="hidden" slot="input">
                 </paper-input-container>
 
-            <iron-ajax bubbles="" id="getSuggestedTagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;frequency&quot;, &quot;dir&quot;: &quot;desc&quot;, &quot;count&quot;: 12}" on-request="_handleGetSuggestedTagsRequest" on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="getSuggestedTagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;frequency&quot;, &quot;dir&quot;: &quot;desc&quot;, &quot;count&quot;: 12}" on-request="handleGetSuggestedTagsRequest" on-response="handleGetSuggestedTagsResponse"></iron-ajax>
 `;
     }
 
     @property({type: Array, notify: true})
-    tags = [];
+    public tags = [];
 
-    suggestedTags: string[] = [];
+    protected suggestedTags: string[] = [];
 
-    refresh() {
-        let getSuggestedTagsAjax = this.$.getSuggestedTagsAjax as IronAjaxElement;
-        getSuggestedTagsAjax.generateRequest();
+    private get getSuggestedTagsAjax(): IronAjaxElement {
+        return this.$.getSuggestedTagsAjax as IronAjaxElement;
     }
 
-    _onSuggestedTagClicked(e: any) {
-        let tagsElement = this.$.tags as any;
+    public refresh() {
+        this.getSuggestedTagsAjax.generateRequest();
+    }
+
+    protected onSuggestedTagClicked(e: any) {
+        const tagsElement = this.$.tags as any;
         tagsElement.add(e.model.item);
 
         // Remove the tag from the suggestion list
-        var suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
+        const suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
         if (suggestedTagIndex > -1) {
             this.splice('suggestedTags', suggestedTagIndex, 1);
         }
     }
-    _handleGetSuggestedTagsRequest() {
+    protected handleGetSuggestedTagsRequest() {
         this.suggestedTags = [];
     }
-    _handleGetSuggestedTagsResponse(e: any) {
+    protected handleGetSuggestedTagsResponse(e: any) {
         this.suggestedTags = e.detail.response;
     }
 }

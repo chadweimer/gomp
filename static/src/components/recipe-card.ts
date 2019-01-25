@@ -58,5 +58,5 @@ export class RecipeCard extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    recipe: Object|null = null;
+    public recipe: object|null = null;
 }

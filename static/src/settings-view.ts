@@ -68,12 +68,12 @@ export class SettingsView extends GompBaseElement {
                   <div class="card-content">
                       <h3>Security Settings</h3>
                       <paper-input label="Username" value="[[username]]" always-float-label="" disabled=""></paper-input>
-                      <paper-password-input label="Current Password" value="{{_currentPassword}}" always-float-label=""></paper-password-input>
-                      <paper-password-input label="New Password" value="{{_newPassword}}" always-float-label=""></paper-password-input>
-                      <paper-password-input label="Confirm Password" value="{{_repeatPassword}}" always-float-label=""></paper-password-input>
+                      <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
+                      <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
+                      <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
                   </div>
                   <div class="card-actions">
-                      <paper-button on-click="_onUpdatePasswordClicked">
+                      <paper-button on-click="onUpdatePasswordClicked">
                           <iron-icon icon="icons:lock-outline"></iron-icon>
                           <span>Update Password</span>
                       <paper-button>
@@ -84,8 +84,8 @@ export class SettingsView extends GompBaseElement {
               <paper-card>
                   <div class="card-content">
                       <h3>Home Settings</h3>
-                      <paper-input label="Title" always-float-label="" value="{{_homeTitle}}">
-                          <paper-icon-button slot="suffix" icon="icons:save" on-click="_onSaveButtonClicked"></paper-icon-button>
+                      <paper-input label="Title" always-float-label="" value="{{homeTitle}}">
+                          <paper-icon-button slot="suffix" icon="icons:save" on-click="onSaveButtonClicked"></paper-icon-button>
                       </paper-input>
                       <form id="homeImageForm" enctype="multipart/form-data">
                           <paper-input-container always-float-label="">
@@ -93,10 +93,10 @@ export class SettingsView extends GompBaseElement {
                               <iron-input slot="input">
                                   <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
                               </iron-input>
-                              <paper-icon-button slot="suffix" icon="icons:file-upload" on-click="_onUploadButtonClicked"></paper-icon-button>
+                              <paper-icon-button slot="suffix" icon="icons:file-upload" on-click="onUploadButtonClicked"></paper-icon-button>
                             </paper-input-container>
                       </form>
-                      <img alt="Home Image" src="[[_homeImageUrl]]" class="responsive" hidden\$="[[!_homeImageUrl]]">
+                      <img alt="Home Image" src="[[homeImageUrl]]" class="responsive" hidden\$="[[!homeImageUrl]]">
                   </div>
               </paper-card>
           </div>
@@ -106,116 +106,137 @@ export class SettingsView extends GompBaseElement {
 
           <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-          <iron-ajax bubbles="" id="getUserAjax" url="/api/v1/users/current" on-response="_handleGetUserResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="_handlePutPasswordResponse" ,="" on-error="_handlePutPasswordError"></iron-ajax>
-          <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="_handleGetSettingsResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="_handlePutSettingsResponse" ,="" on-error="_handlePutSettingsError"></iron-ajax>
-          <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="_handlePostImageRequest" on-response="_handlePostImageResponse" ,="" on-error="_handlePostImageError"></iron-ajax>
+          <iron-ajax bubbles="" id="getUserAjax" url="/api/v1/users/current" on-response="handleGetUserResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" ,="" on-error="handlePutPasswordError"></iron-ajax>
+          <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" ,="" on-error="handlePutSettingsError"></iron-ajax>
+          <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" ,="" on-error="handlePostImageError"></iron-ajax>
 `;
     }
 
     @property({type: String})
-    username = '';
+    public username = '';
 
-    private _currentPassword = '';
-    private _newPassword = '';
-    private _repeatPassword = '';
-    private _homeTitle = '';
-    private _homeImageUrl = '';
+    private currentPassword = '';
+    private newPassword = '';
+    private repeatPassword = '';
+    private homeTitle = '';
+    private homeImageUrl = '';
 
-    ready() {
+    private get homeImageForm(): HTMLFormElement {
+        return this.$.homeImageForm as HTMLFormElement;
+    }
+    private get homeImageFile(): HTMLInputElement {
+        return this.$.homeImageFile as HTMLInputElement;
+    }
+    private get uploadingDialog(): PaperDialogElement {
+        return this.$.uploadingDialog as PaperDialogElement;
+    }
+    private get getUserAjax(): IronAjaxElement {
+        return this.$.getUserAjax as IronAjaxElement;
+    }
+    private get getSettingsAjax(): IronAjaxElement {
+        return this.$.getSettingsAjax as IronAjaxElement;
+    }
+    private get putPasswordAjax(): IronAjaxElement {
+        return this.$.putPasswordAjax as IronAjaxElement;
+    }
+    private get putSettingsAjax(): IronAjaxElement {
+        return this.$.putSettingsAjax as IronAjaxElement;
+    }
+    private get postImageAjax(): IronAjaxElement {
+        return this.$.postImageAjax as IronAjaxElement;
+    }
+
+    public ready() {
         super.ready();
 
         if (this.isActive) {
-            this._refresh();
+            this.refresh();
         }
     }
 
-    _onUpdatePasswordClicked() {
-        if (this._newPassword !== this._repeatPassword) {
+    protected onUpdatePasswordClicked() {
+        if (this.newPassword !== this.repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
         }
 
-        let putPasswordAjax = this.$.putPasswordAjax as IronAjaxElement;
-        putPasswordAjax.body = <any>JSON.stringify({
-            'currentPassword': this._currentPassword,
-            'newPassword': this._newPassword
-        });
-        putPasswordAjax.generateRequest();
+        this.putPasswordAjax.body = JSON.stringify({
+            currentPassword: this.currentPassword,
+            newPassword: this.newPassword,
+        }) as any;
+        this.putPasswordAjax.generateRequest();
     }
-    _onSaveButtonClicked() {
-        let putSettingsAjax = this.$.putSettingsAjax as IronAjaxElement;
-        putSettingsAjax.body = <any>JSON.stringify({
-            'homeTitle': this._homeTitle,
-            'homeImageUrl': this._homeImageUrl,
-        });
-        putSettingsAjax.generateRequest();
+    protected onSaveButtonClicked() {
+        this.putSettingsAjax.body = JSON.stringify({
+            homeTitle: this.homeTitle,
+            homeImageUrl: this.homeImageUrl,
+        }) as any;
+        this.putSettingsAjax.generateRequest();
     }
-    _onUploadButtonClicked() {
-        let postImageAjax = this.$.postImageAjax as IronAjaxElement;
-        postImageAjax.body = new FormData(<HTMLFormElement>this.$.homeImageForm);
-        postImageAjax.generateRequest();
+    protected onUploadButtonClicked() {
+        this.postImageAjax.body = new FormData(this.homeImageForm);
+        this.postImageAjax.generateRequest();
     }
 
-    _isActiveChanged(isActive: Boolean) {
-        (<HTMLInputElement>this.$.homeImageFile).value = '';
-        this._currentPassword = '';
-        this._newPassword = '';
-        this._repeatPassword = '';
+    protected isActiveChanged(isActive: boolean) {
+        this.homeImageFile.value = '';
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.repeatPassword = '';
 
         if (isActive && this.isReady) {
-            this._refresh();
+            this.refresh();
         }
     }
 
-    _handleGetUserResponse(e: CustomEvent) {
-        var user = e.detail.response;
+    protected handleGetUserResponse(e: CustomEvent) {
+        const user = e.detail.response;
 
         this.username = user.username;
     }
-    _handlePutPasswordResponse() {
+    protected handlePutPasswordResponse() {
         this.showToast('Password updated.');
     }
-    _handlePutPasswordError() {
+    protected handlePutPasswordError() {
         this.showToast('Password update failed!');
     }
-    _handleGetSettingsResponse(e: CustomEvent) {
-        var userSettings = e.detail.response;
+    protected handleGetSettingsResponse(e: CustomEvent) {
+        const userSettings = e.detail.response;
 
-        this._homeTitle = userSettings.homeTitle;
-        this._homeImageUrl = userSettings.homeImageUrl;
+        this.homeTitle = userSettings.homeTitle;
+        this.homeImageUrl = userSettings.homeImageUrl;
     }
-    _handlePutSettingsResponse() {
-        this._refresh();
+    protected handlePutSettingsResponse() {
+        this.refresh();
         this.showToast('Settings changed.');
     }
-    _handlePutSettingsError() {
+    protected handlePutSettingsError() {
         this.showToast('Updating settings failed!');
     }
-    _handlePostImageRequest() {
-        (<PaperDialogElement>this.$.uploadingDialog).open();
+    protected handlePostImageRequest() {
+        this.uploadingDialog.open();
     }
-    _handlePostImageResponse(_e: CustomEvent, req: any) {
-        (<PaperDialogElement>this.$.uploadingDialog).close();
-        (<HTMLInputElement>this.$.homeImageFile).value = '';
+    protected handlePostImageResponse(_: CustomEvent, req: any) {
+        this.uploadingDialog.close();
+        this.homeImageFile.value = '';
         this.showToast('Upload complete.');
 
-        var location = req.xhr.getResponseHeader('Location');
-        let putSettingsAjax = this.$.putSettingsAjax as IronAjaxElement;
-        putSettingsAjax.body = <any>JSON.stringify({
-            'homeTitle': this._homeTitle,
-            'homeImageUrl': location,
-        });
-        putSettingsAjax.generateRequest();
+        const location = req.xhr.getResponseHeader('Location');
+        this.putSettingsAjax.body = JSON.stringify({
+            homeTitle: this.homeTitle,
+            homeImageUrl: location,
+        }) as any;
+        this.putSettingsAjax.generateRequest();
     }
-    _handlePostImageError() {
-        (<PaperDialogElement>this.$.uploadingDialog).close();
+    protected handlePostImageError() {
+        this.uploadingDialog.close();
         this.showToast('Upload failed!');
     }
 
-    _refresh() {
-        (<IronAjaxElement>this.$.getUserAjax).generateRequest();
-        (<IronAjaxElement>this.$.getSettingsAjax).generateRequest();
+    protected refresh() {
+        this.getUserAjax.generateRequest();
+        this.getSettingsAjax.generateRequest();
     }
 }

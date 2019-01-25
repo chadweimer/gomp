@@ -89,24 +89,32 @@ export class HomeList extends GompBaseElement {
                         </div>
                     </template>
                 </div>
-                <a class="right" href="#!" on-click="_onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
+                <a class="right" href="#!" on-click="onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
             </article>
 
-            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="_handleGetRecipesRequest" on-response="_handleGetRecipesResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
 `;
     }
 
     @property({type: String, notify: true})
-    title = 'Recipes';
-    @property({type: Array, notify: true, observer: '_tagsChanged'})
-    tags = [];
+    public title = 'Recipes';
+    @property({type: Array, notify: true, observer: 'tagsChanged'})
+    public tags = [];
 
-    total = 0;
-    recipes = [];
+    protected total = 0;
+    protected recipes = [];
 
-    _tagsChanged() {
-        (<IronAjaxElement>this.$.recipesAjax).params = {
-            'q':'',
+    private get recipesAjax(): IronAjaxElement {
+        return this.$.recipesAjax as IronAjaxElement;
+    }
+
+    public refresh() {
+        this.recipesAjax.generateRequest();
+    }
+
+    protected tagsChanged() {
+        this.recipesAjax.params = {
+            'q': '',
             'tags[]': this.tags,
             'sort': 'random',
             'dir': 'asc',
@@ -114,19 +122,15 @@ export class HomeList extends GompBaseElement {
             'count': 6,
         };
     }
-
-    refresh() {
-        (<IronAjaxElement>this.$.recipesAjax).generateRequest();
-    }
-    _handleGetRecipesRequest() {
+    protected handleGetRecipesRequest() {
         this.total = 0;
         this.recipes = [];
     }
-    _handleGetRecipesResponse(e: CustomEvent) {
+    protected handleGetRecipesResponse(e: CustomEvent) {
         this.total = e.detail.response.total;
         this.recipes = e.detail.response.recipes;
     }
-    _onLinkClicked(e: Event) {
+    protected onLinkClicked(e: Event) {
         // Don't nativate to "#!"
         e.preventDefault();
 

@@ -34,4 +34,3 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
 </dom-module>`;
 
 document.head.appendChild($documentContainer.content);
-

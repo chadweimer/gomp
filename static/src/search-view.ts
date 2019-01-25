@@ -129,21 +129,21 @@ export class SearchView extends GompBaseElement {
 
                   <label class="menu-label">View</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
-                      <paper-icon-item name="full" on-click="_onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
-                      <paper-icon-item name="compact" on-click="_onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
+                      <paper-icon-item name="full" on-click="onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
+                      <paper-icon-item name="compact" on-click="onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                   </paper-listbox>
                   <paper-divider></paper-divider>
                   <label class="menu-label">Sort</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
-                      <paper-icon-item name="name" on-click="_onNameSortClicked"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
-                      <paper-icon-item name="rating" on-click="_onRatingSortClicked"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
-                      <paper-icon-item name="random" on-click="_onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
+                      <paper-icon-item name="name" on-click="onNameSortClicked"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
+                      <paper-icon-item name="rating" on-click="onRatingSortClicked"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
+                      <paper-icon-item name="random" on-click="onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
                   </paper-icon-item></paper-icon-item></paper-listbox>
                   <paper-divider></paper-divider>
                   <label class="menu-label">Order</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">
-                      <paper-icon-item name="asc" on-click="_onAscSortClicked"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
-                      <paper-icon-item name="desc" on-click="_onDescSortClicked"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
+                      <paper-icon-item name="asc" on-click="onAscSortClicked"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
+                      <paper-icon-item name="desc" on-click="onDescSortClicked"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
                   </paper-listbox>
               </app-drawer>
 
@@ -156,15 +156,15 @@ export class SearchView extends GompBaseElement {
                       <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                   </div>
                   <div class="outterContainer">
-                      <template is="dom-if" if="[[_areEqual(searchSettings.viewMode, 'full')]]" restamp="">
+                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
                           <template is="dom-repeat" items="[[recipes]]">
                               <div class="recipeContainer">
                                   <recipe-card recipe="[[item]]"></recipe-card>
                               </div>
                           </template>
                       </template>
-                      <template is="dom-if" if="[[_areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
-                          <template is="dom-repeat" items="[[_columnize(recipes, 3)]]" as="inner">
+                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                          <template is="dom-repeat" items="[[columnize(recipes, 3)]]" as="inner">
                               <div class="recipeContainer">
                                   <template is="dom-repeat" items="[[inner]]" as="recipe">
                                       <a href="/recipes/[[recipe.id]]">
@@ -191,121 +191,128 @@ export class SearchView extends GompBaseElement {
           </app-drawer-layout>
 
           <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
-          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-request="_handleGetRecipesRequest" on-response="_handleGetRecipesResponse" on-error="_handleGetRecipesError" debounce-duration="100"></iron-ajax>
+          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
 `;
     }
 
-    @property({type: Number, notify: true, observer: '_pageNumChanged'})
-    pageNum = 1;
+    @property({type: Number, notify: true, observer: 'pageNumChanged'})
+    public pageNum = 1;
     @property({type: Number, notify: true})
-    numPages = 0;
-    @property({type: Object, notify: true, observer: '_searchChanged'})
-    search = {
+    public numPages = 0;
+    @property({type: Object, notify: true, observer: 'searchChanged'})
+    public search = {
         query: '',
-        fields: <string[]>[],
-        tags: <string[]>[],
+        fields: [] as string[],
+        tags: [] as string[],
     };
-    @property({type: Object, notify: true, observer: '_searchChanged'})
-    searchSettings = {
+    @property({type: Object, notify: true, observer: 'searchChanged'})
+    public searchSettings = {
         sortBy: 'name',
         sortDir: 'asc',
         viewMode: 'full',
     };
     @property({type: Array, notify: true})
-    recipes: any[] = [];
+    public recipes: any[] = [];
     @property({type: Number, notify: true})
-    totalRecipeCount = 0;
+    public totalRecipeCount = 0;
+
+    private get settingsDrawer(): AppDrawerElement {
+        return this.$.settingsDrawer as AppDrawerElement;
+    }
+    private get recipesAjax(): IronAjaxElement {
+        return this.$.recipesAjax as IronAjaxElement;
+    }
 
     static get observers() {
         return [
-            '_updatePagination(recipes, totalRecipeCount)',
-            '_searchChanged(search.*)',
-            '_searchChanged(searchSettings.*)',
+            'updatePagination(recipes, totalRecipeCount)',
+            'searchChanged(search.*)',
+            'searchChanged(searchSettings.*)',
         ];
     }
 
-    ready() {
+    public ready() {
         super.ready();
 
         this.refresh();
     }
-    refresh() {
-        (<IronAjaxElement>this.$.recipesAjax).params = {
+    public refresh() {
+        this.recipesAjax.params = {
             'q': this.search.query,
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,
-            'count': this._getRecipeCount(),
+            'count': this.getRecipeCount(),
         };
     }
 
-    _pageNumChanged() {
+    protected pageNumChanged() {
         this.refresh();
     }
-    _searchChanged() {
+    protected searchChanged() {
         this.pageNum = 1;
         this.refresh();
     }
-    _getRecipeCount() {
+    protected getRecipeCount() {
         if (this.searchSettings.viewMode === 'compact') {
             return 60;
         }
         return 18;
     }
 
-    _handleGetRecipesRequest() {
+    protected handleGetRecipesRequest() {
         this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
     }
-    _handleGetRecipesResponse(request: CustomEvent) {
+    protected handleGetRecipesResponse(request: CustomEvent) {
         this.recipes = request.detail.response.recipes;
         this.totalRecipeCount = request.detail.response.total;
     }
-    _handleGetRecipesError () {
+    protected handleGetRecipesError() {
         this.recipes = [];
         this.totalRecipeCount = 0;
     }
 
-    _updatePagination(_recipes: Object|null, total: number) {
-        this.numPages = Math.ceil(total / this._getRecipeCount());
+    protected updatePagination(_: object|null, total: number) {
+        this.numPages = Math.ceil(total / this.getRecipeCount());
     }
 
-    _onFullViewClicked() {
-        this._onChangeSearchSettings('full', this.searchSettings.sortBy, this.searchSettings.sortDir);
+    protected onFullViewClicked() {
+        this.onChangeSearchSettings('full', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
-    _onCompactViewClicked() {
-        this._onChangeSearchSettings('compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
+    protected onCompactViewClicked() {
+        this.onChangeSearchSettings('compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
     }
-    _onNameSortClicked() {
-        this._onChangeSearchSettings(this.searchSettings.viewMode, 'name', 'asc');
+    protected onNameSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'name', 'asc');
     }
-    _onRatingSortClicked() {
-        this._onChangeSearchSettings(this.searchSettings.viewMode, 'rating', 'desc');
+    protected onRatingSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'rating', 'desc');
     }
-    _onRandomSortClicked() {
-        this._onChangeSearchSettings(this.searchSettings.viewMode, 'random', 'asc');
+    protected onRandomSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'random', 'asc');
     }
-    _onAscSortClicked() {
-        this._onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
+    protected onAscSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
     }
-    _onDescSortClicked() {
-        this._onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
+    protected onDescSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
     }
-    _onChangeSearchSettings(viewMode: string, sortBy: string, sortDir: string) {
+    protected onChangeSearchSettings(viewMode: string, sortBy: string, sortDir: string) {
         this.set('searchSettings.viewMode', viewMode);
         this.set('searchSettings.sortBy', sortBy);
         this.set('searchSettings.sortDir', sortDir);
-        (<AppDrawerElement>this.$.settingsDrawer).close();
+        this.settingsDrawer.close();
     }
 
-    _areEqual(a: any, b: any) {
+    protected areEqual(a: any, b: any) {
         return a === b;
     }
-    _columnize(items: any[], numSplits: number) {
-        let splitCount = Math.ceil(items.length / numSplits);
+    protected columnize(items: any[], numSplits: number) {
+        const splitCount = Math.ceil(items.length / numSplits);
 
-        let newArrays: any[] = [
+        const newArrays: any[] = [
             [],
         ];
         let index = 0;

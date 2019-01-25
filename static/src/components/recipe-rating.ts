@@ -17,27 +17,29 @@ export class RecipeRating extends GompBaseElement {
                 }
           </style>
 
-          <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="_starRatingSelected"></iron-star-rating>
+          <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="starRatingSelected"></iron-star-rating>
 
-          <iron-ajax bubbles="" id="rateAjax" url="/api/v1/recipes/[[recipe.id]]/rating" method="PUT" on-response="_handlePutRecipeRatingResponse" on-error="_handlePutRecipeRatingError"></iron-ajax>
+          <iron-ajax bubbles="" id="rateAjax" url="/api/v1/recipes/[[recipe.id]]/rating" method="PUT" on-response="handlePutRecipeRatingResponse" on-error="handlePutRecipeRatingError"></iron-ajax>
 `;
     }
 
     @property({type: Object, notify: true})
-    recipe: Object|null = null;
+    public recipe: object|null = null;
 
-    _starRatingSelected(e: CustomEvent) {
-        let rateAjax = this.$.rateAjax as IronAjaxElement;
-        rateAjax.body = e.detail.rating;
-        rateAjax.generateRequest();
+    private get rateAjax(): IronAjaxElement {
+        return this.$.rateAjax as IronAjaxElement;
     }
-    _handlePutRecipeRatingResponse(e: CustomEvent) {
-        let rateAjax = e.target as IronAjaxElement;
-        this.set('recipe.averageRating', parseFloat((<object>rateAjax.body).toString()));
+
+    protected starRatingSelected(e: CustomEvent) {
+        this.rateAjax.body = e.detail.rating;
+        this.rateAjax.generateRequest();
+    }
+    protected handlePutRecipeRatingResponse(_: CustomEvent) {
+        this.set('recipe.averageRating', parseFloat(this.rateAjax.body.toString()));
         this.showToast('Rating changed.');
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
-    _handlePutRecipeRatingError() {
+    protected handlePutRecipeRatingError() {
         this.showToast('Changing rating failed!');
     }
 }

@@ -86,14 +86,14 @@ export class ImageList extends GompBaseElement {
                   <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
                       <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                       <paper-listbox slot="dropdown-content">
-                          <paper-icon-item data-id="[[item.id]]" on-click="_onSetMainImageClicked"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
-                          <paper-icon-item data-id="[[item.id]]" on-click="_onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                          <paper-icon-item data-id="[[item.id]]" on-click="onSetMainImageClicked"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
+                          <paper-icon-item data-id="[[item.id]]" on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                       </paper-listbox>
                   </paper-menu-button>
               </div>
           </template>
 
-          <paper-dialog id="addDialog" on-iron-overlay-closed="_addDialogClosed" with-backdrop="">
+          <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop="">
               <h3><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
               <p>Browse for a picture to upload to this recipe.</p><p>
               </p><form id="addForm" enctype="multipart/form-data">
@@ -113,95 +113,118 @@ export class ImageList extends GompBaseElement {
               <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
           </paper-dialog>
 
-          <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="_setMainImage"></confirmation-dialog>
-          <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="_deleteImage"></confirmation-dialog>
+          <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="setMainImage"></confirmation-dialog>
+          <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
 
-          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]/images" on-request="_handleGetImagesRequest" on-response="_handleGetImagesResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="addAjax" url="/api/v1/recipes/[[recipeId]]/images" method="POST" on-request="_handleAddRequest" on-response="_handleAddResponse" on-error="_handleAddError"></iron-ajax>
-          <iron-ajax bubbles="" id="setMainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" method="PUT" on-response="_handleSetMainImageResponse" on-error="_handleSetMainImageError"></iron-ajax>
-          <iron-ajax bubbles="" id="deleteAjax" method="DELETE" on-response="_handleDeleteResponse" on-error="_handleDeleteError"></iron-ajax>
+          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]/images" on-request="handleGetImagesRequest" on-response="handleGetImagesResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="addAjax" url="/api/v1/recipes/[[recipeId]]/images" method="POST" on-request="handleAddRequest" on-response="handleAddResponse" on-error="handleAddError"></iron-ajax>
+          <iron-ajax bubbles="" id="setMainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" method="PUT" on-response="handleSetMainImageResponse" on-error="handleSetMainImageError"></iron-ajax>
+          <iron-ajax bubbles="" id="deleteAjax" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 
     @property({type: String})
-    recipeId = '';
+    public recipeId = '';
 
-    images: any[] = [];
+    protected images: any[] = [];
 
-    refresh() {
+    private get addForm(): HTMLFormElement {
+        return this.$.addForm as HTMLFormElement;
+    }
+    private get uploadingDialog(): PaperDialogElement {
+        return this.$.uploadingDialog as PaperDialogElement;
+    }
+    private get addDialog(): PaperDialogElement {
+        return this.$.addDialog as PaperDialogElement;
+    }
+    private get confirmMainImageDialog(): ConfirmationDialog {
+        return this.$.confirmMainImageDialog as ConfirmationDialog;
+    }
+    private get confirmDeleteDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteDialog as ConfirmationDialog;
+    }
+    private get getAjax(): IronAjaxElement {
+        return this.$.getAjax as IronAjaxElement;
+    }
+    private get addAjax(): IronAjaxElement {
+        return this.$.addAjax as IronAjaxElement;
+    }
+    private get deleteAjax(): IronAjaxElement {
+        return this.$.deleteAjax as IronAjaxElement;
+    }
+    private get setMainImageAjax(): IronAjaxElement {
+        return this.$.setMainImageAjax as IronAjaxElement;
+    }
+
+    public refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        (<IronAjaxElement>this.$.getAjax).generateRequest();
+        this.getAjax.generateRequest();
     }
 
-    add() {
-        (<PaperDialogElement>this.$.addDialog).open();
+    public add() {
+        this.addDialog.open();
     }
 
-    _addDialogClosed(e: CustomEvent) {
+    protected addDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
-            let addAjax = this.$.addAjax as IronAjaxElement;
-            addAjax.body = new FormData(<HTMLFormElement>this.$.addForm);
-            addAjax.generateRequest();
+            this.addAjax.body = new FormData(this.addForm);
+            this.addAjax.generateRequest();
         }
     }
-    _onSetMainImageClicked(e: any) {
+    protected onSetMainImageClicked(e: any) {
         e.target.closest('#imageMenu').close();
-        let confirmMainImageDialog = this.$.confirmMainImageDialog as ConfirmationDialog;
-        confirmMainImageDialog.dataset.id = e.target.dataset.id;
-        confirmMainImageDialog.open();
+        this.confirmMainImageDialog.dataset.id = e.target.dataset.id;
+        this.confirmMainImageDialog.open();
     }
-    _setMainImage(e: any) {
-        let setMainImageAjax = this.$.setMainImageAjax as IronAjaxElement;
-        setMainImageAjax.body = <any>parseInt(e.target.dataset.id, 10);
-        setMainImageAjax.generateRequest();
+    protected setMainImage(e: any) {
+        this.setMainImageAjax.body = parseInt(e.target.dataset.id, 10) as any;
+        this.setMainImageAjax.generateRequest();
     }
-    _onDeleteClicked(e: any) {
+    protected onDeleteClicked(e: any) {
         e.target.closest('#imageMenu').close();
-        let confirmDeleteDialog = this.$.confirmDeleteDialog as ConfirmationDialog;
-        confirmDeleteDialog.dataset.id = e.target.dataset.id;
-        confirmDeleteDialog.open();
+        this.confirmDeleteDialog.dataset.id = e.target.dataset.id;
+        this.confirmDeleteDialog.open();
     }
-    _deleteImage(e: any) {
-        let deleteAjax = this.$.deleteAjax as IronAjaxElement;
-        deleteAjax.url = '/api/v1/images/' + e.target.dataset.id;
-        deleteAjax.generateRequest();
+    protected deleteImage(e: any) {
+        this.deleteAjax.url = '/api/v1/images/' + e.target.dataset.id;
+        this.deleteAjax.generateRequest();
     }
 
-    _handleGetImagesRequest() {
+    protected handleGetImagesRequest() {
         this.images = [];
     }
-    _handleGetImagesResponse(e: CustomEvent) {
+    protected handleGetImagesResponse(e: CustomEvent) {
         this.images = e.detail.response;
     }
-    _handleAddRequest() {
-        (<PaperDialogElement>this.$.uploadingDialog).open();
+    protected handleAddRequest() {
+        this.uploadingDialog.open();
     }
-    _handleAddResponse() {
-        (<PaperDialogElement>this.$.uploadingDialog).close();
+    protected handleAddResponse() {
+        this.uploadingDialog.close();
         this.refresh();
         this.dispatchEvent(new CustomEvent('image-added'));
         this.showToast('Upload complete.');
     }
-    _handleAddError() {
-        (<PaperDialogElement>this.$.uploadingDialog).close();
+    protected handleAddError() {
+        this.uploadingDialog.close();
         this.showToast('Upload failed!');
     }
-    _handleSetMainImageResponse() {
+    protected handleSetMainImageResponse() {
         this.dispatchEvent(new CustomEvent('main-image-changed'));
         this.showToast('Main picture changed.');
     }
-    _handleSetMainImageError() {
+    protected handleSetMainImageError() {
         this.showToast('Changing main picture failed!');
     }
-    _handleDeleteResponse() {
+    protected handleDeleteResponse() {
         this.refresh();
         this.dispatchEvent(new CustomEvent('image-deleted'));
         this.showToast('Picture deleted.');
     }
-    _handleDeleteError() {
+    protected handleDeleteError() {
         this.showToast('Deleting picture failed!');
     }
 }

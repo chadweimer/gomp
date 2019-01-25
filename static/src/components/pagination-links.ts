@@ -26,41 +26,54 @@ export class PaginationLinks extends PolymerElement {
                 }
           </style>
 
-          <paper-button id="first" raised="" on-click="_goFirst">|&lt;</paper-button>
-          <paper-button id="prev" raised="" on-click="_goPrev">&lt;</paper-button>
+          <paper-button id="first" raised="" on-click="goFirst">|&lt;</paper-button>
+          <paper-button id="prev" raised="" on-click="goPrev">&lt;</paper-button>
           <paper-button raised="" disabled="">[[pageNum]] of [[numPages]]</paper-button>
-          <paper-button id="next" raised="" on-click="_goNext">&gt;</paper-button>
-          <paper-button id="last" raised="" on-click="_goLast">&gt;|</paper-button>
+          <paper-button id="next" raised="" on-click="goNext">&gt;</paper-button>
+          <paper-button id="last" raised="" on-click="goLast">&gt;|</paper-button>
 `;
     }
 
     @property({type: Number, notify: true})
-    pageNum = 1;
+    public pageNum = 1;
     @property({type: Number, notify: true})
-    numPages = 10;
+    public numPages = 10;
+
+    private get first(): PaperButtonElement {
+        return this.$.first as PaperButtonElement;
+    }
+    private get prev(): PaperButtonElement {
+        return this.$.prev as PaperButtonElement;
+    }
+    private get next(): PaperButtonElement {
+        return this.$.next as PaperButtonElement;
+    }
+    private get last(): PaperButtonElement {
+        return this.$.last as PaperButtonElement;
+    }
 
     static get observers() {
         return [
-            '_pagesChanged(pageNum, numPages)',
+            'pagesChanged(pageNum, numPages)',
         ];
     }
 
-    _pagesChanged() {
-        (<PaperButtonElement>this.$.first).disabled = this.pageNum === 1;
-        (<PaperButtonElement>this.$.prev).disabled = this.pageNum === 1;
-        (<PaperButtonElement>this.$.next).disabled = this.pageNum === this.numPages;
-        (<PaperButtonElement>this.$.last).disabled = this.pageNum === this.numPages;
+    protected pagesChanged() {
+        this.first.disabled = this.pageNum === 1;
+        this.prev.disabled = this.pageNum === 1;
+        this.next.disabled = this.pageNum === this.numPages;
+        this.last.disabled = this.pageNum === this.numPages;
     }
-    _goFirst() {
+    protected goFirst() {
         this.pageNum = 1;
     }
-    _goPrev() {
+    protected goPrev() {
         this.pageNum--;
     }
-    _goNext() {
+    protected goNext() {
         this.pageNum++;
     }
-    _goLast() {
+    protected goLast() {
         this.pageNum = this.numPages;
     }
 }

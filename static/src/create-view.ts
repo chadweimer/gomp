@@ -21,16 +21,16 @@ export class CreateView extends GompBaseElement {
 
             <article>
                 <h4>New Recipe</h4>
-                <recipe-edit is-active="[[isActive]]" on-recipe-edit-cancel="_editCanceled" on-recipe-edit-save="_editSaved"></recipe-edit>
+                <recipe-edit is-active="[[isActive]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
             </article>
 `;
     }
 
-    protected _editCanceled() {
+    protected editCanceled() {
         this.dispatchEvent(
             new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
     }
-    protected _editSaved(e: CustomEvent) {
+    protected editSaved(e: CustomEvent) {
         this.dispatchEvent(
             new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: e.detail.redirectUrl}}));
     }

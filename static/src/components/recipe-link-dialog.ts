@@ -40,40 +40,48 @@ export class RecipeLinkDialog extends GompBaseElement {
                 }
           </style>
 
-          <paper-dialog id="dialog" on-iron-overlay-closed="_onDialogClosed" with-backdrop="">
+          <paper-dialog id="dialog" on-iron-overlay-closed="onDialogClosed" with-backdrop="">
               <h3><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
-              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="_onAutocompleteChange" on-autocomplete-selected="_onAutocompleteSelected" remote-source="" show-results-on-focus="" required=""></paper-autocomplete>
+              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source="" show-results-on-focus="" required=""></paper-autocomplete>
               <div class="buttons">
                   <paper-button dialog-dismiss="">Cancel</paper-button>
-                  <paper-button disabled="[[_shouldPreventAdd(_selectedRecipeId)]]" dialog-confirm="">Add</paper-button>
+                  <paper-button disabled="[[shouldPreventAdd(selectedRecipeId)]]" dialog-confirm="">Add</paper-button>
               </div>
           </paper-dialog>
 
-          <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" on-response="_handleGetRecipesResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="postLinkAjax" url="/api/v1/recipes/[[recipeId]]/links" method="POST" on-response="_handlePostLinkResponse" on-error="_handlePostLinkError"></iron-ajax>
+          <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="postLinkAjax" url="/api/v1/recipes/[[recipeId]]/links" method="POST" on-response="handlePostLinkResponse" on-error="handlePostLinkError"></iron-ajax>
 `;
     }
 
     @property({type: String})
-    recipeId = '';
+    public recipeId = '';
     @property({type: Number})
-    _selectedRecipeId: Number|null = null;
+    public selectedRecipeId: number|null = null;
 
-    open() {
-        let recipeSearcher = this.$.recipeSearcher as any;
+    private get dialog(): PaperDialogElement {
+        return this.$.dialog as PaperDialogElement;
+    }
+    private get recipesAjax(): IronAjaxElement {
+        return this.$.recipesAjax as IronAjaxElement;
+    }
+    private get postLinkAjax(): IronAjaxElement {
+        return this.$.postLinkAjax as IronAjaxElement;
+    }
+
+    public open() {
+        const recipeSearcher = this.$.recipeSearcher as any;
         recipeSearcher.suggestions([]);
         recipeSearcher.clear();
 
-        let dialog = this.$.dialog as PaperDialogElement;
-        dialog.open();
+        this.dialog.open();
     }
 
-    _onAutocompleteChange(e: CustomEvent) {
-        this._selectedRecipeId = null;
-        let value = e.detail.text;
+    protected onAutocompleteChange(e: CustomEvent) {
+        this.selectedRecipeId = null;
+        const value = e.detail.text;
         if (value && value.length >= 2) {
-            let recipesAjax = this.$.recipesAjax as IronAjaxElement;
-            recipesAjax.params = {
+            this.recipesAjax.params = {
                 'q': value,
                 'fields[]': ['name'],
                 'tags[]': [],
@@ -82,40 +90,39 @@ export class RecipeLinkDialog extends GompBaseElement {
                 'page': 1,
                 'count': 20,
             };
-            recipesAjax.generateRequest();
+            this.recipesAjax.generateRequest();
         }
     }
-    _onAutocompleteSelected(e: CustomEvent) {
-        this._selectedRecipeId = e.detail.value;
+    protected onAutocompleteSelected(e: CustomEvent) {
+        this.selectedRecipeId = e.detail.value;
     }
-    _onDialogClosed(e: CustomEvent) {
+    protected onDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
-            let postLinkAjax = this.$.postLinkAjax as IronAjaxElement;
-            postLinkAjax.body = <any>JSON.stringify(this._selectedRecipeId);
-            postLinkAjax.generateRequest();
+            this.postLinkAjax.body = JSON.stringify(this.selectedRecipeId) as any;
+            this.postLinkAjax.generateRequest();
         }
     }
-    _shouldPreventAdd(selectedRecipeId: Number) {
+    protected shouldPreventAdd(selectedRecipeId: number) {
         return selectedRecipeId === null;
     }
-    _handleGetRecipesResponse(e: CustomEvent) {
-        let recipes = e.detail.response.recipes;
+    protected handleGetRecipesResponse(e: CustomEvent) {
+        const recipes = e.detail.response.recipes;
 
-        let suggestions: any[] = [];
+        const suggestions: any[] = [];
         if (recipes) {
-            recipes.forEach(function(recipe: any) {
+            recipes.forEach((recipe: any) => {
                 suggestions.push({value: recipe.id, text: recipe.name});
             });
         }
 
-        let recipeSearcher = this.$.recipeSearcher as any;
+        const recipeSearcher = this.$.recipeSearcher as any;
         recipeSearcher.suggestions(suggestions);
     }
-    _handlePostLinkResponse() {
+    protected handlePostLinkResponse() {
         this.dispatchEvent(new CustomEvent('link-added'));
         this.showToast('Link created.');
     }
-    _handlePostLinkError() {
+    protected handlePostLinkError() {
         this.showToast('Creating link failed!');
     }
 }

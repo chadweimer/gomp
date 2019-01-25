@@ -2,24 +2,26 @@
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
 
-export class GompBaseElement extends PolymerElement {
+export abstract class GompBaseElement extends PolymerElement {
     @property({type: Boolean, notify: true})
-    isReady = false;
-    @property({type: Boolean, notify: true, reflectToAttribute: true, observer: '_isActiveChanged'})
-    isActive = false;
+    protected isReady = false;
+    @property({type: Boolean, notify: true, reflectToAttribute: true, observer: 'isActiveChanged'})
+    protected isActive = false;
 
-    ready() {
+    public ready() {
         super.ready();
 
         this.isReady = true;
     }
 
-    showToast(message: string) {
-        this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message: message}}));
-    }
-    _isNullOrEmpty(val: string|null) {
-        return val === null || val === '';
+    protected showToast(message: string) {
+        this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message}}));
     }
 
-    _isActiveChanged(_isActive: boolean) { }
+    protected getElement<TElement extends Element>(id: string) {
+        return this.$[id] as TElement;
+    }
+
+    // tslint:disable-next-line:no-empty
+    protected isActiveChanged(_: boolean) {}
 }

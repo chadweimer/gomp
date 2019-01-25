@@ -19,6 +19,10 @@ install:
 uninstall:
 	rm -rf $(VENDOR_DIR) $(NODE_MODULES_DIR)
 
+.PHONY: lint
+lint:
+	cd static && npm run lint
+
 .PHONY: build
 build: build-linux-amd64 build-linux-armhf build-windows-amd64
 
