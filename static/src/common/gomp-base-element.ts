@@ -18,10 +18,6 @@ export abstract class GompBaseElement extends PolymerElement {
         this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message}}));
     }
 
-    protected getElement<TElement extends Element>(id: string) {
-        return this.$[id] as TElement;
-    }
-
     // tslint:disable-next-line:no-empty
     protected isActiveChanged(_: boolean) {}
 }
