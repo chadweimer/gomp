@@ -1,9 +1,16 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+'use strict';
+import { html } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax';
+import { GompBaseElement } from './common/gomp-base-element.js';
+import { HomeList } from './components/home-list.js';
+import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-fab/paper-fab.js';
-import './mixins/gomp-core-mixin.js';
 import './components/home-list.js';
 import './shared-styles.js';
-class HomeView extends GompCoreMixin(PolymerElement) {
+
+@customElement('home-view')
+export class HomeView extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -47,56 +54,56 @@ class HomeView extends GompCoreMixin(PolymerElement) {
 
           <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-          <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="_handleGetUserSettingsResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
 `;
     }
 
-    static get is() { return 'home-view'; }
-    static get properties() {
-        return {
-            title: {
-                type: String,
-                notify: true,
-            },
-            image: {
-                type: String,
-                notify: true,
-            },
-        };
+    @property({type: String, notify: true})
+    public title = '';
+    @property({type: String, notify: true})
+    public image = '';
+
+    private get lists(): HomeList[] {
+        return [
+            this.$.allRecipes as HomeList,
+            this.$.beefRecipes as HomeList,
+            this.$.poultryRecipes as HomeList,
+            this.$.porkRecipes as HomeList,
+            this.$.seafoodRecipes as HomeList,
+            this.$.pastaRecipes as HomeList,
+            this.$.vegetarianRecipes as HomeList,
+            this.$.sideRecipes as HomeList,
+            this.$.drinkRecipes as HomeList,
+        ];
+    }
+    private get userSettingsAjax(): IronAjaxElement {
+        return this.$.userSettingsAjax as IronAjaxElement;
     }
 
-    ready() {
+    public ready() {
         super.ready();
 
         if (this.isActive) {
-            this._refresh();
+            this.refresh();
         }
     }
 
-    _isActiveChanged(isActive) {
+    protected isActiveChanged(isActive: boolean) {
         if (isActive && this.isReady) {
-            this._refresh();
+            this.refresh();
         }
     }
-    _handleGetUserSettingsResponse(e) {
-        var userSettings = e.detail.response;
+    protected handleGetUserSettingsResponse(e: CustomEvent) {
+        const userSettings = e.detail.response;
 
         this.title = userSettings.homeTitle;
         this.image = userSettings.homeImageUrl;
     }
 
-    _refresh() {
-        this.$.allRecipes.refresh();
-        this.$.beefRecipes.refresh();
-        this.$.poultryRecipes.refresh();
-        this.$.porkRecipes.refresh();
-        this.$.seafoodRecipes.refresh();
-        this.$.pastaRecipes.refresh();
-        this.$.vegetarianRecipes.refresh();
-        this.$.sideRecipes.refresh();
-        this.$.drinkRecipes.refresh();
-        this.$.userSettingsAjax.generateRequest();
+    protected refresh() {
+        this.lists.forEach((list) => {
+            list.refresh();
+        });
+        this.userSettingsAjax.generateRequest();
     }
 }
-
-window.customElements.define(HomeView.is, HomeView);

@@ -4,18 +4,17 @@ checks:
     enabled: false
   method-lines:
     enabled: false
+  method-count:
+    enabled: false
 plugins:
   duplication:
     enabled: true
     config:
       languages:
       - javascript
-  eslint:
+  tslint:
     enabled: true
-    config:
-      extensions:
-        - .js
-        - .html
+    config: static/tslint.json
   fixme:
     enabled: true
   gofmt:
@@ -28,6 +27,7 @@ ratings:
   paths:
   - "**.css"
   - "**.inc"
+  - "**.ts"
   - "**.js"
   - "**.jsx"
   - "**.go"
@@ -35,6 +35,6 @@ ratings:
 exclude_paths:
 - build/
 - db/
-- node_modules/
+- static/node_modules/
 - static/build/
 - vendor/

@@ -42,7 +42,7 @@ install:
 
 script:
   - sonar-scanner
-  - make build docker
+  - make lint build docker
   # test image
   #- docker run cwmr/gomp:latest ???
 

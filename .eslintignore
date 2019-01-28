@@ -1,7 +1,0 @@
-**/*{.,-}min.js
-build/*
-db/*
-static/node_modules/*
-static/build/*
-static/service-worker.js
-vendor/*

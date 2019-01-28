@@ -1,13 +1,18 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+'use strict';
+import { html } from '@polymer/polymer/polymer-element.js';
+import {customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-input/paper-input-container.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
-import '../mixins/gomp-core-mixin.js';
 import '../shared-styles.js';
-class TagInput extends GompCoreMixin(PolymerElement) {
+
+@customElement('tag-input')
+export class TagInput extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -40,46 +45,43 @@ class TagInput extends GompCoreMixin(PolymerElement) {
                     <label slot="label">Suggested Tags</label>
                     <div slot="prefix">
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-click="_onSuggestedTagClicked" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                            <paper-chip on-click="onSuggestedTagClicked" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
                         </template>
                     </div>
                     <input type="hidden" slot="input">
                 </paper-input-container>
 
-            <iron-ajax bubbles="" id="getSuggestedTagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;frequency&quot;, &quot;dir&quot;: &quot;desc&quot;, &quot;count&quot;: 12}" on-request="_handleGetSuggestedTagsRequest" on-response="_handleGetSuggestedTagsResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="getSuggestedTagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;frequency&quot;, &quot;dir&quot;: &quot;desc&quot;, &quot;count&quot;: 12}" on-request="handleGetSuggestedTagsRequest" on-response="handleGetSuggestedTagsResponse"></iron-ajax>
 `;
     }
 
-    static get is() { return 'tag-input'; }
-    static get properties() {
-        return {
-            tags: {
-                type: Array,
-                notify: true,
-                value: [],
-            },
-        };
+    @property({type: Array, notify: true})
+    public tags = [];
+
+    protected suggestedTags: string[] = [];
+
+    private get getSuggestedTagsAjax(): IronAjaxElement {
+        return this.$.getSuggestedTagsAjax as IronAjaxElement;
     }
 
-    refresh() {
-        this.$.getSuggestedTagsAjax.generateRequest();
+    public refresh() {
+        this.getSuggestedTagsAjax.generateRequest();
     }
 
-    _onSuggestedTagClicked(e) {
-        this.$.tags.add(e.model.item);
+    protected onSuggestedTagClicked(e: any) {
+        const tagsElement = this.$.tags as any;
+        tagsElement.add(e.model.item);
 
         // Remove the tag from the suggestion list
-        var suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
+        const suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
         if (suggestedTagIndex > -1) {
             this.splice('suggestedTags', suggestedTagIndex, 1);
         }
     }
-    _handleGetSuggestedTagsRequest(e) {
+    protected handleGetSuggestedTagsRequest() {
         this.suggestedTags = [];
     }
-    _handleGetSuggestedTagsResponse(e) {
+    protected handleGetSuggestedTagsResponse(e: any) {
         this.suggestedTags = e.detail.response;
     }
 }
-
-window.customElements.define(TagInput.is, TagInput);

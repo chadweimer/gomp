@@ -1,4 +1,9 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+'use strict';
+import { html } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -6,10 +11,11 @@ import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-input/paper-textarea.js';
-import '../mixins/gomp-core-mixin.js';
 import './note-card.js';
 import '../shared-styles.js';
-class NoteList extends GompCoreMixin(PolymerElement) {
+
+@customElement('note-list')
+export class NoteList extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -51,10 +57,10 @@ class NoteList extends GompCoreMixin(PolymerElement) {
           <header>Notes</header>
           <paper-divider></paper-divider>
           <template is="dom-repeat" items="[[notes]]">
-              <note-card note="[[item]]" on-note-card-edit="_editNoteTapped" on-note-card-deleted="_noteDeleted"></note-card>
+              <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted"></note-card>
           </template>
 
-          <paper-dialog id="noteDialog" on-iron-overlay-closed="_noteDialogClosed" with-backdrop="">
+          <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop="">
               <h3><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h3>
               <paper-textarea label="Text" value="{{noteText}}" rows="3" required="" autofocus=""></paper-textarea>
               <div class="buttons">
@@ -63,82 +69,91 @@ class NoteList extends GompCoreMixin(PolymerElement) {
               </div>
           </paper-dialog>
 
-          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]/notes" on-request="_handleGetRequest" on-response="_handleGetResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="postNoteAjax" url="/api/v1/notes" method="POST" on-response="_handlePostNoteResponse" on-error="_handlePostNoteError"></iron-ajax>
-          <iron-ajax bubbles="" id="putNoteAjax" url="/api/v1/notes/[[noteId]]" method="PUT" on-response="_handlePutNoteResponse" on-error="_handlePutNoteError"></iron-ajax>
+          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]/notes" on-request="handleGetRequest" on-response="handleGetResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="postNoteAjax" url="/api/v1/notes" method="POST" on-response="handlePostNoteResponse" on-error="handlePostNoteError"></iron-ajax>
+          <iron-ajax bubbles="" id="putNoteAjax" url="/api/v1/notes/[[noteId]]" method="PUT" on-response="handlePutNoteResponse" on-error="handlePutNoteError"></iron-ajax>
 `;
     }
 
-    static get is() { return 'note-list'; }
-    static get properties() {
-        return {
-            recipeId: {
-                type: String,
-            },
-        };
+    @property({type: String})
+    public recipeId = '';
+
+    protected noteId: number|null = null;
+    protected noteText = '';
+    protected notes: any[] = [];
+
+    private get noteDialog(): PaperDialogElement {
+        return this.$.noteDialog as PaperDialogElement;
+    }
+    private get getAjax(): IronAjaxElement {
+        return this.$.getAjax as IronAjaxElement;
+    }
+    private get putNoteAjax(): IronAjaxElement {
+        return this.$.putNoteAjax as IronAjaxElement;
+    }
+    private get postNoteAjax(): IronAjaxElement {
+        return this.$.postNoteAjax as IronAjaxElement;
     }
 
-    refresh() {
+    public refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        this.$.getAjax.generateRequest();
+        this.getAjax.generateRequest();
     }
-    add() {
+    public add() {
         this.noteId = null;
         this.noteText = '';
-        this.$.noteDialog.open();
+        this.noteDialog.open();
     }
 
-    _noteDialogClosed(e) {
-        if (!e.detail.canceled) {
+    protected noteDialogClosed(e: CustomEvent) {
+        if (!e.detail.canceled && e.detail.confirmed) {
             if (this.noteId) {
-                this.$.putNoteAjax.body = JSON.stringify({
-                    'id': this.noteId,
-                    'recipeId': parseInt(this.recipeId, 10),
-                    'text': this.noteText,
-                });
-                this.$.putNoteAjax.generateRequest();
+                this.putNoteAjax.body = JSON.stringify({
+                    id: this.noteId,
+                    recipeId: parseInt(this.recipeId, 10),
+                    text: this.noteText,
+                }) as any;
+                this.putNoteAjax.generateRequest();
             } else {
-                this.$.postNoteAjax.body = JSON.stringify({
-                    'recipeId': parseInt(this.recipeId, 10),
-                    'text': this.noteText,
-                });
-                this.$.postNoteAjax.generateRequest();
+                this.postNoteAjax.body = JSON.stringify({
+                    recipeId: parseInt(this.recipeId, 10),
+                    text: this.noteText,
+                }) as any;
+                this.postNoteAjax.generateRequest();
             }
         }
     }
-    _editNoteTapped(e) {
+    protected editNoteTapped(e: any) {
         e.preventDefault();
 
         this.noteId = e.target.note.id;
         this.noteText = e.target.note.text;
-        this.$.noteDialog.open();
+        this.noteDialog.open();
     }
-    _noteDeleted(e) {
+    protected noteDeleted() {
         this.refresh();
     }
-    _handleGetRequest(e) {
+    protected handleGetRequest() {
         this.notes = [];
     }
-    _handleGetResponse(e) {
+    protected handleGetResponse(e: CustomEvent) {
         this.notes = e.detail.response;
     }
-    _handlePostNoteResponse(e) {
+    protected handlePostNoteResponse() {
         this.refresh();
         this.showToast('Note created.');
     }
-    _handlePostNoteError(e) {
+    protected handlePostNoteError() {
         this.showToast('Creating note failed!');
     }
-    _handlePutNoteResponse(e) {
+    protected handlePutNoteResponse() {
         this.refresh();
         this.showToast('Note updated.');
     }
-    _handlePutNoteError(e) {
+    protected handlePutNoteError() {
         this.showToast('Updating note failed!');
     }
 }
-
-window.customElements.define(NoteList.is, NoteList);

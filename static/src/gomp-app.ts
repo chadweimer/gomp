@@ -1,7 +1,13 @@
+'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import {setPassiveTouchGestures} from '@polymer/polymer/lib/utils/settings.js';
+import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
+import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
+import '@polymer/app-layout/app-drawer/app-drawer';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
@@ -9,23 +15,24 @@ import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-progress/paper-progress.js';
-import '@cwmr/paper-search/paper-search-bar.js';
-import '@cwmr/paper-search/paper-filter-dialog.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@polymer/paper-toast/paper-toast.js';
+import '@cwmr/paper-divider/paper-divider.js';
+import '@cwmr/paper-search/paper-search-bar.js';
+import '@cwmr/paper-search/paper-filter-dialog.js';
 import './shared-styles.js';
 
 // Gesture events like tap and track generated from touch will not be
 // preventable, allowing for better scrolling performance.
 setPassiveTouchGestures(true);
 
-class GompApp extends PolymerElement {
+@customElement('gomp-app')
+export class GompApp extends PolymerElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -134,7 +141,7 @@ class GompApp extends PolymerElement {
                             Settings
                         </paper-icon-item>
                     </a>
-                    <a href="#!" tabindex="-1" on-click="_onLogoutClicked">
+                    <a href="#!" tabindex="-1" on-click="onLogoutClicked">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
                             Logout
@@ -143,12 +150,12 @@ class GompApp extends PolymerElement {
                 </app-drawer>
                 <app-header-layout id="mainPanel" fullbleed="" has-scrolling-region="">
                     <app-header id="mainHeader" slot="header" reveals="" shadow="">
-                        <div hidden\$="[[_isAuthenticated]]">
+                        <div hidden\$="[[isAuthenticated]]">
                             <app-toolbar>
                                 <div main-title="">[[title]]</div>
                             </app-toolbar>
                         </div>
-                        <div hidden\$="[[!_isAuthenticated]]">
+                        <div hidden\$="[[!isAuthenticated]]">
                             <app-toolbar>
                                 <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle=""></paper-icon-button>
                                 <a href="/" class="hide-on-small-only">[[title]]</a>
@@ -156,10 +163,10 @@ class GompApp extends PolymerElement {
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
-                                <a href="#!" on-click="_onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                                <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="_onSearch" on-paper-search-clear="_onSearch" on-paper-search-filter="_onFilter"></paper-search-bar>
-                                <paper-filter-dialog id="filterDialog" filters="[[searchFilters]]" selected-filters="{{selectedSearchFilters}}" save-button="Apply" on-save="_searchFiltersChanged"></paper-filter-dialog>
+                                <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-filter-dialog id="filterDialog" filters="[[searchFilters]]" selected-filters="{{selectedSearchFilters}}" save-button="Apply" on-save="searchFiltersChanged"></paper-filter-dialog>
                             </app-toolbar>
                         </div>
 
@@ -179,13 +186,13 @@ class GompApp extends PolymerElement {
                     </main>
 
                     <footer>
-                        <div class="indented" hidden\$="[[!_isAuthenticated]]">
+                        <div class="indented" hidden\$="[[!isAuthenticated]]">
                             <h4>Links</h4>
                             <ul>
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
                                 <li><a href="/settings">Settings</a></li>
-                                <li><a href="#!" on-click="_onLogoutClicked">Logout</a></li>
+                                <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
                         <div class="copyright indented">Copyright © 2016-2019 Chad Weimer</div>
@@ -197,118 +204,133 @@ class GompApp extends PolymerElement {
 
             <app-localstorage-document key="search" data="{{search}}" session-only=""></app-localstorage-document>
 
-            <iron-ajax bubbles="" id="appConfigAjax" url="/api/v1/app/configuration" on-response="_handleGetAppConfigurationResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="tagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;tag&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;count&quot;: 100000}" on-response="_handleGetTagsResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="tagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;tag&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;count&quot;: 100000}" on-response="handleGetTagsResponse"></iron-ajax>
 `;
     }
 
-    static get is() { return 'gomp-app'; }
-    static get properties() {
-        return {
-            title: {
-                type: String,
-                value: 'GOMP: Go Meal Planner',
-                observer: '_titleChanged',
-            },
-            page: {
-                type: String,
-                observer: '_pageChanged',
-            },
-            loadingCount : {
-                type: Number,
-                value: 0,
-            },
-            search: {
-                type: Object,
-                value: {
-                    query: '',
-                    fields: [],
-                    tags: [],
-                },
-                notify: true,
-            },
-        };
+    @property({type: String, observer: 'titleChanged'})
+    public title = 'GOMP: Go Meal Planner';
+    @property({type: String, observer: 'pageChanged'})
+    protected page = '';
+    @property({type: Number})
+    protected loadingCount = 0;
+    @property({type: Object, notify: true})
+    protected search = {
+        query: '',
+        fields: [] as string[],
+        tags: [] as string[],
+    };
+    @property({type: Array})
+    protected searchFilters: any[]|null|undefined = null;
+    @property({type: Number})
+    protected selectedSearchFiltersCount = 0;
+    @property({type: Boolean})
+    protected isAuthenticated = false;
+    @property({type: Object})
+    protected selectedSearchFilters: {fields?: [], tags?: []} = {};
+    @property({type: Object})
+    protected route: {path: string}|null|undefined = null;
+
+    private get appConfigAjax(): IronAjaxElement {
+        return this.$.appConfigAjax as IronAjaxElement;
     }
+    private get toast(): PaperToastElement {
+        return this.$.toast as PaperToastElement;
+    }
+    private get drawer(): AppDrawerElement {
+        return this.$.drawer as AppDrawerElement;
+    }
+    private get tagsAjax(): IronAjaxElement {
+        return this.$.tagsAjax as IronAjaxElement;
+    }
+
     static get observers() {
         return [
-            '_routePageChanged(routeData.page)',
-            '_searchFieldsChanged(search.fields)',
-            '_searchTagsChanged(search.tags)',
+            'routePageChanged(routeData.page)',
+            'searchFieldsChanged(search.fields)',
+            'searchTagsChanged(search.tags)',
         ];
     }
 
-    ready() {
-        this.addEventListener('scroll-top', e => this._scrollToTop(e));
-        this.addEventListener('home-list-link-clicked', e => this._onHomeLinkClicked(e));
-        this.addEventListener('iron-overlay-opened', e => this._patchOverlay(e));
-        this.addEventListener('recipes-modified', e => this._recipesModified(e));
-        this.addEventListener('change-page', e => this._changePageRequested(e));
-        this.addEventListener('iron-ajax-presend', e => this._onAjaxPresend(e));
-        this.addEventListener('iron-ajax-request', e => this._onAjaxRequest(e));
-        this.addEventListener('iron-ajax-response', e => this._onAjaxResponse(e));
-        this.addEventListener('iron-ajax-error', e => this._onAjaxError(e));
-        this.addEventListener('show-toast', e => this._onShowToast(e));
+    public ready() {
+        this.addEventListener('scroll-top', () => this.scrollToTop());
+        this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this.onHomeLinkClicked(e));
+        this.addEventListener('iron-overlay-opened', (e) => this.patchOverlay(e));
+        this.addEventListener('recipes-modified', () => this.recipesModified());
+        this.addEventListener('change-page', (e: CustomEvent) => this.changePageRequested(e));
+        this.addEventListener('iron-ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
+        this.addEventListener('iron-ajax-request', () => this.onAjaxRequest());
+        this.addEventListener('iron-ajax-response', () => this.onAjaxResponse());
+        this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
+        this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
 
         super.ready();
-        this.$.appConfigAjax.generateRequest();
+        this.appConfigAjax.generateRequest();
     }
 
-    _titleChanged(title) {
+    protected titleChanged(title: string) {
         document.title = title;
-        document.querySelector('meta[name="application-name"]').setAttribute('content', title);
-        document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', title);
+        const appName = document.querySelector('meta[name="application-name"]');
+        if (appName !== null) {
+            appName.setAttribute('content', title);
+        }
+        const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+        if (appTitle !== null) {
+            appTitle.setAttribute('content', title);
+        }
     }
 
     // https://github.com/PolymerElements/paper-dialog/issues/7
-    _patchOverlay(e) {
-        var path = e.path || (e.composedPath && e.composedPath());
+    protected patchOverlay(e: any) {
+        const path = e.path || (e.composedPath && e.composedPath());
         if (path) {
-            var overlay = path[0];
+            const overlay = path[0];
             if (overlay.withBackdrop) {
                 overlay.parentNode.insertBefore(overlay.backdropElement, overlay);
             }
         }
     }
 
-    _onAjaxPresend(e) {
-        var jwtToken = localStorage.getItem('jwtToken');
-        e.detail.options.headers = {'Authorization': 'Bearer ' + jwtToken};
+    protected onAjaxPresend(e: CustomEvent) {
+        const jwtToken = localStorage.getItem('jwtToken');
+        e.detail.options.headers = {Authorization: 'Bearer ' + jwtToken};
     }
-    _onAjaxRequest(e) {
+    protected onAjaxRequest() {
         this.loadingCount++;
     }
-    _onAjaxResponse(e) {
+    protected onAjaxResponse() {
         this.loadingCount--;
         if (this.loadingCount < 0) {
             this.loadingCount = 0;
         }
     }
-    _onAjaxError(e) {
+    protected onAjaxError(e: CustomEvent) {
         this.loadingCount--;
         if (this.loadingCount < 0) {
             this.loadingCount = 0;
         }
-        if (this.route.path !== '/login' && e.detail.request.xhr.status === 401) {
-            this._logout();
+        if ((!this.route || this.route.path !== '/login') && e.detail.request.xhr.status === 401) {
+            this.logout();
         }
     }
 
-    _onShowToast(e) {
-        this.$.toast.text = e.detail.message;
-        this.$.toast.open();
+    protected onShowToast(e: CustomEvent) {
+        this.toast.text = e.detail.message;
+        this.toast.open();
     }
 
-    _routePageChanged(page) {
+    protected routePageChanged(page: string|null|undefined) {
         this.page = page || 'home';
 
         // Close a non-persistent drawer when the page & route are changed.
-        if (!this.$.drawer.persistent) {
-            this.$.drawer.close();
+        if (!this.drawer.persistent) {
+            this.drawer.close();
         }
     }
-    _pageChanged(page) {
-        if (this._verifyIsAuthenticated()) {
-            this.$.tagsAjax.generateRequest();
+    protected pageChanged(page: string) {
+        if (this.verifyIsAuthenticated()) {
+            this.tagsAjax.generateRequest();
         }
 
         // Load page import on demand. Show 404 page if fails
@@ -336,79 +358,80 @@ class GompApp extends PolymerElement {
             break;
         }
     }
-    _changePageRequested(e) {
-        this._changeRoute(e.detail.url);
+    protected changePageRequested(e: CustomEvent) {
+        this.changeRoute(e.detail.url);
     }
-    _changeRoute(path) {
+    protected changeRoute(path: string) {
         this.set('route.path', path);
     }
-    _scrollToTop() {
+    protected scrollToTop() {
         this.$.mainHeader.scroll(0, 0);
     }
-    _onLogoutClicked(e) {
+    protected onLogoutClicked(e: Event) {
         // Don't nativate to "#!"
         e.preventDefault();
 
-        this._logout();
+        this.logout();
     }
-    _getIsAuthenticated() {
-        var jwtToken = localStorage.getItem('jwtToken');
+    protected getIsAuthenticated() {
+        const jwtToken = localStorage.getItem('jwtToken');
         return jwtToken !== null;
     }
-    _verifyIsAuthenticated() {
-        this._isAuthenticated = this._getIsAuthenticated();
+    protected verifyIsAuthenticated() {
+        this.isAuthenticated = this.getIsAuthenticated();
         // Redirect to login if necessary
-        if (!this._isAuthenticated) {
-            if (this.route.path !== '/login') {
-                this._logout();
+        if (!this.isAuthenticated) {
+            if (!this.route || this.route.path !== '/login') {
+                this.logout();
             }
             return false;
         }
         return true;
     }
-    _logout() {
+    protected logout() {
         localStorage.clear();
         sessionStorage.clear();
-        this._changeRoute('/login');
+        this.changeRoute('/login');
     }
-    _onSearch(e) {
+    protected onSearch(e: any) {
         this.set('search.query', e.target.query.trim());
-        this._changeRoute('/search');
+        this.changeRoute('/search');
     }
-    _onFilter() {
-        this.$.filterDialog.open();
+    protected onFilter() {
+        const filterDialog = this.$.filterDialog as any;
+        filterDialog.open();
     }
-    _onHomeLinkClicked(e) {
+    protected onHomeLinkClicked(e: CustomEvent) {
         this.set('search.query', '');
         this.set('search.fields', []);
         this.set('search.tags', e.detail.tags);
-        this._changeRoute('/search');
+        this.changeRoute('/search');
     }
-    _handleGetAppConfigurationResponse(e) {
+    protected handleGetAppConfigurationResponse(e: CustomEvent) {
         this.title = e.detail.response.title;
     }
-    _handleGetTagsResponse(e) {
-        var tags = e.detail.response;
+    protected handleGetTagsResponse(e: CustomEvent) {
+        const tags = e.detail.response;
 
-        var filters = [];
+        const filters: any[] = [];
 
-        var fieldFilter = {id: 'fields', name: 'Search Fields', values: []};
+        const fieldFilter = {id: 'fields', name: 'Search Fields', values: [] as any[]};
         fieldFilter.values.push({id: 'name', name: 'Name'});
         fieldFilter.values.push({id: 'ingredients', name: 'Ingredients'});
         fieldFilter.values.push({id: 'directions', name: 'Directions'});
         filters.push(fieldFilter);
 
-        var tagFilter = {id: 'tags', name: 'Tags', values: []};
+        const tagFilter = {id: 'tags', name: 'Tags', values: [] as any[]};
         filters.push(tagFilter);
         if (tags) {
-            tags.forEach(function(tag) {
+            tags.forEach((tag: string) => {
                 tagFilter.values.push({id: tag, name: tag});
             });
         }
 
         this.searchFilters = filters;
     }
-    _searchFiltersChanged(e) {
+    protected searchFiltersChanged() {
         if (this.selectedSearchFilters.fields) {
             this.set('search.fields', this.selectedSearchFilters.fields);
         } else {
@@ -419,15 +442,15 @@ class GompApp extends PolymerElement {
         } else {
             this.set('search.tags', []);
         }
-        this._changeRoute('/search');
+        this.changeRoute('/search');
     }
-    _searchFieldsChanged(fields) {
+    protected searchFieldsChanged(fields: string[]) {
         if (!this.selectedSearchFilters) {
             this.selectedSearchFilters = {};
         }
         this.set('selectedSearchFilters.fields', fields);
     }
-    _searchTagsChanged(tags) {
+    protected searchTagsChanged(tags: string[]) {
         if (!this.selectedSearchFilters) {
             this.selectedSearchFilters = {};
         }
@@ -436,11 +459,11 @@ class GompApp extends PolymerElement {
         this.selectedSearchFiltersCount = tags.length;
     }
 
-    _recipesModified(e) {
-        if (this.$.searchView.refresh) {
-            this.$.searchView.refresh();
+    protected recipesModified() {
+        // Use any, and not the real type, since we're using PRPL and don't want to import this staticly
+        const searchView = this.$.searchView as any;
+        if (searchView.refresh) {
+            searchView.refresh();
         }
     }
 }
-
-window.customElements.define(GompApp.is, GompApp);

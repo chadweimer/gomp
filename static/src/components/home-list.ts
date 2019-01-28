@@ -1,9 +1,14 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+'use strict';
+import { html } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
-import '../mixins/gomp-core-mixin.js';
 import './recipe-card.js';
 import '../shared-styles.js';
-class HomeList extends GompCoreMixin(PolymerElement) {
+
+@customElement('home-list')
+export class HomeList extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -84,33 +89,32 @@ class HomeList extends GompCoreMixin(PolymerElement) {
                         </div>
                     </template>
                 </div>
-                <a class="right" href="#!" on-click="_onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
+                <a class="right" href="#!" on-click="onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
             </article>
 
-            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="_handleGetRecipesRequest" on-response="_handleGetRecipesResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
 `;
     }
 
-    static get is() { return 'home-list'; }
-    static get properties() {
-        return {
-            title: {
-                type: String,
-                notify: true,
-                value: 'Recipes',
-            },
-            tags: {
-                type: Array,
-                notify: true,
-                value: [],
-                observer: '_tagsChanged',
-            },
-        };
+    @property({type: String, notify: true})
+    public title = 'Recipes';
+    @property({type: Array, notify: true, observer: 'tagsChanged'})
+    public tags = [];
+
+    protected total = 0;
+    protected recipes = [];
+
+    private get recipesAjax(): IronAjaxElement {
+        return this.$.recipesAjax as IronAjaxElement;
     }
 
-    _tagsChanged() {
-        this.$.recipesAjax.params = {
-            'q':'',
+    public refresh() {
+        this.recipesAjax.generateRequest();
+    }
+
+    protected tagsChanged() {
+        this.recipesAjax.params = {
+            'q': '',
             'tags[]': this.tags,
             'sort': 'random',
             'dir': 'asc',
@@ -118,24 +122,18 @@ class HomeList extends GompCoreMixin(PolymerElement) {
             'count': 6,
         };
     }
-
-    refresh() {
-        this.$.recipesAjax.generateRequest();
-    }
-    _handleGetRecipesRequest(e) {
+    protected handleGetRecipesRequest() {
         this.total = 0;
         this.recipes = [];
     }
-    _handleGetRecipesResponse(e) {
+    protected handleGetRecipesResponse(e: CustomEvent) {
         this.total = e.detail.response.total;
         this.recipes = e.detail.response.recipes;
     }
-    _onLinkClicked(e) {
+    protected onLinkClicked(e: Event) {
         // Don't nativate to "#!"
         e.preventDefault();
 
         this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
     }
 }
-
-window.customElements.define(HomeList.is, HomeList);

@@ -1,20 +1,32 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@polymer/app-route/app-route.js';
+'use strict';
+import { html } from '@polymer/polymer/polymer-element.js';
+import { customElement, property } from '@polymer/decorators';
+import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { GompBaseElement } from './common/gomp-base-element.js';
+import { RecipeDisplay } from './components/recipe-display.js';
+import { ImageList } from './components/image-list.js';
+import { NoteList } from './components/note-list.js';
+import { ConfirmationDialog } from './components/confirmation-dialog.js';
+import { RecipeEdit } from './components/recipe-edit.js';
+import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
 import '@polymer/iron-ajax/iron-ajax.js';
+import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-icons/editor-icons.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial-action.js';
-import './mixins/gomp-core-mixin.js';
+import './components/recipe-display.js';
 import './components/image-list.js';
 import './components/note-list.js';
-import './components/recipe-display.js';
+import './components/confirmation-dialog.js';
 import './components/recipe-edit.js';
 import './components/recipe-link-dialog.js';
 import './shared-styles.js';
-class RecipesView extends GompCoreMixin(PolymerElement) {
+
+@customElement('recipes-view')
+export class RecipesView extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -103,7 +115,7 @@ class RecipesView extends GompCoreMixin(PolymerElement) {
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]"></recipe-display>
                     <div class="tab-container">
                         <div id="images" class="tab">
-                            <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="_refreshMainImage" on-image-deleted="_refreshMainImage" on-main-image-changed="_refreshMainImage"></image-list>
+                            <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage"></image-list>
                         </div>
                         <div id="notes" class="tab">
                             <note-list id="noteList" recipe-id="[[recipeId]]"></note-list>
@@ -112,112 +124,125 @@ class RecipesView extends GompCoreMixin(PolymerElement) {
                 </div>
                 <div hidden\$="[[!editing]]">
                     <h4>Edit Recipe</h4>
-                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="_editCanceled" on-recipe-edit-save="_editSaved"></recipe-edit>
+                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
                 </div>
             </div>
             <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
-                <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="_onNewButtonClicked">New</paper-fab-speed-dial-action></a>
-                <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="_onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="_onEditButtonClicked">Edit</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="_onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="_onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
-                <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-click="_onAddNoteButtonClicked">Add Note</paper-fab-speed-dial-action>
+                <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
+                <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
+                <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-click="onAddNoteButtonClicked">Add Note</paper-fab-speed-dial-action>
             </paper-fab-speed-dial>
 
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="_deleteRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
-            <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="_onLinkAdded"></recipe-link-dialog>
+            <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
 
-            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="_handleDeleteRecipeResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
 `;
     }
 
-    static get is() { return 'recipes-view'; }
-    static get properties() {
-        return {
-            route: {
-                type: Object,
-                notify: true,
-            },
-            recipeId: {
-                type: String,
-            },
-            editing: {
-                type: Boolean,
-                notify: true,
-                value: false,
-            },
-        };
+    @property({type: Object, notify: true})
+    public route: object = {};
+    @property({type: String, notify: true})
+    public recipeId = '';
+    @property({type: Boolean, notify: true})
+    public editing = false;
+
+    private get recipeDisplay(): RecipeDisplay {
+        return this.$.recipeDisplay as RecipeDisplay;
     }
+    private get imageList(): ImageList {
+        return this.$.imageList as ImageList;
+    }
+    private get noteList(): NoteList {
+        return this.$.noteList as NoteList;
+    }
+    private get recipeEdit(): RecipeEdit {
+        return this.$.recipeEdit as RecipeEdit;
+    }
+    private get confirmDeleteDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteDialog as ConfirmationDialog;
+    }
+    private get recipeLinkDialog(): RecipeLinkDialog {
+        return this.$.recipeLinkDialog as RecipeLinkDialog;
+    }
+    private get actions(): any {
+        return this.$.actions as any;
+    }
+    private get deleteAjax(): IronAjaxElement {
+        return this.$.deleteAjax as IronAjaxElement;
+    }
+
     static get observers() {
         return [
-            '_recipeIdChanged(routeData.recipeId)',
+            'recipeIdChanged(routeData.recipeId)',
         ];
     }
 
-    refresh() {
-        this.$.recipeDisplay.refresh();
-        this.$.imageList.refresh();
-        this.$.noteList.refresh();
+    public refresh() {
+        this.recipeDisplay.refresh(null);
+        this.imageList.refresh();
+        this.noteList.refresh();
     }
 
-    _isActiveChanged(active) {
+    protected isActiveChanged(isActive: boolean) {
         // Always exit edit mode when we change screens
         this.editing = false;
 
-        if (active) {
+        if (isActive) {
             this.refresh();
         }
     }
-    _recipeIdChanged(recipeId) {
+    protected recipeIdChanged(recipeId: string) {
         this.recipeId = recipeId;
     }
-    _onNewButtonClicked(e) {
-        this.$.actions.close();
+    protected onNewButtonClicked() {
+        this.actions.close();
     }
-    _onDeleteButtonClicked(e) {
-        this.$.confirmDeleteDialog.open();
-        this.$.actions.close();
+    protected onDeleteButtonClicked() {
+        this.confirmDeleteDialog.open();
+        this.actions.close();
     }
-    _deleteRecipe(e) {
-        this.$.deleteAjax.generateRequest();
+    protected deleteRecipe() {
+        this.deleteAjax.generateRequest();
     }
-    _onEditButtonClicked(e) {
-        this.$.actions.close();
-        this.$.recipeEdit.refresh();
+    protected onEditButtonClicked() {
+        this.actions.close();
+        this.recipeEdit.refresh();
         this.editing = true;
     }
-    _editCanceled(e) {
+    protected editCanceled() {
         this.editing = false;
         this.refresh();
     }
-    _editSaved(e) {
+    protected editSaved() {
         this.editing = false;
         this.refresh();
     }
-    _onAddLinkButtonClicked(e) {
-        this.$.recipeLinkDialog.open();
-        this.$.actions.close();
+    protected onAddLinkButtonClicked() {
+        this.recipeLinkDialog.open();
+        this.actions.close();
     }
-    _onAddImageButtonClicked(e) {
-        this.$.actions.close();
-        this.$.imageList.add();
+    protected onAddImageButtonClicked() {
+        this.actions.close();
+        this.imageList.add();
     }
-    _onAddNoteButtonClicked(e) {
-        this.$.actions.close();
-        this.$.noteList.add();
+    protected onAddNoteButtonClicked() {
+        this.actions.close();
+        this.noteList.add();
     }
-    _refreshMainImage(e) {
-        this.$.recipeDisplay.refresh({mainImage: true});
+    protected refreshMainImage() {
+        this.recipeDisplay.refresh({mainImage: true});
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
-    _onLinkAdded(e) {
-        this.$.recipeDisplay.refresh({links: true});
+    protected onLinkAdded() {
+        this.recipeDisplay.refresh({links: true});
     }
-    _handleDeleteRecipeResponse(e) {
+    protected handleDeleteRecipeResponse() {
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
     }
 }
-
-window.customElements.define(RecipesView.is, RecipesView);
