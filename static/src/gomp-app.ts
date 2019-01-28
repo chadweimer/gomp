@@ -235,6 +235,12 @@ export class GompApp extends PolymerElement {
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
     }
+    private get toast(): PaperToastElement {
+        return this.$.toast as PaperToastElement;
+    }
+    private get drawer(): AppDrawerElement {
+        return this.$.drawer as AppDrawerElement;
+    }
     private get tagsAjax(): IronAjaxElement {
         return this.$.tagsAjax as IronAjaxElement;
     }
@@ -310,18 +316,16 @@ export class GompApp extends PolymerElement {
     }
 
     protected onShowToast(e: CustomEvent) {
-        const toast = this.$.toast as PaperToastElement;
-        toast.text = e.detail.message;
-        toast.open();
+        this.toast.text = e.detail.message;
+        this.toast.open();
     }
 
     protected routePageChanged(page: string|null|undefined) {
         this.page = page || 'home';
 
         // Close a non-persistent drawer when the page & route are changed.
-        const drawer = this.$.drawer as AppDrawerElement;
-        if (!drawer.persistent) {
-            drawer.close();
+        if (!this.drawer.persistent) {
+            this.drawer.close();
         }
     }
     protected pageChanged(page: string) {
