@@ -3,6 +3,8 @@ package models
 import "github.com/jmoiron/sqlx"
 
 // TagModel provides functionality to edit and retrieve tags attached to recipes.
+//
+// swagger:ignore
 type TagModel struct {
 	*Model
 }

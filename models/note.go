@@ -7,11 +7,15 @@ import (
 )
 
 // NoteModel provides functionality to edit and retrieve notes attached to recipes.
+//
+// swagger:ignore
 type NoteModel struct {
 	*Model
 }
 
 // Note represents an individual comment (or note) on a recipe
+//
+// swagger:model note
 type Note struct {
 	ID         int64     `json:"id" db:"id"`
 	RecipeID   int64     `json:"recipeId" db:"recipe_id"`

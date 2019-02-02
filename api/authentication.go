@@ -13,12 +13,21 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// swagger:model
 type authenticateRequest struct {
+	// username
+	//
+	// recuired: true
 	UserName string `json:"username"`
+	// password
+	//
+	// recuired: true
 	Password string `json:"password"`
 }
 
+// swagger:model
 type authenticateResponse struct {
+	// the JSON Web Token
 	Token string `json:"token"`
 }
 

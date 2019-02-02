@@ -18,12 +18,16 @@ import (
 )
 
 // RecipeImageModel provides functionality to edit and retrieve images attached to recipes
+//
+// swagger:ignore
 type RecipeImageModel struct {
 	*Model
 	upl upload.Driver
 }
 
 // RecipeImage represents the data associated with an image attached to a recipe
+//
+// swagger:model recipeImage
 type RecipeImage struct {
 	ID           int64     `json:"id" db:"id"`
 	RecipeID     int64     `json:"recipeId" db:"recipe_id"`

@@ -37,29 +37,47 @@ const (
 var SupportedFields = [...]string{"name", "ingredients", "directions"}
 
 // SearchModel provides functionality to search recipes.
+//
+// swagger:ignore
 type SearchModel struct {
 	*Model
 }
 
 // RecipesFilter is the primary model class for recipe search
+//
+// swagger:parameters getRecipes
 type RecipesFilter struct {
-	Query   string   `json:"query"`
-	Fields  []string `json:"fields"`
-	Tags    []string `json:"tags"`
-	SortBy  string   `json:"sortBy"`
-	SortDir string   `json:"sortDir"`
-	Page    int64    `json:"page"`
-	Count   int64    `json:"count"`
+	// the text query
+	Query string `json:"q"`
+	// names of the fields to search on
+	Fields []string `json:"fields"`
+	// tags to filter by
+	Tags []string `json:"tags"`
+	// what to sort by (e.g., name)
+	SortBy string `json:"sortBy"`
+	// the sort direction (asc, desc)
+	SortDir string `json:"sortDir"`
+	// the page number
+	Page int64 `json:"page"`
+	// the number of results per page
+	Count int64 `json:"count"`
 }
 
 // TagsFilter is the primary model class for tag search
+//
+// swagger:parameters getTags
 type TagsFilter struct {
-	SortBy  string `json:"sortBy"`
+	// what to sort by
+	SortBy string `json:"sortBy"`
+	// the sort direction (asc, desc)
 	SortDir string `json:"sortDir"`
-	Count   int64  `json:"count"`
+	// the number of results
+	Count int64 `json:"count"`
 }
 
 // RecipeCompact is the primary model class for bulk recipe retrieval
+//
+// swagger:model recipeCompact
 type RecipeCompact struct {
 	ID            int64   `json:"id" db:"id"`
 	Name          string  `json:"name" db:"name"`

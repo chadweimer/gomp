@@ -5,6 +5,8 @@ import (
 )
 
 // RecipeLinkModel provides functionality to edit and retrieve recipe links.
+//
+// swagger:ignore
 type RecipeLinkModel struct {
 	*Model
 }

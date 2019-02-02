@@ -9,7 +9,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type userPutPasswordParameters struct {
+// swagger:model
+type putUserPasswordRequest struct {
 	ID              int64  `json:"id"`
 	CurrentPassword string `json:"currentPassword"`
 	NewPassword     string `json:"newPassword"`
@@ -52,7 +53,7 @@ func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	params := new(userPutPasswordParameters)
+	params := new(putUserPasswordRequest)
 	if err := readJSONFromRequest(req, params); err != nil {
 		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return

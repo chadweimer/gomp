@@ -9,11 +9,15 @@ import (
 )
 
 // UserModel provides functionality to edit and authenticate users.
+//
+// swagger:ignore
 type UserModel struct {
 	*Model
 }
 
 // User represents an individual user
+//
+// swagger:model user
 type User struct {
 	ID           int64  `json:"id" db:"id"`
 	Username     string `json:"username" db:"username"`
@@ -21,6 +25,8 @@ type User struct {
 }
 
 // UserSettings represents the settings for an individual user
+//
+// swagger:model userSettings
 type UserSettings struct {
 	UserID       int64   `json:"userId" db:"user_id"`
 	HomeTitle    *string `json:"homeTitle" db:"home_title"`

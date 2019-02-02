@@ -7,11 +7,15 @@ import (
 )
 
 // RecipeModel provides functionality to edit and retrieve recipes.
+//
+// swagger:ignore
 type RecipeModel struct {
 	*Model
 }
 
 // Recipe is the primary model class for recipe storage and retrieval
+//
+// swagger:model recipe
 type Recipe struct {
 	ID            int64    `json:"id" db:"id"`
 	Name          string   `json:"name" db:"name"`

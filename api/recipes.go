@@ -9,9 +9,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// swagger:model
 type getRecipesResponse struct {
-	Recipes *[]models.RecipeCompact `json:"recipes"`
-	Total   int64                   `json:"total"`
+	// the list of recipes in this "page"
+	Recipes []models.RecipeCompact `json:"recipes"`
+	// the total number of recipes matching the supplied filter
+	Total int64 `json:"total"`
 }
 
 func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -47,7 +50,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 		return
 	}
 
-	h.JSON(resp, http.StatusOK, getRecipesResponse{Recipes: recipes, Total: total})
+	h.JSON(resp, http.StatusOK, getRecipesResponse{Recipes: *recipes, Total: total})
 }
 
 func (h apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
