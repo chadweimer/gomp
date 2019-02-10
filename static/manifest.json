@@ -1,4 +1,7 @@
 {
+	"start_url": "/home",
+	"display": "standalone",
+	"description": "Web-based recipe book.",
 	"icons": [
 		{
 			"src": "/static/android-chrome-192x192.png",
