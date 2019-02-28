@@ -2,6 +2,7 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -63,14 +64,16 @@ export class TagInput extends GompBaseElement {
     private get getSuggestedTagsAjax(): IronAjaxElement {
         return this.$.getSuggestedTagsAjax as IronAjaxElement;
     }
+    private get tagsElement(): PaperTagsInput {
+        return this.$.tags as PaperTagsInput;
+    }
 
     public refresh() {
         this.getSuggestedTagsAjax.generateRequest();
     }
 
     protected onSuggestedTagClicked(e: any) {
-        const tagsElement = this.$.tags as any;
-        tagsElement.add(e.model.item);
+        this.tagsElement.addTag(e.model.item);
 
         // Remove the tag from the suggestion list
         const suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
