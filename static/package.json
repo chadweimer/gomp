@@ -12,7 +12,8 @@
   },
   "scripts": {
     "lint": "tslint -c ./tslint.json ./**/*.ts",
-    "clean": "tsc --build . --clean",
+    "clear": "rm -fr ./node_modules",
+    "clean": "tsc --build . --clean && rm -fr ./build",
     "build": "tsc && polymer build"
   },
   "version": "3.0.0",
@@ -30,7 +31,7 @@
     "@cwmr/paper-divider": "^3.0.0",
     "@cwmr/paper-fab-speed-dial": "^3.0.0",
     "@cwmr/paper-password-input": "^3.0.0",
-    "@cwmr/paper-search": "^3.0.0",
+    "@cwmr/paper-search": "^3.0.1",
     "@cwmr/paper-tags-input": "^3.1.0",
     "@polymer/app-layout": "^3.0.0",
     "@polymer/app-route": "^3.0.0",
