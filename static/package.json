@@ -12,7 +12,8 @@
   },
   "scripts": {
     "lint": "tslint -c ./tslint.json ./**/*.ts",
-    "clean": "tsc --build . --clean",
+    "clear": "rm -fr ./node_modules",
+    "clean": "tsc --build . --clean && rm -fr ./build",
     "build": "tsc && polymer build"
   },
   "version": "3.0.0",
