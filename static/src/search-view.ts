@@ -167,7 +167,7 @@ export class SearchView extends GompBaseElement {
                           <template is="dom-repeat" items="[[columnize(recipes, 3)]]" as="inner">
                               <div class="recipeContainer">
                                   <template is="dom-repeat" items="[[inner]]" as="recipe">
-                                      <a href="/recipes/[[recipe.id]]">
+                                      <a href="/recipes/[[recipe.id]]" tabindex="-1">
                                          <paper-icon-item>
                                              <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
                                              <paper-item-body>

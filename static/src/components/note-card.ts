@@ -72,33 +72,37 @@ export class NoteCard extends GompBaseElement {
                 paper-icon-item {
                     cursor: pointer;
                 }
-          </style>
+            </style>
 
-          <paper-card>
-              <div class="card-content">
-                  <div class="note-header">
-                      <iron-icon icon="communication:comment"></iron-icon>
-                      <span class="date">[[formatDate(note.createdAt)]]</span>
-                      <paper-menu-button id="noteMenu" horizontal-align="right">
-                          <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
-                          <paper-listbox slot="dropdown-content">
-                              <paper-icon-item on-click="onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                              <paper-icon-item on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                          </paper-listbox>
-                      </paper-menu-button>
-                  </div>
-                  <paper-divider></paper-divider>
-                  <p class="note-content">[[note.text]]</p>
-                  <paper-divider hidden\$="[[!showModifiedDate(note)]]"></paper-divider>
-                  <div id="modified-date" class="note-footer" hidden\$="[[!showModifiedDate(note)]]">
-                      <span class="date">[[formatDate(note.modifiedAt)]]</span>
-                  </div>
-              </div>
-          </paper-card>
+            <paper-card>
+                <div class="card-content">
+                    <div class="note-header">
+                        <iron-icon icon="communication:comment"></iron-icon>
+                        <span class="date">[[formatDate(note.createdAt)]]</span>
+                        <paper-menu-button id="noteMenu" horizontal-align="right">
+                            <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                            <paper-listbox slot="dropdown-content">
+                                <a href="#!" tabindex="-1" on-click="onEditClicked">
+                                    <paper-icon-item tabindex="-1"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
+                                </a>
+                                <a href="#!" tabindex="-1" on-click="onDeleteClicked">
+                                    <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                                </a>
+                            </paper-listbox>
+                        </paper-menu-button>
+                    </div>
+                    <paper-divider></paper-divider>
+                    <p class="note-content">[[note.text]]</p>
+                    <paper-divider hidden\$="[[!showModifiedDate(note)]]"></paper-divider>
+                    <div id="modified-date" class="note-footer" hidden\$="[[!showModifiedDate(note)]]">
+                        <span class="date">[[formatDate(note.modifiedAt)]]</span>
+                    </div>
+                </div>
+            </paper-card>
 
-          <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
 
-          <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
+            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 
@@ -113,10 +117,16 @@ export class NoteCard extends GompBaseElement {
     }
 
     protected onEditClicked(e: any) {
+        // Don't nativate to "#!"
+        e.preventDefault();
+
         e.target.closest('#noteMenu').close();
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
     protected onDeleteClicked(e: any) {
+        // Don't nativate to "#!"
+        e.preventDefault();
+
         e.target.closest('#noteMenu').close();
         this.confirmDeleteDialog.open();
     }
