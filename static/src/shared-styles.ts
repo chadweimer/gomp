@@ -28,6 +28,10 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 font-weight: 500;
                 color: #212121;
                 text-decoration: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
             }
         </style>
     </template>
