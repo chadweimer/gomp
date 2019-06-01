@@ -14,7 +14,8 @@
         "src/settings-view.js"
     ],
     "extraDependencies": [
-        "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"
+        "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js",
+        "node_modules/web-animations-js/*.js"
     ],
     "builds": [{
         "name": "default",
