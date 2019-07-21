@@ -45,19 +45,29 @@ type Config struct {
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
 	DatabaseURL string
+
+	// MigrationsTableName gets the name of the database migrations table to use.
+	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
+	MigrationsTableName string
+
+	// ForceMigrationVersion gets a version to force the migrations to on startup.
+	// Set to a negative number to skip forcing a version.
+	ForceMigrationVersion int
 }
 
 // Load reads the configuration file from the specified path
 func Load() *Config {
 	c := Config{
-		Port:             4000,
-		UploadDriver:     "fs",
-		UploadPath:       filepath.Join("data", "uploads"),
-		IsDevelopment:    false,
-		SecureKeys:       nil,
-		ApplicationTitle: "GOMP: Go Meal Planner",
-		DatabaseDriver:   "postgres",
-		DatabaseURL:      "",
+		Port:                  4000,
+		UploadDriver:          "fs",
+		UploadPath:            filepath.Join("data", "uploads"),
+		IsDevelopment:         false,
+		SecureKeys:            nil,
+		ApplicationTitle:      "GOMP: Go Meal Planner",
+		DatabaseDriver:        "postgres",
+		DatabaseURL:           "",
+		MigrationsTableName:   "",
+		ForceMigrationVersion: -1,
 	}
 
 	// If environment variables are set, use them.
@@ -69,6 +79,8 @@ func Load() *Config {
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
+	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
+	loadEnv("GOMP_FORCE_MIGRATION_VERSION", &c.ForceMigrationVersion)
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
@@ -79,6 +91,8 @@ func Load() *Config {
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
+		log.Printf("[config] MigrationsTableName=%s", c.MigrationsTableName)
+		log.Printf("[config] ForceMigrationVersion=%d", c.ForceMigrationVersion)
 	}
 
 	return &c
@@ -123,7 +137,7 @@ func (c *Config) Validate() error {
 
 func loadEnv(name string, dest interface{}) {
 	var err error
-	if envStr := os.Getenv(name); envStr != "" {
+	if envStr, ok := os.LookupEnv(name); ok {
 		switch dest := dest.(type) {
 		case *string:
 			*dest = envStr
