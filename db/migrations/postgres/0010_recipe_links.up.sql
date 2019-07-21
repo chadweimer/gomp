@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE recipe_link (
     recipe_id INTEGER NOT NULL,
     dest_recipe_id INTEGER NOT NULL,
@@ -8,3 +10,5 @@ CREATE TABLE recipe_link (
 );
 CREATE INDEX recipe_link_recipe_id_idx ON recipe_link(recipe_id);
 CREATE INDEX recipe_link_dest_recipe_id_idx ON recipe_link(dest_recipe_id);
+
+COMMIT;
