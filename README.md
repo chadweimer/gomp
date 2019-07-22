@@ -13,16 +13,17 @@ Web-based recipe book.
 
 The following table summarizes the available configuration settings, which are settable through environment variables.
 
-| ENV                      | Value    | Default               |
-|--------------------------|----------|-----------------------|
-| PORT                     | uint     | 4000                  |
-| GOMP\_UPLOAD\_DRIVER     | string   | fs                    |
-| GOMP\_UPLOAD\_PATH       | string   | data                  |
-| GOMP\_IS_DEVELOPMENT     | '0', '1' | 0                     |
-| SECURE\_KEY              | []string | &lt;nil&gt;           |
-| GOMP\_APPLICATION\_TITLE | string   | GOMP: Go Meal Planner |
-| DATABASE_DRIVER          | string   | postgres              |
-| DATABASE\_URL            | string   | &lt;empty&gt;         |
+| ENV                             | Value    | Default               |
+|---------------------------------|----------|-----------------------|
+| PORT                            | uint     | 4000                  |
+| GOMP\_UPLOAD\_DRIVER            | string   | fs                    |
+| GOMP\_UPLOAD\_PATH              | string   | data                  |
+| GOMP\_IS_DEVELOPMENT            | '0', '1' | 0                     |
+| SECURE\_KEY                     | []string | &lt;nil&gt;           |
+| GOMP\_APPLICATION\_TITLE        | string   | GOMP: Go Meal Planner |
+| DATABASE_DRIVER                 | string   | postgres              |
+| DATABASE\_URL                   | string   | &lt;empty&gt;         |
+| GOMP\_FORCE\_MIGRATION\_VERSION | int      | -1                    |
 
 ## Database Support
 
