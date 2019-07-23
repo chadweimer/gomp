@@ -44,6 +44,8 @@ func AddRoutes(r *router.RouterGroup, renderer *render.Render, cfg *conf.Config,
 	h.r.Group("/v1", func(v1 *router.RouterGroup) {
 		v1.GET("/app/configuration", h.getAppConfiguration)
 		v1.POST("/auth", h.postAuthenticate)
+		v1.DELETE("/images/:imageID", h.requireAuthentication(h.deleteImage))
+		v1.GET("/tags", h.requireAuthentication(h.getTags))
 		v1.Group("/recipes", func(recipes *router.RouterGroup) {
 			recipes.GET("", h.requireAuthentication(h.getRecipes))
 			recipes.POST("", h.requireAuthentication(h.postRecipe))
@@ -62,11 +64,11 @@ func AddRoutes(r *router.RouterGroup, renderer *render.Render, cfg *conf.Config,
 				recipe.DELETE("/links/:destRecipeID", h.requireAuthentication(h.deleteRecipeLink))
 			})
 		})
-		v1.DELETE("/images/:imageID", h.requireAuthentication(h.deleteImage))
-		v1.POST("/notes", h.requireAuthentication(h.postNote))
-		v1.PUT("/notes/:noteID", h.requireAuthentication(h.putNote))
-		v1.DELETE("/notes/:noteID", h.requireAuthentication(h.deleteNote))
-		v1.GET("/tags", h.requireAuthentication(h.getTags))
+		v1.Group("/notes", func(notes *router.RouterGroup) {
+			notes.POST("", h.requireAuthentication(h.postNote))
+			notes.PUT("/:noteID", h.requireAuthentication(h.putNote))
+			notes.DELETE("/:noteID", h.requireAuthentication(h.deleteNote))
+		})
 		v1.Group("/users", func(users *router.RouterGroup) {
 			users.GET("/:userID", h.requireAuthentication(h.getUser))
 			users.PUT("/:userID/password", h.requireAuthentication(h.putUserPassword))
