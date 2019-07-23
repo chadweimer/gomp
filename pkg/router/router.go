@@ -39,8 +39,12 @@ type RouterGroup struct {
 }
 
 func (r *RouterGroup) Group(path string) *RouterGroup {
+	fullPath := path
+	if len(r.prefix) > 0 {
+		fullPath = r.prefix + path
+	}
 	return &RouterGroup {
 		hr:     r.hr,
-		prefix: path,
+		prefix: fullPath,
 	}
 }
