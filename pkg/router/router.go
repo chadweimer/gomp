@@ -27,6 +27,7 @@ type GroupFunc func(*RouterGroup)
 type RouterGroup struct {
 	hr *httprouter.Router
 	prefix string
+	middlewares []middleware
 }
 
 func (r *RouterGroup) NewGroup(path string) *RouterGroup {
@@ -37,6 +38,7 @@ func (r *RouterGroup) NewGroup(path string) *RouterGroup {
 	return &RouterGroup {
 		hr:     r.hr,
 		prefix: fullPath,
+		middlewares: make([]middleware, 0, 5),
 	}
 }
 
@@ -68,8 +70,17 @@ func (m middleware) Handler(rw http.ResponseWriter, r *http.Request) {
 	m.handler(rw, r, m.next)
 }
 
-func(r *RouterGroup) Use(f MiddlwareFunc) {
-	// TODO: Build middleware chain
+func(r *RouterGroup) Use(f MiddlewareFunc) {
+	lastM := r.middlewares[len(r.middlewares)-1]
+
+	newM := middleware {
+		handler: f,
+		next: lastM.next,
+	}
+
+	lastM.next = newM.Handler
+
+	r.middlewares = append(r.middlewares, newM)
 }
 
 func (r *RouterGroup) GET(path string, handle httprouter.Handle) { r.Handle("GET", path, handle) }
