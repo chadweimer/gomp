@@ -37,8 +37,6 @@ func (r *RouterGroup) NewGroup(path string) *RouterGroup {
 	return &RouterGroup {
 		hr:     r.hr,
 		prefix: fullPath,
-		// TODO: Need to make a fopy
-		middlewares: r.middlewares,
 	}
 }
 
