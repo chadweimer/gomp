@@ -13,8 +13,8 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/pkg/router"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
 	"github.com/urfave/negroni"
 )
@@ -37,13 +37,11 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, model)
+	mainMux := router.New()
 
-	mainMux := httprouter.New()
-	mainMux.Handler("GET", "/api/*apipath", apiHandler)
-	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
-	mainMux.Handler("POST", "/api/*apipath", apiHandler)
-	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
+	apiGroup := mainMux.Group("/api")
+	api.AddRoutes(apiGroup, renderer, cfg, upl, model)
+
 	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
