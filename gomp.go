@@ -39,7 +39,7 @@ func main() {
 
 	mainMux := router.New()
 
-	apiGroup := mainMux.Group("/api")
+	apiGroup := mainMux.NewGroup("/api")
 	api.AddRoutes(apiGroup, renderer, cfg, upl, model)
 
 	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
