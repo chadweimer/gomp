@@ -39,14 +39,18 @@ func main() {
 
 	mainMux := router.New()
 
-	apiGroup := mainMux.NewGroup("/api")
-	api.AddRoutes(apiGroup, renderer, cfg, upl, model)
-
+	// Add the static routes
 	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		http.ServeFile(resp, req, "static/index.html")
 	})
+
+	// Add the API routes
+	apiGroup := mainMux.NewGroup("/api")
+	apiHandler := api.New(renderer, cfg, upl, model)
+	apiHandler.AddRoutes(apiGroup)
+
 	n.UseHandler(mainMux)
 
 	// subscribe to SIGINT signals

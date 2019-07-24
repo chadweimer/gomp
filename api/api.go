@@ -21,63 +21,76 @@ var errMismatchedRecipeID = errors.New("The recipe id in the path does not match
 
 // ---- End Standard Errors ----
 
-type apiHandler struct {
+// ApiHandler defines all the routes for the REST API layer
+type ApiHandler struct {
 	*render.Render
 
-	r      *router.RouterGroup
 	cfg    *conf.Config
 	upl    upload.Driver
 	model  *models.Model
 }
 
-// AddRoutes adds all the needed API routes to the provided RouterGroup
-func AddRoutes(r *router.RouterGroup, renderer *render.Render, cfg *conf.Config, upl upload.Driver, model *models.Model) {
-	h := apiHandler{
+// New initializes a new instance of an ApiHandler
+func New(renderer *render.Render, cfg *conf.Config, upl upload.Driver, model *models.Model) *ApiHandler {
+	return &apiHandler {
 		Render: renderer,
 
-		r:     r,
 		cfg:   cfg,
 		upl:   upl,
 		model: model,
 	}
+}
 
-	h.r.Group("/v1", func(v1 *router.RouterGroup) {
+// AddRoutes adds all the needed API routes to the provided RouterGroup
+func (h *ApiHandler) AddRoutes(r *router.RouterGroup) {
+	r.Group("/v1", func(v1 *router.RouterGroup) {
+		// Everything within this group doesn't require authentication
 		v1.GET("/app/configuration", h.getAppConfiguration)
 		v1.POST("/auth", h.postAuthenticate)
-		v1.DELETE("/images/:imageID", h.requireAuthentication(h.deleteImage))
-		v1.GET("/tags", h.requireAuthentication(h.getTags))
-		v1.Group("/recipes", func(recipes *router.RouterGroup) {
-			recipes.GET("", h.requireAuthentication(h.getRecipes))
-			recipes.POST("", h.requireAuthentication(h.postRecipe))
-			recipes.Group("/:recipeID", func(recipe *router.RouterGroup) {
-				recipe.GET("", h.requireAuthentication(h.getRecipe))
-				recipe.PUT("", h.requireAuthentication(h.putRecipe))
-				recipe.DELETE("", h.requireAuthentication(h.deleteRecipe))
-				recipe.PUT("/rating", h.requireAuthentication(h.putRecipeRating))
-				recipe.GET("/image", h.requireAuthentication(h.getRecipeMainImage))
-				recipe.PUT("/image", h.requireAuthentication(h.putRecipeMainImage))
-				recipe.GET("/images", h.requireAuthentication(h.getRecipeImages))
-				recipe.POST("/images", h.requireAuthentication(h.postRecipeImage))
-				recipe.GET("/notes", h.requireAuthentication(h.getRecipeNotes))
-				recipe.GET("/links", h.requireAuthentication(h.getRecipeLinks))
-				recipe.POST("/links", h.requireAuthentication(h.postRecipeLink))
-				recipe.DELETE("/links/:destRecipeID", h.requireAuthentication(h.deleteRecipeLink))
+
+		v1.Group("", func(private *router.RouterGroup) {
+			// Everything within this group requires authentication
+			private.Use(h.requireAuthentication)
+
+			private.Group("/recipes", func(recipes *router.RouterGroup) {
+				recipes.GET("", h.getRecipes)
+				recipes.POST("", h.postRecipe)
+
+				recipes.Group("/:recipeID", func(recipe *router.RouterGroup) {
+					recipe.GET("", h.getRecipe)
+					recipe.PUT("", h.putRecipe)
+					recipe.DELETE("", h.deleteRecipe)
+					recipe.PUT("/rating", h.putRecipeRating)
+					recipe.GET("/image", h.getRecipeMainImage)
+					recipe.PUT("/image", h.putRecipeMainImage)
+					recipe.GET("/images", h.getRecipeImages)
+					recipe.POST("/images", h.postRecipeImage)
+					recipe.GET("/notes", h.getRecipeNotes)
+					recipe.GET("/links", h.getRecipeLinks)
+					recipe.POST("/links", h.postRecipeLink)
+					recipe.DELETE("/links/:destRecipeID", h.deleteRecipeLink)
+				})
 			})
+
+			private.Group("/notes", func(notes *router.RouterGroup) {
+				notes.POST("", h.postNote)
+				notes.PUT("/:noteID", h.putNote)
+				notes.DELETE("/:noteID", h.deleteNote)
+			})
+
+			private.Group("/users", func(users *router.RouterGroup) {
+				users.GET("/:userID", h.getUser)
+				users.PUT("/:userID/password", h.putUserPassword)
+				users.GET("/:userID/settings", h.getUserSettings)
+				users.PUT("/:userID/settings", h.putUserSettings)
+			})
+
+			private.DELETE("/images/:imageID", h.deleteImage)
+			private.GET("/tags", h.getTags)
+			private.POST("/uploads", h.postUpload)
 		})
-		v1.Group("/notes", func(notes *router.RouterGroup) {
-			notes.POST("", h.requireAuthentication(h.postNote))
-			notes.PUT("/:noteID", h.requireAuthentication(h.putNote))
-			notes.DELETE("/:noteID", h.requireAuthentication(h.deleteNote))
-		})
-		v1.Group("/users", func(users *router.RouterGroup) {
-			users.GET("/:userID", h.requireAuthentication(h.getUser))
-			users.PUT("/:userID/password", h.requireAuthentication(h.putUserPassword))
-			users.GET("/:userID/settings", h.requireAuthentication(h.getUserSettings))
-			users.PUT("/:userID/settings", h.requireAuthentication(h.putUserSettings))
-		})
-		v1.POST("/uploads", h.requireAuthentication(h.postUpload))
 	})
-	//h.r.NotFound = http.HandlerFunc(h.notFound)
+	//r.NotFound = http.HandlerFunc(h.notFound)
 }
 
 //func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
