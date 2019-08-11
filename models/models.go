@@ -158,8 +158,7 @@ func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string
 		return err
 	}
 
-	_, _, err = m.Version()
-	return err
+	return nil
 }
 
 func lock(conn *sql.Conn) error {
