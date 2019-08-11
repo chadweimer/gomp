@@ -150,15 +150,12 @@ func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string
 	}
 
 	if MigrationsForceVersion > 0 {
-		if err := m.Force(MigrationsForceVersion); err != nil {
-			return err
-		}
+		err = m.Force(MigrationsForceVersion)
 	} else {
-		if err := m.Up(); err != nil {
-			if err != migrate.ErrNoChange {
-				return err
-			}
-		}
+		err = m.Up()
+	}
+	if err != nil && err != migrate.ErrNoChange {
+		return err
 	}
 
 	_, _, err = m.Version()
