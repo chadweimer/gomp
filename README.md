@@ -13,17 +13,18 @@ Web-based recipe book.
 
 The following table summarizes the available configuration settings, which are settable through environment variables.
 
-| ENV                             | Value    | Default               |
-|---------------------------------|----------|-----------------------|
-| PORT                            | uint     | 4000                  |
-| GOMP\_UPLOAD\_DRIVER            | string   | fs                    |
-| GOMP\_UPLOAD\_PATH              | string   | data                  |
-| GOMP\_IS_DEVELOPMENT            | '0', '1' | 0                     |
-| SECURE\_KEY                     | []string | &lt;nil&gt;           |
-| GOMP\_APPLICATION\_TITLE        | string   | GOMP: Go Meal Planner |
-| DATABASE_DRIVER                 | string   | postgres              |
-| DATABASE\_URL                   | string   | &lt;empty&gt;         |
-| GOMP\_FORCE\_MIGRATION\_VERSION | int      | -1                    |
+| ENV                              | Value(s)   | Default               | Description |
+|----------------------------------|------------|-----------------------|-------------|
+| DATABASE\_DRIVER                 | 'postgres' | postgres              | Which database/sql driver to use. |
+| DATABASE\_URL                    | string     | &lt;empty&gt;         | The url (or path, connection string, etc) to use with the associated database driver when opening the database connection. |
+| GOMP\_APPLICATION\_TITLE         | string     | GOMP: Go Meal Planner | Used where the application name (title) is displayed on screen. |
+| GOMP\_IS\_DEVELOPMENT            | '0', '1'   | 0                     | Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment. |
+| GOMP\_MIGRATIONS\_TABLE\_NAME    | string     | &lt;empty&gt;         | The name of the database migrations table to use. Leave blank to use the default from https://github.com/golang-migrate/migrate. |
+| GOMP\_MIGRATIONS\_FORCE\_VERSION | int        | -1                    | A version to force the migrations to on startup. Set to a negative number to skip forcing a version. |
+| GOMP\_UPLOAD\_DRIVER             | 'fs', 's3' | fs                    | Used to select which backend data store is used for file uploads. |
+| GOMP\_UPLOAD\_PATH               | string     | data                  | The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name. |
+| PORT                             | uint       | 4000                  | The port number under which the site is being hosted. |
+| SECURE\_KEY                      | []string   | &lt;nil&gt;           | Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas. |
 
 ## Database Support
 

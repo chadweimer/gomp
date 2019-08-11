@@ -63,7 +63,7 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	if err := migrateDatabase(db, cfg.DatabaseDriver, cfg.MigrationsTableName, cfg.ForceMigrationVersion); err != nil {
+	if err := migrateDatabase(db, cfg.DatabaseDriver, cfg.MigrationsTableName, cfg.MigrationsForceVersion); err != nil {
 		log.Fatal("Failed to migrate database", err)
 	}
 
@@ -115,7 +115,7 @@ func (m *Model) tx(op func(*sqlx.Tx) error) error {
 	return tx.Commit()
 }
 
-func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string, forceMigrationVersion int) error {
+func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string, MigrationsForceVersion int) error {
 	// Lock the database while we're migrating so that multiple instances
 	// don't attempt to migrate simultaneously. This requires the same connection
 	// to be used for both locking and unlocking.
@@ -130,22 +130,24 @@ func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string
 	}
 	defer unlock(conn)
 
-	migrationPath := filepath.Join("db", "migrations", databaseDriverName)
-
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
 		MigrationsTable: migrationsTableName,
 	})
+	if err != nil {
+		return err
+	}
+
+	migrationPath := filepath.Join("db", "migrations", databaseDriverName)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
 		databaseDriverName,
 		driver)
-
-	if _, _, err := m.Version(); err != nil {
+	if err != nil {
 		return err
 	}
 
-	if forceMigrationVersion > 0 {
-		if err := m.Force(forceMigrationVersion); err != nil {
+	if MigrationsForceVersion > 0 {
+		if err := m.Force(MigrationsForceVersion); err != nil {
 			return err
 		}
 	} else {

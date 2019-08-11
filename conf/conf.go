@@ -50,24 +50,24 @@ type Config struct {
 	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
 	MigrationsTableName string
 
-	// ForceMigrationVersion gets a version to force the migrations to on startup.
+	// MigrationsForceVersion gets a version to force the migrations to on startup.
 	// Set to a negative number to skip forcing a version.
-	ForceMigrationVersion int
+	MigrationsForceVersion int
 }
 
 // Load reads the configuration file from the specified path
 func Load() *Config {
 	c := Config{
-		Port:                  4000,
-		UploadDriver:          "fs",
-		UploadPath:            filepath.Join("data", "uploads"),
-		IsDevelopment:         false,
-		SecureKeys:            nil,
-		ApplicationTitle:      "GOMP: Go Meal Planner",
-		DatabaseDriver:        "postgres",
-		DatabaseURL:           "",
-		MigrationsTableName:   "",
-		ForceMigrationVersion: -1,
+		Port:                   4000,
+		UploadDriver:           "fs",
+		UploadPath:             filepath.Join("data", "uploads"),
+		IsDevelopment:          false,
+		SecureKeys:             nil,
+		ApplicationTitle:       "GOMP: Go Meal Planner",
+		DatabaseDriver:         "postgres",
+		DatabaseURL:            "",
+		MigrationsTableName:    "",
+		MigrationsForceVersion: -1,
 	}
 
 	// If environment variables are set, use them.
@@ -80,7 +80,7 @@ func Load() *Config {
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
-	loadEnv("GOMP_FORCE_MIGRATION_VERSION", &c.ForceMigrationVersion)
+	loadEnv("GOMP_MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
@@ -92,7 +92,7 @@ func Load() *Config {
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
 		log.Printf("[config] MigrationsTableName=%s", c.MigrationsTableName)
-		log.Printf("[config] ForceMigrationVersion=%d", c.ForceMigrationVersion)
+		log.Printf("[config] MigrationsForceVersion=%d", c.MigrationsForceVersion)
 	}
 
 	return &c
