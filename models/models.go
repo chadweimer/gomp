@@ -155,7 +155,9 @@ func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string
 		}
 	} else {
 		if err := m.Up(); err != nil {
-			return err
+			if err != migrate.ErrNoChange {
+				return err
+			}
 		}
 	}
 
