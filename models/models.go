@@ -137,7 +137,7 @@ func migrateDatabase(db *sqlx.DB, databaseDriverName, migrationsTableName string
 		return err
 	}
 
-	migrationPath := filepath.Join("db", "migrations", databaseDriverName)
+	migrationPath := "file://" + filepath.Join("db", "migrations", databaseDriverName)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
 		databaseDriverName,
