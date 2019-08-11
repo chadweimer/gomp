@@ -16,6 +16,9 @@ import (
 
 	// postgres database driver
 	_ "github.com/lib/pq"
+
+	// File source for db migration
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // ---- Begin Standard Errors ----
