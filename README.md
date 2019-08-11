@@ -19,8 +19,8 @@ The following table summarizes the available configuration settings, which are s
 | DATABASE\_URL                    | string     | &lt;empty&gt;         | The url (or path, connection string, etc) to use with the associated database driver when opening the database connection. |
 | GOMP\_APPLICATION\_TITLE         | string     | GOMP: Go Meal Planner | Used where the application name (title) is displayed on screen. |
 | GOMP\_IS\_DEVELOPMENT            | '0', '1'   | 0                     | Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment. |
-| GOMP\_MIGRATIONS\_TABLE\_NAME    | string     | &lt;empty&gt;         | The name of the database migrations table to use. Leave blank to use the default from https://github.com/golang-migrate/migrate. |
 | GOMP\_MIGRATIONS\_FORCE\_VERSION | int        | -1                    | A version to force the migrations to on startup. Set to a negative number to skip forcing a version. |
+| GOMP\_MIGRATIONS\_TABLE\_NAME    | string     | &lt;empty&gt;         | The name of the database migrations table to use. Leave blank to use the default from https://github.com/golang-migrate/migrate. |
 | GOMP\_UPLOAD\_DRIVER             | 'fs', 's3' | fs                    | Used to select which backend data store is used for file uploads. |
 | GOMP\_UPLOAD\_PATH               | string     | data                  | The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name. |
 | PORT                             | uint       | 4000                  | The port number under which the site is being hosted. |
