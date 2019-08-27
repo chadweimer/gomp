@@ -8,7 +8,7 @@
 		"christian-kohler.npm-intellisense",
 		"polymer.polymer-ide",
 		"bbenoist.vagrant",
-		"PeterJausovec.vscode-docker",
+		"ms-azuretools.vscode-docker",
 		"justinribeiro.polymer2snippets"
 	]
 }

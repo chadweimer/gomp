@@ -1,17 +1,19 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
-  config.vm.box_url = "https://app.vagrantup.com/ubuntu/boxes/bionic64"
+home_path = "~"
+if ENV['HOMESHARE']
+  home_path = ENV['HOMESHARE']
+end
 
-  config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/go/src/github.com/chadweimer/gomp"
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/disco64"
+  config.vm.box_url = "https://app.vagrantup.com/ubuntu/boxes/disco64"
 
   config.vm.network "forwarded_port", guest: 5000, host: 5000
 
   # Let git know who we are
-  config.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig", run: "always"
+  config.vm.provision "file", source: "#{home_path}/.gitconfig", destination: ".gitconfig", run: "always"
 
   # Install docker in the guest
   config.vm.provision "docker" do |d|
@@ -23,13 +25,12 @@ Vagrant.configure("2") do |config|
     curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg
     sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
 
+    # Better node and npm source
+    curl -sL https://deb.nodesource.com/setup_10.x | bash -
+
     # Install necessary packages
     apt update
-    apt install -y git golang go-dep nodejs npm make code xubuntu-core virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
-
-    # Set up the go environment
-    chown -R vagrant:vagrant /go
-    echo "export GOPATH=/go" | tee -a .bashrc
+    DEBIAN_FRONTEND=noninteractive apt install -y git golang-1.12 nodejs make code xubuntu-core
 
     # Allow our user to interact with docker engine
     usermod -aG docker vagrant
@@ -44,6 +45,12 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.gui = true
     vb.memory = "4096"
+
+    if Vagrant::Util::Platform.windows? then
+      # Make symlinks work even when on a Windows host.
+      # This requires that you launch the VM as an admin
+      vb.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/vagrant", "1"]
+    end
 
     # Prevent cloudimg-console.log from being written
     vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
