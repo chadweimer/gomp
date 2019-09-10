@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE recipe_image (
     id SERIAL NOT NULL PRIMARY KEY,
     recipe_id INTEGER NOT NULL,
@@ -8,3 +10,5 @@ CREATE TABLE recipe_image (
     modified_at TIMESTAMP WITH TIME ZONE NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id)
 );
+
+COMMIT;

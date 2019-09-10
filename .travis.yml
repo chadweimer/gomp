@@ -16,7 +16,6 @@ jdk:
   - oraclejdk8
   
 cache:
-  yarn: true
   directories:
     - '$HOME/.sonar/cache'
     - '$HOME/.npm/_cacache'

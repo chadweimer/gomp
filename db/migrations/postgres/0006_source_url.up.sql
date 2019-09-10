@@ -1,2 +1,6 @@
+BEGIN;
+
 ALTER TABLE recipe
 ADD COLUMN source_url TEXT NOT NULL DEFAULT '';
+
+COMMIT;
