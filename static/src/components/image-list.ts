@@ -198,7 +198,7 @@ export class ImageList extends GompBaseElement {
 
         const menu = e.target.closest('#imageMenu');
         menu.close();
-        
+
         this.confirmDeleteDialog.dataset.id = menu.dataset.id || menu.dataId;
         this.confirmDeleteDialog.open();
     }
