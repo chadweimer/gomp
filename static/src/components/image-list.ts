@@ -83,13 +83,13 @@ export class ImageList extends GompBaseElement {
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
                 </div>
                 <div>
-                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right">
+                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
                         <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                         <paper-listbox slot="dropdown-content">
-                            <a href="#!" tabindex="-1" data-id="[[item.id]]" on-click="onSetMainImageClicked">
+                            <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
                                 <paper-icon-item tabindex="-1"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
                             </a>
-                            <a href="#!" tabindex="-1" data-id="[[item.id]]" on-click="onDeleteClicked">
+                            <a href="#!" tabindex="-1" on-click="onDeleteClicked">
                                 <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                             </a>
                         </paper-listbox>
@@ -179,11 +179,13 @@ export class ImageList extends GompBaseElement {
         }
     }
     protected onSetMainImageClicked(e: any) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
-        e.target.closest('#imageMenu').close();
-        this.confirmMainImageDialog.dataset.id = e.target.dataset.id;
+        const menu = e.target.closest('#imageMenu');
+        menu.close();
+
+        this.confirmMainImageDialog.dataset.id = menu.dataset.id || menu.dataId;
         this.confirmMainImageDialog.open();
     }
     protected setMainImage(e: any) {
@@ -191,11 +193,13 @@ export class ImageList extends GompBaseElement {
         this.setMainImageAjax.generateRequest();
     }
     protected onDeleteClicked(e: any) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
-        e.target.closest('#imageMenu').close();
-        this.confirmDeleteDialog.dataset.id = e.target.dataset.id;
+        const menu = e.target.closest('#imageMenu');
+        menu.close();
+
+        this.confirmDeleteDialog.dataset.id = menu.dataset.id || menu.dataId;
         this.confirmDeleteDialog.open();
     }
     protected deleteImage(e: any) {

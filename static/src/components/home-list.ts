@@ -131,7 +131,7 @@ export class HomeList extends GompBaseElement {
         this.recipes = e.detail.response.recipes;
     }
     protected onLinkClicked(e: Event) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
         this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
