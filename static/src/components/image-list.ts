@@ -182,10 +182,10 @@ export class ImageList extends GompBaseElement {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        let menu = e.target.closest('#imageMenu');
+        const menu = e.target.closest('#imageMenu');
         menu.close();
 
-        this.confirmMainImageDialog.dataset.id = menu.dataset.id;
+        this.confirmMainImageDialog.dataset.id = menu.dataset.id || menu.dataId;
         this.confirmMainImageDialog.open();
     }
     protected setMainImage(e: any) {
@@ -196,10 +196,10 @@ export class ImageList extends GompBaseElement {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        let menu = e.target.closest('#imageMenu');
+        const menu = e.target.closest('#imageMenu');
         menu.close();
         
-        this.confirmDeleteDialog.dataset.id = menu.dataset.id;
+        this.confirmDeleteDialog.dataset.id = menu.dataset.id || menu.dataId;
         this.confirmDeleteDialog.open();
     }
     protected deleteImage(e: any) {
