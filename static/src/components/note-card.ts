@@ -117,14 +117,14 @@ export class NoteCard extends GompBaseElement {
     }
 
     protected onEditClicked(e: any) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
         e.target.closest('#noteMenu').close();
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
     protected onDeleteClicked(e: any) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
         e.target.closest('#noteMenu').close();

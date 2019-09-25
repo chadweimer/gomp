@@ -368,7 +368,7 @@ export class GompApp extends PolymerElement {
         this.$.mainHeader.scroll(0, 0);
     }
     protected onLogoutClicked(e: Event) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
         this.logout();

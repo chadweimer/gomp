@@ -179,7 +179,7 @@ export class ImageList extends GompBaseElement {
         }
     }
     protected onSetMainImageClicked(e: any) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
         e.target.closest('#imageMenu').close();
@@ -191,7 +191,7 @@ export class ImageList extends GompBaseElement {
         this.setMainImageAjax.generateRequest();
     }
     protected onDeleteClicked(e: any) {
-        // Don't nativate to "#!"
+        // Don't navigate to "#!"
         e.preventDefault();
 
         e.target.closest('#imageMenu').close();
