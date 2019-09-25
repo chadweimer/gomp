@@ -66,7 +66,7 @@ clean-windows-amd64:
 
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
+	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R db/* $(BUILD_DIR)/windows/amd64/db
 	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/windows/amd64/static
 
