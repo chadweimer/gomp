@@ -43,5 +43,7 @@ spec:
           value: dbpassword
         - name: POSTGRES_USER
           value: dbuser
+        - name: POSTGR4S_DB
+          value: gomp
         ports:
         - containerPort: 5432
