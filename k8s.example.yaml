@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gomp
+  labels:
+    app: gomp
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app: gomp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gomp
+spec:
+  selector:
+    matchLabels:
+      app: gomp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gomp
+    spec:
+      containers:
+      - name: web
+        image: cwmr/gomp
+        env:
+        - name: DATABASE_URL
+          value: postgres://dbuser:dbpassword@localhost/gomp?sslmode=disable
+        - name: SECURE_KEY
+          value: UpdateMe
+        ports:
+        - containerPort: 5000
+      - name: db
+        image: postgres:11-alpine
+        env:
+        - name: POSTGRES_PASSWORD
+          value: dbpassword
+        - name: POSTGRES_USER
+          value: dbuser
+        ports:
+        - containerPort: 5432
