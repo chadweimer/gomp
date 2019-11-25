@@ -33,7 +33,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: data-gomp
+  name: data
   labels:
     app: gomp
     tier: frontend
@@ -47,7 +47,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pgsql-gomp
+  name: pgsql
   labels:
     app: gomp
     tier: database
@@ -90,7 +90,7 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: data-gomp
+          claimName: data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -125,11 +125,4 @@ spec:
       volumes:
       - name: data
         persistentVolumeClaim:
-          claimName: pgsql-gomp
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: pgsql-gomp
+          claimName: pgsql
