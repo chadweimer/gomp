@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  web:
+    build: .
+    image: cwmr/gomp:local
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://dbuser:dbpassword@db/gomp?sslmode=disable
+      - GOMP_UPLOAD_PATH=/var/app/gomp/data/uploads
+      - SECURE_KEY=UpdateMe
+      - GOMP_IS_DEELOPMENT=1
+    ports:
+      - 5000:5000
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_PASSWORD=dbpassword
+      - POSTGRES_USER=dbuser
+      - POSTGRES_DB=gomp
