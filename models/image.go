@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
+	"fmt"
 	"image"
 	"net/http"
 	"path/filepath"
@@ -12,9 +13,9 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/upload"
+	"github.com/disintegration/imageorient"
 	"github.com/disintegration/imaging"
 	"github.com/jmoiron/sqlx"
-	"github.com/rwcarlsen/goexif/exif"
 )
 
 // RecipeImageModel provides functionality to edit and retrieve images attached to recipes
@@ -48,7 +49,7 @@ func (m *RecipeImageModel) Create(imageInfo *RecipeImage, imageData []byte) erro
 func (m *RecipeImageModel) CreateTx(imageInfo *RecipeImage, imageData []byte, tx *sqlx.Tx) error {
 	origURL, thumbURL, err := m.save(imageInfo, imageData)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to save image before inserting to db: %v", err)
 	}
 
 	// Since uploading the image was successful, add a record to the DB
@@ -63,7 +64,7 @@ func (m *RecipeImageModel) createImpl(image *RecipeImage, tx *sqlx.Tx) error {
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
 	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now); err != nil {
-		return err
+		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
 	}
 
 	// Switch to a new main image if necessary, since this might be the first image attached
@@ -73,25 +74,20 @@ func (m *RecipeImageModel) createImpl(image *RecipeImage, tx *sqlx.Tx) error {
 func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, string, error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
-		return "", "", errors.New("Attachment must be an image")
+		return "", "", errors.New("attachment must be an image")
 	}
 
 	// First decode the image
-	image, err := imaging.Decode(bytes.NewReader(data))
+	dataReader := bytes.NewReader(data)
+	image, _, err := imageorient.Decode(dataReader)
 	if err != nil {
-		return "", "", err
-	}
-
-	// And get the exif data (to be used when generating the thumbnail)
-	exifData, err := exif.Decode(bytes.NewReader(data))
-	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("failed to decode image: %v", err)
 	}
 
 	// Then generate a thumbnail image
-	thumbData, err := m.generateThumbnail(image, exifData, contentType)
+	thumbData, err := m.generateThumbnail(image, contentType)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("failed to generate thumbnail image: %v", err)
 	}
 
 	// Save the original image
@@ -100,7 +96,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	origURL := filepath.ToSlash(filepath.Join("/uploads/", origPath))
 	err = m.upl.Save(origPath, data)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("failed to save image using configured upload driver: %v", err)
 	}
 
 	// Save the thumbnail image
@@ -109,38 +105,19 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 	thumbURL := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
 	err = m.upl.Save(thumbPath, thumbData)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("failed to save thumbnail image using configured upload driver: %v", err)
 	}
 
 	return origURL, thumbURL, nil
 }
 
-func (m *RecipeImageModel) generateThumbnail(image image.Image, exifData *exif.Exif, contentType string) ([]byte, error) {
-	// Then generate a thumbnail image
+func (m *RecipeImageModel) generateThumbnail(image image.Image, contentType string) ([]byte, error) {
 	thumbImage := imaging.Thumbnail(image, 500, 500, imaging.NearestNeighbor)
 
-	// Use the EXIF data to determine the orientation of the original image.
-	// This data is lost when generating the thumbnail, so it's needed into
-	// order to potentially explicitly rotate it.
-	orientationTag, err := exifData.Get(exif.Orientation)
-	if err == nil {
-		orientationVal, err := orientationTag.Int(0)
-		if err == nil {
-			switch orientationVal {
-			case 3:
-				thumbImage = imaging.Rotate180(thumbImage)
-			case 6:
-				thumbImage = imaging.Rotate270(thumbImage)
-			case 8:
-				thumbImage = imaging.Rotate90(thumbImage)
-			}
-		}
-	}
-
 	thumbBuf := new(bytes.Buffer)
-	err = imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(80))
+	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(80))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to encode thumbnail image: %v", err)
 	}
 
 	return thumbBuf.Bytes(), nil
