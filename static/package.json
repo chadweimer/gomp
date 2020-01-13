@@ -3,10 +3,10 @@
   "name": "gomp",
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
-    "@polymer/iron-demo-helpers": "^3.0.0",
-    "polymer-cli": "^1.9.0",
-    "tslint": "^5.12.0",
-    "typescript": "^3.2.0",
+    "@polymer/iron-demo-helpers": "^3.1.0",
+    "polymer-cli": "^1.9.11",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4",
     "wct-browser-legacy": "^1.0.1"
   },
   "scripts": {
@@ -32,7 +32,7 @@
     "@cwmr/paper-password-input": "^3.0.0",
     "@cwmr/paper-search": "^3.0.1",
     "@cwmr/paper-tags-input": "^3.1.0",
-    "@polymer/app-layout": "^3.0.0",
+    "@polymer/app-layout": "^3.1.0",
     "@polymer/app-route": "^3.0.0",
     "@polymer/app-storage": "^3.0.0",
     "@polymer/decorators": "^3.0.0",
@@ -42,15 +42,15 @@
     "@polymer/paper-button": "^3.0.0",
     "@polymer/paper-card": "^3.0.0",
     "@polymer/paper-dialog": "^3.0.0",
-    "@polymer/paper-input": "^3.0.0",
+    "@polymer/paper-input": "^3.2.0",
     "@polymer/paper-item": "^3.0.0",
     "@polymer/paper-listbox": "^3.0.0",
     "@polymer/paper-menu-button": "^3.0.0",
     "@polymer/paper-progress": "^3.0.0",
-    "@polymer/paper-spinner": "^3.0.0",
+    "@polymer/paper-spinner": "^3.0.2",
     "@polymer/paper-toast": "^3.0.0",
-    "@polymer/polymer": "^3.0.0",
-    "@webcomponents/webcomponentsjs": "^2.2.4",
-    "web-animations-js": "^2.3.1"
+    "@polymer/polymer": "^3.3.1",
+    "@webcomponents/webcomponentsjs": "^2.4.1",
+    "web-animations-js": "^2.3.2"
   }
 }
