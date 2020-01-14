@@ -10,7 +10,7 @@ services:
       - DATABASE_URL=postgres://dbuser:dbpassword@db/gomp?sslmode=disable
       - GOMP_UPLOAD_PATH=/var/app/gomp/data/uploads
       - SECURE_KEY=UpdateMe
-      - GOMP_IS_DEELOPMENT=1
+      - GOMP_IS_DEVELOPMENT=1
     ports:
       - 5000:5000
   db:
