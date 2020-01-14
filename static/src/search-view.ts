@@ -137,6 +137,8 @@ export class SearchView extends GompBaseElement {
                   <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
                       <paper-icon-item name="name" on-click="onNameSortClicked"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
                       <paper-icon-item name="rating" on-click="onRatingSortClicked"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
+                      <paper-icon-item name="name" on-click="onCreatedSortClicked"><iron-icon icon="av:fiber-new" slot="item-icon"></iron-icon> Created</paper-icon-item>
+                      <paper-icon-item name="name" on-click="onModifiedSortClicked"><iron-icon icon="update" slot="item-icon"></iron-icon> Modified</paper-icon-item>
                       <paper-icon-item name="random" on-click="onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
                   </paper-icon-item></paper-icon-item></paper-listbox>
                   <paper-divider></paper-divider>
@@ -289,6 +291,12 @@ export class SearchView extends GompBaseElement {
     }
     protected onRatingSortClicked() {
         this.onChangeSearchSettings(this.searchSettings.viewMode, 'rating', 'desc');
+    }
+    protected onCreatedSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'created', 'asc');
+    }
+    protected onModifiedSortClicked() {
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'modified', 'asc');
     }
     protected onRandomSortClicked() {
         this.onChangeSearchSettings(this.searchSettings.viewMode, 'random', 'asc');
