@@ -293,10 +293,10 @@ export class SearchView extends GompBaseElement {
         this.onChangeSearchSettings(this.searchSettings.viewMode, 'rating', 'desc');
     }
     protected onCreatedSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'created', 'asc');
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'created', 'desc');
     }
     protected onModifiedSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'modified', 'asc');
+        this.onChangeSearchSettings(this.searchSettings.viewMode, 'modified', 'desc');
     }
     protected onRandomSortClicked() {
         this.onChangeSearchSettings(this.searchSettings.viewMode, 'random', 'asc');
