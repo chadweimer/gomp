@@ -83,7 +83,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 
 		err = h.verifyUserExists(userID)
 		if err == models.ErrNotFound {
-			h.JSON(resp, http.StatusUnauthorized, errors.New("invalid user"))
+			h.JSON(resp, http.StatusUnauthorized, "invalid user")
 		} else if err != nil {
 			h.JSON(resp, http.StatusInternalServerError, err.Error())
 		} else {
