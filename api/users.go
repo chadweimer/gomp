@@ -19,13 +19,15 @@ type userPutPasswordParameters struct {
 func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
+		msg := fmt.Sprintf("getting user from request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
 	user, err := h.model.Users.Read(userID)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, fmt.Errorf("reading user: %v", err))
+		msg := fmt.Sprintf("reading user: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
@@ -35,13 +37,15 @@ func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httpr
 func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
+		msg := fmt.Sprintf("getting user from request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
 	params := new(userPutPasswordParameters)
 	if err := readJSONFromRequest(req, params); err != nil {
-		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("invalid request: %v", err))
+		msg := fmt.Sprintf("invalid request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
@@ -49,12 +53,14 @@ func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request,
 	if params.ID == 0 {
 		params.ID = userID
 	} else if params.ID != userID {
-		h.JSON(resp, http.StatusBadRequest, errors.New("mismatched user id between request and url"))
+		msg := "mismatched user id between request and url"
+		h.JSON(resp, http.StatusBadRequest, msg)
 	}
 
 	err = h.model.Users.UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
 	if err != nil {
-		h.JSON(resp, http.StatusForbidden, fmt.Errorf("update failed: %v", err))
+		msg := fmt.Sprintf("update failed: %v", err)
+		h.JSON(resp, http.StatusForbidden, msg)
 		return
 	}
 
@@ -64,13 +70,15 @@ func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request,
 func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
+		msg := fmt.Sprintf("getting user from request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
 	userSettings, err := h.model.Users.ReadSettings(userID)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, fmt.Errorf("reading user settings: %v", err))
+		msg := fmt.Sprintf("reading user settings: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
@@ -80,13 +88,15 @@ func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request,
 func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
+		msg := fmt.Sprintf("getting user from request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
 	userSettings := new(models.UserSettings)
 	if err := readJSONFromRequest(req, userSettings); err != nil {
-		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("invalid request: %v", err))
+		msg := fmt.Sprintf("invalid request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
@@ -94,11 +104,13 @@ func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request,
 	if userSettings.UserID == 0 {
 		userSettings.UserID = userID
 	} else if userSettings.UserID != userID {
-		h.JSON(resp, http.StatusBadRequest, errors.New("mismatched user id between request and url"))
+		msg := "mismatched user id between request and url"
+		h.JSON(resp, http.StatusBadRequest, msg)
 	}
 
 	if err := h.model.Users.UpdateSettings(userSettings); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, fmt.Errorf("updating user settings: %v", err))
+		msg := fmt.Sprintf("updating user settings: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
