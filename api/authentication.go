@@ -83,7 +83,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 
 		err = h.verifyUserExists(userID)
 		if err == models.ErrNotFound {
-			h.JSON(resp, http.StatusUnauthorized, errors.New("Invalid user"))
+			h.JSON(resp, http.StatusUnauthorized, errors.New("invalid user"))
 		} else if err != nil {
 			h.JSON(resp, http.StatusInternalServerError, err.Error())
 		} else {
@@ -92,6 +92,28 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 
 			handler(resp, req, p)
 		}
+	}
+}
+
+func (h apiHandler) requireSelf(handler httprouter.Handle) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		// Get the user from the request
+		userIDStr := p.ByName("userID")
+		// Get the user from the current session
+		currentUserIDStr := p.ByName("CurrentUserID")
+
+		// Special case for a URL like /api/v1/users/current
+		if userIDStr == "current" {
+			userIDStr = currentUserIDStr
+		}
+
+		// Ensure that the request is for the current session user
+		if userIDStr != currentUserIDStr {
+			h.JSON(resp, http.StatusForbidden, nil)
+			return
+		}
+
+		handler(resp, req, p)
 	}
 }
 

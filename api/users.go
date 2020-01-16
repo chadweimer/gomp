@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -16,22 +17,15 @@ type userPutPasswordParameters struct {
 }
 
 func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userIDStr := p.ByName("userID")
-
-	// Special case for a URL like /api/v1/users/current
-	if userIDStr == "current" {
-		userIDStr = p.ByName("CurrentUserID")
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
 		return
 	}
 
 	user, err := h.model.Users.Read(userID)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.JSON(resp, http.StatusInternalServerError, fmt.Errorf("reading user: %v", err))
 		return
 	}
 
@@ -39,22 +33,15 @@ func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httpr
 }
 
 func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userIDStr := p.ByName("userID")
-
-	// Special case for a URL like /api/v1/users/current
-	if userIDStr == "current" {
-		userIDStr = p.ByName("CurrentUserID")
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
 		return
 	}
 
 	params := new(userPutPasswordParameters)
 	if err := readJSONFromRequest(req, params); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("invalid request: %v", err))
 		return
 	}
 
@@ -67,7 +54,7 @@ func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request,
 
 	err = h.model.Users.UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
 	if err != nil {
-		h.JSON(resp, http.StatusForbidden, err.Error())
+		h.JSON(resp, http.StatusForbidden, fmt.Errorf("update failed: %v", err))
 		return
 	}
 
@@ -75,22 +62,15 @@ func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request,
 }
 
 func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userIDStr := p.ByName("userID")
-
-	// Special case for a URL like /api/v1/users/current/settings
-	if userIDStr == "current" {
-		userIDStr = p.ByName("CurrentUserID")
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
 		return
 	}
 
 	userSettings, err := h.model.Users.ReadSettings(userID)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.JSON(resp, http.StatusInternalServerError, fmt.Errorf("reading user settings: %v", err))
 		return
 	}
 
@@ -98,22 +78,15 @@ func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request,
 }
 
 func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userIDStr := p.ByName("userID")
-
-	// Special case for a URL like /api/v1/users/current/settings
-	if userIDStr == "current" {
-		userIDStr = p.ByName("CurrentUserID")
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("getting user from request: %v", err))
 		return
 	}
 
 	userSettings := new(models.UserSettings)
 	if err := readJSONFromRequest(req, userSettings); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.JSON(resp, http.StatusBadRequest, fmt.Errorf("invalid request: %v", err))
 		return
 	}
 
@@ -125,9 +98,23 @@ func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request,
 	}
 
 	if err := h.model.Users.UpdateSettings(userSettings); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.JSON(resp, http.StatusInternalServerError, fmt.Errorf("updating user settings: %v", err))
 		return
 	}
 
 	resp.WriteHeader(http.StatusNoContent)
+}
+
+func getUserIDForRequest(p httprouter.Params) (int64, error) {
+	// Get the user from the request
+	userIDStr := p.ByName("userID")
+	// Get the user from the current session
+	currentUserIDStr := p.ByName("CurrentUserID")
+
+	// Special case for a URL like /api/v1/users/current
+	if userIDStr == "current" {
+		userIDStr = currentUserIDStr
+	}
+
+	return strconv.ParseInt(userIDStr, 10, 64)
 }
