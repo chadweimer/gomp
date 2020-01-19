@@ -170,14 +170,14 @@ export class SearchView extends GompBaseElement {
                               <div class="recipeContainer">
                                   <template is="dom-repeat" items="[[inner]]" as="recipe">
                                       <a href="/recipes/[[recipe.id]]">
-                                         <paper-icon-item>
-                                             <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                             <paper-item-body>
-                                                 <div>[[recipe.name]]</div>
-                                                 <div secondary="">
+                                          <paper-icon-item>
+                                              <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
+                                              <paper-item-body>
+                                                  <div>[[recipe.name]]</div>
+                                                  <div secondary="">
                                                       <recipe-rating recipe="{{recipe}}" class="compact-rating"></recipe-rating>
-                                                  </div>
-                                             </paper-item-body>
+                                                   </div>
+                                              </paper-item-body>
                                           </paper-icon-item>
                                       </a>
                                   </template>

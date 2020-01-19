@@ -56,7 +56,7 @@ export class RecipeCard extends GompBaseElement {
               <paper-card image="[[recipe.thumbnailUrl]]">
                   <div class="card-content">
                       <div class="truncate">[[recipe.name]]</div>
-                      <div class="subhead">
+                      <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
                           <span>[[formatDate(recipe.createdAt)]]</span>
                           <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
                       </div>
@@ -69,6 +69,9 @@ export class RecipeCard extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public recipe: object|null = null;
+
+    @property({type: Boolean, notify: true})
+    public hideCreatedModifiedDates: boolean = false;
 
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleString();
