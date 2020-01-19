@@ -36,21 +36,15 @@ export class NoteCard extends GompBaseElement {
                 paper-card:hover {
                     @apply --shadow-elevation-6dp;
                 }
-                .note-header {
-                    margin-bottom: 0.5em;
-                }
                 .note-content {
                     margin: 0.75em;
                     white-space: pre-wrap;
                 }
                 .note-footer {
-                    margin-top: 0.5em;
-                }
-                #modified-date {
                     @apply --layout-horizontal;
                     @apply --layout-end-justified;
-                }
-                .date {
+                    
+                    margin-top: 0.5em;
                     color: var(--secondary-text-color);
                     font-size: 0.8em;
                     font-weight: lighter;
@@ -76,9 +70,9 @@ export class NoteCard extends GompBaseElement {
 
             <paper-card>
                 <div class="card-content">
-                    <div class="note-header">
+                    <div>
                         <iron-icon icon="communication:comment"></iron-icon>
-                        <span class="date">[[formatDate(note.createdAt)]]</span>
+                        <span>[[formatDate(note.createdAt)]]</span>
                         <paper-menu-button id="noteMenu" horizontal-align="right">
                             <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                             <paper-listbox slot="dropdown-content">
@@ -93,9 +87,11 @@ export class NoteCard extends GompBaseElement {
                     </div>
                     <paper-divider></paper-divider>
                     <p class="note-content">[[note.text]]</p>
-                    <paper-divider hidden\$="[[!showModifiedDate(note)]]"></paper-divider>
-                    <div id="modified-date" class="note-footer" hidden\$="[[!showModifiedDate(note)]]">
-                        <span class="date">[[formatDate(note.modifiedAt)]]</span>
+                    <div hidden\$="[[!showModifiedDate(note)]]">
+                        <paper-divider></paper-divider>
+                        <div class="note-footer">
+                            <span>edited [[formatDate(note.modifiedAt)]]</span>
+                        </div>
                     </div>
                 </div>
             </paper-card>

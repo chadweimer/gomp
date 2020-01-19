@@ -17,7 +17,7 @@ export class RecipeCard extends GompBaseElement {
                     cursor: pointer;
 
                     --paper-card-header: {
-                        height: 75%;
+                        height: 70%;
 
                         @apply --recipe-card-header;
                     }
@@ -29,7 +29,7 @@ export class RecipeCard extends GompBaseElement {
                     }
                     --paper-card: {
                         width: 100%;
-                        height: 250px;
+                        height: 265px;
 
                         @apply --recipe-card;
                     }
@@ -44,12 +44,22 @@ export class RecipeCard extends GompBaseElement {
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
+                .subhead {
+                    color: var(--secondary-text-color);
+                    font-size: 0.8em;
+                    font-weight: lighter;
+                    line-height: 1.2em;
+                }
           </style>
 
           <a href\$="/recipes/[[recipe.id]]">
               <paper-card image="[[recipe.thumbnailUrl]]">
                   <div class="card-content">
-                      <span class="truncate">[[recipe.name]]</span>
+                      <div class="truncate">[[recipe.name]]</div>
+                      <div class="subhead">
+                          <span>[[formatDate(recipe.createdAt)]]</span>
+                          <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
+                      </div>
                       <recipe-rating recipe="{{recipe}}"></recipe-rating>
                   </div>
               </paper-card>
@@ -59,4 +69,11 @@ export class RecipeCard extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public recipe: object|null = null;
+
+    protected formatDate(dateStr: string) {
+        return new Date(dateStr).toLocaleString();
+    }
+    protected showModifiedDate(recipe: any) {
+        return recipe.modifiedAt !== recipe.createdAt;
+    }
 }
