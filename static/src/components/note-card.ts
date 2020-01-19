@@ -43,7 +43,7 @@ export class NoteCard extends GompBaseElement {
                 .note-footer {
                     @apply --layout-horizontal;
                     @apply --layout-end-justified;
-                    
+
                     margin-top: 0.5em;
                     color: var(--secondary-text-color);
                     font-size: 0.8em;

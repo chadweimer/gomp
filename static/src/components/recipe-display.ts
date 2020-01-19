@@ -64,7 +64,7 @@ export class RecipeDisplay extends GompBaseElement {
                 .footer {
                     @apply --layout-horizontal;
                     @apply --layout-end-justified;
-                    
+
                     color: var(--secondary-text-color);
                     font-size: 0.8em;
                     font-weight: lighter;
