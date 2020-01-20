@@ -210,7 +210,7 @@ export class RecipeDisplay extends GompBaseElement {
         this.showToast('Removing link failed!');
     }
     protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleString();
+        return new Date(dateStr).toLocaleDateString();
     }
     protected showModifiedDate(recipe: any) {
         return recipe.modifiedAt !== recipe.createdAt;
