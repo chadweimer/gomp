@@ -21,7 +21,7 @@ export class HomeList extends GompBaseElement {
                 header {
                     font-size: 1.5em;
                 }
-                .outterContainer {
+                .outerContainer {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
@@ -82,10 +82,10 @@ export class HomeList extends GompBaseElement {
 
             <article>
                 <header>[[title]]</header>
-                <div class="outterContainer">
+                <div class="outerContainer">
                     <template is="dom-repeat" items="[[recipes]]">
                         <div class="recipeContainer">
-                            <recipe-card recipe="[[item]]"></recipe-card>
+                            <recipe-card recipe="[[item]]" hide-created-modified-dates></recipe-card>
                         </div>
                     </template>
                 </div>

@@ -26,7 +26,7 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
 
             a {
                 font-weight: 500;
-                color: #212121;
+                color: var(--primary-text-color);
                 text-decoration: none;
                 -webkit-user-select: none;
                 -moz-user-select: none;

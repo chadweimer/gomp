@@ -61,55 +61,70 @@ export class RecipeDisplay extends GompBaseElement {
                 #confirmDeleteLinkDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
-          </style>
+                .footer {
+                    @apply --layout-horizontal;
+                    @apply --layout-end-justified;
 
-          <paper-card>
-              <div class="card-content">
-                  <recipe-rating recipe="{{recipe}}"></recipe-rating>
-                  <h2>
-                      <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="main-image" hidden\$="[[!mainImage.thumbnailUrl]]"></a>
-                      [[recipe.name]]
-                  </h2>
-                  <section hidden\$="[[!recipe.servingSize]]">
-                      <label>Serving Size</label>
-                      <p class="plain-text">[[recipe.servingSize]]</p>
-                      <paper-divider></paper-divider>
-                  </section>
-                  <section>
-                      <label>Ingredients</label>
-                      <p class="plain-text">[[recipe.ingredients]]</p>
-                      <paper-divider></paper-divider>
-                  </section>
-                  <section>
-                      <label>Directions</label>
-                      <p class="plain-text">[[recipe.directions]]</p>
-                      <paper-divider></paper-divider>
-                  </section>
-                  <section hidden\$="[[!recipe.nutritionInfo]]">
-                      <label>Nutrition</label>
-                      <p class="plain-text">[[recipe.nutritionInfo]]</p>
-                      <paper-divider></paper-divider>
-                  </section>
-                  <section hidden\$="[[!recipe.sourceUrl]]">
-                      <label>Source</label>
-                      <p class="section"><a target="_blank" href\$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
-                      <paper-divider></paper-divider>
-                  </section>
-                  <section hidden\$="[[isEmpty(links)]]">
-                      <label>Related Recipes</label>
-                      <template is="dom-repeat" items="[[links]]">
-                          <paper-icon-item>
-                              <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
-                              <paper-item-body>
-                                  <a href="/recipes/[[item.id]]">[[item.name]]</a>
-                              </paper-item-body>
-                              <iron-icon icon="icons:cancel" on-click="onRemoveLinkClicked"></iron-icon>
-                          </paper-icon-item>
-                      </template>
-                      <paper-divider></paper-divider>
-                  </section>
-                  <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
-              </div>
+                    color: var(--secondary-text-color);
+                    font-size: 0.8em;
+                    font-weight: lighter;
+                }
+            </style>
+
+            <paper-card>
+                <div class="card-content">
+                    <recipe-rating recipe="{{recipe}}"></recipe-rating>
+                    <h2>
+                        <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="main-image" hidden\$="[[!mainImage.thumbnailUrl]]"></a>
+                        [[recipe.name]]
+                    </h2>
+                    <section hidden\$="[[!recipe.servingSize]]">
+                        <label>Serving Size</label>
+                        <p class="plain-text">[[recipe.servingSize]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section>
+                        <label>Ingredients</label>
+                        <p class="plain-text">[[recipe.ingredients]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section>
+                        <label>Directions</label>
+                        <p class="plain-text">[[recipe.directions]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden\$="[[!recipe.nutritionInfo]]">
+                        <label>Nutrition</label>
+                        <p class="plain-text">[[recipe.nutritionInfo]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden\$="[[!recipe.sourceUrl]]">
+                        <label>Source</label>
+                        <p class="section"><a target="_blank" href\$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden\$="[[isEmpty(links)]]">
+                        <label>Related Recipes</label>
+                        <template is="dom-repeat" items="[[links]]">
+                            <paper-icon-item>
+                                <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
+                                <paper-item-body>
+                                    <a href="/recipes/[[item.id]]">[[item.name]]</a>
+                                </paper-item-body>
+                                <iron-icon icon="icons:cancel" on-click="onRemoveLinkClicked"></iron-icon>
+                            </paper-icon-item>
+                        </template>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <section hidden\$="[[isEmpty(recipe.tags)]]">
+                        <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                        <paper-divider></paper-divider>
+                    </section>
+                    <div class="footer" >
+                        <span>[[formatDate(recipe.createdAt)]]</span>
+                        <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
+                    </div>
+                </div>
           </paper-card>
 
           <confirmation-dialog id="confirmDeleteLinkDialog" icon="delete" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
@@ -193,5 +208,11 @@ export class RecipeDisplay extends GompBaseElement {
     }
     protected handleDeleteLinkError() {
         this.showToast('Removing link failed!');
+    }
+    protected formatDate(dateStr: string) {
+        return new Date(dateStr).toLocaleDateString();
+    }
+    protected showModifiedDate(recipe: any) {
+        return recipe.modifiedAt !== recipe.createdAt;
     }
 }
