@@ -1,5 +1,4 @@
-dist: trusty
-sudo: required
+dist: bionic
 
 notifications:
   email: false
@@ -11,18 +10,15 @@ language: go
 
 go:
   - "1.13"
-  
+
 jdk:
   - oraclejdk8
-  
+
 cache:
   directories:
     - '$HOME/.sonar/cache'
     - '$HOME/.npm/_cacache'
 
-env:
-  - GO111MODULE="on"
-    
 addons:
   apt:
     packages:
