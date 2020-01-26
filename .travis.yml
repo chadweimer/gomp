@@ -19,9 +19,6 @@ cache:
     - '$HOME/.sonar/cache'
     - '$HOME/.npm/_cacache'
 
-env:
-  - GO111MODULE="on"
-
 addons:
   apt:
     packages:
