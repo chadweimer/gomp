@@ -75,7 +75,7 @@ export class RecipeDisplay extends GompBaseElement {
                 <div class="card-content">
                     <recipe-rating recipe="{{recipe}}"></recipe-rating>
                     <h2>
-                        <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" alt="Main Image" class="main-image" hidden\$="[[!mainImage.thumbnailUrl]]"></a>
+                        <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
                     </h2>
                     <section hidden\$="[[!recipe.servingSize]]">

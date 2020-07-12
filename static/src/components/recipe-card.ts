@@ -17,7 +17,7 @@ export class RecipeCard extends GompBaseElement {
                     cursor: pointer;
 
                     --paper-card-header: {
-                        height: 70%;
+                        height: 75%;
 
                         @apply --recipe-card-header;
                     }
@@ -45,6 +45,8 @@ export class RecipeCard extends GompBaseElement {
                     text-overflow: ellipsis;
                 }
                 .subhead {
+                    position: absolute;
+                    right: 16px;
                     color: var(--secondary-text-color);
                     font-size: 0.8em;
                     font-weight: lighter;
