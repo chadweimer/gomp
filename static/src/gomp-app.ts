@@ -37,14 +37,15 @@ export class GompApp extends PolymerElement {
         return html`
             <style include="shared-styles">
                 :host > * {
-                    --primary-color: var(--paper-blue-500);
-                    --accent-color: var(--paper-red-500);
-                    --light-accent-color: var(--paper-red-300);
-                    --dark-accent-color: var(--paper-red-700);
+                    --primary-color: var(--paper-deep-purple-500);
+                    --accent-color: var(--paper-teal-500);
+                    --light-accent-color: var(--paper-teal-300);
+                    --dark-accent-color: var(--paper-teal-700);
                     @apply --paper-font-body1;
                 }
                 :host {
                     display: block;
+                    background: var(--paper-grey-50);
                     @apply --layout-fullbleed;
                 }
                 iron-pages > :not(.iron-selected) {
@@ -195,7 +196,7 @@ export class GompApp extends PolymerElement {
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
-                        <div class="copyright indented">Copyright © 2016-2019 Chad Weimer</div>
+                        <div class="copyright indented">Copyright © 2016-2020 Chad Weimer</div>
                     </footer>
                 </app-header-layout>
             </app-drawer-layout>

@@ -37,16 +37,16 @@ export class HomeList extends GompBaseElement {
                 }
                 recipe-card {
                     --recipe-card: {
-                        height: 150px;
+                        height: 160px;
                     }
                     --recipe-card-header: {
-                        height: 65%;
+                        height: 68%;
                     }
                     --recipe-card-content: {
-                        padding: 10px;
+                        padding: 8px;
                     }
-                    --recipe-card-rating-size: 14px;
-                    font-size: 0.9em;
+                    --recipe-card-rating-size: 16px;
+                    font-size: 0.95em;
                 }
                 a {
                     float: right;
