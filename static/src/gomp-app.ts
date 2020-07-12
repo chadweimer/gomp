@@ -196,7 +196,7 @@ export class GompApp extends PolymerElement {
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
-                        <div class="copyright indented">Copyright © 2016-2019 Chad Weimer</div>
+                        <div class="copyright indented">Copyright © 2016-2020 Chad Weimer</div>
                     </footer>
                 </app-header-layout>
             </app-drawer-layout>
