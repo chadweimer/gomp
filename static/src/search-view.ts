@@ -155,31 +155,25 @@ export class SearchView extends GompBaseElement {
                       <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                   </div>
                   <div class="outterContainer">
-                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
-                          <template is="dom-repeat" items="[[recipes]]">
-                              <div class="recipeContainer">
+                      <template is="dom-repeat" items="[[recipes]]">
+                          <div class="recipeContainer">
+                              <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
                                   <recipe-card recipe="[[item]]"></recipe-card>
-                              </div>
-                          </template>
-                      </template>
-                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
-                          <template is="dom-repeat" items="[[columnize(recipes)]]" as="inner">
-                              <div class="recipeContainer">
-                                  <template is="dom-repeat" items="[[inner]]" as="recipe">
-                                      <a href="/recipes/[[recipe.id]]">
-                                          <paper-icon-item>
-                                              <img src="[[recipe.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                              <paper-item-body>
-                                                  <div>[[recipe.name]]</div>
-                                                  <div secondary="">
-                                                      <recipe-rating recipe="{{recipe}}" class="compact-rating"></recipe-rating>
-                                                   </div>
-                                              </paper-item-body>
-                                          </paper-icon-item>
-                                      </a>
-                                  </template>
-                              </div>
-                          </template>
+                              </template>
+                              <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                                  <a href="/recipes/[[item.id]]">
+                                      <paper-icon-item>
+                                          <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
+                                          <paper-item-body>
+                                              <div>[[item.name]]</div>
+                                              <div secondary="">
+                                                  <recipe-rating recipe="{{item}}" class="compact-rating"></recipe-rating>
+                                              </div>
+                                          </paper-item-body>
+                                      </paper-icon-item>
+                                  </a>
+                              </template>
+                          </div>
                       </template>
                   </div>
                   <div class="pagination">
@@ -313,32 +307,5 @@ export class SearchView extends GompBaseElement {
 
     protected areEqual(a: any, b: any) {
         return a === b;
-    }
-    protected columnize(items: any[]) {
-        let numSplits = 4;
-        if (window.screen.width < 600) {
-            numSplits = 1;
-        } else if (window.screen.width < 992) {
-            numSplits = 2;
-        } else if (window.screen.width < 1200) {
-            numSplits = 3;
-        }
-
-        const splitCount = Math.ceil(items.length / numSplits);
-
-        const newArrays: any[] = [
-            [],
-        ];
-        let index = 0;
-
-        for (let i = 0; i < items.length; i++) {
-            if (i >= (index + 1) * splitCount) {
-                newArrays.push([]);
-                index++;
-            }
-            newArrays[index].push(items[i]);
-        }
-
-        return newArrays;
     }
 }
