@@ -91,33 +91,30 @@ export class SearchView extends GompBaseElement {
                     cursor: default;
                 }
                 .compact-rating {
-                    --recipe-rating-size: 13px;
+                    --recipe-rating-size: 14px;
                 }
-                @media screen and (min-width: 993px) {
+                recipe-card {
+                    width: 96%;
+                    margin: 2%;
+                }
+                @media screen and (min-width: 1200px) {
+                    .recipeContainer {
+                        width: 25%;
+                    }
+                }
+                @media screen and (min-width: 992px) and (max-width: 1199px) {
                     .recipeContainer {
                         width: 33%;
                     }
-                    recipe-card {
-                        width: 96%;
-                        margin: 2%;
-                    }
                 }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
+                @media screen and (min-width: 600px) and (max-width: 991px) {
                     .recipeContainer {
                         width: 50%;
                     }
-                    recipe-card {
-                        width: 96%;
-                        margin: 2%;
-                    }
                 }
-                @media screen and (max-width: 600px) {
+                @media screen and (max-width: 599px) {
                     .recipeContainer {
                         width: 100%;
-                    }
-                    recipe-card {
-                        margin: 2%;
-                        width: 96%;
                     }
                 }
           </style>
@@ -166,7 +163,7 @@ export class SearchView extends GompBaseElement {
                           </template>
                       </template>
                       <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
-                          <template is="dom-repeat" items="[[columnize(recipes, 3)]]" as="inner">
+                          <template is="dom-repeat" items="[[columnize(recipes)]]" as="inner">
                               <div class="recipeContainer">
                                   <template is="dom-repeat" items="[[inner]]" as="recipe">
                                       <a href="/recipes/[[recipe.id]]">
@@ -261,7 +258,7 @@ export class SearchView extends GompBaseElement {
         if (this.searchSettings.viewMode === 'compact') {
             return 60;
         }
-        return 18;
+        return 24;
     }
 
     protected handleGetRecipesRequest() {
@@ -317,7 +314,16 @@ export class SearchView extends GompBaseElement {
     protected areEqual(a: any, b: any) {
         return a === b;
     }
-    protected columnize(items: any[], numSplits: number) {
+    protected columnize(items: any[]) {
+        let numSplits = 4;
+        if (window.screen.width < 600) {
+            numSplits = 1;
+        } else if (window.screen.width < 992) {
+            numSplits = 2;
+        } else if (window.screen.width < 1200) {
+            numSplits = 3;
+        }
+
         const splitCount = Math.ceil(items.length / numSplits);
 
         const newArrays: any[] = [
