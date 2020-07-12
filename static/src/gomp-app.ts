@@ -433,8 +433,8 @@ export class GompApp extends PolymerElement {
         }
 
         const picturesFilter = {id: 'pictures', name: 'Pictures', values: [] as any[]};
-        fieldFilter.values.push({id: 'yes', name: 'Yes'});
-        fieldFilter.values.push({id: 'no', name: 'No'});
+        picturesFilter.values.push({id: 'yes', name: 'Yes'});
+        picturesFilter.values.push({id: 'no', name: 'No'});
         filters.push(picturesFilter);
 
         this.searchFilters = filters;
