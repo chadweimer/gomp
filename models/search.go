@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -53,13 +54,14 @@ type SearchModel struct {
 
 // RecipesFilter is the primary model class for recipe search
 type RecipesFilter struct {
-	Query   string   `json:"query"`
-	Fields  []string `json:"fields"`
-	Tags    []string `json:"tags"`
-	SortBy  string   `json:"sortBy"`
-	SortDir string   `json:"sortDir"`
-	Page    int64    `json:"page"`
-	Count   int64    `json:"count"`
+	Query    string   `json:"query"`
+	Fields   []string `json:"fields"`
+	Tags     []string `json:"tags"`
+	Pictures []string `json:"pictures"`
+	SortBy   string   `json:"sortBy"`
+	SortDir  string   `json:"sortDir"`
+	Page     int64    `json:"page"`
+	Count    int64    `json:"count"`
 }
 
 // TagsFilter is the primary model class for tag search
@@ -124,6 +126,28 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		}
 		whereStmt += tagsStmt
 		whereArgs = append(whereArgs, tagsArgs...)
+	}
+
+	if len(filter.Pictures) > 0 {
+		picsParts := make([]string, 0)
+		for _, val := range filter.Pictures {
+			switch strings.ToLower(val) {
+			case "yes":
+				picsParts = append(picsParts, "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
+			case "no":
+				picsParts = append(picsParts, "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
+			}
+		}
+		picsStmt := ""
+		if len(picsParts) > 0 {
+			picsStmt = "(" + strings.Join(picsParts, " OR ") + ")"
+		}
+		if whereStmt == "" {
+			whereStmt += " WHERE "
+		} else {
+			whereStmt += " AND "
+		}
+		whereStmt += picsStmt
 	}
 
 	var total int64

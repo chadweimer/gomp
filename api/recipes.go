@@ -18,6 +18,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 	query := getParam(req.URL.Query(), "q")
 	fields := getParams(req.URL.Query(), "fields[]")
 	tags := getParams(req.URL.Query(), "tags[]")
+	pictures := getParams(req.URL.Query(), "pictures[]")
 	sortBy := getParam(req.URL.Query(), "sort")
 	sortDir := getParam(req.URL.Query(), "dir")
 	page, err := strconv.ParseInt(getParam(req.URL.Query(), "page"), 10, 64)
@@ -32,13 +33,14 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 	}
 
 	filter := models.RecipesFilter{
-		Query:   query,
-		Fields:  fields,
-		Tags:    tags,
-		SortBy:  sortBy,
-		SortDir: sortDir,
-		Page:    page,
-		Count:   count,
+		Query:    query,
+		Fields:   fields,
+		Tags:     tags,
+		Pictures: pictures,
+		SortBy:   sortBy,
+		SortDir:  sortDir,
+		Page:     page,
+		Count:    count,
 	}
 
 	recipes, total, err := h.model.Search.FindRecipes(filter)
