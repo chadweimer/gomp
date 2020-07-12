@@ -28,7 +28,7 @@ addons:
     branches:
       - master
     token:
-      secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
+      secure: "vUPLRzajETsY6R8fj/uv/qi0HgPtHbFMSS3eBN9qmsO+dbF64sKukbMRaLWxHbji8QjyB71NuFpFfq9YWRes5i/z0xHDtj8zP5oLKilpiCi6UzHO9IxeqjR0FITUmfcPr9sxbk0CapPOCmrfLVjIl/YQC9UlgWDTrN679sdkD7Yw35S3+Vq+Sy8W5gWmSvgRIuGGG9Lhx9CdV7Fj8pz6h/S2R5tGvd9EdYvAraaKgblqBWN1aPTOHFyvDSzuFRIOI8Ttx8aubXUzEPreiHWWn+9H+uMiGX40Xc4D3T63Dn48hjolhdlY5uYtGps+95W3R+lkX32vP7wDMeYfzGdJMsZT8r9T0826evKzp4IUtjmc+jTAPz+Ye+mo6WByMFbabU9gaecp4vfbeiYs/KFiT9CAMI7/UjJ1P3m3DKJKx0teTpR8/GKIaKz69P/ahsmkRVbMHYN/lykdmpdVOo7nVmvQnZh5+2vR6astjSyziQklGEglprVGuJ5i0HLgMKdYxHDNMeDsmVMz42a8+ACC9/DYCVbxwdcuf8bNy2N3YC/JnmSvlsSh+K5Cz05UcrHXJWNyxsuy3dv3fSCoHqm+nf34Buy5v5fWkfb6aT9TsMnTCb3y2ZMK0pGF8srQLGQBQuX5l0zdK4tZVVgCnTCADSGvZWYqa7NPtF+MKszOpuM="
 
 install:
   - . $HOME/.nvm/nvm.sh
