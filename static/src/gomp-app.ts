@@ -37,14 +37,15 @@ export class GompApp extends PolymerElement {
         return html`
             <style include="shared-styles">
                 :host > * {
-                    --primary-color: var(--paper-blue-500);
-                    --accent-color: var(--paper-red-500);
-                    --light-accent-color: var(--paper-red-300);
-                    --dark-accent-color: var(--paper-red-700);
+                    --primary-color: var(--paper-deep-purple-500);
+                    --accent-color: var(--paper-teal-500);
+                    --light-accent-color: var(--paper-teal-300);
+                    --dark-accent-color: var(--paper-teal-700);
                     @apply --paper-font-body1;
                 }
                 :host {
                     display: block;
+                    background: var(--paper-grey-50);
                     @apply --layout-fullbleed;
                 }
                 iron-pages > :not(.iron-selected) {
