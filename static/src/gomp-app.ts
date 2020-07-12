@@ -229,7 +229,7 @@ export class GompApp extends PolymerElement {
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
-    protected selectedSearchFilters: {fields?: [], tags?: []} = {};
+    protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: []} = {};
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
 
@@ -251,6 +251,7 @@ export class GompApp extends PolymerElement {
             'routePageChanged(routeData.page)',
             'searchFieldsChanged(search.fields)',
             'searchTagsChanged(search.tags)',
+            'searchPicturesChanged(search.pictures)',
         ];
     }
 
@@ -406,6 +407,7 @@ export class GompApp extends PolymerElement {
         this.set('search.query', '');
         this.set('search.fields', []);
         this.set('search.tags', e.detail.tags);
+        this.set('search.pictures', []);
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
@@ -430,6 +432,11 @@ export class GompApp extends PolymerElement {
             });
         }
 
+        const picturesFilter = {id: 'pictures', name: 'Pictures', values: [] as any[]};
+        fieldFilter.values.push({id: 'yes', name: 'Yes'});
+        fieldFilter.values.push({id: 'no', name: 'No'});
+        filters.push(picturesFilter);
+
         this.searchFilters = filters;
     }
     protected searchFiltersChanged() {
@@ -442,6 +449,11 @@ export class GompApp extends PolymerElement {
             this.set('search.tags', this.selectedSearchFilters.tags);
         } else {
             this.set('search.tags', []);
+        }
+        if (this.selectedSearchFilters.pictures) {
+            this.set('search.pictures', this.selectedSearchFilters.pictures);
+        } else {
+            this.set('search.pictures', []);
         }
         this.changeRoute('/search');
     }
@@ -458,6 +470,12 @@ export class GompApp extends PolymerElement {
         this.set('selectedSearchFilters.tags', tags);
         // Only use tags for the number of selected filters
         this.selectedSearchFiltersCount = tags.length;
+    }
+    protected searchPicturesChanged(pictures: string[]) {
+        if (!this.selectedSearchFilters) {
+            this.selectedSearchFilters = {};
+        }
+        this.set('selectedSearchFilters.pictures', pictures);
     }
 
     protected recipesModified() {
