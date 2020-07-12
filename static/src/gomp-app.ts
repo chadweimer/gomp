@@ -440,21 +440,9 @@ export class GompApp extends PolymerElement {
         this.searchFilters = filters;
     }
     protected searchFiltersChanged() {
-        if (this.selectedSearchFilters.fields) {
-            this.set('search.fields', this.selectedSearchFilters.fields);
-        } else {
-            this.set('search.fields', []);
-        }
-        if (this.selectedSearchFilters.tags) {
-            this.set('search.tags', this.selectedSearchFilters.tags);
-        } else {
-            this.set('search.tags', []);
-        }
-        if (this.selectedSearchFilters.pictures) {
-            this.set('search.pictures', this.selectedSearchFilters.pictures);
-        } else {
-            this.set('search.pictures', []);
-        }
+        this.set('search.fields', this.selectedSearchFilters.fields || []);
+        this.set('search.tags', this.selectedSearchFilters.tags || []);
+        this.set('search.pictures', this.selectedSearchFilters.pictures || []);
         this.changeRoute('/search');
     }
     protected searchFieldsChanged(fields: string[]) {
