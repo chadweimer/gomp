@@ -221,6 +221,7 @@ export class GompApp extends PolymerElement {
         query: '',
         fields: [] as string[],
         tags: [] as string[],
+        pictures: [] as string[],
     };
     @property({type: Array})
     protected searchFilters: any[]|null|undefined = null;
