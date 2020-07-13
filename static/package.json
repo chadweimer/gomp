@@ -1,5 +1,5 @@
 {
-  "description": "Go Meal Planner: A web-based recipe book",
+  "description": "GOMP: Go Meal Planner - A web-based recipe book",
   "name": "gomp",
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
