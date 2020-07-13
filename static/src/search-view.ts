@@ -197,6 +197,7 @@ export class SearchView extends GompBaseElement {
         query: '',
         fields: [] as string[],
         tags: [] as string[],
+        pictures: [] as string[],
     };
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
@@ -234,6 +235,7 @@ export class SearchView extends GompBaseElement {
             'q': this.search.query,
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
+            'pictures[]': this.search.pictures,
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,
