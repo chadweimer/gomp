@@ -13,11 +13,7 @@ plugins:
       languages:
       - javascript
   eslint:
-    enabled: true
-    config:
-      config: static/.eslintrc.js
-      extensions:
-        - .ts
+    enabled: false
   fixme:
     enabled: true
   gofmt:
