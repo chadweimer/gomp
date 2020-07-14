@@ -134,6 +134,9 @@ export class NoteCard extends GompBaseElement {
         return new Date(dateStr).toLocaleDateString();
     }
     protected showModifiedDate(note: any) {
+        if (!note) {
+            return false;
+        }
         return note.modifiedAt !== note.createdAt;
     }
 

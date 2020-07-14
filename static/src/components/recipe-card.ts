@@ -79,6 +79,9 @@ export class RecipeCard extends GompBaseElement {
         return new Date(dateStr).toLocaleDateString();
     }
     protected showModifiedDate(recipe: any) {
+        if (!recipe) {
+            return false;
+        }
         return recipe.modifiedAt !== recipe.createdAt;
     }
 }
