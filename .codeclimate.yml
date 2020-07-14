@@ -12,9 +12,12 @@ plugins:
     config:
       languages:
       - javascript
-  tslint:
+  eslint:
     enabled: true
-    config: static/tslint.json
+    config:
+      config: static/.eslintrc.js
+      extensions:
+        - .ts
   fixme:
     enabled: true
   gofmt:
