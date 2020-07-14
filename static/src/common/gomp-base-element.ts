@@ -18,6 +18,8 @@ export abstract class GompBaseElement extends PolymerElement {
         this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message}}));
     }
 
-    // tslint:disable-next-line:no-empty
-    protected isActiveChanged(_: boolean) {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected isActiveChanged(_: boolean) {
+        // Nothing to do in base
+    }
 }

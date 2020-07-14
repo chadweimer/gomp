@@ -34,7 +34,7 @@ export class RecipeRating extends GompBaseElement {
         this.rateAjax.body = e.detail.rating;
         this.rateAjax.generateRequest();
     }
-    protected handlePutRecipeRatingResponse(_: CustomEvent) {
+    protected handlePutRecipeRatingResponse() {
         this.set('recipe.averageRating', parseFloat(this.rateAjax.body.toString()));
         this.showToast('Rating changed.');
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
