@@ -404,7 +404,7 @@ export class GompApp extends PolymerElement {
             this.getCurrentUserAjax.generateRequest();
         }
     }
-    protected handleGetCurrentUserResponse(e) {
+    protected handleGetCurrentUserResponse(e: CustomEvent) {
         this.userAccessLevel = e.detail.response.accessLevel;
     }
     protected getIsAuthenticated() {
