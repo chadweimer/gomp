@@ -84,6 +84,23 @@ export class AdminView extends GompBaseElement {
                     </div>
                 </paper-card>
             </div>
+            <div class="container">
+                <paper-card>
+                    <div class="card-content">
+                        <h3>New User</h3>
+                        <paper-input label="Username" value="{{newUser.username}}" always-float-label="" disabled=""></paper-input>
+                        <paper-input label="Access Level" value="{{newUser.accessLevel}}" always-float-label="" disabled=""></paper-input>
+                        <paper-password-input label="New Password" value="{{newUser.password}}" always-float-label=""></paper-password-input>
+                        <paper-password-input label="Confirm Password" value="{{newUser.repeatPassword}}" always-float-label=""></paper-password-input>
+                    </div>
+                    <div class="card-actions">
+                        <paper-button on-click="onCreateUserClicked">
+                            <iron-icon icon="icons:add"></iron-icon>
+                            <span>Add</span>
+                        <paper-button>
+                    </div>
+                </paper-card>
+            </div>
 
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
 `;
@@ -119,6 +136,10 @@ export class AdminView extends GompBaseElement {
     protected onDeleteUserClicked(e: any) {
         // Don't navigate to "#!"
         e.preventDefault();
+    }
+
+    protected onCreateUserClicked() {
+        // TODO
     }
 
 }

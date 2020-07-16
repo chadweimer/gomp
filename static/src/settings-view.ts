@@ -78,7 +78,7 @@ export class SettingsView extends GompBaseElement {
                           <iron-icon icon="icons:lock-outline"></iron-icon>
                           <span>Update Password</span>
                       <paper-button>
-                  </paper-button></paper-button></div>
+                  </div>
               </paper-card>
           </div>
           <div class="container">
