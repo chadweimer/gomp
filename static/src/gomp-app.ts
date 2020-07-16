@@ -202,7 +202,7 @@ export class GompApp extends PolymerElement {
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
                                 <li><a href="/settings">Settings</a></li>
-                                <li><a href="/admin" hidden$="[[!getIsAdmin(userAccessLevel)]]">Admin</a></li>
+                                <li hidden$="[[!getIsAdmin(userAccessLevel)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
@@ -217,7 +217,7 @@ export class GompApp extends PolymerElement {
 
             <iron-ajax bubbles="" id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
             <iron-ajax bubbles="" id="tagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;tag&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;count&quot;: 100000}" on-response="handleGetTagsResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="getCurrentUserAjax" url="/api/v1/users/current" on-response="_handleGetCurrentUserResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="getCurrentUserAjax" url="/api/v1/users/current" on-response="handleGetCurrentUserResponse"></iron-ajax>
 `;
     }
 
