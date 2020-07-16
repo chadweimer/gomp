@@ -75,6 +75,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.POST("/api/v1/users", h.requireAuthentication(h.requireAdmin(h.postUser)))
 	h.apiMux.GET("/api/v1/users/:userID", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUser)))
 	h.apiMux.PUT("/api/v1/users/:userID", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUser)))
+	h.apiMux.DELETE("/api/v1/users/:userID", h.requireAuthentication(h.requireAdmin(h.deleteUser)))
 	h.apiMux.PUT("/api/v1/users/:userID/password", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserPassword)))
 	h.apiMux.GET("/api/v1/users/:userID/settings", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserSettings)))
 	h.apiMux.PUT("/api/v1/users/:userID/settings", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserSettings)))

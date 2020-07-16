@@ -189,6 +189,20 @@ func (m *UserModel) UpdateSettingsTx(settings *UserSettings, tx *sqlx.Tx) error 
 	return nil
 }
 
+// Delete removes the specified user from the database using a dedicated transation
+// that is committed if there are not errors.
+func (m *UserModel) Delete(id int64) error {
+	return m.tx(func(tx *sqlx.Tx) error {
+		return m.DeleteTx(id, tx)
+	})
+}
+
+// DeleteTx removes the specified user from the database using the specified transaction.
+func (m *UserModel) DeleteTx(id int64, tx *sqlx.Tx) error {
+	_, err := tx.Exec("DELETE FROM app_user WHERE id = $1", id)
+	return err
+}
+
 // List retrieves all users in the database.
 func (m *UserModel) List() (*[]User, error) {
 	var users []User

@@ -80,16 +80,10 @@ func (h apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p http
 }
 
 func (h apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userIDStr := p.ByName("userID")
-
-	// Special case for a URL like /api/v1/users/current
-	if userIDStr == "current" {
-		userIDStr = p.ByName("CurrentUserID")
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		msg := fmt.Sprintf("getting user from request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
@@ -105,6 +99,22 @@ func (h apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p httpr
 	}
 
 	if err := h.model.Users.Update(&user); err != nil {
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	resp.WriteHeader(http.StatusNoContent)
+}
+
+func (h apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	userID, err := getUserIDForRequest(p)
+	if err != nil {
+		msg := fmt.Sprintf("getting user from request: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
+		return
+	}
+
+	if err := h.model.Users.Delete(userID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
