@@ -21,16 +21,67 @@ export class AdminView extends GompBaseElement {
                 .container {
                     padding: 10px;
                 }
+                .amber {
+                    color: var(--paper-amber-500);
+                }
+                .red {
+                    color: var(--paper-red-500);
+                }
+                .fill {
+                    width: 100%
+                }
+                .left {
+                    text-align: left;
+                }
+                .right {
+                    text-align: right;
+                }
+                @media screen and (min-width: 993px) {
+                    .container {
+                        width: 50%;
+                        margin: auto;
+                    }
+                }
+                @media screen and (min-width: 601px) and (max-width: 992px) {
+                    .container {
+                        width: 75%;
+                        margin: auto;
+                    }
+                }
+                @media screen and (max-width: 600px) {
+                }
             </style>
             <div class="container">
                 <paper-card>
                     <div class="card-content">
                         <h3>Users</h3>
-                        <template is="dom-repeat" items="[[users]]">
-                            <div>[[item.username]] - [[item.accessLevel]]</div>
-                        </template>
+
+                        <table class="fill">
+                            <thead class="left">
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Access Level</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template is="dom-repeat" items="[[users]]">
+                                    <tr>
+                                        <td>[[item.username]]</td>
+                                        <td>[[item.accessLevel]]</td>
+                                        <td class="right">
+                                            <a href="#!" tabindex="-1" on-click="onEditUserClicked">
+                                                <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
+                                            </a>
+                                            <a href="#!" tabindex="-1" on-click="onDeleteUserClicked">
+                                                <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="card-actions"></div>
                 </paper-card>
             </div>
 
@@ -59,4 +110,15 @@ export class AdminView extends GompBaseElement {
     protected handleGetUsersResponse(e: CustomEvent) {
         this.users = e.detail.response;
     }
+
+    protected onEditUserClicked(e: any) {
+        // Don't navigate to "#!"
+        e.preventDefault();
+    }
+
+    protected onDeleteUserClicked(e: any) {
+        // Don't navigate to "#!"
+        e.preventDefault();
+    }
+
 }
