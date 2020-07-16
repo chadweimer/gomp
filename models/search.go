@@ -1,6 +1,11 @@
 package models
 
-import "github.com/jmoiron/sqlx"
+import (
+	"strings"
+	"time"
+
+	"github.com/jmoiron/sqlx"
+)
 
 const (
 	// SortRecipeByName represents the value to use in RecipesFilter.SortBy
@@ -12,6 +17,12 @@ const (
 	// SortRecipeByRating represents the value to use in RecipesFilter.SortBy
 	// in order to sort by the recipe rating
 	SortRecipeByRating string = "rating"
+	// SortRecipeByCreatedDate represents the value to use in RecipesFilter.SortBy
+	// in order to sort by the recipe created date
+	SortRecipeByCreatedDate string = "created"
+	// SortRecipeByModifiedDate represents the value to use in RecipesFilter.SortBy
+	// in order to sort by the recipe modified date
+	SortRecipeByModifiedDate string = "modified"
 
 	// SortTagByText represents the value to use in TagsFilter.SortBy
 	// in order to sort by the tag value
@@ -43,13 +54,14 @@ type SearchModel struct {
 
 // RecipesFilter is the primary model class for recipe search
 type RecipesFilter struct {
-	Query   string   `json:"query"`
-	Fields  []string `json:"fields"`
-	Tags    []string `json:"tags"`
-	SortBy  string   `json:"sortBy"`
-	SortDir string   `json:"sortDir"`
-	Page    int64    `json:"page"`
-	Count   int64    `json:"count"`
+	Query    string   `json:"query"`
+	Fields   []string `json:"fields"`
+	Tags     []string `json:"tags"`
+	Pictures []string `json:"pictures"`
+	SortBy   string   `json:"sortBy"`
+	SortDir  string   `json:"sortDir"`
+	Page     int64    `json:"page"`
+	Count    int64    `json:"count"`
 }
 
 // TagsFilter is the primary model class for tag search
@@ -61,15 +73,17 @@ type TagsFilter struct {
 
 // RecipeCompact is the primary model class for bulk recipe retrieval
 type RecipeCompact struct {
-	ID            int64   `json:"id" db:"id"`
-	Name          string  `json:"name" db:"name"`
-	ServingSize   string  `json:"servingSize" db:"serving_size"`
-	NutritionInfo string  `json:"nutritionInfo" db:"nutrition_info"`
-	Ingredients   string  `json:"ingredients" db:"ingredients"`
-	Directions    string  `json:"directions" db:"directions"`
-	SourceURL     string  `json:"sourceUrl" db:"source_url"`
-	AvgRating     float64 `json:"averageRating" db:"avg_rating"`
-	ThumbnailURL  string  `json:"thumbnailUrl" db:"thumbnail_url"`
+	ID            int64     `json:"id" db:"id"`
+	Name          string    `json:"name" db:"name"`
+	ServingSize   string    `json:"servingSize" db:"serving_size"`
+	NutritionInfo string    `json:"nutritionInfo" db:"nutrition_info"`
+	Ingredients   string    `json:"ingredients" db:"ingredients"`
+	Directions    string    `json:"directions" db:"directions"`
+	SourceURL     string    `json:"sourceUrl" db:"source_url"`
+	CreatedAt     time.Time `json:"createdAt" db:"created_at"`
+	ModifiedAt    time.Time `json:"modifiedAt" db:"modified_at"`
+	AvgRating     float64   `json:"averageRating" db:"avg_rating"`
+	ThumbnailURL  string    `json:"thumbnailUrl" db:"thumbnail_url"`
 }
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
@@ -114,6 +128,28 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		whereArgs = append(whereArgs, tagsArgs...)
 	}
 
+	if len(filter.Pictures) > 0 {
+		picsParts := make([]string, 0)
+		for _, val := range filter.Pictures {
+			switch strings.ToLower(val) {
+			case "yes":
+				picsParts = append(picsParts, "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
+			case "no":
+				picsParts = append(picsParts, "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
+			}
+		}
+		picsStmt := ""
+		if len(picsParts) > 0 {
+			picsStmt = "(" + strings.Join(picsParts, " OR ") + ")"
+		}
+		if whereStmt == "" {
+			whereStmt += " WHERE "
+		} else {
+			whereStmt += " AND "
+		}
+		whereStmt += picsStmt
+	}
+
 	var total int64
 	countStmt := m.db.Rebind("SELECT count(r.id) FROM recipe AS r" + whereStmt)
 	if err := m.db.Get(&total, countStmt, whereArgs...); err != nil {
@@ -126,6 +162,10 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	switch filter.SortBy {
 	case SortRecipeByID:
 		orderStmt += "r.id"
+	case SortRecipeByCreatedDate:
+		orderStmt += "r.created_at"
+	case SortRecipeByModifiedDate:
+		orderStmt += "r.modified_at"
 	case SortRecipeByRating:
 		orderStmt += "avg_rating"
 	case SortByRandom:
@@ -141,7 +181,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	orderStmt += " LIMIT ? OFFSET ?"
 
 	selectStmt := m.db.Rebind("SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
 		"FROM recipe AS r" +
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)

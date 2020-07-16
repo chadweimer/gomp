@@ -1,5 +1,4 @@
-dist: trusty
-sudo: required
+dist: bionic
 
 notifications:
   email: false
@@ -10,21 +9,16 @@ services:
 language: go
 
 go:
-  - 1.8
-  
+  - "1.13"
+
 jdk:
   - oraclejdk8
-  
+
 cache:
-  yarn: true
   directories:
     - '$HOME/.sonar/cache'
-    - '$HOME/.cache/bower'
     - '$HOME/.npm/_cacache'
 
-env:
-  - DEP_VERSION="0.4.1"
-    
 addons:
   apt:
     packages:
@@ -34,13 +28,7 @@ addons:
     branches:
       - master
     token:
-      secure: "2f8c445efa94f8f0fee778207f0cabcee8a6c992"
-
-before_install:
-  # Download the dep binary to bin folder in $GOPATH
-  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
-  # Make the dep binary executable
-  - chmod +x $GOPATH/bin/dep
+      secure: "ogIijBHO6k+e6HDp8l78uSiZsS629PjNIGq3gJglzOM5jS6rgAtplIL23t6DI79sA8EWvW6IWAVVUinkloZ+Jljxedv71kAPn4k6nqzgqrrGvBkTaTbZxpIk9UgI9YQ5tU0OcT2a0X1+6cIZ9B8PKaicesDsXZF4vZb6KQzIZbXyQxn4yMi7RHQX5mcTOacJukP6eM56WLZFHPo5bX9T7HFn0vHZfesASAKgbd+HeOFlsJ73WY7ZQWND3FmINMRitIFRKexnrBiTqr2NxqzNEmShZaOfNTiBu6UaWlMuJAmbVypSB60er/NIr9wp/2sJv8QUIs7H3W6jKyrM3qZODzUbJGpdP/5Lbm5kChsm/I9TPoaInery+adkcufLfI1DyyogdDl6xkD6z6n+0NhQQRxNDmM8+nB8FwxlEDris8bocODdzVEdwL3G2nwBQv1G3adTqMlUa3vxqvwSQtU4bgDlVVNS4ZlevOlcZKSW8IaGOiDtfiL0xVYC3yPEJGUtMuL1q/Sln6qAauKwFXPmdPcs7ztdd4DQIWOp3eq7Nmkd97mY7nbf5tfR/vdxwhYzGbhq1CbHI/H9Ey9R4omAs+b/RDxutXQ5cLFrNILHw8qMlrK+NRWVmXJVITlP4uGqrPgJw4VelCb/ZjOa6D/FzxuO2QSyCOfLtFUaBesWpSM="
 
 install:
   - . $HOME/.nvm/nvm.sh
@@ -49,31 +37,29 @@ install:
 
 script:
   - sonar-scanner
-  - make build docker
+  - make lint build docker
   # test image
   #- docker run cwmr/gomp:latest ???
 
 after_success:
-  - wget -O manifest-tool https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
-  - chmod +x ./manifest-tool
   - docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
   - >
     if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       docker push cwmr/gomp:amd64
       docker push cwmr/gomp:arm
-      ./manifest-tool push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:ARCH --target cwmr/gomp:latest
+      docker run --rm mplatform/manifest-tool --username $DOCKER_USER --password $DOCKER_PASS push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:ARCH --target cwmr/gomp:latest
     elif [ -z "$TRAVIS_TAG" ]; then
       docker tag cwmr/gomp:amd64 cwmr/gomp:dev-amd64
       docker tag cwmr/gomp:arm cwmr/gomp:dev-arm
       docker push cwmr/gomp:dev-amd64
       docker push cwmr/gomp:dev-arm
-      ./manifest-tool push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:dev-ARCH --target cwmr/gomp:dev
+      docker run --rm mplatform/manifest-tool --username $DOCKER_USER --password $DOCKER_PASS push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:dev-ARCH --target cwmr/gomp:dev
     else
       docker tag cwmr/gomp:amd64 cwmr/gomp:$TRAVIS_TAG-amd64
       docker tag cwmr/gomp:arm cwmr/gomp:$TRAVIS_TAG-arm
       docker push cwmr/gomp:$TRAVIS_TAG-amd64
       docker push cwmr/gomp:$TRAVIS_TAG-arm
-      ./manifest-tool push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:$TRAVIS_TAG-ARCH --target cwmr/gomp:$TRAVIS_TAG
+      docker run --rm mplatform/manifest-tool --username $DOCKER_USER --password $DOCKER_PASS push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:$TRAVIS_TAG-ARCH --target cwmr/gomp:$TRAVIS_TAG
     fi
 
 before_deploy:

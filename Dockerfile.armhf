@@ -1,4 +1,4 @@
-FROM hypriot/rpi-alpine:3.6
+FROM balenalib/generic-armv7ahf-alpine:3.11
 LABEL maintainer="ch@dweimer.com"
 
 RUN apk add --no-cache ca-certificates

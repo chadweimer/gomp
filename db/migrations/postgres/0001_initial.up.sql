@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE recipe (
     id SERIAL NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -31,3 +33,5 @@ CREATE TABLE recipe_rating (
     rating REAL NOT NULL,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id)
 );
+
+COMMIT;

@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE app_user_settings (
     user_id INTEGER UNIQUE NOT NULL,
     home_title TEXT,
@@ -6,3 +8,5 @@ CREATE TABLE app_user_settings (
 );
 
 INSERT INTO app_user_settings(user_id) SELECT id FROM app_user;
+
+COMMIT;

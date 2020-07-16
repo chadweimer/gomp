@@ -1,16 +1,19 @@
----
-engines:
+version: "2"
+checks:
+  file-lines:
+    enabled: false
+  method-lines:
+    enabled: false
+  method-count:
+    enabled: false
+plugins:
   duplication:
     enabled: true
     config:
       languages:
       - javascript
   eslint:
-    enabled: true
-    config:
-      extensions:
-        - .js
-        - .html
+    enabled: false
   fixme:
     enabled: true
   gofmt:
@@ -23,6 +26,7 @@ ratings:
   paths:
   - "**.css"
   - "**.inc"
+  - "**.ts"
   - "**.js"
   - "**.jsx"
   - "**.go"
@@ -30,7 +34,6 @@ ratings:
 exclude_paths:
 - build/
 - db/
-- node_modules/
+- static/node_modules/
 - static/build/
-- static/bower_components/
 - vendor/

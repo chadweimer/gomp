@@ -70,22 +70,26 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 	resp.WriteHeader(http.StatusNoContent)
 }
 func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := p.ByName("recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		msg := fmt.Sprintf("failed to parse recipeID from URL, value = %s: %v", recipeIDStr, err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		msg := fmt.Sprintf("failed to read file_content from POSTed image: %v", err)
+		h.JSON(resp, http.StatusBadRequest, msg)
 		return
 	}
 	defer file.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		msg := fmt.Sprintf("failed to read bytes from POSTed image: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
@@ -99,7 +103,8 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 	}
 	err = h.model.Images.Create(imageInfo, uploadedFileData)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		msg := fmt.Sprintf("failed to save and insert image: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 

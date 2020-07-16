@@ -1,8 +1,4 @@
 BUILD_DIR=build
-VENDOR_DIR=vendor
-NODE_MODULES_DIR=static/node_modules
-BOWER_COMPONENTS_DIR=static/bower_components
-POLYMER_BUILD_DIR=static/build
 
 .DEFAULT_GOAL := rebuild
 
@@ -14,19 +10,22 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
-	dep ensure
 	cd static && npm install --silent
 
 .PHONY: uninstall
 uninstall:
-	rm -rf $(VENDOR_DIR) $(NODE_MODULES_DIR) $(BOWER_COMPONENTS_DIR)
+	cd static && npm run clear
+
+.PHONY: lint
+lint:
+	cd static && npm run lint
 
 .PHONY: build
 build: build-linux-amd64 build-linux-armhf build-windows-amd64
 
 .PHONY: clean
 clean: clean-linux-amd64 clean-linux-armhf clean-windows-amd64
-	rm -rf $(POLYMER_BUILD_DIR)
+	cd static && npm run clean
 
 .PHONY: prebuild
 prebuild:
@@ -67,7 +66,7 @@ clean-windows-amd64:
 
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
+	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	mkdir -p $(BUILD_DIR)/windows/amd64/db && cp -R db/* $(BUILD_DIR)/windows/amd64/db
 	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/windows/amd64/static
 

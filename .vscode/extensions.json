@@ -1,14 +1,19 @@
 {
-	// See http://go.microsoft.com/fwlink/?LinkId=827846
-	// for the documentation about the extensions.json format
-	"recommendations": [
-		// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
-		"ms-vscode.go",
-		"eg2.vscode-npm-script",
-		"christian-kohler.npm-intellisense",
-		"polymer.polymer-ide",
-		"bbenoist.vagrant",
-		"PeterJausovec.vscode-docker",
-		"justinribeiro.polymer2snippets"
-	]
+    // See http://go.microsoft.com/fwlink/?LinkId=827846
+    // for the documentation about the extensions.json format
+    "recommendations": [
+        // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+        "golang.go",
+        "eg2.vscode-npm-script",
+        "christian-kohler.npm-intellisense",
+        "polymer.polymer-ide",
+        "bbenoist.vagrant",
+        "ms-azuretools.vscode-docker",
+        "justinribeiro.polymer2snippets",
+        "spmeesseman.vscode-taskexplorer",
+        "ms-vscode.vscode-typescript-tslint-plugin",
+        "redhat.vscode-yaml",
+        "davidanson.vscode-markdownlint",
+        "editorconfig.editorconfig"
+    ]
 }
