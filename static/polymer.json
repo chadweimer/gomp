@@ -11,7 +11,8 @@
         "src/login-view.js",
         "src/recipes-view.js",
         "src/search-view.js",
-        "src/settings-view.js"
+        "src/settings-view.js",
+        "src/admin-view.js"
     ],
     "extraDependencies": [
         "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js",

@@ -288,6 +288,7 @@ export class GompApp extends PolymerElement {
 
         super.ready();
         this.appConfigAjax.generateRequest();
+        this.onCurrentUserChanged();
     }
 
     protected titleChanged(title: string) {
@@ -370,6 +371,9 @@ export class GompApp extends PolymerElement {
             break;
         case 'settings':
             import('./settings-view.js');
+            break;
+        case 'admin':
+            import('./admin-view.js');
             break;
         case 'login':
             import('./login-view.js');
