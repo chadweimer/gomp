@@ -141,18 +141,20 @@ func (m *RecipeModel) DeleteTx(id int64, tx *sqlx.Tx) error {
 func (m *RecipeModel) SetRating(id int64, rating float64) error {
 	var count int64
 	err := m.db.Get(&count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
+
 	if err == sql.ErrNoRows || count == 0 {
 		_, err = m.db.Exec(
 			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
-		return fmt.Errorf("creating recipe rating: %v", err)
-	}
-
-	if err == nil {
+		if err != nil {
+			return fmt.Errorf("creating recipe rating: %v", err)
+		}
+	} else if err == nil {
 		_, err = m.db.Exec(
 			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
-		if err != nil {
-			return fmt.Errorf("updating recipe rating: %v", err)
-		}
+	}
+
+	if err != nil {
+		return fmt.Errorf("updating recipe rating: %v", err)
 	}
 
 	return nil
