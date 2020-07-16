@@ -112,6 +112,17 @@ func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter
 	}
 }
 
+func (h apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		if err := h.verifyUserIsEditor(req, p); err != nil {
+			h.JSON(resp, http.StatusForbidden, err.Error())
+			return
+		}
+
+		handler(resp, req, p)
+	}
+}
+
 func (h apiHandler) getUserIDFromRequest(req *http.Request) (int64, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader == "" {
@@ -181,6 +192,15 @@ func (h apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) er
 	accessLevelStr := p.ByName("CurrentUserAccessLevel")
 	if accessLevelStr != string(models.AdminUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
+	}
+
+	return nil
+}
+
+func (h apiHandler) verifyUserIsEditor(req *http.Request, p httprouter.Params) error {
+	accessLevelStr := p.ByName("CurrentUserAccessLevel")
+	if accessLevelStr != string(models.AdminUserLevel) && accessLevelStr != string(models.EditorUserLevel) {
+		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)
 	}
 
 	return nil
