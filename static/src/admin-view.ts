@@ -96,10 +96,10 @@ export class AdminView extends GompBaseElement {
                                         <td>[[item.username]]</td>
                                         <td>[[item.accessLevel]]</td>
                                         <td class="right">
-                                            <a href="#!" tabindex="-1" data-id="[[item.id]]" on-click="onEditUserClicked">
+                                            <a href="#!" tabindex="-1" data-id\$="[[item.id]]" on-click="onEditUserClicked">
                                                 <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
                                             </a>
-                                            <a href="#!" tabindex="-1" data-id="[[item.id]]" on-click="onDeleteUserClicked">
+                                            <a href="#!" tabindex="-1" data-id\$="[[item.id]]" on-click="onDeleteUserClicked">
                                                 <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
                                             </a>
                                         </td>
