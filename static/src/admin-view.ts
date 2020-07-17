@@ -10,7 +10,10 @@ import '@polymer/iron-icons/social-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-item/paper-item.js';
+import '@polymer/paper-listbox/paper-listbox.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import './shared-styles.js';
 
@@ -117,7 +120,13 @@ export class AdminView extends GompBaseElement {
             <paper-dialog id="userDialog" on-iron-overlay-closed="userDialogClosed" with-backdrop="">
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
                 <paper-input label="Username" value="{{user.username}}" always-float-label="" required=""></paper-input>
-                <paper-input label="Access Level" value="{{user.accessLevel}}" always-float-label="" required=""></paper-input>
+                <paper-dropdown-menu-light label="Access Level" value="{{user.accessLevel}}" always-float-label="" required="">
+                    <paper-listbox slot="dropdown-content">
+                        <paper-item>admin</paper-item>
+                        <paper-item>editor</paper-item>
+                        <paper-item>viewer</paper-item>
+                    </paper-listbox>
+                </paper-dropdown-menu-light>
                 <paper-password-input label="New Password" value="{{user.password}}" always-float-label="" required=""></paper-password-input>
                 <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label="" required=""></paper-password-input>
                 <div class="buttons">
