@@ -44,10 +44,19 @@ export class AdminView extends GompBaseElement {
                 .right {
                     text-align: right;
                 }
+                #userDialog h3 > span {
+                    padding-left: 0.25em;
+                }
+                paper-password-input {
+                    display: block;
+                }
                 @media screen and (min-width: 993px) {
                     .container {
                         width: 50%;
                         margin: auto;
+                    }
+                    paper-dialog {
+                        width: 33%;
                     }
                 }
                 @media screen and (min-width: 601px) and (max-width: 992px) {
@@ -55,8 +64,14 @@ export class AdminView extends GompBaseElement {
                         width: 75%;
                         margin: auto;
                     }
+                    paper-dialog {
+                        width: 75%;
+                    }
                 }
                 @media screen and (max-width: 600px) {
+                    paper-dialog {
+                        width: 100%;
+                    }
                 }
             </style>
             <div class="container">
@@ -101,10 +116,10 @@ export class AdminView extends GompBaseElement {
 
             <paper-dialog id="userDialog" on-iron-overlay-closed="userDialogClosed" with-backdrop="">
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
-                <paper-input label="Username" value="{{user.username}}" always-float-label=""></paper-input>
-                <paper-input label="Access Level" value="{{user.accessLevel}}" always-float-label=""></paper-input>
-                <paper-password-input label="New Password" value="{{user.password}}" always-float-label=""></paper-password-input>
-                <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label=""></paper-password-input>
+                <paper-input label="Username" value="{{user.username}}" always-float-label="" required=""></paper-input>
+                <paper-input label="Access Level" value="{{user.accessLevel}}" always-float-label="" required=""></paper-input>
+                <paper-password-input label="New Password" value="{{user.password}}" always-float-label="" required=""></paper-password-input>
+                <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label="" required=""></paper-password-input>
                 <div class="buttons">
                     <paper-button dialog-dismiss="">Cancel</paper-button>
                     <paper-button dialog-confirm="">Save</paper-button>
