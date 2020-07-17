@@ -2,8 +2,15 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
+import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
+import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-input/paper-input.js';
+import '@cwmr/paper-password-input/paper-password-input.js';
 import './shared-styles.js';
 
 @customElement('admin-view')
@@ -82,31 +89,39 @@ export class AdminView extends GompBaseElement {
                             </tbody>
                         </table>
                     </div>
-                </paper-card>
-            </div>
-            <div class="container">
-                <paper-card>
-                    <div class="card-content">
-                        <h3>New User</h3>
-                        <paper-input label="Username" value="{{newUser.username}}" always-float-label="" disabled=""></paper-input>
-                        <paper-input label="Access Level" value="{{newUser.accessLevel}}" always-float-label="" disabled=""></paper-input>
-                        <paper-password-input label="New Password" value="{{newUser.password}}" always-float-label=""></paper-password-input>
-                        <paper-password-input label="Confirm Password" value="{{newUser.repeatPassword}}" always-float-label=""></paper-password-input>
-                    </div>
                     <div class="card-actions">
-                        <paper-button on-click="onCreateUserClicked">
-                            <iron-icon icon="icons:add"></iron-icon>
+                        <paper-button on-click="onAddUserClicked">
+                            <iron-icon icon="social:person"></iron-icon>
                             <span>Add</span>
                         <paper-button>
                     </div>
                 </paper-card>
             </div>
 
+            <paper-dialog id="userDialog" on-iron-overlay-closed="userDialogClosed" with-backdrop="">
+                <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
+                <paper-input label="Username" value="{{user.username}}" always-float-label=""></paper-input>
+                <paper-input label="Access Level" value="{{user.accessLevel}}" always-float-label=""></paper-input>
+                <paper-password-input label="New Password" value="{{user.password}}" always-float-label=""></paper-password-input>
+                <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label=""></paper-password-input>
+                <div class="buttons">
+                    <paper-button dialog-dismiss="">Cancel</paper-button>
+                    <paper-button dialog-confirm="">Save</paper-button>
+                </div>
+            </paper-dialog>
+
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
 `;
     }
 
     protected users: any[] = [];
+
+    protected userId: number|null = null;
+    protected user: object|null = null;
+
+    private get userDialog(): PaperDialogElement {
+        return this.$.userDialog as PaperDialogElement;
+    }
 
     private get getUsersAjax(): IronAjaxElement {
         return this.$.getUsersAjax as IronAjaxElement;
@@ -138,8 +153,18 @@ export class AdminView extends GompBaseElement {
         e.preventDefault();
     }
 
-    protected onCreateUserClicked() {
-        // TODO
+    protected onAddUserClicked() {
+        this.userId = null;
+        this.user = {
+            username: '',
+            accessLevel: 'editor',
+            password: '',
+            repeatPassword: ''
+        };
+        this.userDialog.open();
     }
 
+    protected userDialogClosed() {
+        // TODO
+    }
 }
