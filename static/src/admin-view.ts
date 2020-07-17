@@ -96,10 +96,10 @@ export class AdminView extends GompBaseElement {
                                         <td>[[item.username]]</td>
                                         <td>[[item.accessLevel]]</td>
                                         <td class="right">
-                                            <a href="#!" tabindex="-1" on-click="onEditUserClicked">
+                                            <a href="#!" tabindex="-1" data-id="[[item.id]]" on-click="onEditUserClicked">
                                                 <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
                                             </a>
-                                            <a href="#!" tabindex="-1" on-click="onDeleteUserClicked">
+                                            <a href="#!" tabindex="-1" data-id="[[item.id]]" on-click="onDeleteUserClicked">
                                                 <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
                                             </a>
                                         </td>
@@ -136,13 +136,21 @@ export class AdminView extends GompBaseElement {
             </paper-dialog>
 
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
+            <iron-ajax bubbles="" id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
+            <iron-ajax bubbles="" id="deleteUserAjax" url="/api/v1/users/[[userId]]" method="DELETE" on-response="handleDeleteUserResponse" on-error="handleDeleteUserError"></iron-ajax>
 `;
     }
 
     protected users: any[] = [];
 
     protected userId: number|null = null;
-    protected user: object|null = null;
+    protected user: {
+        username: string,
+        accessLevel: string,
+        password: string,
+        repeatPassword: string
+    }|null = null;
 
     private get userDialog(): PaperDialogElement {
         return this.$.userDialog as PaperDialogElement;
@@ -150,6 +158,15 @@ export class AdminView extends GompBaseElement {
 
     private get getUsersAjax(): IronAjaxElement {
         return this.$.getUsersAjax as IronAjaxElement;
+    }
+    private get postUserAjax(): IronAjaxElement {
+        return this.$.postUserAjax as IronAjaxElement;
+    }
+    private get putUserAjax(): IronAjaxElement {
+        return this.$.putUserAjax as IronAjaxElement;
+    }
+    private get deleteUserAjax(): IronAjaxElement {
+        return this.$.deleteUserAjax as IronAjaxElement;
     }
 
     public ready() {
@@ -167,15 +184,41 @@ export class AdminView extends GompBaseElement {
     protected handleGetUsersResponse(e: CustomEvent) {
         this.users = e.detail.response;
     }
+    protected handlePostNoteResponse() {
+        this.refresh();
+        this.showToast('User created.');
+    }
+    protected handlePostNoteError() {
+        this.showToast('Creating user failed!');
+    }
+    protected handlePutNoteResponse() {
+        this.refresh();
+        this.showToast('User updated.');
+    }
+    protected handlePutNoteError() {
+        this.showToast('Updating user failed!');
+    }
+    protected handleDeleteNoteResponse() {
+        this.refresh();
+        this.showToast('User deleted.');
+    }
+    protected handleDeleteNoteError() {
+        this.showToast('Deleting user failed!');
+    }
 
     protected onEditUserClicked(e: any) {
         // Don't navigate to "#!"
         e.preventDefault();
+
+        this.userId = e.target.dataset.id || e.target.dataId;
     }
 
     protected onDeleteUserClicked(e: any) {
         // Don't navigate to "#!"
         e.preventDefault();
+
+        this.userId = e.target.dataset.id || e.target.dataId;
+        this.deleteUserAjax.generateRequest();
     }
 
     protected onAddUserClicked() {
@@ -189,7 +232,28 @@ export class AdminView extends GompBaseElement {
         this.userDialog.open();
     }
 
-    protected userDialogClosed() {
-        // TODO
+    protected userDialogClosed(e: CustomEvent) {
+        if (!e.detail.canceled && e.detail.confirmed) {
+            if (this.user.password !== this.user.repeatPassword) {
+                this.showToast('Passwords don\'t match.');
+                return;
+            }
+
+            if (this.userId) {
+                this.putUserAjax.body = JSON.stringify({
+                    id: this.userId,
+                    username: this.user.username,
+                    accessLevel: this.user.accessLevel
+                }) as any;
+                this.putUserAjax.generateRequest();
+            } else {
+                this.postUserAjax.body = JSON.stringify({
+                    username: this.user.username,
+                    accessLevel: this.user.accessLevel,
+                    password: this.user.password
+                }) as any;
+                this.postUserAjax.generateRequest();
+            }
+        }
     }
 }
