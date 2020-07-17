@@ -3,6 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -15,6 +16,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
+import './components/confirmation-dialog.js';
 import './shared-styles.js';
 
 @customElement('admin-view')
@@ -135,6 +137,8 @@ export class AdminView extends GompBaseElement {
                 </div>
             </paper-dialog>
 
+            <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete this user?" on-confirmed="deleteUser"></confirmation-dialog>
+
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
             <iron-ajax bubbles="" id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
             <iron-ajax bubbles="" id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
@@ -154,6 +158,9 @@ export class AdminView extends GompBaseElement {
 
     private get userDialog(): PaperDialogElement {
         return this.$.userDialog as PaperDialogElement;
+    }
+    private get confirmDeleteUserDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteUserDialog as ConfirmationDialog;
     }
 
     private get getUsersAjax(): IronAjaxElement {
@@ -218,6 +225,9 @@ export class AdminView extends GompBaseElement {
         e.preventDefault();
 
         this.userId = e.target.dataset.id || e.target.dataId;
+        this.confirmDeleteUserDialog.open();
+    }
+    protected deleteUser() {
         this.deleteUserAjax.generateRequest();
     }
 
