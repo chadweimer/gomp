@@ -120,11 +120,11 @@ export class AdminView extends GompBaseElement {
             <paper-dialog id="userDialog" on-iron-overlay-closed="userDialogClosed" with-backdrop="">
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
                 <paper-input label="Username" value="{{user.username}}" always-float-label="" required=""></paper-input>
-                <paper-dropdown-menu-light label="Access Level" value="{{user.accessLevel}}" always-float-label="" required="">
-                    <paper-listbox slot="dropdown-content">
-                        <paper-item>admin</paper-item>
-                        <paper-item>editor</paper-item>
-                        <paper-item>viewer</paper-item>
+                <paper-dropdown-menu-light label="Access Level" always-float-label="" required="">
+                    <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
+                        <paper-item item-name="admin">admin</paper-item>
+                        <paper-item item-name="editor">editor</paper-item>
+                        <paper-item item-name="viewer">viewer</paper-item>
                     </paper-listbox>
                 </paper-dropdown-menu-light>
                 <paper-password-input label="New Password" value="{{user.password}}" always-float-label="" required=""></paper-password-input>
