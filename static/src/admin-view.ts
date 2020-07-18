@@ -270,7 +270,7 @@ export class AdminView extends GompBaseElement {
         this.userId = +el.dataset.id;
 
         const selectedUser = this.users.find(u => u.id === this.userId);
-        if (!!selectedUser) {
+        if (selectedUser) {
             this.user = {
                 username: selectedUser.username,
                 accessLevel: selectedUser.accessLevel,
