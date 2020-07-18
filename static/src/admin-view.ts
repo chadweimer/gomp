@@ -122,7 +122,7 @@ export class AdminView extends GompBaseElement {
                 </paper-card>
             </div>
 
-            <paper-dialog id="userDialog" on-iron-overlay-closed="userDialogClosed" with-backdrop="">
+            <paper-dialog id="addUserDialog" on-iron-overlay-closed="addUserDialogClosed" with-backdrop="">
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
                 <paper-input label="Username" value="{{user.username}}" always-float-label="" required=""></paper-input>
                 <paper-dropdown-menu-light label="Access Level" always-float-label="" required="">
@@ -134,6 +134,22 @@ export class AdminView extends GompBaseElement {
                 </paper-dropdown-menu-light>
                 <paper-password-input label="New Password" value="{{user.password}}" always-float-label="" required=""></paper-password-input>
                 <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label="" required=""></paper-password-input>
+                <div class="buttons">
+                    <paper-button dialog-dismiss="">Cancel</paper-button>
+                    <paper-button dialog-confirm="">Save</paper-button>
+                </div>
+            </paper-dialog>
+
+            <paper-dialog id="editUserDialog" on-iron-overlay-closed="editUserDialogClosed" with-backdrop="">
+                <h3><iron-icon icon="social:person"></iron-icon> <span>Edit User</span></h3>
+                <paper-input label="Username" value="{{user.username}}" always-float-label="" disabled=""></paper-input>
+                <paper-dropdown-menu-light label="Access Level" always-float-label="" required="">
+                    <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
+                        <paper-item item-name="admin">admin</paper-item>
+                        <paper-item item-name="editor">editor</paper-item>
+                        <paper-item item-name="viewer">viewer</paper-item>
+                    </paper-listbox>
+                </paper-dropdown-menu-light>
                 <div class="buttons">
                     <paper-button dialog-dismiss="">Cancel</paper-button>
                     <paper-button dialog-confirm="">Save</paper-button>
@@ -159,8 +175,11 @@ export class AdminView extends GompBaseElement {
         repeatPassword: string
     }|null = null;
 
-    private get userDialog(): PaperDialogElement {
-        return this.$.userDialog as PaperDialogElement;
+    private get addUserDialog(): PaperDialogElement {
+        return this.$.addUserDialog as PaperDialogElement;
+    }
+    private get editUserDialog(): PaperDialogElement {
+        return this.$.editUserDialog as PaperDialogElement;
     }
     private get confirmDeleteUserDialog(): ConfirmationDialog {
         return this.$.confirmDeleteUserDialog as ConfirmationDialog;
@@ -216,12 +235,63 @@ export class AdminView extends GompBaseElement {
         this.showToast('Deleting user failed!');
     }
 
+    protected onAddUserClicked() {
+        this.userId = null;
+        this.user = {
+            username: '',
+            accessLevel: 'editor',
+            password: '',
+            repeatPassword: ''
+        };
+        this.addUserDialog.open();
+    }
+
+    protected addUserDialogClosed(e: CustomEvent) {
+        if (!e.detail.canceled && e.detail.confirmed) {
+            if (this.user.password !== this.user.repeatPassword) {
+                this.showToast('Passwords don\'t match.');
+                return;
+            }
+
+            this.postUserAjax.body = JSON.stringify({
+                username: this.user.username,
+                accessLevel: this.user.accessLevel,
+                password: this.user.password
+            }) as any;
+            this.postUserAjax.generateRequest();
+        }
+    }
+
     protected onEditUserClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
         const el = e.currentTarget as HTMLElement;
         this.userId = +el.dataset.id;
+
+        const selectedUser = this.users.find(u => u.id === this.userId);
+        if (!!selectedUser) {
+            this.user = {
+                username: selectedUser.username,
+                accessLevel: selectedUser.accessLevel,
+                password: null,
+                repeatPassword: null
+            };
+            this.editUserDialog.open();
+        } else {
+            this.showToast('Unknown user selected.');
+        }
+    }
+
+    protected editUserDialogClosed(e: CustomEvent) {
+        if (!e.detail.canceled && e.detail.confirmed) {
+            this.putUserAjax.body = JSON.stringify({
+                id: this.userId,
+                username: this.user.username,
+                accessLevel: this.user.accessLevel
+            }) as any;
+            this.putUserAjax.generateRequest();
+        }
     }
 
     protected onDeleteUserClicked(e: Event) {
@@ -234,41 +304,5 @@ export class AdminView extends GompBaseElement {
     }
     protected deleteUser() {
         this.deleteUserAjax.generateRequest();
-    }
-
-    protected onAddUserClicked() {
-        this.userId = null;
-        this.user = {
-            username: '',
-            accessLevel: 'editor',
-            password: '',
-            repeatPassword: ''
-        };
-        this.userDialog.open();
-    }
-
-    protected userDialogClosed(e: CustomEvent) {
-        if (!e.detail.canceled && e.detail.confirmed) {
-            if (this.user.password !== this.user.repeatPassword) {
-                this.showToast('Passwords don\'t match.');
-                return;
-            }
-
-            if (this.userId) {
-                this.putUserAjax.body = JSON.stringify({
-                    id: this.userId,
-                    username: this.user.username,
-                    accessLevel: this.user.accessLevel
-                }) as any;
-                this.putUserAjax.generateRequest();
-            } else {
-                this.postUserAjax.body = JSON.stringify({
-                    username: this.user.username,
-                    accessLevel: this.user.accessLevel,
-                    password: this.user.password
-                }) as any;
-                this.postUserAjax.generateRequest();
-            }
-        }
     }
 }
