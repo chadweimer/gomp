@@ -52,6 +52,9 @@ export class AdminView extends GompBaseElement {
                 #userDialog h3 > span {
                     padding-left: 0.25em;
                 }
+                #confirmDeleteUserDialog {
+                    --confirmation-dialog-title-color: var(--paper-red-500);
+                }
                 paper-password-input {
                     display: block;
                 }
@@ -191,25 +194,25 @@ export class AdminView extends GompBaseElement {
     protected handleGetUsersResponse(e: CustomEvent) {
         this.users = e.detail.response;
     }
-    protected handlePostNoteResponse() {
+    protected handlePostUserResponse() {
         this.refresh();
         this.showToast('User created.');
     }
-    protected handlePostNoteError() {
+    protected handlePostUserError() {
         this.showToast('Creating user failed!');
     }
-    protected handlePutNoteResponse() {
+    protected handlePutUserResponse() {
         this.refresh();
         this.showToast('User updated.');
     }
-    protected handlePutNoteError() {
+    protected handlePutUserError() {
         this.showToast('Updating user failed!');
     }
-    protected handleDeleteNoteResponse() {
+    protected handleDeleteUserResponse() {
         this.refresh();
         this.showToast('User deleted.');
     }
-    protected handleDeleteNoteError() {
+    protected handleDeleteUserError() {
         this.showToast('Deleting user failed!');
     }
 
