@@ -206,6 +206,12 @@ export class AdminView extends GompBaseElement {
         }
     }
 
+    protected isActiveChanged(isActive: boolean) {
+        if (isActive && this.isReady) {
+            this.refresh();
+        }
+    }
+
     protected refresh() {
         this.getUsersAjax.generateRequest();
     }
