@@ -216,18 +216,20 @@ export class AdminView extends GompBaseElement {
         this.showToast('Deleting user failed!');
     }
 
-    protected onEditUserClicked(e: any) {
+    protected onEditUserClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.userId = e.target.dataset.id || e.target.dataId;
+        const el = e.currentTarget as HTMLElement;
+        this.userId = +el.dataset.id;
     }
 
-    protected onDeleteUserClicked(e: any) {
+    protected onDeleteUserClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.userId = e.target.dataset.id || e.target.dataId;
+        const el = e.currentTarget as HTMLElement;
+        this.userId = +el.dataset.id;
         this.confirmDeleteUserDialog.open();
     }
     protected deleteUser() {
