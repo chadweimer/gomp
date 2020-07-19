@@ -126,7 +126,8 @@ func (h apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
 
 		// Don't allow operating on the current user (e.g., for deleting)
 		if userIDStr == currentUserIDStr {
-			h.JSON(resp, http.StatusForbidden, err.Error())
+			msg := fmt.Sprintf("Endpoint '%s' disallowed on current user", req.URL.Path)
+			h.JSON(resp, http.StatusForbidden, msg)
 			return
 		}
 
