@@ -156,7 +156,7 @@ export class AdminView extends GompBaseElement {
                 </div>
             </paper-dialog>
 
-            <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete this user?" on-confirmed="deleteUser"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete '[[user.username]]'?" on-confirmed="deleteUser"></confirmation-dialog>
 
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
             <iron-ajax bubbles="" id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
@@ -306,7 +306,19 @@ export class AdminView extends GompBaseElement {
 
         const el = e.currentTarget as HTMLElement;
         this.userId = +el.dataset.id;
-        this.confirmDeleteUserDialog.open();
+
+        const selectedUser = this.users.find(u => u.id === this.userId);
+        if (selectedUser) {
+            this.user = {
+                username: selectedUser.username,
+                accessLevel: selectedUser.accessLevel,
+                password: null,
+                repeatPassword: null
+            };
+            this.confirmDeleteUserDialog.open();
+        } else {
+            this.showToast('Unknown user selected.');
+        }
     }
     protected deleteUser() {
         this.deleteUserAjax.generateRequest();
