@@ -142,6 +142,13 @@ export class GompApp extends PolymerElement {
                             Settings
                         </paper-icon-item>
                     </a>
+                    <a href="/admin" tabindex="-1" hidden$="[[!getIsAdmin(userAccessLevel)]]">
+                        <paper-icon-item tabindex="-1">
+                            <iron-icon icon="icons:lock" slot="item-icon"></iron-icon>
+                            Admin
+                        </paper-icon-item>
+                    </a>
+                    <paper-divider></paper-divider>
                     <a href="#!" tabindex="-1" on-click="onLogoutClicked">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
@@ -164,6 +171,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
+                                <a href="/admin" hidden$="[[!getIsAdmin(userAccessLevel)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
                                 <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
@@ -181,6 +189,7 @@ export class GompApp extends PolymerElement {
                             <recipes-view name="recipes" route="[[subroute]]"></recipes-view>
                             <create-view name="create"></create-view>
                             <settings-view name="settings"></settings-view>
+                            <admin-view name="admin"></admin-view>
                             <login-view name="login"></login-view>
                             <status-404-view name="status-404"></status-404-view>
                         </iron-pages>
@@ -193,6 +202,7 @@ export class GompApp extends PolymerElement {
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
                                 <li><a href="/settings">Settings</a></li>
+                                <li hidden$="[[!getIsAdmin(userAccessLevel)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
@@ -207,6 +217,7 @@ export class GompApp extends PolymerElement {
 
             <iron-ajax bubbles="" id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
             <iron-ajax bubbles="" id="tagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;tag&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;count&quot;: 100000}" on-response="handleGetTagsResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="getCurrentUserAjax" url="/api/v1/users/current" on-response="handleGetCurrentUserResponse"></iron-ajax>
 `;
     }
 
@@ -233,6 +244,8 @@ export class GompApp extends PolymerElement {
     protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: []} = {};
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
+    @property({type: String, notify: true})
+    protected userAccessLevel = 'none';
 
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
@@ -245,6 +258,9 @@ export class GompApp extends PolymerElement {
     }
     private get tagsAjax(): IronAjaxElement {
         return this.$.tagsAjax as IronAjaxElement;
+    }
+    private get getCurrentUserAjax(): IronAjaxElement {
+        return this.$.getCurrentUserAjax as IronAjaxElement;
     }
 
     static get observers() {
@@ -268,9 +284,11 @@ export class GompApp extends PolymerElement {
         this.addEventListener('iron-ajax-response', () => this.onAjaxResponse());
         this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
+        this.addEventListener('current-user-changed', () => this.onCurrentUserChanged());
 
         super.ready();
         this.appConfigAjax.generateRequest();
+        this.onCurrentUserChanged();
     }
 
     protected titleChanged(title: string) {
@@ -354,6 +372,9 @@ export class GompApp extends PolymerElement {
         case 'settings':
             import('./settings-view.js');
             break;
+        case 'admin':
+            import('./admin-view.js');
+            break;
         case 'login':
             import('./login-view.js');
             break;
@@ -377,9 +398,22 @@ export class GompApp extends PolymerElement {
 
         this.logout();
     }
+    protected onCurrentUserChanged() {
+        this.updateUserAccessLevel();
+    }
+    protected updateUserAccessLevel() {
+        if (!this.getIsAuthenticated()) {
+            this.userAccessLevel = 'none';
+        } else {
+            this.getCurrentUserAjax.generateRequest();
+        }
+    }
+    protected handleGetCurrentUserResponse(e: CustomEvent) {
+        this.userAccessLevel = e.detail.response.accessLevel;
+    }
     protected getIsAuthenticated() {
         const jwtToken = localStorage.getItem('jwtToken');
-        return jwtToken !== null;
+        return !!jwtToken;
     }
     protected verifyIsAuthenticated() {
         this.isAuthenticated = this.getIsAuthenticated();
@@ -392,9 +426,17 @@ export class GompApp extends PolymerElement {
         }
         return true;
     }
+    protected getIsAdmin(userAccessLevel: string) {
+        if (!userAccessLevel) {
+            return false;
+        }
+
+        return userAccessLevel === 'admin';
+    }
     protected logout() {
         localStorage.clear();
         sessionStorage.clear();
+        this.onCurrentUserChanged();
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {

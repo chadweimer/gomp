@@ -67,7 +67,8 @@ export class SettingsView extends GompBaseElement {
               <paper-card>
                   <div class="card-content">
                       <h3>Security Settings</h3>
-                      <paper-input label="Username" value="[[username]]" always-float-label="" disabled=""></paper-input>
+                      <paper-input label="Username" value="[[user.username]]" always-float-label="" disabled=""></paper-input>
+                      <paper-input label="Access Level" value="[[user.accessLevel]]" always-float-label="" disabled=""></paper-input>
                       <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
                       <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
                       <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
@@ -77,7 +78,7 @@ export class SettingsView extends GompBaseElement {
                           <iron-icon icon="icons:lock-outline"></iron-icon>
                           <span>Update Password</span>
                       <paper-button>
-                  </paper-button></paper-button></div>
+                  </div>
               </paper-card>
           </div>
           <div class="container">
@@ -114,8 +115,8 @@ export class SettingsView extends GompBaseElement {
 `;
     }
 
-    @property({type: String})
-    public username = '';
+    @property({type: Object, notify: true})
+    public user: object|null = null;
 
     private currentPassword = '';
     private newPassword = '';
@@ -192,9 +193,7 @@ export class SettingsView extends GompBaseElement {
     }
 
     protected handleGetUserResponse(e: CustomEvent) {
-        const user = e.detail.response;
-
-        this.username = user.username;
+        this.user = e.detail.response;
     }
     protected handlePutPasswordResponse() {
         this.showToast('Password updated.');

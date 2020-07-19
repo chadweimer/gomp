@@ -102,7 +102,7 @@ func (h apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p htt
 	}
 
 	if recipe.ID != recipeID {
-		h.JSON(resp, http.StatusBadRequest, errMismatchedRecipeID.Error())
+		h.JSON(resp, http.StatusBadRequest, errMismatchedID.Error())
 		return
 	}
 

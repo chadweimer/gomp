@@ -44,6 +44,7 @@
     "@polymer/paper-button": "^3.0.0",
     "@polymer/paper-card": "^3.0.0",
     "@polymer/paper-dialog": "^3.0.0",
+    "@polymer/paper-dropdown-menu": "^3.1.0",
     "@polymer/paper-input": "^3.2.1",
     "@polymer/paper-item": "^3.0.0",
     "@polymer/paper-listbox": "^3.0.0",
