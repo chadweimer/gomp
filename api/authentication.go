@@ -126,10 +126,8 @@ func (h apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
 
 		// Don't allow operating on the current user (e.g., for deleting)
 		if userIDStr == currentUserIDStr {
-			if err := h.verifyUserIsAdmin(req, p); err != nil {
-				h.JSON(resp, http.StatusForbidden, err.Error())
-				return
-			}
+			h.JSON(resp, http.StatusForbidden, err.Error())
+			return
 		}
 
 		handler(resp, req, p)
