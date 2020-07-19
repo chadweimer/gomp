@@ -112,6 +112,30 @@ func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter
 	}
 }
 
+func (h apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
+	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		// Get the user from the request
+		userIDStr := p.ByName("userID")
+		// Get the user from the current session
+		currentUserIDStr := p.ByName("CurrentUserID")
+
+		// Special case for a URL like /api/v1/users/current
+		if userIDStr == "current" {
+			userIDStr = currentUserIDStr
+		}
+
+		// Don't allow operating on the current user (e.g., for deleting)
+		if userIDStr == currentUserIDStr {
+			if err := h.verifyUserIsAdmin(req, p); err != nil {
+				h.JSON(resp, http.StatusForbidden, err.Error())
+				return
+			}
+		}
+
+		handler(resp, req, p)
+	}
+}
+
 func (h apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		if err := h.verifyUserIsEditor(req, p); err != nil {
