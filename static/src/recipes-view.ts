@@ -9,6 +9,7 @@ import { NoteList } from './components/note-list.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { RecipeEdit } from './components/recipe-edit.js';
 import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
+import { User } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -150,6 +151,8 @@ export class RecipesView extends GompBaseElement {
     public recipeId = '';
     @property({type: Boolean, notify: true})
     public editing = false;
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     private get recipeDisplay(): RecipeDisplay {
         return this.$.recipeDisplay as RecipeDisplay;

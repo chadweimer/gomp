@@ -1,10 +1,11 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement } from '@polymer/decorators';
+import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { User } from './models/models.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/social-icons.js';
@@ -164,6 +165,9 @@ export class AdminView extends GompBaseElement {
             <iron-ajax bubbles="" id="deleteUserAjax" url="/api/v1/users/[[userId]]" method="DELETE" on-response="handleDeleteUserResponse" on-error="handleDeleteUserError"></iron-ajax>
 `;
     }
+
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     protected users: any[] = [];
 

@@ -1,6 +1,7 @@
 'use strict';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
+import { User } from '../models/models.js';
 
 export abstract class GompBaseElement extends PolymerElement {
     @property({type: Boolean, notify: true})
@@ -21,5 +22,13 @@ export abstract class GompBaseElement extends PolymerElement {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected isActiveChanged(_: boolean) {
         // Nothing to do in base
+    }
+
+    protected getCanEdit(user: User): boolean {
+        if (!user?.accessLevel) {
+            return false;
+        }
+
+        return user.accessLevel === 'admin' || user.accessLevel === 'editor';
     }
 }

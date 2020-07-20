@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { Search, User } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -193,12 +194,7 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public search = {
-        query: '',
-        fields: [] as string[],
-        tags: [] as string[],
-        pictures: [] as string[],
-    };
+    public search: Search = null;
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
         sortBy: 'name',
@@ -209,6 +205,8 @@ export class SearchView extends GompBaseElement {
     public recipes: any[] = [];
     @property({type: Number, notify: true})
     public totalRecipeCount = 0;
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     private get settingsDrawer(): AppDrawerElement {
         return this.$.settingsDrawer as AppDrawerElement;

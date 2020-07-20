@@ -5,6 +5,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
+import { Search, User } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -142,7 +143,7 @@ export class GompApp extends PolymerElement {
                             Settings
                         </paper-icon-item>
                     </a>
-                    <a href="/admin" tabindex="-1" hidden$="[[!getIsAdmin(userAccessLevel)]]">
+                    <a href="/admin" tabindex="-1" hidden$="[[!getIsAdmin(currentUser)]]">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:lock" slot="item-icon"></iron-icon>
                             Admin
@@ -171,7 +172,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
-                                <a href="/admin" hidden$="[[!getIsAdmin(userAccessLevel)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
+                                <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
                                 <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
@@ -184,12 +185,12 @@ export class GompApp extends PolymerElement {
 
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
-                            <home-view name="home"></home-view>
-                            <search-view id="searchView" name="search" search="{{search}}"></search-view>
-                            <recipes-view name="recipes" route="[[subroute]]"></recipes-view>
-                            <create-view name="create"></create-view>
-                            <settings-view name="settings"></settings-view>
-                            <admin-view name="admin"></admin-view>
+                            <home-view name="home" current-user="[[currentUser]]"></home-view>
+                            <search-view id="searchView" name="search" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
+                            <create-view name="create" current-user="[[currentUser]]"></create-view>
+                            <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
+                            <admin-view name="admin" current-user="[[currentUser]]"></admin-view>
                             <login-view name="login"></login-view>
                             <status-404-view name="status-404"></status-404-view>
                         </iron-pages>
@@ -202,7 +203,7 @@ export class GompApp extends PolymerElement {
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
                                 <li><a href="/settings">Settings</a></li>
-                                <li hidden$="[[!getIsAdmin(userAccessLevel)]]"><a href="/admin">Admin</a></li>
+                                <li hidden$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
@@ -228,7 +229,7 @@ export class GompApp extends PolymerElement {
     @property({type: Number})
     protected loadingCount = 0;
     @property({type: Object, notify: true})
-    protected search = {
+    protected search: Search = {
         query: '',
         fields: [] as string[],
         tags: [] as string[],
@@ -244,8 +245,8 @@ export class GompApp extends PolymerElement {
     protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: []} = {};
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
-    @property({type: String, notify: true})
-    protected userAccessLevel = 'none';
+    @property({type: Object, notify: true})
+    protected currentUser: User = null;
 
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
@@ -399,17 +400,14 @@ export class GompApp extends PolymerElement {
         this.logout();
     }
     protected onCurrentUserChanged() {
-        this.updateUserAccessLevel();
-    }
-    protected updateUserAccessLevel() {
         if (!this.getIsAuthenticated()) {
-            this.userAccessLevel = 'none';
+            this.currentUser = null;
         } else {
             this.getCurrentUserAjax.generateRequest();
         }
     }
     protected handleGetCurrentUserResponse(e: CustomEvent) {
-        this.userAccessLevel = e.detail.response.accessLevel;
+        this.currentUser = e.detail.response;
     }
     protected getIsAuthenticated() {
         const jwtToken = localStorage.getItem('jwtToken');
@@ -426,12 +424,12 @@ export class GompApp extends PolymerElement {
         }
         return true;
     }
-    protected getIsAdmin(userAccessLevel: string) {
-        if (!userAccessLevel) {
+    protected getIsAdmin(user: User) {
+        if (!user?.accessLevel) {
             return false;
         }
 
-        return userAccessLevel === 'admin';
+        return user.accessLevel === 'admin';
     }
     protected logout() {
         localStorage.clear();

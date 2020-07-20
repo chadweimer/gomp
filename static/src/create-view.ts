@@ -1,7 +1,8 @@
 'use strict';
-import { customElement } from '@polymer/decorators';
+import { customElement, property } from '@polymer/decorators';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { User } from './models/models.js';
 import './components/recipe-edit.js';
 import './shared-styles.js';
 
@@ -25,6 +26,9 @@ export class CreateView extends GompBaseElement {
             </article>
 `;
     }
+
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     protected editCanceled() {
         this.dispatchEvent(

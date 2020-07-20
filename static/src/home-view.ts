@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { HomeList } from './components/home-list.js';
+import { User } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-fab/paper-fab.js';
 import './components/home-list.js';
@@ -52,7 +53,7 @@ export class HomeView extends GompBaseElement {
               <home-list id="drinkRecipes" title="Drinks" tags="[&quot;drink&quot;,&quot;cocktail&quot;]"></home-list>
           </section>
 
-          <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+          <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
           <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
 `;
@@ -62,6 +63,8 @@ export class HomeView extends GompBaseElement {
     public title = '';
     @property({type: String, notify: true})
     public image = '';
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     private get lists(): HomeList[] {
         return [
