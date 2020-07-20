@@ -116,10 +116,10 @@ export class RecipesView extends GompBaseElement {
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]"></recipe-display>
                     <div class="tab-container">
                         <div id="images" class="tab">
-                            <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage"></image-list>
+                            <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage" readonly\$="[[!getCanEdit(currentUser)]]"></image-list>
                         </div>
                         <div id="notes" class="tab">
-                            <note-list id="noteList" recipe-id="[[recipeId]]"></note-list>
+                            <note-list id="noteList" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></note-list>
                         </div>
                     </div>
                 </div>
@@ -128,7 +128,7 @@ export class RecipesView extends GompBaseElement {
                     <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
                 </div>
             </div>
-            <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
+            <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing || !getCanEdit(currentUser)]]" with-backdrop="">
                 <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
                 <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
                 <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>

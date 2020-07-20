@@ -73,7 +73,7 @@ export class NoteCard extends GompBaseElement {
                     <div>
                         <iron-icon icon="communication:comment"></iron-icon>
                         <span>[[formatDate(note.createdAt)]]</span>
-                        <paper-menu-button id="noteMenu" horizontal-align="right">
+                        <paper-menu-button id="noteMenu" horizontal-align="right" hidden\$="[[readonly]]">
                             <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                             <paper-listbox slot="dropdown-content">
                                 <a href="#!" tabindex="-1" on-click="onEditClicked">
@@ -104,6 +104,9 @@ export class NoteCard extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public note: object|null = null;
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     private get confirmDeleteDialog(): ConfirmationDialog {
         return this.$.confirmDeleteDialog as ConfirmationDialog;

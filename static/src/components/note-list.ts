@@ -57,7 +57,7 @@ export class NoteList extends GompBaseElement {
           <header>Notes</header>
           <paper-divider></paper-divider>
           <template is="dom-repeat" items="[[notes]]">
-              <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted"></note-card>
+              <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted" readonly\$="[[readonly]]"></note-card>
           </template>
 
           <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop="">
@@ -77,6 +77,9 @@ export class NoteList extends GompBaseElement {
 
     @property({type: String})
     public recipeId = '';
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     protected noteId: number|null = null;
     protected noteText = '';

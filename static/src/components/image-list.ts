@@ -83,7 +83,7 @@ export class ImageList extends GompBaseElement {
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
                 </div>
                 <div>
-                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
+                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]" hidden\$="[[readonly]]">
                         <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                         <paper-listbox slot="dropdown-content">
                             <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
@@ -129,6 +129,9 @@ export class ImageList extends GompBaseElement {
 
     @property({type: String})
     public recipeId = '';
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     protected images: any[] = [];
 
