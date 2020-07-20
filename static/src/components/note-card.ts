@@ -50,7 +50,7 @@ export class NoteCard extends GompBaseElement {
                     font-weight: lighter;
                 }
                 paper-menu-button {
-                    posion: absolute;
+                    position: absolute;
                     top: 0;
                     right: 0;
                 }
@@ -73,17 +73,19 @@ export class NoteCard extends GompBaseElement {
                     <div>
                         <iron-icon icon="communication:comment"></iron-icon>
                         <span>[[formatDate(note.createdAt)]]</span>
-                        <paper-menu-button id="noteMenu" horizontal-align="right" hidden\$="[[readonly]]">
-                            <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
-                            <paper-listbox slot="dropdown-content">
-                                <a href="#!" tabindex="-1" on-click="onEditClicked">
-                                    <paper-icon-item tabindex="-1"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                                </a>
-                                <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                    <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                                </a>
-                            </paper-listbox>
-                        </paper-menu-button>
+                        <div hidden\$="[[readonly]]">
+                            <paper-menu-button id="noteMenu" horizontal-align="right">
+                                <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                                <paper-listbox slot="dropdown-content">
+                                    <a href="#!" tabindex="-1" on-click="onEditClicked">
+                                        <paper-icon-item tabindex="-1"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
+                                    </a>
+                                    <a href="#!" tabindex="-1" on-click="onDeleteClicked">
+                                        <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                                    </a>
+                                </paper-listbox>
+                            </paper-menu-button>
+                        </div>
                     </div>
                     <paper-divider></paper-divider>
                     <p class="note-content">[[note.text]]</p>

@@ -82,8 +82,8 @@ export class ImageList extends GompBaseElement {
                 <div class="imageContainer">
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
                 </div>
-                <div>
-                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]" hidden\$="[[readonly]]">
+                <div hidden\$="[[readonly]]">
+                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
                         <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                         <paper-listbox slot="dropdown-content">
                             <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">

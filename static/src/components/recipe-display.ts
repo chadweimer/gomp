@@ -73,7 +73,7 @@ export class RecipeDisplay extends GompBaseElement {
 
             <paper-card>
                 <div class="card-content">
-                    <recipe-rating recipe="{{recipe}}"></recipe-rating>
+                    <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
@@ -138,6 +138,9 @@ export class RecipeDisplay extends GompBaseElement {
 
     @property({type: String})
     public recipeId = '';
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     protected recipe: object|null = null;
     protected mainImage: object|null = null;
