@@ -2,8 +2,10 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
+import { Note } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -105,7 +107,7 @@ export class NoteCard extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public note: object|null = null;
+    public note: Note = null;
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
@@ -117,18 +119,24 @@ export class NoteCard extends GompBaseElement {
         return this.$.deleteAjax as IronAjaxElement;
     }
 
-    protected onEditClicked(e: any) {
+    protected onEditClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        e.target.closest('#noteMenu').close();
+        const el = e.target as HTMLElement;
+        const menu = el.closest('#noteMenu') as PaperMenuButton;
+        menu.close();
+
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
-    protected onDeleteClicked(e: any) {
+    protected onDeleteClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        e.target.closest('#noteMenu').close();
+        const el = e.target as HTMLElement;
+        const menu = el.closest('#noteMenu') as PaperMenuButton;
+        menu.close();
+
         this.confirmDeleteDialog.open();
     }
     protected deleteNote() {
@@ -138,7 +146,7 @@ export class NoteCard extends GompBaseElement {
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
     }
-    protected showModifiedDate(note: any) {
+    protected showModifiedDate(note: Note) {
         if (!note) {
             return false;
         }

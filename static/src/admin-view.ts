@@ -5,7 +5,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User } from './models/models.js';
+import { User, EventWithModel } from './models/models.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/social-icons.js';
@@ -272,7 +272,7 @@ export class AdminView extends GompBaseElement {
         }
     }
 
-    protected onEditUserClicked(e: {preventDefault(): void; model: {item: User}}) {
+    protected onEditUserClicked(e: EventWithModel<{item: User}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
@@ -303,7 +303,7 @@ export class AdminView extends GompBaseElement {
         }
     }
 
-    protected onDeleteUserClicked(e: {preventDefault(): void; model: {item: User}}) {
+    protected onDeleteUserClicked(e: EventWithModel<{item: User}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 

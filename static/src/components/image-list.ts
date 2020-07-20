@@ -3,6 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import '@polymer/iron-ajax/iron-ajax.js';
@@ -181,32 +182,38 @@ export class ImageList extends GompBaseElement {
             this.addAjax.generateRequest();
         }
     }
-    protected onSetMainImageClicked(e: any) {
+    protected onSetMainImageClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const menu = e.target.closest('#imageMenu');
+        const el = e.target as HTMLElement;
+        const menu = el.closest('#imageMenu') as PaperMenuButton;
         menu.close();
 
-        this.confirmMainImageDialog.dataset.id = menu.dataset.id || menu.dataId;
+        this.confirmMainImageDialog.dataset.id = menu.dataset.id;
         this.confirmMainImageDialog.open();
     }
-    protected setMainImage(e: any) {
-        this.setMainImageAjax.body = parseInt(e.target.dataset.id, 10) as any;
+    protected setMainImage(e: Event) {
+        const el = e.target as HTMLElement;
+
+        this.setMainImageAjax.body = parseInt(el.dataset.id, 10) as any;
         this.setMainImageAjax.generateRequest();
     }
-    protected onDeleteClicked(e: any) {
+    protected onDeleteClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const menu = e.target.closest('#imageMenu');
+        const el = e.target as HTMLElement;
+        const menu = el.closest('#imageMenu') as PaperMenuButton;
         menu.close();
 
-        this.confirmDeleteDialog.dataset.id = menu.dataset.id || menu.dataId;
+        this.confirmDeleteDialog.dataset.id = menu.dataset.id;
         this.confirmDeleteDialog.open();
     }
-    protected deleteImage(e: any) {
-        this.deleteAjax.url = '/api/v1/images/' + e.target.dataset.id;
+    protected deleteImage(e: Event) {
+        const el = e.target as HTMLElement;
+
+        this.deleteAjax.url = '/api/v1/images/' + el.dataset.id;
         this.deleteAjax.generateRequest();
     }
 

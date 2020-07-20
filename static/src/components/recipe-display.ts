@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
+import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -142,9 +143,9 @@ export class RecipeDisplay extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected recipe: object|null = null;
+    protected recipe: Recipe = null;
     protected mainImage: object|null = null;
-    protected links: any[] = [];
+    protected links: RecipeCompact[] = [];
 
     private get confirmDeleteLinkDialog(): ConfirmationDialog {
         return this.$.confirmDeleteLinkDialog as ConfirmationDialog;
@@ -182,22 +183,24 @@ export class RecipeDisplay extends GompBaseElement {
         return !Array.isArray(arr) || !arr.length;
     }
 
-    protected onRemoveLinkClicked(e: any) {
+    protected onRemoveLinkClicked(e: EventWithModel<{item: RecipeCompact}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id;
+        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id.toString();
         this.confirmDeleteLinkDialog.open();
     }
-    protected deleteLink(e: any) {
-        this.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.target.dataset.id;
+    protected deleteLink(e: Event) {
+        const el = e.target as HTMLElement;
+
+        this.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + el.dataset.id;
         this.deleteLinkAjax.generateRequest();
     }
 
     protected handleGetRecipeRequest() {
         this.recipe = null;
     }
-    protected handleGetRecipeResponse(e: CustomEvent) {
+    protected handleGetRecipeResponse(e: CustomEvent<{response: Recipe}>) {
         this.recipe = e.detail.response;
     }
     protected handleGetMainImageRequest() {
@@ -206,7 +209,7 @@ export class RecipeDisplay extends GompBaseElement {
     protected handleGetMainImageResponse(e: CustomEvent) {
         this.mainImage = e.detail.response;
     }
-    protected handleGetLinksResponse(e: CustomEvent) {
+    protected handleGetLinksResponse(e: CustomEvent<{response: RecipeCompact[]}>) {
         this.links = e.detail.response;
     }
     protected handleDeleteLinkResponse() {
@@ -218,7 +221,7 @@ export class RecipeDisplay extends GompBaseElement {
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
     }
-    protected showModifiedDate(recipe: any) {
+    protected showModifiedDate(recipe: Recipe) {
         if (!recipe) {
             return false;
         }

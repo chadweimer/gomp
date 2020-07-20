@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { Search, User } from './models/models.js';
+import { Search, User, RecipeCompact } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -202,7 +202,7 @@ export class SearchView extends GompBaseElement {
         viewMode: 'full',
     };
     @property({type: Array, notify: true})
-    public recipes: any[] = [];
+    public recipes: RecipeCompact[] = [];
     @property({type: Number, notify: true})
     public totalRecipeCount = 0;
     @property({type: Object, notify: true})
@@ -258,9 +258,9 @@ export class SearchView extends GompBaseElement {
     protected handleGetRecipesRequest() {
         this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
     }
-    protected handleGetRecipesResponse(request: CustomEvent) {
-        this.recipes = request.detail.response.recipes;
-        this.totalRecipeCount = request.detail.response.total;
+    protected handleGetRecipesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[], total: number}}>) {
+        this.recipes = e.detail.response.recipes;
+        this.totalRecipeCount = e.detail.response.total;
     }
     protected handleGetRecipesError() {
         this.recipes = [];

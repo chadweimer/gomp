@@ -2,6 +2,7 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
+import { RecipeCompact } from '../models/models.js';
 import '@polymer/paper-card/paper-card.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
@@ -70,7 +71,7 @@ export class RecipeCard extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public recipe: object|null = null;
+    public recipe: RecipeCompact = null;
 
     @property({type: Boolean, notify: true})
     public hideCreatedModifiedDates = false;
@@ -81,7 +82,7 @@ export class RecipeCard extends GompBaseElement {
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
     }
-    protected showModifiedDate(recipe: any) {
+    protected showModifiedDate(recipe: RecipeCompact) {
         if (!recipe) {
             return false;
         }
