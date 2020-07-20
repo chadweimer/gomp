@@ -277,19 +277,15 @@ export class AdminView extends GompBaseElement {
         e.preventDefault();
 
         const selectedUser = e.model.item;
-        this.userId = selectedUser.id;
 
-        if (selectedUser) {
-            this.user = {
-                username: selectedUser.username,
-                accessLevel: selectedUser.accessLevel,
-                password: null,
-                repeatPassword: null
-            };
-            this.editUserDialog.open();
-        } else {
-            this.showToast('Unknown user selected.');
-        }
+        this.userId = selectedUser.id;
+        this.user = {
+            username: selectedUser.username,
+            accessLevel: selectedUser.accessLevel,
+            password: null,
+            repeatPassword: null
+        };
+        this.editUserDialog.open();
     }
 
     protected editUserDialogClosed(e: CustomEvent) {
@@ -308,19 +304,15 @@ export class AdminView extends GompBaseElement {
         e.preventDefault();
 
         const selectedUser = e.model.item;
-        this.userId = selectedUser.id;
 
-        if (selectedUser) {
-            this.user = {
-                username: selectedUser.username,
-                accessLevel: selectedUser.accessLevel,
-                password: null,
-                repeatPassword: null
-            };
-            this.confirmDeleteUserDialog.open();
-        } else {
-            this.showToast('Unknown user selected.');
-        }
+        this.userId = selectedUser.id;
+        this.user = {
+            username: selectedUser.username,
+            accessLevel: selectedUser.accessLevel,
+            password: null,
+            repeatPassword: null
+        };
+        this.confirmDeleteUserDialog.open();
     }
     protected deleteUser() {
         this.deleteUserAjax.generateRequest();
