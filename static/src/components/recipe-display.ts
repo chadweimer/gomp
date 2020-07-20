@@ -111,7 +111,7 @@ export class RecipeDisplay extends GompBaseElement {
                                 <paper-item-body>
                                     <a href="/recipes/[[item.id]]">[[item.name]]</a>
                                 </paper-item-body>
-                                <iron-icon icon="icons:cancel" on-click="onRemoveLinkClicked"></iron-icon>
+                                <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><iron-icon icon="icons:cancel"></iron-icon></a>
                             </paper-icon-item>
                         </template>
                         <paper-divider></paper-divider>
@@ -183,6 +183,9 @@ export class RecipeDisplay extends GompBaseElement {
     }
 
     protected onRemoveLinkClicked(e: any) {
+        // Don't navigate to "#!"
+        e.preventDefault();
+
         this.confirmDeleteLinkDialog.dataset.id = e.model.item.id;
         this.confirmDeleteLinkDialog.open();
     }
