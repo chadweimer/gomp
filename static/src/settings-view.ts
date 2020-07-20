@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { User } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -67,8 +68,8 @@ export class SettingsView extends GompBaseElement {
               <paper-card>
                   <div class="card-content">
                       <h3>Security Settings</h3>
-                      <paper-input label="Username" value="[[user.username]]" always-float-label="" disabled=""></paper-input>
-                      <paper-input label="Access Level" value="[[user.accessLevel]]" always-float-label="" disabled=""></paper-input>
+                      <paper-input label="Username" value="[[currentUser.username]]" always-float-label="" disabled=""></paper-input>
+                      <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label="" disabled=""></paper-input>
                       <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
                       <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
                       <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
@@ -107,7 +108,6 @@ export class SettingsView extends GompBaseElement {
 
           <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-          <iron-ajax bubbles="" id="getUserAjax" url="/api/v1/users/current" on-response="handleGetUserResponse"></iron-ajax>
           <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" ,="" on-error="handlePutPasswordError"></iron-ajax>
           <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
           <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" ,="" on-error="handlePutSettingsError"></iron-ajax>
@@ -116,7 +116,7 @@ export class SettingsView extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public user: object|null = null;
+    public currentUser: User = null;
 
     private currentPassword = '';
     private newPassword = '';
@@ -132,9 +132,6 @@ export class SettingsView extends GompBaseElement {
     }
     private get uploadingDialog(): PaperDialogElement {
         return this.$.uploadingDialog as PaperDialogElement;
-    }
-    private get getUserAjax(): IronAjaxElement {
-        return this.$.getUserAjax as IronAjaxElement;
     }
     private get getSettingsAjax(): IronAjaxElement {
         return this.$.getSettingsAjax as IronAjaxElement;
@@ -192,9 +189,6 @@ export class SettingsView extends GompBaseElement {
         }
     }
 
-    protected handleGetUserResponse(e: CustomEvent) {
-        this.user = e.detail.response;
-    }
     protected handlePutPasswordResponse() {
         this.showToast('Password updated.');
     }
@@ -235,7 +229,6 @@ export class SettingsView extends GompBaseElement {
     }
 
     protected refresh() {
-        this.getUserAjax.generateRequest();
         this.getSettingsAjax.generateRequest();
     }
 }

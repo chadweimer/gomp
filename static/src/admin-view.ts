@@ -1,10 +1,11 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement } from '@polymer/decorators';
+import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { User, EventWithModel } from './models/models.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/social-icons.js';
@@ -101,10 +102,10 @@ export class AdminView extends GompBaseElement {
                                         <td>[[item.username]]</td>
                                         <td>[[item.accessLevel]]</td>
                                         <td class="right">
-                                            <a href="#!" tabindex="-1" data-id\$="[[item.id]]" on-click="onEditUserClicked">
+                                            <a href="#!" tabindex="-1" on-click="onEditUserClicked">
                                                 <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
                                             </a>
-                                            <a href="#!" tabindex="-1" data-id\$="[[item.id]]" on-click="onDeleteUserClicked">
+                                            <a href="#!" tabindex="-1" on-click="onDeleteUserClicked">
                                                 <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
                                             </a>
                                         </td>
@@ -165,7 +166,10 @@ export class AdminView extends GompBaseElement {
 `;
     }
 
-    protected users: any[] = [];
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
+
+    protected users: User[] = [];
 
     protected userId: number|null = null;
     protected user: {
@@ -268,25 +272,20 @@ export class AdminView extends GompBaseElement {
         }
     }
 
-    protected onEditUserClicked(e: Event) {
+    protected onEditUserClicked(e: EventWithModel<{item: User}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const el = e.currentTarget as HTMLElement;
-        this.userId = +el.dataset.id;
+        const selectedUser = e.model.item;
 
-        const selectedUser = this.users.find(u => u.id === this.userId);
-        if (selectedUser) {
-            this.user = {
-                username: selectedUser.username,
-                accessLevel: selectedUser.accessLevel,
-                password: null,
-                repeatPassword: null
-            };
-            this.editUserDialog.open();
-        } else {
-            this.showToast('Unknown user selected.');
-        }
+        this.userId = selectedUser.id;
+        this.user = {
+            username: selectedUser.username,
+            accessLevel: selectedUser.accessLevel,
+            password: null,
+            repeatPassword: null
+        };
+        this.editUserDialog.open();
     }
 
     protected editUserDialogClosed(e: CustomEvent) {
@@ -300,25 +299,20 @@ export class AdminView extends GompBaseElement {
         }
     }
 
-    protected onDeleteUserClicked(e: Event) {
+    protected onDeleteUserClicked(e: EventWithModel<{item: User}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const el = e.currentTarget as HTMLElement;
-        this.userId = +el.dataset.id;
+        const selectedUser = e.model.item;
 
-        const selectedUser = this.users.find(u => u.id === this.userId);
-        if (selectedUser) {
-            this.user = {
-                username: selectedUser.username,
-                accessLevel: selectedUser.accessLevel,
-                password: null,
-                repeatPassword: null
-            };
-            this.confirmDeleteUserDialog.open();
-        } else {
-            this.showToast('Unknown user selected.');
-        }
+        this.userId = selectedUser.id;
+        this.user = {
+            username: selectedUser.username,
+            accessLevel: selectedUser.accessLevel,
+            password: null,
+            repeatPassword: null
+        };
+        this.confirmDeleteUserDialog.open();
     }
     protected deleteUser() {
         this.deleteUserAjax.generateRequest();

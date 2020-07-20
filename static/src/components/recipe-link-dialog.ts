@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
+import { RecipeCompact } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -77,7 +78,7 @@ export class RecipeLinkDialog extends GompBaseElement {
         this.dialog.open();
     }
 
-    protected onAutocompleteChange(e: CustomEvent) {
+    protected onAutocompleteChange(e: CustomEvent<{text: string}>) {
         this.selectedRecipeId = null;
         const value = e.detail.text;
         if (value && value.length >= 2) {
@@ -93,7 +94,7 @@ export class RecipeLinkDialog extends GompBaseElement {
             this.recipesAjax.generateRequest();
         }
     }
-    protected onAutocompleteSelected(e: CustomEvent) {
+    protected onAutocompleteSelected(e: CustomEvent<{value: number}>) {
         this.selectedRecipeId = e.detail.value;
     }
     protected onDialogClosed(e: CustomEvent) {
@@ -105,12 +106,12 @@ export class RecipeLinkDialog extends GompBaseElement {
     protected shouldPreventAdd(selectedRecipeId: number) {
         return selectedRecipeId === null;
     }
-    protected handleGetRecipesResponse(e: CustomEvent) {
+    protected handleGetRecipesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[]; total: number}}>) {
         const recipes = e.detail.response.recipes;
 
-        const suggestions: any[] = [];
+        const suggestions: {value: number; text: string;}[] = [];
         if (recipes) {
-            recipes.forEach((recipe: any) => {
+            recipes.forEach(recipe => {
                 suggestions.push({value: recipe.id, text: recipe.name});
             });
         }

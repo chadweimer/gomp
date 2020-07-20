@@ -85,7 +85,7 @@ export class HomeList extends GompBaseElement {
                 <div class="outerContainer">
                     <template is="dom-repeat" items="[[recipes]]">
                         <div class="recipeContainer">
-                            <recipe-card recipe="[[item]]" hide-created-modified-dates></recipe-card>
+                            <recipe-card recipe="[[item]]" hide-created-modified-dates readonly\$="[[readonly]]"></recipe-card>
                         </div>
                     </template>
                 </div>
@@ -98,8 +98,12 @@ export class HomeList extends GompBaseElement {
 
     @property({type: String, notify: true})
     public title = 'Recipes';
+
     @property({type: Array, notify: true, observer: 'tagsChanged'})
     public tags = [];
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     protected total = 0;
     protected recipes = [];

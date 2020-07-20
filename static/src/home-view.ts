@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { HomeList } from './components/home-list.js';
+import { User } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-fab/paper-fab.js';
 import './components/home-list.js';
@@ -41,18 +42,18 @@ export class HomeView extends GompBaseElement {
                   <h1 hidden\$="[[!title]]">[[title]]</h1>
                   <img alt="Home Image" class="responsive" hidden\$="[[!image]]" src="[[image]]">
               </header>
-              <home-list id="allRecipes"></home-list>
-              <home-list id="beefRecipes" title="Beef" tags="[&quot;beef&quot;,&quot;steak&quot;]"></home-list>
-              <home-list id="poultryRecipes" title="Poultry" tags="[&quot;chicken&quot;,&quot;turkey&quot;,&quot;poultry&quot;]"></home-list>
-              <home-list id="seafoodRecipes" title="Seafood" tags="[&quot;seafood&quot;,&quot;fish&quot;]"></home-list>
-              <home-list id="porkRecipes" title="Pork" tags="[&quot;pork&quot;]"></home-list>
-              <home-list id="pastaRecipes" title="Pasta" tags="[&quot;pasta&quot;]"></home-list>
-              <home-list id="vegetarianRecipes" title="Vegetarian" tags="[&quot;vegetarian&quot;]"></home-list>
-              <home-list id="sideRecipes" title="Sides" tags="[&quot;side&quot;,&quot;sides&quot;]"></home-list>
-              <home-list id="drinkRecipes" title="Drinks" tags="[&quot;drink&quot;,&quot;cocktail&quot;]"></home-list>
+              <home-list id="allRecipes" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="beefRecipes" title="Beef" tags="[&quot;beef&quot;,&quot;steak&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="poultryRecipes" title="Poultry" tags="[&quot;chicken&quot;,&quot;turkey&quot;,&quot;poultry&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="seafoodRecipes" title="Seafood" tags="[&quot;seafood&quot;,&quot;fish&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="porkRecipes" title="Pork" tags="[&quot;pork&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="pastaRecipes" title="Pasta" tags="[&quot;pasta&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="vegetarianRecipes" title="Vegetarian" tags="[&quot;vegetarian&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="sideRecipes" title="Sides" tags="[&quot;side&quot;,&quot;sides&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
+              <home-list id="drinkRecipes" title="Drinks" tags="[&quot;drink&quot;,&quot;cocktail&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
           </section>
 
-          <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+          <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
           <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
 `;
@@ -62,6 +63,8 @@ export class HomeView extends GompBaseElement {
     public title = '';
     @property({type: String, notify: true})
     public image = '';
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     private get lists(): HomeList[] {
         return [

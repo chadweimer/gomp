@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { Search, User, RecipeCompact } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -158,7 +159,7 @@ export class SearchView extends GompBaseElement {
                       <template is="dom-repeat" items="[[recipes]]">
                           <div class="recipeContainer">
                               <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
-                                  <recipe-card recipe="[[item]]"></recipe-card>
+                                  <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
                               </template>
                               <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
                                   <a href="/recipes/[[item.id]]">
@@ -167,7 +168,7 @@ export class SearchView extends GompBaseElement {
                                           <paper-item-body>
                                               <div>[[item.name]]</div>
                                               <div secondary="">
-                                                  <recipe-rating recipe="{{item}}" class="compact-rating"></recipe-rating>
+                                                  <recipe-rating recipe="{{item}}" class="compact-rating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
                                               </div>
                                           </paper-item-body>
                                       </paper-icon-item>
@@ -180,7 +181,7 @@ export class SearchView extends GompBaseElement {
                       <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                   </div>
               </div>
-              <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+              <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
           </app-drawer-layout>
 
           <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
@@ -193,12 +194,7 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public search = {
-        query: '',
-        fields: [] as string[],
-        tags: [] as string[],
-        pictures: [] as string[],
-    };
+    public search: Search = null;
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
         sortBy: 'name',
@@ -206,9 +202,11 @@ export class SearchView extends GompBaseElement {
         viewMode: 'full',
     };
     @property({type: Array, notify: true})
-    public recipes: any[] = [];
+    public recipes: RecipeCompact[] = [];
     @property({type: Number, notify: true})
     public totalRecipeCount = 0;
+    @property({type: Object, notify: true})
+    public currentUser: User = null;
 
     private get settingsDrawer(): AppDrawerElement {
         return this.$.settingsDrawer as AppDrawerElement;
@@ -260,9 +258,9 @@ export class SearchView extends GompBaseElement {
     protected handleGetRecipesRequest() {
         this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
     }
-    protected handleGetRecipesResponse(request: CustomEvent) {
-        this.recipes = request.detail.response.recipes;
-        this.totalRecipeCount = request.detail.response.total;
+    protected handleGetRecipesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[], total: number}}>) {
+        this.recipes = e.detail.response.recipes;
+        this.totalRecipeCount = e.detail.response.total;
     }
     protected handleGetRecipesError() {
         this.recipes = [];

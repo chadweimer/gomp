@@ -2,8 +2,10 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
+import { Note } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -50,7 +52,7 @@ export class NoteCard extends GompBaseElement {
                     font-weight: lighter;
                 }
                 paper-menu-button {
-                    posion: absolute;
+                    position: absolute;
                     top: 0;
                     right: 0;
                 }
@@ -73,17 +75,19 @@ export class NoteCard extends GompBaseElement {
                     <div>
                         <iron-icon icon="communication:comment"></iron-icon>
                         <span>[[formatDate(note.createdAt)]]</span>
-                        <paper-menu-button id="noteMenu" horizontal-align="right">
-                            <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
-                            <paper-listbox slot="dropdown-content">
-                                <a href="#!" tabindex="-1" on-click="onEditClicked">
-                                    <paper-icon-item tabindex="-1"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                                </a>
-                                <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                    <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                                </a>
-                            </paper-listbox>
-                        </paper-menu-button>
+                        <div hidden\$="[[readonly]]">
+                            <paper-menu-button id="noteMenu" horizontal-align="right">
+                                <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                                <paper-listbox slot="dropdown-content">
+                                    <a href="#!" tabindex="-1" on-click="onEditClicked">
+                                        <paper-icon-item tabindex="-1"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
+                                    </a>
+                                    <a href="#!" tabindex="-1" on-click="onDeleteClicked">
+                                        <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                                    </a>
+                                </paper-listbox>
+                            </paper-menu-button>
+                        </div>
                     </div>
                     <paper-divider></paper-divider>
                     <p class="note-content">[[note.text]]</p>
@@ -103,7 +107,10 @@ export class NoteCard extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public note: object|null = null;
+    public note: Note = null;
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     private get confirmDeleteDialog(): ConfirmationDialog {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
@@ -112,18 +119,24 @@ export class NoteCard extends GompBaseElement {
         return this.$.deleteAjax as IronAjaxElement;
     }
 
-    protected onEditClicked(e: any) {
+    protected onEditClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        e.target.closest('#noteMenu').close();
+        const el = e.target as HTMLElement;
+        const menu = el.closest('#noteMenu') as PaperMenuButton;
+        menu.close();
+
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
-    protected onDeleteClicked(e: any) {
+    protected onDeleteClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        e.target.closest('#noteMenu').close();
+        const el = e.target as HTMLElement;
+        const menu = el.closest('#noteMenu') as PaperMenuButton;
+        menu.close();
+
         this.confirmDeleteDialog.open();
     }
     protected deleteNote() {
@@ -133,7 +146,7 @@ export class NoteCard extends GompBaseElement {
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
     }
-    protected showModifiedDate(note: any) {
+    protected showModifiedDate(note: Note) {
         if (!note) {
             return false;
         }

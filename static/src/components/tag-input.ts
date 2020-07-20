@@ -57,7 +57,7 @@ export class TagInput extends GompBaseElement {
     }
 
     @property({type: Array, notify: true})
-    public tags = [];
+    public tags: string[] = [];
 
     protected suggestedTags: string[] = [];
 
@@ -72,7 +72,7 @@ export class TagInput extends GompBaseElement {
         this.getSuggestedTagsAjax.generateRequest();
     }
 
-    protected onSuggestedTagClicked(e: any) {
+    protected onSuggestedTagClicked(e: {model: {item: string}}) {
         this.tagsElement.addTag(e.model.item);
 
         // Remove the tag from the suggestion list
@@ -84,7 +84,7 @@ export class TagInput extends GompBaseElement {
     protected handleGetSuggestedTagsRequest() {
         this.suggestedTags = [];
     }
-    protected handleGetSuggestedTagsResponse(e: any) {
+    protected handleGetSuggestedTagsResponse(e: CustomEvent<{response: string[]}>) {
         this.suggestedTags = e.detail.response;
     }
 }

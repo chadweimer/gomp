@@ -4,6 +4,8 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
+import { Note } from '../models/models.js';
+import { NoteCard } from './note-card.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -57,7 +59,7 @@ export class NoteList extends GompBaseElement {
           <header>Notes</header>
           <paper-divider></paper-divider>
           <template is="dom-repeat" items="[[notes]]">
-              <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted"></note-card>
+              <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted" readonly\$="[[readonly]]"></note-card>
           </template>
 
           <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop="">
@@ -78,9 +80,12 @@ export class NoteList extends GompBaseElement {
     @property({type: String})
     public recipeId = '';
 
-    protected noteId: number|null = null;
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
+
+    protected noteId: number = null;
     protected noteText = '';
-    protected notes: any[] = [];
+    protected notes: Note[] = [];
 
     private get noteDialog(): PaperDialogElement {
         return this.$.noteDialog as PaperDialogElement;
@@ -126,11 +131,13 @@ export class NoteList extends GompBaseElement {
             }
         }
     }
-    protected editNoteTapped(e: any) {
+    protected editNoteTapped(e: Event) {
         e.preventDefault();
 
-        this.noteId = e.target.note.id;
-        this.noteText = e.target.note.text;
+        const noteCard = e.target as NoteCard;
+
+        this.noteId = noteCard.note.id;
+        this.noteText = noteCard.note.text;
         this.noteDialog.open();
     }
     protected noteDeleted() {
@@ -139,7 +146,7 @@ export class NoteList extends GompBaseElement {
     protected handleGetRequest() {
         this.notes = [];
     }
-    protected handleGetResponse(e: CustomEvent) {
+    protected handleGetResponse(e: CustomEvent<{response: Note[]}>) {
         this.notes = e.detail.response;
     }
     protected handlePostNoteResponse() {

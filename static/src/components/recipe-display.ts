@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
+import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -73,7 +74,7 @@ export class RecipeDisplay extends GompBaseElement {
 
             <paper-card>
                 <div class="card-content">
-                    <recipe-rating recipe="{{recipe}}"></recipe-rating>
+                    <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
@@ -111,7 +112,7 @@ export class RecipeDisplay extends GompBaseElement {
                                 <paper-item-body>
                                     <a href="/recipes/[[item.id]]">[[item.name]]</a>
                                 </paper-item-body>
-                                <iron-icon icon="icons:cancel" on-click="onRemoveLinkClicked"></iron-icon>
+                                <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><iron-icon icon="icons:cancel"></iron-icon></a>
                             </paper-icon-item>
                         </template>
                         <paper-divider></paper-divider>
@@ -139,9 +140,12 @@ export class RecipeDisplay extends GompBaseElement {
     @property({type: String})
     public recipeId = '';
 
-    protected recipe: object|null = null;
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
+
+    protected recipe: Recipe = null;
     protected mainImage: object|null = null;
-    protected links: any[] = [];
+    protected links: RecipeCompact[] = [];
 
     private get confirmDeleteLinkDialog(): ConfirmationDialog {
         return this.$.confirmDeleteLinkDialog as ConfirmationDialog;
@@ -179,19 +183,24 @@ export class RecipeDisplay extends GompBaseElement {
         return !Array.isArray(arr) || !arr.length;
     }
 
-    protected onRemoveLinkClicked(e: any) {
-        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id;
+    protected onRemoveLinkClicked(e: EventWithModel<{item: RecipeCompact}>) {
+        // Don't navigate to "#!"
+        e.preventDefault();
+
+        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id.toString();
         this.confirmDeleteLinkDialog.open();
     }
-    protected deleteLink(e: any) {
-        this.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + e.target.dataset.id;
+    protected deleteLink(e: Event) {
+        const el = e.target as HTMLElement;
+
+        this.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + el.dataset.id;
         this.deleteLinkAjax.generateRequest();
     }
 
     protected handleGetRecipeRequest() {
         this.recipe = null;
     }
-    protected handleGetRecipeResponse(e: CustomEvent) {
+    protected handleGetRecipeResponse(e: CustomEvent<{response: Recipe}>) {
         this.recipe = e.detail.response;
     }
     protected handleGetMainImageRequest() {
@@ -200,7 +209,7 @@ export class RecipeDisplay extends GompBaseElement {
     protected handleGetMainImageResponse(e: CustomEvent) {
         this.mainImage = e.detail.response;
     }
-    protected handleGetLinksResponse(e: CustomEvent) {
+    protected handleGetLinksResponse(e: CustomEvent<{response: RecipeCompact[]}>) {
         this.links = e.detail.response;
     }
     protected handleDeleteLinkResponse() {
@@ -212,7 +221,7 @@ export class RecipeDisplay extends GompBaseElement {
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
     }
-    protected showModifiedDate(recipe: any) {
+    protected showModifiedDate(recipe: Recipe) {
         if (!recipe) {
             return false;
         }
