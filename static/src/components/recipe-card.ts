@@ -62,7 +62,7 @@ export class RecipeCard extends GompBaseElement {
                           <span>[[formatDate(recipe.createdAt)]]</span>
                           <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
                       </div>
-                      <recipe-rating recipe="{{recipe}}"></recipe-rating>
+                      <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                   </div>
               </paper-card>
           </a>
@@ -74,6 +74,9 @@ export class RecipeCard extends GompBaseElement {
 
     @property({type: Boolean, notify: true})
     public hideCreatedModifiedDates = false;
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();

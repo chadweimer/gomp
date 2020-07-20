@@ -91,7 +91,7 @@ export class LoginView extends GompBaseElement {
     }
     protected handlePostAuthResponse(e: CustomEvent) {
         localStorage.setItem('jwtToken', e.detail.response.token);
-        this.dispatchEvent(new CustomEvent('current-user-changed', {bubbles: true, composed: true, detail: {user: e.detail.response.user}}));
+        this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true, detail: {user: e.detail.response.user}}));
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
     }
     protected handlePostAuthError() {

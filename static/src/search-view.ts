@@ -159,7 +159,7 @@ export class SearchView extends GompBaseElement {
                       <template is="dom-repeat" items="[[recipes]]">
                           <div class="recipeContainer">
                               <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
-                                  <recipe-card recipe="[[item]]"></recipe-card>
+                                  <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
                               </template>
                               <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
                                   <a href="/recipes/[[item.id]]">
@@ -168,7 +168,7 @@ export class SearchView extends GompBaseElement {
                                           <paper-item-body>
                                               <div>[[item.name]]</div>
                                               <div secondary="">
-                                                  <recipe-rating recipe="{{item}}" class="compact-rating"></recipe-rating>
+                                                  <recipe-rating recipe="{{item}}" class="compact-rating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
                                               </div>
                                           </paper-item-body>
                                       </paper-icon-item>
@@ -181,7 +181,7 @@ export class SearchView extends GompBaseElement {
                       <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                   </div>
               </div>
-              <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+              <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
           </app-drawer-layout>
 
           <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>

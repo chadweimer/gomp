@@ -17,7 +17,7 @@ export class RecipeRating extends GompBaseElement {
                 }
           </style>
 
-          <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="starRatingSelected"></iron-star-rating>
+          <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="starRatingSelected" readonly\$="[[readonly]]"></iron-star-rating>
 
           <iron-ajax bubbles="" id="rateAjax" url="/api/v1/recipes/[[recipe.id]]/rating" method="PUT" on-response="handlePutRecipeRatingResponse" on-error="handlePutRecipeRatingError"></iron-ajax>
 `;
@@ -25,6 +25,9 @@ export class RecipeRating extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public recipe: object|null = null;
+
+    @property({type: Boolean, reflectToAttribute: true})
+    public readonly = false;
 
     private get rateAjax(): IronAjaxElement {
         return this.$.rateAjax as IronAjaxElement;

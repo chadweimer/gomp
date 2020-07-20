@@ -285,7 +285,7 @@ export class GompApp extends PolymerElement {
         this.addEventListener('iron-ajax-response', () => this.onAjaxResponse());
         this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
-        this.addEventListener('current-user-changed', () => this.onCurrentUserChanged());
+        this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
 
         super.ready();
         this.appConfigAjax.generateRequest();
@@ -434,7 +434,7 @@ export class GompApp extends PolymerElement {
     protected logout() {
         localStorage.clear();
         sessionStorage.clear();
-        this.onCurrentUserChanged();
+        this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true, detail: {user: null}}));
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {

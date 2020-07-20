@@ -169,7 +169,7 @@ export class AdminView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
-    protected users: any[] = [];
+    protected users: User[] = [];
 
     protected userId: number|null = null;
     protected user: {
