@@ -13,18 +13,19 @@ export interface User {
 
 interface RecipeBase {
 	id: number;
-	name: string;
-	servingSize: string;
-	nutritionInfo: string;
-	ingredients: string;
-	directions: string;
-	sourceUrl: string;
+    name: string;
+    state: string;
 	createdAt: string;
 	modifiedAt: string;
 	averageRating: number;
 }
 
 export interface Recipe extends RecipeBase {
+	servingSize: string;
+	nutritionInfo: string;
+	ingredients: string;
+	directions: string;
+	sourceUrl: string;
 	tags: string[];
 }
 
