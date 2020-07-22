@@ -2,7 +2,6 @@ package models
 
 import (
 	"strings"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -73,17 +72,9 @@ type TagsFilter struct {
 
 // RecipeCompact is the primary model class for bulk recipe retrieval
 type RecipeCompact struct {
-	ID            int64     `json:"id" db:"id"`
-	Name          string    `json:"name" db:"name"`
-	ServingSize   string    `json:"servingSize" db:"serving_size"`
-	NutritionInfo string    `json:"nutritionInfo" db:"nutrition_info"`
-	Ingredients   string    `json:"ingredients" db:"ingredients"`
-	Directions    string    `json:"directions" db:"directions"`
-	SourceURL     string    `json:"sourceUrl" db:"source_url"`
-	CreatedAt     time.Time `json:"createdAt" db:"created_at"`
-	ModifiedAt    time.Time `json:"modifiedAt" db:"modified_at"`
-	AvgRating     float64   `json:"averageRating" db:"avg_rating"`
-	ThumbnailURL  string    `json:"thumbnailUrl" db:"thumbnail_url"`
+	recipeBase
+
+	ThumbnailURL string `json:"thumbnailUrl" db:"thumbnail_url"`
 }
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
@@ -181,7 +172,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	orderStmt += " LIMIT ? OFFSET ?"
 
 	selectStmt := m.db.Rebind("SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
+		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
 		"FROM recipe AS r" +
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)
