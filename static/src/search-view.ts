@@ -158,10 +158,8 @@ export class SearchView extends GompBaseElement {
                   <div class="outterContainer">
                       <template is="dom-repeat" items="[[recipes]]">
                           <div class="recipeContainer">
-                              <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
-                                  <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
-                              </template>
-                              <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                              <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]" hidden\$="!areEqual(searchSettings.viewMode, 'full')]]"></recipe-card>
+                              <div hidden="[[!areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
                                   <a href="/recipes/[[item.id]]">
                                       <paper-icon-item>
                                           <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
@@ -173,7 +171,7 @@ export class SearchView extends GompBaseElement {
                                           </paper-item-body>
                                       </paper-icon-item>
                                   </a>
-                              </template>
+                              </div>
                           </div>
                       </template>
                   </div>
