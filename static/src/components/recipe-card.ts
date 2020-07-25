@@ -53,20 +53,34 @@ export class RecipeCard extends GompBaseElement {
                     font-weight: lighter;
                     line-height: 1.2em;
                 }
+                .container {
+                    position: relative;
+                }
+                .state {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                }
+                .state[hidden] {
+                    display: none !important;
+                }
           </style>
 
-          <a href\$="/recipes/[[recipe.id]]">
-              <paper-card image="[[recipe.thumbnailUrl]]">
-                  <div class="card-content">
-                      <div class="truncate">[[recipe.name]]</div>
-                      <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
-                          <span>[[formatDate(recipe.createdAt)]]</span>
-                          <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
-                      </div>
-                      <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
-                  </div>
-              </paper-card>
-          </a>
+          <div class="container">
+            <a href\$="/recipes/[[recipe.id]]">
+                <paper-card image="[[recipe.thumbnailUrl]]">
+                    <div class="card-content">
+                        <div class="truncate">[[recipe.name]]</div>
+                        <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
+                            <span>[[formatDate(recipe.createdAt)]]</span>
+                            <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
+                        </div>
+                        <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
+                    </div>
+                </paper-card>
+            </a>
+            <paper-chip class="state" hidden\$="[[!showState(recipe)]]>[[recipe.state]]</paper-chip>
+        </div>
 `;
     }
 
@@ -87,5 +101,11 @@ export class RecipeCard extends GompBaseElement {
             return false;
         }
         return recipe.modifiedAt !== recipe.createdAt;
+    }
+    protected showState(recipe: RecipeCompact) {
+        if (!recipe) {
+            return false;
+        }
+        return recipe.state !== 'active';
     }
 }
