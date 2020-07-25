@@ -19,6 +19,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 	fields := getParams(req.URL.Query(), "fields[]")
 	tags := getParams(req.URL.Query(), "tags[]")
 	pictures := getParams(req.URL.Query(), "pictures[]")
+	states := getParams(req.URL.Query(), "states[]")
 	sortBy := getParam(req.URL.Query(), "sort")
 	sortDir := getParam(req.URL.Query(), "dir")
 	page, err := strconv.ParseInt(getParam(req.URL.Query(), "page"), 10, 64)
@@ -37,6 +38,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 		Fields:   fields,
 		Tags:     tags,
 		Pictures: pictures,
+		States:   states,
 		SortBy:   sortBy,
 		SortDir:  sortDir,
 		Page:     page,

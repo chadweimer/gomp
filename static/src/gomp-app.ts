@@ -234,6 +234,7 @@ export class GompApp extends PolymerElement {
         fields: [] as string[],
         tags: [] as string[],
         pictures: [] as string[],
+        states: [] as string[],
     };
     @property({type: Array})
     protected searchFilters: any[]|null|undefined = null;
@@ -242,7 +243,7 @@ export class GompApp extends PolymerElement {
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
-    protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: []} = {};
+    protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: [], states?: []} = {};
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
     @property({type: Object, notify: true})
@@ -270,7 +271,8 @@ export class GompApp extends PolymerElement {
             'searchFieldsChanged(search.fields)',
             'searchTagsChanged(search.tags)',
             'searchPicturesChanged(search.pictures)',
-            'searchChanged(search.fields, search.tags, search.pictures)',
+            'searchStatesChanged(search.states)',
+            'searchChanged(search.fields, search.tags, search.pictures, search.states)',
         ];
     }
 
@@ -450,6 +452,7 @@ export class GompApp extends PolymerElement {
         this.set('search.fields', []);
         this.set('search.tags', e.detail.tags);
         this.set('search.pictures', []);
+        this.set('search.states', []);
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
@@ -479,16 +482,22 @@ export class GompApp extends PolymerElement {
         picturesFilter.values.push({id: 'no', name: 'No'});
         filters.push(picturesFilter);
 
+        const statesFilter = {id: 'states', name: 'States', values: [] as any[]};
+        statesFilter.values.push({id: 'active', name: 'Active'});
+        statesFilter.values.push({id: 'archived', name: 'Archived'});
+        filters.push(statesFilter);
+
         this.searchFilters = filters;
     }
     protected searchFiltersChanged() {
         this.set('search.fields', this.selectedSearchFilters.fields || []);
         this.set('search.tags', this.selectedSearchFilters.tags || []);
         this.set('search.pictures', this.selectedSearchFilters.pictures || []);
+        this.set('search.states', this.selectedSearchFilters.states || []);
         this.changeRoute('/search');
     }
-    protected searchChanged(fields: string[], tags: string[], pictures: string[]) {
-        this.selectedSearchFiltersCount = fields.length + tags.length + pictures.length;
+    protected searchChanged(fields: string[], tags: string[], pictures: string[], states: string[]) {
+        this.selectedSearchFiltersCount = fields.length + tags.length + pictures.length + states.length;
     }
     protected searchFieldsChanged(fields: string[]) {
         if (!this.selectedSearchFilters) {
@@ -507,6 +516,12 @@ export class GompApp extends PolymerElement {
             this.selectedSearchFilters = {};
         }
         this.set('selectedSearchFilters.pictures', pictures);
+    }
+    protected searchStatesChanged(states: string[]) {
+        if (!this.selectedSearchFilters) {
+            this.selectedSearchFilters = {};
+        }
+        this.set('selectedSearchFilters.states', states);
     }
 
     protected recipesModified() {

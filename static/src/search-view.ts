@@ -234,6 +234,7 @@ export class SearchView extends GompBaseElement {
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
             'pictures[]': this.search.pictures,
+            'states[]': this.search.states,
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,

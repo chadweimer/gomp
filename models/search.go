@@ -57,6 +57,7 @@ type RecipesFilter struct {
 	Fields   []string `json:"fields"`
 	Tags     []string `json:"tags"`
 	Pictures []string `json:"pictures"`
+	States   []string `json:"states"`
 	SortBy   string   `json:"sortBy"`
 	SortDir  string   `json:"sortDir"`
 	Page     int64    `json:"page"`
@@ -81,6 +82,17 @@ type RecipeCompact struct {
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
 	whereStmt := ""
 	whereArgs := make([]interface{}, 0)
+	var err error
+
+	if len(filter.States) > 0 {
+		whereStmt, whereArgs, err = sqlx.In(" WHERE r.current_state IN (?))", filter.States)
+		if err != nil {
+			return nil, 0, err
+		}
+	} else {
+		whereStmt = " WHERE r.current_state = 'active'"
+	}
+
 	if filter.Query != "" {
 		// If the filter didn't specify the fields to search on, use all of them
 		filterFields := filter.Fields
@@ -101,7 +113,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 			}
 		}
 
-		whereStmt += " WHERE (" + fieldStr + ")"
+		whereStmt += " AND (" + fieldStr + ")"
 		whereArgs = append(whereArgs, fieldArgs...)
 	}
 
@@ -110,12 +122,8 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		if err != nil {
 			return nil, 0, err
 		}
-		if whereStmt == "" {
-			whereStmt += " WHERE "
-		} else {
-			whereStmt += " AND "
-		}
-		whereStmt += tagsStmt
+
+		whereStmt += " AND " + tagsStmt
 		whereArgs = append(whereArgs, tagsArgs...)
 	}
 
@@ -133,12 +141,8 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		if len(picsParts) > 0 {
 			picsStmt = "(" + strings.Join(picsParts, " OR ") + ")"
 		}
-		if whereStmt == "" {
-			whereStmt += " WHERE "
-		} else {
-			whereStmt += " AND "
-		}
-		whereStmt += picsStmt
+
+		whereStmt += " AND " + picsStmt
 	}
 
 	var total int64
@@ -178,7 +182,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	selectArgs := append(whereArgs, filter.Count, offset)
 
 	var recipes []RecipeCompact
-	err := m.db.Select(&recipes, selectStmt, selectArgs...)
+	err = m.db.Select(&recipes, selectStmt, selectArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
