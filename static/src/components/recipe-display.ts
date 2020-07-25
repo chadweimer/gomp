@@ -187,6 +187,10 @@ export class RecipeDisplay extends GompBaseElement {
         }
     }
 
+    public isState(state: string) {
+        return this.recipe?.state === state;
+    }
+
     protected isEmpty(arr: any[]) {
         return !Array.isArray(arr) || !arr.length;
     }

@@ -138,8 +138,8 @@ export class RecipesView extends GompBaseElement {
                 <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
                     <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
-                    <paper-fab-speed-dial-action class="indigo" icon="icons:archive" on-click="onArchiveButtonClicked" hidden\$="[[!isState('active')]]">Archive</paper-fab-speed-dial-action>
-                    <paper-fab-speed-dial-action class="indigo" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden\$="[[!isState('archived')]]">Unarchive</paper-fab-speed-dial-action>
+                    <paper-fab-speed-dial-action class="indigo" icon="icons:archive" on-click="onArchiveButtonClicked" hidden\$="[[!isState('active', recipeId)]]">Archive</paper-fab-speed-dial-action>
+                    <paper-fab-speed-dial-action class="indigo" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden\$="[[!isState('archived', recipeId)]]">Unarchive</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
@@ -291,8 +291,7 @@ export class RecipesView extends GompBaseElement {
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
     }
 
-    protected isState(/*recipe: Recipe,*/ state: string) {
-        return state === state;
-        //return recipe?.state === state;
+    protected isState(state: string) {
+        return this.recipeDisplay.isState(state);
     }
 }
