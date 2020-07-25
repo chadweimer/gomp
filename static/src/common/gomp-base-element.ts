@@ -31,4 +31,8 @@ export abstract class GompBaseElement extends PolymerElement {
 
         return user.accessLevel === 'admin' || user.accessLevel === 'editor';
     }
+
+    protected areEqual(a: any, b: any) {
+        return a === b;
+    }
 }

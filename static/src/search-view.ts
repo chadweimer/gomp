@@ -305,8 +305,4 @@ export class SearchView extends GompBaseElement {
         this.set('searchSettings.sortDir', sortDir);
         this.settingsDrawer.close();
     }
-
-    protected areEqual(a: any, b: any) {
-        return a === b;
-    }
 }
