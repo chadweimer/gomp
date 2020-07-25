@@ -187,10 +187,6 @@ export class RecipeDisplay extends GompBaseElement {
         }
     }
 
-    public isState(state: string) {
-        return this.recipe?.state === state;
-    }
-
     protected isEmpty(arr: any[]) {
         return !Array.isArray(arr) || !arr.length;
     }
@@ -214,6 +210,7 @@ export class RecipeDisplay extends GompBaseElement {
     }
     protected handleGetRecipeResponse(e: CustomEvent<{response: Recipe}>) {
         this.recipe = e.detail.response;
+        this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
     }
     protected handleGetMainImageRequest() {
         this.mainImage = null;
