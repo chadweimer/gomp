@@ -85,7 +85,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	var err error
 
 	if len(filter.States) > 0 {
-		whereStmt, whereArgs, err = sqlx.In(" WHERE r.current_state IN (?))", filter.States)
+		whereStmt, whereArgs, err = sqlx.In(" WHERE r.current_state IN (?)", filter.States)
 		if err != nil {
 			return nil, 0, err
 		}
