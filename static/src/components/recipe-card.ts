@@ -83,7 +83,7 @@ export class RecipeCard extends GompBaseElement {
                     </div>
                 </paper-card>
             </a>
-            <paper-chip class="state" hidden\$="[[!areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+            <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
         </div>
 `;
     }
