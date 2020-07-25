@@ -158,7 +158,7 @@ export class SearchView extends GompBaseElement {
                   <div class="outterContainer">
                       <template is="dom-repeat" items="[[recipes]]">
                           <div class="recipeContainer">
-                              <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]" hidden\$="!areEqual(searchSettings.viewMode, 'full')]]"></recipe-card>
+                              <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]" hidden\$="[[!areEqual(searchSettings.viewMode, 'full')]]"></recipe-card>
                               <div hidden="[[!areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
                                   <a href="/recipes/[[item.id]]">
                                       <paper-icon-item>
