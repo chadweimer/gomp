@@ -41,6 +41,9 @@ export class RecipesView extends GompBaseElement {
                 #confirmArchiveDialog {
                     --confirmation-dialog-title-color: var(--paper-indigo-500);
                 }
+                #confirmUnarchiveDialog {
+                    --confirmation-dialog-title-color: var(--paper-indigo-500);
+                }
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
