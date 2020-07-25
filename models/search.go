@@ -80,7 +80,7 @@ type RecipeCompact struct {
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
-	whereStmt := ""
+	whereStmt := " WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error
 
@@ -89,8 +89,6 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		if err != nil {
 			return nil, 0, err
 		}
-	} else {
-		whereStmt = " WHERE r.current_state = 'active'"
 	}
 
 	if filter.Query != "" {
