@@ -179,3 +179,14 @@ func (m *RecipeModel) SetRating(id int64, rating float64) error {
 
 	return nil
 }
+
+// SetState updates the state of the specified recipe.
+func (m *RecipeModel) SetState(id int64, state RecipeState) error {
+	_, err := m.db.Exec(
+		"UPDATE recipes SET current_state = $1 WHERE id = $2", state, id)
+	if err != nil {
+		return fmt.Errorf("updating recipe state: %v", err)
+	}
+
+	return nil
+}

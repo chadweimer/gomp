@@ -59,6 +59,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.requireEditor(h.postRecipe)))
 	h.apiMux.PUT("/api/v1/recipes/:recipeID", h.requireAuthentication(h.requireEditor(h.putRecipe)))
 	h.apiMux.DELETE("/api/v1/recipes/:recipeID", h.requireAuthentication(h.requireEditor(h.deleteRecipe)))
+	h.apiMux.PUT("/api/v1/recipes/:recipeID/state", h.requireAuthentication(h.requireEditor(h.putRecipeState)))
 	h.apiMux.PUT("/api/v1/recipes/:recipeID/rating", h.requireAuthentication(h.requireEditor(h.putRecipeRating)))
 	h.apiMux.PUT("/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.requireEditor(h.putRecipeMainImage)))
 	h.apiMux.POST("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.requireEditor(h.postRecipeImage)))

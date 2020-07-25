@@ -132,6 +132,27 @@ func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p 
 	resp.WriteHeader(http.StatusOK)
 }
 
+func (h apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	if err != nil {
+		h.JSON(resp, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var state models.RecipeState
+	if err := readJSONFromRequest(req, &state); err != nil {
+		h.JSON(resp, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.model.Recipes.SetState(recipeID, state); err != nil {
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	resp.WriteHeader(http.StatusNoContent)
+}
+
 func (h apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
