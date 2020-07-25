@@ -85,7 +85,7 @@ export class RecipeDisplay extends GompBaseElement {
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
-                        <paper-chip class="state" hidden\$="[[!showState(recipe)]]>[[recipe.state]]</paper-chip>
+                        <paper-chip class="state" hidden\$="[[!showState(recipe)]]">[[recipe.state]]</paper-chip>
                     </h2>
                     <section hidden\$="[[!recipe.servingSize]]">
                         <label>Serving Size</label>
