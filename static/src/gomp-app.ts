@@ -374,6 +374,9 @@ export class GompApp extends PolymerElement {
         case 'search':
             import('./search-view.js');
             break;
+        case 'archived':
+            import('./search-view.js');
+            break;
         case 'recipes':
             import('./recipes-view.js');
             break;
