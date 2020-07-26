@@ -6,6 +6,32 @@ export interface Search {
     states: string[];
 }
 
+export enum SearchField {
+    Name = 'name',
+    Ingredients = 'ingredients',
+    Directions = 'directions'
+}
+
+export enum RecipeState {
+    Active = 'active',
+    Archived = 'archived',
+    Deleted = 'deleted'
+}
+
+export enum YesNoAny {
+    Yes = 'yes',
+    No = 'no',
+    Any = 'any'
+}
+
+export interface SearchFilter {
+    query: string;
+    fields: SearchField[];
+    hasPictures: YesNoAny;
+    states: RecipeState[];
+    tags: string[]
+}
+
 export interface User {
     id: number;
     username: string;

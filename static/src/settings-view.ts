@@ -17,6 +17,7 @@ import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
+import './components/search-filter.js';
 import './shared-styles.js';
 
 @customElement('settings-view')
@@ -86,6 +87,7 @@ export class SettingsView extends GompBaseElement {
               <paper-card>
                   <div class="card-content">
                       <h3>Home Settings</h3>
+                      <search-filter></search-filter>
                       <paper-input label="Title" always-float-label="" value="{{homeTitle}}">
                           <paper-icon-button slot="suffix" icon="icons:save" on-click="onSaveButtonClicked"></paper-icon-button>
                       </paper-input>
