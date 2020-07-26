@@ -136,6 +136,12 @@ export class GompApp extends PolymerElement {
                             Recipes
                         </paper-icon-item>
                     </a>
+                    <a href="/search/archived" tabindex="-1">
+                        <paper-icon-item tabindex="-1">
+                            <iron-icon icon="icons:archive" slot="item-icon"></iron-icon>
+                            Archived
+                        </paper-icon-item>
+                    </a>
                     <paper-divider></paper-divider>
                     <a href="/settings" tabindex="-1">
                         <paper-icon-item tabindex="-1">
@@ -171,6 +177,7 @@ export class GompApp extends PolymerElement {
                                 <div main-title=""></div>
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                                <a href="/search/archived"><paper-item name="archived" class="hide-on-med-and-down">Archived</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
@@ -186,7 +193,7 @@ export class GompApp extends PolymerElement {
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="searchView" name="search" route="[[subroute]]" search="{{search}}" current-user="[[currentUser]]"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
                             <create-view name="create" current-user="[[currentUser]]"></create-view>
                             <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
@@ -202,6 +209,7 @@ export class GompApp extends PolymerElement {
                             <ul>
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
+                                <li><a href="/search/archived">Archived</a></li>
                                 <li><a href="/settings">Settings</a></li>
                                 <li hidden$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
@@ -234,7 +242,6 @@ export class GompApp extends PolymerElement {
         fields: [] as string[],
         tags: [] as string[],
         pictures: [] as string[],
-        states: [] as string[],
     };
     @property({type: Array})
     protected searchFilters: any[]|null|undefined = null;
@@ -243,7 +250,7 @@ export class GompApp extends PolymerElement {
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
-    protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: [], states?: []} = {};
+    protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: []} = {};
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
     @property({type: Object, notify: true})
@@ -271,8 +278,7 @@ export class GompApp extends PolymerElement {
             'searchFieldsChanged(search.fields)',
             'searchTagsChanged(search.tags)',
             'searchPicturesChanged(search.pictures)',
-            'searchStatesChanged(search.states)',
-            'searchChanged(search.fields, search.tags, search.pictures, search.states)',
+            'searchChanged(search.fields, search.tags, search.pictures)',
         ];
     }
 
@@ -452,7 +458,6 @@ export class GompApp extends PolymerElement {
         this.set('search.fields', []);
         this.set('search.tags', e.detail.tags);
         this.set('search.pictures', []);
-        this.set('search.states', []);
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
@@ -482,22 +487,16 @@ export class GompApp extends PolymerElement {
         picturesFilter.values.push({id: 'no', name: 'No'});
         filters.push(picturesFilter);
 
-        const statesFilter = {id: 'states', name: 'States', values: [] as any[]};
-        statesFilter.values.push({id: 'active', name: 'Active'});
-        statesFilter.values.push({id: 'archived', name: 'Archived'});
-        filters.push(statesFilter);
-
         this.searchFilters = filters;
     }
     protected searchFiltersChanged() {
         this.set('search.fields', this.selectedSearchFilters.fields || []);
         this.set('search.tags', this.selectedSearchFilters.tags || []);
         this.set('search.pictures', this.selectedSearchFilters.pictures || []);
-        this.set('search.states', this.selectedSearchFilters.states || []);
         this.changeRoute('/search');
     }
-    protected searchChanged(fields: string[], tags: string[], pictures: string[], states: string[]) {
-        this.selectedSearchFiltersCount = fields.length + tags.length + pictures.length + states.length;
+    protected searchChanged(fields: string[], tags: string[], pictures: string[]) {
+        this.selectedSearchFiltersCount = fields.length + tags.length + pictures.length;
     }
     protected searchFieldsChanged(fields: string[]) {
         if (!this.selectedSearchFilters) {
@@ -516,12 +515,6 @@ export class GompApp extends PolymerElement {
             this.selectedSearchFilters = {};
         }
         this.set('selectedSearchFilters.pictures', pictures);
-    }
-    protected searchStatesChanged(states: string[]) {
-        if (!this.selectedSearchFilters) {
-            this.selectedSearchFilters = {};
-        }
-        this.set('selectedSearchFilters.states', states);
     }
 
     protected recipesModified() {

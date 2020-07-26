@@ -120,6 +120,8 @@ export class SearchView extends GompBaseElement {
                 }
           </style>
 
+          <app-route id="appRoute" route="{{route}}" pattern="/:listType" data="{{routeData}}"></app-route>
+
           <app-drawer-layout force-narrow="">
               <app-drawer id="settingsDrawer" align="right" slot="drawer">
                   <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
@@ -193,6 +195,10 @@ export class SearchView extends GompBaseElement {
 `;
     }
 
+    @property({type: Object, notify: true})
+    public route: object = {};
+    @property({type: String, notify: true})
+    public listType = '';
     @property({type: Number, notify: true, observer: 'pageNumChanged'})
     public pageNum = 1;
     @property({type: Number, notify: true})
@@ -224,6 +230,7 @@ export class SearchView extends GompBaseElement {
             'updatePagination(recipes, totalRecipeCount)',
             'searchChanged(search.*)',
             'searchChanged(searchSettings.*)',
+            'listTypeChanged(routeData.listType)',
         ];
     }
 
@@ -233,12 +240,16 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
+        var states = [];
+        if (this.listType === 'archived') {
+            states = ['archived'];
+        }
         this.recipesAjax.params = {
             'q': this.search.query,
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
             'pictures[]': this.search.pictures,
-            'states[]': this.search.states,
+            'states[]': states,
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,
@@ -246,6 +257,10 @@ export class SearchView extends GompBaseElement {
         };
     }
 
+    protected listTypeChanged(listType: string) {
+        this.listType = listType;
+        this.refresh();
+    }
     protected pageNumChanged() {
         this.refresh();
     }

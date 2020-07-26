@@ -3,7 +3,6 @@ export interface Search {
     fields: string[];
     tags: string[];
     pictures: string[];
-    states: string[];
 }
 
 export interface User {
