@@ -50,9 +50,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>States</label>
                 <div>
                     <paper-radio-group selected="{{filter.states}}">
-                        <paper-radio-button class="selection" name="active">Active</paper-radio-button>
-                        <paper-radio-button class="selection" name="archived">Archived</paper-radio-button>
-                        <paper-radio-button class="selection" name="any">Any</paper-radio-button>
+                        <template is="dom-repeat" items="[[availableStates]]">
+                            <paper-radio-button class="selection" name="[[item.value]]">[[item.name]]</paper-radio-button>
+                        </template>
                     </paper-radio-group>
                 </div>
                 <paper-divider></paper-divider>
@@ -61,9 +61,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>Pictures</label>
                 <div>
                     <paper-radio-group selected="{{filter.pictures}}">
-                        <paper-radio-button class="selection" name="yes">Yes</paper-radio-button>
-                        <paper-radio-button class="selection" name="no">No</paper-radio-button>
-                        <paper-radio-button class="selection" name="any">Any</paper-radio-button>
+                        <template is="dom-repeat" items="[[availablePictures]]">
+                            <paper-radio-button class="selection" name="[[item.value]]">[[item.name]]</paper-radio-button>
+                        </template>
                     </paper-radio-group>
                 </div>
                 <paper-divider></paper-divider>
@@ -76,6 +76,18 @@ export class SearchFilterElement extends GompBaseElement {
         {name: 'Name', value: SearchField.Name},
         {name: 'Ingredients', value: SearchField.Ingredients},
         {name: 'Directions', value: SearchField.Directions}
+    ];
+
+    protected availableStates = [
+        {name: 'Active', value: SearchState.Active},
+        {name: 'Archived', value: SearchState.Archived},
+        {name: 'Any', value: SearchState.Any}
+    ];
+
+    protected availablePictures = [
+        {name: 'Yes', value: SearchPictures.Yes},
+        {name: 'No', value: SearchPictures.No},
+        {name: 'Any', value: SearchPictures.Any}
     ];
 
     @property({type: Object, notify: true})
