@@ -130,13 +130,14 @@ export class GompApp extends PolymerElement {
                             Home
                         </paper-icon-item>
                     </a>
+                    <paper-divider></paper-divider>
                     <a href="/search" tabindex="-1">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
                             Recipes
                         </paper-icon-item>
                     </a>
-                    <a href="/search/archived" tabindex="-1">
+                    <a href="/archived" tabindex="-1">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:archive" slot="item-icon"></iron-icon>
                             Archived
@@ -177,7 +178,7 @@ export class GompApp extends PolymerElement {
                                 <div main-title=""></div>
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
-                                <a href="/search/archived"><paper-item name="archived" class="hide-on-med-and-down">Archived</paper-item></a>
+                                <a href="/archived"><paper-item name="archived" class="hide-on-med-and-down">Archived</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
@@ -193,7 +194,8 @@ export class GompApp extends PolymerElement {
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" route="[[subroute]]" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="searchView" name="search" type="active" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="archivedView" name="archived" type="archived" search="{{search}}" current-user="[[currentUser]]"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
                             <create-view name="create" current-user="[[currentUser]]"></create-view>
                             <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
@@ -209,7 +211,7 @@ export class GompApp extends PolymerElement {
                             <ul>
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
-                                <li><a href="/search/archived">Archived</a></li>
+                                <li><a href="/archived">Archived</a></li>
                                 <li><a href="/settings">Settings</a></li>
                                 <li hidden$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
@@ -522,6 +524,10 @@ export class GompApp extends PolymerElement {
         const searchView = this.$.searchView as any;
         if (searchView.refresh) {
             searchView.refresh();
+        }
+        const archivedView = this.$.archivedView as any;
+        if (archivedView.refresh) {
+            archivedView.refresh();
         }
     }
 }

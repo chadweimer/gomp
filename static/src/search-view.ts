@@ -197,8 +197,8 @@ export class SearchView extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public route: object = {};
-    @property({type: String, notify: true})
-    public listType = '';
+    @property({type: String, notify: true, observer: 'typeChanged'})
+    public type = '';
     @property({type: Number, notify: true, observer: 'pageNumChanged'})
     public pageNum = 1;
     @property({type: Number, notify: true})
@@ -230,7 +230,6 @@ export class SearchView extends GompBaseElement {
             'updatePagination(recipes, totalRecipeCount)',
             'searchChanged(search.*)',
             'searchChanged(searchSettings.*)',
-            'listTypeChanged(routeData.listType)',
         ];
     }
 
@@ -240,16 +239,12 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
-        let states: string[] = [];
-        if (this.listType === 'archived') {
-            states = ['archived'];
-        }
         this.recipesAjax.params = {
             'q': this.search.query,
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
             'pictures[]': this.search.pictures,
-            'states[]': states,
+            'states[]': [this.type],
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,
@@ -257,8 +252,8 @@ export class SearchView extends GompBaseElement {
         };
     }
 
-    protected listTypeChanged(listType: string) {
-        this.listType = listType;
+    protected typeChanged() {
+        this.pageNum = 1;
         this.refresh();
     }
     protected pageNumChanged() {
