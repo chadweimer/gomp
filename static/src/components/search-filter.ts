@@ -31,9 +31,9 @@ export class SearchFilterElement extends GompBaseElement {
                 }
             </style>
 
-            <paper-input label="Name" always-float-label="" value="{{query}}"></paper-input>
+            <paper-input label="Search Terms" always-float-label="" value="{{query}}"></paper-input>
             <section>
-                <label>Search Fields</label>
+                <label>Fields to Search</label>
                 <div>
                     <paper-checkbox value="{{searchOnName}}">Name</paper-checkbox>
                     <paper-checkbox value="{{searchOnIngredients}}">Ingredients</paper-checkbox>
