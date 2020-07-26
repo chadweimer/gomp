@@ -40,7 +40,7 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>Fields to Search</label>
                 <div>
                     <template is="dom-repeat" items="[[availableFields]]">
-                        <paper-checkbox id\$="[[item.value]]" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
+                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
                     </template>
                 </div>
                 <span class="note">All listed fields will be included if no selection is made</span>
