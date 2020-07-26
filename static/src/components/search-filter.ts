@@ -3,7 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchFilter, SearchField } from '../models/models';
+import { SearchFilter, SearchField, SearchState, SearchPictures } from '../models/models';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
@@ -79,7 +79,13 @@ export class SearchFilterElement extends GompBaseElement {
     ];
 
     @property({type: Object, notify: true})
-    public filter: SearchFilter = null;
+    public filter: SearchFilter = {
+        query: '',
+        fields: [],
+        states: SearchState.Active,
+        pictures: SearchPictures.Any,
+        tags: []
+    };
 
     static get observers() {
         return [
@@ -87,14 +93,22 @@ export class SearchFilterElement extends GompBaseElement {
         ];
     }
 
+    public ready() {
+        super.ready();
+
+        this.fieldsChanged(this.filter.fields);
+    }
+
     protected isFieldSelected(value: SearchField) {
-      return this.filter.fields.indexOf(value) >= 0;
+        return this.filter.fields.indexOf(value) >= 0;
     }
 
     protected fieldsChanged(selectedFields: SearchField[]) {
         this.availableFields.forEach(field => {
             const cb = this.shadowRoot.querySelector('#' + field.value) as PaperCheckboxElement;
-            cb.checked = selectedFields.indexOf(field.value) >= 0;
+            if (cb) {
+                cb.checked = selectedFields.indexOf(field.value) >= 0;
+            }
         });
     }
 
@@ -102,7 +116,7 @@ export class SearchFilterElement extends GompBaseElement {
         const selectedFields: SearchField[] = [];
         this.availableFields.forEach(field => {
             const cb = this.shadowRoot.querySelector('#' + field.value) as PaperCheckboxElement;
-            if (cb.checked) {
+            if (cb?.checked) {
                 selectedFields.push(field.value);
             }
         });
