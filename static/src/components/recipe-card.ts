@@ -37,9 +37,6 @@ export class RecipeCard extends GompBaseElement {
                     }
                     --recipe-rating-size: var(--recipe-card-rating-size, 18px);
                 }
-                :host[hidden] {
-                    display: none !important;
-                }
                 paper-card:hover {
                     @apply --shadow-elevation-6dp;
                 }

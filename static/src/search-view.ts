@@ -156,10 +156,16 @@ export class SearchView extends GompBaseElement {
                       <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                   </div>
                   <div class="outterContainer">
-                      <template is="dom-repeat" items="[[recipes]]">
-                          <div class="recipeContainer">
-                              <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]" hidden\$="[[!areEqual(searchSettings.viewMode, 'full')]]"></recipe-card>
-                              <div hidden="[[!areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
+                          <template is="dom-repeat" items="[[recipes]]">
+                              <div class="recipeContainer">
+                                  <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
+                              </div>
+                          </template>
+                      </template>
+                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                          <template is="dom-repeat" items="[[recipes]]">
+                              <div class="recipeContainer">
                                   <a href="/recipes/[[item.id]]">
                                       <paper-icon-item>
                                           <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
@@ -172,7 +178,7 @@ export class SearchView extends GompBaseElement {
                                       </paper-icon-item>
                                   </a>
                               </div>
-                          </div>
+                          </template>
                       </template>
                   </div>
                   <div class="pagination">
