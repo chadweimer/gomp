@@ -223,6 +223,7 @@ export class GompApp extends PolymerElement {
             <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
                 <search-filter id="searchSettings"></search-filter>
                 <div class="buttons">
+                    <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
                     <paper-button dialog-dismiss="">Cancel</paper-button>
                     <paper-button dialog-confirm="">Save</paper-button>
                 </div>
@@ -474,6 +475,15 @@ export class GompApp extends PolymerElement {
             this.set('searchFilter.states', this.searchSettings.filter.states);
             this.changeRoute('/search');
         }
+    }
+    protected onResetSearchFilterClicked() {
+        this.searchSettings.filter = {
+            query: '',
+            fields: [],
+            states: SearchState.Active,
+            pictures: SearchPictures.Any,
+            tags: []
+        };
     }
 
     protected recipesModified() {
