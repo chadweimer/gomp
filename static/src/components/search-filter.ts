@@ -19,13 +19,13 @@ export class SearchFilterElement extends GompBaseElement {
                     display: block;
                 }
                 section {
-                    padding: 1em 0;
+                    padding: 0.5em 0;
                 }
                 label {
                     color: var(--secondary-text-color);
                     font-size: 0.9em;
                 }
-                paper-checkbox {
+                .selection {
                     padding: 0.5em;
                 }
                 .note {
@@ -38,9 +38,9 @@ export class SearchFilterElement extends GompBaseElement {
             <section>
                 <label>Fields to Search</label>
                 <div>
-                    <paper-checkbox value="{{searchOnName}}">Name</paper-checkbox>
-                    <paper-checkbox value="{{searchOnIngredients}}">Ingredients</paper-checkbox>
-                    <paper-checkbox value="{{searchOnDirections}}">Directions</paper-checkbox>
+                    <paper-checkbox class="selection" value="{{searchOnName}}">Name</paper-checkbox>
+                    <paper-checkbox class="selection" value="{{searchOnIngredients}}">Ingredients</paper-checkbox>
+                    <paper-checkbox class="selection" value="{{searchOnDirections}}">Directions</paper-checkbox>
                 </div>
                 <span class="note">All listed fields will be included if no selection is made</span>
                 <paper-divider></paper-divider>
@@ -49,9 +49,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>States</label>
                 <div>
                     <paper-radio-group selected="{{filter.states}}">
-                        <paper-radio-button name="active">Active</paper-raio-button>
-                        <paper-radio-button name="archived">Archived</paper-raio-button>
-                        <paper-radio-button name="any">Any</paper-raio-button>
+                        <paper-radio-button class="selection" name="active">Active</paper-radio-button>
+                        <paper-radio-button class="selection" name="archived">Archived</paper-radio-button>
+                        <paper-radio-button class="selection" name="any">Any</paper-radio-button>
                     </paper-radio-group>
                 </div>
                 <paper-divider></paper-divider>
@@ -60,9 +60,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>Pictures</label>
                 <div>
                     <paper-radio-group selected="{{filter.pictures}}">
-                        <paper-radio-button name="yes">Yes</paper-raio-button>
-                        <paper-radio-button name="no">No</paper-raio-button>
-                        <paper-radio-button name="any">Any</paper-raio-button>
+                        <paper-radio-button class="selection" name="yes">Yes</paper-radio-button>
+                        <paper-radio-button class="selection" name="no">No</paper-radio-button>
+                        <paper-radio-button class="selection" name="any">Any</paper-radio-button>
                     </paper-radio-group>
                 </div>
                 <paper-divider></paper-divider>
