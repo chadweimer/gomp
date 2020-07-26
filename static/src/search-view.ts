@@ -240,7 +240,7 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
-        var states = [];
+        let states: string[] = [];
         if (this.listType === 'archived') {
             states = ['archived'];
         }
