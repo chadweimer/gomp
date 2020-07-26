@@ -12,13 +12,13 @@ export enum SearchField {
     Directions = 'directions'
 }
 
-export enum RecipeState {
+export enum SearchState {
     Active = 'active',
     Archived = 'archived',
-    Deleted = 'deleted'
+    Any = 'any'
 }
 
-export enum YesNoAny {
+export enum SearchPictures {
     Yes = 'yes',
     No = 'no',
     Any = 'any'
@@ -27,8 +27,8 @@ export enum YesNoAny {
 export interface SearchFilter {
     query: string;
     fields: SearchField[];
-    hasPictures: YesNoAny;
-    states: RecipeState[];
+    pictures: SearchPictures;
+    states: SearchState;
     tags: string[]
 }
 
