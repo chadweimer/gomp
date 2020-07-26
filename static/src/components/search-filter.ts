@@ -68,7 +68,7 @@ export class SearchFilterElement extends GompBaseElement {
                 </div>
                 <paper-divider></paper-divider>
             </section>
-            <paper-tags-input id="tags" tags="{{filter.tags}}"></paper-tags-input>
+            <paper-tags-input tags="{{filter.tags}}"></paper-tags-input>
 `;
     }
 
@@ -99,7 +99,7 @@ export class SearchFilterElement extends GompBaseElement {
 
     protected fieldsChanged(selectedFields: SearchField[]) {
         this.availableFields.forEach(field => {
-            const cb = this.$[field.value] as PaperCheckboxElement;
+            const cb = this.shadowRoot.querySelector('#' + field.value) as PaperCheckboxElement;
             cb.checked = selectedFields.indexOf(field.value) >= 0;
         });
     }
@@ -107,7 +107,7 @@ export class SearchFilterElement extends GompBaseElement {
     protected selectedFieldChanged() {
         const selectedFields: SearchField[] = [];
         this.availableFields.forEach(field => {
-            const cb = this.$[field.value] as PaperCheckboxElement;
+            const cb = this.shadowRoot.querySelector('#' + field.value) as PaperCheckboxElement;
             if (cb.checked) {
                 selectedFields.push(field.value);
             }
