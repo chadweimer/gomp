@@ -194,8 +194,8 @@ export class GompApp extends PolymerElement {
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" type="active" search="{{search}}" current-user="[[currentUser]]"></search-view>
-                            <search-view id="archivedView" name="archived" type="archived" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="searchView" name="search" search-type="active" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="archivedView" name="archived" search-type="archived" search="{{search}}" current-user="[[currentUser]]"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
                             <create-view name="create" current-user="[[currentUser]]"></create-view>
                             <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
