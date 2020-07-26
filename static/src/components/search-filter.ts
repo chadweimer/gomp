@@ -5,6 +5,7 @@ import { GompBaseElement } from '../common/gomp-base-element';
 import { SearchFilter, RecipeState, YesNoAny } from '../models/models';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
+import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 
 @customElement('search-filter')
@@ -40,6 +41,7 @@ export class SearchFilterElement extends GompBaseElement {
                     <paper-checkbox value="{{searchOnDirections}}">Directions</paper-checkbox>
                 </div>
                 <span class="note">All listed fields will be included if no selection is made</span>
+                <paper-divider></paper-divider>
             </section>
             <section>
                 <label>States</label>
@@ -48,6 +50,7 @@ export class SearchFilterElement extends GompBaseElement {
                     <paper-checkbox value="{{includeArchivedState}}">Archived</paper-checkbox>
                 </div>
                 <span class="note">Only active recipes will be included if no selection is made</span>
+                <paper-divider></paper-divider>
             </section>
             <section>
                 <label>Pictures</label>
@@ -56,6 +59,7 @@ export class SearchFilterElement extends GompBaseElement {
                     <paper-checkbox value="{{includeRecipesWithoutPictures}}">Without</paper-checkbox>
                 </div>
                 <span class="note">Both will be included if no selection is made</span>
+                <paper-divider></paper-divider>
             </section>
             <paper-tags-input id="tags" tags="{{tags}}"></paper-tags-input>
 `;
