@@ -98,16 +98,10 @@ export class GompApp extends PolymerElement {
                     .hide-on-large-only {
                         display: none;
                     }
-                    paper-dialog {
-                        width: 50%;
-                    }
                 }
                 @media screen and (max-width: 992px) {
                     .hide-on-med-and-down {
                         display: none;
-                    }
-                    paper-dialog {
-                        width: 50%;
                     }
                 }
                 @media screen and (min-width: 601px) {
@@ -115,8 +109,6 @@ export class GompApp extends PolymerElement {
                         padding-left: 150px;
                         padding-right: 150px;
                     }
-                }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
                     paper-dialog {
                         width: 75%;
                     }
