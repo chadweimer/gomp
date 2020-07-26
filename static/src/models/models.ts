@@ -3,6 +3,7 @@ export interface Search {
     fields: string[];
     tags: string[];
     pictures: string[];
+    states: string[];
 }
 
 export interface User {
@@ -12,32 +13,33 @@ export interface User {
 }
 
 interface RecipeBase {
-	id: number;
-	name: string;
-	servingSize: string;
-	nutritionInfo: string;
-	ingredients: string;
-	directions: string;
-	sourceUrl: string;
-	createdAt: string;
-	modifiedAt: string;
-	averageRating: number;
+    id: number;
+    name: string;
+    state: string;
+    createdAt: string;
+    modifiedAt: string;
+    averageRating: number;
 }
 
 export interface Recipe extends RecipeBase {
-	tags: string[];
+    servingSize: string;
+    nutritionInfo: string;
+    ingredients: string;
+    directions: string;
+    sourceUrl: string;
+    tags: string[];
 }
 
 export interface RecipeCompact extends RecipeBase {
-	thumbnailUrl: string;
+    thumbnailUrl: string;
 }
 
 export interface Note {
-	id: number;
-	recipeId: number;
-	text: string;
-	createdAt: string;
-	modifiedAt: string;
+    id: number;
+    recipeId: number;
+    text: string;
+    createdAt: string;
+    modifiedAt: string;
 }
 
 export interface EventWithModel<T = any> extends Event {

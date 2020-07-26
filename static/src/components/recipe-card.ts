@@ -4,6 +4,7 @@ import {customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
 import '@polymer/paper-card/paper-card.js';
+import '@cwmr/paper-chip/paper-chip.js';
 import './recipe-rating.js';
 import '../shared-styles.js';
 
@@ -53,20 +54,34 @@ export class RecipeCard extends GompBaseElement {
                     font-weight: lighter;
                     line-height: 1.2em;
                 }
+                .container {
+                    position: relative;
+                }
+                .state {
+                    position: absolute;
+                    top: 16px;
+                    right: 16px;
+                }
+                .state[hidden] {
+                    display: none !important;
+                }
           </style>
 
-          <a href\$="/recipes/[[recipe.id]]">
-              <paper-card image="[[recipe.thumbnailUrl]]">
-                  <div class="card-content">
-                      <div class="truncate">[[recipe.name]]</div>
-                      <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
-                          <span>[[formatDate(recipe.createdAt)]]</span>
-                          <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
-                      </div>
-                      <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
-                  </div>
-              </paper-card>
-          </a>
+          <div class="container">
+            <a href\$="/recipes/[[recipe.id]]">
+                <paper-card image="[[recipe.thumbnailUrl]]">
+                    <div class="card-content">
+                        <div class="truncate">[[recipe.name]]</div>
+                        <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
+                            <span>[[formatDate(recipe.createdAt)]]</span>
+                            <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
+                        </div>
+                        <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
+                    </div>
+                </paper-card>
+            </a>
+            <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+        </div>
 `;
     }
 

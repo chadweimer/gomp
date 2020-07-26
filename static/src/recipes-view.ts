@@ -9,7 +9,7 @@ import { NoteList } from './components/note-list.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { RecipeEdit } from './components/recipe-edit.js';
 import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
-import { User } from './models/models.js';
+import { User, Recipe } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -38,11 +38,20 @@ export class RecipesView extends GompBaseElement {
                 .container {
                     padding: 10px;
                 }
+                #confirmArchiveDialog {
+                    --confirmation-dialog-title-color: var(--paper-indigo-500);
+                }
+                #confirmUnarchiveDialog {
+                    --confirmation-dialog-title-color: var(--paper-indigo-500);
+                }
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
                 #actions {
                     --paper-fab-speed-dial-position: fixed;
+                }
+                paper-fab-speed-dial-action[hidden] {
+                    display: none !important;
                 }
                 paper-fab-speed-dial-action.green {
                     --paper-fab-speed-dial-action-background: var(--paper-green-500);
@@ -132,6 +141,8 @@ export class RecipesView extends GompBaseElement {
                 <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
                     <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
+                    <paper-fab-speed-dial-action class="indigo" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
+                    <paper-fab-speed-dial-action class="indigo" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden="[[!areEqual(recipeState, 'archived')]]">Unarchive</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
@@ -139,10 +150,13 @@ export class RecipesView extends GompBaseElement {
                 </paper-fab-speed-dial>
             </div>
 
+            <confirmation-dialog id="confirmArchiveDialog" icon="icons:archive" title="Archive Recipe?" message="Are you sure you want to archive this recipe?" on-confirmed="archiveRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmUnarchiveDialog" icon="icons:unarchive" title="Unarchive Recipe?" message="Are you sure you want to unarchive this recipe?" on-confirmed="unarchiveRecipe"></confirmation-dialog>
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
             <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
 
+            <iron-ajax bubbles="" id="updateStateAjax" url="/api/v1/recipes/[[recipeId]]/state" method="PUT" on-response="handleUpdateStateResponse"></iron-ajax>
             <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
 `;
     }
@@ -156,6 +170,8 @@ export class RecipesView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    protected recipeState: string = null;
+
     private get recipeDisplay(): RecipeDisplay {
         return this.$.recipeDisplay as RecipeDisplay;
     }
@@ -168,6 +184,12 @@ export class RecipesView extends GompBaseElement {
     private get recipeEdit(): RecipeEdit {
         return this.$.recipeEdit as RecipeEdit;
     }
+    private get confirmArchiveDialog(): ConfirmationDialog {
+        return this.$.confirmArchiveDialog as ConfirmationDialog;
+    }
+    private get confirmUnarchiveDialog(): ConfirmationDialog {
+        return this.$.confirmUnarchiveDialog as ConfirmationDialog;
+    }
     private get confirmDeleteDialog(): ConfirmationDialog {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
     }
@@ -177,6 +199,9 @@ export class RecipesView extends GompBaseElement {
     private get actions(): any {
         return this.$.actions as any;
     }
+    private get updateStateAjax(): IronAjaxElement {
+        return this.$.updateStateAjax as IronAjaxElement;
+    }
     private get deleteAjax(): IronAjaxElement {
         return this.$.deleteAjax as IronAjaxElement;
     }
@@ -185,6 +210,12 @@ export class RecipesView extends GompBaseElement {
         return [
             'recipeIdChanged(routeData.recipeId)',
         ];
+    }
+
+    public ready() {
+        this.addEventListener('recipe-loaded', (e: CustomEvent) => this.onRecipeLoaded(e));
+
+        super.ready();
     }
 
     public refresh() {
@@ -206,6 +237,22 @@ export class RecipesView extends GompBaseElement {
     }
     protected onNewButtonClicked() {
         this.actions.close();
+    }
+    protected onArchiveButtonClicked() {
+        this.confirmArchiveDialog.open();
+        this.actions.close();
+    }
+    protected archiveRecipe() {
+        this.updateStateAjax.body = JSON.stringify('archived') as any;
+        this.updateStateAjax.generateRequest();
+    }
+    protected onUnarchiveButtonClicked() {
+        this.confirmUnarchiveDialog.open();
+        this.actions.close();
+    }
+    protected unarchiveRecipe() {
+        this.updateStateAjax.body = JSON.stringify('active') as any;
+        this.updateStateAjax.generateRequest();
     }
     protected onDeleteButtonClicked() {
         this.confirmDeleteDialog.open();
@@ -246,8 +293,16 @@ export class RecipesView extends GompBaseElement {
     protected onLinkAdded() {
         this.recipeDisplay.refresh({links: true});
     }
+    protected handleUpdateStateResponse() {
+        this.recipeDisplay.refresh({recipe: true});
+        this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+    }
     protected handleDeleteRecipeResponse() {
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+    }
+
+    private onRecipeLoaded(e: CustomEvent<{recipe: Recipe}>) {
+        this.recipeState = e.detail.recipe?.state;
     }
 }

@@ -156,12 +156,16 @@ export class SearchView extends GompBaseElement {
                       <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                   </div>
                   <div class="outterContainer">
-                      <template is="dom-repeat" items="[[recipes]]">
-                          <div class="recipeContainer">
-                              <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
+                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
+                          <template is="dom-repeat" items="[[recipes]]">
+                              <div class="recipeContainer">
                                   <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
-                              </template>
-                              <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                              </div>
+                          </template>
+                      </template>
+                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                          <template is="dom-repeat" items="[[recipes]]">
+                              <div class="recipeContainer">
                                   <a href="/recipes/[[item.id]]">
                                       <paper-icon-item>
                                           <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
@@ -173,8 +177,8 @@ export class SearchView extends GompBaseElement {
                                           </paper-item-body>
                                       </paper-icon-item>
                                   </a>
-                              </template>
-                          </div>
+                              </div>
+                          </template>
                       </template>
                   </div>
                   <div class="pagination">
@@ -234,6 +238,7 @@ export class SearchView extends GompBaseElement {
             'fields[]': this.search.fields,
             'tags[]': this.search.tags,
             'pictures[]': this.search.pictures,
+            'states[]': this.search.states,
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,
@@ -303,9 +308,5 @@ export class SearchView extends GompBaseElement {
         this.set('searchSettings.sortBy', sortBy);
         this.set('searchSettings.sortDir', sortDir);
         this.settingsDrawer.close();
-    }
-
-    protected areEqual(a: any, b: any) {
-        return a === b;
     }
 }

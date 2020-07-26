@@ -19,6 +19,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 	fields := getParams(req.URL.Query(), "fields[]")
 	tags := getParams(req.URL.Query(), "tags[]")
 	pictures := getParams(req.URL.Query(), "pictures[]")
+	states := getParams(req.URL.Query(), "states[]")
 	sortBy := getParam(req.URL.Query(), "sort")
 	sortDir := getParam(req.URL.Query(), "dir")
 	page, err := strconv.ParseInt(getParam(req.URL.Query(), "page"), 10, 64)
@@ -37,6 +38,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 		Fields:   fields,
 		Tags:     tags,
 		Pictures: pictures,
+		States:   states,
 		SortBy:   sortBy,
 		SortDir:  sortDir,
 		Page:     page,
@@ -128,6 +130,27 @@ func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p 
 	}
 
 	resp.WriteHeader(http.StatusOK)
+}
+
+func (h apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	if err != nil {
+		h.JSON(resp, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var state models.RecipeState
+	if err := readJSONFromRequest(req, &state); err != nil {
+		h.JSON(resp, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.model.Recipes.SetState(recipeID, state); err != nil {
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	resp.WriteHeader(http.StatusNoContent)
 }
 
 func (h apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {

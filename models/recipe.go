@@ -13,19 +13,39 @@ type RecipeModel struct {
 	*Model
 }
 
+// RecipeState represents an enumeration of states that a recipe can be in
+type RecipeState string
+
+const (
+	// ActiveRecipeState represents an active recipe
+	ActiveRecipeState RecipeState = "active"
+
+	// ArchivedRecipeState represents a recipe that has been archived
+	ArchivedRecipeState RecipeState = "archived"
+
+	// DeletedRecipeState represents a recipe that has been deleted
+	DeletedRecipeState RecipeState = "deleted"
+)
+
+type recipeBase struct {
+	ID         int64       `json:"id" db:"id"`
+	Name       string      `json:"name" db:"name"`
+	State      RecipeState `json:"state" db:"current_state"`
+	CreatedAt  time.Time   `json:"createdAt" db:"created_at"`
+	ModifiedAt time.Time   `json:"modifiedAt" db:"modified_at"`
+	AvgRating  float64     `json:"averageRating" db:"avg_rating"`
+}
+
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
-	ID            int64     `json:"id" db:"id"`
-	Name          string    `json:"name" db:"name"`
-	ServingSize   string    `json:"servingSize" db:"serving_size"`
-	NutritionInfo string    `json:"nutritionInfo" db:"nutrition_info"`
-	Ingredients   string    `json:"ingredients" db:"ingredients"`
-	Directions    string    `json:"directions" db:"directions"`
-	SourceURL     string    `json:"sourceUrl" db:"source_url"`
-	CreatedAt     time.Time `json:"createdAt" db:"created_at"`
-	ModifiedAt    time.Time `json:"modifiedAt" db:"modified_at"`
-	AvgRating     float64   `json:"averageRating" db:"avg_rating"`
-	Tags          []string  `json:"tags"`
+	recipeBase
+
+	ServingSize   string   `json:"servingSize" db:"serving_size"`
+	NutritionInfo string   `json:"nutritionInfo" db:"nutrition_info"`
+	Ingredients   string   `json:"ingredients" db:"ingredients"`
+	Directions    string   `json:"directions" db:"directions"`
+	SourceURL     string   `json:"sourceUrl" db:"source_url"`
+	Tags          []string `json:"tags"`
 }
 
 // Create stores the recipe in the database as a new record using
@@ -62,7 +82,7 @@ func (m *RecipeModel) CreateTx(recipe *Recipe, tx *sqlx.Tx) error {
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (m *RecipeModel) Read(id int64) (*Recipe, error) {
 	stmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
 		"FROM recipe AS r WHERE r.id = $1"
 	recipe := new(Recipe)
 	err := m.db.Get(recipe, stmt, id)
@@ -160,14 +180,13 @@ func (m *RecipeModel) SetRating(id int64, rating float64) error {
 	return nil
 }
 
-// List retrieves all recipes.
-func (m *RecipeModel) List() (*[]RecipeCompact, error) {
-	var recipes []RecipeCompact
-
-	selectStmt := "SELECT r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url FROM recipe as r"
-	if err := m.db.Select(&recipes, selectStmt); err != nil {
-		return nil, fmt.Errorf("listing recipes: %v", err)
+// SetState updates the state of the specified recipe.
+func (m *RecipeModel) SetState(id int64, state RecipeState) error {
+	_, err := m.db.Exec(
+		"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
+	if err != nil {
+		return fmt.Errorf("updating recipe state: %v", err)
 	}
 
-	return &recipes, nil
+	return nil
 }

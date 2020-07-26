@@ -70,6 +70,13 @@ export class RecipeDisplay extends GompBaseElement {
                     font-size: 0.8em;
                     font-weight: lighter;
                 }
+                .state {
+                    vertical-align: middle;
+                    margin-left: 1em;
+                }
+                .state[hidden] {
+                    display: none !important;
+                }
             </style>
 
             <paper-card>
@@ -78,6 +85,7 @@ export class RecipeDisplay extends GompBaseElement {
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
+                        <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
                     </h2>
                     <section hidden\$="[[!recipe.servingSize]]">
                         <label>Serving Size</label>
@@ -202,6 +210,7 @@ export class RecipeDisplay extends GompBaseElement {
     }
     protected handleGetRecipeResponse(e: CustomEvent<{response: Recipe}>) {
         this.recipe = e.detail.response;
+        this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
     }
     protected handleGetMainImageRequest() {
         this.mainImage = null;

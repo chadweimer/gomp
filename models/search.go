@@ -2,7 +2,6 @@ package models
 
 import (
 	"strings"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -58,6 +57,7 @@ type RecipesFilter struct {
 	Fields   []string `json:"fields"`
 	Tags     []string `json:"tags"`
 	Pictures []string `json:"pictures"`
+	States   []string `json:"states"`
 	SortBy   string   `json:"sortBy"`
 	SortDir  string   `json:"sortDir"`
 	Page     int64    `json:"page"`
@@ -73,23 +73,24 @@ type TagsFilter struct {
 
 // RecipeCompact is the primary model class for bulk recipe retrieval
 type RecipeCompact struct {
-	ID            int64     `json:"id" db:"id"`
-	Name          string    `json:"name" db:"name"`
-	ServingSize   string    `json:"servingSize" db:"serving_size"`
-	NutritionInfo string    `json:"nutritionInfo" db:"nutrition_info"`
-	Ingredients   string    `json:"ingredients" db:"ingredients"`
-	Directions    string    `json:"directions" db:"directions"`
-	SourceURL     string    `json:"sourceUrl" db:"source_url"`
-	CreatedAt     time.Time `json:"createdAt" db:"created_at"`
-	ModifiedAt    time.Time `json:"modifiedAt" db:"modified_at"`
-	AvgRating     float64   `json:"averageRating" db:"avg_rating"`
-	ThumbnailURL  string    `json:"thumbnailUrl" db:"thumbnail_url"`
+	recipeBase
+
+	ThumbnailURL string `json:"thumbnailUrl" db:"thumbnail_url"`
 }
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
 func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64, error) {
-	whereStmt := ""
+	whereStmt := " WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
+	var err error
+
+	if len(filter.States) > 0 {
+		whereStmt, whereArgs, err = sqlx.In(" WHERE r.current_state IN (?)", filter.States)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
 	if filter.Query != "" {
 		// If the filter didn't specify the fields to search on, use all of them
 		filterFields := filter.Fields
@@ -110,7 +111,7 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 			}
 		}
 
-		whereStmt += " WHERE (" + fieldStr + ")"
+		whereStmt += " AND (" + fieldStr + ")"
 		whereArgs = append(whereArgs, fieldArgs...)
 	}
 
@@ -119,12 +120,8 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		if err != nil {
 			return nil, 0, err
 		}
-		if whereStmt == "" {
-			whereStmt += " WHERE "
-		} else {
-			whereStmt += " AND "
-		}
-		whereStmt += tagsStmt
+
+		whereStmt += " AND " + tagsStmt
 		whereArgs = append(whereArgs, tagsArgs...)
 	}
 
@@ -142,12 +139,8 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 		if len(picsParts) > 0 {
 			picsStmt = "(" + strings.Join(picsParts, " OR ") + ")"
 		}
-		if whereStmt == "" {
-			whereStmt += " WHERE "
-		} else {
-			whereStmt += " AND "
-		}
-		whereStmt += picsStmt
+
+		whereStmt += " AND " + picsStmt
 	}
 
 	var total int64
@@ -181,13 +174,13 @@ func (m *SearchModel) FindRecipes(filter RecipesFilter) (*[]RecipeCompact, int64
 	orderStmt += " LIMIT ? OFFSET ?"
 
 	selectStmt := m.db.Rebind("SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
+		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
 		"FROM recipe AS r" +
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)
 
 	var recipes []RecipeCompact
-	err := m.db.Select(&recipes, selectStmt, selectArgs...)
+	err = m.db.Select(&recipes, selectStmt, selectArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
