@@ -6,6 +6,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
+import { SearchFilterElement } from './components/search-filter.js';
 import { Search, User, SearchFilter, SearchState, SearchPictures } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
@@ -227,9 +228,10 @@ export class GompApp extends PolymerElement {
             </app-drawer-layout>
 
             <paper-dialog id="searchFilterDialog" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
-                <search-filter filter="{{searchFilter}}"></search-filter>
+                <search-filter id="searchSettings" filter="[[searchFilter]]"></search-filter>
                 <div class="buttons">
-                    <paper-button dialog-confirm="">Close</paper-button>
+                    <paper-button dialog-dismiss="">Cancel</paper-button>
+                    <paper-button dialog-confirm="">Save</paper-button>
                 </div>
             </paper-dialog>
 
@@ -278,6 +280,9 @@ export class GompApp extends PolymerElement {
     @property({type: Object, notify: true})
     protected currentUser: User = null;
 
+    private get searchSettings(): SearchFilterElement {
+        return this.$.searchSettings as SearchFilterElement;
+    }
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
     }
@@ -520,7 +525,8 @@ export class GompApp extends PolymerElement {
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
-            // TODO
+            this.searchFilter = this.searchSettings.filter;
+            this.changeRoute('/search');
         }
     }
     protected searchFiltersChanged() {

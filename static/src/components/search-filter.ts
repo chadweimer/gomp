@@ -3,7 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchFilter, SearchState, SearchPictures, SearchField } from '../models/models';
+import { SearchFilter, SearchField } from '../models/models';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
