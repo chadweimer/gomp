@@ -94,26 +94,36 @@ export class GompApp extends PolymerElement {
                     font-weight: lighter;
                     font-size: 0.9em;
                 }
-                @media screen and (min-width: 993px) {
-                    .hide-on-large-only {
-                        display: none;
+                .indented {
+                    padding-left: 150px;
+                    padding-right: 150px;
+                }
+                @media screen and (min-width: 1200px) {
+                    paper-dialog {
+                        width: 33%;
                     }
                 }
-                @media screen and (max-width: 992px) {
-                    .hide-on-med-and-down {
-                        display: none;
+                @media screen and (min-width: 992px) and (max-width: 1199px) {
+                    paper-dialog {
+                        width: 50%;
                     }
                 }
-                @media screen and (min-width: 601px) {
-                    .indented {
-                        padding-left: 150px;
-                        padding-right: 150px;
-                    }
+                @media screen and (min-width: 600px) and (max-width: 991px) {
                     paper-dialog {
                         width: 75%;
                     }
                 }
-                @media screen and (max-width: 600px) {
+                @media screen and (min-width: 992px) {
+                    .hide-on-large-only {
+                        display: none;
+                    }
+                }
+                @media screen and (max-width: 991px) {
+                    .hide-on-med-and-down {
+                        display: none;
+                    }
+                }
+                @media screen and (max-width: 599px) {
                     .hide-on-small-only {
                         display: none;
                     }
@@ -184,7 +194,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                             </app-toolbar>
                         </div>
 
@@ -221,6 +231,7 @@ export class GompApp extends PolymerElement {
             </app-drawer-layout>
 
             <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
+                <h3>Search Settings</h3>
                 <search-filter id="searchSettings"></search-filter>
                 <div class="buttons">
                     <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
@@ -252,8 +263,6 @@ export class GompApp extends PolymerElement {
         pictures: SearchPictures.Any,
         tags: []
     };
-    @property({type: Number})
-    protected selectedSearchFiltersCount = 0;
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})

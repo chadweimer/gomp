@@ -1,11 +1,3 @@
-export interface Search {
-    query: string;
-    fields: string[];
-    tags: string[];
-    pictures: string[];
-    states: string[];
-}
-
 export enum SearchField {
     Name = 'name',
     Ingredients = 'ingredients',
