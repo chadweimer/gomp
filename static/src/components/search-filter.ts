@@ -1,8 +1,9 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
+import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchFilter, SearchState, SearchPictures } from '../models/models';
+import { SearchFilter, SearchState, SearchPictures, SearchField } from '../models/models';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
@@ -38,9 +39,9 @@ export class SearchFilterElement extends GompBaseElement {
             <section>
                 <label>Fields to Search</label>
                 <div>
-                    <paper-checkbox class="selection" value="{{searchOnName}}">Name</paper-checkbox>
-                    <paper-checkbox class="selection" value="{{searchOnIngredients}}">Ingredients</paper-checkbox>
-                    <paper-checkbox class="selection" value="{{searchOnDirections}}">Directions</paper-checkbox>
+                    <template is="dom-repeat" items="[[availableFields]]">
+                        <paper-checkbox id\$="[[item.value]]" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
+                    </template>
                 </div>
                 <span class="note">All listed fields will be included if no selection is made</span>
                 <paper-divider></paper-divider>
@@ -71,9 +72,11 @@ export class SearchFilterElement extends GompBaseElement {
 `;
     }
 
-    protected searchOnName = false;
-    protected searchOnIngredients = false;
-    protected searchOnDirections = false;
+    protected availableFields = [
+        {name: SearchField[SearchField.Name], value: SearchField.Name},
+        {name: SearchField[SearchField.Ingredients], value: SearchField.Ingredients},
+        {name: SearchField[SearchField.Directions], value: SearchField.Directions}
+    ];
 
     @property({type: Object, notify: true})
     public filter: SearchFilter|null = {
@@ -83,4 +86,32 @@ export class SearchFilterElement extends GompBaseElement {
         pictures: SearchPictures.Any,
         tags: []
     };
+
+    static get observers() {
+        return [
+            'fieldsChanged(filter.fields)',
+        ];
+    }
+
+    protected isFieldSelected(value: SearchField) {
+      return this.filter.fields.indexOf(value) >= 0;
+    }
+
+    protected fieldsChanged(selectedFields: SearchField[]) {
+        this.availableFields.forEach(field => {
+            const cb = this.$[field.value] as PaperCheckboxElement;
+            cb.checked = selectedFields.indexOf(field.value) >= 0;
+        });
+    }
+
+    protected selectedFieldChanged() {
+        const selectedFields: SearchField[] = [];
+        this.availableFields.forEach(field => {
+            const cb = this.$[field.value] as PaperCheckboxElement;
+            if (cb.checked) {
+                selectedFields.push(field.value);
+            }
+        });
+        this.push('filter.fields', selectedFields);
+    }
 }
