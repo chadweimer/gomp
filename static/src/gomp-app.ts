@@ -220,8 +220,8 @@ export class GompApp extends PolymerElement {
                 </app-header-layout>
             </app-drawer-layout>
 
-            <paper-dialog id="searchFilterDialog" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
-                <search-filter id="searchSettings" filter="[[searchFilter]]"></search-filter>
+            <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
+                <search-filter id="searchSettings"></search-filter>
                 <div class="buttons">
                     <paper-button dialog-dismiss="">Cancel</paper-button>
                     <paper-button dialog-confirm="">Save</paper-button>
@@ -461,6 +461,9 @@ export class GompApp extends PolymerElement {
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
         this.title = e.detail.response.title;
+    }
+    protected searchFilterDialogOpened() {
+        this.searchSettings.filter = JSON.parse(JSON.stringify(this.searchFilter));
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
