@@ -244,7 +244,7 @@ export class GompApp extends PolymerElement {
     @property({type: Number})
     protected loadingCount = 0;
     @property({type: Object, notify: true})
-    public searchFilter: SearchFilter = {
+    protected searchFilter: SearchFilter = {
         query: '',
         fields: [],
         states: SearchState.Active,
@@ -452,11 +452,11 @@ export class GompApp extends PolymerElement {
         filterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
-        this.set('filter.query', '');
-        this.set('filter.fields', []);
-        this.set('filter.tags', e.detail.tags);
-        this.set('filter.pictures', []);
-        this.set('filter.states', []);
+        this.set('searchFilter.query', '');
+        this.set('searchFilter.fields', []);
+        this.set('searchFilter.tags', e.detail.tags);
+        this.set('searchFilter.pictures', SearchPictures.Any);
+        this.set('searchFilter.states', SearchState.Active);
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
@@ -464,7 +464,7 @@ export class GompApp extends PolymerElement {
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
-            this.searchFilter = this.searchSettings.filter;
+            this.set('searchFilter', this.searchSettings.filter);
             this.changeRoute('/search');
         }
     }
