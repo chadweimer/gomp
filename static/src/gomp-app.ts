@@ -4,6 +4,7 @@ import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js'
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
+import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { Search, User } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
@@ -26,6 +27,7 @@ import '@polymer/paper-toast/paper-toast.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import '@cwmr/paper-search/paper-filter-dialog.js';
+import './components/search-filter.js';
 import './shared-styles.js';
 
 // Gesture events like tap and track generated from touch will not be
@@ -95,16 +97,25 @@ export class GompApp extends PolymerElement {
                     .hide-on-large-only {
                         display: none;
                     }
+                    paper-dialog {
+                        width: 50%;
+                    }
                 }
                 @media screen and (max-width: 992px) {
                     .hide-on-med-and-down {
                         display: none;
+                    }
+                    paper-dialog {
+                        width: 50%;
                     }
                 }
                 @media screen and (min-width: 601px) {
                     .indented {
                         padding-left: 150px;
                         padding-right: 150px;
+                    }
+                    paper-dialog {
+                        width: 75%;
                     }
                 }
                 @media screen and (max-width: 600px) {
@@ -114,6 +125,9 @@ export class GompApp extends PolymerElement {
                     .indented {
                         padding-left: 15px;
                         padding-right: 15px;
+                    }
+                    paper-dialog {
+                        width: 100%;
                     }
                 }
             </style>
@@ -211,6 +225,13 @@ export class GompApp extends PolymerElement {
                     </footer>
                 </app-header-layout>
             </app-drawer-layout>
+
+            <paper-dialog id="searchFilterDialog" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
+                <search-filter></search-filter>
+                <div class="buttons">
+                    <paper-button dialog-confirm="">Close</paper-button>
+                </div>
+            </paper-dialog>
 
             <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
@@ -444,7 +465,7 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/search');
     }
     protected onFilter() {
-        const filterDialog = this.$.filterDialog as any;
+        const filterDialog = this.$.searchFilterDialog as PaperDialogElement;
         filterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
@@ -488,6 +509,11 @@ export class GompApp extends PolymerElement {
         filters.push(statesFilter);
 
         this.searchFilters = filters;
+    }
+    protected searchFilterDialogClosed(e: CustomEvent) {
+        if (!e.detail.canceled && e.detail.confirmed) {
+            // TODO
+        }
     }
     protected searchFiltersChanged() {
         this.set('search.fields', this.selectedSearchFilters.fields || []);
