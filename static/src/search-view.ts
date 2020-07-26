@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { Search, User, RecipeCompact, SearchFilter, SearchPictures, SearchState } from './models/models.js';
+import { User, RecipeCompact, SearchFilter, SearchPictures, SearchState } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -198,8 +198,6 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public search: Search = null;
-    @property({type: Object, notify: true, observer: 'filterChanged'})
     public filter: SearchFilter = null;
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
@@ -224,7 +222,7 @@ export class SearchView extends GompBaseElement {
     static get observers() {
         return [
             'updatePagination(recipes, totalRecipeCount)',
-            'searchChanged(search.*)',
+            'searchChanged(filter.*)',
             'searchChanged(searchSettings.*)',
         ];
     }
@@ -235,27 +233,9 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
-        this.recipesAjax.params = {
-            'q': this.search.query,
-            'fields[]': this.search.fields,
-            'tags[]': this.search.tags,
-            'pictures[]': this.search.pictures,
-            'states[]': this.search.states,
-            'sort': this.searchSettings.sortBy,
-            'dir': this.searchSettings.sortDir,
-            'page': this.pageNum,
-            'count': this.getRecipeCount(),
-        };
-    }
-
-    protected pageNumChanged() {
-        this.refresh();
-    }
-    protected filterChanged(filter: SearchFilter) {
-        this.pageNum = 1;
 
         const pictures: string[] = [];
-        switch (filter.pictures) {
+        switch (this.filter.pictures) {
             case SearchPictures.Yes:
             case SearchPictures.No:
                 pictures.push(this.filter.pictures);
@@ -263,7 +243,7 @@ export class SearchView extends GompBaseElement {
         }
 
         const states: string[] = [];
-        switch (filter.states) {
+        switch (this.filter.states) {
             case SearchState.Active:
             case SearchState.Archived:
                 states.push(this.filter.states);
@@ -275,9 +255,9 @@ export class SearchView extends GompBaseElement {
         }
 
         this.recipesAjax.params = {
-            'q': filter.query,
-            'fields[]': filter.fields,
-            'tags[]': filter.tags,
+            'q': this.filter.query,
+            'fields[]': this.filter.fields,
+            'tags[]': this.filter.tags,
             'pictures[]': pictures,
             'states[]': states,
             'sort': this.searchSettings.sortBy,
@@ -285,6 +265,10 @@ export class SearchView extends GompBaseElement {
             'page': this.pageNum,
             'count': this.getRecipeCount(),
         };
+    }
+
+    protected pageNumChanged() {
+        this.refresh();
     }
     protected searchChanged() {
         this.pageNum = 1;
