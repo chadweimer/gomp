@@ -73,9 +73,9 @@ export class SearchFilterElement extends GompBaseElement {
     }
 
     protected availableFields = [
-        {name: SearchField[SearchField.Name], value: SearchField.Name},
-        {name: SearchField[SearchField.Ingredients], value: SearchField.Ingredients},
-        {name: SearchField[SearchField.Directions], value: SearchField.Directions}
+        {name: 'Name', value: SearchField.Name},
+        {name: 'Ingredients', value: SearchField.Ingredients},
+        {name: 'Directions', value: SearchField.Directions}
     ];
 
     @property({type: Object, notify: true})
