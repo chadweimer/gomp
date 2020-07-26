@@ -27,7 +27,6 @@ import '@polymer/paper-styles/paper-styles.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
-import '@cwmr/paper-search/paper-filter-dialog.js';
 import './components/search-filter.js';
 import './shared-styles.js';
 
