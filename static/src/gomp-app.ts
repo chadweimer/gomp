@@ -360,6 +360,8 @@ export class GompApp extends PolymerElement {
         }
     }
     protected pageChanged(page: string) {
+        this.verifyIsAuthenticated();
+
         // Load page import on demand. Show 404 page if fails
         switch (page) {
         case 'home':
