@@ -79,13 +79,7 @@ export class SearchFilterElement extends GompBaseElement {
     ];
 
     @property({type: Object, notify: true})
-    public filter: SearchFilter|null = {
-        query: '',
-        fields: [],
-        states: SearchState.Active,
-        pictures: SearchPictures.Any,
-        tags: []
-    };
+    public filter: SearchFilter = null;
 
     static get observers() {
         return [
@@ -112,6 +106,6 @@ export class SearchFilterElement extends GompBaseElement {
                 selectedFields.push(field.value);
             }
         });
-        this.push('filter.fields', selectedFields);
+        this.set('filter.fields', selectedFields);
     }
 }

@@ -6,7 +6,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
-import { Search, User } from './models/models.js';
+import { Search, User, SearchFilter, SearchState, SearchPictures } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -189,7 +189,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                                 <paper-filter-dialog id="filterDialog" filters="[[searchFilters]]" selected-filters="{{selectedSearchFilters}}" save-button="Apply" on-save="searchFiltersChanged"></paper-filter-dialog>
                             </app-toolbar>
                         </div>
@@ -200,7 +200,7 @@ export class GompApp extends PolymerElement {
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="searchView" name="search" filter="[[searchFilter]]" current-user="[[currentUser]]"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
                             <create-view name="create" current-user="[[currentUser]]"></create-view>
                             <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
@@ -227,7 +227,7 @@ export class GompApp extends PolymerElement {
             </app-drawer-layout>
 
             <paper-dialog id="searchFilterDialog" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
-                <search-filter></search-filter>
+                <search-filter filter="{{searchFilter}}"></search-filter>
                 <div class="buttons">
                     <paper-button dialog-confirm="">Close</paper-button>
                 </div>
@@ -256,6 +256,14 @@ export class GompApp extends PolymerElement {
         tags: [] as string[],
         pictures: [] as string[],
         states: [] as string[],
+    };
+    @property({type: Object, notify: true})
+    public searchFilter: SearchFilter = {
+        query: '',
+        fields: [],
+        states: SearchState.Active,
+        pictures: SearchPictures.Any,
+        tags: []
     };
     @property({type: Array})
     protected searchFilters: any[]|null|undefined = null;
@@ -461,7 +469,7 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {
-        this.set('search.query', e.target.query.trim());
+        this.set('searchFilter.query', e.target.query.trim());
         this.changeRoute('/search');
     }
     protected onFilter() {
