@@ -236,7 +236,7 @@ export class GompApp extends PolymerElement {
                 <div class="buttons">
                     <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
                     <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Save</paper-button>
+                    <paper-button dialog-confirm="">Apply</paper-button>
                 </div>
             </paper-dialog>
 
