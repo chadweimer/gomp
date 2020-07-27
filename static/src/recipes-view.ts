@@ -39,10 +39,10 @@ export class RecipesView extends GompBaseElement {
                     padding: 10px;
                 }
                 #confirmArchiveDialog {
-                    --confirmation-dialog-title-color: var(--paper-indigo-500);
+                    --confirmation-dialog-title-color: var(--paper-purple-500);
                 }
                 #confirmUnarchiveDialog {
-                    --confirmation-dialog-title-color: var(--paper-indigo-500);
+                    --confirmation-dialog-title-color: var(--paper-purple-500);
                 }
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
@@ -76,6 +76,10 @@ export class RecipesView extends GompBaseElement {
                 paper-fab-speed-dial-action.blue {
                     --paper-fab-speed-dial-action-background: var(--paper-blue-500);
                     --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-blue-900);
+                }
+                paper-fab-speed-dial-action.purple {
+                    --paper-fab-speed-dial-action-background: var(--paper-purple-500);
+                    --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-purple-900);
                 }
                 .tab-container {
                     @apply --layout-horizontal;
@@ -141,8 +145,8 @@ export class RecipesView extends GompBaseElement {
                 <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
                     <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
-                    <paper-fab-speed-dial-action class="indigo" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
-                    <paper-fab-speed-dial-action class="indigo" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden="[[!areEqual(recipeState, 'archived')]]">Unarchive</paper-fab-speed-dial-action>
+                    <paper-fab-speed-dial-action class="purple" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
+                    <paper-fab-speed-dial-action class="purple" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden="[[!areEqual(recipeState, 'archived')]]">Unarchive</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>

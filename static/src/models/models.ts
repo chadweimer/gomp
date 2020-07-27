@@ -1,9 +1,27 @@
-export interface Search {
+export enum SearchField {
+    Name = 'name',
+    Ingredients = 'ingredients',
+    Directions = 'directions'
+}
+
+export enum SearchState {
+    Active = 'active',
+    Archived = 'archived',
+    Any = 'any'
+}
+
+export enum SearchPictures {
+    Yes = 'yes',
+    No = 'no',
+    Any = 'any'
+}
+
+export interface SearchFilter {
     query: string;
-    fields: string[];
-    tags: string[];
-    pictures: string[];
-    states: string[];
+    fields: SearchField[];
+    pictures: SearchPictures;
+    states: SearchState;
+    tags: string[]
 }
 
 export interface User {

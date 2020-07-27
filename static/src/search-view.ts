@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { Search, User, RecipeCompact } from './models/models.js';
+import { User, RecipeCompact, SearchFilter, SearchPictures, SearchState } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -198,7 +198,7 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public search: Search = null;
+    public filter: SearchFilter = null;
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
         sortBy: 'name',
@@ -222,7 +222,7 @@ export class SearchView extends GompBaseElement {
     static get observers() {
         return [
             'updatePagination(recipes, totalRecipeCount)',
-            'searchChanged(search.*)',
+            'searchChanged(filter.*)',
             'searchChanged(searchSettings.*)',
         ];
     }
@@ -233,12 +233,33 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
+
+        const pictures: string[] = [];
+        switch (this.filter.pictures) {
+            case SearchPictures.Yes:
+            case SearchPictures.No:
+                pictures.push(this.filter.pictures);
+                break;
+        }
+
+        const states: string[] = [];
+        switch (this.filter.states) {
+            case SearchState.Active:
+            case SearchState.Archived:
+                states.push(this.filter.states);
+                break;
+            case SearchState.Any:
+                states.push(SearchState.Active);
+                states.push(SearchState.Archived);
+                break;
+        }
+
         this.recipesAjax.params = {
-            'q': this.search.query,
-            'fields[]': this.search.fields,
-            'tags[]': this.search.tags,
-            'pictures[]': this.search.pictures,
-            'states[]': this.search.states,
+            'q': this.filter.query,
+            'fields[]': this.filter.fields,
+            'tags[]': this.filter.tags,
+            'pictures[]': pictures,
+            'states[]': states,
             'sort': this.searchSettings.sortBy,
             'dir': this.searchSettings.sortDir,
             'page': this.pageNum,

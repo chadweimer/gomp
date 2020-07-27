@@ -4,8 +4,10 @@ import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js'
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
+import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
-import { Search, User } from './models/models.js';
+import { SearchFilterElement } from './components/search-filter.js';
+import { User, SearchFilter, SearchState, SearchPictures } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -16,6 +18,7 @@ import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
+import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
@@ -25,7 +28,7 @@ import '@polymer/paper-styles/paper-styles.js';
 import '@polymer/paper-toast/paper-toast.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
-import '@cwmr/paper-search/paper-filter-dialog.js';
+import './components/search-filter.js';
 import './shared-styles.js';
 
 // Gesture events like tap and track generated from touch will not be
@@ -91,29 +94,45 @@ export class GompApp extends PolymerElement {
                     font-weight: lighter;
                     font-size: 0.9em;
                 }
-                @media screen and (min-width: 993px) {
+                .indented {
+                    padding-left: 150px;
+                    padding-right: 150px;
+                }
+                @media screen and (min-width: 1200px) {
+                    paper-dialog {
+                        width: 33%;
+                    }
+                }
+                @media screen and (min-width: 992px) and (max-width: 1199px) {
+                    paper-dialog {
+                        width: 50%;
+                    }
+                }
+                @media screen and (min-width: 600px) and (max-width: 991px) {
+                    paper-dialog {
+                        width: 75%;
+                    }
+                }
+                @media screen and (min-width: 992px) {
                     .hide-on-large-only {
                         display: none;
                     }
                 }
-                @media screen and (max-width: 992px) {
+                @media screen and (max-width: 991px) {
                     .hide-on-med-and-down {
                         display: none;
                     }
                 }
-                @media screen and (min-width: 601px) {
-                    .indented {
-                        padding-left: 150px;
-                        padding-right: 150px;
-                    }
-                }
-                @media screen and (max-width: 600px) {
+                @media screen and (max-width: 599px) {
                     .hide-on-small-only {
                         display: none;
                     }
                     .indented {
                         padding-left: 15px;
                         padding-right: 15px;
+                    }
+                    paper-dialog {
+                        width: 100%;
                     }
                 }
             </style>
@@ -175,8 +194,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[search.query]]" nr-selected-filters="[[selectedSearchFiltersCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
-                                <paper-filter-dialog id="filterDialog" filters="[[searchFilters]]" selected-filters="{{selectedSearchFilters}}" save-button="Apply" on-save="searchFiltersChanged"></paper-filter-dialog>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                             </app-toolbar>
                         </div>
 
@@ -186,7 +204,7 @@ export class GompApp extends PolymerElement {
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" search="{{search}}" current-user="[[currentUser]]"></search-view>
+                            <search-view id="searchView" name="search" filter="[[searchFilter]]" current-user="[[currentUser]]"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
                             <create-view name="create" current-user="[[currentUser]]"></create-view>
                             <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
@@ -212,12 +230,21 @@ export class GompApp extends PolymerElement {
                 </app-header-layout>
             </app-drawer-layout>
 
+            <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
+                <h3>Search Settings</h3>
+                <search-filter id="searchSettings"></search-filter>
+                <div class="buttons">
+                    <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
+                    <paper-button dialog-dismiss="">Cancel</paper-button>
+                    <paper-button dialog-confirm="">Apply</paper-button>
+                </div>
+            </paper-dialog>
+
             <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
-            <app-localstorage-document key="search" data="{{search}}" session-only=""></app-localstorage-document>
+            <app-localstorage-document key="searchFilter" data="{{searchFilter}}" session-only=""></app-localstorage-document>
 
             <iron-ajax bubbles="" id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="tagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;tag&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;count&quot;: 100000}" on-response="handleGetTagsResponse"></iron-ajax>
             <iron-ajax bubbles="" id="getCurrentUserAjax" url="/api/v1/users/current" on-response="handleGetCurrentUserResponse"></iron-ajax>
 `;
     }
@@ -229,26 +256,23 @@ export class GompApp extends PolymerElement {
     @property({type: Number})
     protected loadingCount = 0;
     @property({type: Object, notify: true})
-    protected search: Search = {
+    protected searchFilter: SearchFilter = {
         query: '',
-        fields: [] as string[],
-        tags: [] as string[],
-        pictures: [] as string[],
-        states: [] as string[],
+        fields: [],
+        states: SearchState.Active,
+        pictures: SearchPictures.Any,
+        tags: []
     };
-    @property({type: Array})
-    protected searchFilters: any[]|null|undefined = null;
-    @property({type: Number})
-    protected selectedSearchFiltersCount = 0;
     @property({type: Boolean})
     protected isAuthenticated = false;
-    @property({type: Object})
-    protected selectedSearchFilters: {fields?: [], tags?: [], pictures?: [], states?: []} = {};
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
     @property({type: Object, notify: true})
     protected currentUser: User = null;
 
+    private get searchSettings(): SearchFilterElement {
+        return this.$.searchSettings as SearchFilterElement;
+    }
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
     }
@@ -258,9 +282,6 @@ export class GompApp extends PolymerElement {
     private get drawer(): AppDrawerElement {
         return this.$.drawer as AppDrawerElement;
     }
-    private get tagsAjax(): IronAjaxElement {
-        return this.$.tagsAjax as IronAjaxElement;
-    }
     private get getCurrentUserAjax(): IronAjaxElement {
         return this.$.getCurrentUserAjax as IronAjaxElement;
     }
@@ -268,11 +289,6 @@ export class GompApp extends PolymerElement {
     static get observers() {
         return [
             'routePageChanged(routeData.page)',
-            'searchFieldsChanged(search.fields)',
-            'searchTagsChanged(search.tags)',
-            'searchPicturesChanged(search.pictures)',
-            'searchStatesChanged(search.states)',
-            'searchChanged(search.fields, search.tags, search.pictures, search.states)',
         ];
     }
 
@@ -354,9 +370,7 @@ export class GompApp extends PolymerElement {
         }
     }
     protected pageChanged(page: string) {
-        if (this.verifyIsAuthenticated()) {
-            this.tagsAjax.generateRequest();
-        }
+        this.verifyIsAuthenticated();
 
         // Load page import on demand. Show 404 page if fails
         switch (page) {
@@ -440,88 +454,43 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {
-        this.set('search.query', e.target.query.trim());
+        this.set('searchFilter.query', e.target.query.trim());
         this.changeRoute('/search');
     }
     protected onFilter() {
-        const filterDialog = this.$.filterDialog as any;
+        const filterDialog = this.$.searchFilterDialog as PaperDialogElement;
         filterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
-        this.set('search.query', '');
-        this.set('search.fields', []);
-        this.set('search.tags', e.detail.tags);
-        this.set('search.pictures', []);
-        this.set('search.states', []);
+        this.setSearchFilter({
+            query: '',
+            fields: [],
+            tags: e.detail.tags,
+            pictures: SearchPictures.Any,
+            states: SearchState.Active
+        });
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
         this.title = e.detail.response.title;
     }
-    protected handleGetTagsResponse(e: CustomEvent) {
-        const tags = e.detail.response;
-
-        const filters: any[] = [];
-
-        const fieldFilter = {id: 'fields', name: 'Search Fields', values: [] as any[]};
-        fieldFilter.values.push({id: 'name', name: 'Name'});
-        fieldFilter.values.push({id: 'ingredients', name: 'Ingredients'});
-        fieldFilter.values.push({id: 'directions', name: 'Directions'});
-        filters.push(fieldFilter);
-
-        const tagFilter = {id: 'tags', name: 'Tags', values: [] as any[]};
-        filters.push(tagFilter);
-        if (tags) {
-            tags.forEach((tag: string) => {
-                tagFilter.values.push({id: tag, name: tag});
-            });
+    protected searchFilterDialogOpened() {
+        this.searchSettings.filter = JSON.parse(JSON.stringify(this.searchFilter));
+    }
+    protected searchFilterDialogClosed(e: CustomEvent) {
+        if (!e.detail.canceled && e.detail.confirmed) {
+            this.setSearchFilter(this.searchSettings.filter);
+            this.changeRoute('/search');
         }
-
-        const picturesFilter = {id: 'pictures', name: 'Pictures', values: [] as any[]};
-        picturesFilter.values.push({id: 'yes', name: 'Yes'});
-        picturesFilter.values.push({id: 'no', name: 'No'});
-        filters.push(picturesFilter);
-
-        const statesFilter = {id: 'states', name: 'States', values: [] as any[]};
-        statesFilter.values.push({id: 'active', name: 'Active'});
-        statesFilter.values.push({id: 'archived', name: 'Archived'});
-        filters.push(statesFilter);
-
-        this.searchFilters = filters;
     }
-    protected searchFiltersChanged() {
-        this.set('search.fields', this.selectedSearchFilters.fields || []);
-        this.set('search.tags', this.selectedSearchFilters.tags || []);
-        this.set('search.pictures', this.selectedSearchFilters.pictures || []);
-        this.set('search.states', this.selectedSearchFilters.states || []);
-        this.changeRoute('/search');
-    }
-    protected searchChanged(fields: string[], tags: string[], pictures: string[], states: string[]) {
-        this.selectedSearchFiltersCount = fields.length + tags.length + pictures.length + states.length;
-    }
-    protected searchFieldsChanged(fields: string[]) {
-        if (!this.selectedSearchFilters) {
-            this.selectedSearchFilters = {};
-        }
-        this.set('selectedSearchFilters.fields', fields);
-    }
-    protected searchTagsChanged(tags: string[]) {
-        if (!this.selectedSearchFilters) {
-            this.selectedSearchFilters = {};
-        }
-        this.set('selectedSearchFilters.tags', tags);
-    }
-    protected searchPicturesChanged(pictures: string[]) {
-        if (!this.selectedSearchFilters) {
-            this.selectedSearchFilters = {};
-        }
-        this.set('selectedSearchFilters.pictures', pictures);
-    }
-    protected searchStatesChanged(states: string[]) {
-        if (!this.selectedSearchFilters) {
-            this.selectedSearchFilters = {};
-        }
-        this.set('selectedSearchFilters.states', states);
+    protected onResetSearchFilterClicked() {
+        this.searchSettings.filter = {
+            query: '',
+            fields: [],
+            states: SearchState.Active,
+            pictures: SearchPictures.Any,
+            tags: []
+        };
     }
 
     protected recipesModified() {
@@ -530,5 +499,13 @@ export class GompApp extends PolymerElement {
         if (searchView.refresh) {
             searchView.refresh();
         }
+    }
+
+    private setSearchFilter(filter: SearchFilter) {
+        this.set('searchFilter.query', filter.query);
+        this.set('searchFilter.fields', filter.fields);
+        this.set('searchFilter.tags', filter.tags);
+        this.set('searchFilter.pictures', filter.pictures);
+        this.set('searchFilter.states', filter.states);
     }
 }
