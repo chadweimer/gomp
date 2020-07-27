@@ -462,11 +462,13 @@ export class GompApp extends PolymerElement {
         filterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
-        this.set('searchFilter.query', '');
-        this.set('searchFilter.fields', []);
-        this.set('searchFilter.tags', e.detail.tags);
-        this.set('searchFilter.pictures', SearchPictures.Any);
-        this.set('searchFilter.states', SearchState.Active);
+        this.setSearchFilter({
+            query: '',
+            fields: [],
+            tags: e.detail.tags,
+            pictures: SearchPictures.Any,
+            states: SearchState.Active
+        });
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
@@ -477,11 +479,7 @@ export class GompApp extends PolymerElement {
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
         if (!e.detail.canceled && e.detail.confirmed) {
-            this.set('searchFilter.query', this.searchSettings.filter.query);
-            this.set('searchFilter.fields', this.searchSettings.filter.fields);
-            this.set('searchFilter.tags', this.searchSettings.filter.tags);
-            this.set('searchFilter.pictures', this.searchSettings.filter.pictures);
-            this.set('searchFilter.states', this.searchSettings.filter.states);
+            this.setSearchFilter(this.searchSettings.filter);
             this.changeRoute('/search');
         }
     }
@@ -501,5 +499,13 @@ export class GompApp extends PolymerElement {
         if (searchView.refresh) {
             searchView.refresh();
         }
+    }
+
+    private setSearchFilter(filter: SearchFilter) {
+        this.set('searchFilter.query', filter.query);
+        this.set('searchFilter.fields', filter.fields);
+        this.set('searchFilter.tags', filter.tags);
+        this.set('searchFilter.pictures', filter.pictures);
+        this.set('searchFilter.states', filter.states);
     }
 }
