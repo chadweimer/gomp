@@ -370,7 +370,7 @@ export class GompApp extends PolymerElement {
 
         // Restore the scroll position for the selected page
         // Adapted from: https://github.com/PolymerElements/app-layout/blob/master/templates/pesto
-        var map = this.scrollPositionMap;
+        const map = this.scrollPositionMap;
         if (oldRouteData != null && oldRouteData.page != null) {
             map[oldRouteData.page] = window.pageYOffset;
         }
