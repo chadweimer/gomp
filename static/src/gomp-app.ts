@@ -376,25 +376,29 @@ export class GompApp extends PolymerElement {
         return this.$.mainPanel.shadowRoot.querySelector('#contentContainer');
     }
     protected routeDataChanged(routeData: {page: string}, oldRouteData: {page: string}) {
-        this.page = routeData?.page || 'home';
-
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.drawer.persistent) {
             this.drawer.close();
         }
 
-        // Restore the scroll position for the selected page
-        // Adapted from: https://github.com/PolymerElements/app-layout/blob/master/templates/pesto
+        const scrollMap = this.scrollPositionMap;
+
+        // Store the current scroll position for when we return to this page
         const scrollPos = this.getScrollPosition();
-        const map = this.scrollPositionMap;
         if (oldRouteData != null && oldRouteData.page != null) {
-            map[oldRouteData.page] = scrollPos;
+            scrollMap[oldRouteData.page] = scrollPos;
         }
-        if (map[routeData.page] != null) {
-            this.setScrollPosition(map[routeData.page]);
+
+        // IMPORTANT: These must come after storing the current scroll position
+        this.page = routeData?.page || 'home';
+
+        // IMPORTANT: This must come after changing the page, so that we scroll the new content
+        if (scrollMap[routeData.page] != null) {
+            this.setScrollPosition(scrollMap[routeData.page]);
         } else if (this.isConnected) {
             this.setScrollPosition({x: 0, y: 0});
         }
+
     }
     protected pageChanged(page: string) {
         this.verifyIsAuthenticated();
