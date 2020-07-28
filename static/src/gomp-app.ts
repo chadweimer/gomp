@@ -268,8 +268,12 @@ export class GompApp extends PolymerElement {
     protected isAuthenticated = false;
     @property({type: Object})
     protected route: {path: string}|null|undefined = null;
+    @property({type: Object, observer: 'routeDataChanged'})
+    protected routeData: {page: string};
     @property({type: Object, notify: true})
     protected currentUser: User = null;
+
+    private scrollPositionMap: object = {};
 
     private get searchSettings(): SearchFilterElement {
         return this.$.searchSettings as SearchFilterElement;
@@ -287,14 +291,8 @@ export class GompApp extends PolymerElement {
         return this.$.getCurrentUserAjax as IronAjaxElement;
     }
 
-    static get observers() {
-        return [
-            'routePageChanged(routeData.page)',
-        ];
-    }
-
     public ready() {
-        this.addEventListener('scroll-top', () => this.scrollToTop());
+        this.addEventListener('scroll-top', () => this.scrollToPos(0, 0));
         this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this.onHomeLinkClicked(e));
         this.addEventListener('iron-overlay-opened', (e) => this.patchOverlay(e));
         this.addEventListener('recipes-modified', () => this.recipesModified());
@@ -362,12 +360,24 @@ export class GompApp extends PolymerElement {
         this.toast.open();
     }
 
-    protected routePageChanged(page: string|null|undefined) {
-        this.page = page || 'home';
+    protected routeDataChanged(routeData: {page: string}, oldRouteData: {page: string}) {
+        this.page = routeData?.page || 'home';
 
         // Close a non-persistent drawer when the page & route are changed.
         if (!this.drawer.persistent) {
             this.drawer.close();
+        }
+
+        // Restore the scroll position for the selected page
+        // Adapted from: https://github.com/PolymerElements/app-layout/blob/master/templates/pesto
+        var map = this.scrollPositionMap;
+        if (oldRouteData != null && oldRouteData.page != null) {
+            map[oldRouteData.page] = window.pageYOffset;
+        }
+        if (map[routeData.page] != null) {
+            this.scrollToPos(0, map[routeData.page]);
+        } else if (this.isConnected) {
+            this.scrollToPos(0, 0);
         }
     }
     protected pageChanged(page: string) {
@@ -407,8 +417,8 @@ export class GompApp extends PolymerElement {
     protected changeRoute(path: string) {
         this.set('route.path', path);
     }
-    protected scrollToTop() {
-        this.$.mainHeader.scroll(0, 0);
+    protected scrollToPos(x: number, y: number) {
+        this.$.mainHeader.scroll(x, y);
     }
     protected onLogoutClicked(e: Event) {
         // Don't navigate to "#!"
