@@ -370,9 +370,12 @@ export class GompApp extends PolymerElement {
 
         // Restore the scroll position for the selected page
         // Adapted from: https://github.com/PolymerElements/app-layout/blob/master/templates/pesto
+        // This is pretty brittle, as in using an interal element from the elements template,
+        // but so far it's the only known way to get at the scoll position
+        const contentContainer = this.$.mainPanel.shadowRoot.querySelector('#contentContainer');
         const map = this.scrollPositionMap;
-        if (oldRouteData != null && oldRouteData.page != null) {
-            map[oldRouteData.page] = window.pageYOffset;
+        if (oldRouteData != null && oldRouteData.page != null && contentContainer != null) {
+            map[oldRouteData.page] = contentContainer.scrollTop;
         }
         if (map[routeData.page] != null) {
             this.scrollToPos(0, map[routeData.page]);
