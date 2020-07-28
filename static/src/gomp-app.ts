@@ -292,7 +292,7 @@ export class GompApp extends PolymerElement {
     }
 
     public ready() {
-        this.addEventListener('scroll-top', () => this.scrollToPos(0, 0));
+        this.addEventListener('scroll-top', () => this.setScrollPosition({x: 0, y: 0}));
         this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this.onHomeLinkClicked(e));
         this.addEventListener('iron-overlay-opened', (e) => this.patchOverlay(e));
         this.addEventListener('recipes-modified', () => this.recipesModified());
@@ -360,6 +360,21 @@ export class GompApp extends PolymerElement {
         this.toast.open();
     }
 
+    private getScrollPosition() {
+        const scrollContainer = this.getScrollContainer();
+        return scrollContainer !== null
+            ? {x: scrollContainer.scrollLeft, y: scrollContainer.scrollTop}
+            : null;
+    }
+    private setScrollPosition(pos: {x: number, y: number}) {
+        const scrollContainer = this.getScrollContainer();
+        scrollContainer.scroll(pos.x, pos.y);
+    }
+    private getScrollContainer(): Element|null {
+        // This is pretty brittle, as in using an interal element from the elements template,
+        // but so far it's the only known way to get at the scoll position
+        return this.$.mainPanel.shadowRoot.querySelector('#contentContainer');
+    }
     protected routeDataChanged(routeData: {page: string}, oldRouteData: {page: string}) {
         this.page = routeData?.page || 'home';
 
@@ -370,17 +385,15 @@ export class GompApp extends PolymerElement {
 
         // Restore the scroll position for the selected page
         // Adapted from: https://github.com/PolymerElements/app-layout/blob/master/templates/pesto
-        // This is pretty brittle, as in using an interal element from the elements template,
-        // but so far it's the only known way to get at the scoll position
-        const contentContainer = this.$.mainPanel.shadowRoot.querySelector('#contentContainer');
+        const scrollPos = this.getScrollPosition();
         const map = this.scrollPositionMap;
-        if (oldRouteData != null && oldRouteData.page != null && contentContainer != null) {
-            map[oldRouteData.page] = contentContainer.scrollTop;
+        if (oldRouteData != null && oldRouteData.page != null) {
+            map[oldRouteData.page] = scrollPos;
         }
         if (map[routeData.page] != null) {
-            this.scrollToPos(0, map[routeData.page]);
+            this.setScrollPosition(map[routeData.page]);
         } else if (this.isConnected) {
-            this.scrollToPos(0, 0);
+            this.setScrollPosition({x: 0, y: 0});
         }
     }
     protected pageChanged(page: string) {
@@ -419,9 +432,6 @@ export class GompApp extends PolymerElement {
     }
     protected changeRoute(path: string) {
         this.set('route.path', path);
-    }
-    protected scrollToPos(x: number, y: number) {
-        this.$.mainHeader.scroll(x, y);
     }
     protected onLogoutClicked(e: Event) {
         // Don't navigate to "#!"
