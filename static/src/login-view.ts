@@ -38,21 +38,21 @@ export class LoginView extends GompBaseElement {
                         width: 100%;
                     }
                 }
-          </style>
-          <div class="container">
-              <paper-card heading="Login">
-                  <div class="card-content">
-                      <paper-input name="username" value="{{username}}" label="Email" on-keydown="onInputKeydown" required="" autofocus="" autocomplete=""></paper-input>
-                     <paper-password-input name="password" value="{{password}}" label="Password" on-keydown="onInputKeydown" required=""></paper-password-input>
-                     <div class="error">[[errorMessage]]</div>
-                  </div>
-                  <div class="card-actions">
-                      <paper-button id="loginButton" on-click="onLoginClicked">Login</paper-button>
-                  </div>
-              </paper-card>
-          </div>
+            </style>
+            <div class="container">
+                <paper-card heading="Login">
+                    <div class="card-content">
+                        <paper-input name="username" value="{{username}}" label="Email" on-keydown="onInputKeydown" required="" autofocus="" autocomplete=""></paper-input>
+                        <paper-password-input name="password" value="{{password}}" label="Password" on-keydown="onInputKeydown" required=""></paper-password-input>
+                        <div class="error">[[errorMessage]]</div>
+                    </div>
+                    <div class="card-actions">
+                        <paper-button id="loginButton" on-click="onLoginClicked">Login</paper-button>
+                    </div>
+                </paper-card>
+            </div>
 
-          <iron-ajax bubbles="" id="authAjax" url="/api/v1/auth" method="POST" on-request="handlePostAuthRequest" on-response="handlePostAuthResponse" on-error="handlePostAuthError"></iron-ajax>
+            <iron-ajax bubbles="" id="authAjax" url="/api/v1/auth" method="POST" on-request="handlePostAuthRequest" on-response="handlePostAuthResponse" on-error="handlePostAuthError"></iron-ajax>
 `;
     }
 
