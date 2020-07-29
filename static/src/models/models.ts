@@ -30,13 +30,13 @@ export enum SortDir {
 }
 
 export class SearchFilter {
-    query: string = '';
+    query = '';
     fields: SearchField[] = [];
-    pictures: SearchPictures = SearchPictures.Any;
-    states: SearchState = SearchState.Active;
+    pictures = SearchPictures.Any;
+    states = SearchState.Active;
     tags: string[] = [];
-    sortBy: SortBy = SortBy.Name;
-    sortDir: SortDir = SortDir.Asc;
+    sortBy = SortBy.Name;
+    sortDir = SortDir.Asc;
 }
 
 export interface User {
