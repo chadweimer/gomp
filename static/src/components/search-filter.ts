@@ -79,15 +79,13 @@ export class SearchFilterElement extends GompBaseElement {
                 <paper-divider></paper-divider>
             </section>
             <section>
-                <div>
-                    <paper-dropdown-menu-light label="Sort By" always-float-label="">
-                        <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
-                            <template is="dom-repeat" items="[[availableSortBy]]">
-                                <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
-                            </template>
-                        </paper-listbox>
-                    </paper-dropdown-menu-light>
-                </div>
+                <paper-dropdown-menu-light label="Sort By" always-float-label="">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
+                        <template is="dom-repeat" items="[[availableSortBy]]">
+                            <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu-light>
                 <paper-radio-group selected="{{filter.sortDir}}">
                     <template is="dom-repeat" items="[[availableSortDir]]">
                         <paper-radio-button class="selection" name="[[item.value]]">[[item.name]]</paper-radio-button>
