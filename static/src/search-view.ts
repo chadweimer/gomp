@@ -137,8 +137,8 @@ export class SearchView extends GompBaseElement {
                       <paper-icon-item name="rating" on-click="onRatingSortClicked"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
                       <paper-icon-item name="created" on-click="onCreatedSortClicked"><iron-icon icon="av:fiber-new" slot="item-icon"></iron-icon> Created</paper-icon-item>
                       <paper-icon-item name="modified" on-click="onModifiedSortClicked"><iron-icon icon="update" slot="item-icon"></iron-icon> Modified</paper-icon-item>
-                      <paper-icon-item name="random" on-click="onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random<paper-icon-item>
-                  </paper-icon-item></paper-icon-item></paper-listbox>
+                      <paper-icon-item name="random" on-click="onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random</paper-icon-item>
+                  </paper-listbox>
                   <paper-divider></paper-divider>
                   <label class="menu-label">Order</label>
                   <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">

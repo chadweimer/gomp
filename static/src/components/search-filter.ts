@@ -4,8 +4,14 @@ import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { GompBaseElement } from '../common/gomp-base-element';
 import { SearchFilter, SearchField, SearchState, SearchPictures } from '../models/models';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/av-icons.js';
+import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-checkbox/paper-checkbox.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-item/paper-icon-item.js';
+import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@cwmr/paper-divider/paper-divider.js';
@@ -68,7 +74,28 @@ export class SearchFilterElement extends GompBaseElement {
                 </div>
                 <paper-divider></paper-divider>
             </section>
-            <paper-tags-input tags="{{filter.tags}}"></paper-tags-input>
+            <section>
+                <paper-tags-input tags="{{filter.tags}}"></paper-tags-input>
+                <paper-divider></paper-divider>
+            </section>
+            <section>
+                <label>Sort</label>
+                <div>
+                    <paper-dropdown-menu-light label="Sort By" always-float-label="">
+                        <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
+                            <paper-icon-item name="name"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
+                            <paper-icon-item name="rating"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
+                            <paper-icon-item name="created"><iron-icon icon="av:fiber-new" slot="item-icon"></iron-icon> Created</paper-icon-item>
+                            <paper-icon-item name="modified"><iron-icon icon="update" slot="item-icon"></iron-icon> Modified</paper-icon-item>
+                            <paper-icon-item name="random"><iron-icon icon="help" slot="item-icon"></iron-icon> Random</paper-icon-item>
+                        </paper-listbox>
+                    </paper-dropdown-menu-light>
+                    <paper-radio-group selected="{{filter.sortDir}}">
+                        <paper-radio-button class="selection" name="Asc">Asc</paper-radio-button>
+                        <paper-radio-button class="selection" name="Desc">Desc</paper-radio-button>
+                    </paper-radio-group>
+                </div>
+            </section>
 `;
     }
 
