@@ -502,7 +502,10 @@ export class GompApp extends PolymerElement {
             return;
         }
 
-        this.searchSettings.filter = JSON.parse(JSON.stringify(this.searchFilter));
+        // Make sure to fill in any missing fields
+        const defaultFilter = new SearchFilter();
+        const filter = {...defaultFilter, ...this.searchFilter};
+        this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
         if (e.target !== this.searchFilterDialog) {

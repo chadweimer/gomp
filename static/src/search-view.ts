@@ -216,10 +216,12 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
+        // Make sure to fill in any missing fields
         const defaultFilter = new SearchFilter();
+        const filter = {...defaultFilter, ...this.filter};
 
         const pictures: string[] = [];
-        switch (this.filter.pictures ?? defaultFilter.pictures) {
+        switch (filter.pictures) {
             case SearchPictures.Yes:
             case SearchPictures.No:
                 pictures.push(this.filter.pictures);
@@ -227,7 +229,7 @@ export class SearchView extends GompBaseElement {
         }
 
         const states: string[] = [];
-        switch (this.filter.states ?? defaultFilter.states) {
+        switch (filter.states) {
             case SearchState.Active:
             case SearchState.Archived:
                 states.push(this.filter.states);
@@ -239,13 +241,13 @@ export class SearchView extends GompBaseElement {
         }
 
         this.recipesAjax.params = {
-            'q': this.filter.query ?? defaultFilter.query,
-            'fields[]': this.filter.fields ?? defaultFilter.fields,
-            'tags[]': this.filter.tags ?? defaultFilter.tags,
+            'q': filter.query,
+            'fields[]': filter.fields,
+            'tags[]': filter.tags,
             'pictures[]': pictures,
             'states[]': states,
-            'sort': this.filter.sortBy ?? defaultFilter.sortBy,
-            'dir': this.filter.sortDir ?? defaultFilter.sortDir,
+            'sort': filter.sortBy,
+            'dir': filter.sortDir,
             'page': this.pageNum,
             'count': this.getRecipeCount(),
         };
