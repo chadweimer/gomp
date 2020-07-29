@@ -81,7 +81,7 @@ export class SearchFilterElement extends GompBaseElement {
             <section>
                 <div>
                     <paper-dropdown-menu-light label="Sort By" always-float-label="">
-                        <paper-listbox slot="dropdown-content" class="dropdown-content" selected="[[filter.sortBy]]" attr-for-selected="name" fallback-selection="name" on-iron-select="onSortBySelected">
+                        <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
                             <template is="dom-repeat" items="[[availableSortBy]]">
                                 <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                             </template>
@@ -173,9 +173,5 @@ export class SearchFilterElement extends GompBaseElement {
             }
         });
         this.set('filter.fields', selectedFields);
-    }
-
-    protected onSortBySelected(e: CustomEvent<{item: {name: string}}>) {
-        this.set('filter.sortBy', e.detail.item.name);
     }
 }

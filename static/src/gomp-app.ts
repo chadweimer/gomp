@@ -283,6 +283,9 @@ export class GompApp extends PolymerElement {
     private get searchSettings(): SearchFilterElement {
         return this.$.searchSettings as SearchFilterElement;
     }
+    private get searchFilterDialog(): PaperDialogElement {
+        return this.$.searchFilterDialog as PaperDialogElement;
+    }
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
     }
@@ -491,8 +494,7 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/search');
     }
     protected onFilter() {
-        const filterDialog = this.$.searchFilterDialog as PaperDialogElement;
-        filterDialog.open();
+        this.searchFilterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
         this.setSearchFilter({
@@ -509,10 +511,18 @@ export class GompApp extends PolymerElement {
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
         this.title = e.detail.response.title;
     }
-    protected searchFilterDialogOpened() {
+    protected searchFilterDialogOpened(e: CustomEvent) {
+        if (e.target !== this.searchFilterDialog) {
+            return;
+        }
+
         this.searchSettings.filter = JSON.parse(JSON.stringify(this.searchFilter));
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
+        if (e.target !== this.searchFilterDialog) {
+            return;
+        }
+
         if (!e.detail.canceled && e.detail.confirmed) {
             this.setSearchFilter(this.searchSettings.filter);
             this.changeRoute('/search');
