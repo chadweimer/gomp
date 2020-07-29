@@ -175,7 +175,7 @@ export class SearchFilterElement extends GompBaseElement {
         this.set('filter.fields', selectedFields);
     }
 
-    protected onSortBySelected(e: CustomEvent<{item: {name: string, value: SortBy}}>) {
-        this.set('filter.sortBy', e.detail.item.value);
+    protected onSortBySelected(e: CustomEvent<{item: {name: string}}>) {
+        this.set('filter.sortBy', e.detail.item.name);
     }
 }
