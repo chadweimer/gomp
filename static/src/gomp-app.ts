@@ -7,7 +7,7 @@ import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, SearchFilter, SearchState, SearchPictures } from './models/models.js';
+import { User, SearchFilter, SearchState, SearchPictures, SortBy, SortDir } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -265,7 +265,9 @@ export class GompApp extends PolymerElement {
         fields: [],
         states: SearchState.Active,
         pictures: SearchPictures.Any,
-        tags: []
+        tags: [],
+        sortBy: SortBy.Name,
+        sortDir: SortDir.Asc
     };
     @property({type: Boolean})
     protected isAuthenticated = false;
@@ -498,7 +500,9 @@ export class GompApp extends PolymerElement {
             fields: [],
             tags: e.detail.tags,
             pictures: SearchPictures.Any,
-            states: SearchState.Active
+            states: SearchState.Active,
+            sortBy: SortBy.Name,
+            sortDir: SortDir.Asc
         });
         this.changeRoute('/search');
     }
@@ -520,7 +524,9 @@ export class GompApp extends PolymerElement {
             fields: [],
             states: SearchState.Active,
             pictures: SearchPictures.Any,
-            tags: []
+            tags: [],
+            sortBy: SortBy.Name,
+            sortDir: SortDir.Asc
         };
     }
 
@@ -538,5 +544,7 @@ export class GompApp extends PolymerElement {
         this.set('searchFilter.tags', filter.tags);
         this.set('searchFilter.pictures', filter.pictures);
         this.set('searchFilter.states', filter.states);
+        this.set('searchFilter.sortBy', filter.sortBy);
+        this.set('searchFilter.sortDir', filter.sortDir);
     }
 }

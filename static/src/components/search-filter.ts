@@ -3,7 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchFilter, SearchField, SearchState, SearchPictures } from '../models/models';
+import { SearchFilter, SearchField, SearchState, SearchPictures, SortBy, SortDir } from '../models/models';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -79,22 +79,20 @@ export class SearchFilterElement extends GompBaseElement {
                 <paper-divider></paper-divider>
             </section>
             <section>
-                <label>Sort</label>
                 <div>
                     <paper-dropdown-menu-light label="Sort By" always-float-label="">
                         <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
-                            <paper-icon-item name="name"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
-                            <paper-icon-item name="rating"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
-                            <paper-icon-item name="created"><iron-icon icon="av:fiber-new" slot="item-icon"></iron-icon> Created</paper-icon-item>
-                            <paper-icon-item name="modified"><iron-icon icon="update" slot="item-icon"></iron-icon> Modified</paper-icon-item>
-                            <paper-icon-item name="random"><iron-icon icon="help" slot="item-icon"></iron-icon> Random</paper-icon-item>
+                            <template is="dom-repeat" items="[[availableSortBy]]">
+                                <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
+                            </template>
                         </paper-listbox>
                     </paper-dropdown-menu-light>
-                    <paper-radio-group selected="{{filter.sortDir}}">
-                        <paper-radio-button class="selection" name="Asc">Asc</paper-radio-button>
-                        <paper-radio-button class="selection" name="Desc">Desc</paper-radio-button>
-                    </paper-radio-group>
                 </div>
+                <paper-radio-group selected="{{filter.sortDir}}">
+                    <template is="dom-repeat" items="[[availableSortDir]]">
+                        <paper-radio-button class="selection" name="[[item.value]]">[[item.name]]</paper-radio-button>
+                    </template>
+                </paper-radio-group>
             </section>
 `;
     }
@@ -117,13 +115,28 @@ export class SearchFilterElement extends GompBaseElement {
         {name: 'Any', value: SearchPictures.Any}
     ];
 
+    protected availableSortBy = [
+        {name: 'Name', value: SortBy.Name, icon: 'av:sort-by-alpha'},
+        {name: 'Rating', value: SortBy.Rating, icon: 'stars'},
+        {name: 'Created', value: SortBy.Created, icon: 'av:fiber-new'},
+        {name: 'Modified', value: SortBy.Modified, icon: 'update'},
+        {name: 'Random', value: SortBy.Random, icon: 'help'}
+    ];
+
+    protected availableSortDir = [
+        {name: 'Asc', value: SortDir.Asc},
+        {name: 'Desc', value: SortDir.Desc},
+    ];
+
     @property({type: Object, notify: true})
     public filter: SearchFilter = {
         query: '',
         fields: [],
         states: SearchState.Active,
         pictures: SearchPictures.Any,
-        tags: []
+        tags: [],
+        sortBy: SortBy.Name,
+        sortDir: SortDir.Asc
     };
 
     static get observers() {

@@ -16,12 +16,27 @@ export enum SearchPictures {
     Any = 'any'
 }
 
+export enum SortBy {
+    Name = 'name',
+    Rating = 'rating',
+    Created = 'created',
+    Modified = 'modified',
+    Random = 'random'
+}
+
+export enum SortDir {
+    Asc = 'asc',
+    Desc = 'desc'
+}
+
 export interface SearchFilter {
     query: string;
     fields: SearchField[];
     pictures: SearchPictures;
     states: SearchState;
-    tags: string[]
+    tags: string[],
+    sortBy: SortBy,
+    sortDir: SortDir
 }
 
 export interface User {
