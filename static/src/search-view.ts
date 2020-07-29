@@ -130,21 +130,6 @@ export class SearchView extends GompBaseElement {
                       <paper-icon-item name="full" on-click="onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
                       <paper-icon-item name="compact" on-click="onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                   </paper-listbox>
-                  <paper-divider></paper-divider>
-                  <label class="menu-label">Sort</label>
-                  <paper-listbox class="menu-content" selected="[[searchSettings.sortBy]]" attr-for-selected="name" fallback-selection="name">
-                      <paper-icon-item name="name" on-click="onNameSortClicked"><iron-icon icon="av:sort-by-alpha" slot="item-icon"></iron-icon> Name</paper-icon-item>
-                      <paper-icon-item name="rating" on-click="onRatingSortClicked"><iron-icon icon="stars" slot="item-icon"></iron-icon> Rating</paper-icon-item>
-                      <paper-icon-item name="created" on-click="onCreatedSortClicked"><iron-icon icon="av:fiber-new" slot="item-icon"></iron-icon> Created</paper-icon-item>
-                      <paper-icon-item name="modified" on-click="onModifiedSortClicked"><iron-icon icon="update" slot="item-icon"></iron-icon> Modified</paper-icon-item>
-                      <paper-icon-item name="random" on-click="onRandomSortClicked"><iron-icon icon="help" slot="item-icon"></iron-icon> Random</paper-icon-item>
-                  </paper-listbox>
-                  <paper-divider></paper-divider>
-                  <label class="menu-label">Order</label>
-                  <paper-listbox class="menu-content" selected="[[searchSettings.sortDir]]" attr-for-selected="name" fallback-selection="asc">
-                      <paper-icon-item name="asc" on-click="onAscSortClicked"><iron-icon icon="arrow-upward" slot="item-icon"></iron-icon> ASC</paper-icon-item>
-                      <paper-icon-item name="desc" on-click="onDescSortClicked"><iron-icon icon="arrow-downward" slot="item-icon"></iron-icon> DESC</paper-icon-item>
-                  </paper-listbox>
               </app-drawer>
 
               <div class="section">
@@ -198,11 +183,9 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public filter: SearchFilter = null;
+    public filter = new SearchFilter();
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
-        sortBy: 'name',
-        sortDir: 'asc',
         viewMode: 'full',
     };
     @property({type: Array, notify: true})
@@ -233,9 +216,10 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
+        const defaultFilter = new SearchFilter();
 
         const pictures: string[] = [];
-        switch (this.filter.pictures) {
+        switch (this.filter.pictures ?? defaultFilter.pictures) {
             case SearchPictures.Yes:
             case SearchPictures.No:
                 pictures.push(this.filter.pictures);
@@ -243,7 +227,7 @@ export class SearchView extends GompBaseElement {
         }
 
         const states: string[] = [];
-        switch (this.filter.states) {
+        switch (this.filter.states ?? defaultFilter.states) {
             case SearchState.Active:
             case SearchState.Archived:
                 states.push(this.filter.states);
@@ -255,13 +239,13 @@ export class SearchView extends GompBaseElement {
         }
 
         this.recipesAjax.params = {
-            'q': this.filter.query,
-            'fields[]': this.filter.fields,
-            'tags[]': this.filter.tags,
+            'q': this.filter.query ?? defaultFilter.query,
+            'fields[]': this.filter.fields ?? defaultFilter.fields,
+            'tags[]': this.filter.tags ?? defaultFilter.tags,
             'pictures[]': pictures,
             'states[]': states,
-            'sort': this.searchSettings.sortBy,
-            'dir': this.searchSettings.sortDir,
+            'sort': this.filter.sortBy ?? defaultFilter.sortBy,
+            'dir': this.filter.sortDir ?? defaultFilter.sortDir,
             'page': this.pageNum,
             'count': this.getRecipeCount(),
         };
@@ -298,36 +282,13 @@ export class SearchView extends GompBaseElement {
     }
 
     protected onFullViewClicked() {
-        this.onChangeSearchSettings('full', this.searchSettings.sortBy, this.searchSettings.sortDir);
+        this.onChangeSearchSettings('full');
     }
     protected onCompactViewClicked() {
-        this.onChangeSearchSettings('compact', this.searchSettings.sortBy, this.searchSettings.sortDir);
+        this.onChangeSearchSettings('compact');
     }
-    protected onNameSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'name', 'asc');
-    }
-    protected onRatingSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'rating', 'desc');
-    }
-    protected onCreatedSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'created', 'desc');
-    }
-    protected onModifiedSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'modified', 'desc');
-    }
-    protected onRandomSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, 'random', 'asc');
-    }
-    protected onAscSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'asc');
-    }
-    protected onDescSortClicked() {
-        this.onChangeSearchSettings(this.searchSettings.viewMode, this.searchSettings.sortBy, 'desc');
-    }
-    protected onChangeSearchSettings(viewMode: string, sortBy: string, sortDir: string) {
+    protected onChangeSearchSettings(viewMode: string) {
         this.set('searchSettings.viewMode', viewMode);
-        this.set('searchSettings.sortBy', sortBy);
-        this.set('searchSettings.sortDir', sortDir);
         this.settingsDrawer.close();
     }
 }

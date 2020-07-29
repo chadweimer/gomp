@@ -7,7 +7,7 @@ import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, SearchFilter, SearchState, SearchPictures, SortBy, SortDir } from './models/models.js';
+import { User, SearchFilter } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -260,15 +260,7 @@ export class GompApp extends PolymerElement {
     @property({type: Number})
     protected loadingCount = 0;
     @property({type: Object, notify: true})
-    protected searchFilter: SearchFilter = {
-        query: '',
-        fields: [],
-        states: SearchState.Active,
-        pictures: SearchPictures.Any,
-        tags: [],
-        sortBy: SortBy.Name,
-        sortDir: SortDir.Asc
-    };
+    protected searchFilter = new SearchFilter();
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
@@ -497,15 +489,9 @@ export class GompApp extends PolymerElement {
         this.searchFilterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
-        this.setSearchFilter({
-            query: '',
-            fields: [],
-            tags: e.detail.tags,
-            pictures: SearchPictures.Any,
-            states: SearchState.Active,
-            sortBy: SortBy.Name,
-            sortDir: SortDir.Asc
-        });
+        var filter = new SearchFilter();
+        filter.tags = e.detail.tags;
+        this.setSearchFilter(filter);
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
@@ -529,15 +515,7 @@ export class GompApp extends PolymerElement {
         }
     }
     protected onResetSearchFilterClicked() {
-        this.searchSettings.filter = {
-            query: '',
-            fields: [],
-            states: SearchState.Active,
-            pictures: SearchPictures.Any,
-            tags: [],
-            sortBy: SortBy.Name,
-            sortDir: SortDir.Asc
-        };
+        this.searchSettings.filter = new SearchFilter();
     }
 
     protected recipesModified() {

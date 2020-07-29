@@ -127,15 +127,7 @@ export class SearchFilterElement extends GompBaseElement {
     ];
 
     @property({type: Object, notify: true})
-    public filter: SearchFilter = {
-        query: '',
-        fields: [],
-        states: SearchState.Active,
-        pictures: SearchPictures.Any,
-        tags: [],
-        sortBy: SortBy.Name,
-        sortDir: SortDir.Asc
-    };
+    public filter = new SearchFilter();
 
     static get observers() {
         return [

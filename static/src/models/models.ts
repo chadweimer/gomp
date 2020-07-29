@@ -29,14 +29,14 @@ export enum SortDir {
     Desc = 'desc'
 }
 
-export interface SearchFilter {
-    query: string;
-    fields: SearchField[];
-    pictures: SearchPictures;
-    states: SearchState;
-    tags: string[],
-    sortBy: SortBy,
-    sortDir: SortDir
+export class SearchFilter {
+    query: string = '';
+    fields: SearchField[] = [];
+    pictures: SearchPictures = SearchPictures.Any;
+    states: SearchState = SearchState.Active;
+    tags: string[] = [];
+    sortBy: SortBy = SortBy.Name;
+    sortDir: SortDir = SortDir.Asc;
 }
 
 export interface User {
