@@ -20,6 +20,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
@@ -233,7 +234,9 @@ export class GompApp extends PolymerElement {
 
             <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
                 <h3>Search Settings</h3>
-                <search-filter id="searchSettings"></search-filter>
+                <paper-dialog-scrollable>
+                    <search-filter id="searchSettings"></search-filter>
+                </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
                     <paper-button dialog-dismiss="">Cancel</paper-button>
