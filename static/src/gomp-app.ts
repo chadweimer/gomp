@@ -196,7 +196,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[getNumSearchFilters(searchFilter)]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[numModifiedSearchFilters]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                             </app-toolbar>
                         </div>
 
@@ -261,6 +261,8 @@ export class GompApp extends PolymerElement {
     protected loadingCount = 0;
     @property({type: Object, notify: true})
     protected searchFilter = new SearchFilter();
+    @property({type: Number})
+    protected numModifiedSearchFilters = 0;
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
@@ -289,6 +291,12 @@ export class GompApp extends PolymerElement {
     }
     private get getCurrentUserAjax(): IronAjaxElement {
         return this.$.getCurrentUserAjax as IronAjaxElement;
+    }
+
+    static get observers() {
+        return [
+            'searchFilterChanged(searchFilter.*)',
+        ];
     }
 
     public ready() {
@@ -520,18 +528,19 @@ export class GompApp extends PolymerElement {
     protected onResetSearchFilterClicked() {
         this.searchSettings.filter = new SearchFilter();
     }
-    protected getNumSearchFilters(filter: SearchFilter) {
+    protected searchFilterChanged(filter: SearchFilter) {
         const defaultFilter = new SearchFilter();
-        const filterProps = Object.keys(defaultFilter);
+        const expectedKeys = Object.keys(defaultFilter);
+        const actualKeys = Object.keys(filter);
 
-        let numNonDefaultFilters = 0;
-        filterProps.forEach((prop) => {
-            if (!filter[prop] || filter[prop] !== defaultFilter[prop]) {
-                numNonDefaultFilters++;
+        let numModifiedFilters = 0;
+        expectedKeys.forEach((key) => {
+            if (actualKeys.indexOf(key) >= 0 && filter[key] !== defaultFilter[key]) {
+                numModifiedFilters++;
             }
         });
 
-        return numNonDefaultFilters;
+        this.numModifiedSearchFilters = numModifiedFilters;
     }
 
     protected recipesModified() {
