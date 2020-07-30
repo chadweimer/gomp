@@ -32,7 +32,6 @@ import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import './components/search-filter.js';
 import './shared-styles.js';
-import * as _ from 'lodash';
 
 // Gesture events like tap and track generated from touch will not be
 // preventable, allowing for better scrolling performance.
@@ -527,7 +526,7 @@ export class GompApp extends PolymerElement {
 
         let numNonDefaultFilters = 0;
         filterProps.forEach((prop) => {
-            if (!filter[prop] || !_.isEqual(filter[prop], defaultFilter[prop])) {
+            if (!filter[prop] || filter[prop] !== defaultFilter[prop]) {
                 numNonDefaultFilters++;
             }
         });
