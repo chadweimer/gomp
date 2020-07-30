@@ -4,6 +4,7 @@
   "devDependencies": {
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-demo-helpers": "^3.1.0",
+    "@types/lodash": "^4.14.158",
     "@typescript-eslint/eslint-plugin": "^3.6.1",
     "@typescript-eslint/parser": "^3.6.1",
     "eslint": "^7.4.0",
@@ -58,6 +59,7 @@
     "@polymer/paper-toast": "^3.0.0",
     "@polymer/polymer": "^3.4.1",
     "@webcomponents/webcomponentsjs": "^2.4.3",
+    "lodash": "^4.17.19",
     "web-animations-js": "^2.3.2"
   }
 }

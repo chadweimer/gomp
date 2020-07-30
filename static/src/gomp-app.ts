@@ -32,6 +32,7 @@ import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import './components/search-filter.js';
 import './shared-styles.js';
+import * as _ from 'lodash';
 
 // Gesture events like tap and track generated from touch will not be
 // preventable, allowing for better scrolling performance.
@@ -196,7 +197,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[searchFilter.query]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[getNumSearchFilters(searchFilter)]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                             </app-toolbar>
                         </div>
 
@@ -519,6 +520,19 @@ export class GompApp extends PolymerElement {
     }
     protected onResetSearchFilterClicked() {
         this.searchSettings.filter = new SearchFilter();
+    }
+    protected getNumSearchFilters(filter: SearchFilter) {
+        const defaultFilter = new SearchFilter();
+        const filterProps = Object.keys(defaultFilter);
+
+        let numNonDefaultFilters = 0;
+        filterProps.forEach((prop) => {
+            if (!filter[prop] || !_.isEqual(filter[prop], defaultFilter[prop])) {
+                numNonDefaultFilters++;
+            }
+        });
+
+        return numNonDefaultFilters;
     }
 
     protected recipesModified() {
