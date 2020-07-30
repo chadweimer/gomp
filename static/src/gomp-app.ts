@@ -528,7 +528,8 @@ export class GompApp extends PolymerElement {
     protected onResetSearchFilterClicked() {
         this.searchSettings.filter = new SearchFilter();
     }
-    protected searchFilterChanged(filter: SearchFilter) {
+    protected searchFilterChanged() {
+        const filter = this.searchFilter;
         const defaultFilter = new SearchFilter();
         const expectedKeys = Object.keys(defaultFilter);
         const actualKeys = Object.keys(filter);
