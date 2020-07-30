@@ -76,7 +76,6 @@ export class SearchFilterElement extends GompBaseElement {
             </section>
             <section>
                 <paper-tags-input tags="{{filter.tags}}"></paper-tags-input>
-                <paper-divider></paper-divider>
             </section>
             <section>
                 <paper-dropdown-menu-light label="Sort By" always-float-label="">
