@@ -25,7 +25,7 @@ export class SearchFilterElement extends GompBaseElement {
                 :host {
                     display: block;
                 }
-                section {
+                section.padded {
                     padding: 0.5em 0;
                 }
                 label {
@@ -39,10 +39,15 @@ export class SearchFilterElement extends GompBaseElement {
                     color: var(--secondary-text-color);
                     font-size: 0.75em;
                 }
+                .bottom {
+                    vertical-align: bottom;
+                }
             </style>
 
-            <paper-input label="Search Terms" always-float-label="" value="{{filter.query}}"></paper-input>
             <section>
+                <paper-input label="Search Terms" always-float-label="" value="{{filter.query}}"></paper-input>
+            </section>
+            <section class="padded">
                 <label>Fields to Search</label>
                 <div>
                     <template is="dom-repeat" items="[[availableFields]]">
@@ -52,7 +57,7 @@ export class SearchFilterElement extends GompBaseElement {
                 <span class="note">All listed fields will be included if no selection is made</span>
                 <paper-divider></paper-divider>
             </section>
-            <section>
+            <section class="padded">
                 <label>States</label>
                 <div>
                     <paper-radio-group selected="{{filter.states}}">
@@ -63,7 +68,7 @@ export class SearchFilterElement extends GompBaseElement {
                 </div>
                 <paper-divider></paper-divider>
             </section>
-            <section>
+            <section class="padded">
                 <label>Pictures</label>
                 <div>
                     <paper-radio-group selected="{{filter.pictures}}">
@@ -85,7 +90,7 @@ export class SearchFilterElement extends GompBaseElement {
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu-light>
-                <paper-radio-group selected="{{filter.sortDir}}">
+                <paper-radio-group class="bottom" selected="{{filter.sortDir}}">
                     <template is="dom-repeat" items="[[availableSortDir]]">
                         <paper-radio-button class="selection" name="[[item.value]]">[[item.name]]</paper-radio-button>
                     </template>
