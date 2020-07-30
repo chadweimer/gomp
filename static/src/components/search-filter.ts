@@ -30,7 +30,7 @@ export class SearchFilterElement extends GompBaseElement {
                 }
                 label {
                     color: var(--secondary-text-color);
-                    font-size: 0.9em;
+                    font-size: 0.85em;
                 }
                 .selection {
                     padding: 0.5em;
