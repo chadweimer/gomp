@@ -16,12 +16,27 @@ export enum SearchPictures {
     Any = 'any'
 }
 
-export interface SearchFilter {
-    query: string;
-    fields: SearchField[];
-    pictures: SearchPictures;
-    states: SearchState;
-    tags: string[]
+export enum SortBy {
+    Name = 'name',
+    Rating = 'rating',
+    Created = 'created',
+    Modified = 'modified',
+    Random = 'random'
+}
+
+export enum SortDir {
+    Asc = 'asc',
+    Desc = 'desc'
+}
+
+export class SearchFilter {
+    query = '';
+    fields: SearchField[] = [];
+    pictures = SearchPictures.Any;
+    states = SearchState.Active;
+    tags: string[] = [];
+    sortBy = SortBy.Name;
+    sortDir = SortDir.Asc;
 }
 
 export interface User {

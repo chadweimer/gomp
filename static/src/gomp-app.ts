@@ -7,7 +7,7 @@ import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, SearchFilter, SearchState, SearchPictures } from './models/models.js';
+import { User, SearchFilter } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -20,6 +20,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
@@ -233,7 +234,9 @@ export class GompApp extends PolymerElement {
 
             <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
                 <h3>Search Settings</h3>
-                <search-filter id="searchSettings"></search-filter>
+                <paper-dialog-scrollable>
+                    <search-filter id="searchSettings"></search-filter>
+                </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
                     <paper-button dialog-dismiss="">Cancel</paper-button>
@@ -257,13 +260,7 @@ export class GompApp extends PolymerElement {
     @property({type: Number})
     protected loadingCount = 0;
     @property({type: Object, notify: true})
-    protected searchFilter: SearchFilter = {
-        query: '',
-        fields: [],
-        states: SearchState.Active,
-        pictures: SearchPictures.Any,
-        tags: []
-    };
+    protected searchFilter = new SearchFilter();
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
@@ -277,6 +274,9 @@ export class GompApp extends PolymerElement {
 
     private get searchSettings(): SearchFilterElement {
         return this.$.searchSettings as SearchFilterElement;
+    }
+    private get searchFilterDialog(): PaperDialogElement {
+        return this.$.searchFilterDialog as PaperDialogElement;
     }
     private get appConfigAjax(): IronAjaxElement {
         return this.$.appConfigAjax as IronAjaxElement;
@@ -486,39 +486,39 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/search');
     }
     protected onFilter() {
-        const filterDialog = this.$.searchFilterDialog as PaperDialogElement;
-        filterDialog.open();
+        this.searchFilterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent) {
-        this.setSearchFilter({
-            query: '',
-            fields: [],
-            tags: e.detail.tags,
-            pictures: SearchPictures.Any,
-            states: SearchState.Active
-        });
+        const filter = new SearchFilter();
+        filter.tags = e.detail.tags;
+        this.setSearchFilter(filter);
         this.changeRoute('/search');
     }
     protected handleGetAppConfigurationResponse(e: CustomEvent) {
         this.title = e.detail.response.title;
     }
-    protected searchFilterDialogOpened() {
-        this.searchSettings.filter = JSON.parse(JSON.stringify(this.searchFilter));
+    protected searchFilterDialogOpened(e: CustomEvent) {
+        if (e.target !== this.searchFilterDialog) {
+            return;
+        }
+
+        // Make sure to fill in any missing fields
+        const defaultFilter = new SearchFilter();
+        const filter = {...defaultFilter, ...this.searchFilter};
+        this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
     }
     protected searchFilterDialogClosed(e: CustomEvent) {
+        if (e.target !== this.searchFilterDialog) {
+            return;
+        }
+
         if (!e.detail.canceled && e.detail.confirmed) {
             this.setSearchFilter(this.searchSettings.filter);
             this.changeRoute('/search');
         }
     }
     protected onResetSearchFilterClicked() {
-        this.searchSettings.filter = {
-            query: '',
-            fields: [],
-            states: SearchState.Active,
-            pictures: SearchPictures.Any,
-            tags: []
-        };
+        this.searchSettings.filter = new SearchFilter();
     }
 
     protected recipesModified() {
@@ -535,5 +535,7 @@ export class GompApp extends PolymerElement {
         this.set('searchFilter.tags', filter.tags);
         this.set('searchFilter.pictures', filter.pictures);
         this.set('searchFilter.states', filter.states);
+        this.set('searchFilter.sortBy', filter.sortBy);
+        this.set('searchFilter.sortDir', filter.sortDir);
     }
 }
