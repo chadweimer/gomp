@@ -13,8 +13,8 @@ type postgresLinkDriver struct {
 // Create stores a link between 2 recipes in the database as a new record
 // using a dedicated transation that is committed if there are not errors.
 func (d *postgresLinkDriver) Create(recipeID, destRecipeID int64) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.CreateTx(recipeID, destRecipeID, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.CreateTx(recipeID, destRecipeID, tx)
 	})
 }
 
@@ -30,8 +30,8 @@ func (d *postgresLinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx)
 // Delete removes the linked recipe from the database using a dedicated transation
 // that is committed if there are not errors.
 func (d *postgresLinkDriver) Delete(recipeID, destRecipeID int64) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.DeleteTx(recipeID, destRecipeID, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.DeleteTx(recipeID, destRecipeID, tx)
 	})
 }
 
@@ -55,7 +55,7 @@ func (d *postgresLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, erro
 		"r.id IN (SELECT dest_recipe_id FROM recipe_link WHERE recipe_id = $1) OR " +
 		"r.id IN (SELECT recipe_id FROM recipe_link WHERE dest_recipe_id = $1) " +
 		"ORDER BY r.name ASC"
-	if err := m.db.Select(&recipes, selectStmt, recipeID); err != nil {
+	if err := d.db.Select(&recipes, selectStmt, recipeID); err != nil {
 		return nil, err
 	}
 

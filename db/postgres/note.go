@@ -12,8 +12,8 @@ type postgresNoteDriver struct {
 }
 
 func (d *postgresNoteDriver) Create(note *models.Note) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.CreateTx(note, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.CreateTx(note, tx)
 	})
 }
 
@@ -26,8 +26,8 @@ func (d *postgresNoteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
 }
 
 func (d *postgresNoteDriver) Update(note *models.Note) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.UpdateTx(note, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.UpdateTx(note, tx)
 	})
 }
 
@@ -39,8 +39,8 @@ func (d *postgresNoteDriver) UpdateTx(note *models.Note, tx *sqlx.Tx) error {
 }
 
 func (d *postgresNoteDriver) Delete(id int64) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.DeleteTx(id, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.DeleteTx(id, tx)
 	})
 }
 
@@ -50,8 +50,8 @@ func (d *postgresNoteDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
 }
 
 func (d *postgresNoteDriver) DeleteAll(recipeID int64) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.DeleteAllTx(recipeID, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.DeleteAllTx(recipeID, tx)
 	})
 }
 
@@ -65,7 +65,7 @@ func (d *postgresNoteDriver) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 func (d *postgresNoteDriver) List(recipeID int64) (*[]models.Note, error) {
 	var notes []models.Note
 
-	if err := m.db.Select(&notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeID); err != nil {
+	if err := d.db.Select(&notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeID); err != nil {
 		return nil, err
 	}
 

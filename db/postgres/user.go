@@ -16,7 +16,7 @@ type postgresUserDriver struct {
 func (d *postgresUserDriver) Authenticate(username, password string) (*models.User, error) {
 	user := new(User)
 
-	if err := m.db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
+	if err := d.db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
 		return nil, err
 	}
 
@@ -28,8 +28,8 @@ func (d *postgresUserDriver) Authenticate(username, password string) (*models.Us
 }
 
 func (d *postgresUserDriver) Create(user *models.User) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.CreateTx(user, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.CreateTx(user, tx)
 	})
 }
 
@@ -43,7 +43,7 @@ func (d *postgresUserDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
 func (d *postgresUserDriver) Read(id int64) (*models.User, error) {
 	user := new(User)
 
-	err := m.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
+	err := d.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
@@ -54,8 +54,8 @@ func (d *postgresUserDriver) Read(id int64) (*models.User, error) {
 }
 
 func (d *postgresUserDriver) Update(user *models.User) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.UpdateTx(user, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.UpdateTx(user, tx)
 	})
 }
 
@@ -66,14 +66,14 @@ func (d *postgresUserDriver) UpdateTx(user *models.User, tx *sqlx.Tx) error {
 }
 
 func (d *postgresUserDriver) UpdatePassword(id int64, password, newPassword string) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.UpdatePasswordTx(id, password, newPassword, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.UpdatePasswordTx(id, password, newPassword, tx)
 	})
 }
 
 func (d *postgresUserDriver) UpdatePasswordTx(id int64, password, newPassword string, tx *sqlx.Tx) error {
 	// Make sure the current password is correct
-	user, err := m.Read(id)
+	user, err := d.Read(id)
 	if err != nil {
 		return err
 	}
@@ -95,21 +95,21 @@ func (d *postgresUserDriver) UpdatePasswordTx(id int64, password, newPassword st
 func (d *postgresUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 	userSettings := new(models.UserSettings)
 
-	if err := m.db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
+	if err := d.db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
 		return nil, err
 	}
 
 	// Default to the application title if the user hasn't set their own
 	if userSettings.HomeTitle == nil {
-		userSettings.HomeTitle = &m.cfg.ApplicationTitle
+		userSettings.HomeTitle = &d.cfg.ApplicationTitle
 	}
 
 	return userSettings, nil
 }
 
 func (d *postgresUserDriver) UpdateSettings(settings *models.UserSettings) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.UpdateSettingsTx(settings, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.UpdateSettingsTx(settings, tx)
 	})
 }
 
@@ -126,8 +126,8 @@ func (d *postgresUserDriver) UpdateSettingsTx(settings *models.UserSettings, tx 
 }
 
 func (d *postgresUserDriver) Delete(id int64) error {
-	return m.tx(func(tx *sqlx.Tx) error {
-		return m.DeleteTx(id, tx)
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.DeleteTx(id, tx)
 	})
 }
 
@@ -139,7 +139,7 @@ func (d *postgresUserDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
 func (d *postgresUserDriver) List() (*[]models.User, error) {
 	var users []models.User
 
-	if err := m.db.Select(&users, "SELECT * FROM app_user ORDER BY username ASC"); err != nil {
+	if err := d.db.Select(&users, "SELECT * FROM app_user ORDER BY username ASC"); err != nil {
 		return nil, err
 	}
 
