@@ -34,9 +34,7 @@ type Model struct {
 	cfg *conf.Config
 	db  *sqlx.DB
 
-	Recipes *RecipeModel
-	Images  *RecipeImageModel
-	Search  *SearchModel
+	Images *RecipeImageModel
 }
 
 // New constructs a new Model object
@@ -70,9 +68,7 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 		cfg: cfg,
 		db:  db,
 	}
-	m.Recipes = &RecipeModel{Model: m}
 	m.Images = &RecipeImageModel{Model: m, upl: upl}
-	m.Search = &SearchModel{Model: m}
 
 	return m
 }
