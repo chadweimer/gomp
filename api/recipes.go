@@ -61,7 +61,7 @@ func (h apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p htt
 		return
 	}
 
-	recipe, err := h.model.Recipes.Read(recipeID)
+	recipe, err := h.db.Recipes().Read(recipeID)
 	if err == models.ErrNotFound {
 		h.JSON(resp, http.StatusNotFound, err.Error())
 		return
@@ -81,7 +81,7 @@ func (h apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p ht
 		return
 	}
 
-	if err := h.model.Recipes.Create(&recipe); err != nil {
+	if err := h.db.Recipes().Create(&recipe); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -108,7 +108,7 @@ func (h apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p htt
 		return
 	}
 
-	if err := h.model.Recipes.Update(&recipe); err != nil {
+	if err := h.db.Recipes().Update(&recipe); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -123,7 +123,7 @@ func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p 
 		return
 	}
 
-	err = h.model.Recipes.Delete(recipeID)
+	err = h.db.Recipes().Delete(recipeID)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -145,7 +145,7 @@ func (h apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	if err := h.model.Recipes.SetState(recipeID, state); err != nil {
+	if err := h.db.Recipes().SetState(recipeID, state); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -166,7 +166,7 @@ func (h apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	if err := h.model.Recipes.SetRating(recipeID, rating); err != nil {
+	if err := h.db.Recipes().SetRating(recipeID, rating); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}

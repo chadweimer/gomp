@@ -16,7 +16,7 @@ func (h apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	notes, err := h.model.Notes.List(recipeID)
+	notes, err := h.db.Notes().List(recipeID)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -32,7 +32,7 @@ func (h apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p http
 		return
 	}
 
-	if err := h.model.Notes.Create(&note); err != nil {
+	if err := h.db.Notes().Create(&note); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -59,7 +59,7 @@ func (h apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httpr
 		return
 	}
 
-	if err := h.model.Notes.Update(&note); err != nil {
+	if err := h.db.Notes().Update(&note); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -74,7 +74,7 @@ func (h apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request, p ht
 		return
 	}
 
-	if err := h.model.Notes.Delete(noteID); err != nil {
+	if err := h.db.Notes().Delete(noteID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}

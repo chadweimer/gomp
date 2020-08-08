@@ -139,7 +139,7 @@ type TagDriver interface {
 	List(recipeID int64) (*[]string, error)
 
 	// Find retrieves all tags matching the specified search filter and within the range specified.
-	Find(filter *model.TagsFilter) (*[]string, error)
+	Find(filter *models.TagsFilter) (*[]string, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.
