@@ -88,7 +88,7 @@ export class RecipeCard extends GompBaseElement {
                         <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                     </div>
                     <div class="card-actions">
-                        <a href="/recipes/[[recipe.id]]/edit">
+                        <a href\$="/recipes/[[recipe.id]]/edit">
                             <paper-icon-button icon="icons:create"></paper-icon-button>
                         </a>
                         <paper-icon-button icon="icons:archive" on-click="onArchive"></paper-icon-button>
