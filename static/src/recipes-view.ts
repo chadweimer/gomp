@@ -213,6 +213,7 @@ export class RecipesView extends GompBaseElement {
     static get observers() {
         return [
             'recipeIdChanged(routeData.recipeId)',
+            'modeChanged(routeData.mode)',
         ];
     }
 
@@ -236,6 +237,9 @@ export class RecipesView extends GompBaseElement {
     }
     protected recipeIdChanged(recipeId: string) {
         this.recipeId = recipeId;
+    }
+    protected modeChanged(mode: string) {
+        this.mode = mode;
     }
     protected onNewButtonClicked() {
         this.actions.close();
