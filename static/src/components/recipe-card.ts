@@ -42,6 +42,9 @@ export class RecipeCard extends GompBaseElement {
 
                         @apply --recipe-card-content;
                     }
+                    --paper-card-actions: {
+                        @apply --recipe-card-actions;
+                    }
                     --paper-card: {
                         width: 100%;
 
