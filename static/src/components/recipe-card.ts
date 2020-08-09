@@ -88,10 +88,10 @@ export class RecipeCard extends GompBaseElement {
                         <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                     </div>
                     <div class="card-actions">
-                        <paper-icon-button icon="icons:create"></paper-icon-button>
-                        <paper-icon-button icon="icons:archive"></paper-icon-button>
-                        <paper-icon-button icon="icons:delete"></paper-icon-button>
-                        <paper-icon-button icon="icons:list"></paper-icon-button>
+                        <paper-icon-button icon="icons:create" on-click="onEdit"></paper-icon-button>
+                        <paper-icon-button icon="icons:archive" on-click="onArchive"></paper-icon-button>
+                        <paper-icon-button icon="icons:delete" on-click="onDelete"></paper-icon-button>
+                        <paper-icon-button icon="icons:list" on-click="onAddToList"></paper-icon-button>
                     </div>
                 </paper-card>
             </a>
@@ -117,5 +117,17 @@ export class RecipeCard extends GompBaseElement {
             return false;
         }
         return recipe.modifiedAt !== recipe.createdAt;
+    }
+    protected onEdit() {
+        // TODO
+    }
+    protected onArchive() {
+        // TODO
+    }
+    protected onDelete() {
+        // TODO
+    }
+    protected onAddToList() {
+        // TODO
     }
 }
