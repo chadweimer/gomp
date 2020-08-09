@@ -138,7 +138,7 @@ export class RecipesView extends GompBaseElement {
                 </div>
                 <div hidden\$="[[!areEqual(mode, 'edit')]]">
                     <h4>Edit Recipe</h4>
-                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
+                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editComplete" on-recipe-edit-save="editComplete"></recipe-edit>
                 </div>
             </div>
             <div hidden\$="[[!getCanEdit(currentUser)]]">
@@ -224,10 +224,13 @@ export class RecipesView extends GompBaseElement {
     }
 
     public refresh() {
-        this.recipeDisplay.refresh(null);
-        this.recipeEdit.refresh();
-        this.imageList.refresh();
-        this.noteList.refresh();
+        if (this.mode === 'edit') {
+            this.recipeEdit.refresh();
+        } else {
+            this.recipeDisplay.refresh(null);
+            this.imageList.refresh();
+            this.noteList.refresh();
+        }
     }
 
     protected isActiveChanged(isActive: boolean) {
@@ -240,6 +243,10 @@ export class RecipesView extends GompBaseElement {
     }
     protected modeChanged(mode: string) {
         this.mode = mode;
+
+        if (this.isActive) {
+            this.refresh();
+        }
     }
     protected onNewButtonClicked() {
         this.actions.close();
@@ -269,15 +276,9 @@ export class RecipesView extends GompBaseElement {
     }
     protected onEditButtonClicked() {
         this.actions.close();
-        this.recipeEdit.refresh();
     }
-    protected editCanceled() {
-        this.mode = 'view';
-        this.refresh();
-    }
-    protected editSaved() {
-        this.mode = 'view';
-        this.refresh();
+    protected editComplete() {
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/view'}}));
     }
     protected onAddLinkButtonClicked() {
         this.recipeLinkDialog.open();
