@@ -3,6 +3,8 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
+import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import './recipe-rating.js';
@@ -77,6 +79,12 @@ export class RecipeCard extends GompBaseElement {
                             <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
                         </div>
                         <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
+                    </div>
+                    <div class="card-actions">
+                        <paper-icon-button icon="icons:visibility"></paper-icon-button>
+                        <paper-icon-button icon="icons:create"></paper-icon-button>
+                        <paper-icon-button icon="icons:delete"></paper-icon-button>
+                        <paper-icon-button icon="icons:list"></paper-icon-button>
                     </div>
                 </paper-card>
             </a>
