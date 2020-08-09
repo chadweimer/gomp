@@ -87,12 +87,8 @@ export class ImageList extends GompBaseElement {
                     <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
                         <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                         <paper-listbox slot="dropdown-content">
-                            <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
-                                <paper-icon-item tabindex="-1"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
-                            </a>
-                            <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                            </a>
+                            <paper-icon-item tabindex="-1" on-click="onSetMainImageClicked"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
+                            <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                         </paper-listbox>
                     </paper-menu-button>
                 </div>
