@@ -9,10 +9,14 @@ import { RecipeCompact } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-card/paper-card.js';
+import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-radio-button/paper-radio-button.js';
+import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import './confirmation-dialog.js';
 import './recipe-rating.js';
@@ -67,6 +71,12 @@ export class RecipeCard extends GompBaseElement {
                 }
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
+                }
+                #addToListDialog > paper-radio-group * {
+                    display: block;
+                }
+                #addToListDialog > paper-dropdown-menu-light {
+                    width: 400px;
                 }
                 .truncate {
                     display: block;
@@ -124,8 +134,15 @@ export class RecipeCard extends GompBaseElement {
 
         <paper-dialog id="addToListDialog" on-iron-overlay-opened="addToListDialogOpened" on-iron-overlay-closed="addToListDialogClosed" with-backdrop="">
             <h3>Add to List</h3>
-            <paper-dialog-scrollable>
-            </paper-dialog-scrollable>
+            <paper-radio-group>
+                <paper-radio-button name="new">New List</paper-radio-button>
+                <paper-input label="Name" always-float-label="" value=""></paper-input>
+                <paper-radio-button name="existing">Existing List</paper-radio-button>
+                <paper-dropdown-menu-light label="Select" always-float-label="">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" selected="" attr-for-selected="name" fallback-selection="name">
+                    </paper-listbox>
+                </paper-dropdown-menu-light>
+            </paper-radio-group>
             <div class="buttons">
                 <paper-button dialog-dismiss="">Cancel</paper-button>
                 <paper-button dialog-confirm="">Apply</paper-button>
