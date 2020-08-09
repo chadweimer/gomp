@@ -40,8 +40,8 @@ export class RecipeCard extends GompBaseElement {
                     }
                     --recipe-rating-size: var(--recipe-card-rating-size, 18px);
                     --paper-icon-button: {
-                        width: 32px;
-                        height: 32px;
+                        width: 36px;
+                        height: 36px;
                     }
                 }
                 paper-card:hover {
@@ -86,8 +86,8 @@ export class RecipeCard extends GompBaseElement {
                         <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                     </div>
                     <div class="card-actions">
-                        <paper-icon-button icon="icons:visibility"></paper-icon-button>
                         <paper-icon-button icon="icons:create"></paper-icon-button>
+                        <paper-icon-button icon="icons:archive"></paper-icon-button>
                         <paper-icon-button icon="icons:delete"></paper-icon-button>
                         <paper-icon-button icon="icons:list"></paper-icon-button>
                     </div>
