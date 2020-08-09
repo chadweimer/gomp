@@ -118,16 +118,16 @@ export class RecipeCard extends GompBaseElement {
         }
         return recipe.modifiedAt !== recipe.createdAt;
     }
-    protected onEdit() {
-        // TODO
+    protected onEdit(e: CustomEvent) {
+        e.preventDefault();
     }
-    protected onArchive() {
-        // TODO
+    protected onArchive(e: CustomEvent) {
+        e.preventDefault();
     }
-    protected onDelete() {
-        // TODO
+    protected onDelete(e: CustomEvent) {
+        e.preventDefault();
     }
-    protected onAddToList() {
-        // TODO
+    protected onAddToList(e: CustomEvent) {
+        e.preventDefault();
     }
 }
