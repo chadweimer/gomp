@@ -122,10 +122,10 @@ export class RecipesView extends GompBaseElement {
                 }
             </style>
 
-            <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}"></app-route>
+            <app-route id="appRoute" route="{{route}}" pattern="/:recipeId/:mode" data="{{routeData}}"></app-route>
 
             <div class="container">
-                <div hidden\$="[[editing]]">
+                <div hidden\$="[[areEqual(mode, 'edit')]]">
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-display>
                     <div class="tab-container">
                         <div id="images" class="tab">
@@ -136,18 +136,18 @@ export class RecipesView extends GompBaseElement {
                         </div>
                     </div>
                 </div>
-                <div hidden\$="[[!editing]]">
+                <div hidden\$="[[!areEqual(mode, 'edit')]]">
                     <h4>Edit Recipe</h4>
                     <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
                 </div>
             </div>
             <div hidden\$="[[!getCanEdit(currentUser)]]">
-                <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
+                <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[areEqual(mode, 'edit')]]" with-backdrop="">
                     <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden="[[!areEqual(recipeState, 'archived')]]">Unarchive</paper-fab-speed-dial-action>
-                    <paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action>
+                    <a href="/recipes/[[recipeId]]/edit"><paper-fab-speed-dial-action class="amber" icon="icons:create" on-click="onEditButtonClicked">Edit</paper-fab-speed-dial-action></a>
                     <paper-fab-speed-dial-action class="indigo" icon="icons:link" on-click="onAddLinkButtonClicked">Link to Another Recipe</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="teal" icon="image:add-a-photo" on-click="onAddImageButtonClicked">Upload Picture</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="blue" icon="editor:insert-comment" on-click="onAddNoteButtonClicked">Add Note</paper-fab-speed-dial-action>
@@ -169,8 +169,8 @@ export class RecipesView extends GompBaseElement {
     public route: object = {};
     @property({type: String, notify: true})
     public recipeId = '';
-    @property({type: Boolean, notify: true})
-    public editing = false;
+    @property({type: String, notify: true})
+    protected mode = '';
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
@@ -230,9 +230,6 @@ export class RecipesView extends GompBaseElement {
     }
 
     protected isActiveChanged(isActive: boolean) {
-        // Always exit edit mode when we change screens
-        this.editing = false;
-
         if (isActive) {
             this.refresh();
         }
@@ -269,14 +266,13 @@ export class RecipesView extends GompBaseElement {
     protected onEditButtonClicked() {
         this.actions.close();
         this.recipeEdit.refresh();
-        this.editing = true;
     }
     protected editCanceled() {
-        this.editing = false;
+        this.mode = 'view';
         this.refresh();
     }
     protected editSaved() {
-        this.editing = false;
+        this.mode = 'view';
         this.refresh();
     }
     protected onAddLinkButtonClicked() {

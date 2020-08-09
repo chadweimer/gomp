@@ -68,7 +68,7 @@ export class RecipeCard extends GompBaseElement {
           </style>
 
           <div class="container">
-            <a href\$="/recipes/[[recipe.id]]">
+            <a href\$="/recipes/[[recipe.id]]/view">
                 <paper-card image="[[recipe.thumbnailUrl]]">
                     <div class="card-content">
                         <div class="truncate">[[recipe.name]]</div>
