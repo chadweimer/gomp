@@ -21,7 +21,7 @@ export class RecipeCard extends GompBaseElement {
                     cursor: pointer;
 
                     --paper-card-header: {
-                        height: 170px;
+                        height: 175px;
 
                         @apply --recipe-card-header;
                     }
@@ -29,6 +29,7 @@ export class RecipeCard extends GompBaseElement {
                         margin-top: -25%;
                     }
                     --paper-card-content: {
+                        padding-top: 12px;
                         padding-bottom: 0px;
 
                         @apply --recipe-card-content;
@@ -42,6 +43,7 @@ export class RecipeCard extends GompBaseElement {
                     --paper-icon-button: {
                         width: 36px;
                         height: 36px;
+                        color: var(--paper-grey-800);
                     }
                 }
                 paper-card:hover {
