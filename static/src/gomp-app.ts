@@ -69,13 +69,6 @@ export class GompApp extends PolymerElement {
                 paper-search-bar {
                     color: var(--light-theme-text-color);
                 }
-                paper-filter-dialog {
-                    --paper-filter-toolbar-background: var(--primary-color);
-                    --paper-filter-toolbar: {
-                        background: var(--primary-color);
-                        color: white;
-                    }
-                }
                 paper-progress {
                     width: 100%;
                 }
