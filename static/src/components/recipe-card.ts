@@ -37,8 +37,7 @@ export class RecipeCard extends GompBaseElement {
                         margin-top: -25%;
                     }
                     --paper-card-content: {
-                        padding-top: 12px;
-                        padding-bottom: 0px;
+                        padding: 12px 16px 0px 16px;
 
                         @apply --recipe-card-content;
                     }

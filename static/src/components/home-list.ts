@@ -34,8 +34,7 @@ export class HomeList extends GompBaseElement {
                         height: 100px;
                     }
                     --recipe-card-content: {
-                        padding-left: 8px;
-                        padding-right: 8px;
+                        padding: 8px 8px 0px 8px;
                     }
                     --recipe-card-actions: {
                         display: none;

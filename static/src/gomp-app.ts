@@ -85,14 +85,12 @@ export class GompApp extends PolymerElement {
                 }
                 footer .copyright {
                     background: var(--paper-grey-600);
-                    padding-top: 10px;
-                    padding-bottom: 10px;
+                    padding: 10px 0px;
                     font-weight: lighter;
                     font-size: 0.9em;
                 }
                 .indented {
-                    padding-left: 150px;
-                    padding-right: 150px;
+                    padding: 0px 150px;
                 }
                 @media screen and (min-width: 1200px) {
                     paper-dialog {
@@ -124,8 +122,7 @@ export class GompApp extends PolymerElement {
                         display: none;
                     }
                     .indented {
-                        padding-left: 15px;
-                        padding-right: 15px;
+                        padding: 0px 15px;
                     }
                     paper-dialog {
                         width: 100%;

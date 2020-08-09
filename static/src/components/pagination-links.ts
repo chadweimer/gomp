@@ -21,6 +21,7 @@ export class PaginationLinks extends PolymerElement {
                 paper-button {
                     font-weight: 600;
                     text-transform: lowercase;
+                    vertical-align: top;
                 }
                 paper-button:not([disabled]) {
                     color: #ffffff;
