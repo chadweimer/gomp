@@ -72,10 +72,10 @@ export class RecipeCard extends GompBaseElement {
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
-                #addToListDialog > paper-radio-group * {
+                #addToListDialog paper-radio-group > * {
                     display: block;
                 }
-                #addToListDialog > paper-dropdown-menu-light {
+                #addToListDialog paper-dropdown-menu-light {
                     width: 400px;
                 }
                 .truncate {
