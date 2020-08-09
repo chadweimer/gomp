@@ -224,6 +224,7 @@ export class RecipesView extends GompBaseElement {
 
     public refresh() {
         this.recipeDisplay.refresh(null);
+        this.recipeEdit.refresh();
         this.imageList.refresh();
         this.noteList.refresh();
     }
