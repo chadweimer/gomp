@@ -76,7 +76,7 @@ export class RecipeCard extends GompBaseElement {
                     display: block;
                 }
                 #addToListDialog paper-dropdown-menu-light {
-                    width: 400px;
+                    width: 300px;
                 }
                 .truncate {
                     display: block;
