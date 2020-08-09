@@ -17,6 +17,7 @@ import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icons/maps-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -153,8 +154,14 @@ export class GompApp extends PolymerElement {
                     </a>
                     <a href="/search" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
+                            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
                             Recipes
+                        </paper-icon-item>
+                    </a>
+                    <a href="/lists" tabindex="-1">
+                        <paper-icon-item tabindex="-1">
+                            <iron-icon icon="icons:list" slot="item-icon"></iron-icon>
+                            Lists
                         </paper-icon-item>
                     </a>
                     <paper-divider></paper-divider>
@@ -192,6 +199,7 @@ export class GompApp extends PolymerElement {
                                 <div main-title=""></div>
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
+                                <a href="/lists"><paper-item name="lists" class="hide-on-med-and-down">Lists</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
                                 <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
@@ -222,6 +230,7 @@ export class GompApp extends PolymerElement {
                             <ul>
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
+                                <li><a href="/lists">Lists</a></li>
                                 <li><a href="/settings">Settings</a></li>
                                 <li hidden$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
