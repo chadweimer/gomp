@@ -5,7 +5,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
-import { RecipeCompact } from '../models/models.js';
+import { RecipeCompact, RecipeList } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
@@ -151,6 +151,7 @@ export class RecipeCard extends GompBaseElement {
 
         <iron-ajax bubbles="" id="updateStateAjax" url="/api/v1/recipes/[[recipe.id]]/state" method="PUT" on-response="handleUpdateStateResponse"></iron-ajax>
         <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipe.id]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
+        <iron-ajax bubbles="" id="getListsAjax" url="/api/v1/lists" method="GET" on-response="handleGetListsResponse"></iron-ajax>
 `;
     }
 
@@ -162,6 +163,8 @@ export class RecipeCard extends GompBaseElement {
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
+
+    protected recipeLists: RecipeList[] = [];
 
     private get confirmArchiveDialog(): ConfirmationDialog {
         return this.$.confirmArchiveDialog as ConfirmationDialog;
@@ -180,6 +183,9 @@ export class RecipeCard extends GompBaseElement {
     }
     private get deleteAjax(): IronAjaxElement {
         return this.$.deleteAjax as IronAjaxElement;
+    }
+    private get getListsAjax(): IronAjaxElement {
+        return this.$.getListsAjax as IronAjaxElement;
     }
 
     protected formatDate(dateStr: string) {
@@ -214,6 +220,8 @@ export class RecipeCard extends GompBaseElement {
     protected onAddToList(e: CustomEvent) {
         e.preventDefault();
 
+        this.getListsAjax.generateRequest();
+        // TODO: Move to only after getting response?
         this.addToListDialog.open();
     }
 
@@ -241,5 +249,8 @@ export class RecipeCard extends GompBaseElement {
     }
     protected handleDeleteRecipeResponse() {
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+    }
+    protected handleGetListsResponse() {
+        // TODO
     }
 }

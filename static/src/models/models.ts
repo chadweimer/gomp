@@ -75,6 +75,11 @@ export interface Note {
     modifiedAt: string;
 }
 
+export interface RecipeList {
+    id: number;
+    name: string;
+}
+
 export interface EventWithModel<T = any> extends Event {
     model: T;
 }
