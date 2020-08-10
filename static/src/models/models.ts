@@ -78,6 +78,9 @@ export interface Note {
 export interface RecipeList {
     id: number;
     name: string;
+	state: string;
+	createdAt: Date;
+	modifiedAt: Date;
 }
 
 export interface EventWithModel<T = any> extends Event {

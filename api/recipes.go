@@ -139,7 +139,7 @@ func (h apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	var state models.RecipeState
+	var state models.EntityState
 	if err := readJSONFromRequest(req, &state); err != nil {
 		h.JSON(resp, http.StatusBadRequest, err.Error())
 		return

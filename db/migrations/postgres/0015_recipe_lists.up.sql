@@ -1,5 +1,7 @@
 BEGIN;
 
+ALTER TYPE recipe_state RENAME TO entity_state;
+
 CREATE TABLE menu (
     id SERIAL NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -17,6 +19,7 @@ CREATE TABLE menu_recipe (
 CREATE TABLE recipe_list (
     id SERIAL NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
+    current_state entity_state NOT NULL DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
