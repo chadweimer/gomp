@@ -172,7 +172,7 @@ export class ImageList extends GompBaseElement {
         this.addDialog.open();
     }
 
-    protected addDialogClosed(e: CustomEvent) {
+    protected addDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             this.addAjax.body = new FormData(this.addForm);
             this.addAjax.generateRequest();

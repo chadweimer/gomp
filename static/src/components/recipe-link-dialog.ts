@@ -97,7 +97,7 @@ export class RecipeLinkDialog extends GompBaseElement {
     protected onAutocompleteSelected(e: CustomEvent<{value: number}>) {
         this.selectedRecipeId = e.detail.value;
     }
-    protected onDialogClosed(e: CustomEvent) {
+    protected onDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             this.postLinkAjax.body = JSON.stringify(this.selectedRecipeId) as any;
             this.postLinkAjax.generateRequest();

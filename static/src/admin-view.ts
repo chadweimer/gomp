@@ -288,7 +288,7 @@ export class AdminView extends GompBaseElement {
         this.editUserDialog.open();
     }
 
-    protected editUserDialogClosed(e: CustomEvent) {
+    protected editUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             this.putUserAjax.body = JSON.stringify({
                 id: this.userId,
