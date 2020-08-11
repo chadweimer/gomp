@@ -156,6 +156,7 @@ export class RecipeCard extends GompBaseElement {
         <iron-ajax bubbles="" id="updateStateAjax" url="/api/v1/recipes/[[recipe.id]]/state" method="PUT" on-response="handleUpdateStateResponse"></iron-ajax>
         <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipe.id]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
         <iron-ajax bubbles="" id="getListsAjax" url="/api/v1/lists" method="GET" on-response="handleGetListsResponse"></iron-ajax>
+        <iron-ajax bubbles="" id="postListAjax" url="/api/v1/lists" method="POST" on-response="handlePostListResponse" on-error="handlePostListError"></iron-ajax>
 `;
     }
 
@@ -194,10 +195,10 @@ export class RecipeCard extends GompBaseElement {
     private get getListsAjax(): IronAjaxElement {
         return this.$.getListsAjax as IronAjaxElement;
     }
-
-    protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleDateString();
+    private get postListAjax(): IronAjaxElement {
+        return this.$.postListAjax as IronAjaxElement;
     }
+
     protected showModifiedDate(recipe: RecipeCompact) {
         if (!recipe) {
             return false;
@@ -250,8 +251,17 @@ export class RecipeCard extends GompBaseElement {
     protected addToListDialogOpened() {
         // TODO
     }
-    protected addToListDialogClosed() {
-        // TODO
+    protected addToListDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+        if (!e.detail.canceled && e.detail.confirmed) {
+            if (this.selectedListType === 'new') {
+                this.postListAjax.body = JSON.stringify({
+                    name: this.newRecipeListName
+                }) as any;
+                this.postListAjax.generateRequest();
+
+                // TODO: Add the recipe to the new list
+            }
+        }
     }
 
     protected handleUpdateStateResponse() {
@@ -262,5 +272,11 @@ export class RecipeCard extends GompBaseElement {
     }
     protected handleGetListsResponse(e: CustomEvent<{response: RecipeListCompact[]}>) {
         this.recipeLists = e.detail.response;
+    }
+    protected handlePostListResponse() {
+        this.showToast('New list created');
+    }
+    protected handlePostListError() {
+        this.showToast('Creating list failed');
     }
 }
