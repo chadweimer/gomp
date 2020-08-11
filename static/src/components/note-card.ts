@@ -139,9 +139,6 @@ export class NoteCard extends GompBaseElement {
         this.deleteAjax.generateRequest();
     }
 
-    protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleDateString();
-    }
     protected showModifiedDate(note: Note) {
         if (!note) {
             return false;
