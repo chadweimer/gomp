@@ -14,6 +14,7 @@ import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
@@ -134,12 +135,15 @@ export class RecipeCard extends GompBaseElement {
 
         <paper-dialog id="addToListDialog" on-iron-overlay-opened="addToListDialogOpened" on-iron-overlay-closed="addToListDialogClosed" with-backdrop="">
             <h3>Add to List</h3>
-            <paper-radio-group>
+            <paper-radio-group selected="{{selectedListType}}">
                 <paper-radio-button name="new">New List</paper-radio-button>
-                <paper-input label="Name" always-float-label="" value=""></paper-input>
+                <paper-input label="Name" always-float-label="" value="{{newRecipeListName}}" disabled="[[!areEqual(selectedListType, 'new')]]"></paper-input>
                 <paper-radio-button name="existing">Existing List</paper-radio-button>
-                <paper-dropdown-menu-light label="Select" always-float-label="">
-                    <paper-listbox slot="dropdown-content" class="dropdown-content" selected="" attr-for-selected="name" fallback-selection="name">
+                <paper-dropdown-menu-light label="Select" always-float-label="" disabled="[[areEqual(selectedListType, 'new')]]">
+                    <paper-listbox slot="dropdown-content" selected="[[selectedRecipeListId]]" attr-for-selected="name">
+                        <template is="dom-repeat" items="[[recipeLists]]">
+                            <paper-item name="[[item.id]]">[[item.name]]</paper-item>
+                        </template>
                     </paper-listbox>
                 </paper-dropdown-menu-light>
             </paper-radio-group>
@@ -164,7 +168,10 @@ export class RecipeCard extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
+    protected selectedListType: string = 'new';
     protected recipeLists: RecipeListCompact[] = [];
+    protected selectedRecipeListId: number = null;
+    protected newRecipeListName: string = null;
 
     private get confirmArchiveDialog(): ConfirmationDialog {
         return this.$.confirmArchiveDialog as ConfirmationDialog;
@@ -221,7 +228,10 @@ export class RecipeCard extends GompBaseElement {
         e.preventDefault();
 
         this.getListsAjax.generateRequest();
+
         // TODO: Move to only after getting response?
+        this.selectedListType = 'new';
+        this.selectedRecipeListId = null;
         this.addToListDialog.open();
     }
 
@@ -250,7 +260,7 @@ export class RecipeCard extends GompBaseElement {
     protected handleDeleteRecipeResponse() {
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
-    protected handleGetListsResponse() {
-        // TODO
+    protected handleGetListsResponse(e: CustomEvent<{response: RecipeListCompact[]}>) {
+        this.recipeLists = e.detail.response;
     }
 }
