@@ -5,7 +5,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
-import { RecipeCompact, RecipeList } from '../models/models.js';
+import { RecipeCompact, RecipeListCompact } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
@@ -164,7 +164,7 @@ export class RecipeCard extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected recipeLists: RecipeList[] = [];
+    protected recipeLists: RecipeListCompact[] = [];
 
     private get confirmArchiveDialog(): ConfirmationDialog {
         return this.$.confirmArchiveDialog as ConfirmationDialog;

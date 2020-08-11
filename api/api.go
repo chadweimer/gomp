@@ -55,6 +55,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.GET("/api/v1/recipes/:recipeID/links", h.requireAuthentication(h.getRecipeLinks))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
 	h.apiMux.GET("/api/v1/lists", h.requireAuthentication(h.getLists))
+	h.apiMux.GET("/api/v1/lists/:listID", h.requireAuthentication(h.getList))
 
 	// Editor
 	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.requireEditor(h.postRecipe)))

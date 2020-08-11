@@ -75,7 +75,7 @@ export interface Note {
     modifiedAt: string;
 }
 
-export interface RecipeList {
+export interface RecipeListCompact {
     id: number;
     name: string;
 	state: string;
