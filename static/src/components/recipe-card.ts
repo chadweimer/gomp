@@ -168,7 +168,7 @@ export class RecipeCard extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected selectedListType: string = 'new';
+    protected selectedListType = 'new';
     protected recipeLists: RecipeListCompact[] = [];
     protected selectedRecipeListId: number = null;
     protected newRecipeListName: string = null;
