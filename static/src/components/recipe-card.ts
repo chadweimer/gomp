@@ -140,7 +140,7 @@ export class RecipeCard extends GompBaseElement {
                 <paper-input label="Name" always-float-label="" value="{{newRecipeListName}}" disabled="[[!areEqual(selectedListType, 'new')]]"></paper-input>
                 <paper-radio-button name="existing">Existing List</paper-radio-button>
                 <paper-dropdown-menu-light label="Select" always-float-label="" disabled="[[areEqual(selectedListType, 'new')]]">
-                    <paper-listbox slot="dropdown-content" selected="[[selectedRecipeListId]]" attr-for-selected="name">
+                    <paper-listbox slot="dropdown-content" selected="{{selectedRecipeListId}}" attr-for-selected="name">
                         <template is="dom-repeat" items="[[recipeLists]]">
                             <paper-item name="[[item.id]]">[[item.name]]</paper-item>
                         </template>
@@ -172,7 +172,7 @@ export class RecipeCard extends GompBaseElement {
     protected selectedListType = 'new';
     protected recipeLists: RecipeListCompact[] = [];
     protected selectedRecipeListId: number = null;
-    protected newRecipeListName: string = null;
+    protected newRecipeListName = '';
 
     private get confirmArchiveDialog(): ConfirmationDialog {
         return this.$.confirmArchiveDialog as ConfirmationDialog;
@@ -232,7 +232,8 @@ export class RecipeCard extends GompBaseElement {
 
         // TODO: Move to only after getting response?
         this.selectedListType = 'new';
-        this.selectedRecipeListId = null;
+        this.newRecipeListName = '';
+        this.selectedRecipeListId = 0;
         this.addToListDialog.open();
     }
 
