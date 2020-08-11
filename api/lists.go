@@ -96,3 +96,15 @@ func (h apiHandler) deleteList(resp http.ResponseWriter, req *http.Request, p ht
 
 	resp.WriteHeader(http.StatusOK)
 }
+
+func (h apiHandler) getListRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	// TODO
+}
+
+func (h apiHandler) postListRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	// TODO
+}
+
+func (h apiHandler) deleteListRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	// TODO
+}

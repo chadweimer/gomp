@@ -56,6 +56,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
 	h.apiMux.GET("/api/v1/lists", h.requireAuthentication(h.getLists))
 	h.apiMux.GET("/api/v1/lists/:listID", h.requireAuthentication(h.getList))
+	h.apiMux.GET("/api/v1/lists/:listID/recipes", h.requireAuthentication(h.requireEditor(h.getListRecipes)))
 
 	// Editor
 	h.apiMux.POST("/api/v1/recipes", h.requireAuthentication(h.requireEditor(h.postRecipe)))
@@ -75,6 +76,8 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, mo
 	h.apiMux.POST("/api/v1/lists", h.requireAuthentication(h.requireEditor(h.postList)))
 	h.apiMux.PUT("/api/v1/lists/:listID", h.requireAuthentication(h.requireEditor(h.putList)))
 	h.apiMux.DELETE("/api/v1/lists/:listID", h.requireAuthentication(h.requireEditor(h.deleteList)))
+	h.apiMux.POST("/api/v1/lists/:listID/recipes", h.requireAuthentication(h.requireEditor(h.postListRecipe)))
+	h.apiMux.DELETE("/api/v1/lists/:listID/recipes/:recipeID", h.requireAuthentication(h.requireEditor(h.deleteListRecipe)))
 
 	// Admin
 	h.apiMux.GET("/api/v1/users", h.requireAuthentication(h.requireAdmin(h.getUsers)))
