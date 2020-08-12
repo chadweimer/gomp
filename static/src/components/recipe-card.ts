@@ -133,13 +133,13 @@ export class RecipeCard extends GompBaseElement {
         <confirmation-dialog id="confirmUnarchiveDialog" icon="icons:unarchive" title="Unarchive Recipe?" message="Are you sure you want to unarchive this recipe?" on-confirmed="unarchiveRecipe"></confirmation-dialog>
         <confirmation-dialog id="confirmDeleteDialog" icon="icons:delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
-        <paper-dialog id="addToListDialog" on-iron-overlay-opened="addToListDialogOpened" on-iron-overlay-closed="addToListDialogClosed" with-backdrop="">
+        <paper-dialog id="addToListDialog" on-iron-overlay-closed="addToListDialogClosed" with-backdrop="">
             <h3>Add to List</h3>
             <paper-radio-group selected="{{selectedListType}}">
                 <paper-radio-button name="new">New List</paper-radio-button>
                 <paper-input label="Name" always-float-label="" value="{{newRecipeListName}}" disabled="[[!areEqual(selectedListType, 'new')]]"></paper-input>
                 <paper-radio-button name="existing">Existing List</paper-radio-button>
-                <paper-dropdown-menu-light label="Select" always-float-label="" disabled="[[areEqual(selectedListType, 'new')]]">
+                <paper-dropdown-menu-light label="Select" placeholder="None Selected" always-float-label="" disabled="[[areEqual(selectedListType, 'new')]]">
                     <paper-listbox slot="dropdown-content" selected="{{selectedRecipeListId}}" attr-for-selected="name">
                         <template is="dom-repeat" items="[[recipeLists]]">
                             <paper-item name="[[item.id]]">[[item.name]]</paper-item>
@@ -157,6 +157,7 @@ export class RecipeCard extends GompBaseElement {
         <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipe.id]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
         <iron-ajax bubbles="" id="getListsAjax" url="/api/v1/lists" method="GET" on-response="handleGetListsResponse"></iron-ajax>
         <iron-ajax bubbles="" id="postListAjax" url="/api/v1/lists" method="POST" on-response="handlePostListResponse" on-error="handlePostListError"></iron-ajax>
+        <iron-ajax bubbles="" id="postListRecipe" url="/api/v1/lists/[[selectedRecipeListId]]/recipes/[[recipe.id]]" method="POST" on-response="handlePostListRecipeResponse" on-error="handlePostListRecipeError"></iron-ajax>
 `;
     }
 
@@ -197,6 +198,9 @@ export class RecipeCard extends GompBaseElement {
     }
     private get postListAjax(): IronAjaxElement {
         return this.$.postListAjax as IronAjaxElement;
+    }
+    private get postListRecipe(): IronAjaxElement {
+        return this.$.postListRecipe as IronAjaxElement;
     }
 
     protected showModifiedDate(recipe: RecipeCompact) {
@@ -249,9 +253,6 @@ export class RecipeCard extends GompBaseElement {
         this.deleteAjax.generateRequest();
     }
 
-    protected addToListDialogOpened() {
-        // TODO
-    }
     protected addToListDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             if (this.selectedListType === 'new') {
@@ -259,8 +260,10 @@ export class RecipeCard extends GompBaseElement {
                     name: this.newRecipeListName
                 }) as any;
                 this.postListAjax.generateRequest();
-
-                // TODO: Add the recipe to the new list
+            } else if (this.selectedRecipeListId && this.selectedRecipeListId > 0) {
+                this.postListRecipe.generateRequest();
+            } else {
+                this.showToast('No list was selected');
             }
         }
     }
@@ -274,10 +277,21 @@ export class RecipeCard extends GompBaseElement {
     protected handleGetListsResponse(e: CustomEvent<{response: RecipeListCompact[]}>) {
         this.recipeLists = e.detail.response;
     }
-    protected handlePostListResponse() {
-        this.showToast('New list created');
+    protected handlePostListResponse(_: CustomEvent, req: {xhr: XMLHttpRequest}) {
+        // The only time this occurs is when creating a new list to add the selected recipe,
+        // so now is the time to proceed with adding the recipe to the newly created list
+        const locationUrl = req.xhr.getResponseHeader('location');
+        const listId = locationUrl.substring(locationUrl.lastIndexOf('/') + 1);
+        this.selectedRecipeListId = +listId;
+        this.postListRecipe.generateRequest();
     }
     protected handlePostListError() {
         this.showToast('Creating list failed');
+    }
+    protected handlePostListRecipeResponse() {
+        this.showToast('Recipe added to list');
+    }
+    protected handlePostListRecipeError() {
+        this.showToast('Adding recipe to list failed');
     }
 }
