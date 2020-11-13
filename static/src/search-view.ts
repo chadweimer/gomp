@@ -118,63 +118,66 @@ export class SearchView extends GompBaseElement {
                         width: 100%;
                     }
                 }
-          </style>
+            </style>
 
-          <app-drawer-layout force-narrow="">
-              <app-drawer id="settingsDrawer" align="right" slot="drawer">
-                  <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
-                  <app-toolbar></app-toolbar>
+            <app-drawer-layout force-narrow="">
+                <app-drawer id="settingsDrawer" align="right" slot="drawer">
+                    <!-- This is here simply to be a spacer since this shows behind the app toolbar -->
+                    <app-toolbar></app-toolbar>
 
-                  <label class="menu-label">View</label>
-                  <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
-                      <paper-icon-item name="full" on-click="onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
-                      <paper-icon-item name="compact" on-click="onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
-                  </paper-listbox>
-              </app-drawer>
+                    <label class="menu-label">View</label>
+                    <paper-listbox class="menu-content" selected="[[searchSettings.viewMode]]" attr-for-selected="name" fallback-selection="full">
+                        <paper-icon-item name="full" on-click="onFullViewClicked"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
+                        <paper-icon-item name="compact" on-click="onCompactViewClicked"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
+                    </paper-listbox>
+                </app-drawer>
 
-              <div class="section">
-                  <div>
-                      <span>[[totalRecipeCount]] results</span>
-                      <iron-icon id="settingsIcon" icon="icons:sort" drawer-toggle=""></iron-icon>
-                  </div>
-                  <div class="pagination">
-                      <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
-                  </div>
-                  <div class="outterContainer">
-                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
-                          <template is="dom-repeat" items="[[recipes]]">
-                              <div class="recipeContainer">
-                                  <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
-                              </div>
-                          </template>
-                      </template>
-                      <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
-                          <template is="dom-repeat" items="[[recipes]]">
-                              <div class="recipeContainer">
-                                  <a href="/recipes/[[item.id]]">
-                                      <paper-icon-item>
-                                          <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                          <paper-item-body>
-                                              <div>[[item.name]]</div>
-                                              <div secondary="">
-                                                  <recipe-rating recipe="{{item}}" class="compact-rating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
-                                              </div>
-                                          </paper-item-body>
-                                      </paper-icon-item>
-                                  </a>
-                              </div>
-                          </template>
-                      </template>
-                  </div>
-                  <div class="pagination">
-                      <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
-                  </div>
-              </div>
-              <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
-          </app-drawer-layout>
+                <div class="section">
+                    <div>
+                        <span>[[totalRecipeCount]] results</span>
+                        <iron-icon id="settingsIcon" icon="icons:sort" drawer-toggle=""></iron-icon>
+                    </div>
+                    <div class="pagination">
+                        <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
+                    </div>
+                    <div class="outterContainer">
+                        <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
+                            <template is="dom-repeat" items="[[recipes]]">
+                                <div class="recipeContainer">
+                                    <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
+                                </div>
+                            </template>
+                        </template>
+                        <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                            <template is="dom-repeat" items="[[recipes]]">
+                                <div class="recipeContainer">
+                                    <a href="/recipes/[[item.id]]">
+                                        <paper-icon-item>
+                                            <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
+                                            <paper-item-body>
+                                                <div>[[item.name]]</div>
+                                                <div secondary="">
+                                                    <recipe-rating recipe="{{item}}" class="compact-rating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
+                                                </div>
+                                            </paper-item-body>
+                                        </paper-icon-item>
+                                    </a>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                    <div class="pagination">
+                        <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
+                    </div>
+                </div>
+                <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+            </app-drawer-layout>
 
-          <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
-          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
+            <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
+            <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" debounce-duration="100"
+                on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError"></iron-ajax>
+            <iron-ajax bubbles="" auto="" id="recipesAllStatesAjax" url="/api/v1/recipes" debounce-duration="100"
+                on-response="handleGetRecipesAllStatesResponse" on-error="handleGetRecipesAllStatesError"></iron-ajax>
 `;
     }
 
@@ -192,6 +195,8 @@ export class SearchView extends GompBaseElement {
     public recipes: RecipeCompact[] = [];
     @property({type: Number, notify: true})
     public totalRecipeCount = 0;
+    @property({type: Number, notify: true})
+    public totalRecipeAllStatesCount = 0;
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
@@ -200,6 +205,9 @@ export class SearchView extends GompBaseElement {
     }
     private get recipesAjax(): IronAjaxElement {
         return this.$.recipesAjax as IronAjaxElement;
+    }
+    private get recipesAllStatesAjax(): IronAjaxElement {
+        return this.$.recipesAllStatesAjax as IronAjaxElement;
     }
 
     static get observers() {
@@ -216,41 +224,11 @@ export class SearchView extends GompBaseElement {
         this.refresh();
     }
     public refresh() {
-        // Make sure to fill in any missing fields
-        const defaultFilter = new SearchFilter();
-        const filter = {...defaultFilter, ...this.filter};
+        // Search for the actual matches
+        this.recipesAjax.params = this.getSearchParams(this.filter);
 
-        const pictures: string[] = [];
-        switch (filter.pictures) {
-            case SearchPictures.Yes:
-            case SearchPictures.No:
-                pictures.push(this.filter.pictures);
-                break;
-        }
-
-        const states: string[] = [];
-        switch (filter.states) {
-            case SearchState.Active:
-            case SearchState.Archived:
-                states.push(this.filter.states);
-                break;
-            case SearchState.Any:
-                states.push(SearchState.Active);
-                states.push(SearchState.Archived);
-                break;
-        }
-
-        this.recipesAjax.params = {
-            'q': filter.query,
-            'fields[]': filter.fields,
-            'tags[]': filter.tags,
-            'pictures[]': pictures,
-            'states[]': states,
-            'sort': filter.sortBy,
-            'dir': filter.sortDir,
-            'page': this.pageNum,
-            'count': this.getRecipeCount(),
-        };
+        // But also check how many matches there would be if all states were included
+        this.recipesAllStatesAjax.params = this.getSearchParams({...this.filter, ...{states: SearchState.Any}});
     }
 
     protected pageNumChanged() {
@@ -278,6 +256,12 @@ export class SearchView extends GompBaseElement {
         this.recipes = [];
         this.totalRecipeCount = 0;
     }
+    protected handleGetRecipesAllStatesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[], total: number}}>) {
+        this.totalRecipeAllStatesCount = e.detail.response.total;
+    }
+    protected handleGetRecipesAllStatesError() {
+        this.totalRecipeAllStatesCount = 0;
+    }
 
     protected updatePagination(_: object|null, total: number) {
         this.numPages = Math.ceil(total / this.getRecipeCount());
@@ -292,5 +276,43 @@ export class SearchView extends GompBaseElement {
     protected onChangeSearchSettings(viewMode: string) {
         this.set('searchSettings.viewMode', viewMode);
         this.settingsDrawer.close();
+    }
+
+    private getSearchParams(filter: SearchFilter) {
+        // Make sure to fill in any missing fields
+        const defaultFilter = new SearchFilter();
+        filter = {...defaultFilter, ...filter};
+
+        const pictures: string[] = [];
+        switch (filter.pictures) {
+            case SearchPictures.Yes:
+            case SearchPictures.No:
+                pictures.push(this.filter.pictures);
+                break;
+        }
+
+        const states: string[] = [];
+        switch (filter.states) {
+            case SearchState.Active:
+            case SearchState.Archived:
+                states.push(this.filter.states);
+                break;
+            case SearchState.Any:
+                states.push(SearchState.Active);
+                states.push(SearchState.Archived);
+                break;
+        }
+
+        return {
+            'q': filter.query,
+            'fields[]': filter.fields,
+            'tags[]': filter.tags,
+            'pictures[]': pictures,
+            'states[]': states,
+            'sort': filter.sortBy,
+            'dir': filter.sortDir,
+            'page': this.pageNum,
+            'count': this.getRecipeCount(),
+        };
     }
 }
