@@ -178,7 +178,7 @@ export class RecipeEdit extends GompBaseElement {
         this.onSaveComplete();
     }
     protected onSaveComplete() {
-        this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId} : null}));
+        this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId + '/view'} : null}));
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
 }
