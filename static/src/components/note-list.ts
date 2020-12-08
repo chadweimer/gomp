@@ -113,7 +113,7 @@ export class NoteList extends GompBaseElement {
         this.noteDialog.open();
     }
 
-    protected noteDialogClosed(e: CustomEvent) {
+    protected noteDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             if (this.noteId) {
                 this.putNoteAjax.body = JSON.stringify({

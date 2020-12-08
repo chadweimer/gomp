@@ -94,9 +94,6 @@ export class RecipeCard extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleDateString();
-    }
     protected showModifiedDate(recipe: RecipeCompact) {
         if (!recipe) {
             return false;

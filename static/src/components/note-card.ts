@@ -79,12 +79,8 @@ export class NoteCard extends GompBaseElement {
                             <paper-menu-button id="noteMenu" horizontal-align="right">
                                 <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                                 <paper-listbox slot="dropdown-content">
-                                    <a href="#!" tabindex="-1" on-click="onEditClicked">
-                                        <paper-icon-item tabindex="-1"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                                    </a>
-                                    <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                        <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                                    </a>
+                                    <paper-icon-item tabindex="-1" on-click="onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
+                                    <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
                                 </paper-listbox>
                             </paper-menu-button>
                         </div>
@@ -143,9 +139,6 @@ export class NoteCard extends GompBaseElement {
         this.deleteAjax.generateRequest();
     }
 
-    protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleDateString();
-    }
     protected showModifiedDate(note: Note) {
         if (!note) {
             return false;

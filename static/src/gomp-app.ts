@@ -501,7 +501,7 @@ export class GompApp extends PolymerElement {
         const filter = {...defaultFilter, ...this.searchFilter};
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
     }
-    protected searchFilterDialogClosed(e: CustomEvent) {
+    protected searchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (e.target !== this.searchFilterDialog) {
             return;
         }

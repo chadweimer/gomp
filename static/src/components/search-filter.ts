@@ -84,7 +84,7 @@ export class SearchFilterElement extends GompBaseElement {
             </section>
             <section>
                 <paper-dropdown-menu-light label="Sort By" always-float-label="">
-                    <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
+                    <paper-listbox slot="dropdown-content" selected="{{filter.sortBy}}" attr-for-selected="name" fallback-selection="name">
                         <template is="dom-repeat" items="[[availableSortBy]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                         </template>
