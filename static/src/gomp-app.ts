@@ -17,6 +17,7 @@ import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icons/maps-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -153,7 +154,7 @@ export class GompApp extends PolymerElement {
                     </a>
                     <a href="/search" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
+                            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
                             Recipes
                         </paper-icon-item>
                     </a>
