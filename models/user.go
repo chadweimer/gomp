@@ -90,6 +90,8 @@ func (m *UserModel) CreateTx(user *User, tx *sqlx.Tx) error {
 	return tx.Get(user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
 }
 
+// Read retrieves the information about the user from the database, if found.
+// If no user exists with the specified ID, a NoRecordFound error is returned.
 func (m *UserModel) Read(id int64) (*User, error) {
 	user := new(User)
 

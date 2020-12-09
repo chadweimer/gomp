@@ -1,0 +1,33 @@
+BEGIN;
+
+ALTER TYPE recipe_state RENAME TO entity_state;
+
+CREATE TABLE menu (
+    id SERIAL NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE menu_recipe (
+    menu_id INTEGER NOT NULL REFERENCES menu(id) ON DELETE CASCADE,
+    recipe_id INTEGER NOT NULL REFERENCES recipe(id) ON DELETE CASCADE,
+    PRIMARY KEY (menu_id, recipe_id)
+);
+
+-- TODO: Make lists per user?
+CREATE TABLE recipe_list (
+    id SERIAL NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    current_state entity_state NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE recipe_list_menu (
+    recipe_list_id INTEGER NOT NULL REFERENCES recipe_list(id) ON DELETE CASCADE,
+    menu_id INTEGER NOT NULL REFERENCES menu(id) ON DELETE CASCADE,
+    PRIMARY KEY(recipe_list_id, menu_id)
+);
+
+COMMIT;

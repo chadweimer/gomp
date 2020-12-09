@@ -75,6 +75,14 @@ export interface Note {
     modifiedAt: string;
 }
 
+export interface RecipeListCompact {
+    id: number;
+    name: string;
+	state: string;
+	createdAt: Date;
+	modifiedAt: Date;
+}
+
 export interface EventWithModel<T = any> extends Event {
     model: T;
 }

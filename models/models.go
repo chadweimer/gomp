@@ -41,6 +41,7 @@ type Model struct {
 	Links   *RecipeLinkModel
 	Users   *UserModel
 	Search  *SearchModel
+	Lists   *RecipeListModel
 }
 
 // New constructs a new Model object
@@ -81,6 +82,7 @@ func New(cfg *conf.Config, upl upload.Driver) *Model {
 	m.Links = &RecipeLinkModel{Model: m}
 	m.Users = &UserModel{Model: m}
 	m.Search = &SearchModel{Model: m}
+	m.Lists = &RecipeListModel{Model: m}
 
 	return m
 }

@@ -13,24 +13,10 @@ type RecipeModel struct {
 	*Model
 }
 
-// RecipeState represents an enumeration of states that a recipe can be in
-type RecipeState string
-
-const (
-	// ActiveRecipeState represents an active recipe
-	ActiveRecipeState RecipeState = "active"
-
-	// ArchivedRecipeState represents a recipe that has been archived
-	ArchivedRecipeState RecipeState = "archived"
-
-	// DeletedRecipeState represents a recipe that has been deleted
-	DeletedRecipeState RecipeState = "deleted"
-)
-
 type recipeBase struct {
 	ID         int64       `json:"id" db:"id"`
 	Name       string      `json:"name" db:"name"`
-	State      RecipeState `json:"state" db:"current_state"`
+	State      EntityState `json:"state" db:"current_state"`
 	CreatedAt  time.Time   `json:"createdAt" db:"created_at"`
 	ModifiedAt time.Time   `json:"modifiedAt" db:"modified_at"`
 	AvgRating  float64     `json:"averageRating" db:"avg_rating"`
@@ -181,7 +167,7 @@ func (m *RecipeModel) SetRating(id int64, rating float64) error {
 }
 
 // SetState updates the state of the specified recipe.
-func (m *RecipeModel) SetState(id int64, state RecipeState) error {
+func (m *RecipeModel) SetState(id int64, state EntityState) error {
 	_, err := m.db.Exec(
 		"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
 	if err != nil {
