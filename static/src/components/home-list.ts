@@ -25,19 +25,11 @@ export class HomeList extends GompBaseElement {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
-                paper-progress {
-                    width: 100%;
-                }
-                paper-fab.green {
-                    --paper-fab-background: var(--paper-green-500);
-                    --paper-fab-keyboard-focus-background: var(--paper-green-900);
-                    position: fixed;
-                    bottom: 16px;
-                    right: 16px;
-                }
                 recipe-card {
                     --recipe-card: {
                         height: 160px;
+                        width: 96%;
+                        margin: 2%;
                     }
                     --recipe-card-header: {
                         height: 68%;
@@ -55,27 +47,15 @@ export class HomeList extends GompBaseElement {
                     .recipeContainer {
                         width: 16.6%;
                     }
-                    recipe-card {
-                        width: 96%;
-                        margin: 2%;
-                    }
                 }
                 @media screen and (min-width: 601px) and (max-width: 992px) {
                     .recipeContainer {
                         width: 33%;
                      }
-                    recipe-card {
-                        width: 96%;
-                        margin: 2%;
-                    }
                 }
                 @media screen and (max-width: 600px) {
                     .recipeContainer {
                         width: 50%;
-                    }
-                    recipe-card {
-                        margin: 2%;
-                        width: 96%;
                     }
                 }
             </style>

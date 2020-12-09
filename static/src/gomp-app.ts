@@ -17,6 +17,7 @@ import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icons/maps-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -67,13 +68,6 @@ export class GompApp extends PolymerElement {
                 }
                 paper-search-bar {
                     color: var(--light-theme-text-color);
-                }
-                paper-filter-dialog {
-                    --paper-filter-toolbar-background: var(--primary-color);
-                    --paper-filter-toolbar: {
-                        background: var(--primary-color);
-                        color: white;
-                    }
                 }
                 paper-progress {
                     width: 100%;
@@ -153,7 +147,7 @@ export class GompApp extends PolymerElement {
                     </a>
                     <a href="/search" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
+                            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
                             Recipes
                         </paper-icon-item>
                     </a>
@@ -507,7 +501,7 @@ export class GompApp extends PolymerElement {
         const filter = {...defaultFilter, ...this.searchFilter};
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
     }
-    protected searchFilterDialogClosed(e: CustomEvent) {
+    protected searchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (e.target !== this.searchFilterDialog) {
             return;
         }

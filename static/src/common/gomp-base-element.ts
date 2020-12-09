@@ -35,4 +35,8 @@ export abstract class GompBaseElement extends PolymerElement {
     protected areEqual(a: any, b: any) {
         return a === b;
     }
+
+    protected formatDate(dateStr: string) {
+        return new Date(dateStr).toLocaleDateString();
+    }
 }
