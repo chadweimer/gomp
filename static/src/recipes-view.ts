@@ -143,7 +143,7 @@ export class RecipesView extends GompBaseElement {
             </div>
             <div hidden\$="[[!getCanEdit(currentUser)]]">
                 <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[areEqual(mode, 'edit')]]" with-backdrop="">
-                    <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
+                    <paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden="[[!areEqual(recipeState, 'archived')]]">Unarchive</paper-fab-speed-dial-action>
@@ -250,6 +250,7 @@ export class RecipesView extends GompBaseElement {
     }
     protected onNewButtonClicked() {
         this.actions.close();
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/create'}}));
     }
     protected onArchiveButtonClicked() {
         this.confirmArchiveDialog.open();
@@ -276,6 +277,7 @@ export class RecipesView extends GompBaseElement {
     }
     protected onEditButtonClicked() {
         this.actions.close();
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/edit'}}));
     }
     protected editComplete() {
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/view'}}));
