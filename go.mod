@@ -3,8 +3,6 @@ module github.com/chadweimer/gomp
 require (
 	github.com/aws/aws-sdk-go v1.33.5
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/disintegration/gift v1.2.1 // indirect
-	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec
 	github.com/disintegration/imaging v1.6.2
 	github.com/golang-migrate/migrate/v4 v4.11.0
 	github.com/jmoiron/sqlx v1.2.0
