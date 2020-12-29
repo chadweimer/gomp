@@ -131,7 +131,7 @@ export class GompApp extends PolymerElement {
                         width: 100%;
                     }
                     paper-search-bar {
-                        --input-styles {
+                        --input-styles: {
                             max-width: 150px;
                         }
                     }
