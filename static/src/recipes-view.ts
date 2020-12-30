@@ -122,10 +122,10 @@ export class RecipesView extends GompBaseElement {
                 }
             </style>
 
-            <app-route id="appRoute" route="{{route}}" pattern="/:recipeId" data="{{routeData}}"></app-route>
+            <app-route id="appRoute" route="{{route}}" pattern="/:recipeId/:mode" data="{{routeData}}"></app-route>
 
             <div class="container">
-                <div hidden\$="[[editing]]">
+                <div hidden\$="[[areEqual(mode, 'edit')]]">
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-display>
                     <div class="tab-container">
                         <div id="images" class="tab">
@@ -136,14 +136,14 @@ export class RecipesView extends GompBaseElement {
                         </div>
                     </div>
                 </div>
-                <div hidden\$="[[!editing]]">
+                <div hidden\$="[[!areEqual(mode, 'edit')]]">
                     <h4>Edit Recipe</h4>
-                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
+                    <recipe-edit id="recipeEdit" recipe-id="[[recipeId]]" on-recipe-edit-cancel="editComplete" on-recipe-edit-save="editComplete"></recipe-edit>
                 </div>
             </div>
             <div hidden\$="[[!getCanEdit(currentUser)]]">
-                <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[editing]]" with-backdrop="">
-                    <a href="/create"><paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action></a>
+                <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[areEqual(mode, 'edit')]]" with-backdrop="">
+                    <paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:unarchive" on-click="onUnarchiveButtonClicked" hidden="[[!areEqual(recipeState, 'archived')]]">Unarchive</paper-fab-speed-dial-action>
@@ -169,8 +169,8 @@ export class RecipesView extends GompBaseElement {
     public route: object = {};
     @property({type: String, notify: true})
     public recipeId = '';
-    @property({type: Boolean, notify: true})
-    public editing = false;
+    @property({type: String, notify: true})
+    protected mode = '';
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
@@ -213,6 +213,7 @@ export class RecipesView extends GompBaseElement {
     static get observers() {
         return [
             'recipeIdChanged(routeData.recipeId)',
+            'modeChanged(routeData.mode)',
         ];
     }
 
@@ -223,15 +224,16 @@ export class RecipesView extends GompBaseElement {
     }
 
     public refresh() {
-        this.recipeDisplay.refresh(null);
-        this.imageList.refresh();
-        this.noteList.refresh();
+        if (this.mode === 'edit') {
+            this.recipeEdit.refresh();
+        } else {
+            this.recipeDisplay.refresh(null);
+            this.imageList.refresh();
+            this.noteList.refresh();
+        }
     }
 
     protected isActiveChanged(isActive: boolean) {
-        // Always exit edit mode when we change screens
-        this.editing = false;
-
         if (isActive) {
             this.refresh();
         }
@@ -239,8 +241,16 @@ export class RecipesView extends GompBaseElement {
     protected recipeIdChanged(recipeId: string) {
         this.recipeId = recipeId;
     }
+    protected modeChanged(mode: string) {
+        this.mode = mode;
+
+        if (this.isActive) {
+            this.refresh();
+        }
+    }
     protected onNewButtonClicked() {
         this.actions.close();
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/create'}}));
     }
     protected onArchiveButtonClicked() {
         this.confirmArchiveDialog.open();
@@ -267,16 +277,10 @@ export class RecipesView extends GompBaseElement {
     }
     protected onEditButtonClicked() {
         this.actions.close();
-        this.recipeEdit.refresh();
-        this.editing = true;
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/edit'}}));
     }
-    protected editCanceled() {
-        this.editing = false;
-        this.refresh();
-    }
-    protected editSaved() {
-        this.editing = false;
-        this.refresh();
+    protected editComplete() {
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/view'}}));
     }
     protected onAddLinkButtonClicked() {
         this.recipeLinkDialog.open();

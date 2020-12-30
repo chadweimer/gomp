@@ -256,7 +256,7 @@ export class AdminView extends GompBaseElement {
         this.addUserDialog.open();
     }
 
-    protected addUserDialogClosed(e: CustomEvent) {
+    protected addUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             if (this.user.password !== this.user.repeatPassword) {
                 this.showToast('Passwords don\'t match.');
@@ -288,7 +288,7 @@ export class AdminView extends GompBaseElement {
         this.editUserDialog.open();
     }
 
-    protected editUserDialogClosed(e: CustomEvent) {
+    protected editUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             this.putUserAjax.body = JSON.stringify({
                 id: this.userId,

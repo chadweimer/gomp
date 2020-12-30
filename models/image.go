@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/upload"
-	"github.com/disintegration/imageorient"
 	"github.com/disintegration/imaging"
 	"github.com/jmoiron/sqlx"
 )
@@ -79,7 +78,7 @@ func (m *RecipeImageModel) save(imageInfo *RecipeImage, data []byte) (string, st
 
 	// First decode the image
 	dataReader := bytes.NewReader(data)
-	image, _, err := imageorient.Decode(dataReader)
+	image, err := imaging.Decode(dataReader, imaging.AutoOrientation(true))
 	if err != nil {
 		return "", "", fmt.Errorf("failed to decode image: %v", err)
 	}
