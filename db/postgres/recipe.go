@@ -156,8 +156,8 @@ func (d *postgresRecipeDriver) SetState(id int64, state models.RecipeState) erro
 	return nil
 }
 
-// FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
-func (d *postgresRecipeDriver) FindRecipes(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+// Find retrieves all recipes matching the specified search filter and within the range specified.
+func (d *postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := " WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error
