@@ -160,12 +160,3 @@ func unlock(conn *sql.Conn) error {
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err
 }
-
-func containsString(arr []string, str string) bool {
-	for _, a := range arr {
-		if a == str {
-			return true
-		}
-	}
-	return false
-}

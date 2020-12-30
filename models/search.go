@@ -36,9 +36,9 @@ const (
 	SortDirDesc string = "desc"
 )
 
-// SupportedFields defines an array of field names that can be used
+// SupportedSearchFields defines an array of field names that can be used
 // in RecipesFilter.Fields
-var SupportedFields = [...]string{"name", "ingredients", "directions"}
+var SupportedSearchFields = [...]string{"name", "ingredients", "directions"}
 
 // RecipesFilter is the primary model class for recipe search
 type RecipesFilter struct {

@@ -5,16 +5,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// Driver represents the interface of a backing data store
 type Driver interface {
 	Close() error
 
-	Recipes() *RecipeDriver
-	Tags() *TagDriver
-	Notes() *NoteDriver
-	Images() *RecipeImageDriver
-	Links() *LinkDriver
-	Users() *UserDriver
-	Search() *SearchDriver
+	Recipes() RecipeDriver
+	Tags() TagDriver
+	Notes() NoteDriver
+	Images() RecipeImageDriver
+	Links() LinkDriver
+	Users() UserDriver
+	//Search() *SearchDriver
 }
 
 // LinkDriver provides functionality to edit and retrieve recipe links.

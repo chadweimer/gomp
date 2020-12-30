@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
@@ -17,6 +18,13 @@ const driverName string = "postgres"
 
 type postgresDriver struct {
 	db *sqlx.DB
+
+	recipes *postgresRecipeDriver
+	images  *postgresRecipeImageDriver
+	tags    *postgresTagDriver
+	notes   *postgresNoteDriver
+	links   *postgresLinkDriver
+	users   *postgresUserDriver
 }
 
 func Open(hostUrl string, migrationsTableName string, migrationsForceVersion int) (*postgresDriver, error) {
@@ -57,6 +65,30 @@ func (d *postgresDriver) Close() error {
 	}
 
 	return nil
+}
+
+func (d *postgresDriver) Recipes() db.RecipeDriver {
+	return d.recipes
+}
+
+func (d *postgresDriver) Images() db.RecipeImageDriver {
+	return d.images
+}
+
+func (d *postgresDriver) Tags() db.TagDriver {
+	return d.tags
+}
+
+func (d *postgresDriver) Notes() db.NoteDriver {
+	return d.notes
+}
+
+func (d *postgresDriver) Links() db.LinkDriver {
+	return d.links
+}
+
+func (d *postgresDriver) Users() db.UserDriver {
+	return d.users
 }
 
 func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {

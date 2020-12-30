@@ -47,16 +47,16 @@ func (d *postgresTagDriver) List(recipeID int64) (*[]string, error) {
 func (d *postgresTagDriver) Find(filter *models.TagsFilter) (*[]string, error) {
 	selectStmt := "SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY "
 	switch filter.SortBy {
-	case SortTagByFrequency:
+	case models.SortTagByFrequency:
 		selectStmt += "dups"
-	case SortByRandom:
+	case models.SortByRandom:
 		selectStmt += "RANDOM()"
-	case SortTagByText:
+	case models.SortTagByText:
 		fallthrough
 	default:
 		selectStmt += "tag"
 	}
-	if filter.SortDir == SortDirDesc {
+	if filter.SortDir == models.SortDirDesc {
 		selectStmt += " DESC"
 	}
 	selectStmt += " LIMIT ?"

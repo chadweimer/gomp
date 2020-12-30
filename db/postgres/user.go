@@ -14,7 +14,7 @@ type postgresUserDriver struct {
 }
 
 func (d *postgresUserDriver) Authenticate(username, password string) (*models.User, error) {
-	user := new(User)
+	user := new(models.User)
 
 	if err := d.db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
 		return nil, err
@@ -41,11 +41,11 @@ func (d *postgresUserDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
 }
 
 func (d *postgresUserDriver) Read(id int64) (*models.User, error) {
-	user := new(User)
+	user := new(models.User)
 
 	err := d.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
 	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
+		return nil, models.ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (d *postgresUserDriver) List() (*[]models.User, error) {
 	return &users, nil
 }
 
-func verifyPassword(user *User, password string) error {
+func verifyPassword(user *models.User, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return errors.New("username or password invalid")
 	}

@@ -49,10 +49,10 @@ func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
 		"FROM recipe AS r WHERE r.id = $1"
-	recipe := new(Recipe)
+	recipe := new(models.Recipe)
 	err := d.db.Get(recipe, stmt, id)
 	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
+		return nil, models.ErrNotFound
 	} else if err != nil {
 		return nil, fmt.Errorf("reading recipe: %v", err)
 	}
@@ -88,12 +88,12 @@ func (d *postgresRecipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) erro
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	err = d.Tags.DeleteAllTx(recipe.ID, tx)
+	err = d.Tags().DeleteAllTx(recipe.ID, tx)
 	if err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
 	}
 	for _, tag := range recipe.Tags {
-		err = d.Tags.CreateTx(recipe.ID, tag, tx)
+		err = d.Tags().CreateTx(recipe.ID, tag, tx)
 		if err != nil {
 			return fmt.Errorf("updating tags on recipe: %v", err)
 		}
@@ -119,7 +119,7 @@ func (d *postgresRecipeDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
 	}
 
 	// If we successfully deleted the recipe, delete all of it's attachments
-	return d.Images.DeleteAllTx(id, tx)
+	return d.Images().DeleteAllTx(id, tx)
 }
 
 // SetRating adds or updates the rating of the specified recipe.
@@ -157,7 +157,7 @@ func (d *postgresRecipeDriver) SetState(id int64, state models.RecipeState) erro
 }
 
 // FindRecipes retrieves all recipes matching the specified search filter and within the range specified.
-func (m *SearchModel) FindRecipes(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+func (d *postgresRecipeDriver) FindRecipes(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := " WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error
@@ -173,13 +173,13 @@ func (m *SearchModel) FindRecipes(filter *models.RecipesFilter) (*[]models.Recip
 		// If the filter didn't specify the fields to search on, use all of them
 		filterFields := filter.Fields
 		if filterFields == nil || len(filterFields) == 0 {
-			filterFields = SupportedFields[:]
+			filterFields = models.SupportedSearchFields[:]
 		}
 
 		// Build up the string of fields to query against
 		fieldStr := ""
 		fieldArgs := make([]interface{}, 0)
-		for _, field := range SupportedFields {
+		for _, field := range models.SupportedSearchFields {
 			if containsString(filterFields, field) {
 				if fieldStr != "" {
 					fieldStr += " OR "
@@ -231,22 +231,22 @@ func (m *SearchModel) FindRecipes(filter *models.RecipesFilter) (*[]models.Recip
 
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
-	case SortRecipeByID:
+	case models.SortRecipeByID:
 		orderStmt += "r.id"
-	case SortRecipeByCreatedDate:
+	case models.SortRecipeByCreatedDate:
 		orderStmt += "r.created_at"
-	case SortRecipeByModifiedDate:
+	case models.SortRecipeByModifiedDate:
 		orderStmt += "r.modified_at"
-	case SortRecipeByRating:
+	case models.SortRecipeByRating:
 		orderStmt += "avg_rating"
-	case SortByRandom:
+	case models.SortByRandom:
 		orderStmt += "RANDOM()"
-	case SortRecipeByName:
+	case models.SortRecipeByName:
 		fallthrough
 	default:
 		orderStmt += "r.name"
 	}
-	if filter.SortDir == SortDirDesc {
+	if filter.SortDir == models.SortDirDesc {
 		orderStmt += " DESC"
 	}
 	orderStmt += " LIMIT ? OFFSET ?"
@@ -257,11 +257,20 @@ func (m *SearchModel) FindRecipes(filter *models.RecipesFilter) (*[]models.Recip
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)
 
-	var recipes []RecipeCompact
+	var recipes []models.RecipeCompact
 	err = d.db.Select(&recipes, selectStmt, selectArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	return &recipes, total, nil
+}
+
+func containsString(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }
