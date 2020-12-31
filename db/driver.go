@@ -25,7 +25,6 @@ type Driver interface {
 	Images() RecipeImageDriver
 	Links() LinkDriver
 	Users() UserDriver
-	//Search() *SearchDriver
 }
 
 // LinkDriver provides functionality to edit and retrieve recipe links.
