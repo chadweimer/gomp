@@ -61,9 +61,17 @@ func Open(hostURL string, migrationsTableName string, migrationsForceVersion int
 		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
 	}
 
-	return &postgresDriver{
+	drv := &postgresDriver{
 		db: db,
-	}, nil
+	}
+	drv.recipes = &postgresRecipeDriver{drv}
+	drv.images = &postgresRecipeImageDriver{drv}
+	drv.tags = &postgresTagDriver{drv}
+	drv.notes = &postgresNoteDriver{drv}
+	drv.links = &postgresLinkDriver{drv}
+	drv.users = &postgresUserDriver{drv}
+
+	return drv, nil
 }
 
 func (d *postgresDriver) Close() error {
