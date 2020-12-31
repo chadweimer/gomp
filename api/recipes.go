@@ -7,6 +7,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -124,8 +125,12 @@ func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p 
 		return
 	}
 
-	err = h.db.Recipes().Delete(recipeID)
-	if err != nil {
+	if err = h.db.Recipes().Delete(recipeID); err != nil {
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err = upload.DeleteAll(h.upl, recipeID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}

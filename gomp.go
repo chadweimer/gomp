@@ -13,7 +13,6 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db/postgres"
-	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -26,7 +25,6 @@ func main() {
 		log.Fatalf("[config] %s", err.Error())
 	}
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
-	img := models.New(upl)
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
@@ -45,7 +43,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, img, db)
+	apiHandler := api.NewHandler(renderer, cfg, upl, db)
 
 	mainMux := httprouter.New()
 	mainMux.Handler("GET", "/api/*apipath", apiHandler)

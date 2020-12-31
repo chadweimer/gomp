@@ -9,6 +9,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	uuid "github.com/satori/go.uuid"
 )
@@ -104,11 +105,17 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 	}
 
 	// Save the image itself
-	h.img.Save(imageInfo, uploadedFileData)
+	url, thumbURL, err := upload.Save(h.upl, imageInfo, uploadedFileData)
+	if err != nil {
+		msg := fmt.Sprintf("failed to save and insert image: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
+		return
+	}
+	imageInfo.URL = url
+	imageInfo.ThumbnailURL = thumbURL
 
 	// Now insert the record in the database
-	err = h.db.Images().Create(imageInfo)
-	if err != nil {
+	if err = h.db.Images().Create(imageInfo); err != nil {
 		msg := fmt.Sprintf("failed to save and insert image: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
@@ -136,7 +143,7 @@ func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
-	if err := h.img.Delete(image); err != nil {
+	if err := upload.Delete(h.upl, image); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}

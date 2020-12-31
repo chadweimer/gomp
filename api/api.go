@@ -9,7 +9,6 @@ import (
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -26,19 +25,17 @@ type apiHandler struct {
 
 	cfg    *conf.Config
 	upl    upload.Driver
-	img    *models.RecipeImageModel
 	db     db.Driver
 	apiMux *httprouter.Router
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, img *models.RecipeImageModel, db db.Driver) http.Handler {
+func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler {
 	h := apiHandler{
 		Render: renderer,
 
 		cfg: cfg,
 		upl: upl,
-		img: img,
 		db:  db,
 	}
 
