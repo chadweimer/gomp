@@ -30,7 +30,7 @@ func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httpr
 		return
 	}
 
-	user, err := h.model.Users.Read(userID)
+	user, err := h.db.Users().Read(userID)
 	if err != nil {
 		msg := fmt.Sprintf("reading user: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
@@ -42,7 +42,7 @@ func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httpr
 
 func (h apiHandler) getUsers(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	// Add pagination?
-	users, err := h.model.Users.List()
+	users, err := h.db.Users().List()
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -70,7 +70,7 @@ func (h apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p http
 		AccessLevel:  newUser.AccessLevel,
 	}
 
-	if err := h.model.Users.Create(&user); err != nil {
+	if err := h.db.Users().Create(&user); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -98,7 +98,7 @@ func (h apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p httpr
 		return
 	}
 
-	if err := h.model.Users.Update(&user); err != nil {
+	if err := h.db.Users().Update(&user); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -114,7 +114,7 @@ func (h apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request, p ht
 		return
 	}
 
-	if err := h.model.Users.Delete(userID); err != nil {
+	if err := h.db.Users().Delete(userID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -137,7 +137,7 @@ func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	err = h.model.Users.UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
+	err = h.db.Users().UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
 	if err != nil {
 		msg := fmt.Sprintf("update failed: %v", err)
 		h.JSON(resp, http.StatusForbidden, msg)
@@ -155,11 +155,16 @@ func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	userSettings, err := h.model.Users.ReadSettings(userID)
+	userSettings, err := h.db.Users().ReadSettings(userID)
 	if err != nil {
 		msg := fmt.Sprintf("reading user settings: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
+	}
+
+	// Default to the application title if the user hasn't set their own
+	if userSettings.HomeTitle == nil {
+		userSettings.HomeTitle = &h.cfg.ApplicationTitle
 	}
 
 	h.JSON(resp, http.StatusOK, userSettings)
@@ -188,7 +193,7 @@ func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request,
 		h.JSON(resp, http.StatusBadRequest, msg)
 	}
 
-	if err := h.model.Users.UpdateSettings(userSettings); err != nil {
+	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
 		msg := fmt.Sprintf("updating user settings: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return

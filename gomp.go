@@ -12,7 +12,7 @@ import (
 
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/db/postgres"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -25,11 +25,17 @@ func main() {
 		log.Fatalf("[config] %s", err.Error())
 	}
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
-	model := models.New(cfg, upl)
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
 	})
+	db, err := postgres.Open(
+		cfg.DatabaseURL,
+		cfg.MigrationsTableName,
+		cfg.MigrationsForceVersion)
+	if err != nil {
+		log.Fatalf("[db] %s", err.Error())
+	}
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
@@ -37,7 +43,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, model)
+	apiHandler := api.NewHandler(renderer, cfg, upl, db)
 
 	mainMux := httprouter.New()
 	mainMux.Handler("GET", "/api/*apipath", apiHandler)
@@ -72,5 +78,5 @@ func main() {
 
 	// Shutdown the http server and close the database connection
 	srv.Shutdown(ctx)
-	model.TearDown()
+	db.Close()
 }

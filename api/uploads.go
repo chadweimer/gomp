@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	uuid "github.com/satori/go.uuid"
 )
 
 func (h apiHandler) postUpload(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -25,7 +25,7 @@ func (h apiHandler) postUpload(resp http.ResponseWriter, req *http.Request, p ht
 
 	// Generate a unique name for the image
 	imageExt := filepath.Ext(fileHeader.Filename)
-	imageName := uuid.NewV4().String() + imageExt
+	imageName := uuid.New().String() + imageExt
 
 	fileURL := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	h.upl.Save(imageName, uploadedFileData)

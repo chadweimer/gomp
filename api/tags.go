@@ -23,7 +23,7 @@ func (h apiHandler) getTags(resp http.ResponseWriter, req *http.Request, p httpr
 		Count:   count,
 	}
 
-	tags, err := h.model.Search.FindTags(filter)
+	tags, err := h.db.Tags().Find(&filter)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return

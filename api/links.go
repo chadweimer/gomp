@@ -15,7 +15,7 @@ func (h apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	recipes, err := h.model.Links.List(recipeID)
+	recipes, err := h.db.Links().List(recipeID)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -37,7 +37,7 @@ func (h apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	if err := h.model.Links.Create(recipeID, destRecipeID); err != nil {
+	if err := h.db.Links().Create(recipeID, destRecipeID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -59,7 +59,7 @@ func (h apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if err := h.model.Links.Delete(recipeID, destRecipeID); err != nil {
+	if err := h.db.Links().Delete(recipeID, destRecipeID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}

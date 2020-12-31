@@ -7,9 +7,11 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/upload"
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	uuid "github.com/satori/go.uuid"
 )
 
 func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -19,7 +21,7 @@ func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	images, err := h.model.Images.List(recipeID)
+	images, err := h.db.Images().List(recipeID)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -35,8 +37,8 @@ func (h apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	image, err := h.model.Images.ReadMainImage(recipeID)
-	if err == models.ErrNotFound {
+	image, err := h.db.Images().ReadMainImage(recipeID)
+	if err == db.ErrNotFound {
 		h.JSON(resp, http.StatusNotFound, err.Error())
 		return
 	}
@@ -62,7 +64,7 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 	}
 
 	image := models.RecipeImage{ID: imageID, RecipeID: recipeID}
-	if err := h.model.Images.UpdateMainImage(&image); err != nil {
+	if err := h.db.Images().UpdateMainImage(&image); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -95,15 +97,26 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 
 	// Generate a unique name for the image
 	imageExt := filepath.Ext(fileHeader.Filename)
-	imageName := uuid.NewV4().String() + imageExt
+	imageName := uuid.New().String() + imageExt
+
+	// Save the image itself
+	url, thumbURL, err := upload.Save(h.upl, recipeID, imageName, uploadedFileData)
+	if err != nil {
+		msg := fmt.Sprintf("failed to save image file: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
+		return
+	}
 
 	imageInfo := &models.RecipeImage{
-		RecipeID: recipeID,
-		Name:     imageName,
+		RecipeID:     recipeID,
+		Name:         imageName,
+		URL:          url,
+		ThumbnailURL: thumbURL,
 	}
-	err = h.model.Images.Create(imageInfo, uploadedFileData)
-	if err != nil {
-		msg := fmt.Sprintf("failed to save and insert image: %v", err)
+
+	// Now insert the record in the database
+	if err = h.db.Images().Create(imageInfo); err != nil {
+		msg := fmt.Sprintf("failed to insert image database record: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
@@ -119,8 +132,25 @@ func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
-	if err := h.model.Images.Delete(imageID); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+	// We need to read the info about the image for later
+	image, err := h.db.Images().Read(imageID)
+	if err != nil {
+		msg := fmt.Sprintf("failed to get image database record: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
+		return
+	}
+
+	// Now delete the record from the database
+	if err := h.db.Images().Delete(imageID); err != nil {
+		msg := fmt.Sprintf("failed to delete image database record: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
+		return
+	}
+
+	// And lastly delete the image file itself
+	if err := upload.Delete(h.upl, image.RecipeID, image.Name); err != nil {
+		msg := fmt.Sprintf("failed to delete image file: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 

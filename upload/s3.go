@@ -122,7 +122,7 @@ func newLazyReadSeeker(reader io.Reader, size int64) *lazyReadSeeker {
 	return &lazyReadSeeker{rawReader: reader, size: size}
 }
 
-func (r *lazyReadSeeker) Read(p []byte) (n int, err error) {
+func (r lazyReadSeeker) Read(p []byte) (n int, err error) {
 	// If we already have a real ReadSeeker, use it
 	if r.readSeeker != nil {
 		return r.readSeeker.Read(p)
@@ -149,7 +149,7 @@ func (r *lazyReadSeeker) Read(p []byte) (n int, err error) {
 	return
 }
 
-func (r *lazyReadSeeker) Seek(offset int64, whence int) (int64, error) {
+func (r lazyReadSeeker) Seek(offset int64, whence int) (int64, error) {
 	// If we already have a real ReadSeeker, use it
 	if r.readSeeker != nil {
 		return r.readSeeker.Seek(offset, whence)
@@ -173,7 +173,7 @@ func (r *lazyReadSeeker) Seek(offset int64, whence int) (int64, error) {
 	return r.readSeeker.Seek(offset, whence)
 }
 
-func (r *lazyReadSeeker) upconvert(seed []byte) {
+func (r lazyReadSeeker) upconvert(seed []byte) {
 	buffer := bytes.NewBuffer(seed)
 	remaining, err := ioutil.ReadAll(r.rawReader)
 	if err != nil {

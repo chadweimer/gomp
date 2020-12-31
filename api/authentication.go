@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
@@ -31,7 +32,7 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	user, err := h.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
+	user, err := h.db.Users().Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
 		h.JSON(resp, http.StatusUnauthorized, err.Error())
 		return
@@ -61,7 +62,7 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 
 		user, err := h.verifyUserExists(userID)
 		if err != nil {
-			if err == models.ErrNotFound {
+			if err == db.ErrNotFound {
 				h.JSON(resp, http.StatusUnauthorized, errors.New("Invalid user"))
 			} else {
 				h.JSON(resp, http.StatusInternalServerError, err.Error())
@@ -198,9 +199,9 @@ func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, erro
 
 func (h apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 	// Verify this is a valid user in the DB
-	user, err := h.model.Users.Read(userID)
+	user, err := h.db.Users().Read(userID)
 	if err != nil {
-		if err == models.ErrNotFound {
+		if err == db.ErrNotFound {
 			return nil, err
 		}
 
