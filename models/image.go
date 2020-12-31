@@ -31,6 +31,11 @@ type RecipeImageModel struct {
 	upl upload.Driver
 }
 
+// New constructs a new RecipeImageModel object
+func New(upl upload.Driver) *RecipeImageModel {
+	return &RecipeImageModel{upl: upl}
+}
+
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
 func (m *RecipeImageModel) Save(imageInfo *RecipeImage, data []byte) (string, string, error) {

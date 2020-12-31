@@ -26,7 +26,7 @@ func main() {
 		log.Fatalf("[config] %s", err.Error())
 	}
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
-	model := models.New(upl)
+	img := models.New(upl)
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
@@ -45,7 +45,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, model, db)
+	apiHandler := api.NewHandler(renderer, cfg, upl, img, db)
 
 	mainMux := httprouter.New()
 	mainMux.Handler("GET", "/api/*apipath", apiHandler)
