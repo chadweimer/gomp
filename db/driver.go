@@ -165,6 +165,8 @@ type UserDriver interface {
 	// the specified transaction.
 	CreateTx(user *models.User, tx *sqlx.Tx) error
 
+	// Read retrieves the information about the user from the database, if found.
+	// If no user exists with the specified ID, a NoRecordFound error is returned.
 	Read(id int64) (*models.User, error)
 
 	// Update stores the user in the database by updating the existing record with the specified
@@ -215,8 +217,7 @@ type RecipeImageDriver interface {
 	// CreateTx creates a record in the database using the specified transaction.
 	CreateTx(imageInfo *models.RecipeImage, tx *sqlx.Tx) error
 
-	// Read retrieves the information about the image from the database, if found,
-	// using a dedicated transation that is committed if there are not errors.
+	// Read retrieves the information about the image from the database, if found.
 	// If no image exists with the specified ID, a ErrNotFound error is returned.
 	Read(id int64) (*models.RecipeImage, error)
 
