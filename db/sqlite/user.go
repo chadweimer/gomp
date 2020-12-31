@@ -1,4 +1,4 @@
-package postgres
+package sqlite
 
 import (
 	"database/sql"
@@ -10,11 +10,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type postgresUserDriver struct {
-	*postgresDriver
+type sqliteUserDriver struct {
+	*sqliteDriver
 }
 
-func (d postgresUserDriver) Authenticate(username, password string) (*models.User, error) {
+func (d sqliteUserDriver) Authenticate(username, password string) (*models.User, error) {
 	user := new(models.User)
 
 	if err := d.db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
@@ -28,20 +28,20 @@ func (d postgresUserDriver) Authenticate(username, password string) (*models.Use
 	return user, nil
 }
 
-func (d postgresUserDriver) Create(user *models.User) error {
+func (d sqliteUserDriver) Create(user *models.User) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(user, tx)
 	})
 }
 
-func (d postgresUserDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
+func (d sqliteUserDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3) RETURNING id"
 
 	return tx.Get(user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
 }
 
-func (d postgresUserDriver) Read(id int64) (*models.User, error) {
+func (d sqliteUserDriver) Read(id int64) (*models.User, error) {
 	user := new(models.User)
 
 	err := d.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
@@ -54,25 +54,25 @@ func (d postgresUserDriver) Read(id int64) (*models.User, error) {
 	return user, nil
 }
 
-func (d postgresUserDriver) Update(user *models.User) error {
+func (d sqliteUserDriver) Update(user *models.User) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.UpdateTx(user, tx)
 	})
 }
 
-func (d postgresUserDriver) UpdateTx(user *models.User, tx *sqlx.Tx) error {
+func (d sqliteUserDriver) UpdateTx(user *models.User, tx *sqlx.Tx) error {
 	_, err := tx.Exec("UPDATE app_user SET username = $1, access_level = $2 WHERE ID = $3",
 		user.Username, user.AccessLevel, user.ID)
 	return err
 }
 
-func (d postgresUserDriver) UpdatePassword(id int64, password, newPassword string) error {
+func (d sqliteUserDriver) UpdatePassword(id int64, password, newPassword string) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.UpdatePasswordTx(id, password, newPassword, tx)
 	})
 }
 
-func (d postgresUserDriver) UpdatePasswordTx(id int64, password, newPassword string, tx *sqlx.Tx) error {
+func (d sqliteUserDriver) UpdatePasswordTx(id int64, password, newPassword string, tx *sqlx.Tx) error {
 	// Make sure the current password is correct
 	user, err := d.Read(id)
 	if err != nil {
@@ -93,7 +93,7 @@ func (d postgresUserDriver) UpdatePasswordTx(id int64, password, newPassword str
 	return err
 }
 
-func (d postgresUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
+func (d sqliteUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 	userSettings := new(models.UserSettings)
 
 	if err := d.db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
@@ -103,13 +103,13 @@ func (d postgresUserDriver) ReadSettings(id int64) (*models.UserSettings, error)
 	return userSettings, nil
 }
 
-func (d postgresUserDriver) UpdateSettings(settings *models.UserSettings) error {
+func (d sqliteUserDriver) UpdateSettings(settings *models.UserSettings) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.UpdateSettingsTx(settings, tx)
 	})
 }
 
-func (d postgresUserDriver) UpdateSettingsTx(settings *models.UserSettings, tx *sqlx.Tx) error {
+func (d sqliteUserDriver) UpdateSettingsTx(settings *models.UserSettings, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE app_user_settings "+
 			"SET home_title = $1, home_image_url = $2 WHERE user_id = $3",
@@ -121,18 +121,18 @@ func (d postgresUserDriver) UpdateSettingsTx(settings *models.UserSettings, tx *
 	return nil
 }
 
-func (d postgresUserDriver) Delete(id int64) error {
+func (d sqliteUserDriver) Delete(id int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.DeleteTx(id, tx)
 	})
 }
 
-func (d postgresUserDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
+func (d sqliteUserDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec("DELETE FROM app_user WHERE id = $1", id)
 	return err
 }
 
-func (d postgresUserDriver) List() (*[]models.User, error) {
+func (d sqliteUserDriver) List() (*[]models.User, error) {
 	var users []models.User
 
 	if err := d.db.Select(&users, "SELECT * FROM app_user ORDER BY username ASC"); err != nil {

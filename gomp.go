@@ -12,7 +12,9 @@ import (
 
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/db/postgres"
+	"github.com/chadweimer/gomp/db/sqlite"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -20,8 +22,9 @@ import (
 )
 
 func main() {
+	var err error
 	cfg := conf.Load()
-	if err := cfg.Validate(); err != nil {
+	if err = cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
@@ -29,12 +32,23 @@ func main() {
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
 	})
-	db, err := postgres.Open(
-		cfg.DatabaseURL,
-		cfg.MigrationsTableName,
-		cfg.MigrationsForceVersion)
-	if err != nil {
-		log.Fatalf("[db] %s", err.Error())
+	var db db.Driver
+	if cfg.DatabaseDriver == postgres.DriverName {
+		db, err = postgres.Open(
+			cfg.DatabaseURL,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
+		if err != nil {
+			log.Fatalf("[db] %s", err.Error())
+		}
+	} else if cfg.DatabaseDriver == sqlite.DriverName {
+		db, err = sqlite.Open(
+			cfg.DatabaseURL,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
+		if err != nil {
+			log.Fatalf("[db] %s", err.Error())
+		}
 	}
 
 	n := negroni.New()

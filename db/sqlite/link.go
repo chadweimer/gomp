@@ -1,18 +1,18 @@
-package postgres
+package sqlite
 
 import (
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
 
-// postgresLinkDriver provides functionality to edit and retrieve recipe links.
-type postgresLinkDriver struct {
-	*postgresDriver
+// sqliteLinkDriver provides functionality to edit and retrieve recipe links.
+type sqliteLinkDriver struct {
+	*sqliteDriver
 }
 
 // Create stores a link between 2 recipes in the database as a new record
 // using a dedicated transation that is committed if there are not errors.
-func (d postgresLinkDriver) Create(recipeID, destRecipeID int64) error {
+func (d sqliteLinkDriver) Create(recipeID, destRecipeID int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(recipeID, destRecipeID, tx)
 	})
@@ -20,7 +20,7 @@ func (d postgresLinkDriver) Create(recipeID, destRecipeID int64) error {
 
 // CreateTx stores a link between 2 recipes in the database as a new record
 // using the specified transaction.
-func (d postgresLinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
+func (d sqliteLinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_link (recipe_id, dest_recipe_id) VALUES ($1, $2)"
 
 	_, err := tx.Exec(stmt, recipeID, destRecipeID)
@@ -29,14 +29,14 @@ func (d postgresLinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx) 
 
 // Delete removes the linked recipe from the database using a dedicated transation
 // that is committed if there are not errors.
-func (d postgresLinkDriver) Delete(recipeID, destRecipeID int64) error {
+func (d sqliteLinkDriver) Delete(recipeID, destRecipeID int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.DeleteTx(recipeID, destRecipeID, tx)
 	})
 }
 
 // DeleteTx removes the linked recipe from the database using the specified transaction.
-func (d postgresLinkDriver) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
+func (d sqliteLinkDriver) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_link WHERE (recipe_id = $1 AND dest_recipe_id = $2) OR (recipe_id = $2 AND dest_recipe_id = $1)",
 		recipeID,
@@ -45,7 +45,7 @@ func (d postgresLinkDriver) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) 
 }
 
 // List retrieves all recipes linked to recipe with the specified id.
-func (d postgresLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
+func (d sqliteLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
 	var recipes []models.RecipeCompact
 
 	selectStmt := "SELECT " +

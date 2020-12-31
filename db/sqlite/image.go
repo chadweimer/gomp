@@ -1,4 +1,4 @@
-package postgres
+package sqlite
 
 import (
 	"database/sql"
@@ -10,17 +10,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type postgresRecipeImageDriver struct {
-	*postgresDriver
+type sqliteRecipeImageDriver struct {
+	*sqliteDriver
 }
 
-func (d postgresRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
+func (d sqliteRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(imageInfo, tx)
 	})
 }
 
-func (d postgresRecipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
+func (d sqliteRecipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	now := time.Now()
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
@@ -33,7 +33,7 @@ func (d postgresRecipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.
 	return d.setMainImageIfNecessary(image.RecipeID, tx)
 }
 
-func (d postgresRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
+func (d sqliteRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
 	var image *models.RecipeImage
 	err := d.tx(func(tx *sqlx.Tx) error {
 		var err error
@@ -45,7 +45,7 @@ func (d postgresRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
 	return image, err
 }
 
-func (d postgresRecipeImageDriver) ReadTx(id int64, tx *sqlx.Tx) (*models.RecipeImage, error) {
+func (d sqliteRecipeImageDriver) ReadTx(id int64, tx *sqlx.Tx) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
 	err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = $1", id)
 	if err == sql.ErrNoRows {
@@ -57,7 +57,7 @@ func (d postgresRecipeImageDriver) ReadTx(id int64, tx *sqlx.Tx) (*models.Recipe
 	return image, nil
 }
 
-func (d postgresRecipeImageDriver) ReadMainImage(recipeID int64) (*models.RecipeImage, error) {
+func (d sqliteRecipeImageDriver) ReadMainImage(recipeID int64) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
 	err := d.db.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeID)
 	if err == sql.ErrNoRows {
@@ -69,13 +69,13 @@ func (d postgresRecipeImageDriver) ReadMainImage(recipeID int64) (*models.Recipe
 	return image, nil
 }
 
-func (d postgresRecipeImageDriver) UpdateMainImage(image *models.RecipeImage) error {
+func (d sqliteRecipeImageDriver) UpdateMainImage(image *models.RecipeImage) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.UpdateMainImageTx(image, tx)
 	})
 }
 
-func (d postgresRecipeImageDriver) UpdateMainImageTx(image *models.RecipeImage, tx *sqlx.Tx) error {
+func (d sqliteRecipeImageDriver) UpdateMainImageTx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe SET image_id = $1 WHERE id = $2",
 		image.ID, image.RecipeID)
@@ -85,7 +85,7 @@ func (d postgresRecipeImageDriver) UpdateMainImageTx(image *models.RecipeImage, 
 
 // List returns a RecipeImage slice that contains data for all images
 // attached to the specified recipe.
-func (d postgresRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, error) {
+func (d sqliteRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, error) {
 	var images []models.RecipeImage
 
 	if err := d.db.Select(&images, "SELECT * FROM recipe_image WHERE recipe_id = $1 ORDER BY created_at ASC", recipeID); err != nil {
@@ -97,7 +97,7 @@ func (d postgresRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, 
 
 // Delete removes the specified image from the backing store and database
 // using a dedicated transation that is committed if there are not errors.
-func (d postgresRecipeImageDriver) Delete(id int64) error {
+func (d sqliteRecipeImageDriver) Delete(id int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.DeleteTx(id, tx)
 	})
@@ -105,7 +105,7 @@ func (d postgresRecipeImageDriver) Delete(id int64) error {
 
 // DeleteTx removes the specified image from the backing store and database
 // using the specified transaction.
-func (d postgresRecipeImageDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
+func (d sqliteRecipeImageDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
 	image, err := d.ReadTx(id, tx)
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (d postgresRecipeImageDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
 	return d.setMainImageIfNecessary(image.RecipeID, tx)
 }
 
-func (d postgresRecipeImageDriver) setMainImageIfNecessary(recipeID int64, tx *sqlx.Tx) error {
+func (d sqliteRecipeImageDriver) setMainImageIfNecessary(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET image_id = (SELECT recipe_image.id FROM recipe_image WHERE recipe_image.recipe_id = recipe.id LIMIT 1)"+
@@ -128,13 +128,13 @@ func (d postgresRecipeImageDriver) setMainImageIfNecessary(recipeID int64, tx *s
 	return err
 }
 
-func (d postgresRecipeImageDriver) DeleteAll(recipeID int64) error {
+func (d sqliteRecipeImageDriver) DeleteAll(recipeID int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.DeleteAllTx(recipeID, tx)
 	})
 }
 
-func (d postgresRecipeImageDriver) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
+func (d sqliteRecipeImageDriver) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_image WHERE recipe_id = $1",
 		recipeID)

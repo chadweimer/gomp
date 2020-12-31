@@ -21,7 +21,7 @@ import (
 )
 
 // DriverName is the name to use for this driver
-const DriverName string = "sqlite"
+const DriverName string = "sqlite3"
 
 type sqliteDriver struct {
 	db *sqlx.DB
