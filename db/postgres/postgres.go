@@ -12,6 +12,12 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
+
+	// postgres database driver
+	_ "github.com/lib/pq"
+
+	// File source for db migration
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 const driverName string = "postgres"
@@ -27,14 +33,16 @@ type postgresDriver struct {
 	users   *postgresUserDriver
 }
 
-func Open(hostUrl string, migrationsTableName string, migrationsForceVersion int) (*postgresDriver, error) {
+// Open established a connection to the specified database and returns
+// an object that implements db.Driver that can be used to query it.
+func Open(hostURL string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
 	// In docker, on first bring up, the DB takes a little while.
 	// Let's try a few times to establish connection before giving up.
 	const maxAttempts = 20
 	var db *sqlx.DB
 	var err error
 	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(driverName, hostUrl)
+		db, err = sqlx.Connect(driverName, hostURL)
 		if err == nil {
 			break
 		}

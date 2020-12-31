@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
 	uuid "github.com/satori/go.uuid"
@@ -19,7 +20,7 @@ func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	images, err := h.model.Images.List(recipeID)
+	images, err := h.db.Images().List(recipeID)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -35,8 +36,8 @@ func (h apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	image, err := h.model.Images.ReadMainImage(recipeID)
-	if err == models.ErrNotFound {
+	image, err := h.db.Images().ReadMainImage(recipeID)
+	if err == db.ErrNotFound {
 		h.JSON(resp, http.StatusNotFound, err.Error())
 		return
 	}
@@ -62,7 +63,7 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 	}
 
 	image := models.RecipeImage{ID: imageID, RecipeID: recipeID}
-	if err := h.model.Images.UpdateMainImage(&image); err != nil {
+	if err := h.db.Images().UpdateMainImage(&image); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -101,7 +102,12 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 		RecipeID: recipeID,
 		Name:     imageName,
 	}
-	err = h.model.Images.Create(imageInfo, uploadedFileData)
+
+	// Save the image itself
+	h.model.Images.Save(imageInfo, uploadedFileData)
+
+	// Now insert the record in the database
+	err = h.db.Images().Create(imageInfo)
 	if err != nil {
 		msg := fmt.Sprintf("failed to save and insert image: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
@@ -119,7 +125,18 @@ func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
-	if err := h.model.Images.Delete(imageID); err != nil {
+	image, err := h.db.Images().Read(imageID)
+	if err != nil {
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.db.Images().Delete(imageID); err != nil {
+		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.model.Images.Delete(image); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
 	}

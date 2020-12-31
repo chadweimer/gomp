@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -52,7 +53,7 @@ func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	recipe := new(models.Recipe)
 	err := d.db.Get(recipe, stmt, id)
 	if err == sql.ErrNoRows {
-		return nil, models.ErrNotFound
+		return nil, db.ErrNotFound
 	} else if err != nil {
 		return nil, fmt.Errorf("reading recipe: %v", err)
 	}

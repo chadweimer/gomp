@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
@@ -45,7 +46,7 @@ func (d *postgresUserDriver) Read(id int64) (*models.User, error) {
 
 	err := d.db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
 	if err == sql.ErrNoRows {
-		return nil, models.ErrNotFound
+		return nil, db.ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
@@ -97,11 +98,6 @@ func (d *postgresUserDriver) ReadSettings(id int64) (*models.UserSettings, error
 
 	if err := d.db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
 		return nil, err
-	}
-
-	// Default to the application title if the user hasn't set their own
-	if userSettings.HomeTitle == nil {
-		userSettings.HomeTitle = &d.cfg.ApplicationTitle
 	}
 
 	return userSettings, nil

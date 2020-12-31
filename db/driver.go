@@ -1,9 +1,19 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
+
+// ---- Begin Standard Errors ----
+
+// ErrNotFound represents the error when a database record cannot be
+// found matching the criteria specified by the caller
+var ErrNotFound = errors.New("No record found matching supplied criteria")
+
+// ---- End Standard Errors ----
 
 // Driver represents the interface of a backing data store
 type Driver interface {
@@ -195,4 +205,56 @@ type UserDriver interface {
 
 	// List retrieves all users in the database.
 	List() (*[]models.User, error)
+}
+
+// RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.
+type RecipeImageDriver interface {
+	// Create creates a record in the database using a dedicated transation
+	// that is committed if there are not errors.
+	Create(imageInfo *models.RecipeImage) error
+
+	// CreateTx creates a record in the database using the specified transaction.
+	CreateTx(imageInfo *models.RecipeImage, tx *sqlx.Tx) error
+
+	// Read retrieves the information about the image from the database, if found,
+	// using a dedicated transation that is committed if there are not errors.
+	// If no image exists with the specified ID, a ErrNotFound error is returned.
+	Read(id int64) (*models.RecipeImage, error)
+
+	// ReadTx retrieves the information about the image from the database, if found,
+	// using the specified transaction. If no image exists with the specified ID,
+	// a ErrNotFound error is returned.
+	ReadTx(id int64, tx *sqlx.Tx) (*models.RecipeImage, error)
+
+	// ReadMainImage retrieves the information about the main image for the specified recipe
+	// image from the database. If no main image exists, a ErrNotFound error is returned.
+	ReadMainImage(recipeID int64) (*models.RecipeImage, error)
+
+	// UpdateMainImage sets the id of the main image for the specified recipe
+	// using a dedicated transation that is committed if there are not errors.
+	UpdateMainImage(image *models.RecipeImage) error
+
+	// UpdateMainImageTx sets the id of the main image for the specified recipe
+	// using the specified transaction.
+	UpdateMainImageTx(image *models.RecipeImage, tx *sqlx.Tx) error
+
+	// List returns a RecipeImage slice that contains data for all images
+	// attached to the specified recipe.
+	List(recipeID int64) (*[]models.RecipeImage, error)
+
+	// Delete removes the specified image from the backing store and database
+	// using a dedicated transation that is committed if there are not errors.
+	Delete(id int64) error
+
+	// DeleteTx removes the specified image from the backing store and database
+	// using the specified transaction.
+	DeleteTx(id int64, tx *sqlx.Tx) error
+
+	// DeleteAll removes all images for the specified recipe from the database
+	// using a dedicated transation that is committed if there are not errors.
+	DeleteAll(recipeID int64) error
+
+	// DeleteAllTx removes all images for the specified recipe from the database
+	// using the specified transaction.
+	DeleteAllTx(recipeID int64, tx *sqlx.Tx) error
 }

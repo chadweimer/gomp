@@ -26,18 +26,20 @@ type apiHandler struct {
 
 	cfg    *conf.Config
 	upl    upload.Driver
-	db     *db.Driver
+	model  *models.Model
+	db     db.Driver
 	apiMux *httprouter.Router
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db *db.Driver) http.Handler {
+func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, model *models.Model, db db.Driver) http.Handler {
 	h := apiHandler{
 		Render: renderer,
 
-		cfg: cfg,
-		upl: upl,
-		db:  db,
+		cfg:   cfg,
+		upl:   upl,
+		model: model,
+		db:    db,
 	}
 
 	h.apiMux = httprouter.New()

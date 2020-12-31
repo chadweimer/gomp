@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
 )
@@ -45,7 +46,7 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 		Count:    count,
 	}
 
-	recipes, total, err := h.model.Search.FindRecipes(filter)
+	recipes, total, err := h.db.Recipes().Find(&filter)
 	if err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
@@ -62,7 +63,7 @@ func (h apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p htt
 	}
 
 	recipe, err := h.db.Recipes().Read(recipeID)
-	if err == models.ErrNotFound {
+	if err == db.ErrNotFound {
 		h.JSON(resp, http.StatusNotFound, err.Error())
 		return
 	}
