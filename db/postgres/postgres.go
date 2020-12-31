@@ -20,7 +20,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const driverName string = "postgres"
+// DriverName is the name to use for this driver
+const DriverName string = "postgres"
 
 type postgresDriver struct {
 	db *sqlx.DB
@@ -42,7 +43,7 @@ func Open(hostURL string, migrationsTableName string, migrationsForceVersion int
 	var db *sqlx.DB
 	var err error
 	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(driverName, hostURL)
+		db, err = sqlx.Connect(DriverName, hostURL)
 		if err == nil {
 			break
 		}
@@ -129,10 +130,10 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 		return err
 	}
 
-	migrationPath := "file://" + filepath.Join("db", driverName, "migrations")
+	migrationPath := "file://" + filepath.Join("db", DriverName, "migrations")
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
-		driverName,
+		DriverName,
 		driver)
 	if err != nil {
 		return err

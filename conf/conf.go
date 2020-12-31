@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/chadweimer/gomp/db/postgres"
+	"github.com/chadweimer/gomp/db/sqlite"
 	"github.com/chadweimer/gomp/upload"
 )
 
@@ -39,7 +41,7 @@ type Config struct {
 	ApplicationTitle string
 
 	// DatabaseDriver gets which database/sql driver to use.
-	// Supported drivers: postgres
+	// Supported drivers: postgres, sqlite
 	DatabaseDriver string
 
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
@@ -64,8 +66,8 @@ func Load() *Config {
 		IsDevelopment:          false,
 		SecureKeys:             nil,
 		ApplicationTitle:       "GOMP: Go Meal Planner",
-		DatabaseDriver:         "postgres",
-		DatabaseURL:            "",
+		DatabaseDriver:         sqlite.DriverName,
+		DatabaseURL:            filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
 	}
@@ -120,8 +122,8 @@ func (c Config) Validate() error {
 		return errors.New("GOMP_APPLICATION_TITLE must be specified")
 	}
 
-	if c.DatabaseDriver != "postgres" {
-		return errors.New("DATABASE_DRIVER must be one of ('postgres')")
+	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite.DriverName {
+		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", postgres.DriverName, sqlite.DriverName)
 	}
 
 	if c.DatabaseURL == "" {

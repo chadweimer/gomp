@@ -1,4 +1,4 @@
-package postgres
+package sqlite
 
 import (
 	"context"
@@ -10,39 +10,40 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/jmoiron/sqlx"
 
-	// postgres database driver
-	_ "github.com/lib/pq"
+	// sqlite database driver
+	_ "github.com/mattn/go-sqlite3"
 
 	// File source for db migration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const driverName string = "postgres"
+// DriverName is the name to use for this driver
+const DriverName string = "sqlite"
 
-type postgresDriver struct {
+type sqliteDriver struct {
 	db *sqlx.DB
 
-	recipes *postgresRecipeDriver
-	images  *postgresRecipeImageDriver
-	tags    *postgresTagDriver
-	notes   *postgresNoteDriver
-	links   *postgresLinkDriver
-	users   *postgresUserDriver
+	recipes *sqliteRecipeDriver
+	images  *sqliteRecipeImageDriver
+	tags    *sqliteTagDriver
+	notes   *sqliteNoteDriver
+	links   *sqliteLinkDriver
+	users   *sqliteUserDriver
 }
 
 // Open established a connection to the specified database and returns
 // an object that implements db.Driver that can be used to query it.
-func Open(hostURL string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
+func Open(path string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
 	// In docker, on first bring up, the DB takes a little while.
 	// Let's try a few times to establish connection before giving up.
 	const maxAttempts = 20
 	var db *sqlx.DB
 	var err error
 	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(driverName, hostURL)
+		db, err = sqlx.Connect(DriverName, path)
 		if err == nil {
 			break
 		}
@@ -61,20 +62,20 @@ func Open(hostURL string, migrationsTableName string, migrationsForceVersion int
 		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
 	}
 
-	drv := &postgresDriver{
+	drv := &sqliteDriver{
 		db: db,
 	}
-	drv.recipes = &postgresRecipeDriver{drv}
-	drv.images = &postgresRecipeImageDriver{drv}
-	drv.tags = &postgresTagDriver{drv}
-	drv.notes = &postgresNoteDriver{drv}
-	drv.links = &postgresLinkDriver{drv}
-	drv.users = &postgresUserDriver{drv}
+	drv.recipes = &sqliteRecipeDriver{drv}
+	drv.images = &sqliteRecipeImageDriver{drv}
+	drv.tags = &sqliteTagDriver{drv}
+	drv.notes = &sqliteNoteDriver{drv}
+	drv.links = &sqliteLinkDriver{drv}
+	drv.users = &sqliteUserDriver{drv}
 
 	return drv, nil
 }
 
-func (d postgresDriver) Close() error {
+func (d sqliteDriver) Close() error {
 	log.Print("Closing database connection...")
 	if err := d.db.Close(); err != nil {
 		return fmt.Errorf("failed to close the connection to the database: '%+v'", err)
@@ -83,27 +84,27 @@ func (d postgresDriver) Close() error {
 	return nil
 }
 
-func (d postgresDriver) Recipes() db.RecipeDriver {
+func (d sqliteDriver) Recipes() db.RecipeDriver {
 	return d.recipes
 }
 
-func (d postgresDriver) Images() db.RecipeImageDriver {
+func (d sqliteDriver) Images() db.RecipeImageDriver {
 	return d.images
 }
 
-func (d postgresDriver) Tags() db.TagDriver {
+func (d sqliteDriver) Tags() db.TagDriver {
 	return d.tags
 }
 
-func (d postgresDriver) Notes() db.NoteDriver {
+func (d sqliteDriver) Notes() db.NoteDriver {
 	return d.notes
 }
 
-func (d postgresDriver) Links() db.LinkDriver {
+func (d sqliteDriver) Links() db.LinkDriver {
 	return d.links
 }
 
-func (d postgresDriver) Users() db.UserDriver {
+func (d sqliteDriver) Users() db.UserDriver {
 	return d.users
 }
 
@@ -122,17 +123,17 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 	}
 	defer unlock(conn)
 
-	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
+	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{
 		MigrationsTable: migrationsTableName,
 	})
 	if err != nil {
 		return err
 	}
 
-	migrationPath := "file://" + filepath.Join("db", driverName, "migrations")
+	migrationPath := "file://" + filepath.Join("db", DriverName, "migrations")
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
-		driverName,
+		DriverName,
 		driver)
 	if err != nil {
 		return err
@@ -162,7 +163,7 @@ func unlock(conn *sql.Conn) error {
 	return err
 }
 
-func (d postgresDriver) tx(op func(*sqlx.Tx) error) error {
+func (d sqliteDriver) tx(op func(*sqlx.Tx) error) error {
 	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
