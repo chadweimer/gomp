@@ -74,7 +74,7 @@ func Open(hostURL string, migrationsTableName string, migrationsForceVersion int
 	return drv, nil
 }
 
-func (d *postgresDriver) Close() error {
+func (d postgresDriver) Close() error {
 	log.Print("Closing database connection...")
 	if err := d.db.Close(); err != nil {
 		return fmt.Errorf("failed to close the connection to the database: '%+v'", err)
@@ -83,27 +83,27 @@ func (d *postgresDriver) Close() error {
 	return nil
 }
 
-func (d *postgresDriver) Recipes() db.RecipeDriver {
+func (d postgresDriver) Recipes() db.RecipeDriver {
 	return d.recipes
 }
 
-func (d *postgresDriver) Images() db.RecipeImageDriver {
+func (d postgresDriver) Images() db.RecipeImageDriver {
 	return d.images
 }
 
-func (d *postgresDriver) Tags() db.TagDriver {
+func (d postgresDriver) Tags() db.TagDriver {
 	return d.tags
 }
 
-func (d *postgresDriver) Notes() db.NoteDriver {
+func (d postgresDriver) Notes() db.NoteDriver {
 	return d.notes
 }
 
-func (d *postgresDriver) Links() db.LinkDriver {
+func (d postgresDriver) Links() db.LinkDriver {
 	return d.links
 }
 
-func (d *postgresDriver) Users() db.UserDriver {
+func (d postgresDriver) Users() db.UserDriver {
 	return d.users
 }
 
@@ -162,7 +162,7 @@ func unlock(conn *sql.Conn) error {
 	return err
 }
 
-func (d *postgresDriver) tx(op func(*sqlx.Tx) error) error {
+func (d postgresDriver) tx(op func(*sqlx.Tx) error) error {
 	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
