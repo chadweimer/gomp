@@ -107,7 +107,7 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 	// Save the image itself
 	url, thumbURL, err := upload.Save(h.upl, imageInfo, uploadedFileData)
 	if err != nil {
-		msg := fmt.Sprintf("failed to save and insert image: %v", err)
+		msg := fmt.Sprintf("failed to save image file: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
@@ -116,7 +116,7 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 
 	// Now insert the record in the database
 	if err = h.db.Images().Create(imageInfo); err != nil {
-		msg := fmt.Sprintf("failed to save and insert image: %v", err)
+		msg := fmt.Sprintf("failed to insert image database record: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
@@ -134,17 +134,20 @@ func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p h
 
 	image, err := h.db.Images().Read(imageID)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		msg := fmt.Sprintf("failed to get image database record: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
 	if err := h.db.Images().Delete(imageID); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		msg := fmt.Sprintf("failed to delete image database record: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
 	if err := upload.Delete(h.upl, image); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		msg := fmt.Sprintf("failed to delete image file: %v", err)
+		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
