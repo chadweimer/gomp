@@ -9,7 +9,7 @@ services:
 language: go
 
 go:
-  - "1.13"
+  - "1.15"
 
 jdk:
   - oraclejdk8
