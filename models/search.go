@@ -52,10 +52,3 @@ type RecipesFilter struct {
 	Page     int64    `json:"page"`
 	Count    int64    `json:"count"`
 }
-
-// RecipeCompact is the primary model class for bulk recipe retrieval
-type RecipeCompact struct {
-	recipeBase
-
-	ThumbnailURL string `json:"thumbnailUrl" db:"thumbnail_url"`
-}

@@ -27,6 +27,13 @@ type recipeBase struct {
 	AvgRating  float64     `json:"averageRating" db:"avg_rating"`
 }
 
+// RecipeCompact is the primary model class for bulk recipe retrieval
+type RecipeCompact struct {
+	recipeBase
+
+	ThumbnailURL string `json:"thumbnailUrl" db:"thumbnail_url"`
+}
+
 // Recipe is the primary model class for recipe storage and retrieval
 type Recipe struct {
 	recipeBase
