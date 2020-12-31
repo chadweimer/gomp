@@ -99,20 +99,20 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 	imageExt := filepath.Ext(fileHeader.Filename)
 	imageName := uuid.NewV4().String() + imageExt
 
-	imageInfo := &models.RecipeImage{
-		RecipeID: recipeID,
-		Name:     imageName,
-	}
-
 	// Save the image itself
-	url, thumbURL, err := upload.Save(h.upl, imageInfo, uploadedFileData)
+	url, thumbURL, err := upload.Save(h.upl, recipeID, imageName, uploadedFileData)
 	if err != nil {
 		msg := fmt.Sprintf("failed to save image file: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
-	imageInfo.URL = url
-	imageInfo.ThumbnailURL = thumbURL
+
+	imageInfo := &models.RecipeImage{
+		RecipeID:     recipeID,
+		Name:         imageName,
+		URL:          url,
+		ThumbnailURL: thumbURL,
+	}
 
 	// Now insert the record in the database
 	if err = h.db.Images().Create(imageInfo); err != nil {

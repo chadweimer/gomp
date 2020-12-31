@@ -10,13 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chadweimer/gomp/models"
 	"github.com/disintegration/imaging"
 )
 
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func Save(driver Driver, imageInfo *models.RecipeImage, data []byte) (string, string, error) {
+func Save(driver Driver, recipeID int64, imageName string, data []byte) (string, string, error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
 		return "", "", errors.New("attachment must be an image")
@@ -36,8 +35,8 @@ func Save(driver Driver, imageInfo *models.RecipeImage, data []byte) (string, st
 	}
 
 	// Save the original image
-	origDir := getDirPathForImage(imageInfo.RecipeID)
-	origPath := filepath.Join(origDir, imageInfo.Name)
+	origDir := getDirPathForImage(recipeID)
+	origPath := filepath.Join(origDir, imageName)
 	origURL := filepath.ToSlash(filepath.Join("/uploads/", origPath))
 	err = driver.Save(origPath, data)
 	if err != nil {
@@ -45,8 +44,8 @@ func Save(driver Driver, imageInfo *models.RecipeImage, data []byte) (string, st
 	}
 
 	// Save the thumbnail image
-	thumbDir := getDirPathForThumbnail(imageInfo.RecipeID)
-	thumbPath := filepath.Join(thumbDir, imageInfo.Name)
+	thumbDir := getDirPathForThumbnail(recipeID)
+	thumbPath := filepath.Join(thumbDir, imageName)
 	thumbURL := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
 	err = driver.Save(thumbPath, thumbData)
 	if err != nil {
@@ -69,12 +68,12 @@ func generateThumbnail(image image.Image, contentType string) ([]byte, error) {
 }
 
 // Delete removes the specified image files from the upload store.
-func Delete(driver Driver, image *models.RecipeImage) error {
-	origPath := filepath.Join(getDirPathForImage(image.RecipeID), image.Name)
+func Delete(driver Driver, recipeID int64, imageName string) error {
+	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
 	if err := driver.Delete(origPath); err != nil {
 		return err
 	}
-	thumbPath := filepath.Join(getDirPathForThumbnail(image.RecipeID), image.Name)
+	thumbPath := filepath.Join(getDirPathForThumbnail(recipeID), imageName)
 	if err := driver.Delete(thumbPath); err != nil {
 		return err
 	}
