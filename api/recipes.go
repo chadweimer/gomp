@@ -130,6 +130,7 @@ func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p 
 		return
 	}
 
+	// Delete all the uploaded image files associated with the recipe also
 	if err = upload.DeleteAll(h.upl, recipeID); err != nil {
 		h.JSON(resp, http.StatusInternalServerError, err.Error())
 		return
