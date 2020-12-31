@@ -10,8 +10,8 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	uuid "github.com/satori/go.uuid"
 )
 
 func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
@@ -97,7 +97,7 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 
 	// Generate a unique name for the image
 	imageExt := filepath.Ext(fileHeader.Filename)
-	imageName := uuid.NewV4().String() + imageExt
+	imageName := uuid.New().String() + imageExt
 
 	// Save the image itself
 	url, thumbURL, err := upload.Save(h.upl, recipeID, imageName, uploadedFileData)
@@ -132,6 +132,7 @@ func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
+	// We need to read the info about the image for later
 	image, err := h.db.Images().Read(imageID)
 	if err != nil {
 		msg := fmt.Sprintf("failed to get image database record: %v", err)
@@ -139,13 +140,15 @@ func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p h
 		return
 	}
 
+	// Now delete the record from the database
 	if err := h.db.Images().Delete(imageID); err != nil {
 		msg := fmt.Sprintf("failed to delete image database record: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
 	}
 
-	if err := upload.Delete(h.upl, image); err != nil {
+	// And lastly delete the image file itself
+	if err := upload.Delete(h.upl, image.RecipeID, image.Name); err != nil {
 		msg := fmt.Sprintf("failed to delete image file: %v", err)
 		h.JSON(resp, http.StatusInternalServerError, msg)
 		return
