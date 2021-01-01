@@ -41,7 +41,7 @@ type Config struct {
 	ApplicationTitle string
 
 	// DatabaseDriver gets which database/sql driver to use.
-	// Supported drivers: postgres, sqlite
+	// Supported drivers: postgres, sqlite3
 	DatabaseDriver string
 
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
