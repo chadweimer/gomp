@@ -3,7 +3,6 @@ package sqlite3
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
@@ -21,11 +20,10 @@ func (d sqliteRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 }
 
 func (d sqliteRecipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
-	now := time.Now()
-	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4, $5, $6)"
+	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
+		"VALUES ($1, $2, $3, $4)"
 
-	res, err := tx.Exec(stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now)
+	res, err := tx.Exec(stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL)
 	if err != nil {
 		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
 	}

@@ -49,8 +49,10 @@ func (d sqliteRecipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (d sqliteRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
-		"FROM recipe AS r WHERE r.id = $1"
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
+		"FROM recipe AS r " +
+		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+		"WHERE r.id = $1"
 	recipe := new(models.Recipe)
 	err := d.db.Get(recipe, stmt, id)
 	if err == sql.ErrNoRows {

@@ -18,11 +18,10 @@ func (d sqliteNoteDriver) Create(note *models.Note) error {
 }
 
 func (d sqliteNoteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
-	now := time.Now()
-	stmt := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4)"
+	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
+		"VALUES ($1, $2)"
 
-	res, err := tx.Exec(stmt, note.RecipeID, note.Note, now, now)
+	res, err := tx.Exec(stmt, note.RecipeID, note.Note)
 	if err != nil {
 		return err
 	}
