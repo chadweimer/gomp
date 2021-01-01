@@ -18,6 +18,7 @@ The following table summarizes the available configuration settings, which are s
 | DATABASE\_DRIVER                 | 'postgres', 'sqlite3' | &lt;empty&gt;         | Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE\_URL. |
 | DATABASE\_URL                    | string               | data/data.db          | The url (or path, connection string, etc) to use with the associated database driver when opening the database connection. |
 | GOMP\_APPLICATION\_TITLE         | string               | GOMP: Go Meal Planner | Used where the application name (title) is displayed on screen. |
+| GOMP_BASE_ASSETS_PATH            | string               | static                | The base path to the client assets. |
 | GOMP\_IS\_DEVELOPMENT            | '0', '1'             | 0                     | Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment. |
 | GOMP\_MIGRATIONS\_FORCE\_VERSION | int                  | -1                    | A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version. |
 | GOMP\_MIGRATIONS\_TABLE\_NAME    | string               | &lt;empty&gt;         | The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.> |
