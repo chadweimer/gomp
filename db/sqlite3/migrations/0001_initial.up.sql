@@ -1,7 +1,7 @@
 -- Schema
 
 CREATE TABLE app_user (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     access_level TEXT CHECK(access_level IN ('admin', 'editor', 'viewer')) DEFAULT 'editor'
@@ -16,7 +16,7 @@ CREATE TABLE app_user_settings (
 );
 
 CREATE TABLE recipe (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     ingredients TEXT NOT NULL,
     directions TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE INDEX recipe_tag_idx ON recipe_tag(tag);
 CREATE INDEX recipe_tag_recipe_id_idx ON recipe_tag(recipe_id);
 
 CREATE TABLE recipe_note (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY,
     recipe_id INTEGER NOT NULL,
     note TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE recipe_rating (
 CREATE INDEX recipe_rating_recipe_id_idx ON recipe_rating(recipe_id);
 
 CREATE TABLE recipe_image (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id INTEGER NOT NULL PRIMARY KEY,
     recipe_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
