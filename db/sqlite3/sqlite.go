@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -36,23 +38,19 @@ type sqliteDriver struct {
 // Open established a connection to the specified database and returns
 // an object that implements db.Driver that can be used to query it.
 func Open(path string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
-	// In docker, on first bring up, the DB takes a little while.
-	// Let's try a few times to establish connection before giving up.
-	const maxAttempts = 20
-	var db *sqlx.DB
-	var err error
-	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(DriverName, path)
+	// Attempt to create the base path, if necessary
+	fileURL, err := url.Parse(path)
+	if err == nil && fileURL.Scheme == "file" {
+		fullPath, err := filepath.Abs(fileURL.RequestURI())
 		if err == nil {
-			break
+			dir := filepath.Dir(fullPath)
+			_ = os.MkdirAll(dir, 0755)
 		}
+	}
 
-		if i < maxAttempts {
-			log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
-			time.Sleep(500 * time.Millisecond)
-		} else {
-			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%+v'", i, err)
-		}
+	db, err := sqlx.Connect(DriverName, path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: '%+v'", err)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
