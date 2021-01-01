@@ -69,7 +69,7 @@ func Load() *Config {
 		IsDevelopment:          false,
 		SecureKeys:             nil,
 		ApplicationTitle:       "GOMP: Go Meal Planner",
-		DatabaseDriver:         sqlite3.DriverName,
+		DatabaseDriver:         "",
 		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
@@ -88,6 +88,26 @@ func Load() *Config {
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
 	loadEnv("GOMP_MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
+
+	// Special case for backward compatibility
+	if c.DatabaseDriver == "" {
+		if c.IsDevelopment {
+			log.Print("[config] DATABASE_DRIVER is empty. Will attempt to infer...")
+		}
+		if strings.HasPrefix(c.DatabaseURL, "file:") {
+			if c.IsDevelopment {
+				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", sqlite3.DriverName)
+			}
+			c.DatabaseDriver = sqlite3.DriverName
+		} else if strings.HasPrefix(c.DatabaseURL, "postgres:") {
+			if c.IsDevelopment {
+				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", postgres.DriverName)
+			}
+			c.DatabaseDriver = postgres.DriverName
+		} else if c.IsDevelopment {
+			log.Print("[config] Unable to infer a value for DATABASE_DRIVER")
+		}
+	}
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
