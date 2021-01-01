@@ -26,13 +26,14 @@ func (d sqliteRecipeDriver) Create(recipe *models.Recipe) error {
 // the specified transaction.
 func (d sqliteRecipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+		"VALUES ($1, $2, $3, $4, $5, $6)"
 
-	err := tx.Get(recipe, stmt,
+	res, err := tx.Exec(stmt,
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %v", err)
 	}
+	recipe.ID, _ = res.LastInsertId()
 
 	for _, tag := range recipe.Tags {
 		err := d.Tags().CreateTx(recipe.ID, tag, tx)
