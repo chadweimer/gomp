@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -64,10 +65,10 @@ func main() {
 	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
 	mainMux.Handler("POST", "/api/*apipath", apiHandler)
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
+	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath)))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		http.ServeFile(resp, req, "static/index.html")
+		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	})
 	n.UseHandler(mainMux)
 

@@ -55,6 +55,9 @@ type Config struct {
 	// MigrationsForceVersion gets a version to force the migrations to on startup.
 	// Set to a negative number to skip forcing a version.
 	MigrationsForceVersion int
+
+	// BaseAssetsPath gets the base path to the client assets.
+	BaseAssetsPath string
 }
 
 // Load reads the configuration file from the specified path
@@ -70,6 +73,7 @@ func Load() *Config {
 		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
+		BaseAssetsPath:         "static",
 	}
 
 	// If environment variables are set, use them.
@@ -79,6 +83,7 @@ func Load() *Config {
 	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
+	loadEnv("GOMP_BASE_ASSETS_PATH", &c.BaseAssetsPath)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
@@ -91,6 +96,7 @@ func Load() *Config {
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
+		log.Printf("[config] BaseAssetsPath=%s", c.BaseAssetsPath)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
 		log.Printf("[config] MigrationsTableName=%s", c.MigrationsTableName)
@@ -120,6 +126,10 @@ func (c Config) Validate() error {
 
 	if c.ApplicationTitle == "" {
 		return errors.New("GOMP_APPLICATION_TITLE must be specified")
+	}
+
+	if c.BaseAssetsPath == "" {
+		return errors.New("GOMP_BASE_ASSETS_PATH must be specified")
 	}
 
 	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite3.DriverName {
