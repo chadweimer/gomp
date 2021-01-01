@@ -18,11 +18,10 @@ func (d postgresNoteDriver) Create(note *models.Note) error {
 }
 
 func (d postgresNoteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
-	now := time.Now()
-	stmt := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4) RETURNING id"
+	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
+		"VALUES ($1, $2) RETURNING id"
 
-	return tx.Get(note, stmt, note.RecipeID, note.Note, now, now)
+	return tx.Get(note, stmt, note.RecipeID, note.Note)
 }
 
 func (d postgresNoteDriver) Update(note *models.Note) error {

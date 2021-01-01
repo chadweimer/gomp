@@ -3,7 +3,6 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
@@ -21,11 +20,10 @@ func (d postgresRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 }
 
 func (d postgresRecipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
-	now := time.Now()
-	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
+		"VALUES ($1, $2, $3, $4) RETURNING id"
 
-	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now); err != nil {
+	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL); err != nil {
 		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
 	}
 
