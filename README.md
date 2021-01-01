@@ -15,8 +15,8 @@ The following table summarizes the available configuration settings, which are s
 
 | ENV                              | Value(s)             | Default               | Description |
 |----------------------------------|----------------------|-----------------------|-------------|
-| DATABASE\_DRIVER                 | 'postgres', 'sqlite3' | &lt;empty&gt;         | Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE\_URL. |
-| DATABASE\_URL                    | string               | data/data.db          | The url (or path, connection string, etc) to use with the associated database driver when opening the database connection. |
+| DATABASE\_DRIVER                 | 'postgres', 'sqlite3' | &lt;empty&gt;        | Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE\_URL. |
+| DATABASE\_URL                    | string               | file:data/data.db     | The url (or path, connection string, etc) to use with the associated database driver when opening the database connection. |
 | GOMP\_APPLICATION\_TITLE         | string               | GOMP: Go Meal Planner | Used where the application name (title) is displayed on screen. |
 | GOMP_BASE_ASSETS_PATH            | string               | static                | The base path to the client assets. |
 | GOMP\_IS\_DEVELOPMENT            | '0', '1'             | 0                     | Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment. |
