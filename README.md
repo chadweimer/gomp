@@ -25,7 +25,7 @@ The following table summarizes the available configuration settings, which are s
 | GOMP\_UPLOAD\_DRIVER             | 'fs', 's3'           | fs                    | Used to select which backend data store is used for file uploads. |
 | GOMP\_UPLOAD\_PATH               | string               | data/uploads          | The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name. |
 | PORT                             | uint                 | 4000                  | The port number under which the site is being hosted. |
-| SECURE\_KEY                      | []string             | &lt;nil&gt;           | Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas. |
+| SECURE\_KEY                      | []string             | ChangeMe              | Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas. |
 
 ## Database Support
 

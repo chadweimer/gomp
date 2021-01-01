@@ -60,6 +60,8 @@ type Config struct {
 	BaseAssetsPath string
 }
 
+const defaultSecureKey string = "ChangeMe"
+
 // Load reads the configuration file from the specified path
 func Load() *Config {
 	c := Config{
@@ -67,7 +69,7 @@ func Load() *Config {
 		UploadDriver:           "fs",
 		UploadPath:             filepath.Join("data", "uploads"),
 		IsDevelopment:          false,
-		SecureKeys:             nil,
+		SecureKeys:             []string{defaultSecureKey},
 		ApplicationTitle:       "GOMP: Go Meal Planner",
 		DatabaseDriver:         "",
 		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
@@ -142,6 +144,8 @@ func (c Config) Validate() error {
 
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
 		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
+	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
+		log.Printf("[config] WARNING: SECURE_KEY is set to the default value '%s'. It is highly recommended that this be changed to something unique.", defaultSecureKey)
 	}
 
 	if c.ApplicationTitle == "" {
