@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -21,8 +22,7 @@ var errMismatchedID = errors.New("The id in the path does not match the one spec
 // ---- End Standard Errors ----
 
 type apiHandler struct {
-	*render.Render
-
+	rnd    *render.Render
 	cfg    *conf.Config
 	upl    upload.Driver
 	db     db.Driver
@@ -32,14 +32,12 @@ type apiHandler struct {
 // NewHandler returns a new instance of http.Handler
 func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler {
 	h := apiHandler{
-		Render: renderer,
-
-		cfg: cfg,
-		upl: upl,
-		db:  db,
+		rnd:    renderer,
+		cfg:    cfg,
+		upl:    upl,
+		db:     db,
+		apiMux: httprouter.New(),
 	}
-
-	h.apiMux = httprouter.New()
 
 	// Public
 	h.apiMux.GET("/api/v1/app/configuration", h.getAppConfiguration)
@@ -84,13 +82,31 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 	return &h
 }
 
-func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
-	h.JSON(resp, http.StatusNotFound, fmt.Sprintf("%s is not a valid API endpoint", req.URL.Path))
-}
-
 func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-Type", "application/json")
 	h.apiMux.ServeHTTP(resp, req)
+}
+
+func (h apiHandler) OK(resp http.ResponseWriter, v interface{}) {
+	h.rnd.JSON(resp, http.StatusOK, v)
+}
+
+func (h apiHandler) NoContent(resp http.ResponseWriter) {
+	resp.WriteHeader(http.StatusNoContent)
+}
+
+func (h apiHandler) Created(resp http.ResponseWriter, location string) {
+	resp.Header().Set("Location", location)
+	resp.WriteHeader(http.StatusCreated)
+}
+
+func (h apiHandler) Error(resp http.ResponseWriter, status int, err error) {
+	log.Print(err.Error())
+	h.rnd.JSON(resp, status, err.Error())
+}
+
+func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
+	h.Error(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 
 func getParam(values url.Values, key string) string {

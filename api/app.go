@@ -13,5 +13,5 @@ func (h apiHandler) getAppConfiguration(resp http.ResponseWriter, req *http.Requ
 		Title: h.cfg.ApplicationTitle,
 	}
 
-	h.JSON(resp, http.StatusOK, appConfiguration)
+	h.OK(resp, appConfiguration)
 }
