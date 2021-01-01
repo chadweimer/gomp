@@ -14,7 +14,7 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/db/postgres"
-	"github.com/chadweimer/gomp/db/sqlite"
+	"github.com/chadweimer/gomp/db/sqlite3"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -41,8 +41,8 @@ func main() {
 		if err != nil {
 			log.Fatalf("[db] %s", err.Error())
 		}
-	} else if cfg.DatabaseDriver == sqlite.DriverName {
-		db, err = sqlite.Open(
+	} else if cfg.DatabaseDriver == sqlite3.DriverName {
+		db, err = sqlite3.Open(
 			cfg.DatabaseURL,
 			cfg.MigrationsTableName,
 			cfg.MigrationsForceVersion)

@@ -1,16 +1,10 @@
-BEGIN;
-
 -- Schema
 
-CREATE TYPE user_level AS ENUM ('admin', 'editor', 'viewer');
-
-CREATE TYPE recipe_state AS ENUM ('active', 'archived', 'deleted');
-
 CREATE TABLE app_user (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    access_level user_level DEFAULT 'editor'
+    access_level TEXT CHECK(access_level IN ('admin', 'editor', 'viewer')) DEFAULT 'editor'
 );
 CREATE INDEX user_username_idx ON app_user(username);
 
@@ -22,7 +16,7 @@ CREATE TABLE app_user_settings (
 );
 
 CREATE TABLE recipe (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     ingredients TEXT NOT NULL,
     directions TEXT NOT NULL,
@@ -30,7 +24,7 @@ CREATE TABLE recipe (
     nutrition_info TEXT NOT NULL DEFAULT '',
     source_url TEXT NOT NULL DEFAULT '',
     image_id INTEGER REFERENCES recipe_image(id) ON DELETE SET NULL,
-    current_state recipe_state DEFAULT 'active',
+    current_state TEXT CHECK(current_state IN ('active', 'archived', 'deleted')) DEFAULT 'active',
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -47,7 +41,7 @@ CREATE INDEX recipe_tag_idx ON recipe_tag(tag);
 CREATE INDEX recipe_tag_recipe_id_idx ON recipe_tag(recipe_id);
 
 CREATE TABLE recipe_note (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     recipe_id INTEGER NOT NULL,
     note TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -64,7 +58,7 @@ CREATE TABLE recipe_rating (
 CREATE INDEX recipe_rating_recipe_id_idx ON recipe_rating(recipe_id);
 
 CREATE TABLE recipe_image (
-    id SERIAL NOT NULL PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     recipe_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
@@ -92,5 +86,3 @@ INSERT INTO app_user (username, password_hash, access_level)
 SELECT 'admin@example.com', '$2a$08$1C0IMQAwkxLQcYvL/03jpuwOZjyF/6BCXgxHhkoarRoVp1wmiGwAS', 'admin';
 
 INSERT INTO app_user_settings(user_id) SELECT id FROM app_user;
-
-COMMIT;

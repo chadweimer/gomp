@@ -1,8 +1,7 @@
-package sqlite
+package sqlite3
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -117,11 +116,6 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 		return err
 	}
 	defer conn.Close()
-	// This should block until the lock has been acquired
-	if err := lock(conn); err != nil {
-		return err
-	}
-	defer unlock(conn)
 
 	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{
 		MigrationsTable: migrationsTableName,
@@ -149,18 +143,6 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 	}
 
 	return nil
-}
-
-func lock(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_lock(1)`
-	_, err := conn.ExecContext(context.Background(), stmt)
-	return err
-}
-
-func unlock(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_unlock(1)`
-	_, err := conn.ExecContext(context.Background(), stmt)
-	return err
 }
 
 func (d sqliteDriver) tx(op func(*sqlx.Tx) error) error {

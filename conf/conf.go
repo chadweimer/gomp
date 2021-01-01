@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/chadweimer/gomp/db/postgres"
-	"github.com/chadweimer/gomp/db/sqlite"
+	"github.com/chadweimer/gomp/db/sqlite3"
 	"github.com/chadweimer/gomp/upload"
 )
 
@@ -66,8 +66,8 @@ func Load() *Config {
 		IsDevelopment:          false,
 		SecureKeys:             nil,
 		ApplicationTitle:       "GOMP: Go Meal Planner",
-		DatabaseDriver:         sqlite.DriverName,
-		DatabaseURL:            filepath.Join("data", "data.db"),
+		DatabaseDriver:         sqlite3.DriverName,
+		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
 	}
@@ -122,8 +122,8 @@ func (c Config) Validate() error {
 		return errors.New("GOMP_APPLICATION_TITLE must be specified")
 	}
 
-	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite.DriverName {
-		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", postgres.DriverName, sqlite.DriverName)
+	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite3.DriverName {
+		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", postgres.DriverName, sqlite3.DriverName)
 	}
 
 	if c.DatabaseURL == "" {
