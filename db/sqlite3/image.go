@@ -23,11 +23,13 @@ func (d sqliteRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 func (d sqliteRecipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	now := time.Now()
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+		"VALUES ($1, $2, $3, $4, $5, $6)"
 
-	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now); err != nil {
+	res, err := tx.Exec(stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL, now, now)
+	if err != nil {
 		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
 	}
+	image.ID, _ = res.LastInsertId()
 
 	// Switch to a new main image if necessary, since this might be the first image attached
 	return d.setMainImageIfNecessary(image.RecipeID, tx)

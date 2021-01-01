@@ -20,9 +20,15 @@ func (d sqliteNoteDriver) Create(note *models.Note) error {
 func (d sqliteNoteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
 	now := time.Now()
 	stmt := "INSERT INTO recipe_note (recipe_id, note, created_at, modified_at) " +
-		"VALUES ($1, $2, $3, $4) RETURNING id"
+		"VALUES ($1, $2, $3, $4)"
 
-	return tx.Get(note, stmt, note.RecipeID, note.Note, now, now)
+	res, err := tx.Exec(stmt, note.RecipeID, note.Note, now, now)
+	if err != nil {
+		return err
+	}
+	note.ID, _ = res.LastInsertId()
+
+	return nil
 }
 
 func (d sqliteNoteDriver) Update(note *models.Note) error {

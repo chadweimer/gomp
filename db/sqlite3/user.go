@@ -36,9 +36,15 @@ func (d sqliteUserDriver) Create(user *models.User) error {
 
 func (d sqliteUserDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
-		"VALUES ($1, $2, $3) RETURNING id"
+		"VALUES ($1, $2, $3)"
 
-	return tx.Get(user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
+	res, err := tx.Exec(stmt, user.Username, user.PasswordHash, user.AccessLevel)
+	if err != nil {
+		return err
+	}
+	user.ID, _ = res.LastInsertId()
+
+	return nil
 }
 
 func (d sqliteUserDriver) Read(id int64) (*models.User, error) {
