@@ -36,6 +36,12 @@ type UserSettings struct {
 
 // Scan implements the sql.Scanner interface
 func (u *UserLevel) Scan(value interface{}) error {
+	asString, ok := value.(string)
+	if ok {
+		*u = UserLevel(asString)
+		return nil
+	}
+
 	asBytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("Scan source is not []byte")
