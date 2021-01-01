@@ -10,8 +10,6 @@ services:
       - db
     environment:
       - DATABASE_URL=postgres://dbuser:dbpassword@db/gomp?sslmode=disable
-      - GOMP_UPLOAD_PATH=/var/app/gomp/data/uploads
-      - SECURE_KEY=UpdateMe
     volumes:
       - data:/var/app/gomp/data
     ports:
