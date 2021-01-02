@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.12
 LABEL maintainer="ch@dweimer.com"
 
 RUN apk add --no-cache ca-certificates \
