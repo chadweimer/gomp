@@ -3,13 +3,13 @@ package sqlite3
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/db/sqlcommon"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/jmoiron/sqlx"
@@ -24,15 +24,15 @@ import (
 // DriverName is the name to use for this driver
 const DriverName string = "sqlite3"
 
-type sqliteDriver struct {
-	db *sqlx.DB
+type driver struct {
+	*sqlcommon.Driver
 
-	recipes *sqliteRecipeDriver
-	images  *sqliteRecipeImageDriver
-	tags    *sqliteTagDriver
-	notes   *sqliteNoteDriver
-	links   *sqliteLinkDriver
-	users   *sqliteUserDriver
+	recipes *recipeDriver
+	images  *recipeImageDriver
+	tags    *sqlcommon.TagDriver
+	notes   *noteDriver
+	links   *sqlcommon.LinkDriver
+	users   *userDriver
 }
 
 // Open established a connection to the specified database and returns
@@ -59,49 +59,40 @@ func Open(path string, migrationsTableName string, migrationsForceVersion int) (
 		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
 	}
 
-	drv := &sqliteDriver{
-		db: db,
+	drv := &driver{
+		Driver: sqlcommon.New(db),
 	}
-	drv.recipes = &sqliteRecipeDriver{drv}
-	drv.images = &sqliteRecipeImageDriver{drv}
-	drv.tags = &sqliteTagDriver{drv}
-	drv.notes = &sqliteNoteDriver{drv}
-	drv.links = &sqliteLinkDriver{drv}
-	drv.users = &sqliteUserDriver{drv}
+	drv.recipes = newRecipeDriver(drv)
+	drv.images = newRecipeImageDriver(drv)
+	drv.tags = &sqlcommon.TagDriver{drv.Driver}
+	drv.notes = newNoteDriver(drv)
+	drv.links = &sqlcommon.LinkDriver{drv.Driver}
+	drv.users = newUserDriver(drv)
 
 	return drv, nil
 }
 
-func (d sqliteDriver) Close() error {
-	log.Print("Closing database connection...")
-	if err := d.db.Close(); err != nil {
-		return fmt.Errorf("failed to close the connection to the database: '%+v'", err)
-	}
-
-	return nil
-}
-
-func (d sqliteDriver) Recipes() db.RecipeDriver {
+func (d driver) Recipes() db.RecipeDriver {
 	return d.recipes
 }
 
-func (d sqliteDriver) Images() db.RecipeImageDriver {
+func (d driver) Images() db.RecipeImageDriver {
 	return d.images
 }
 
-func (d sqliteDriver) Tags() db.TagDriver {
+func (d driver) Tags() db.TagDriver {
 	return d.tags
 }
 
-func (d sqliteDriver) Notes() db.NoteDriver {
+func (d driver) Notes() db.NoteDriver {
 	return d.notes
 }
 
-func (d sqliteDriver) Links() db.LinkDriver {
+func (d driver) Links() db.LinkDriver {
 	return d.links
 }
 
-func (d sqliteDriver) Users() db.UserDriver {
+func (d driver) Users() db.UserDriver {
 	return d.users
 }
 
@@ -141,27 +132,4 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 	}
 
 	return nil
-}
-
-func (d sqliteDriver) tx(op func(*sqlx.Tx) error) error {
-	tx, err := d.db.Beginx()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if recv := recover(); recv != nil {
-			// Make sure to rollback after a panic...
-			tx.Rollback()
-
-			// ... but let the panicing continue
-			panic(recv)
-		}
-	}()
-
-	if err = op(tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit()
 }

@@ -1,23 +1,28 @@
 package sqlite3
 
 import (
-	"time"
-
+	"github.com/chadweimer/gomp/db/sqlcommon"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
 
-type sqliteNoteDriver struct {
-	*sqliteDriver
+type noteDriver struct {
+	*sqlcommon.NoteDriver
 }
 
-func (d sqliteNoteDriver) Create(note *models.Note) error {
-	return d.tx(func(tx *sqlx.Tx) error {
+func newNoteDriver(driver *driver) *noteDriver {
+	return &noteDriver{
+		NoteDriver: &sqlcommon.NoteDriver{driver.Driver},
+	}
+}
+
+func (d noteDriver) Create(note *models.Note) error {
+	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(note, tx)
 	})
 }
 
-func (d sqliteNoteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
+func (d noteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
 		"VALUES ($1, $2)"
 
@@ -28,51 +33,4 @@ func (d sqliteNoteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
 	note.ID, _ = res.LastInsertId()
 
 	return nil
-}
-
-func (d sqliteNoteDriver) Update(note *models.Note) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.UpdateTx(note, tx)
-	})
-}
-
-func (d sqliteNoteDriver) UpdateTx(note *models.Note, tx *sqlx.Tx) error {
-	_, err := tx.Exec("UPDATE recipe_note SET note = $1, modified_at = $2 "+
-		"WHERE ID = $3 AND recipe_id = $4",
-		note.Note, time.Now(), note.ID, note.RecipeID)
-	return err
-}
-
-func (d sqliteNoteDriver) Delete(id int64) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.DeleteTx(id, tx)
-	})
-}
-
-func (d sqliteNoteDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
-	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = $1", id)
-	return err
-}
-
-func (d sqliteNoteDriver) DeleteAll(recipeID int64) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.DeleteAllTx(recipeID, tx)
-	})
-}
-
-func (d sqliteNoteDriver) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
-	_, err := tx.Exec(
-		"DELETE FROM recipe_note WHERE recipe_id = $1",
-		recipeID)
-	return err
-}
-
-func (d sqliteNoteDriver) List(recipeID int64) (*[]models.Note, error) {
-	var notes []models.Note
-
-	if err := d.db.Select(&notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeID); err != nil {
-		return nil, err
-	}
-
-	return &notes, nil
 }

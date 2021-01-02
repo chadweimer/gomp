@@ -6,25 +6,34 @@ import (
 	"strings"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/db/sqlcommon"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
 
-type postgresRecipeDriver struct {
-	*postgresDriver
+type recipeDriver struct {
+	*driver
+	*sqlcommon.RecipeDriver
+}
+
+func newRecipeDriver(driver *driver) *recipeDriver {
+	return &recipeDriver{
+		driver:       driver,
+		RecipeDriver: &sqlcommon.RecipeDriver{driver.Driver},
+	}
 }
 
 // Create stores the recipe in the database as a new record using
 // a dedicated transaction that is committed if there are not errors.
-func (d postgresRecipeDriver) Create(recipe *models.Recipe) error {
-	return d.tx(func(tx *sqlx.Tx) error {
+func (d recipeDriver) Create(recipe *models.Recipe) error {
+	return d.driver.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(recipe, tx)
 	})
 }
 
 // CreateTx stores the recipe in the database as a new record using
 // the specified transaction.
-func (d postgresRecipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
@@ -46,12 +55,12 @@ func (d postgresRecipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error
 
 // Read retrieves the information about the recipe from the database, if found.
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
-func (d postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
+func (d recipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
 		"FROM recipe AS r WHERE r.id = $1"
 	recipe := new(models.Recipe)
-	err := d.db.Get(recipe, stmt, id)
+	err := d.driver.Db.Get(recipe, stmt, id)
 	if err == sql.ErrNoRows {
 		return nil, db.ErrNotFound
 	} else if err != nil {
@@ -70,15 +79,15 @@ func (d postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 // Update stores the specified recipe in the database by updating the
 // existing record with the specified id using a dedicated transaction
 // that is committed if there are not errors.
-func (d postgresRecipeDriver) Update(recipe *models.Recipe) error {
-	return d.tx(func(tx *sqlx.Tx) error {
+func (d recipeDriver) Update(recipe *models.Recipe) error {
+	return d.driver.Tx(func(tx *sqlx.Tx) error {
 		return d.UpdateTx(recipe, tx)
 	})
 }
 
 // UpdateTx stores the specified recipe in the database by updating the
 // existing record with the specified id using the specified transaction.
-func (d postgresRecipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6, modified_at = transaction_timestamp() "+
@@ -103,61 +112,8 @@ func (d postgresRecipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error
 	return nil
 }
 
-// Delete removes the specified recipe from the database using a dedicated transaction
-// that is committed if there are not errors. Note that this method does not delete
-// any attachments that we associated with the deleted recipe.
-func (d postgresRecipeDriver) Delete(id int64) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.DeleteTx(id, tx)
-	})
-}
-
-// DeleteTx removes the specified recipe from the database using the specified transaction.
-// Note that this method does not delete any attachments that we associated with the deleted recipe.
-func (d postgresRecipeDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
-	if _, err := tx.Exec("DELETE FROM recipe WHERE id = $1", id); err != nil {
-		return fmt.Errorf("deleting recipe: %v", err)
-	}
-
-	return nil
-}
-
-// SetRating adds or updates the rating of the specified recipe.
-func (d postgresRecipeDriver) SetRating(id int64, rating float64) error {
-	var count int64
-	err := d.db.Get(&count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
-
-	if err == sql.ErrNoRows || count == 0 {
-		_, err = d.db.Exec(
-			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
-		if err != nil {
-			return fmt.Errorf("creating recipe rating: %v", err)
-		}
-	} else if err == nil {
-		_, err = d.db.Exec(
-			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
-	}
-
-	if err != nil {
-		return fmt.Errorf("updating recipe rating: %v", err)
-	}
-
-	return nil
-}
-
-// SetState updates the state of the specified recipe.
-func (d postgresRecipeDriver) SetState(id int64, state models.RecipeState) error {
-	_, err := d.db.Exec(
-		"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
-	if err != nil {
-		return fmt.Errorf("updating recipe state: %v", err)
-	}
-
-	return nil
-}
-
 // Find retrieves all recipes matching the specified search filter and within the range specified.
-func (d postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := " WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error
@@ -222,8 +178,8 @@ func (d postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.Reci
 	}
 
 	var total int64
-	countStmt := d.db.Rebind("SELECT count(r.id) FROM recipe AS r" + whereStmt)
-	if err := d.db.Get(&total, countStmt, whereArgs...); err != nil {
+	countStmt := d.driver.Db.Rebind("SELECT count(r.id) FROM recipe AS r" + whereStmt)
+	if err := d.driver.Db.Get(&total, countStmt, whereArgs...); err != nil {
 		return nil, 0, err
 	}
 
@@ -251,14 +207,14 @@ func (d postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.Reci
 	}
 	orderStmt += " LIMIT ? OFFSET ?"
 
-	selectStmt := d.db.Rebind("SELECT " +
+	selectStmt := d.driver.Db.Rebind("SELECT " +
 		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
 		"FROM recipe AS r" +
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)
 
 	var recipes []models.RecipeCompact
-	err = d.db.Select(&recipes, selectStmt, selectArgs...)
+	err = d.driver.Db.Select(&recipes, selectStmt, selectArgs...)
 	if err != nil {
 		return nil, 0, err
 	}
