@@ -1,8 +1,6 @@
 FROM balenalib/armv7hf-debian:buster
 LABEL maintainer="ch@dweimer.com"
 
-#RUN apk add --no-cache ca-certificates
-
 WORKDIR /var/app/gomp
 COPY build/linux/armhf/ ./
 VOLUME /var/app/gomp/data
