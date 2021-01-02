@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     # Install necessary packages
     apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git make xubuntu-core
+    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git build-essential crossbuild-essential-armhf xubuntu-core
     snap install go --classic
     snap install node --classic
     snap install code --classic
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "libvirt" do |lv, override|
     lv.memory = "4096"
 
-    override.vm.synced_folder './', '/vagrant', type: "9p", disabled: false, accessmode: "mapped"
+    override.vm.synced_folder "./", "/vagrant", type: "rsync"
   end
 
   config.vm.provider "virtualbox" do |vb|
