@@ -23,6 +23,8 @@ addons:
   apt:
     packages:
       - zip
+      - gcc-arm-linux-gnueabihf
+      - libc6-dev-armhf-cross
   sonarcloud:
     organization: "chadweimer-github"
     branches:
