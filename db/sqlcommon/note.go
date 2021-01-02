@@ -1,8 +1,6 @@
 package sqlcommon
 
 import (
-	"time"
-
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -18,9 +16,9 @@ func (d NoteDriver) Update(note *models.Note) error {
 }
 
 func (d NoteDriver) UpdateTx(note *models.Note, tx *sqlx.Tx) error {
-	_, err := tx.Exec("UPDATE recipe_note SET note = $1, modified_at = $2 "+
-		"WHERE ID = $3 AND recipe_id = $4",
-		note.Note, time.Now(), note.ID, note.RecipeID)
+	_, err := tx.Exec("UPDATE recipe_note SET note = $1, modified_at = CURRENT_TIMESTAMP "+
+		"WHERE ID = $2 AND recipe_id = $3",
+		note.Note, note.ID, note.RecipeID)
 	return err
 }
 

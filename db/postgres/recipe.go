@@ -92,7 +92,7 @@ func (d recipeDriver) Update(recipe *models.Recipe) error {
 func (d recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
-			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6, modified_at = transaction_timestamp() "+
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6, modified_at = CURRENT_TIMESTAMP "+
 			"WHERE id = $7",
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL, recipe.ID)
 	if err != nil {

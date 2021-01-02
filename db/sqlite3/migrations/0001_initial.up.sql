@@ -25,8 +25,8 @@ CREATE TABLE recipe (
     source_url TEXT NOT NULL DEFAULT '',
     image_id INTEGER REFERENCES recipe_image(id) ON DELETE SET NULL,
     current_state TEXT CHECK(current_state IN ('active', 'archived', 'deleted')) DEFAULT 'active',
-    created_at DATETIME NOT NULL DEFAULT (datetime('now')),
-    modified_at DATETIME NOT NULL DEFAULT (datetime('now'))
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX recipe_name_idx ON recipe(name);
 CREATE INDEX recipe_ingredients_idx ON recipe(ingredients);
@@ -44,8 +44,8 @@ CREATE TABLE recipe_note (
     id INTEGER NOT NULL PRIMARY KEY,
     recipe_id INTEGER NOT NULL,
     note TEXT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT (datetime('now')),
-    modified_at DATETIME NOT NULL DEFAULT (datetime('now')),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id) ON DELETE CASCADE
 );
 CREATE INDEX recipe_note_recipe_id_idx ON recipe_note(recipe_id);
@@ -63,8 +63,8 @@ CREATE TABLE recipe_image (
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     thumbnail_url TEXT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT (datetime('now')),
-    modified_at DATETIME NOT NULL DEFAULT (datetime('now')),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(recipe_id) REFERENCES recipe(id) ON DELETE CASCADE
 );
 CREATE INDEX recipe_image_recipe_id_idx ON recipe_image(recipe_id);
