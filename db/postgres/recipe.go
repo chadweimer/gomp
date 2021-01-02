@@ -44,7 +44,7 @@ func (d recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	}
 
 	for _, tag := range recipe.Tags {
-		err := d.Tags().CreateTx(recipe.ID, tag, tx)
+		err := d.tags.CreateTx(recipe.ID, tag, tx)
 		if err != nil {
 			return fmt.Errorf("adding tags to new recipe: %v", err)
 		}
@@ -69,7 +69,7 @@ func (d recipeDriver) Read(id int64) (*models.Recipe, error) {
 		return nil, fmt.Errorf("reading recipe: %v", err)
 	}
 
-	tags, err := d.Tags().List(id)
+	tags, err := d.tags.List(id)
 	if err != nil {
 		return nil, fmt.Errorf("reading tags for recipe: %v", err)
 	}
@@ -100,12 +100,12 @@ func (d recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	err = d.Tags().DeleteAllTx(recipe.ID, tx)
+	err = d.tags.DeleteAllTx(recipe.ID, tx)
 	if err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
 	}
 	for _, tag := range recipe.Tags {
-		err = d.Tags().CreateTx(recipe.ID, tag, tx)
+		err = d.tags.CreateTx(recipe.ID, tag, tx)
 		if err != nil {
 			return fmt.Errorf("updating tags on recipe: %v", err)
 		}
