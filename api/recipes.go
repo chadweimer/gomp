@@ -26,12 +26,12 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 	sortDir := getParam(req.URL.Query(), "dir")
 	page, err := strconv.ParseInt(getParam(req.URL.Query(), "page"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 	count, err := strconv.ParseInt(getParam(req.URL.Query(), "count"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
@@ -49,134 +49,133 @@ func (h apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p ht
 
 	recipes, total, err := h.db.Recipes().Find(&filter)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.JSON(resp, http.StatusOK, getRecipesResponse{Recipes: recipes, Total: total})
+	h.OK(resp, getRecipesResponse{Recipes: recipes, Total: total})
 }
 
 func (h apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	recipe, err := h.db.Recipes().Read(recipeID)
 	if err == db.ErrNotFound {
-		h.JSON(resp, http.StatusNotFound, err.Error())
+		h.Error(resp, http.StatusNotFound, err)
 		return
 	}
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.JSON(resp, http.StatusOK, recipe)
+	h.OK(resp, recipe)
 }
 
 func (h apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, &recipe); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.Recipes().Create(&recipe); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.Header().Set("Location", fmt.Sprintf("/api/v1/recipes/%d", recipe.ID))
-	resp.WriteHeader(http.StatusCreated)
+	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d", recipe.ID))
 }
 
 func (h apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, &recipe); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	if recipe.ID != recipeID {
-		h.JSON(resp, http.StatusBadRequest, errMismatchedID.Error())
+		h.Error(resp, http.StatusBadRequest, errMismatchedID)
 		return
 	}
 
 	if err := h.db.Recipes().Update(&recipe); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }
 
 func (h apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	if err = h.db.Recipes().Delete(recipeID); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
 	if err = upload.DeleteAll(h.upl, recipeID); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusOK)
+	h.NoContent(resp)
 }
 
 func (h apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	var state models.RecipeState
 	if err := readJSONFromRequest(req, &state); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.Recipes().SetState(recipeID, state); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }
 
 func (h apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	var rating float64
 	if err := readJSONFromRequest(req, &rating); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.Recipes().SetRating(recipeID, rating); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }

@@ -1,28 +1,28 @@
-package postgres
+package sqlite3
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"log"
+	"net/url"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/db/sqlcommon"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/jmoiron/sqlx"
 
-	// postgres database driver
-	_ "github.com/lib/pq"
+	// sqlite database driver
+	_ "github.com/mattn/go-sqlite3"
 
 	// File source for db migration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // DriverName is the name to use for this driver
-const DriverName string = "postgres"
+const DriverName string = "sqlite3"
 
 type driver struct {
 	*sqlcommon.Driver
@@ -37,24 +37,20 @@ type driver struct {
 
 // Open established a connection to the specified database and returns
 // an object that implements db.Driver that can be used to query it.
-func Open(hostURL string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
-	// In docker, on first bring up, the DB takes a little while.
-	// Let's try a few times to establish connection before giving up.
-	const maxAttempts = 20
-	var db *sqlx.DB
-	var err error
-	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(DriverName, hostURL)
+func Open(path string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
+	// Attempt to create the base path, if necessary
+	fileURL, err := url.Parse(path)
+	if err == nil && fileURL.Scheme == "file" {
+		fullPath, err := filepath.Abs(fileURL.RequestURI())
 		if err == nil {
-			break
+			dir := filepath.Dir(fullPath)
+			_ = os.MkdirAll(dir, 0755)
 		}
+	}
 
-		if i < maxAttempts {
-			log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
-			time.Sleep(500 * time.Millisecond)
-		} else {
-			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%+v'", i, err)
-		}
+	db, err := sqlx.Connect(DriverName, path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database: '%+v'", err)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
@@ -109,13 +105,8 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 		return err
 	}
 	defer conn.Close()
-	// This should block until the lock has been acquired
-	if err := lock(conn); err != nil {
-		return err
-	}
-	defer unlock(conn)
 
-	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
+	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{
 		MigrationsTable: migrationsTableName,
 	})
 	if err != nil {
@@ -141,16 +132,4 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 	}
 
 	return nil
-}
-
-func lock(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_lock(1)`
-	_, err := conn.ExecContext(context.Background(), stmt)
-	return err
-}
-
-func unlock(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_unlock(1)`
-	_, err := conn.ExecContext(context.Background(), stmt)
-	return err
 }

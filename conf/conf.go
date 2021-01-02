@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/chadweimer/gomp/db/postgres"
+	"github.com/chadweimer/gomp/db/sqlite3"
 	"github.com/chadweimer/gomp/upload"
 )
 
@@ -39,7 +41,7 @@ type Config struct {
 	ApplicationTitle string
 
 	// DatabaseDriver gets which database/sql driver to use.
-	// Supported drivers: postgres
+	// Supported drivers: postgres, sqlite3
 	DatabaseDriver string
 
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
@@ -53,7 +55,12 @@ type Config struct {
 	// MigrationsForceVersion gets a version to force the migrations to on startup.
 	// Set to a negative number to skip forcing a version.
 	MigrationsForceVersion int
+
+	// BaseAssetsPath gets the base path to the client assets.
+	BaseAssetsPath string
 }
+
+const defaultSecureKey string = "ChangeMe"
 
 // Load reads the configuration file from the specified path
 func Load() *Config {
@@ -62,12 +69,13 @@ func Load() *Config {
 		UploadDriver:           "fs",
 		UploadPath:             filepath.Join("data", "uploads"),
 		IsDevelopment:          false,
-		SecureKeys:             nil,
+		SecureKeys:             []string{defaultSecureKey},
 		ApplicationTitle:       "GOMP: Go Meal Planner",
-		DatabaseDriver:         "postgres",
-		DatabaseURL:            "",
+		DatabaseDriver:         "",
+		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
+		BaseAssetsPath:         "static",
 	}
 
 	// If environment variables are set, use them.
@@ -77,10 +85,31 @@ func Load() *Config {
 	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
+	loadEnv("GOMP_BASE_ASSETS_PATH", &c.BaseAssetsPath)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
 	loadEnv("GOMP_MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
+
+	// Special case for backward compatibility
+	if c.DatabaseDriver == "" {
+		if c.IsDevelopment {
+			log.Print("[config] DATABASE_DRIVER is empty. Will attempt to infer...")
+		}
+		if strings.HasPrefix(c.DatabaseURL, "file:") {
+			if c.IsDevelopment {
+				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", sqlite3.DriverName)
+			}
+			c.DatabaseDriver = sqlite3.DriverName
+		} else if strings.HasPrefix(c.DatabaseURL, "postgres:") {
+			if c.IsDevelopment {
+				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", postgres.DriverName)
+			}
+			c.DatabaseDriver = postgres.DriverName
+		} else if c.IsDevelopment {
+			log.Print("[config] Unable to infer a value for DATABASE_DRIVER")
+		}
+	}
 
 	if c.IsDevelopment {
 		log.Printf("[config] Port=%d", c.Port)
@@ -89,6 +118,7 @@ func Load() *Config {
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
 		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
+		log.Printf("[config] BaseAssetsPath=%s", c.BaseAssetsPath)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
 		log.Printf("[config] MigrationsTableName=%s", c.MigrationsTableName)
@@ -114,14 +144,20 @@ func (c Config) Validate() error {
 
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
 		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
+	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
+		log.Printf("[config] WARNING: SECURE_KEY is set to the default value '%s'. It is highly recommended that this be changed to something unique.", defaultSecureKey)
 	}
 
 	if c.ApplicationTitle == "" {
 		return errors.New("GOMP_APPLICATION_TITLE must be specified")
 	}
 
-	if c.DatabaseDriver != "postgres" {
-		return errors.New("DATABASE_DRIVER must be one of ('postgres')")
+	if c.BaseAssetsPath == "" {
+		return errors.New("GOMP_BASE_ASSETS_PATH must be specified")
+	}
+
+	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite3.DriverName {
+		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", postgres.DriverName, sqlite3.DriverName)
 	}
 
 	if c.DatabaseURL == "" {

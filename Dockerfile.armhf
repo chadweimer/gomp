@@ -1,7 +1,5 @@
-FROM balenalib/generic-armv7ahf-alpine:3.11
+FROM balenalib/armv7hf-debian:buster
 LABEL maintainer="ch@dweimer.com"
-
-RUN apk add --no-cache ca-certificates
 
 WORKDIR /var/app/gomp
 COPY build/linux/armhf/ ./

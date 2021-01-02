@@ -7,12 +7,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/db/postgres"
+	"github.com/chadweimer/gomp/db/sqlite3"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -20,8 +23,9 @@ import (
 )
 
 func main() {
+	var err error
 	cfg := conf.Load()
-	if err := cfg.Validate(); err != nil {
+	if err = cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
@@ -29,12 +33,23 @@ func main() {
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
 	})
-	db, err := postgres.Open(
-		cfg.DatabaseURL,
-		cfg.MigrationsTableName,
-		cfg.MigrationsForceVersion)
-	if err != nil {
-		log.Fatalf("[db] %s", err.Error())
+	var db db.Driver
+	if cfg.DatabaseDriver == postgres.DriverName {
+		db, err = postgres.Open(
+			cfg.DatabaseURL,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
+		if err != nil {
+			log.Fatalf("[db] %s", err.Error())
+		}
+	} else if cfg.DatabaseDriver == sqlite3.DriverName {
+		db, err = sqlite3.Open(
+			cfg.DatabaseURL,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
+		if err != nil {
+			log.Fatalf("[db] %s", err.Error())
+		}
 	}
 
 	n := negroni.New()
@@ -50,10 +65,10 @@ func main() {
 	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
 	mainMux.Handler("POST", "/api/*apipath", apiHandler)
 	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir("static")))
+	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath)))
 	mainMux.ServeFiles("/uploads/*filepath", upl)
 	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		http.ServeFile(resp, req, "static/index.html")
+		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	})
 	n.UseHandler(mainMux)
 

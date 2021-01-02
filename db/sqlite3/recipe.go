@@ -1,4 +1,4 @@
-package postgres
+package sqlite3
 
 import (
 	"database/sql"
@@ -35,13 +35,14 @@ func (d recipeDriver) Create(recipe *models.Recipe) error {
 // the specified transaction.
 func (d recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+		"VALUES ($1, $2, $3, $4, $5, $6)"
 
-	err := tx.Get(recipe, stmt,
+	res, err := tx.Exec(stmt,
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %v", err)
 	}
+	recipe.ID, _ = res.LastInsertId()
 
 	for _, tag := range recipe.Tags {
 		err := d.tags.CreateTx(recipe.ID, tag, tx)
@@ -142,8 +143,8 @@ func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompac
 				if fieldStr != "" {
 					fieldStr += " OR "
 				}
-				fieldStr += "to_tsvector('english', r." + field + ") @@ plainto_tsquery(?)"
-				fieldArgs = append(fieldArgs, filter.Query)
+				fieldStr += "r." + field + " LIKE ?"
+				fieldArgs = append(fieldArgs, "%"+filter.Query+"%")
 			}
 		}
 

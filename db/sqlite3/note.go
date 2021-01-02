@@ -1,4 +1,4 @@
-package postgres
+package sqlite3
 
 import (
 	"github.com/chadweimer/gomp/db/sqlcommon"
@@ -24,7 +24,13 @@ func (d noteDriver) Create(note *models.Note) error {
 
 func (d noteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
-		"VALUES ($1, $2) RETURNING id"
+		"VALUES ($1, $2)"
 
-	return tx.Get(note, stmt, note.RecipeID, note.Note)
+	res, err := tx.Exec(stmt, note.RecipeID, note.Note)
+	if err != nil {
+		return err
+	}
+	note.ID, _ = res.LastInsertId()
+
+	return nil
 }

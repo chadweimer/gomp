@@ -1,4 +1,4 @@
-package postgres
+package sqlite3
 
 import (
 	"fmt"
@@ -26,11 +26,13 @@ func (d recipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 
 func (d recipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
-		"VALUES ($1, $2, $3, $4) RETURNING id"
+		"VALUES ($1, $2, $3, $4)"
 
-	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL); err != nil {
+	res, err := tx.Exec(stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL)
+	if err != nil {
 		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
 	}
+	image.ID, _ = res.LastInsertId()
 
 	// Switch to a new main image if necessary, since this might be the first image attached
 	return d.SetMainImageIfNecessary(image.RecipeID, tx)
