@@ -57,8 +57,10 @@ func (d recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
 func (d recipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating " +
-		"FROM recipe AS r WHERE r.id = $1"
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
+		"FROM recipe AS r " +
+		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+		"WHERE r.id = $1"
 	recipe := new(models.Recipe)
 	err := d.driver.Db.Get(recipe, stmt, id)
 	if err == sql.ErrNoRows {
@@ -114,12 +116,12 @@ func (d recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 
 // Find retrieves all recipes matching the specified search filter and within the range specified.
 func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
-	whereStmt := " WHERE r.current_state = 'active'"
+	whereStmt := "WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error
 
 	if len(filter.States) > 0 {
-		whereStmt, whereArgs, err = sqlx.In(" WHERE r.current_state IN (?)", filter.States)
+		whereStmt, whereArgs, err = sqlx.In("WHERE r.current_state IN (?)", filter.States)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -178,7 +180,7 @@ func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompac
 	}
 
 	var total int64
-	countStmt := d.driver.Db.Rebind("SELECT count(r.id) FROM recipe AS r" + whereStmt)
+	countStmt := d.driver.Db.Rebind("SELECT count(r.id) FROM recipe AS r " + whereStmt)
 	if err := d.driver.Db.Get(&total, countStmt, whereArgs...); err != nil {
 		return nil, 0, err
 	}
@@ -208,8 +210,10 @@ func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompac
 	orderStmt += " LIMIT ? OFFSET ?"
 
 	selectStmt := d.driver.Db.Rebind("SELECT " +
-		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE((SELECT g.rating FROM recipe_rating AS g WHERE g.recipe_id = r.id), 0) AS avg_rating, COALESCE((SELECT thumbnail_url FROM recipe_image WHERE id = r.image_id), '') AS thumbnail_url " +
-		"FROM recipe AS r" +
+		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
+		"FROM recipe AS r " +
+		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+		"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
 		whereStmt + orderStmt)
 	selectArgs := append(whereArgs, filter.Count, offset)
 
