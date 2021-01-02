@@ -1,14 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.require_plugin "vagrant-reload"
-
 home_path = "~"
 if ENV['HOMESHARE']
   home_path = ENV['HOMESHARE']
 end
 
 Vagrant.configure("2") do |config|
+  config.vagrant.plugins = ["vagrant-reload"]
+
   config.vm.box = "generic/ubuntu2010"
 
   config.vm.network "forwarded_port", guest: 5000, host: 5000
@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     # Install necessary packages
     apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y git make xubuntu-core
+    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git make xubuntu-core
     snap install go --classic
     snap install node --classic
     snap install code --classic
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "libvirt" do |lv, override|
     lv.memory = "4096"
 
-    override.vm.synced_folder './', '/vagrant', type: '9p', disabled: false, accessmode: "mapped"
+    override.vm.synced_folder './', '/vagrant', type: "9p", disabled: false, accessmode: "mapped"
   end
 
   config.vm.provider "virtualbox" do |vb|
