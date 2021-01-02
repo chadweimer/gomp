@@ -143,8 +143,8 @@ func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompac
 				if fieldStr != "" {
 					fieldStr += " OR "
 				}
-				fieldStr += "to_tsvector('english', r." + field + ") @@ plainto_tsquery(?)"
-				fieldArgs = append(fieldArgs, filter.Query)
+				fieldStr += "r." + field + " LIKE ?"
+				fieldArgs = append(fieldArgs, "%"+filter.Query+"%")
 			}
 		}
 
