@@ -38,7 +38,7 @@ clean-linux-amd64:
 
 .PHONY: build-linux-amd64
 build-linux-amd64: prebuild
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_DIR)/linux/amd64/gomp
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o $(BUILD_DIR)/linux/amd64/gomp
 	mkdir -p $(BUILD_DIR)/linux/amd64/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/linux/amd64/db/postgres/migrations
 	mkdir -p $(BUILD_DIR)/linux/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/linux/amd64/db/sqlite3/migrations
 	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/linux/amd64/static
@@ -53,7 +53,7 @@ clean-linux-armhf:
 
 .PHONY: build-linux-armhf
 build-linux-armhf: prebuild
-	GOOS=linux GOARCH=arm go build -o $(BUILD_DIR)/linux/armhf/gomp
+	GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -o $(BUILD_DIR)/linux/armhf/gomp
 	mkdir -p $(BUILD_DIR)/linux/armhf/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/linux/armhf/db/postgres/migrations
 	mkdir -p $(BUILD_DIR)/linux/armhf/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/linux/armhf/db/sqlite3/migrations
 	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/default/* $(BUILD_DIR)/linux/armhf/static
@@ -68,7 +68,7 @@ clean-windows-amd64:
 
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
-	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o $(BUILD_DIR)/windows/amd64/gomp
 	mkdir -p $(BUILD_DIR)/windows/amd64/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/windows/amd64/db/postgres/migrations
 	mkdir -p $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations
 	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/windows/amd64/static
