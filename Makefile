@@ -69,8 +69,8 @@ clean-windows-amd64:
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
 	GOOS=windows GOARCH=amd64 go build -o $(BUILD_DIR)/windows/amd64/gomp
-	mkdir -p $(BUILD_DIR)/windows/amd64/db/postgres/migrations && cp -R db/postgres/migrations $(BUILD_DIR)/windows/amd64/db/postgres/migrations
-	mkdir -p $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations
+	mkdir -p $(BUILD_DIR)/windows/amd64/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/windows/amd64/db/postgres/migrations
+	mkdir -p $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations
 	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/windows/amd64/static
 
 .PHONY: rebuild-windows-amd64
