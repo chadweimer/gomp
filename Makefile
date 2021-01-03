@@ -38,7 +38,7 @@ clean-linux-amd64:
 
 .PHONY: build-linux-amd64
 build-linux-amd64: prebuild
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o $(BUILD_DIR)/linux/amd64/gomp
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o $(BUILD_DIR)/linux/amd64/gomp -ldflags '-extldflags "-static -static-libgcc"'
 	mkdir -p $(BUILD_DIR)/linux/amd64/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/linux/amd64/db/postgres/migrations
 	mkdir -p $(BUILD_DIR)/linux/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/linux/amd64/db/sqlite3/migrations
 	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/linux/amd64/static
