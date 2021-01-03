@@ -53,7 +53,7 @@ clean-linux-armhf:
 
 .PHONY: build-linux-armhf
 build-linux-armhf: prebuild
-	GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -o $(BUILD_DIR)/linux/armhf/gomp
+	GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -o $(BUILD_DIR)/linux/armhf/gomp -ldflags '-extldflags "-static -static-libgcc"'
 	mkdir -p $(BUILD_DIR)/linux/armhf/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/linux/armhf/db/postgres/migrations
 	mkdir -p $(BUILD_DIR)/linux/armhf/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/linux/armhf/db/sqlite3/migrations
 	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/default/* $(BUILD_DIR)/linux/armhf/static
