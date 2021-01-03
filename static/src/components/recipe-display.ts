@@ -118,7 +118,7 @@ export class RecipeDisplay extends GompBaseElement {
                             <paper-icon-item>
                                 <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                                 <paper-item-body>
-                                    <a href="/recipes/[[item.id]]">[[item.name]]</a>
+                                    <a href="/recipes/[[item.id]]/view">[[item.name]]</a>
                                 </paper-item-body>
                                 <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><iron-icon icon="icons:cancel"></iron-icon></a>
                             </paper-icon-item>
