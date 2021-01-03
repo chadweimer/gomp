@@ -1,4 +1,13 @@
-BUILD_DIR=build
+BUILD_DIR=./build
+BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
+BUILD_LIN_ARMHF_DIR=$(BUILD_DIR)/linux/armhf
+BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
+DB_MIGRATIONS_REL_DIR=db/migrations
+
+GO_LIN_LD_FLAGS=-extldflags "-static -static-libgcc"
+GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
+GO_ENV_LIN_ARMHF=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
+GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
 
 .DEFAULT_GOAL := rebuild
 
@@ -33,45 +42,42 @@ prebuild:
 
 .PHONY: clean-linux-amd64
 clean-linux-amd64:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go clean -i ./...
-	rm -rf $(BUILD_DIR)/linux/amd64
+	$(GO_ENV_LIN_AMD64) go clean -i ./...
+	rm -rf $(BUILD_LIN_AMD64_DIR)
 
 .PHONY: build-linux-amd64
 build-linux-amd64: prebuild
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o $(BUILD_DIR)/linux/amd64/gomp -ldflags '-extldflags "-static -static-libgcc"'
-	mkdir -p $(BUILD_DIR)/linux/amd64/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/linux/amd64/db/postgres/migrations
-	mkdir -p $(BUILD_DIR)/linux/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/linux/amd64/db/sqlite3/migrations
-	mkdir -p $(BUILD_DIR)/linux/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/linux/amd64/static
+	$(GO_ENV_LIN_AMD64) go build -o $(BUILD_LIN_AMD64_DIR)/gomp -ldflags '$(GO_LIN_LD_FLAGS)'
+	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_AMD64_DIR)/static
 
 .PHONY: rebuild-linux-amd64
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
 
 .PHONY: clean-linux-armhf
 clean-linux-armhf:
-	GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go clean -i ./...
-	rm -rf $(BUILD_DIR)/linux/armhf
+	$(GO_ENV_LIN_ARMHF) go clean -i ./...
+	rm -rf $(BUILD_LIN_ARMHF_DIR)
 
 .PHONY: build-linux-armhf
 build-linux-armhf: prebuild
-	GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc go build -o $(BUILD_DIR)/linux/armhf/gomp -ldflags '-extldflags "-static -static-libgcc"'
-	mkdir -p $(BUILD_DIR)/linux/armhf/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/linux/armhf/db/postgres/migrations
-	mkdir -p $(BUILD_DIR)/linux/armhf/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/linux/armhf/db/sqlite3/migrations
-	mkdir -p $(BUILD_DIR)/linux/armhf/static && cp -R static/build/default/* $(BUILD_DIR)/linux/armhf/static
+	$(GO_ENV_LIN_ARMHF) go build -o $(BUILD_LIN_ARMHF_DIR)/gomp -ldflags '$(GO_LIN_LD_FLAGS)'
+	mkdir -p $(BUILD_LIN_ARMHF_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARMHF_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_ARMHF_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_ARMHF_DIR)/static
 
 .PHONY: rebuild-linux-armhf
 rebuild-linux-armhf: clean-linux-armhf build-linux-armhf
 
 .PHONY: clean-windows-amd64
 clean-windows-amd64:
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go clean -i ./...
-	rm -rf $(BUILD_DIR)/windows/amd64
+	$(GO_ENV_WIN_AMD64) go clean -i ./...
+	rm -rf $(BUILD_WIN_AMD64_DIR)
 
 .PHONY: build-windows-amd64
 build-windows-amd64: prebuild
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -o $(BUILD_DIR)/windows/amd64/gomp.exe
-	mkdir -p $(BUILD_DIR)/windows/amd64/db/postgres/migrations && cp -R db/postgres/migrations/* $(BUILD_DIR)/windows/amd64/db/postgres/migrations
-	mkdir -p $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations && cp -R db/sqlite3/migrations/* $(BUILD_DIR)/windows/amd64/db/sqlite3/migrations
-	mkdir -p $(BUILD_DIR)/windows/amd64/static && cp -R static/build/default/* $(BUILD_DIR)/windows/amd64/static
+	$(GO_ENV_WIN_AMD64) go build -o $(BUILD_WIN_AMD64_DIR)/gomp.exe
+	mkdir -p $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_WIN_AMD64_DIR)/static && cp -R static/build/default/* $(BUILD_WIN_AMD64_DIR)/static
 
 .PHONY: rebuild-windows-amd64
 rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64
@@ -82,7 +88,6 @@ docker-linux-amd64: build-linux-amd64
 
 .PHONY: docker-linux-armhf
 docker-linux-armhf: build-linux-armhf
-	docker run --rm --privileged multiarch/qemu-user-static:register --reset
 	docker build --build-arg ARCH=armhf -t cwmr/gomp:arm .
 
 .PHONY: docker
@@ -91,8 +96,8 @@ docker: docker-linux-amd64 docker-linux-armhf
 .PHONY: archive
 archive:
 	rm -f $(BUILD_DIR)/gomp-linux-amd64.tar.gz
-	tar -C $(BUILD_DIR)/linux/amd64 -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
+	tar -C $(BUILD_LIN_AMD64_DIR) -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
 	rm -f $(BUILD_DIR)/gomp-linux-armhf.tar.gz
-	tar -C $(BUILD_DIR)/linux/armhf -zcf $(BUILD_DIR)/gomp-linux-armhf.tar.gz .
+	tar -C $(BUILD_LIN_ARMHF_DIR) -zcf $(BUILD_DIR)/gomp-linux-armhf.tar.gz .
 	rm -f $(BUILD_DIR)/gomp-windows-amd64.zip
-	cd build/windows/amd64 && zip -rq ../../gomp-windows-amd64.zip *
+	cd $(BUILD_WIN_AMD64_DIR) && zip -rq ../../gomp-windows-amd64.zip *
