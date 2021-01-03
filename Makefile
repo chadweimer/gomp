@@ -83,7 +83,7 @@ docker-linux-amd64: build-linux-amd64
 .PHONY: docker-linux-armhf
 docker-linux-armhf: build-linux-armhf
 	docker run --rm --privileged multiarch/qemu-user-static:register --reset
-	docker build -t cwmr/gomp:arm -f Dockerfile.armhf .
+	docker build --build-arg ARCH=armhf -t cwmr/gomp:arm .
 
 .PHONY: docker
 docker: docker-linux-amd64 docker-linux-armhf
