@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     # Install necessary packages
     apt update
-    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git build-essential crossbuild-essential-armhf xubuntu-core
+    DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git build-essential crossbuild-essential-armhf gcc-mingw-w64-x86-64 xubuntu-core
     snap install go --classic
     snap install node --classic
     snap install code --classic
