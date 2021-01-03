@@ -25,6 +25,7 @@ addons:
       - zip
       - gcc-arm-linux-gnueabihf
       - libc6-dev-armhf-cross
+      - gcc-mingw-w64-x86-64
   sonarcloud:
     organization: "chadweimer-github"
     branches:
