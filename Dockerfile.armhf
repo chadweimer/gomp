@@ -1,4 +1,4 @@
-FROM balenalib/armv7hf-debian:buster
+FROM scratch
 LABEL maintainer="ch@dweimer.com"
 
 WORKDIR /var/app/gomp

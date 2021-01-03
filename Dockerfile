@@ -1,4 +1,4 @@
-FROM debian:10-slim
+FROM scratch
 LABEL maintainer="ch@dweimer.com"
 
 WORKDIR /var/app/gomp
