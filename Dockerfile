@@ -1,11 +1,12 @@
-FROM debian:10-slim
+FROM scratch
+ARG ARCH=amd64
 LABEL maintainer="ch@dweimer.com"
-
-WORKDIR /var/app/gomp
-COPY build/linux/amd64/ ./
-VOLUME /var/app/gomp/data
 
 ENV PORT 5000
 EXPOSE 5000
+
+WORKDIR /var/app/gomp
+VOLUME /var/app/gomp/data
+COPY build/linux/${ARCH}/ ./
 
 ENTRYPOINT ["./gomp"]
