@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User } from './models/models.js';
+import { User, UserSettings } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -86,7 +86,7 @@ export class SettingsView extends GompBaseElement {
               <paper-card>
                   <div class="card-content">
                       <h3>Home Settings</h3>
-                      <paper-input label="Title" always-float-label="" value="{{homeTitle}}">
+                      <paper-input label="Title" always-float-label="" value="{{userSettings.homeTitle}}">
                           <paper-icon-button slot="suffix" icon="icons:save" on-click="onSaveButtonClicked"></paper-icon-button>
                       </paper-input>
                       <form id="homeImageForm" enctype="multipart/form-data">
@@ -98,7 +98,7 @@ export class SettingsView extends GompBaseElement {
                               <paper-icon-button slot="suffix" icon="icons:file-upload" on-click="onUploadButtonClicked"></paper-icon-button>
                             </paper-input-container>
                       </form>
-                      <img alt="Home Image" src="[[homeImageUrl]]" class="responsive" hidden\$="[[!homeImageUrl]]">
+                      <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
                   </div>
               </paper-card>
           </div>
@@ -118,11 +118,11 @@ export class SettingsView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    protected userSettings: UserSettings = null;
+
     private currentPassword = '';
     private newPassword = '';
     private repeatPassword = '';
-    private homeTitle = '';
-    private homeImageUrl = '';
 
     private get homeImageForm(): HTMLFormElement {
         return this.$.homeImageForm as HTMLFormElement;
@@ -167,10 +167,7 @@ export class SettingsView extends GompBaseElement {
         this.putPasswordAjax.generateRequest();
     }
     protected onSaveButtonClicked() {
-        this.putSettingsAjax.body = JSON.stringify({
-            homeTitle: this.homeTitle,
-            homeImageUrl: this.homeImageUrl,
-        }) as any;
+        this.putSettingsAjax.body = JSON.stringify(this.userSettings) as any;
         this.putSettingsAjax.generateRequest();
     }
     protected onUploadButtonClicked() {
@@ -195,11 +192,8 @@ export class SettingsView extends GompBaseElement {
     protected handlePutPasswordError() {
         this.showToast('Password update failed!');
     }
-    protected handleGetSettingsResponse(e: CustomEvent) {
-        const userSettings = e.detail.response;
-
-        this.homeTitle = userSettings.homeTitle;
-        this.homeImageUrl = userSettings.homeImageUrl;
+    protected handleGetSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
+        this.userSettings = e.detail.response;
     }
     protected handlePutSettingsResponse() {
         this.refresh();
@@ -217,11 +211,8 @@ export class SettingsView extends GompBaseElement {
         this.showToast('Upload complete.');
 
         const location = req.xhr.getResponseHeader('Location');
-        this.putSettingsAjax.body = JSON.stringify({
-            homeTitle: this.homeTitle,
-            homeImageUrl: location,
-        }) as any;
-        this.putSettingsAjax.generateRequest();
+        this.userSettings.homeImageUrl = location;
+        this.onSaveButtonClicked();
     }
     protected handlePostImageError() {
         this.uploadingDialog.close();
