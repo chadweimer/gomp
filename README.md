@@ -90,19 +90,22 @@ The following table summarizes the available configuration settings, which are s
 
 ENV                     |Value(s)         |Default          |Description
 ------------------------|-----------------|-----------------|------------
+BASE_ASSETS_PATH        |string           |static           |The base path to the client assets.
 DATABASE_DRIVER         |postgres, sqlite3|&lt;empty&gt;    |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL.
 DATABASE_URL            |string           |file:data/data.db|The url (or path, connection string, etc) to use with the associated database driver when opening the database connection.
-BASE_ASSETS_PATH        |string           |static           |The base path to the client assets.
 IS_DEVELOPMENT          |0, 1             |0                |Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment.
 MIGRATIONS_FORCE_VERSION|int              |-1               |A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version.
 MIGRATIONS_TABLE_NAME   |string           |&lt;empty&gt;    |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
-UPLOAD_DRIVER           |fs, s3           |fs               |Used to select which backend data store is used for file uploads.
-UPLOAD_PATH             |string           |data/uploads     |The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name.
 PORT                    |uint             |5000             |The port number under which the site is being hosted.
 SECURE_KEY              |[]string         |ChangeMe         |Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas.
+UPLOAD_DRIVER           |fs, s3           |fs               |Used to select which backend data store is used for file uploads.
+UPLOAD_PATH             |string           |data/uploads     |The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name.
 
 All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.
 The name with "GOMP_" is prefered if both are present.
+
+For values that are releative paths (e.g., DATABASE_URL for SQLite and UPLOAD_PATH for the fs driver), they are always relative to the application working directory.
+When using docker, this is "/var/app/gomp", so anthing at or below the "data/" relative path is in the exposed "/var/app/gomp/data" volume.
 
 ## Database Support
 
