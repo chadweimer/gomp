@@ -19,11 +19,48 @@ The easiest method is via docker.
 docker run -p 5000:5000 cwmr/gomp
 ```
 
-The above command will use the default configuration, which includes using an embedded SQLite database that is not recommended in production.
+The above command will use the default configuration, which includes using an embedded SQLite database and ephemeral storage, which is not recommended in production.
 
 #### With PostgreSQL
 
-TODO
+The easiest way to deploy with a PostgreSQL database is via `docker-compose`.
+An example compose file can be found at the root of this repo and is shown here:
+
+```yaml
+
+version: '2'
+
+volumes:
+  data:
+  db-data:
+services:
+  web:
+    image: cwmr/gomp
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://dbuser:dbpassword@db/gomp?sslmode=disable
+    volumes:
+      - data:/var/app/gomp/data
+    ports:
+      - 5000:5000
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=dbpassword
+      - POSTGRES_USER=dbuser
+      - POSTGRES_DB=gomp
+    volumes:
+      - db-data:/var/lib/postgresql/data
+```
+
+To execute, use the standard syntax (the assumes there is a file named "docker-compose.yaml" in the current directory).
+
+```bash
+docker-compose up
+```
+
+You will obviously want to cater the values (e.g., passwords) for your deployment.
 
 ### Kubernetes
 
