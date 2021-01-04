@@ -11,6 +11,7 @@
             "mode": "debug",
             "program": "${workspaceFolder}",
             "env": {
+                "GOMP_PORT": 12345,
                 "GOMP_IS_DEVELOPMENT": 1,
                 "GOMP_BASE_ASSETS_PATH": "static/build/default"
             }

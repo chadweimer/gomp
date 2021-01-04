@@ -75,12 +75,12 @@ func Load() *Config {
 	}
 
 	// If environment variables are set, use them.
-	loadEnv("GOMP_BASE_ASSETS_PATH", &c.BaseAssetsPath)
-	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
-	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
-	loadEnv("GOMP_MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
-	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
-	loadEnv("GOMP_UPLOAD_PATH", &c.UploadPath)
+	loadEnv("BASE_ASSETS_PATH", &c.BaseAssetsPath)
+	loadEnv("IS_DEVELOPMENT", &c.IsDevelopment)
+	loadEnv("MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
+	loadEnv("MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
+	loadEnv("UPLOAD_DRIVER", &c.UploadDriver)
+	loadEnv("UPLOAD_PATH", &c.UploadPath)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
 	loadEnv("DATABASE_URL", &c.DatabaseURL)
 	loadEnv("PORT", &c.Port)
@@ -129,11 +129,11 @@ func (c Config) Validate() error {
 	}
 
 	if c.UploadDriver != upload.FileSystemDriver && c.UploadDriver != upload.S3Driver {
-		return fmt.Errorf("GOMP_UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver)
+		return fmt.Errorf("UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver)
 	}
 
 	if c.UploadPath == "" {
-		return errors.New("GOMP_UPLOAD_PATH must be specified")
+		return errors.New("UPLOAD_PATH must be specified")
 	}
 
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
@@ -143,7 +143,7 @@ func (c Config) Validate() error {
 	}
 
 	if c.BaseAssetsPath == "" {
-		return errors.New("GOMP_BASE_ASSETS_PATH must be specified")
+		return errors.New("BASE_ASSETS_PATH must be specified")
 	}
 
 	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite3.DriverName {
@@ -162,14 +162,22 @@ func (c Config) Validate() error {
 }
 
 func loadEnv(name string, dest interface{}) {
-	var err error
-	if envStr, ok := os.LookupEnv(name); ok {
+	// Try the original name...
+	envStr, ok := os.LookupEnv(name)
+	// ... and if not found, try the alternative that is prefixed with GOMP_
+	if !ok {
+		name = "GOMP_" + name
+		envStr, ok = os.LookupEnv(name)
+	}
+
+	if ok {
 		switch dest := dest.(type) {
 		case *string:
 			*dest = envStr
 		case *[]string:
 			*dest = strings.Split(envStr, ",")
 		case *int:
+			var err error
 			if *dest, err = strconv.Atoi(envStr); err != nil {
 				log.Fatalf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
 					name, envStr, err)
