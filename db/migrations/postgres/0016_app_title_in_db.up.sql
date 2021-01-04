@@ -8,6 +8,6 @@ CREATE TABLE app_configuration (
 
 -- Seed data
 
-INSERT INTO app_configuration (title) SELECT 'GOMP: Go Meal Planner';
+INSERT INTO app_configuration (title) VALUES('GOMP: Go Meal Planner');
 
 COMMIT;
