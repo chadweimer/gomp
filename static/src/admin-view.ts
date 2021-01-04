@@ -86,6 +86,21 @@ export class AdminView extends GompBaseElement {
             <div class="container">
                 <paper-card>
                     <div class="card-content">
+                        <h3>Application Configuration</h3>
+
+                        <paper-input label="Title" value="{{appConfig.title}}" always-float-label=""></paper-input>
+                    </div>
+                    <div class="card-actions">
+                    <paper-button on-click="onSaveAppConfigClicked">
+                        <iron-icon icon="icons:save"></iron-icon>
+                        <span>Save</span>
+                    <paper-button>
+                    </div>
+                </paper-card>
+            </div>
+            <div class="container">
+                <paper-card>
+                    <div class="card-content">
                         <h3>Users</h3>
 
                         <table class="fill">
@@ -159,6 +174,8 @@ export class AdminView extends GompBaseElement {
 
             <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete '[[user.username]]'?" on-confirmed="deleteUser"></confirmation-dialog>
 
+            <iron-ajax bubbles="" id="getAppConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="putAppConfigAjax" url="/api/v1/app/configuration" method="PUT" on-response="handlePutAppConfigResponse" ,="" on-error="handlePutAppConfigError"></iron-ajax>
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
             <iron-ajax bubbles="" id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
             <iron-ajax bubbles="" id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
@@ -168,6 +185,8 @@ export class AdminView extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public currentUser: User = null;
+
+    protected appConfig: {title: string} = null;
 
     protected users: User[] = [];
 
@@ -189,6 +208,12 @@ export class AdminView extends GompBaseElement {
         return this.$.confirmDeleteUserDialog as ConfirmationDialog;
     }
 
+    private get getAppConfigAjax(): IronAjaxElement {
+        return this.$.getAppConfigAjax as IronAjaxElement;
+    }
+    private get putAppConfigAjax(): IronAjaxElement {
+        return this.$.putAppConfigAjax as IronAjaxElement;
+    }
     private get getUsersAjax(): IronAjaxElement {
         return this.$.getUsersAjax as IronAjaxElement;
     }
@@ -217,7 +242,19 @@ export class AdminView extends GompBaseElement {
     }
 
     protected refresh() {
+        this.getAppConfigAjax.generateRequest();
         this.getUsersAjax.generateRequest();
+    }
+
+    protected handleGetAppConfigResponse(e: CustomEvent) {
+        this.appConfig = e.detail.response;
+    }
+    protected handlePutAppConfigResponse() {
+        this.refresh();
+        this.showToast('Configuration changed.');
+    }
+    protected handlePutAppConfigError() {
+        this.showToast('Updating configuration failed!');
     }
 
     protected handleGetUsersResponse(e: CustomEvent) {
@@ -243,6 +280,11 @@ export class AdminView extends GompBaseElement {
     }
     protected handleDeleteUserError() {
         this.showToast('Deleting user failed!');
+    }
+
+    protected onSaveAppConfigClicked() {
+        this.putAppConfigAjax.body = JSON.stringify(this.appConfig) as any;
+        this.putAppConfigAjax.generateRequest();
     }
 
     protected onAddUserClicked() {

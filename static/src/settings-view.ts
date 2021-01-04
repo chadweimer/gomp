@@ -108,10 +108,10 @@ export class SettingsView extends GompBaseElement {
 
           <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-          <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" ,="" on-error="handlePutPasswordError"></iron-ajax>
+          <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" on-error="handlePutPasswordError"></iron-ajax>
           <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" ,="" on-error="handlePutSettingsError"></iron-ajax>
-          <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" ,="" on-error="handlePostImageError"></iron-ajax>
+          <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
+          <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
 `;
     }
 
