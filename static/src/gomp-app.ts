@@ -302,6 +302,7 @@ export class GompApp extends PolymerElement {
         this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
+        this.addEventListener('app-config-changed', (e: CustomEvent) => this.onAppConfigChanged(e));
 
         super.ready();
         this.appConfigAjax.generateRequest();
@@ -354,7 +355,7 @@ export class GompApp extends PolymerElement {
         }
     }
 
-    protected onShowToast(e: CustomEvent) {
+    protected onShowToast(e: CustomEvent<{message: string}>) {
         this.toast.text = e.detail.message;
         this.toast.open();
     }
@@ -430,7 +431,7 @@ export class GompApp extends PolymerElement {
             break;
         }
     }
-    protected changePageRequested(e: CustomEvent) {
+    protected changePageRequested(e: CustomEvent<{url: string}>) {
         this.changeRoute(e.detail.url);
     }
     protected changeRoute(path: string) {
@@ -449,7 +450,7 @@ export class GompApp extends PolymerElement {
             this.getCurrentUserAjax.generateRequest();
         }
     }
-    protected handleGetCurrentUserResponse(e: CustomEvent) {
+    protected handleGetCurrentUserResponse(e: CustomEvent<{response: User}>) {
         this.currentUser = e.detail.response;
     }
     protected getIsAuthenticated() {
@@ -487,13 +488,16 @@ export class GompApp extends PolymerElement {
     protected onFilter() {
         this.searchFilterDialog.open();
     }
-    protected onHomeLinkClicked(e: CustomEvent) {
+    protected onHomeLinkClicked(e: CustomEvent<{tags: string[]}>) {
         const filter = new SearchFilter();
         filter.tags = e.detail.tags;
         this.setSearchFilter(filter);
         this.changeRoute('/search');
     }
-    protected handleGetAppConfigurationResponse(e: CustomEvent) {
+    protected onAppConfigChanged(e: CustomEvent<{title: string}>) {
+        this.title = e.detail.title;
+    }
+    protected handleGetAppConfigurationResponse(e: CustomEvent<{response: {title: string}}>) {
         this.title = e.detail.response.title;
     }
     protected searchFilterDialogOpened(e: CustomEvent) {

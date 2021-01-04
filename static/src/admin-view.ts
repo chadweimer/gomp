@@ -252,6 +252,7 @@ export class AdminView extends GompBaseElement {
     protected handlePutAppConfigResponse() {
         this.refresh();
         this.showToast('Configuration changed.');
+        this.dispatchEvent(new CustomEvent('app-config-changed', {bubbles: true, composed: true, detail: this.appConfig}));
     }
     protected handlePutAppConfigError() {
         this.showToast('Updating configuration failed!');
