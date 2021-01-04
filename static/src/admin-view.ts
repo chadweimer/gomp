@@ -175,7 +175,7 @@ export class AdminView extends GompBaseElement {
             <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete '[[user.username]]'?" on-confirmed="deleteUser"></confirmation-dialog>
 
             <iron-ajax bubbles="" id="getAppConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="putAppConfigAjax" url="/api/v1/app/configuration" method="PUT" on-response="handlePutAppConfigResponse" ,="" on-error="handlePutAppConfigError"></iron-ajax>
+            <iron-ajax bubbles="" id="putAppConfigAjax" url="/api/v1/app/configuration" method="PUT" on-response="handlePutAppConfigResponse" on-error="handlePutAppConfigError"></iron-ajax>
             <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
             <iron-ajax bubbles="" id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
             <iron-ajax bubbles="" id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
