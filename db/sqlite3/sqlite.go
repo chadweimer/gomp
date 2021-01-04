@@ -113,7 +113,7 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 		return err
 	}
 
-	migrationPath := "file://" + filepath.Join("db", DriverName, "migrations")
+	migrationPath := "file://" + filepath.Join("db", "migrations", DriverName)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
 		DriverName,
