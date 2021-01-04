@@ -62,7 +62,7 @@ const defaultSecureKey string = "ChangeMe"
 // Load reads the configuration file from the specified path
 func Load() *Config {
 	c := Config{
-		Port:                   4000,
+		Port:                   5000,
 		UploadDriver:           "fs",
 		UploadPath:             filepath.Join("data", "uploads"),
 		IsDevelopment:          false,
