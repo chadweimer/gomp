@@ -20,14 +20,34 @@ docker run -p 5000:5000 cwmr/gomp
 ```
 
 The above command will use the default configuration, which includes using an embedded SQLite database and ephemeral storage, which is not recommended in production.
+In order to have persistent storage, you can use a bind mount or named volume with the volume exposed by the container at "/var/app/gomp/data".
+
+```bash
+docker run -p 5000:5000 -v /path/on/host:/var/app/gomp/data cwmr/gomp
+```
+
+The equivalent compose file, this time using a named volume, would look like the following.
+
+```yaml
+version: '2'
+
+volumes:
+  data:
+services:
+  web:
+    image: cwmr/gomp
+    volumes:
+      - data:/var/app/gomp/data
+    ports:
+      - 5000:5000
+```
 
 #### With PostgreSQL
 
 The easiest way to deploy with a PostgreSQL database is via `docker-compose`.
-An example compose file can be found at the root of this repo and is shown here:
+An example compose file can be found at the root of this repo and is shown below.
 
 ```yaml
-
 version: '2'
 
 volumes:
@@ -52,12 +72,6 @@ services:
       - POSTGRES_DB=gomp
     volumes:
       - db-data:/var/lib/postgresql/data
-```
-
-To execute, use the standard syntax (the assumes there is a file named "docker-compose.yaml" in the current directory).
-
-```bash
-docker-compose up
 ```
 
 You will obviously want to cater the values (e.g., passwords) for your deployment.
