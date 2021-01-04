@@ -18,12 +18,23 @@ var ErrNotFound = errors.New("No record found matching supplied criteria")
 type Driver interface {
 	Close() error
 
+	AppConfiguration() AppConfigurationDriver
 	Recipes() RecipeDriver
 	Tags() TagDriver
 	Notes() NoteDriver
 	Images() RecipeImageDriver
 	Links() LinkDriver
 	Users() UserDriver
+}
+
+// AppConfigurationDriver provides functionality to edit and retrieve application configuration.
+type AppConfigurationDriver interface {
+	// Read retrieves the application configuration from the database.
+	Read() (*models.AppConfiguration, error)
+
+	// Update stores the application configuration in the database
+	// using a dedicated transation that is committed if there are not errors.
+	Update(cfg *models.AppConfiguration) error
 }
 
 // LinkDriver provides functionality to edit and retrieve recipe links.

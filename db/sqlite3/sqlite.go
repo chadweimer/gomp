@@ -27,6 +27,7 @@ const DriverName string = "sqlite3"
 type driver struct {
 	*sqlcommon.Driver
 
+	app     *sqlcommon.AppConfigurationDriver
 	recipes *recipeDriver
 	images  *recipeImageDriver
 	tags    *sqlcommon.TagDriver
@@ -62,14 +63,19 @@ func Open(path string, migrationsTableName string, migrationsForceVersion int) (
 	drv := &driver{
 		Driver: sqlcommon.New(db),
 	}
+	drv.app = &sqlcommon.AppConfigurationDriver{Driver: drv.Driver}
 	drv.recipes = newRecipeDriver(drv)
 	drv.images = newRecipeImageDriver(drv)
-	drv.tags = &sqlcommon.TagDriver{drv.Driver}
+	drv.tags = &sqlcommon.TagDriver{Driver: drv.Driver}
 	drv.notes = newNoteDriver(drv)
-	drv.links = &sqlcommon.LinkDriver{drv.Driver}
+	drv.links = &sqlcommon.LinkDriver{Driver: drv.Driver}
 	drv.users = newUserDriver(drv)
 
 	return drv, nil
+}
+
+func (d driver) AppConfiguration() db.AppConfigurationDriver {
+	return d.app
 }
 
 func (d driver) Recipes() db.RecipeDriver {

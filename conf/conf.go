@@ -37,9 +37,6 @@ type Config struct {
 	// Multiple keys can be separated by commas.
 	SecureKeys []string
 
-	// ApplicationTitle is used where the application name (title) is displayed on screen.
-	ApplicationTitle string
-
 	// DatabaseDriver gets which database/sql driver to use.
 	// Supported drivers: postgres, sqlite3
 	DatabaseDriver string
@@ -70,7 +67,6 @@ func Load() *Config {
 		UploadPath:             filepath.Join("data", "uploads"),
 		IsDevelopment:          false,
 		SecureKeys:             []string{defaultSecureKey},
-		ApplicationTitle:       "GOMP: Go Meal Planner",
 		DatabaseDriver:         "",
 		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
@@ -79,17 +75,16 @@ func Load() *Config {
 	}
 
 	// If environment variables are set, use them.
-	loadEnv("PORT", &c.Port)
-	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
-	loadEnv("GOMP_UPLOAD_PATH", &c.UploadPath)
-	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
-	loadEnv("SECURE_KEY", &c.SecureKeys)
-	loadEnv("GOMP_APPLICATION_TITLE", &c.ApplicationTitle)
 	loadEnv("GOMP_BASE_ASSETS_PATH", &c.BaseAssetsPath)
-	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
-	loadEnv("DATABASE_URL", &c.DatabaseURL)
+	loadEnv("GOMP_IS_DEVELOPMENT", &c.IsDevelopment)
 	loadEnv("GOMP_MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
 	loadEnv("GOMP_MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
+	loadEnv("GOMP_UPLOAD_DRIVER", &c.UploadDriver)
+	loadEnv("GOMP_UPLOAD_PATH", &c.UploadPath)
+	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
+	loadEnv("DATABASE_URL", &c.DatabaseURL)
+	loadEnv("PORT", &c.Port)
+	loadEnv("SECURE_KEY", &c.SecureKeys)
 
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
@@ -117,7 +112,6 @@ func Load() *Config {
 		log.Printf("[config] UploadPath=%s", c.UploadPath)
 		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
 		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
-		log.Printf("[config] ApplicationTitle=%s", c.ApplicationTitle)
 		log.Printf("[config] BaseAssetsPath=%s", c.BaseAssetsPath)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
 		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
@@ -146,10 +140,6 @@ func (c Config) Validate() error {
 		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
 		log.Printf("[config] WARNING: SECURE_KEY is set to the default value '%s'. It is highly recommended that this be changed to something unique.", defaultSecureKey)
-	}
-
-	if c.ApplicationTitle == "" {
-		return errors.New("GOMP_APPLICATION_TITLE must be specified")
 	}
 
 	if c.BaseAssetsPath == "" {

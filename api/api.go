@@ -70,6 +70,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 	h.apiMux.POST("/api/v1/uploads", h.requireAuthentication(h.requireEditor(h.postUpload)))
 
 	// Admin
+	h.apiMux.PUT("/api/v1/app/configuration", h.requireAuthentication(h.requireAdmin(h.putAppConfiguration)))
 	h.apiMux.GET("/api/v1/users", h.requireAuthentication(h.requireAdmin(h.getUsers)))
 	h.apiMux.POST("/api/v1/users", h.requireAuthentication(h.requireAdmin(h.postUser)))
 	h.apiMux.GET("/api/v1/users/:userID", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUser)))
