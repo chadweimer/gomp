@@ -7,7 +7,7 @@ import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, SearchFilter } from './models/models.js';
+import { User, SearchFilter, AppConfiguration } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -494,10 +494,10 @@ export class GompApp extends PolymerElement {
         this.setSearchFilter(filter);
         this.changeRoute('/search');
     }
-    protected onAppConfigChanged(e: CustomEvent<{title: string}>) {
+    protected onAppConfigChanged(e: CustomEvent<AppConfiguration>) {
         this.title = e.detail.title;
     }
-    protected handleGetAppConfigurationResponse(e: CustomEvent<{response: {title: string}}>) {
+    protected handleGetAppConfigurationResponse(e: CustomEvent<{response: AppConfiguration}>) {
         this.title = e.detail.response.title;
     }
     protected searchFilterDialogOpened(e: CustomEvent) {

@@ -5,7 +5,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, EventWithModel } from './models/models.js';
+import { User, EventWithModel, AppConfiguration } from './models/models.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/social-icons.js';
@@ -186,7 +186,7 @@ export class AdminView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
-    protected appConfig: {title: string} = null;
+    protected appConfig: AppConfiguration = null;
 
     protected users: User[] = [];
 
@@ -250,7 +250,6 @@ export class AdminView extends GompBaseElement {
         this.appConfig = e.detail.response;
     }
     protected handlePutAppConfigResponse() {
-        this.refresh();
         this.showToast('Configuration changed.');
         this.dispatchEvent(new CustomEvent('app-config-changed', {bubbles: true, composed: true, detail: this.appConfig}));
     }

@@ -1,3 +1,7 @@
+export class AppConfiguration {
+    title: string;
+}
+
 export enum SearchField {
     Name = 'name',
     Ingredients = 'ingredients',
