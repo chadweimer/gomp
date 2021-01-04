@@ -102,7 +102,7 @@ PORT                    |uint             |5000             |The port number und
 SECURE_KEY              |[]string         |ChangeMe         |Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas.
 
 All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.
-The name without "GOMP_" is prefered if both are present.
+The name with "GOMP_" is prefered if both are present.
 
 ## Database Support
 

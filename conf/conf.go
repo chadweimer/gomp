@@ -162,11 +162,13 @@ func (c Config) Validate() error {
 }
 
 func loadEnv(name string, dest interface{}) {
-	// Try the original name...
-	envStr, ok := os.LookupEnv(name)
-	// ... and if not found, try the alternative that is prefixed with GOMP_
-	if !ok {
-		name = "GOMP_" + name
+	fullName := "GOMP_" + name
+	// Try the application specific name (prefixed with GOMP_)...
+	envStr, ok := os.LookupEnv(fullName)
+	// ... and only if not found, try the base name
+	if ok {
+		name = fullName
+	} else {
 		envStr, ok = os.LookupEnv(name)
 	}
 
