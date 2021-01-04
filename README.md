@@ -9,6 +9,30 @@ Web-based recipe book.
 [![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/releases)
 [![license](https://img.shields.io/github/license/chadweimer/gomp.svg)](LICENSE)
 
+## Installation
+
+### Docker
+
+The easiest method is via docker.
+
+```bash
+docker run -p 5000:5000 cwmr/gomp
+```
+
+The above command will use the default configuration, which includes using an embedded SQLite database that is not recommended in production.
+
+#### With PostgreSQL
+
+TODO
+
+### Kubernetes
+
+TODO
+
+### Manual
+
+TODO
+
 ## Configuration
 
 The following table summarizes the available configuration settings, which are settable through environment variables.
