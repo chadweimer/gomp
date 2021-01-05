@@ -98,6 +98,7 @@ docker: docker-linux-amd64 docker-linux-armhf
 .PHONY: docker-publish
 ifndef DOCKER_TAG
 docker-publish:
+	export DOCKER_CLI_EXPERIMENTAL=enabled
 	docker push cwmr/gomp:amd64
 	docker push cwmr/gomp:arm
 	docker manifest create cwmr/gomp:latest cwmr/gomp:amd64 cwmr/gomp:arm
@@ -105,6 +106,7 @@ docker-publish:
 	docker manifest push cwmr/gomp:latest
 else
 docker-publish:
+	export DOCKER_CLI_EXPERIMENTAL=enabled
 	docker tag cwmr/gomp:amd64 cwmr/gomp:$(DOCKER_TAG)-amd64
 	docker tag cwmr/gomp:arm cwmr/gomp:$(DOCKER_TAG)-arm
 	docker push cwmr/gomp:$(DOCKER_TAG)-amd64
