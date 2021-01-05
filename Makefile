@@ -28,6 +28,7 @@ uninstall:
 
 .PHONY: lint
 lint:
+	go vet ./...
 	cd static && npm run lint
 
 .PHONY: build

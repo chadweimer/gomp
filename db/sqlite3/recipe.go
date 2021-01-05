@@ -19,7 +19,7 @@ type recipeDriver struct {
 func newRecipeDriver(driver *driver) *recipeDriver {
 	return &recipeDriver{
 		driver:       driver,
-		RecipeDriver: &sqlcommon.RecipeDriver{driver.Driver},
+		RecipeDriver: &sqlcommon.RecipeDriver{Driver: driver.Driver},
 	}
 }
 
