@@ -14,4 +14,5 @@ jobs:
         with:
           install: true
           driver: docker
-      - run: make lint install build docker
+      - run: make install
+      - run: lint build docker
