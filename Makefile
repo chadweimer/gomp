@@ -96,8 +96,23 @@ docker-linux-armhf: build-linux-armhf
 docker: docker-linux-amd64 docker-linux-armhf
 
 .PHONY: docker-publish
+ifndef DOCKER_TAG
 docker-publish:
-	echo $(GIT_REF)
+	docker push cwmr/gomp:amd64
+	docker push cwmr/gomp:arm
+	docker manifest create cwmr/gomp:latest cwmr/gomp:amd64 cwmr/gomp:arm
+	docker manifest annotate --arch arm cwmr/gomp:latest cwmr/gomp:arm
+	docker manifest push cwmr/gomp:latest
+else
+docker-publish:
+	docker tag cwmr/gomp:amd64 cwmr/gomp:$(DOCKER_TAG)-amd64
+	docker tag cwmr/gomp:arm cwmr/gomp:$(DOCKER_TAG)-arm
+	docker push cwmr/gomp:$(DOCKER_TAG)-amd64
+	docker push cwmr/gomp:$(DOCKER_TAG)-arm
+	docker manifest create cwmr/gomp:$(DOCKER_TAG) cwmr/gomp:$(DOCKER_TAG)-amd64 cwmr/gomp:$(DOCKER_TAG)-arm
+	docker manifest annotate --arch arm cwmr/gomp:$(DOCKER_TAG) cwmr/gomp:$(DOCKER_TAG)-arm
+	docker manifest push cwmr/gomp:$(DOCKER_TAG)
+endif
 
 .PHONY: archive
 archive:
