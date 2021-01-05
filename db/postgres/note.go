@@ -12,7 +12,7 @@ type noteDriver struct {
 
 func newNoteDriver(driver *driver) *noteDriver {
 	return &noteDriver{
-		NoteDriver: &sqlcommon.NoteDriver{driver.Driver},
+		NoteDriver: &sqlcommon.NoteDriver{Driver: driver.Driver},
 	}
 }
 

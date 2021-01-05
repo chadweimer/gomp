@@ -19,6 +19,7 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
+	go install
 	cd static && npm install --silent
 
 .PHONY: uninstall
@@ -27,6 +28,7 @@ uninstall:
 
 .PHONY: lint
 lint:
+	go vet ./...
 	cd static && npm run lint
 
 .PHONY: build
@@ -92,6 +94,21 @@ docker-linux-armhf: build-linux-armhf
 
 .PHONY: docker
 docker: docker-linux-amd64 docker-linux-armhf
+
+.PHONY: docker-publish
+ifndef DOCKER_TAG
+docker-publish:
+	docker push cwmr/gomp:amd64
+	docker push cwmr/gomp:arm
+	docker run --rm mplatform/manifest-tool --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN} push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:ARCH --target cwmr/gomp:latest
+else
+docker-publish:
+	docker tag cwmr/gomp:amd64 cwmr/gomp:$(DOCKER_TAG)-amd64
+	docker tag cwmr/gomp:arm cwmr/gomp:$(DOCKER_TAG)-arm
+	docker push cwmr/gomp:$(DOCKER_TAG)-amd64
+	docker push cwmr/gomp:$(DOCKER_TAG)-arm
+	docker run --rm mplatform/manifest-tool --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN} push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:$(DOCKER_TAG)-ARCH --target cwmr/gomp:$(DOCKER_TAG)
+endif
 
 .PHONY: archive
 archive:

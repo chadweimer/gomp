@@ -14,7 +14,7 @@ type recipeImageDriver struct {
 
 func newRecipeImageDriver(driver *driver) *recipeImageDriver {
 	return &recipeImageDriver{
-		RecipeImageDriver: &sqlcommon.RecipeImageDriver{driver.Driver},
+		RecipeImageDriver: &sqlcommon.RecipeImageDriver{Driver: driver.Driver},
 	}
 }
 

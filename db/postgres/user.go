@@ -12,7 +12,7 @@ type userDriver struct {
 
 func newUserDriver(driver *driver) *userDriver {
 	return &userDriver{
-		UserDriver: &sqlcommon.UserDriver{driver.Driver},
+		UserDriver: &sqlcommon.UserDriver{Driver: driver.Driver},
 	}
 }
 
