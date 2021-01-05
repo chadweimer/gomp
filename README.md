@@ -19,6 +19,8 @@ The easiest method is via docker.
 docker run -p 5000:5000 cwmr/gomp
 ```
 
+On a fresh deployment, you can log into the application using the default user "admin@example.com" with password "password".
+
 The above command will use the default configuration, which includes using an embedded SQLite database and ephemeral storage, which is not recommended in production.
 In order to have persistent storage, you can use a bind mount or named volume with the volume exposed by the container at "/var/app/gomp/data".
 
