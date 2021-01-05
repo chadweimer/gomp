@@ -21,6 +21,7 @@ reinstall: uninstall install
 
 .PHONY: install
 install:
+	go install
 	cd static && npm install --silent
 
 .PHONY: uninstall
