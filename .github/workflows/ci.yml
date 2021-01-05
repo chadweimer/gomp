@@ -1,3 +1,4 @@
+name: Continuous Integration
 on:
   push:
     branches: [master]
@@ -7,6 +8,7 @@ on:
     types: [published]
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
