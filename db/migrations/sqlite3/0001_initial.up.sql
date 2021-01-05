@@ -83,6 +83,6 @@ CREATE INDEX recipe_link_dest_recipe_id_idx ON recipe_link(dest_recipe_id);
 -- Seed data
 
 INSERT INTO app_user (username, password_hash, access_level)
-SELECT 'admin@example.com', '$2a$08$1C0IMQAwkxLQcYvL/03jpuwOZjyF/6BCXgxHhkoarRoVp1wmiGwAS', 'admin';
+VALUES('admin@example.com', '$2a$08$1C0IMQAwkxLQcYvL/03jpuwOZjyF/6BCXgxHhkoarRoVp1wmiGwAS', 'admin');
 
 INSERT INTO app_user_settings(user_id) SELECT id FROM app_user;

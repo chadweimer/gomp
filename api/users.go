@@ -163,7 +163,9 @@ func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request,
 
 	// Default to the application title if the user hasn't set their own
 	if userSettings.HomeTitle == nil {
-		userSettings.HomeTitle = &h.cfg.ApplicationTitle
+		if cfg, err := h.db.AppConfiguration().Read(); err == nil {
+			userSettings.HomeTitle = &cfg.Title
+		}
 	}
 
 	h.OK(resp, userSettings)

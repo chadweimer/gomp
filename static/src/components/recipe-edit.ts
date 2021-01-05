@@ -60,7 +60,7 @@ export class RecipeEdit extends GompBaseElement {
           <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
           <iron-ajax bubbles="" id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="handlePutRecipeResponse"></iron-ajax>
           <iron-ajax bubbles="" id="postAjax" url="/api/v1/recipes" method="POST" on-response="handlePostRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" ,="" on-error="handleAddImageResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" on-error="handleAddImageResponse"></iron-ajax>
 `;
     }
 

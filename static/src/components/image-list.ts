@@ -6,6 +6,7 @@ import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
+import { RecipeImage } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -134,7 +135,7 @@ export class ImageList extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected images: any[] = [];
+    protected images: RecipeImage[] = [];
 
     private get addForm(): HTMLFormElement {
         return this.$.addForm as HTMLFormElement;
@@ -220,7 +221,7 @@ export class ImageList extends GompBaseElement {
     protected handleGetImagesRequest() {
         this.images = [];
     }
-    protected handleGetImagesResponse(e: CustomEvent) {
+    protected handleGetImagesResponse(e: CustomEvent<{response: RecipeImage[]}>) {
         this.images = e.detail.response;
     }
     protected handleAddRequest() {
