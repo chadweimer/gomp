@@ -16,8 +16,7 @@ func (d NoteDriver) Update(note *models.Note) error {
 }
 
 func (d NoteDriver) UpdateTx(note *models.Note, tx *sqlx.Tx) error {
-	_, err := tx.Exec("UPDATE recipe_note SET note = $1, modified_at = CURRENT_TIMESTAMP "+
-		"WHERE ID = $2 AND recipe_id = $3",
+	_, err := tx.Exec("UPDATE recipe_note SET note = $1 WHERE ID = $2 AND recipe_id = $3",
 		note.Note, note.ID, note.RecipeID)
 	return err
 }
