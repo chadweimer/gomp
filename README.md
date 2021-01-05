@@ -104,8 +104,8 @@ UPLOAD_PATH             |string           |data/uploads     |The path (full or r
 All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.
 The name with "GOMP_" is prefered if both are present.
 
-For values that are releative paths (e.g., BASE_ASSETS_PATH, DATABASE_URL for SQLite, and UPLOAD_PATH for the fs driver), they are always relative to the application working directory.
-When using docker, this is "/var/app/gomp", so anthing at or below the "data/" relative path is in the exposed "/var/app/gomp/data" volume.
+For values that allow releative paths (e.g., BASE_ASSETS_PATH, DATABASE_URL for SQLite, and UPLOAD_PATH for the fs driver), they are always relative to the application working directory.
+When using docker, this is "/var/app/gomp", so anything at or below the "data/" relative path is in the exposed "/var/app/gomp/data" volume.
 
 ## Database Support
 
