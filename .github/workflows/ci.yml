@@ -44,3 +44,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         if: startswith(github.ref, 'refs/tags/')
+      - run: make archive
+        if: startsWith(github.ref, 'refs/tags/')
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/gomp-linux-amd64.tar.gz
+            build/gomp-linux-armhf.tar.gz
+            build/gomp-windows-amd64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
