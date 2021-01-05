@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "Build linux/amd64",
+            "type": "shell",
+            "command": "make build-linux-amd64",
+            "problemMatcher": [
+                "$go",
+                "$tsc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

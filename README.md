@@ -47,7 +47,7 @@ services:
 #### With PostgreSQL
 
 The easiest way to deploy with a PostgreSQL database is via `docker-compose`.
-An example compose file can be found at the root of this repo and is shown below.
+An example compose file can be found at at [examples/docker-compose.yml](examples/docker-compose.yml) and is shown below.
 
 ```yaml
 version: '2'
