@@ -1,7 +1,7 @@
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -14,5 +14,6 @@ jobs:
         with:
           install: true
           driver: docker
+      - run: sudo apt install zip gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gcc-mingw-w64-x86-64
       - run: make install
       - run: make lint build docker
