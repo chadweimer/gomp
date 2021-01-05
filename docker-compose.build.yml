@@ -1,9 +1,0 @@
-version: '2'
-
-services:
-  web:
-    build: .
-    environment:
-      - GOMP_IS_DEVELOPMENT=1
-    ports:
-      - 5000:5000
