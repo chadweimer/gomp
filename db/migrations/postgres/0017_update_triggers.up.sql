@@ -1,17 +1,13 @@
 BEGIN;
 
 -- recipe
-CREATE FUNCTION on_recipe_update()
-    RETURNS TRIGGER
-    LANGUAGE PLPGSQL
-    AS
-$$
-BEGIN
-    UPDATE recipe SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+CREATE FUNCTION on_recipe_update() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE recipe SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 
-    RETURN NEW;
-END;
-$$
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER on_recipe_update
     AFTER UPDATE ON recipe
@@ -20,17 +16,13 @@ CREATE TRIGGER on_recipe_update
     EXECUTE FUNCTION on_recipe_update();
 
 -- recipe_note
-CREATE FUNCTION on_recipe_note_update()
-    RETURNS TRIGGER
-    LANGUAGE PLPGSQL
-    AS
-$$
-BEGIN
-    UPDATE recipe_note SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+CREATE FUNCTION on_recipe_note_update() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE recipe_note SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 
-    RETURN NEW;
-END;
-$$
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER on_recipe_note_update
     AFTER UPDATE ON recipe_note
@@ -39,17 +31,13 @@ CREATE TRIGGER on_recipe_note_update
     EXECUTE FUNCTION on_recipe_note_update();
 
 -- recipe_image
-CREATE FUNCTION on_recipe_image_update()
-    RETURNS TRIGGER
-    LANGUAGE PLPGSQL
-    AS
-$$
-BEGIN
-    UPDATE recipe_image SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+CREATE FUNCTION on_recipe_image_update() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE recipe_image SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 
-    RETURN NEW;
-END;
-$$
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER on_recipe_image_update
     AFTER UPDATE ON recipe_image
