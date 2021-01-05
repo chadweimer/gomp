@@ -99,22 +99,16 @@ docker: docker-linux-amd64 docker-linux-armhf
 .PHONY: docker-publish
 ifndef DOCKER_TAG
 docker-publish:
-	export DOCKER_CLI_EXPERIMENTAL=enabled
 	docker push cwmr/gomp:amd64
 	docker push cwmr/gomp:arm
-	docker manifest create cwmr/gomp:latest cwmr/gomp:amd64 cwmr/gomp:arm
-	docker manifest annotate --arch arm cwmr/gomp:latest cwmr/gomp:arm
-	docker manifest push cwmr/gomp:latest
+	docker run --rm mplatform/manifest-tool --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN} push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:ARCH --target cwmr/gomp:latest
 else
 docker-publish:
-	export DOCKER_CLI_EXPERIMENTAL=enabled
 	docker tag cwmr/gomp:amd64 cwmr/gomp:$(DOCKER_TAG)-amd64
 	docker tag cwmr/gomp:arm cwmr/gomp:$(DOCKER_TAG)-arm
 	docker push cwmr/gomp:$(DOCKER_TAG)-amd64
 	docker push cwmr/gomp:$(DOCKER_TAG)-arm
-	docker manifest create cwmr/gomp:$(DOCKER_TAG) cwmr/gomp:$(DOCKER_TAG)-amd64 cwmr/gomp:$(DOCKER_TAG)-arm
-	docker manifest annotate --arch arm cwmr/gomp:$(DOCKER_TAG) cwmr/gomp:$(DOCKER_TAG)-arm
-	docker manifest push cwmr/gomp:$(DOCKER_TAG)
+	docker run --rm mplatform/manifest-tool --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN} push from-args --platforms linux/amd64,linux/arm --template cwmr/gomp:$(DOCKER_TAG)-ARCH --target cwmr/gomp:$(DOCKER_TAG)
 endif
 
 .PHONY: archive

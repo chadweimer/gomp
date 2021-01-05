@@ -28,8 +28,17 @@ jobs:
       - run: make install
       - run: make lint build docker
       - run: make docker-publish
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         if: startswith(github.ref, 'refs/heads/master')
       - run: make docker-publish DOCKER_TAG=dev
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         if: startswith(github.ref, 'refs/pull/')
       - run: make docker-publish DOCKER_TAG=$(echo $GITHUB_REF | sed -e "/^refs\/tags\///")
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         if: startswith(github.ref, 'refs/tags/')
