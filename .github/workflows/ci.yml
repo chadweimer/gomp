@@ -1,4 +1,10 @@
-on: [push]
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  release:
+    types: [published]
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -17,3 +23,4 @@ jobs:
       - run: sudo apt install zip gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gcc-mingw-w64-x86-64
       - run: make install
       - run: make lint build docker
+      - run: make docker-publish GIT_REF=${{ github.ref }}

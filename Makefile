@@ -9,6 +9,8 @@ GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
 GO_ENV_LIN_ARMHF=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
 GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
 
+GIT_REF=
+
 .DEFAULT_GOAL := rebuild
 
 .PHONY: rebuild
@@ -92,6 +94,10 @@ docker-linux-armhf: build-linux-armhf
 
 .PHONY: docker
 docker: docker-linux-amd64 docker-linux-armhf
+
+.PHONY: docker-publish
+docker-publish:
+	echo $(GIT_REF)
 
 .PHONY: archive
 archive:
