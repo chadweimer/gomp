@@ -1,10 +1,5 @@
-FROM debian:10-slim
+FROM balenalib/amd64-ubuntu:focal
 LABEL maintainer="ch@dweimer.com"
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates
-
-RUN update-ca-certificates
 
 EXPOSE 5000
 
