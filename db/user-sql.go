@@ -1,39 +1,57 @@
-package sqlcommon
+package db
 
 import (
 	"database/sql"
 	"errors"
 
-	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserDriver struct {
-	*Driver
+type sqlUserDriver struct {
+	*sqlDriver
 }
 
-func (d UserDriver) Authenticate(username, password string) (*models.User, error) {
+func (d sqlUserDriver) Authenticate(username, password string) (*models.User, error) {
 	user := new(models.User)
 
 	if err := d.Db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
 		return nil, err
 	}
 
-	if err := verifyPassword(user, password); err != nil {
+	if err := d.verifyPassword(user, password); err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (d UserDriver) Read(id int64) (*models.User, error) {
+func (d sqlUserDriver) Create(user *models.User) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.createtx(user, tx)
+	})
+}
+
+func (d sqlUserDriver) createtx(user *models.User, tx *sqlx.Tx) error {
+	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
+		"VALUES ($1, $2, $3)"
+
+	res, err := tx.Exec(stmt, user.Username, user.PasswordHash, user.AccessLevel)
+	if err != nil {
+		return err
+	}
+	user.ID, _ = res.LastInsertId()
+
+	return nil
+}
+
+func (d sqlUserDriver) Read(id int64) (*models.User, error) {
 	user := new(models.User)
 
 	err := d.Db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
 	if err == sql.ErrNoRows {
-		return nil, db.ErrNotFound
+		return nil, ErrNotFound
 	} else if err != nil {
 		return nil, err
 	}
@@ -41,31 +59,31 @@ func (d UserDriver) Read(id int64) (*models.User, error) {
 	return user, nil
 }
 
-func (d UserDriver) Update(user *models.User) error {
-	return d.Tx(func(tx *sqlx.Tx) error {
-		return d.UpdateTx(user, tx)
+func (d sqlUserDriver) Update(user *models.User) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.updatetx(user, tx)
 	})
 }
 
-func (d UserDriver) UpdateTx(user *models.User, tx *sqlx.Tx) error {
+func (d sqlUserDriver) updatetx(user *models.User, tx *sqlx.Tx) error {
 	_, err := tx.Exec("UPDATE app_user SET username = $1, access_level = $2 WHERE ID = $3",
 		user.Username, user.AccessLevel, user.ID)
 	return err
 }
 
-func (d UserDriver) UpdatePassword(id int64, password, newPassword string) error {
-	return d.Tx(func(tx *sqlx.Tx) error {
-		return d.UpdatePasswordTx(id, password, newPassword, tx)
+func (d sqlUserDriver) UpdatePassword(id int64, password, newPassword string) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.updatePasswordtx(id, password, newPassword, tx)
 	})
 }
 
-func (d UserDriver) UpdatePasswordTx(id int64, password, newPassword string, tx *sqlx.Tx) error {
+func (d sqlUserDriver) updatePasswordtx(id int64, password, newPassword string, tx *sqlx.Tx) error {
 	// Make sure the current password is correct
 	user, err := d.Read(id)
 	if err != nil {
 		return err
 	}
-	err = verifyPassword(user, password)
+	err = d.verifyPassword(user, password)
 	if err != nil {
 		return err
 	}
@@ -80,7 +98,7 @@ func (d UserDriver) UpdatePasswordTx(id int64, password, newPassword string, tx 
 	return err
 }
 
-func (d UserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
+func (d sqlUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 	userSettings := new(models.UserSettings)
 
 	if err := d.Db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
@@ -90,13 +108,13 @@ func (d UserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 	return userSettings, nil
 }
 
-func (d UserDriver) UpdateSettings(settings *models.UserSettings) error {
-	return d.Tx(func(tx *sqlx.Tx) error {
-		return d.UpdateSettingsTx(settings, tx)
+func (d sqlUserDriver) UpdateSettings(settings *models.UserSettings) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.updateSettingstx(settings, tx)
 	})
 }
 
-func (d UserDriver) UpdateSettingsTx(settings *models.UserSettings, tx *sqlx.Tx) error {
+func (d sqlUserDriver) updateSettingstx(settings *models.UserSettings, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE app_user_settings "+
 			"SET home_title = $1, home_image_url = $2 WHERE user_id = $3",
@@ -108,18 +126,18 @@ func (d UserDriver) UpdateSettingsTx(settings *models.UserSettings, tx *sqlx.Tx)
 	return nil
 }
 
-func (d UserDriver) Delete(id int64) error {
-	return d.Tx(func(tx *sqlx.Tx) error {
-		return d.DeleteTx(id, tx)
+func (d sqlUserDriver) Delete(id int64) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.deletetx(id, tx)
 	})
 }
 
-func (d UserDriver) DeleteTx(id int64, tx *sqlx.Tx) error {
+func (d sqlUserDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec("DELETE FROM app_user WHERE id = $1", id)
 	return err
 }
 
-func (d UserDriver) List() (*[]models.User, error) {
+func (d sqlUserDriver) List() (*[]models.User, error) {
 	var users []models.User
 
 	if err := d.Db.Select(&users, "SELECT * FROM app_user ORDER BY username ASC"); err != nil {
@@ -129,7 +147,7 @@ func (d UserDriver) List() (*[]models.User, error) {
 	return &users, nil
 }
 
-func verifyPassword(user *models.User, password string) error {
+func (d sqlUserDriver) verifyPassword(user *models.User, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return errors.New("username or password invalid")
 	}

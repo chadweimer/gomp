@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"log"
 
 	"github.com/chadweimer/gomp/models"
 )
@@ -25,6 +26,33 @@ type Driver interface {
 	Images() RecipeImageDriver
 	Links() LinkDriver
 	Users() UserDriver
+}
+
+// CreateDriver returns a Driver implementation based upon the value of the driver parameter
+func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) Driver {
+	switch driver {
+	case PostgresDriverName:
+		drv, err := openPostgres(
+			connectionString,
+			migrationsTableName,
+			migrationsForceVersion)
+		if err != nil {
+			log.Fatalf("[db] %s", err.Error())
+		}
+		return drv
+	case SQLiteDriverName:
+		drv, err := openSQLite(
+			connectionString,
+			migrationsTableName,
+			migrationsForceVersion)
+		if err != nil {
+			log.Fatalf("[db] %s", err.Error())
+		}
+		return drv
+	}
+
+	log.Fatalf("Invalid DatabaseDriver '%s' specified", driver)
+	return nil
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.
@@ -186,4 +214,13 @@ type RecipeImageDriver interface {
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transation that is committed if there are not errors.
 	DeleteAll(recipeID int64) error
+}
+
+func containsString(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }
