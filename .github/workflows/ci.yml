@@ -48,7 +48,7 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      - run: make docker-publish DOCKER_TAG=$(echo $GITHUB_REF | sed -e "/^refs\/tags\///")
+      - run: make docker-publish DOCKER_TAG=$(echo "$GITHUB_REF" | sed -e "/^refs\/tags\///")
         if: startswith(github.ref, 'refs/tags/')
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
