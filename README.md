@@ -4,7 +4,6 @@ Web-based recipe book.
 
 [![TravisCI](https://img.shields.io/travis/com/chadweimer/gomp.svg?label=travisci)](https://travis-ci.com/chadweimer/gomp)
 [![Code Climate](https://img.shields.io/codeclimate/maintainability/chadweimer/gomp.svg)](https://codeclimate.com/github/chadweimer/gomp)
-[![SonarQube Tech Debt](https://img.shields.io/sonar/https/sonarcloud.io/chadweimer%3Agomp/tech_debt.svg)](https://sonarcloud.io/dashboard?id=chadweimer%3Agomp)
 [![Closed Pull Requests](https://img.shields.io/github/issues-pr-closed-raw/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/pulls)
 [![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/releases)
 [![license](https://img.shields.io/github/license/chadweimer/gomp.svg)](LICENSE)

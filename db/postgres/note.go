@@ -16,13 +16,13 @@ func newNoteDriver(driver *driver) *noteDriver {
 	}
 }
 
-func (d noteDriver) Create(note *models.Note) error {
+func (d *noteDriver) Create(note *models.Note) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(note, tx)
 	})
 }
 
-func (d noteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
+func (d *noteDriver) CreateTx(note *models.Note, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
 		"VALUES ($1, $2) RETURNING id"
 

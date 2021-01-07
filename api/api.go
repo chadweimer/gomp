@@ -83,30 +83,30 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 	return &h
 }
 
-func (h apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-Type", "application/json")
 	h.apiMux.ServeHTTP(resp, req)
 }
 
-func (h apiHandler) OK(resp http.ResponseWriter, v interface{}) {
+func (h *apiHandler) OK(resp http.ResponseWriter, v interface{}) {
 	h.rnd.JSON(resp, http.StatusOK, v)
 }
 
-func (h apiHandler) NoContent(resp http.ResponseWriter) {
+func (h *apiHandler) NoContent(resp http.ResponseWriter) {
 	resp.WriteHeader(http.StatusNoContent)
 }
 
-func (h apiHandler) Created(resp http.ResponseWriter, location string) {
+func (h *apiHandler) Created(resp http.ResponseWriter, location string) {
 	resp.Header().Set("Location", location)
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (h apiHandler) Error(resp http.ResponseWriter, status int, err error) {
+func (h *apiHandler) Error(resp http.ResponseWriter, status int, err error) {
 	log.Print(err.Error())
 	h.rnd.JSON(resp, status, err.Error())
 }
 
-func (h apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 	h.Error(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 

@@ -9,33 +9,33 @@ type TagDriver struct {
 	*Driver
 }
 
-func (d TagDriver) Create(recipeID int64, tag string) error {
+func (d *TagDriver) Create(recipeID int64, tag string) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(recipeID, tag, tx)
 	})
 }
 
-func (d TagDriver) CreateTx(recipeID int64, tag string, tx *sqlx.Tx) error {
+func (d *TagDriver) CreateTx(recipeID int64, tag string, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeID, tag)
 	return err
 }
 
-func (d TagDriver) DeleteAll(recipeID int64) error {
+func (d *TagDriver) DeleteAll(recipeID int64) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.DeleteAllTx(recipeID, tx)
 	})
 }
 
-func (d TagDriver) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
+func (d *TagDriver) DeleteAllTx(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)
 	return err
 }
 
-func (d TagDriver) List(recipeID int64) (*[]string, error) {
+func (d *TagDriver) List(recipeID int64) (*[]string, error) {
 	var tags []string
 	if err := d.Db.Select(&tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (d TagDriver) List(recipeID int64) (*[]string, error) {
 	return &tags, nil
 }
 
-func (d TagDriver) Find(filter *models.TagsFilter) (*[]string, error) {
+func (d *TagDriver) Find(filter *models.TagsFilter) (*[]string, error) {
 	selectStmt := "SELECT tag, COUNT(tag) AS dups FROM recipe_tag GROUP BY tag ORDER BY "
 	switch filter.SortBy {
 	case models.SortTagByFrequency:

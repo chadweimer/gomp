@@ -4,7 +4,7 @@ BUILD_LIN_ARMHF_DIR=$(BUILD_DIR)/linux/armhf
 BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 DB_MIGRATIONS_REL_DIR=db/migrations
 
-GO_LIN_LD_FLAGS=-extldflags "-static -static-libgcc"
+GO_LIN_LD_FLAGS=-ldflags '-extldflags "-static -static-libgcc"'
 GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
 GO_ENV_LIN_ARMHF=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
 GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
@@ -49,7 +49,7 @@ clean-linux-amd64:
 
 .PHONY: build-linux-amd64
 build-linux-amd64: prebuild
-	$(GO_ENV_LIN_AMD64) go build -o $(BUILD_LIN_AMD64_DIR)/gomp -ldflags '$(GO_LIN_LD_FLAGS)'
+	$(GO_ENV_LIN_AMD64) go build -o $(BUILD_LIN_AMD64_DIR)/gomp $(GO_LIN_LD_FLAGS)
 	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
 	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_AMD64_DIR)/static
 
@@ -63,7 +63,7 @@ clean-linux-armhf:
 
 .PHONY: build-linux-armhf
 build-linux-armhf: prebuild
-	$(GO_ENV_LIN_ARMHF) go build -o $(BUILD_LIN_ARMHF_DIR)/gomp -ldflags '$(GO_LIN_LD_FLAGS)'
+	$(GO_ENV_LIN_ARMHF) go build -o $(BUILD_LIN_ARMHF_DIR)/gomp $(GO_LIN_LD_FLAGS)
 	mkdir -p $(BUILD_LIN_ARMHF_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARMHF_DIR)/$(DB_MIGRATIONS_REL_DIR)
 	mkdir -p $(BUILD_LIN_ARMHF_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_ARMHF_DIR)/static
 
@@ -90,7 +90,7 @@ docker-linux-amd64: build-linux-amd64
 
 .PHONY: docker-linux-armhf
 docker-linux-armhf: build-linux-armhf
-	docker build -t cwmr/gomp:arm -f Dockerfile.armhf .
+	docker build -t cwmr/gomp:arm --build-arg ARCH=armv7hf --build-arg BUILD_DIR=$(BUILD_LIN_ARMHF_DIR) .
 
 .PHONY: docker
 docker: docker-linux-amd64 docker-linux-armhf

@@ -1,12 +1,13 @@
-FROM alpine:3.12
+ARG ARCH=amd64
+FROM balenalib/$ARCH-alpine:3.12
 LABEL maintainer="ch@dweimer.com"
-
-RUN apk add --no-cache ca-certificates
 
 EXPOSE 5000
 
 WORKDIR /var/app/gomp
 VOLUME /var/app/gomp/data
-COPY build/linux/amd64/ ./
+
+ARG BUILD_DIR=build/linux/amd64/
+COPY $BUILD_DIR ./
 
 ENTRYPOINT ["./gomp"]

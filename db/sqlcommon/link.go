@@ -12,7 +12,7 @@ type LinkDriver struct {
 
 // Create stores a link between 2 recipes in the database as a new record
 // using a dedicated transation that is committed if there are not errors.
-func (d LinkDriver) Create(recipeID, destRecipeID int64) error {
+func (d *LinkDriver) Create(recipeID, destRecipeID int64) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(recipeID, destRecipeID, tx)
 	})
@@ -20,7 +20,7 @@ func (d LinkDriver) Create(recipeID, destRecipeID int64) error {
 
 // CreateTx stores a link between 2 recipes in the database as a new record
 // using the specified transaction.
-func (d LinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
+func (d *LinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_link (recipe_id, dest_recipe_id) VALUES ($1, $2)"
 
 	_, err := tx.Exec(stmt, recipeID, destRecipeID)
@@ -29,14 +29,14 @@ func (d LinkDriver) CreateTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
 
 // Delete removes the linked recipe from the database using a dedicated transation
 // that is committed if there are not errors.
-func (d LinkDriver) Delete(recipeID, destRecipeID int64) error {
+func (d *LinkDriver) Delete(recipeID, destRecipeID int64) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.DeleteTx(recipeID, destRecipeID, tx)
 	})
 }
 
 // DeleteTx removes the linked recipe from the database using the specified transaction.
-func (d LinkDriver) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
+func (d *LinkDriver) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_link WHERE (recipe_id = $1 AND dest_recipe_id = $2) OR (recipe_id = $2 AND dest_recipe_id = $1)",
 		recipeID,
@@ -45,7 +45,7 @@ func (d LinkDriver) DeleteTx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
 }
 
 // List retrieves all recipes linked to recipe with the specified id.
-func (d LinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
+func (d *LinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
 	var recipes []models.RecipeCompact
 
 	selectStmt := "SELECT " +

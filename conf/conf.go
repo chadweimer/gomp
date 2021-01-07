@@ -123,7 +123,7 @@ func Load() *Config {
 }
 
 // Validate checks whether the current configuration settings are valid.
-func (c Config) Validate() error {
+func (c *Config) Validate() error {
 	if c.Port <= 0 {
 		return errors.New("PORT must be a positive integer")
 	}

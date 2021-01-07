@@ -15,7 +15,7 @@ func New(db *sqlx.DB) *Driver {
 	return &Driver{Db: db}
 }
 
-func (d Driver) Close() error {
+func (d *Driver) Close() error {
 	log.Print("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
 		return fmt.Errorf("failed to close the connection to the database: '%+v'", err)
@@ -24,7 +24,7 @@ func (d Driver) Close() error {
 	return nil
 }
 
-func (d Driver) Tx(op func(*sqlx.Tx) error) error {
+func (d *Driver) Tx(op func(*sqlx.Tx) error) error {
 	tx, err := d.Db.Beginx()
 	if err != nil {
 		return err
