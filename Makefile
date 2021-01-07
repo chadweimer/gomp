@@ -90,7 +90,7 @@ docker-linux-amd64: build-linux-amd64
 
 .PHONY: docker-linux-armhf
 docker-linux-armhf: build-linux-armhf
-	docker build -t cwmr/gomp:arm -f Dockerfile.armhf .
+	docker build -t cwmr/gomp:arm --build-arg ARCH=armv7hf --build-arg BUILD_DIR=$(BUILD_LIN_ARMHF_DIR) .
 
 .PHONY: docker
 docker: docker-linux-amd64 docker-linux-armhf
