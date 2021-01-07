@@ -24,12 +24,12 @@ jobs:
           driver: docker
       - uses: docker/setup-qemu-action@v1
         with:
-          platforms: arm
+          platforms: arm,arm64
       - uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - run: sudo apt install zip gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gcc-mingw-w64-x86-64
+      - run: sudo apt install zip gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gcc-aarch64-linux-gnu libc6-dev-arm64-cross gcc-mingw-w64-x86-64
       - run: make install
       - run: make lint
       - run: make build docker
@@ -55,7 +55,8 @@ jobs:
         with:
           files: |
             build/gomp-linux-amd64.tar.gz
-            build/gomp-linux-armhf.tar.gz
+            build/gomp-linux-arm.tar.gz
+            build/gomp-linux-arm64.tar.gz
             build/gomp-windows-amd64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
