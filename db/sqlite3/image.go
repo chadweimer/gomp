@@ -18,13 +18,13 @@ func newRecipeImageDriver(driver *driver) *recipeImageDriver {
 	}
 }
 
-func (d recipeImageDriver) Create(imageInfo *models.RecipeImage) error {
+func (d *recipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(imageInfo, tx)
 	})
 }
 
-func (d recipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
+func (d *recipeImageDriver) CreateTx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
 		"VALUES ($1, $2, $3, $4)"
 

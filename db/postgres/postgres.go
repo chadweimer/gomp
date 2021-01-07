@@ -78,31 +78,31 @@ func Open(hostURL string, migrationsTableName string, migrationsForceVersion int
 	return drv, nil
 }
 
-func (d driver) AppConfiguration() db.AppConfigurationDriver {
+func (d *driver) AppConfiguration() db.AppConfigurationDriver {
 	return d.app
 }
 
-func (d driver) Recipes() db.RecipeDriver {
+func (d *driver) Recipes() db.RecipeDriver {
 	return d.recipes
 }
 
-func (d driver) Images() db.RecipeImageDriver {
+func (d *driver) Images() db.RecipeImageDriver {
 	return d.images
 }
 
-func (d driver) Tags() db.TagDriver {
+func (d *driver) Tags() db.TagDriver {
 	return d.tags
 }
 
-func (d driver) Notes() db.NoteDriver {
+func (d *driver) Notes() db.NoteDriver {
 	return d.notes
 }
 
-func (d driver) Links() db.LinkDriver {
+func (d *driver) Links() db.LinkDriver {
 	return d.links
 }
 
-func (d driver) Users() db.UserDriver {
+func (d *driver) Users() db.UserDriver {
 	return d.users
 }
 

@@ -25,7 +25,7 @@ func newRecipeDriver(driver *driver) *recipeDriver {
 
 // Create stores the recipe in the database as a new record using
 // a dedicated transaction that is committed if there are not errors.
-func (d recipeDriver) Create(recipe *models.Recipe) error {
+func (d *recipeDriver) Create(recipe *models.Recipe) error {
 	return d.driver.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(recipe, tx)
 	})
@@ -33,7 +33,7 @@ func (d recipeDriver) Create(recipe *models.Recipe) error {
 
 // CreateTx stores the recipe in the database as a new record using
 // the specified transaction.
-func (d recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d *recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
 		"VALUES ($1, $2, $3, $4, $5, $6)"
 
@@ -56,7 +56,7 @@ func (d recipeDriver) CreateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 
 // Read retrieves the information about the recipe from the database, if found.
 // If no recipe exists with the specified ID, a NoRecordFound error is returned.
-func (d recipeDriver) Read(id int64) (*models.Recipe, error) {
+func (d *recipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
 		"FROM recipe AS r " +
@@ -82,7 +82,7 @@ func (d recipeDriver) Read(id int64) (*models.Recipe, error) {
 // Update stores the specified recipe in the database by updating the
 // existing record with the specified id using a dedicated transaction
 // that is committed if there are not errors.
-func (d recipeDriver) Update(recipe *models.Recipe) error {
+func (d *recipeDriver) Update(recipe *models.Recipe) error {
 	return d.driver.Tx(func(tx *sqlx.Tx) error {
 		return d.UpdateTx(recipe, tx)
 	})
@@ -90,7 +90,7 @@ func (d recipeDriver) Update(recipe *models.Recipe) error {
 
 // UpdateTx stores the specified recipe in the database by updating the
 // existing record with the specified id using the specified transaction.
-func (d recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d *recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6 "+
@@ -116,7 +116,7 @@ func (d recipeDriver) UpdateTx(recipe *models.Recipe, tx *sqlx.Tx) error {
 }
 
 // Find retrieves all recipes matching the specified search filter and within the range specified.
-func (d recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+func (d *recipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := "WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error

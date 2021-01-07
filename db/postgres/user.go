@@ -16,13 +16,13 @@ func newUserDriver(driver *driver) *userDriver {
 	}
 }
 
-func (d userDriver) Create(user *models.User) error {
+func (d *userDriver) Create(user *models.User) error {
 	return d.Tx(func(tx *sqlx.Tx) error {
 		return d.CreateTx(user, tx)
 	})
 }
 
-func (d userDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
+func (d *userDriver) CreateTx(user *models.User, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3) RETURNING id"
 

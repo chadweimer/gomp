@@ -27,7 +27,7 @@ func CreateDriver(driver string, path string) Driver {
 	case FileSystemDriver:
 		return newFileSystemDriver(path)
 	case S3Driver:
-		return s3Driver{path}
+		return &s3Driver{path}
 	}
 
 	log.Fatalf("Invalid UploadDriver '%s' specified", driver)
