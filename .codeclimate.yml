@@ -12,6 +12,8 @@ plugins:
     config:
       languages:
       - javascript
+      - typescript
+      - go
   eslint:
     enabled: true
     config:
