@@ -39,7 +39,7 @@ ratings:
   - "**.html"
 exclude_paths:
 - build/
-- db/
+- db/migrations/
 - static/node_modules/
 - static/build/
 - vendor/
