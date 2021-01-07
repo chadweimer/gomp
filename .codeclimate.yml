@@ -13,7 +13,9 @@ plugins:
       languages:
       - javascript
   eslint:
-    enabled: false
+    enabled: true
+    config:
+      config: static/.eslintrc
   fixme:
     enabled: true
   gofmt:
