@@ -1,6 +1,6 @@
 BUILD_DIR=./build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
-BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm
+BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
 BUILD_LIN_ARM64_DIR=$(BUILD_DIR)/linux/arm64
 BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 DB_MIGRATIONS_REL_DIR=db/migrations
@@ -100,37 +100,12 @@ build-windows-amd64: prebuild
 .PHONY: rebuild-windows-amd64
 rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64
 
-.PHONY: docker-linux-amd64
-docker-linux-amd64: build-linux-amd64
-	docker build -t cwmr/gomp:amd64 .
-
-.PHONY: docker-linux-arm
-docker-linux-arm: build-linux-arm
-	docker build -t cwmr/gomp:arm --build-arg ARCH=armv7hf --build-arg BUILD_DIR=$(BUILD_LIN_ARM_DIR) .
-
-.PHONY: docker-linux-arm64
-docker-linux-arm64: build-linux-arm64
-	docker build -t cwmr/gomp:arm64 --build-arg ARCH=aarch64 --build-arg BUILD_DIR=$(BUILD_LIN_ARM64_DIR) .
-
 .PHONY: docker
-docker: docker-linux-amd64 docker-linux-arm docker-linux-arm64
-
-.PHONY: docker-publish
+docker:
 ifndef DOCKER_TAG
-docker-publish:
-	docker push cwmr/gomp:amd64
-	docker push cwmr/gomp:arm
-	docker push cwmr/gomp:arm64
-	docker run --rm mplatform/manifest-tool --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN} push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template cwmr/gomp:ARCH --target cwmr/gomp:latest
+	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:local .
 else
-docker-publish:
-	docker tag cwmr/gomp:amd64 cwmr/gomp:$(DOCKER_TAG)-amd64
-	docker tag cwmr/gomp:arm cwmr/gomp:$(DOCKER_TAG)-arm
-	docker tag cwmr/gomp:arm64 cwmr/gomp:$(DOCKER_TAG)-arm64
-	docker push cwmr/gomp:$(DOCKER_TAG)-amd64
-	docker push cwmr/gomp:$(DOCKER_TAG)-arm
-	docker push cwmr/gomp:$(DOCKER_TAG)-arm64
-	docker run --rm mplatform/manifest-tool --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_TOKEN} push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template cwmr/gomp:$(DOCKER_TAG)-ARCH --target cwmr/gomp:$(DOCKER_TAG)
+	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:$(DOCKER_TAG) .
 endif
 
 .PHONY: archive
