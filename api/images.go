@@ -14,7 +14,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -30,7 +30,7 @@ func (h apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request,
 	h.OK(resp, images)
 }
 
-func (h apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -50,7 +50,7 @@ func (h apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 	h.OK(resp, image)
 }
 
-func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -71,7 +71,7 @@ func (h apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Reque
 
 	h.NoContent(resp)
 }
-func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	recipeIDStr := p.ByName("recipeID")
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
@@ -124,7 +124,7 @@ func (h apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request,
 	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/images/%d", imageInfo.RecipeID, imageInfo.ID))
 }
 
-func (h apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	imageID, err := strconv.ParseInt(p.ByName("imageID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

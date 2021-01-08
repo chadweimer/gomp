@@ -11,9 +11,15 @@ plugins:
     enabled: true
     config:
       languages:
-      - javascript
+        javascript:
+          mass_threshold: 60
+        typescript:
+          mass_threshold: 60
+        go:
   eslint:
-    enabled: false
+    enabled: true
+    config:
+      config: static/.eslintrc
   fixme:
     enabled: true
   gofmt:
@@ -33,7 +39,7 @@ ratings:
   - "**.html"
 exclude_paths:
 - build/
-- db/
+- db/migrations/
 - static/node_modules/
 - static/build/
 - vendor/

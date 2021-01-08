@@ -14,13 +14,13 @@ type postgresRecipeDriver struct {
 	*sqlRecipeDriver
 }
 
-func (d postgresRecipeDriver) Create(recipe *models.Recipe) error {
+func (d *postgresRecipeDriver) Create(recipe *models.Recipe) error {
 	return d.postgresDriver.tx(func(tx *sqlx.Tx) error {
 		return d.createtx(recipe, tx)
 	})
 }
 
-func (d postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d *postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
@@ -40,7 +40,7 @@ func (d postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error
 	return nil
 }
 
-func (d postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
+func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
 		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
 		"FROM recipe AS r " +
@@ -63,13 +63,13 @@ func (d postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	return recipe, nil
 }
 
-func (d postgresRecipeDriver) Update(recipe *models.Recipe) error {
+func (d *postgresRecipeDriver) Update(recipe *models.Recipe) error {
 	return d.postgresDriver.tx(func(tx *sqlx.Tx) error {
-		return d.Updatetx(recipe, tx)
+		return d.updatetx(recipe, tx)
 	})
 }
 
-func (d postgresRecipeDriver) Updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d *postgresRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6 "+
@@ -94,7 +94,7 @@ func (d postgresRecipeDriver) Updatetx(recipe *models.Recipe, tx *sqlx.Tx) error
 	return nil
 }
 
-func (d postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+func (d *postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := "WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error

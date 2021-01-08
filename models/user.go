@@ -49,6 +49,6 @@ func (u *UserLevel) Scan(value interface{}) error {
 }
 
 // Value implements the sql/driver.Valuer interface
-func (u UserLevel) Value() (driver.Value, error) {
-	return string(u), nil
+func (u *UserLevel) Value() (driver.Value, error) {
+	return string(*u), nil
 }

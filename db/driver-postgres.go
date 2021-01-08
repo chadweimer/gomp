@@ -77,31 +77,31 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	return drv, nil
 }
 
-func (d postgresDriver) AppConfiguration() AppConfigurationDriver {
+func (d *postgresDriver) AppConfiguration() AppConfigurationDriver {
 	return d.app
 }
 
-func (d postgresDriver) Recipes() RecipeDriver {
+func (d *postgresDriver) Recipes() RecipeDriver {
 	return d.recipes
 }
 
-func (d postgresDriver) Images() RecipeImageDriver {
+func (d *postgresDriver) Images() RecipeImageDriver {
 	return d.images
 }
 
-func (d postgresDriver) Tags() TagDriver {
+func (d *postgresDriver) Tags() TagDriver {
 	return d.tags
 }
 
-func (d postgresDriver) Notes() NoteDriver {
+func (d *postgresDriver) Notes() NoteDriver {
 	return d.notes
 }
 
-func (d postgresDriver) Links() LinkDriver {
+func (d *postgresDriver) Links() LinkDriver {
 	return d.links
 }
 
-func (d postgresDriver) Users() UserDriver {
+func (d *postgresDriver) Users() UserDriver {
 	return d.users
 }
 
