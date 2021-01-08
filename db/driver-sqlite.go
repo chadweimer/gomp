@@ -73,35 +73,35 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	return drv, nil
 }
 
-func (d sqliteDriver) AppConfiguration() AppConfigurationDriver {
+func (d *sqliteDriver) AppConfiguration() AppConfigurationDriver {
 	return d.app
 }
 
-func (d sqliteDriver) Recipes() RecipeDriver {
+func (d *sqliteDriver) Recipes() RecipeDriver {
 	return d.recipes
 }
 
-func (d sqliteDriver) Images() RecipeImageDriver {
+func (d *sqliteDriver) Images() RecipeImageDriver {
 	return d.images
 }
 
-func (d sqliteDriver) Tags() TagDriver {
+func (d *sqliteDriver) Tags() TagDriver {
 	return d.tags
 }
 
-func (d sqliteDriver) Notes() NoteDriver {
+func (d *sqliteDriver) Notes() NoteDriver {
 	return d.notes
 }
 
-func (d sqliteDriver) Links() LinkDriver {
+func (d *sqliteDriver) Links() LinkDriver {
 	return d.links
 }
 
-func (d sqliteDriver) Users() UserDriver {
+func (d *sqliteDriver) Users() UserDriver {
 	return d.users
 }
 
-func (d sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (d *sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return err

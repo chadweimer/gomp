@@ -105,7 +105,7 @@ func (d *postgresDriver) Users() UserDriver {
 	return d.users
 }
 
-func (d postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	// Lock the database while we're migrating so that multiple instances
 	// don't attempt to migrate simultaneously. This requires the same connection
 	// to be used for both locking and unlocking.

@@ -11,13 +11,13 @@ type postgresRecipeImageDriver struct {
 	*sqlRecipeImageDriver
 }
 
-func (d postgresRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
+func (d *postgresRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.createtx(imageInfo, tx)
 	})
 }
 
-func (d postgresRecipeImageDriver) createtx(image *models.RecipeImage, tx *sqlx.Tx) error {
+func (d *postgresRecipeImageDriver) createtx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
 		"VALUES ($1, $2, $3, $4) RETURNING id"
 

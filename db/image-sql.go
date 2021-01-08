@@ -12,13 +12,13 @@ type sqlRecipeImageDriver struct {
 	*sqlDriver
 }
 
-func (d sqlRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
+func (d *sqlRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.Createtx(imageInfo, tx)
 	})
 }
 
-func (d sqlRecipeImageDriver) Createtx(image *models.RecipeImage, tx *sqlx.Tx) error {
+func (d *sqlRecipeImageDriver) Createtx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
 		"VALUES ($1, $2, $3, $4)"
 
@@ -32,7 +32,7 @@ func (d sqlRecipeImageDriver) Createtx(image *models.RecipeImage, tx *sqlx.Tx) e
 	return d.setMainImageIfNecessary(image.RecipeID, tx)
 }
 
-func (d sqlRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
+func (d *sqlRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
 	var image *models.RecipeImage
 	err := d.tx(func(tx *sqlx.Tx) error {
 		var err error
@@ -44,7 +44,7 @@ func (d sqlRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
 	return image, err
 }
 
-func (d sqlRecipeImageDriver) readtx(id int64, tx *sqlx.Tx) (*models.RecipeImage, error) {
+func (d *sqlRecipeImageDriver) readtx(id int64, tx *sqlx.Tx) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
 	err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = $1", id)
 	if err == sql.ErrNoRows {
@@ -56,7 +56,7 @@ func (d sqlRecipeImageDriver) readtx(id int64, tx *sqlx.Tx) (*models.RecipeImage
 	return image, nil
 }
 
-func (d sqlRecipeImageDriver) ReadMainImage(recipeID int64) (*models.RecipeImage, error) {
+func (d *sqlRecipeImageDriver) ReadMainImage(recipeID int64) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
 	err := d.Db.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeID)
 	if err == sql.ErrNoRows {
@@ -68,13 +68,13 @@ func (d sqlRecipeImageDriver) ReadMainImage(recipeID int64) (*models.RecipeImage
 	return image, nil
 }
 
-func (d sqlRecipeImageDriver) UpdateMainImage(image *models.RecipeImage) error {
+func (d *sqlRecipeImageDriver) UpdateMainImage(image *models.RecipeImage) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.updateMainImagetx(image, tx)
 	})
 }
 
-func (d sqlRecipeImageDriver) updateMainImagetx(image *models.RecipeImage, tx *sqlx.Tx) error {
+func (d *sqlRecipeImageDriver) updateMainImagetx(image *models.RecipeImage, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe SET image_id = $1 WHERE id = $2",
 		image.ID, image.RecipeID)
@@ -82,7 +82,7 @@ func (d sqlRecipeImageDriver) updateMainImagetx(image *models.RecipeImage, tx *s
 	return err
 }
 
-func (d sqlRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, error) {
+func (d *sqlRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, error) {
 	var images []models.RecipeImage
 
 	if err := d.Db.Select(&images, "SELECT * FROM recipe_image WHERE recipe_id = $1 ORDER BY created_at ASC", recipeID); err != nil {
@@ -92,13 +92,13 @@ func (d sqlRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, error
 	return &images, nil
 }
 
-func (d sqlRecipeImageDriver) Delete(id int64) error {
+func (d *sqlRecipeImageDriver) Delete(id int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.deletetx(id, tx)
 	})
 }
 
-func (d sqlRecipeImageDriver) deletetx(id int64, tx *sqlx.Tx) error {
+func (d *sqlRecipeImageDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	image, err := d.readtx(id, tx)
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func (d sqlRecipeImageDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	return d.setMainImageIfNecessary(image.RecipeID, tx)
 }
 
-func (d sqlRecipeImageDriver) setMainImageIfNecessary(recipeID int64, tx *sqlx.Tx) error {
+func (d *sqlRecipeImageDriver) setMainImageIfNecessary(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET image_id = (SELECT recipe_image.id FROM recipe_image WHERE recipe_image.recipe_id = recipe.id LIMIT 1)"+
@@ -121,13 +121,13 @@ func (d sqlRecipeImageDriver) setMainImageIfNecessary(recipeID int64, tx *sqlx.T
 	return err
 }
 
-func (d sqlRecipeImageDriver) DeleteAll(recipeID int64) error {
+func (d *sqlRecipeImageDriver) DeleteAll(recipeID int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.deleteAlltx(recipeID, tx)
 	})
 }
 
-func (d sqlRecipeImageDriver) deleteAlltx(recipeID int64, tx *sqlx.Tx) error {
+func (d *sqlRecipeImageDriver) deleteAlltx(recipeID int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_image WHERE recipe_id = $1",
 		recipeID)
