@@ -2,7 +2,7 @@
 
 Web-based recipe book.
 
-[![TravisCI](https://img.shields.io/travis/com/chadweimer/gomp.svg?label=travisci)](https://travis-ci.com/chadweimer/gomp)
+![Continuous Integration](https://img.shields.io/github/workflow/status/chadweimer/gomp/Continuous%20Integration)
 [![Code Climate](https://img.shields.io/codeclimate/maintainability/chadweimer/gomp.svg)](https://codeclimate.com/github/chadweimer/gomp)
 [![Closed Pull Requests](https://img.shields.io/github/issues-pr-closed-raw/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/pulls)
 [![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/releases)
