@@ -1,9 +1,10 @@
-BUILD_DIR=./build
+BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
 BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
 BUILD_LIN_ARM64_DIR=$(BUILD_DIR)/linux/arm64
 BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 DB_MIGRATIONS_REL_DIR=db/migrations
+CLIENT_BUILD_DIR=static/build/default
 
 GO_LIN_LD_FLAGS=-ldflags '-extldflags "-static -static-libgcc"'
 GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
@@ -20,16 +21,18 @@ rebuild: clean build
 reinstall: uninstall install
 
 .PHONY: install
-install:
-	go install
+install: static/node_modules
+
+static/node_modules:
 	cd static && npm install --silent
 
 .PHONY: uninstall
 uninstall:
 	cd static && npm run clear
+	rm -rf node_modules
 
 .PHONY: lint
-lint:
+lint: install
 	go vet ./...
 	cd static && npm run lint
 
@@ -40,8 +43,7 @@ build: build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	cd static && npm run clean
 
-.PHONY: prebuild
-prebuild:
+$(CLIENT_BUILD_DIR): static/node_modules
 	cd static && npm run build
 
 .PHONY: clean-linux-amd64
@@ -50,10 +52,12 @@ clean-linux-amd64:
 	rm -rf $(BUILD_LIN_AMD64_DIR)
 
 .PHONY: build-linux-amd64
-build-linux-amd64: prebuild
+build-linux-amd64: $(BUILD_LIN_AMD64_DIR)
+
+$(BUILD_LIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_AMD64) go build -o $(BUILD_LIN_AMD64_DIR)/gomp $(GO_LIN_LD_FLAGS)
-	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_AMD64_DIR)/static
+	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_LIN_AMD64_DIR)/static
 
 .PHONY: rebuild-linux-amd64
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
@@ -64,10 +68,12 @@ clean-linux-arm:
 	rm -rf $(BUILD_LIN_ARM_DIR)
 
 .PHONY: build-linux-arm
-build-linux-arm: prebuild
+build-linux-arm: $(BUILD_LIN_ARM_DIR)
+
+$(BUILD_LIN_ARM_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_ARM) go build -o $(BUILD_LIN_ARM_DIR)/gomp $(GO_LIN_LD_FLAGS)
-	mkdir -p $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_LIN_ARM_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_ARM_DIR)/static
+	mkdir -p $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_ARM_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_LIN_ARM_DIR)/static
 
 .PHONY: rebuild-linux-arm
 rebuild-linux-arm: clean-linux-arm build-linux-arm
@@ -78,10 +84,12 @@ clean-linux-arm64:
 	rm -rf $(BUILD_LIN_ARM64_DIR)
 
 .PHONY: build-linux-arm64
-build-linux-arm64: prebuild
+build-linux-arm64: $(BUILD_LIN_ARM64_DIR)
+
+$(BUILD_LIN_ARM64_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_ARM64) go build -o $(BUILD_LIN_ARM64_DIR)/gomp $(GO_LIN_LD_FLAGS)
-	mkdir -p $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_LIN_ARM64_DIR)/static && cp -R static/build/default/* $(BUILD_LIN_ARM64_DIR)/static
+	mkdir -p $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_ARM64_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_LIN_ARM64_DIR)/static
 
 .PHONY: rebuild-linux-arm64
 rebuild-linux-arm64: clean-linux-arm64 build-linux-arm64
@@ -92,16 +100,18 @@ clean-windows-amd64:
 	rm -rf $(BUILD_WIN_AMD64_DIR)
 
 .PHONY: build-windows-amd64
-build-windows-amd64: prebuild
+build-windows-amd64: $(BUILD_WIN_AMD64_DIR)
+
+$(BUILD_WIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_WIN_AMD64) go build -o $(BUILD_WIN_AMD64_DIR)/gomp.exe
-	mkdir -p $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_WIN_AMD64_DIR)/static && cp -R static/build/default/* $(BUILD_WIN_AMD64_DIR)/static
+	mkdir -p $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_WIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_WIN_AMD64_DIR)/static
 
 .PHONY: rebuild-windows-amd64
 rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64
 
 .PHONY: docker
-docker:
+docker: build
 ifndef DOCKER_TAG
 	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:local .
 else
@@ -109,7 +119,7 @@ else
 endif
 
 .PHONY: archive
-archive:
+archive: build
 	rm -f $(BUILD_DIR)/gomp-linux-amd64.tar.gz
 	tar -C $(BUILD_LIN_AMD64_DIR) -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
 	rm -f $(BUILD_DIR)/gomp-linux-arm.tar.gz
