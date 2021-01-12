@@ -56,8 +56,8 @@ build-linux-amd64: $(BUILD_LIN_AMD64_DIR)
 
 $(BUILD_LIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_AMD64) go build -o $(BUILD_LIN_AMD64_DIR)/gomp $(GO_LIN_LD_FLAGS)
-	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_LIN_AMD64_DIR)/static
+	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_LIN_AMD64_DIR)/static
 
 .PHONY: rebuild-linux-amd64
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
@@ -72,8 +72,8 @@ build-linux-arm: $(BUILD_LIN_ARM_DIR)
 
 $(BUILD_LIN_ARM_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_ARM) go build -o $(BUILD_LIN_ARM_DIR)/gomp $(GO_LIN_LD_FLAGS)
-	mkdir -p $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_LIN_ARM_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_LIN_ARM_DIR)/static
+	mkdir -p $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_ARM_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_LIN_ARM_DIR)/static
 
 .PHONY: rebuild-linux-arm
 rebuild-linux-arm: clean-linux-arm build-linux-arm
@@ -88,8 +88,8 @@ build-linux-arm64: $(BUILD_LIN_ARM64_DIR)
 
 $(BUILD_LIN_ARM64_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_ARM64) go build -o $(BUILD_LIN_ARM64_DIR)/gomp $(GO_LIN_LD_FLAGS)
-	mkdir -p $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_LIN_ARM64_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_LIN_ARM64_DIR)/static
+	mkdir -p $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_LIN_ARM64_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_LIN_ARM64_DIR)/static
 
 .PHONY: rebuild-linux-arm64
 rebuild-linux-arm64: clean-linux-arm64 build-linux-arm64
@@ -104,8 +104,8 @@ build-windows-amd64: $(BUILD_WIN_AMD64_DIR)
 
 $(BUILD_WIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
 	$(GO_ENV_WIN_AMD64) go build -o $(BUILD_WIN_AMD64_DIR)/gomp.exe
-	mkdir -p $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR) $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
-	mkdir -p $(BUILD_WIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR) $(BUILD_WIN_AMD64_DIR)/static
+	mkdir -p $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
+	mkdir -p $(BUILD_WIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_WIN_AMD64_DIR)/static
 
 .PHONY: rebuild-windows-amd64
 rebuild-windows-amd64: clean-windows-amd64 build-windows-amd64
