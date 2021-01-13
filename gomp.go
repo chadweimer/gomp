@@ -14,8 +14,6 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/db/postgres"
-	"github.com/chadweimer/gomp/db/sqlite3"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -33,24 +31,8 @@ func main() {
 		IsDevelopment: cfg.IsDevelopment,
 		IndentJSON:    true,
 	})
-	var db db.Driver
-	if cfg.DatabaseDriver == postgres.DriverName {
-		db, err = postgres.Open(
-			cfg.DatabaseURL,
-			cfg.MigrationsTableName,
-			cfg.MigrationsForceVersion)
-		if err != nil {
-			log.Fatalf("[db] %s", err.Error())
-		}
-	} else if cfg.DatabaseDriver == sqlite3.DriverName {
-		db, err = sqlite3.Open(
-			cfg.DatabaseURL,
-			cfg.MigrationsTableName,
-			cfg.MigrationsForceVersion)
-		if err != nil {
-			log.Fatalf("[db] %s", err.Error())
-		}
-	}
+	dbDriver := db.CreateDriver(
+		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
@@ -58,7 +40,7 @@ func main() {
 		n.Use(negroni.NewLogger())
 	}
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, db)
+	apiHandler := api.NewHandler(renderer, cfg, upl, dbDriver)
 
 	mainMux := httprouter.New()
 	mainMux.Handler("GET", "/api/*apipath", apiHandler)
@@ -93,5 +75,5 @@ func main() {
 
 	// Shutdown the http server and close the database connection
 	srv.Shutdown(ctx)
-	db.Close()
+	dbDriver.Close()
 }

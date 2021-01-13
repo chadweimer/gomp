@@ -1,4 +1,4 @@
-package postgres
+package db
 
 import (
 	"context"
@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/db/sqlcommon"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
@@ -21,31 +19,29 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-// DriverName is the name to use for this driver
-const DriverName string = "postgres"
+// PostgresDriverName is the name to use for this driver
+const PostgresDriverName string = "postgres"
 
-type driver struct {
-	*sqlcommon.Driver
+type postgresDriver struct {
+	*sqlDriver
 
-	app     *sqlcommon.AppConfigurationDriver
-	recipes *recipeDriver
-	images  *recipeImageDriver
-	tags    *sqlcommon.TagDriver
-	notes   *noteDriver
-	links   *sqlcommon.LinkDriver
-	users   *userDriver
+	app     *sqlAppConfigurationDriver
+	recipes *postgresRecipeDriver
+	images  *postgresRecipeImageDriver
+	tags    *sqlTagDriver
+	notes   *postgresNoteDriver
+	links   *sqlLinkDriver
+	users   *postgresUserDriver
 }
 
-// Open established a connection to the specified database and returns
-// an object that implements db.Driver that can be used to query it.
-func Open(hostURL string, migrationsTableName string, migrationsForceVersion int) (db.Driver, error) {
+func openPostgres(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// In docker, on first bring up, the DB takes a little while.
 	// Let's try a few times to establish connection before giving up.
 	const maxAttempts = 20
 	var db *sqlx.DB
 	var err error
 	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(DriverName, hostURL)
+		db, err = sqlx.Connect(PostgresDriverName, connectionString)
 		if err == nil {
 			break
 		}
@@ -60,53 +56,58 @@ func Open(hostURL string, migrationsTableName string, migrationsForceVersion int
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	if err := migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
+	sqlDriver := &sqlDriver{Db: db}
+	drv := &postgresDriver{
+		sqlDriver: sqlDriver,
+
+		app:    &sqlAppConfigurationDriver{sqlDriver},
+		images: &postgresRecipeImageDriver{&sqlRecipeImageDriver{sqlDriver}},
+		tags:   &sqlTagDriver{sqlDriver},
+		notes:  &postgresNoteDriver{&sqlNoteDriver{sqlDriver}},
+		links:  &sqlLinkDriver{sqlDriver},
+		users:  &postgresUserDriver{&sqlUserDriver{sqlDriver}},
+	}
+	drv.recipes = &postgresRecipeDriver{
+		postgresDriver:  drv,
+		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
 	}
 
-	drv := &driver{
-		Driver: sqlcommon.New(db),
+	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
+		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
 	}
-	drv.app = &sqlcommon.AppConfigurationDriver{Driver: drv.Driver}
-	drv.recipes = newRecipeDriver(drv)
-	drv.images = newRecipeImageDriver(drv)
-	drv.tags = &sqlcommon.TagDriver{Driver: drv.Driver}
-	drv.notes = newNoteDriver(drv)
-	drv.links = &sqlcommon.LinkDriver{Driver: drv.Driver}
-	drv.users = newUserDriver(drv)
 
 	return drv, nil
 }
 
-func (d *driver) AppConfiguration() db.AppConfigurationDriver {
+func (d *postgresDriver) AppConfiguration() AppConfigurationDriver {
 	return d.app
 }
 
-func (d *driver) Recipes() db.RecipeDriver {
+func (d *postgresDriver) Recipes() RecipeDriver {
 	return d.recipes
 }
 
-func (d *driver) Images() db.RecipeImageDriver {
+func (d *postgresDriver) Images() RecipeImageDriver {
 	return d.images
 }
 
-func (d *driver) Tags() db.TagDriver {
+func (d *postgresDriver) Tags() TagDriver {
 	return d.tags
 }
 
-func (d *driver) Notes() db.NoteDriver {
+func (d *postgresDriver) Notes() NoteDriver {
 	return d.notes
 }
 
-func (d *driver) Links() db.LinkDriver {
+func (d *postgresDriver) Links() LinkDriver {
 	return d.links
 }
 
-func (d *driver) Users() db.UserDriver {
+func (d *postgresDriver) Users() UserDriver {
 	return d.users
 }
 
-func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	// Lock the database while we're migrating so that multiple instances
 	// don't attempt to migrate simultaneously. This requires the same connection
 	// to be used for both locking and unlocking.
@@ -116,10 +117,10 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 	}
 	defer conn.Close()
 	// This should block until the lock has been acquired
-	if err := lock(conn); err != nil {
+	if err := lockPostgres(conn); err != nil {
 		return err
 	}
-	defer unlock(conn)
+	defer unlockPostgres(conn)
 
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
 		MigrationsTable: migrationsTableName,
@@ -128,10 +129,10 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 		return err
 	}
 
-	migrationPath := "file://" + filepath.Join("db", "migrations", DriverName)
+	migrationPath := "file://" + filepath.Join("db", "migrations", PostgresDriverName)
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationPath,
-		DriverName,
+		PostgresDriverName,
 		driver)
 	if err != nil {
 		return err
@@ -149,13 +150,13 @@ func migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVer
 	return nil
 }
 
-func lock(conn *sql.Conn) error {
+func lockPostgres(conn *sql.Conn) error {
 	stmt := `SELECT pg_advisory_lock(1)`
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err
 }
 
-func unlock(conn *sql.Conn) error {
+func unlockPostgres(conn *sql.Conn) error {
 	stmt := `SELECT pg_advisory_unlock(1)`
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err

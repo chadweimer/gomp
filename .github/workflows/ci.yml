@@ -27,7 +27,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: sudo apt install zip gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gcc-aarch64-linux-gnu libc6-dev-arm64-cross gcc-mingw-w64-x86-64
-      - run: make install lint build
+      - run: make lint build
       - run: make docker DOCKER_TAG=latest
         if: startswith(github.ref, 'refs/heads/master')
       - run: make docker DOCKER_TAG=dev

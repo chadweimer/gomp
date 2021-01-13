@@ -10,8 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chadweimer/gomp/db/postgres"
-	"github.com/chadweimer/gomp/db/sqlite3"
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
 )
 
@@ -93,14 +92,14 @@ func Load() *Config {
 		}
 		if strings.HasPrefix(c.DatabaseURL, "file:") {
 			if c.IsDevelopment {
-				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", sqlite3.DriverName)
+				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
 			}
-			c.DatabaseDriver = sqlite3.DriverName
+			c.DatabaseDriver = db.SQLiteDriverName
 		} else if strings.HasPrefix(c.DatabaseURL, "postgres:") {
 			if c.IsDevelopment {
-				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", postgres.DriverName)
+				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
 			}
-			c.DatabaseDriver = postgres.DriverName
+			c.DatabaseDriver = db.PostgresDriverName
 		} else if c.IsDevelopment {
 			log.Print("[config] Unable to infer a value for DATABASE_DRIVER")
 		}
@@ -146,8 +145,8 @@ func (c *Config) Validate() error {
 		return errors.New("BASE_ASSETS_PATH must be specified")
 	}
 
-	if c.DatabaseDriver != postgres.DriverName && c.DatabaseDriver != sqlite3.DriverName {
-		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", postgres.DriverName, sqlite3.DriverName)
+	if c.DatabaseDriver != db.PostgresDriverName && c.DatabaseDriver != db.SQLiteDriverName {
+		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName)
 	}
 
 	if c.DatabaseURL == "" {
