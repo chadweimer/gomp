@@ -56,19 +56,21 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
+	sqlDriver := &sqlDriver{Db: db}
 	drv := &postgresDriver{
-		sqlDriver: &sqlDriver{Db: db},
+		sqlDriver: sqlDriver,
+
+		app:    &sqlAppConfigurationDriver{sqlDriver},
+		images: &postgresRecipeImageDriver{&sqlRecipeImageDriver{sqlDriver}},
+		tags:   &sqlTagDriver{sqlDriver},
+		notes:  &postgresNoteDriver{&sqlNoteDriver{sqlDriver}},
+		links:  &sqlLinkDriver{sqlDriver},
+		users:  &postgresUserDriver{&sqlUserDriver{sqlDriver}},
 	}
-	drv.app = &sqlAppConfigurationDriver{sqlDriver: drv.sqlDriver}
 	drv.recipes = &postgresRecipeDriver{
 		postgresDriver:  drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver: drv.sqlDriver},
+		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
 	}
-	drv.images = &postgresRecipeImageDriver{&sqlRecipeImageDriver{drv.sqlDriver}}
-	drv.tags = &sqlTagDriver{drv.sqlDriver}
-	drv.notes = &postgresNoteDriver{&sqlNoteDriver{drv.sqlDriver}}
-	drv.links = &sqlLinkDriver{drv.sqlDriver}
-	drv.users = &postgresUserDriver{&sqlUserDriver{drv.sqlDriver}}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)

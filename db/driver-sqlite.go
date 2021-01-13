@@ -52,19 +52,21 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
+	sqlDriver := &sqlDriver{Db: db}
 	drv := &sqliteDriver{
-		sqlDriver: &sqlDriver{Db: db},
+		sqlDriver: sqlDriver,
+
+		app:    &sqlAppConfigurationDriver{sqlDriver},
+		images: &sqlRecipeImageDriver{sqlDriver},
+		tags:   &sqlTagDriver{sqlDriver},
+		notes:  &sqlNoteDriver{sqlDriver},
+		links:  &sqlLinkDriver{sqlDriver},
+		users:  &sqlUserDriver{sqlDriver},
 	}
-	drv.app = &sqlAppConfigurationDriver{sqlDriver: drv.sqlDriver}
 	drv.recipes = &sqliteRecipeDriver{
 		sqliteDriver:    drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver: drv.sqlDriver},
+		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
 	}
-	drv.images = &sqlRecipeImageDriver{drv.sqlDriver}
-	drv.tags = &sqlTagDriver{drv.sqlDriver}
-	drv.notes = &sqlNoteDriver{drv.sqlDriver}
-	drv.links = &sqlLinkDriver{drv.sqlDriver}
-	drv.users = &sqlUserDriver{drv.sqlDriver}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
