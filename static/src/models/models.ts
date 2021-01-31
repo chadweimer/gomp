@@ -69,6 +69,7 @@ export interface Recipe extends RecipeBase {
     nutritionInfo: string;
     ingredients: string;
     directions: string;
+    storageInstructions: string;
     sourceUrl: string;
     tags: string[];
 }
