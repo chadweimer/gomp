@@ -50,8 +50,8 @@ export interface User {
 }
 
 export interface UserSettings {
-	userId: string;
-	homeTitle: string;
+    userId: string;
+    homeTitle: string;
     homeImageUrl: string;
     favoriteTags: string[];
 }
