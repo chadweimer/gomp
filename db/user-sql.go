@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -105,6 +106,12 @@ func (d *sqlUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 		return nil, err
 	}
 
+	var tags []string
+	if err := d.Db.Select(&tags, "SELECT tag FROM app_user_favorite_tag WHERE user_id = $1 ORDER BY tag ASC", id); err != nil {
+		return nil, err
+	}
+	userSettings.FavoriteTags = tags
+
 	return userSettings, nil
 }
 
@@ -121,6 +128,22 @@ func (d *sqlUserDriver) updateSettingstx(settings *models.UserSettings, tx *sqlx
 		settings.HomeTitle, settings.HomeImageURL, settings.UserID)
 	if err != nil {
 		return err
+	}
+
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err = tx.Exec(
+		"DELETE FROM app_user_favorite_tag WHERE user_id = $1",
+		settings.UserID)
+	if err != nil {
+		return fmt.Errorf("deleting favorite tags before updating on user: %v", err)
+	}
+	for _, tag := range settings.FavoriteTags {
+		_, err = tx.Exec(
+			"INSERT INTO app_user_favorite_tag (user_id, tag) VALUES ($1, $2)",
+			settings.UserID, tag)
+		if err != nil {
+			return fmt.Errorf("updating favorite tags on user: %v", err)
+		}
 	}
 
 	return nil
