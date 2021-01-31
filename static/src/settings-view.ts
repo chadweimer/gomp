@@ -17,6 +17,7 @@ import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
+import '@cwmr/paper-tags-input/paper-tags-input.js';
 import './shared-styles.js';
 
 @customElement('settings-view')
@@ -63,55 +64,59 @@ export class SettingsView extends GompBaseElement {
                 }
                 @media screen and (max-width: 600px) {
                 }
-          </style>
-          <div class="container">
-              <paper-card>
-                  <div class="card-content">
-                      <h3>Security Settings</h3>
-                      <paper-input label="Username" value="[[currentUser.username]]" always-float-label="" disabled=""></paper-input>
-                      <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label="" disabled=""></paper-input>
-                      <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
-                      <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
-                      <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
-                  </div>
-                  <div class="card-actions">
-                      <paper-button on-click="onUpdatePasswordClicked">
-                          <iron-icon icon="icons:lock-outline"></iron-icon>
-                          <span>Update Password</span>
-                      <paper-button>
-                  </div>
-              </paper-card>
-          </div>
-          <div class="container">
-              <paper-card>
-                  <div class="card-content">
-                      <h3>Home Settings</h3>
-                      <paper-input label="Title" always-float-label="" value="{{userSettings.homeTitle}}">
-                          <paper-icon-button slot="suffix" icon="icons:save" on-click="onSaveButtonClicked"></paper-icon-button>
-                      </paper-input>
-                      <form id="homeImageForm" enctype="multipart/form-data">
-                          <paper-input-container always-float-label="">
-                              <label slot="label">Image</label>
-                              <iron-input slot="input">
-                                  <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
-                              </iron-input>
-                              <paper-icon-button slot="suffix" icon="icons:file-upload" on-click="onUploadButtonClicked"></paper-icon-button>
-                            </paper-input-container>
-                      </form>
-                      <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
-                  </div>
-              </paper-card>
-          </div>
-          <paper-dialog id="uploadingDialog" with-backdrop="">
-              <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
-          </paper-dialog>
+            </style>
+            <div class="container">
+                <paper-card>
+                    <div class="card-content">
+                        <h3>Security Settings</h3>
+                        <paper-input label="Username" value="[[currentUser.username]]" always-float-label="" disabled=""></paper-input>
+                        <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label="" disabled=""></paper-input>
+                        <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
+                        <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
+                        <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
+                    </div>
+                    <div class="card-actions">
+                        <paper-button on-click="onUpdatePasswordClicked">
+                            <iron-icon icon="icons:lock-outline"></iron-icon>
+                            <span>Update Password</span>
+                        <paper-button>
+                    </div>
+                </paper-card>
+            </div>
+            <div class="container">
+                <paper-card>
+                    <div class="card-content">
+                        <h3>Settings</h3>
+                        <paper-tags-input id="tags" label="Favorite Tags" tags="{{userSettings.favoriteTags}}"></paper-tags-input>
+                        <paper-input label="Home Title" always-float-label="" value="{{userSettings.homeTitle}}"></paper-input>
+                        <form id="homeImageForm" enctype="multipart/form-data">
+                            <paper-input-container always-float-label="">
+                                <label slot="label">Home Image</label>
+                                <iron-input slot="input">
+                                    <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
+                                </iron-input>
+                                </paper-input-container>
+                        </form>
+                        <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
+                    </div>
+                    <div class="card-actions">
+                        <paper-button on-click="onSaveButtonClicked">
+                            <iron-icon icon="icons:save"></iron-icon>
+                            <span>Save</span>
+                        <paper-button>
+                    </div>
+                </paper-card>
+            </div>
+            <paper-dialog id="uploadingDialog" with-backdrop="">
+                <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
+            </paper-dialog>
 
-          <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+            <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-          <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" on-error="handlePutPasswordError"></iron-ajax>
-          <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
-          <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
+            <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" on-error="handlePutPasswordError"></iron-ajax>
+            <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
+            <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
 `;
     }
 
@@ -167,12 +172,14 @@ export class SettingsView extends GompBaseElement {
         this.putPasswordAjax.generateRequest();
     }
     protected onSaveButtonClicked() {
-        this.putSettingsAjax.body = JSON.stringify(this.userSettings) as any;
-        this.putSettingsAjax.generateRequest();
-    }
-    protected onUploadButtonClicked() {
-        this.postImageAjax.body = new FormData(this.homeImageForm);
-        this.postImageAjax.generateRequest();
+        // If there's no image to upload, go directly to saving
+        if (!this.homeImageFile.value) {
+            this.saveSettings();
+        } else {
+            // We start by uploading the image, after which the rest of the settings will be saved
+            this.postImageAjax.body = new FormData(this.homeImageForm);
+            this.postImageAjax.generateRequest();
+        }
     }
 
     protected isActiveChanged(isActive: boolean) {
@@ -212,11 +219,16 @@ export class SettingsView extends GompBaseElement {
 
         const location = req.xhr.getResponseHeader('Location');
         this.userSettings.homeImageUrl = location;
-        this.onSaveButtonClicked();
+        this.saveSettings();
     }
     protected handlePostImageError() {
         this.uploadingDialog.close();
         this.showToast('Upload failed!');
+    }
+
+    private saveSettings() {
+        this.putSettingsAjax.body = JSON.stringify(this.userSettings) as any;
+        this.putSettingsAjax.generateRequest();
     }
 
     protected refresh() {
