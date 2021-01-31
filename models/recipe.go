@@ -38,10 +38,11 @@ type RecipeCompact struct {
 type Recipe struct {
 	recipeBase
 
-	ServingSize   string   `json:"servingSize" db:"serving_size"`
-	NutritionInfo string   `json:"nutritionInfo" db:"nutrition_info"`
-	Ingredients   string   `json:"ingredients" db:"ingredients"`
-	Directions    string   `json:"directions" db:"directions"`
-	SourceURL     string   `json:"sourceUrl" db:"source_url"`
-	Tags          []string `json:"tags"`
+	ServingSize         string   `json:"servingSize" db:"serving_size"`
+	NutritionInfo       string   `json:"nutritionInfo" db:"nutrition_info"`
+	Ingredients         string   `json:"ingredients" db:"ingredients"`
+	Directions          string   `json:"directions" db:"directions"`
+	StorageInstructions string   `json:"storageInstructions" db:"storage_instructions"`
+	SourceURL           string   `json:"sourceUrl" db:"source_url"`
+	Tags                []string `json:"tags"`
 }
