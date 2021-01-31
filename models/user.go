@@ -29,9 +29,10 @@ type User struct {
 
 // UserSettings represents the settings for an individual user
 type UserSettings struct {
-	UserID       int64   `json:"userId" db:"user_id"`
-	HomeTitle    *string `json:"homeTitle" db:"home_title"`
-	HomeImageURL *string `json:"homeImageUrl" db:"home_image_url"`
+	UserID       int64    `json:"userId" db:"user_id"`
+	HomeTitle    *string  `json:"homeTitle" db:"home_title"`
+	HomeImageURL *string  `json:"homeImageUrl" db:"home_image_url"`
+	FavoriteTags []string `json:"favoriteTags"`
 }
 
 // Scan implements the sql.Scanner interface

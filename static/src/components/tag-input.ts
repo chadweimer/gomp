@@ -4,6 +4,7 @@ import {customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
+import { UserSettings } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -52,7 +53,7 @@ export class TagInput extends GompBaseElement {
                     <input type="hidden" slot="input">
                 </paper-input-container>
 
-            <iron-ajax bubbles="" id="getSuggestedTagsAjax" url="/api/v1/tags" params="{&quot;sort&quot;: &quot;frequency&quot;, &quot;dir&quot;: &quot;desc&quot;, &quot;count&quot;: 12}" on-request="handleGetSuggestedTagsRequest" on-response="handleGetSuggestedTagsResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-request="handleGetSettingsRequest" on-response="handleGetSettingsResponse"></iron-ajax>
 `;
     }
 
@@ -61,15 +62,15 @@ export class TagInput extends GompBaseElement {
 
     protected suggestedTags: string[] = [];
 
-    private get getSuggestedTagsAjax(): IronAjaxElement {
-        return this.$.getSuggestedTagsAjax as IronAjaxElement;
+    private get getSettingsAjax(): IronAjaxElement {
+        return this.$.getSettingsAjax as IronAjaxElement;
     }
     private get tagsElement(): PaperTagsInput {
         return this.$.tags as PaperTagsInput;
     }
 
     public refresh() {
-        this.getSuggestedTagsAjax.generateRequest();
+        this.getSettingsAjax.generateRequest();
     }
 
     protected onSuggestedTagClicked(e: {model: {item: string}}) {
@@ -81,10 +82,10 @@ export class TagInput extends GompBaseElement {
             this.splice('suggestedTags', suggestedTagIndex, 1);
         }
     }
-    protected handleGetSuggestedTagsRequest() {
+    protected handleGetSettingsRequest() {
         this.suggestedTags = [];
     }
-    protected handleGetSuggestedTagsResponse(e: CustomEvent<{response: string[]}>) {
-        this.suggestedTags = e.detail.response;
+    protected handleGetSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
+        this.suggestedTags = e.detail.response.favoriteTags;
     }
 }
