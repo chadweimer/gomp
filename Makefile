@@ -41,13 +41,16 @@ build: build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64
 
 .PHONY: clean
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
+
+.PHONY: clean-client
+clean-client:
 	cd static && npm run clean
 
 $(CLIENT_BUILD_DIR): static/node_modules
 	cd static && npm run build
 
 .PHONY: clean-linux-amd64
-clean-linux-amd64:
+clean-linux-amd64: clean-client
 	$(GO_ENV_LIN_AMD64) go clean -i ./...
 	rm -rf $(BUILD_LIN_AMD64_DIR)
 
@@ -63,7 +66,7 @@ $(BUILD_LIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
 rebuild-linux-amd64: clean-linux-amd64 build-linux-amd64
 
 .PHONY: clean-linux-arm
-clean-linux-arm:
+clean-linux-arm: clean-client
 	$(GO_ENV_LIN_ARM) go clean -i ./...
 	rm -rf $(BUILD_LIN_ARM_DIR)
 
@@ -79,7 +82,7 @@ $(BUILD_LIN_ARM_DIR): $(CLIENT_BUILD_DIR)
 rebuild-linux-arm: clean-linux-arm build-linux-arm
 
 .PHONY: clean-linux-arm64
-clean-linux-arm64:
+clean-linux-arm64: clean-client
 	$(GO_ENV_LIN_ARM64) go clean -i ./...
 	rm -rf $(BUILD_LIN_ARM64_DIR)
 
@@ -95,7 +98,7 @@ $(BUILD_LIN_ARM64_DIR): $(CLIENT_BUILD_DIR)
 rebuild-linux-arm64: clean-linux-arm64 build-linux-arm64
 
 .PHONY: clean-windows-amd64
-clean-windows-amd64:
+clean-windows-amd64: clean-client
 	$(GO_ENV_WIN_AMD64) go clean -i ./...
 	rm -rf $(BUILD_WIN_AMD64_DIR)
 

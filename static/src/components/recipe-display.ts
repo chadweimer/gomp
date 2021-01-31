@@ -102,6 +102,11 @@ export class RecipeDisplay extends GompBaseElement {
                         <p class="plain-text">[[recipe.directions]]</p>
                         <paper-divider></paper-divider>
                     </section>
+                    <section hidden\$="[[!recipe.storageInstructions]]">
+                        <label>Storage/Freezer Instructions</label>
+                        <p class="plain-text">[[recipe.storageInstructions]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
                     <section hidden\$="[[!recipe.nutritionInfo]]">
                         <label>Nutrition</label>
                         <p class="plain-text">[[recipe.nutritionInfo]]</p>

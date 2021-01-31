@@ -46,7 +46,7 @@ services:
 #### With PostgreSQL
 
 The easiest way to deploy with a PostgreSQL database is via `docker-compose`.
-An example compose file can be found at at [examples/docker-compose.yml](examples/docker-compose.yml) and is shown below.
+An example compose file can be found at [examples/docker-compose.yml](examples/docker-compose.yml) and is shown below.
 
 ```yaml
 version: '2'
@@ -79,11 +79,50 @@ You will obviously want to cater the values (e.g., passwords) for your deploymen
 
 ### Kubernetes
 
-TODO
+A basic manifest is shown below. This manifest is roughly equivalent to the first docker command shown in the [Docker](#Docker) section above, and is thus not recommended for production use.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.service: web
+  name: web
+spec:
+  selector:
+    matchLabels:
+      app.service: web
+  template:
+    metadata:
+      labels:
+        app.service: web
+    spec:
+      containers:
+      - image: cwmr/gomp
+        name: web
+        ports:
+        - containerPort: 5000
+        restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.service: web
+  name: web
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+  selector:
+    app.service: web
+```
+
+:construction: TODO
 
 ### Manual
 
-TODO
+:construction: TODO
 
 ## Configuration
 

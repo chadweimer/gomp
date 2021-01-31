@@ -21,11 +21,11 @@ func (d *postgresRecipeDriver) Create(recipe *models.Recipe) error {
 }
 
 func (d *postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error {
-	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, source_url) " +
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url) " +
+		"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 
 	err := tx.Get(recipe, stmt,
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %v", err)
 	}
@@ -42,7 +42,7 @@ func (d *postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) erro
 
 func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.storage_instructions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
 		"FROM recipe AS r " +
 		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 		"WHERE r.id = $1"
@@ -72,9 +72,9 @@ func (d *postgresRecipeDriver) Update(recipe *models.Recipe) error {
 func (d *postgresRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"UPDATE recipe "+
-			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, source_url = $6 "+
-			"WHERE id = $7",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.SourceURL, recipe.ID)
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7 "+
+			"WHERE id = $8",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.ID)
 	if err != nil {
 		return fmt.Errorf("updating recipe: %v", err)
 	}
