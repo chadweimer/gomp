@@ -1,19 +1,19 @@
 package models
 
 const (
-	// SortRecipeByName represents the value to use in RecipesFilter.SortBy
+	// SortRecipeByName represents the value to use in SearchFilter.SortBy
 	// in order to sort by the recipe name
 	SortRecipeByName string = "name"
-	// SortRecipeByID represents the value to use in RecipesFilter.SortBy
+	// SortRecipeByID represents the value to use in SearchFilter.SortBy
 	// in order to sort by the recipe ID
 	SortRecipeByID string = "id"
-	// SortRecipeByRating represents the value to use in RecipesFilter.SortBy
+	// SortRecipeByRating represents the value to use in SearchFilter.SortBy
 	// in order to sort by the recipe rating
 	SortRecipeByRating string = "rating"
-	// SortRecipeByCreatedDate represents the value to use in RecipesFilter.SortBy
+	// SortRecipeByCreatedDate represents the value to use in SearchFilter.SortBy
 	// in order to sort by the recipe created date
 	SortRecipeByCreatedDate string = "created"
-	// SortRecipeByModifiedDate represents the value to use in RecipesFilter.SortBy
+	// SortRecipeByModifiedDate represents the value to use in SearchFilter.SortBy
 	// in order to sort by the recipe modified date
 	SortRecipeByModifiedDate string = "modified"
 
@@ -24,49 +24,38 @@ const (
 	// in order to sort by the number of recipes using a tag
 	SortTagByFrequency string = "frequency"
 
-	// SortByRandom represents the value to use in RecipesFilter.SortBy
+	// SortByRandom represents the value to use in SearchFilter.SortBy
 	// and TagsFilter.SortBy in order to sort the results randomly
 	SortByRandom string = "random"
 
-	// SortDirAsc represents the value to use in RecipesFilter.SortDir
+	// SortDirAsc represents the value to use in SearchFilter.SortDir
 	// and TagsFilter.SortDir in order to sort the results in ascending order.
 	SortDirAsc string = "asc"
-	// SortDirDesc represents the value to use in RecipesFilter.SortDir
+	// SortDirDesc represents the value to use in SearchFilter.SortDir
 	// and TagsFilter.SortDir in order to sort the results in descending order.
 	SortDirDesc string = "desc"
 )
 
 // SupportedSearchFields defines an array of field names that can be used
-// in RecipesFilter.Fields
+// in SearchFilter.Fields
 var SupportedSearchFields = [...]string{"name", "ingredients", "directions"}
 
-// RecipesFilter is the primary model class for recipe search
-type RecipesFilter struct {
-	Query    string   `json:"query"`
-	Fields   []string `json:"fields"`
-	Tags     []string `json:"tags"`
-	Pictures []string `json:"pictures"`
-	States   []string `json:"states"`
-	SortBy   string   `json:"sortBy"`
-	SortDir  string   `json:"sortDir"`
-	Page     int64    `json:"page"`
-	Count    int64    `json:"count"`
-}
-
+// SearchFilter is the primary model class for recipe search
 type SearchFilter struct {
-	Query        string
-	WithPictures *bool
-	Fields       []string
-	States       []string
-	Tags         []string
-	SortBy       string
-	SortDir      string
+	Query        string   `json:"query" db:"query"`
+	WithPictures *bool    `json:"withPictures" db:"with_pictures"`
+	Fields       []string `json:"fields"`
+	States       []string `json:"states"`
+	Tags         []string `json:"tags"`
+	SortBy       string   `json:"sortBy" db:"sort_by"`
+	SortDir      string   `json:"sortDir" db:"sort_dir"`
 }
 
+// SavedSearchFilter represents a recipe search that is saved in the backing data store
 type SavedSearchFilter struct {
 	SearchFilter
 
-	ID     int
-	UserID int
-	Name   string
+	ID     int    `json:"id" db:"id"`
+	UserID int    `json:"userId" db:"user_id"`
+	Name   string `json:"name" db:"name"`
 }
