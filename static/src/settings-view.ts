@@ -9,6 +9,7 @@ import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-input/iron-input.js';
+import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -16,6 +17,8 @@ import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-spinner/paper-spinner.js';
+import '@polymer/paper-tabs/paper-tab.js';
+import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import './shared-styles.js';
@@ -31,6 +34,7 @@ export class SettingsView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
+                    --paper-tabs-selection-bar-color: var(--accent-color);
                 }
                 .container {
                     padding: 10px;
@@ -66,46 +70,49 @@ export class SettingsView extends GompBaseElement {
                 }
             </style>
             <div class="container">
-                <paper-card>
-                    <div class="card-content">
-                        <h3>Security Settings</h3>
-                        <paper-input label="Username" value="[[currentUser.username]]" always-float-label="" disabled=""></paper-input>
-                        <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label="" disabled=""></paper-input>
-                        <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
-                        <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
-                        <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
-                    </div>
-                    <div class="card-actions">
-                        <paper-button on-click="onUpdatePasswordClicked">
-                            <iron-icon icon="icons:lock-outline"></iron-icon>
-                            <span>Update Password</span>
-                        <paper-button>
-                    </div>
-                </paper-card>
-            </div>
-            <div class="container">
-                <paper-card>
-                    <div class="card-content">
-                        <h3>Settings</h3>
-                        <paper-tags-input id="tags" label="Favorite Tags" tags="{{userSettings.favoriteTags}}"></paper-tags-input>
-                        <paper-input label="Home Title" always-float-label="" value="{{userSettings.homeTitle}}"></paper-input>
-                        <form id="homeImageForm" enctype="multipart/form-data">
-                            <paper-input-container always-float-label="">
-                                <label slot="label">Home Image</label>
-                                <iron-input slot="input">
-                                    <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
-                                </iron-input>
-                                </paper-input-container>
-                        </form>
-                        <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
-                    </div>
-                    <div class="card-actions">
-                        <paper-button on-click="onSaveButtonClicked">
-                            <iron-icon icon="icons:save"></iron-icon>
-                            <span>Save</span>
-                        <paper-button>
-                    </div>
-                </paper-card>
+                <paper-tabs selected="{{selectedTab}}">
+                    <paper-tab>Preferences</paper-tab>
+                    <paper-tab>Security</paper-tab>
+                </paper-tabs>
+
+                <iron-pages selected="[[selectedTab]]">
+                    <paper-card>
+                        <div class="card-content">
+                            <paper-tags-input id="tags" label="Favorite Tags" tags="{{userSettings.favoriteTags}}"></paper-tags-input>
+                            <paper-input label="Home Title" always-float-label="" value="{{userSettings.homeTitle}}"></paper-input>
+                            <form id="homeImageForm" enctype="multipart/form-data">
+                                <paper-input-container always-float-label="">
+                                    <label slot="label">Home Image</label>
+                                    <iron-input slot="input">
+                                        <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
+                                    </iron-input>
+                                    </paper-input-container>
+                            </form>
+                            <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
+                        </div>
+                        <div class="card-actions">
+                            <paper-button on-click="onSaveButtonClicked">
+                                <iron-icon icon="icons:save"></iron-icon>
+                                <span>Save</span>
+                            <paper-button>
+                        </div>
+                    </paper-card>
+                    <paper-card>
+                        <div class="card-content">
+                            <paper-input label="Username" value="[[currentUser.username]]" always-float-label="" disabled=""></paper-input>
+                            <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label="" disabled=""></paper-input>
+                            <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
+                            <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
+                            <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
+                        </div>
+                        <div class="card-actions">
+                            <paper-button on-click="onUpdatePasswordClicked">
+                                <iron-icon icon="icons:lock-outline"></iron-icon>
+                                <span>Update Password</span>
+                            <paper-button>
+                        </div>
+                    </paper-card>
+                </iron-pages>
             </div>
             <paper-dialog id="uploadingDialog" with-backdrop="">
                 <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
@@ -153,6 +160,8 @@ export class SettingsView extends GompBaseElement {
 
     public ready() {
         super.ready();
+
+        this.set('selectedTab', 0);
 
         if (this.isActive) {
             this.refresh();
