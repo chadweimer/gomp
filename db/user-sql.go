@@ -320,17 +320,17 @@ func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, t
 		return err
 	}
 
-	d.setSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
 
-	d.setSearchFilterStatesTx(filter.ID, filter.Fields, tx)
+	d.SetSearchFilterStatesTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
 
-	d.setSearchFilterTagsTx(filter.ID, filter.Fields, tx)
+	d.SetSearchFilterTagsTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
