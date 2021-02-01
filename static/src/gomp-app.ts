@@ -509,6 +509,7 @@ export class GompApp extends PolymerElement {
         const defaultFilter = new SearchFilterParameters();
         const filter = {...defaultFilter, ...this.searchFilter};
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
+        this.searchSettings.refresh();
     }
     protected searchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (e.target !== this.searchFilterDialog) {
@@ -522,6 +523,7 @@ export class GompApp extends PolymerElement {
     }
     protected onResetSearchFilterClicked() {
         this.searchSettings.filter = new SearchFilterParameters();
+        this.searchSettings.refresh();
     }
 
     protected recipesModified() {

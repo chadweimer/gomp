@@ -2,6 +2,7 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
+import { TagInput } from './tag-input.js';
 import { GompBaseElement } from '../common/gomp-base-element';
 import { SearchFilterParameters, SearchField, SearchState, SearchPictures, SortBy, SortDir } from '../models/models';
 import '@polymer/iron-icon/iron-icon.js';
@@ -15,7 +16,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
 import '@cwmr/paper-divider/paper-divider.js';
-import '@cwmr/paper-tags-input/paper-tags-input.js';
+import './tag-input.js';
 
 @customElement('search-filter')
 export class SearchFilterElement extends GompBaseElement {
@@ -80,7 +81,7 @@ export class SearchFilterElement extends GompBaseElement {
                 <paper-divider></paper-divider>
             </section>
             <section>
-                <paper-tags-input tags="{{filter.tags}}"></paper-tags-input>
+                <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
             </section>
             <section>
                 <paper-dropdown-menu-light label="Sort By" always-float-label="">
@@ -133,6 +134,10 @@ export class SearchFilterElement extends GompBaseElement {
     @property({type: Object, notify: true})
     public filter = new SearchFilterParameters();
 
+    private get tagsInput(): TagInput {
+        return this.$.tagsInput as TagInput;
+    }
+
     static get observers() {
         return [
             'fieldsChanged(filter.fields)',
@@ -143,6 +148,10 @@ export class SearchFilterElement extends GompBaseElement {
         super.ready();
 
         this.fieldsChanged(this.filter.fields);
+    }
+
+    public refresh() {
+        this.tagsInput.refresh();
     }
 
     protected isFieldSelected(value: SearchField) {

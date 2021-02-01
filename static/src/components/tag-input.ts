@@ -86,6 +86,6 @@ export class TagInput extends GompBaseElement {
         this.suggestedTags = [];
     }
     protected handleGetSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
-        this.suggestedTags = e.detail.response.favoriteTags;
+        this.suggestedTags = e.detail.response.favoriteTags.filter(t => this.tags.indexOf(t) === -1);
     }
 }
