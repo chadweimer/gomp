@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, UserSettings } from './models/models.js';
+import { SavedSearchFilter, User, UserSettings } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -38,6 +38,21 @@ export class SettingsView extends GompBaseElement {
                 }
                 .container {
                     padding: 10px;
+                }
+                .amber {
+                    color: var(--paper-amber-500);
+                }
+                .red {
+                    color: var(--paper-red-500);
+                }
+                .fill {
+                    width: 100%
+                }
+                .left {
+                    text-align: left;
+                }
+                .right {
+                    text-align: right;
                 }
                 img.responsive {
                     max-width: 100%;
@@ -112,9 +127,6 @@ export class SettingsView extends GompBaseElement {
                                         <tr>
                                             <td>[[item.name]]</td>
                                             <td class="right">
-                                                <a href="#!" tabindex="-1" on-click="onSearchFilterClicked">
-                                                    <iron-icon class="amber" icon="icons:search" slot="item-icon"></iron-icon>
-                                                </a>
                                                 <a href="#!" tabindex="-1" on-click="onEditFilterClicked">
                                                     <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
                                                 </a>
@@ -161,6 +173,7 @@ export class SettingsView extends GompBaseElement {
             <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
             <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
             <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
+            <iron-ajax bubbles="" id="getUserSearchFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserSearchFiltersResponse"></iron-ajax>
 `;
     }
 
@@ -168,6 +181,7 @@ export class SettingsView extends GompBaseElement {
     public currentUser: User = null;
 
     protected userSettings: UserSettings = null;
+    protected filters: SavedSearchFilter[] = [];
 
     private currentPassword = '';
     private newPassword = '';
@@ -193,6 +207,9 @@ export class SettingsView extends GompBaseElement {
     }
     private get postImageAjax(): IronAjaxElement {
         return this.$.postImageAjax as IronAjaxElement;
+    }
+    private get getUserSearchFiltersAjax(): IronAjaxElement {
+        return this.$.getUserSearchFiltersAjax as IronAjaxElement;
     }
 
     public ready() {
@@ -271,6 +288,9 @@ export class SettingsView extends GompBaseElement {
         this.uploadingDialog.close();
         this.showToast('Upload failed!');
     }
+    protected handleGetUserSearchFiltersResponse(e: CustomEvent<{response: SavedSearchFilter[]}>) {
+        this.filters = e.detail.response;
+    }
 
     private saveSettings() {
         this.putSettingsAjax.body = JSON.stringify(this.userSettings) as any;
@@ -279,5 +299,6 @@ export class SettingsView extends GompBaseElement {
 
     protected refresh() {
         this.getSettingsAjax.generateRequest();
+        this.getUserSearchFiltersAjax.generateRequest();
     }
 }
