@@ -52,3 +52,21 @@ type RecipesFilter struct {
 	Page     int64    `json:"page"`
 	Count    int64    `json:"count"`
 }
+
+type SearchFilter struct {
+	Query        *string
+	WithPictures *bool
+	Fields       []string
+	States       []string
+	Tags         []string
+	SortBy       string
+	SortDir      string
+}
+
+type SavedSearchFilter struct {
+	SearchFilter
+
+	ID     int
+	UserID int
+	Name   string
+}
