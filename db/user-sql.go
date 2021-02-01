@@ -187,17 +187,17 @@ func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, t
 	}
 	filter.ID, _ = res.LastInsertId()
 
-	d.setSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
 
-	d.setSearchFilterStatesTx(filter.ID, filter.Fields, tx)
+	d.SetSearchFilterStatesTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
 
-	d.setSearchFilterTagsTx(filter.ID, filter.Fields, tx)
+	d.SetSearchFilterTagsTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, t
 	return nil
 }
 
-func (d *sqlUserDriver) setSearchFilterFieldsTx(filterID int64, fields []string, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) SetSearchFilterFieldsTx(filterID int64, fields []string, tx *sqlx.Tx) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	_, err := d.Db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterID)
 	if err != nil {
@@ -224,7 +224,7 @@ func (d *sqlUserDriver) setSearchFilterFieldsTx(filterID int64, fields []string,
 	return nil
 }
 
-func (d *sqlUserDriver) setSearchFilterStatesTx(filterID int64, states []string, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) SetSearchFilterStatesTx(filterID int64, states []string, tx *sqlx.Tx) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	_, err := d.Db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterID)
 	if err != nil {
@@ -243,7 +243,7 @@ func (d *sqlUserDriver) setSearchFilterStatesTx(filterID int64, states []string,
 	return nil
 }
 
-func (d *sqlUserDriver) setSearchFilterTagsTx(filterID int64, tags []string, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) SetSearchFilterTagsTx(filterID int64, tags []string, tx *sqlx.Tx) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	_, err := d.Db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterID)
 	if err != nil {
