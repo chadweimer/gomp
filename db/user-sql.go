@@ -180,6 +180,16 @@ func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, t
 }
 
 func (d *sqlUserDriver) ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error) {
+	filter := new(models.SavedSearchFilter)
+
+	err := d.Db.Get(filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterID, userID)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	return filter, nil
 }
 
 func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) error {
@@ -202,6 +212,13 @@ func (d *sqlUserDriver) deleteSearchFilterTx(userID int64, filterID int64, tx *s
 
 // List retrieves all user's saved search filters.
 func (d *sqlUserDriver) ListSearchFilters(userID int64) (*[]models.SavedSearchFilter, error) {
+	var filters []models.SavedSearchFilter
+
+	if err := d.Db.Select(&filters, "SELECT * FROM search_filter WHERE user_id = $1 ORDER BY name ASC", userID); err != nil {
+		return nil, err
+	}
+
+	return &filters, nil
 }
 
 func (d *sqlUserDriver) verifyPassword(user *models.User, password string) error {
