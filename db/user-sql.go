@@ -170,6 +170,40 @@ func (d *sqlUserDriver) List() (*[]models.User, error) {
 	return &users, nil
 }
 
+func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.createSearchFilterTx(filter, tx)
+	})
+}
+
+func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+}
+
+func (d *sqlUserDriver) ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error) {
+}
+
+func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.updateSearchFilterTx(filter, tx)
+	})
+}
+
+func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+}
+
+func (d *sqlUserDriver) DeleteSearchFilter(userID int64, filterID int64) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.deleteSearchFilterTx(userID, filterID, tx)
+	})
+}
+
+func (d *sqlUserDriver) deleteSearchFilterTx(userID int64, filterID int64, tx *sqlx.Tx) error {
+}
+
+// List retrieves all user's saved search filters.
+func (d *sqlUserDriver) ListSearchFilters(userID int64) (*[]models.SavedSearchFilter, error) {
+}
+
 func (d *sqlUserDriver) verifyPassword(user *models.User, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return errors.New("username or password invalid")

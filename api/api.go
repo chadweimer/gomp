@@ -51,6 +51,11 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 	h.apiMux.GET("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.getRecipeImages))
 	h.apiMux.GET("/api/v1/recipes/:recipeID/notes", h.requireAuthentication(h.getRecipeNotes))
 	h.apiMux.GET("/api/v1/recipes/:recipeID/links", h.requireAuthentication(h.getRecipeLinks))
+	h.apiMux.GET("/api/v1/users/:userID/filters", h.requireAuthentication(h.getUserFilters))
+	h.apiMux.POST("/api/v1/users/:userID/filters", h.requireAuthentication(h.postUserFilter))
+	h.apiMux.GET("/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.getUserFilter))
+	h.apiMux.PUT("/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.putUserFilter))
+	h.apiMux.DELETE("/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.deleteUserFilter))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
 
 	// Editor

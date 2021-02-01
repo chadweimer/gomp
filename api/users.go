@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/crypto/bcrypt"
@@ -215,4 +216,151 @@ func getUserIDForRequest(p httprouter.Params) (int64, error) {
 	}
 
 	return strconv.ParseInt(userIDStr, 10, 64)
+}
+
+func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	userID, err := getUserIDForRequest(p)
+	if err != nil {
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
+		return
+	}
+
+	searches, err := h.db.Users().ListSearchFilters(userID)
+	if err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.OK(resp, searches)
+}
+
+func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	userID, err := getUserIDForRequest(p)
+	if err != nil {
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
+		return
+	}
+
+	var filter models.SavedSearchFilter
+	if err := readJSONFromRequest(req, &filter); err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	// Make sure the ID is set in the object
+	if filter.UserID == 0 {
+		filter.UserID = userID
+	} else if filter.UserID != userID {
+		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	}
+
+	if err := h.db.Users().CreateSearchFilter(&filter); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.Created(resp, fmt.Sprintf("/api/v1/users/%d/filters/%d", filter.UserID, filter.ID))
+}
+
+func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	userID, err := getUserIDForRequest(p)
+	if err != nil {
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
+		return
+	}
+
+	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	if err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	filter, err := h.db.Users().ReadSearchFilter(userID, filterID)
+	if err != nil {
+		fullErr := fmt.Errorf("reading filter: %v", err)
+		h.Error(resp, http.StatusInternalServerError, fullErr)
+		return
+	}
+
+	h.OK(resp, filter)
+}
+
+func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	userID, err := getUserIDForRequest(p)
+	if err != nil {
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
+		return
+	}
+
+	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	if err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	var filter models.SavedSearchFilter
+	if err := readJSONFromRequest(req, &filter); err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	// Make sure the ID is set in the object
+	if filter.ID == 0 {
+		filter.ID = filterID
+	} else if filter.ID != filterID {
+		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+		return
+	}
+
+	// Make sure the UserID is set in the object
+	if filter.UserID == 0 {
+		filter.UserID = userID
+	} else if filter.UserID != userID {
+		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+		return
+	}
+
+	// TODO: Make sure the filter is for the correct user
+	_, err = h.db.Users().ReadSearchFilter(userID, filterID)
+	if err == db.ErrNotFound {
+		h.Error(resp, http.StatusNotFound, err)
+		return
+	}
+	if err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := h.db.Users().UpdateSearchFilter(&filter); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.NoContent(resp)
+}
+
+func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+	userID, err := getUserIDForRequest(p)
+	if err != nil {
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
+		return
+	}
+
+	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	if err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.db.Users().DeleteSearchFilter(userID, filterID); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.NoContent(resp)
 }
