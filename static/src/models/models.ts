@@ -44,8 +44,8 @@ export interface SavedSearchFilter {
     userId: number;
     name: string;
     query: string;
-    fields: SearchField[];
     withPictures: boolean|null;
+    fields: SearchField[];
     states: SearchState[];
     tags: string[];
     sortBy: SortBy;
