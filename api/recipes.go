@@ -25,7 +25,7 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p h
 	sortDir := getParam(req.URL.Query(), "dir")
 
 	var withPictures *bool
-	pictures := getParams(req.URL.Query(), "pictures")
+	pictures := getParam(req.URL.Query(), "pictures")
   if pictures != "" {
 		withPics, err := strconv.ParseBool(pictures)
 		if err == nil {
