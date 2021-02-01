@@ -16,6 +16,8 @@ import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-tabs/paper-tab.js';
+import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import './components/confirmation-dialog.js';
 import './shared-styles.js';
@@ -31,6 +33,7 @@ export class AdminView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
+                    --paper-tabs-selection-bar-color: var(--accent-color);
                 }
                 .container {
                     padding: 10px;
@@ -84,58 +87,59 @@ export class AdminView extends GompBaseElement {
                 }
             </style>
             <div class="container">
-                <paper-card>
-                    <div class="card-content">
-                        <h3>Application Configuration</h3>
+                <paper-tabs selected="{{selectedTab}}">
+                    <paper-tab>Configuration</paper-tab>
+                    <paper-tab>Users</paper-tab>
+                </paper-tabs>
 
-                        <paper-input label="Title" value="{{appConfig.title}}" always-float-label=""></paper-input>
-                    </div>
-                    <div class="card-actions">
-                    <paper-button on-click="onSaveAppConfigClicked">
-                        <iron-icon icon="icons:save"></iron-icon>
-                        <span>Save</span>
-                    <paper-button>
-                    </div>
-                </paper-card>
-            </div>
-            <div class="container">
-                <paper-card>
-                    <div class="card-content">
-                        <h3>Users</h3>
-
-                        <table class="fill">
-                            <thead class="left">
-                                <tr>
-                                    <th>Email</th>
-                                    <th>Access Level</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template is="dom-repeat" items="[[users]]">
-                                    <tr>
-                                        <td>[[item.username]]</td>
-                                        <td>[[item.accessLevel]]</td>
-                                        <td class="right">
-                                            <a href="#!" tabindex="-1" on-click="onEditUserClicked">
-                                                <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
-                                            </a>
-                                            <a href="#!" tabindex="-1" on-click="onDeleteUserClicked">
-                                                <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="card-actions">
-                        <paper-button on-click="onAddUserClicked">
-                            <iron-icon icon="social:person"></iron-icon>
-                            <span>Add</span>
+                <iron-pages selected="[[selectedTab]]">
+                    <paper-card>
+                        <div class="card-content">
+                            <paper-input label="Application Title" value="{{appConfig.title}}" always-float-label=""></paper-input>
+                        </div>
+                        <div class="card-actions">
+                        <paper-button on-click="onSaveAppConfigClicked">
+                            <iron-icon icon="icons:save"></iron-icon>
+                            <span>Save</span>
                         <paper-button>
-                    </div>
-                </paper-card>
+                        </div>
+                    </paper-card>
+                    <paper-card>
+                        <div class="card-content">
+                            <table class="fill">
+                                <thead class="left">
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Access Level</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template is="dom-repeat" items="[[users]]">
+                                        <tr>
+                                            <td>[[item.username]]</td>
+                                            <td>[[item.accessLevel]]</td>
+                                            <td class="right">
+                                                <a href="#!" tabindex="-1" on-click="onEditUserClicked">
+                                                    <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
+                                                </a>
+                                                <a href="#!" tabindex="-1" on-click="onDeleteUserClicked">
+                                                    <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-actions">
+                            <paper-button on-click="onAddUserClicked">
+                                <iron-icon icon="social:person"></iron-icon>
+                                <span>Add</span>
+                            <paper-button>
+                        </div>
+                    </paper-card>
+                </iron-pages>
             </div>
 
             <paper-dialog id="addUserDialog" on-iron-overlay-closed="addUserDialogClosed" with-backdrop="">
@@ -229,6 +233,8 @@ export class AdminView extends GompBaseElement {
 
     public ready() {
         super.ready();
+
+        this.set('selectedTab', 0);
 
         if (this.isActive) {
             this.refresh();

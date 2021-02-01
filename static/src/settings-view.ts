@@ -72,6 +72,7 @@ export class SettingsView extends GompBaseElement {
             <div class="container">
                 <paper-tabs selected="{{selectedTab}}">
                     <paper-tab>Preferences</paper-tab>
+                    <paper-tab>Searches</paper-tab>
                     <paper-tab>Security</paper-tab>
                 </paper-tabs>
 
@@ -86,7 +87,7 @@ export class SettingsView extends GompBaseElement {
                                     <iron-input slot="input">
                                         <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
                                     </iron-input>
-                                    </paper-input-container>
+                                </paper-input-container>
                             </form>
                             <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
                         </div>
@@ -94,6 +95,42 @@ export class SettingsView extends GompBaseElement {
                             <paper-button on-click="onSaveButtonClicked">
                                 <iron-icon icon="icons:save"></iron-icon>
                                 <span>Save</span>
+                            <paper-button>
+                        </div>
+                    </paper-card>
+                    <paper-card>
+                        <div class="card-content">
+                            <table class="fill">
+                                <thead class="left">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template is="dom-repeat" items="[[filters]]">
+                                        <tr>
+                                            <td>[[item.name]]</td>
+                                            <td class="right">
+                                                <a href="#!" tabindex="-1" on-click="onSearchFilterClicked">
+                                                    <iron-icon class="amber" icon="icons:search" slot="item-icon"></iron-icon>
+                                                </a>
+                                                <a href="#!" tabindex="-1" on-click="onEditFilterClicked">
+                                                    <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
+                                                </a>
+                                                <a href="#!" tabindex="-1" on-click="onDeleteFilterClicked">
+                                                    <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-actions">
+                            <paper-button on-click="onAddFilterClicked">
+                                <iron-icon icon="icons:search"></iron-icon>
+                                <span>Add</span>
                             <paper-button>
                         </div>
                     </paper-card>
