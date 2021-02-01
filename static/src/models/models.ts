@@ -29,7 +29,7 @@ export enum SortDir {
     Desc = 'desc'
 }
 
-export class SearchFilter {
+export class SearchFilterParameters {
     query = '';
     fields: SearchField[] = [];
     pictures = SearchPictures.Any;
@@ -37,6 +37,19 @@ export class SearchFilter {
     tags: string[] = [];
     sortBy = SortBy.Name;
     sortDir = SortDir.Asc;
+}
+
+export interface SavedSearchFilter {
+    id: number;
+    userId: number;
+    name: string;
+    query: string;
+    fields: SearchField[];
+    withPictures: boolean|null;
+    states: SearchState[];
+    tags: string[];
+    sortBy: SortBy;
+    sortDir: SortDir;
 }
 
 export interface AppConfiguration {

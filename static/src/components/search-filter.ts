@@ -3,7 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchFilter, SearchField, SearchState, SearchPictures, SortBy, SortDir } from '../models/models';
+import { SearchFilterParameters, SearchField, SearchState, SearchPictures, SortBy, SortDir } from '../models/models';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -131,7 +131,7 @@ export class SearchFilterElement extends GompBaseElement {
     ];
 
     @property({type: Object, notify: true})
-    public filter = new SearchFilter();
+    public filter = new SearchFilterParameters();
 
     static get observers() {
         return [

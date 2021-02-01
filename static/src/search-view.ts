@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, RecipeCompact, SearchFilter, SearchPictures, SearchState } from './models/models.js';
+import { User, RecipeCompact, SearchFilterParameters, SearchPictures, SearchState } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -183,7 +183,7 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public filter = new SearchFilter();
+    public filter = new SearchFilterParameters();
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
         viewMode: 'full',
@@ -217,14 +217,16 @@ export class SearchView extends GompBaseElement {
     }
     public refresh() {
         // Make sure to fill in any missing fields
-        const defaultFilter = new SearchFilter();
+        const defaultFilter = new SearchFilterParameters();
         const filter = {...defaultFilter, ...this.filter};
 
-        const pictures: string[] = [];
+        let withPictures: boolean|null = null;
         switch (filter.pictures) {
             case SearchPictures.Yes:
+                withPictures = true;
+                break;
             case SearchPictures.No:
-                pictures.push(this.filter.pictures);
+                withPictures = false;
                 break;
         }
 
@@ -242,9 +244,9 @@ export class SearchView extends GompBaseElement {
 
         this.recipesAjax.params = {
             'q': filter.query,
+            'pictures': withPictures,
             'fields[]': filter.fields,
             'tags[]': filter.tags,
-            'pictures[]': pictures,
             'states[]': states,
             'sort': filter.sortBy,
             'dir': filter.sortDir,
