@@ -177,6 +177,89 @@ func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) err
 }
 
 func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
+		"VALUES ($1, $2, $3, $4, $5, $6)"
+
+	res, err := tx.Exec(
+		stmt, filter.UserID, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
+	if err != nil {
+		return err
+	}
+	filter.ID, _ = res.LastInsertId()
+
+	d.setSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	d.setSearchFilterStatesTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	d.setSearchFilterTagsTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) setSearchFilterFieldsTx(filterID int64, fields []string, tx *sqlx.Tx) error {
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err := d.Db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterID)
+	if err != nil {
+		return err
+	}
+
+	for _, field := range fields {
+		_, err := d.Db.Exec(
+			"INSERT INTO search_filter_field (search_filter_id, field) VALUES ($1, $2)",
+			filterID, field)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) setSearchFilterStatesTx(filterID int64, states []string, tx *sqlx.Tx) error {
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err := d.Db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterID)
+	if err != nil {
+		return err
+	}
+
+	for _, state := range states {
+		_, err := d.Db.Exec(
+			"INSERT INTO search_filter_state (search_filter_id, state) VALUES ($1, $2)",
+			filterID, state)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) setSearchFilterTagsTx(filterID int64, tags []string, tx *sqlx.Tx) error {
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err := d.Db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterID)
+	if err != nil {
+		return err
+	}
+
+	for _, tag := range tags {
+		_, err := d.Db.Exec(
+			"INSERT INTO search_filter_tag (search_filter_id, tag) VALUES ($1, $2)",
+			filterID, tag)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (d *sqlUserDriver) ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error) {
@@ -186,6 +269,30 @@ func (d *sqlUserDriver) ReadSearchFilter(userID int64, filterID int64) (*models.
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	} else if err != nil {
+		return nil, err
+	}
+
+	err = d.Db.Select(
+		&filter.Fields,
+		"SELECT field FROM search_filter_field WHERE search_filter_id = $1",
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	err = d.Db.Select(
+		&filter.States,
+		"SELECT state FROM search_filter_state WHERE search_filter_id = $1",
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	err = d.Db.Select(
+		&filter.Tags,
+		"SELECT tag FROM search_filter_tag WHERE search_filter_id = $1",
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 
@@ -199,6 +306,36 @@ func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) err
 }
 
 func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
+	if _, err := d.ReadSearchFilter(filter.UserID, filter.ID); err == sql.ErrNoRows {
+		return ErrNotFound
+	}
+
+	stmt := "UPDATE search_filter SET name = $3, query = $4, with_pictures = $5, sort_by = $6, sort_dir = $7) " +
+		"WHERE id = $1 AND user_id = $2"
+
+	_, err := tx.Exec(
+		stmt, filter.ID, filter.UserID, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
+	if err != nil {
+		return err
+	}
+
+	d.setSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	d.setSearchFilterStatesTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	d.setSearchFilterTagsTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (d *sqlUserDriver) DeleteSearchFilter(userID int64, filterID int64) error {
@@ -208,13 +345,22 @@ func (d *sqlUserDriver) DeleteSearchFilter(userID int64, filterID int64) error {
 }
 
 func (d *sqlUserDriver) deleteSearchFilterTx(userID int64, filterID int64, tx *sqlx.Tx) error {
+	_, err := tx.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterID, userID)
+	if err == sql.ErrNoRows {
+		return ErrNotFound
+	}
+	return err
 }
 
 // List retrieves all user's saved search filters.
 func (d *sqlUserDriver) ListSearchFilters(userID int64) (*[]models.SavedSearchFilter, error) {
 	var filters []models.SavedSearchFilter
 
-	if err := d.Db.Select(&filters, "SELECT * FROM search_filter WHERE user_id = $1 ORDER BY name ASC", userID); err != nil {
+	err := d.Db.Select(
+		&filters,
+		"SELECT * FROM search_filter WHERE user_id = $1 ORDER BY name ASC",
+		userID)
+	if err != nil {
 		return nil, err
 	}
 
