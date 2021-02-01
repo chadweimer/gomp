@@ -128,7 +128,7 @@ type RecipeDriver interface {
 	SetState(id int64, state models.RecipeState) error
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
-	Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error)
+	Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
 }
 
 // TagDriver provides functionality to edit and retrieve tags attached to recipes.

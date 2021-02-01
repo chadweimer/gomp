@@ -54,7 +54,7 @@ type RecipesFilter struct {
 }
 
 type SearchFilter struct {
-	Query        *string
+	Query        string
 	WithPictures *bool
 	Fields       []string
 	States       []string

@@ -20,34 +20,45 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p h
 	query := getParam(req.URL.Query(), "q")
 	fields := getParams(req.URL.Query(), "fields[]")
 	tags := getParams(req.URL.Query(), "tags[]")
-	pictures := getParams(req.URL.Query(), "pictures[]")
 	states := getParams(req.URL.Query(), "states[]")
 	sortBy := getParam(req.URL.Query(), "sort")
 	sortDir := getParam(req.URL.Query(), "dir")
+
+	var withPictures *bool
+	pictures := getParams(req.URL.Query(), "pictures")
+  if pictures != "" {
+		withPics, err := strconv.ParseBool(pictures)
+		if err == nil {
+			withPictures = &withPics
+		} else {
+			h.Error(resp, http.StatusBadRequest, err)
+			return
+		}
+	}
+
 	page, err := strconv.ParseInt(getParam(req.URL.Query(), "page"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
+
 	count, err := strconv.ParseInt(getParam(req.URL.Query(), "count"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	filter := models.RecipesFilter{
-		Query:    query,
-		Fields:   fields,
-		Tags:     tags,
-		Pictures: pictures,
-		States:   states,
-		SortBy:   sortBy,
-		SortDir:  sortDir,
-		Page:     page,
-		Count:    count,
+	filter := models.SearchFilter{
+		Query:        query,
+		Fields:       fields,
+		Tags:         tags,
+		WithPictures: withPictures,
+		States:       states,
+		SortBy:       sortBy,
+		SortDir:      sortDir,
 	}
 
-	recipes, total, err := h.db.Recipes().Find(&filter)
+	recipes, total, err := h.db.Recipes().Find(&filter, page, count)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
