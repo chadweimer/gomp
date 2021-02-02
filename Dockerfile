@@ -1,15 +1,14 @@
-FROM alpine:3.11
+FROM alpine:3.12
+ARG TARGETPLATFORM
 LABEL maintainer="ch@dweimer.com"
 
-RUN apk add --no-cache ca-certificates \
-  && mkdir /lib64 \
-  && ln -s /lib/ld-musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+RUN apk add --no-cache ca-certificates
+
+EXPOSE 5000
 
 WORKDIR /var/app/gomp
-COPY build/linux/amd64/ ./
 VOLUME /var/app/gomp/data
 
-ENV PORT 5000
-EXPOSE 5000
+COPY build/$TARGETPLATFORM ./
 
 ENTRYPOINT ["./gomp"]

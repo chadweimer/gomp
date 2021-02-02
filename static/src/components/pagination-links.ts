@@ -2,6 +2,8 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { PaperButtonElement } from '@polymer/paper-button/paper-button.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '../shared-styles.js';
 
@@ -19,6 +21,7 @@ export class PaginationLinks extends PolymerElement {
                 paper-button {
                     font-weight: 600;
                     text-transform: lowercase;
+                    vertical-align: top;
                 }
                 paper-button:not([disabled]) {
                     color: #ffffff;
@@ -26,11 +29,11 @@ export class PaginationLinks extends PolymerElement {
                 }
           </style>
 
-          <paper-button id="first" raised="" on-click="goFirst">|&lt;</paper-button>
-          <paper-button id="prev" raised="" on-click="goPrev">&lt;</paper-button>
+          <paper-button id="first" raised="" on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
+          <paper-button id="prev" raised="" on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
           <paper-button raised="" disabled="">[[pageNum]] of [[numPages]]</paper-button>
-          <paper-button id="next" raised="" on-click="goNext">&gt;</paper-button>
-          <paper-button id="last" raised="" on-click="goLast">&gt;|</paper-button>
+          <paper-button id="next" raised="" on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
+          <paper-button id="last" raised="" on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
 `;
     }
 

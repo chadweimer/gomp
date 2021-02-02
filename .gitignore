@@ -30,7 +30,6 @@ _testmain.go
 *.prof
 
 .env
-docker-compose.yml
 
 # IDE files
 .vscode/
@@ -38,6 +37,9 @@ docker-compose.yml
 .idea/
 
 # Ignore the main build output
-gomp
-gomp.exe
-debug
+/gomp
+/gomp.exe
+/debug
+
+# Ignore default runtime folder
+/data

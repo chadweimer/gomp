@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { HomeList } from './components/home-list.js';
-import { User } from './models/models.js';
+import { User, UserSettings } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-fab/paper-fab.js';
 import './components/home-list.js';
@@ -39,8 +39,8 @@ export class HomeView extends GompBaseElement {
           </style>
           <section>
               <header>
-                  <h1 hidden\$="[[!title]]">[[title]]</h1>
-                  <img alt="Home Image" class="responsive" hidden\$="[[!image]]" src="[[image]]">
+                  <h1 hidden\$="[[!currentUserSettings.homeTitle]]">[[currentUserSettings.homeTitle]]</h1>
+                  <img alt="Home Image" class="responsive" hidden\$="[[!currentUserSettings.homeImageUrl]]" src="[[currentUserSettings.homeImageUrl]]">
               </header>
               <home-list id="allRecipes" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
               <home-list id="beefRecipes" title="Beef" tags="[&quot;beef&quot;,&quot;steak&quot;]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
@@ -59,12 +59,10 @@ export class HomeView extends GompBaseElement {
 `;
     }
 
-    @property({type: String, notify: true})
-    public title = '';
-    @property({type: String, notify: true})
-    public image = '';
     @property({type: Object, notify: true})
     public currentUser: User = null;
+
+    protected currentUserSettings: UserSettings = null;
 
     private get lists(): HomeList[] {
         return [
@@ -96,11 +94,8 @@ export class HomeView extends GompBaseElement {
             this.refresh();
         }
     }
-    protected handleGetUserSettingsResponse(e: CustomEvent) {
-        const userSettings = e.detail.response;
-
-        this.title = userSettings.homeTitle;
-        this.image = userSettings.homeImageUrl;
+    protected handleGetUserSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
+        this.currentUserSettings = e.detail.response;
     }
 
     protected refresh() {

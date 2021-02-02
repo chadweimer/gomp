@@ -14,12 +14,12 @@ type fileSystemDriver struct {
 }
 
 // NewFileSystemDriver constucts a FileSystemDriver.
-func newFileSystemDriver(rootPath string) fileSystemDriver {
-	return fileSystemDriver{rootPath: rootPath, FileSystem: JustFilesFileSystem{http.Dir(rootPath)}}
+func newFileSystemDriver(rootPath string) *fileSystemDriver {
+	return &fileSystemDriver{rootPath: rootPath, FileSystem: &JustFilesFileSystem{http.Dir(rootPath)}}
 }
 
 // Save creates or overrites a file with the provided binary data.
-func (u fileSystemDriver) Save(filePath string, data []byte) error {
+func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.rootPath, filePath)
 
@@ -40,7 +40,7 @@ func (u fileSystemDriver) Save(filePath string, data []byte) error {
 }
 
 // Delete deletes the file at the specified path, if it exists.
-func (u fileSystemDriver) Delete(filePath string) error {
+func (u *fileSystemDriver) Delete(filePath string) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.rootPath, filePath)
 
@@ -48,7 +48,7 @@ func (u fileSystemDriver) Delete(filePath string) error {
 }
 
 // DeleteAll deletes all files at or under the specified directory path.
-func (u fileSystemDriver) DeleteAll(dirPath string) error {
+func (u *fileSystemDriver) DeleteAll(dirPath string) error {
 	// First prepend the base UploadPath
 	dirPath = filepath.Join(u.rootPath, dirPath)
 
@@ -69,7 +69,7 @@ func NewJustFilesFileSystem(fs http.FileSystem) *JustFilesFileSystem {
 // Open returns a http.File is the assocaiated file exists.
 // If the name specifies a directory, an os.ErrPermission
 // error is returned
-func (fs JustFilesFileSystem) Open(name string) (http.File, error) {
+func (fs *JustFilesFileSystem) Open(name string) (http.File, error) {
 	name = strings.TrimPrefix(name, "/")
 
 	f, err := fs.fs.Open(name)

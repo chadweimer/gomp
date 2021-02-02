@@ -4,6 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
+import { Recipe, SearchState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-input/iron-input.js';
@@ -44,6 +45,7 @@ export class RecipeEdit extends GompBaseElement {
                   <paper-textarea label="Serving Size" always-float-label="" value="{{recipe.servingSize}}"></paper-textarea>
                   <paper-textarea label="Ingredients" always-float-label="" value="{{recipe.ingredients}}"></paper-textarea>
                   <paper-textarea label="Directions" always-float-label="" value="{{recipe.directions}}"></paper-textarea>
+                  <paper-textarea label="Storage/Freezer Instructions" always-float-label="" value="{{recipe.storageInstructions}}"></paper-textarea>
                   <paper-textarea label="Nutrition" always-float-label="" value="{{recipe.nutritionInfo}}"></paper-textarea>
                   <paper-input label="Source" always-float-label="" value="{{recipe.sourceUrl}}"></paper-input>
                   <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
@@ -60,7 +62,7 @@ export class RecipeEdit extends GompBaseElement {
           <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
           <iron-ajax bubbles="" id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="handlePutRecipeResponse"></iron-ajax>
           <iron-ajax bubbles="" id="postAjax" url="/api/v1/recipes" method="POST" on-response="handlePostRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" ,="" on-error="handleAddImageResponse"></iron-ajax>
+          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" on-error="handleAddImageResponse"></iron-ajax>
 `;
     }
 
@@ -68,7 +70,7 @@ export class RecipeEdit extends GompBaseElement {
     public recipeId: string|null = null;
 
     protected newRecipeId = NaN;
-    protected recipe: object|null = null;
+    protected recipe: Recipe = null;
 
     private get tagsInput(): TagInput {
         return this.$.tagsInput as TagInput;
@@ -116,13 +118,19 @@ export class RecipeEdit extends GompBaseElement {
         this.mainImage.value = '';
         if (!this.recipeId) {
             this.recipe = {
+                id: null,
                 name: '',
+                state: SearchState.Active,
+                createdAt: null,
+                modifiedAt: null,
                 servingSize: '',
                 ingredients: '',
                 directions: '',
-                nutrition: '',
+                nutritionInfo: '',
                 sourceUrl: '',
+                storageInstructions: '',
                 tags: [],
+                averageRating: 0,
             };
         }
         if (isActive && this.isReady) {
@@ -178,7 +186,7 @@ export class RecipeEdit extends GompBaseElement {
         this.onSaveComplete();
     }
     protected onSaveComplete() {
-        this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId} : null}));
+        this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId + '/view'} : null}));
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
 }

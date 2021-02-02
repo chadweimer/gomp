@@ -1,0 +1,206 @@
+package db
+
+import (
+	"database/sql"
+	"fmt"
+	"strings"
+
+	"github.com/chadweimer/gomp/models"
+	"github.com/jmoiron/sqlx"
+)
+
+type postgresRecipeDriver struct {
+	*postgresDriver
+	*sqlRecipeDriver
+}
+
+func (d *postgresRecipeDriver) Create(recipe *models.Recipe) error {
+	return d.postgresDriver.tx(func(tx *sqlx.Tx) error {
+		return d.createtx(recipe, tx)
+	})
+}
+
+func (d *postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error {
+	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url) " +
+		"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
+
+	err := tx.Get(recipe, stmt,
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL)
+	if err != nil {
+		return fmt.Errorf("creating recipe: %v", err)
+	}
+
+	for _, tag := range recipe.Tags {
+		err := d.tags.createtx(recipe.ID, tag, tx)
+		if err != nil {
+			return fmt.Errorf("adding tags to new recipe: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
+	stmt := "SELECT " +
+		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.storage_instructions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
+		"FROM recipe AS r " +
+		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+		"WHERE r.id = $1"
+	recipe := new(models.Recipe)
+	err := d.postgresDriver.Db.Get(recipe, stmt, id)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	} else if err != nil {
+		return nil, fmt.Errorf("reading recipe: %v", err)
+	}
+
+	tags, err := d.tags.List(id)
+	if err != nil {
+		return nil, fmt.Errorf("reading tags for recipe: %v", err)
+	}
+	recipe.Tags = *tags
+
+	return recipe, nil
+}
+
+func (d *postgresRecipeDriver) Update(recipe *models.Recipe) error {
+	return d.postgresDriver.tx(func(tx *sqlx.Tx) error {
+		return d.updatetx(recipe, tx)
+	})
+}
+
+func (d *postgresRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		"UPDATE recipe "+
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7 "+
+			"WHERE id = $8",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.ID)
+	if err != nil {
+		return fmt.Errorf("updating recipe: %v", err)
+	}
+
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	err = d.tags.deleteAlltx(recipe.ID, tx)
+	if err != nil {
+		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
+	}
+	for _, tag := range recipe.Tags {
+		err = d.tags.createtx(recipe.ID, tag, tx)
+		if err != nil {
+			return fmt.Errorf("updating tags on recipe: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *postgresRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+	whereStmt := "WHERE r.current_state = 'active'"
+	whereArgs := make([]interface{}, 0)
+	var err error
+
+	if len(filter.States) > 0 {
+		whereStmt, whereArgs, err = sqlx.In("WHERE r.current_state IN (?)", filter.States)
+		if err != nil {
+			return nil, 0, err
+		}
+	}
+
+	if filter.Query != "" {
+		// If the filter didn't specify the fields to search on, use all of them
+		filterFields := filter.Fields
+		if filterFields == nil || len(filterFields) == 0 {
+			filterFields = models.SupportedSearchFields[:]
+		}
+
+		// Build up the string of fields to query against
+		fieldStr := ""
+		fieldArgs := make([]interface{}, 0)
+		for _, field := range models.SupportedSearchFields {
+			if containsString(filterFields, field) {
+				if fieldStr != "" {
+					fieldStr += " OR "
+				}
+				fieldStr += "to_tsvector('english', r." + field + ") @@ plainto_tsquery(?)"
+				fieldArgs = append(fieldArgs, filter.Query)
+			}
+		}
+
+		whereStmt += " AND (" + fieldStr + ")"
+		whereArgs = append(whereArgs, fieldArgs...)
+	}
+
+	if len(filter.Tags) > 0 {
+		tagsStmt, tagsArgs, err := sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", filter.Tags)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		whereStmt += " AND " + tagsStmt
+		whereArgs = append(whereArgs, tagsArgs...)
+	}
+
+	if len(filter.Pictures) > 0 {
+		picsParts := make([]string, 0)
+		for _, val := range filter.Pictures {
+			switch strings.ToLower(val) {
+			case "yes":
+				picsParts = append(picsParts, "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
+			case "no":
+				picsParts = append(picsParts, "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
+			}
+		}
+		picsStmt := ""
+		if len(picsParts) > 0 {
+			picsStmt = "(" + strings.Join(picsParts, " OR ") + ")"
+		}
+
+		whereStmt += " AND " + picsStmt
+	}
+
+	var total int64
+	countStmt := d.postgresDriver.Db.Rebind("SELECT count(r.id) FROM recipe AS r " + whereStmt)
+	if err := d.postgresDriver.Db.Get(&total, countStmt, whereArgs...); err != nil {
+		return nil, 0, err
+	}
+
+	offset := filter.Count * (filter.Page - 1)
+
+	orderStmt := " ORDER BY "
+	switch filter.SortBy {
+	case models.SortRecipeByID:
+		orderStmt += "r.id"
+	case models.SortRecipeByCreatedDate:
+		orderStmt += "r.created_at"
+	case models.SortRecipeByModifiedDate:
+		orderStmt += "r.modified_at"
+	case models.SortRecipeByRating:
+		orderStmt += "avg_rating"
+	case models.SortByRandom:
+		orderStmt += "RANDOM()"
+	case models.SortRecipeByName:
+		fallthrough
+	default:
+		orderStmt += "r.name"
+	}
+	if filter.SortDir == models.SortDirDesc {
+		orderStmt += " DESC"
+	}
+	orderStmt += " LIMIT ? OFFSET ?"
+
+	selectStmt := d.postgresDriver.Db.Rebind("SELECT " +
+		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
+		"FROM recipe AS r " +
+		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+		"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
+		whereStmt + orderStmt)
+	selectArgs := append(whereArgs, filter.Count, offset)
+
+	var recipes []models.RecipeCompact
+	err = d.postgresDriver.Db.Select(&recipes, selectStmt, selectArgs...)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return &recipes, total, nil
+}

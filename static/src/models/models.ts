@@ -39,10 +39,21 @@ export class SearchFilter {
     sortDir = SortDir.Asc;
 }
 
+export interface AppConfiguration {
+    title: string;
+}
+
 export interface User {
     id: number;
     username: string;
     accessLevel: string;
+}
+
+export interface UserSettings {
+    userId: string;
+    homeTitle: string;
+    homeImageUrl: string;
+    favoriteTags: string[];
 }
 
 interface RecipeBase {
@@ -59,6 +70,7 @@ export interface Recipe extends RecipeBase {
     nutritionInfo: string;
     ingredients: string;
     directions: string;
+    storageInstructions: string;
     sourceUrl: string;
     tags: string[];
 }
@@ -71,6 +83,16 @@ export interface Note {
     id: number;
     recipeId: number;
     text: string;
+    createdAt: string;
+    modifiedAt: string;
+}
+
+export interface RecipeImage {
+    id: number;
+    recipeId: number;
+    name: string;
+    url: string;
+    thumbnailUrl: string;
     createdAt: string;
     modifiedAt: string;
 }

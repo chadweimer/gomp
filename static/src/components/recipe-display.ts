@@ -102,6 +102,11 @@ export class RecipeDisplay extends GompBaseElement {
                         <p class="plain-text">[[recipe.directions]]</p>
                         <paper-divider></paper-divider>
                     </section>
+                    <section hidden\$="[[!recipe.storageInstructions]]">
+                        <label>Storage/Freezer Instructions</label>
+                        <p class="plain-text">[[recipe.storageInstructions]]</p>
+                        <paper-divider></paper-divider>
+                    </section>
                     <section hidden\$="[[!recipe.nutritionInfo]]">
                         <label>Nutrition</label>
                         <p class="plain-text">[[recipe.nutritionInfo]]</p>
@@ -118,7 +123,7 @@ export class RecipeDisplay extends GompBaseElement {
                             <paper-icon-item>
                                 <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                                 <paper-item-body>
-                                    <a href="/recipes/[[item.id]]">[[item.name]]</a>
+                                    <a href="/recipes/[[item.id]]/view">[[item.name]]</a>
                                 </paper-item-body>
                                 <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><iron-icon icon="icons:cancel"></iron-icon></a>
                             </paper-icon-item>
@@ -226,9 +231,6 @@ export class RecipeDisplay extends GompBaseElement {
     }
     protected handleDeleteLinkError() {
         this.showToast('Removing link failed!');
-    }
-    protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleDateString();
     }
     protected showModifiedDate(recipe: Recipe) {
         if (!recipe) {

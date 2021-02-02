@@ -68,7 +68,7 @@ export class RecipeCard extends GompBaseElement {
           </style>
 
           <div class="container">
-            <a href\$="/recipes/[[recipe.id]]">
+            <a href\$="/recipes/[[recipe.id]]/view">
                 <paper-card image="[[recipe.thumbnailUrl]]">
                     <div class="card-content">
                         <div class="truncate">[[recipe.name]]</div>
@@ -94,9 +94,6 @@ export class RecipeCard extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected formatDate(dateStr: string) {
-        return new Date(dateStr).toLocaleDateString();
-    }
     protected showModifiedDate(recipe: RecipeCompact) {
         if (!recipe) {
             return false;

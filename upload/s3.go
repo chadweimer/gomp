@@ -21,7 +21,7 @@ type s3Driver struct {
 }
 
 // Save creates or overrites a file with the provided binary data.
-func (u s3Driver) Save(filePath string, data []byte) error {
+func (u *s3Driver) Save(filePath string, data []byte) error {
 	svc := s3.New(session.New())
 
 	key := filepath.ToSlash(filePath)
@@ -36,7 +36,7 @@ func (u s3Driver) Save(filePath string, data []byte) error {
 }
 
 // Delete deletes the file with the specified key, if it exists.
-func (u s3Driver) Delete(key string) error {
+func (u *s3Driver) Delete(key string) error {
 	svc := s3.New(session.New())
 
 	key = filepath.ToSlash(key)
@@ -49,7 +49,7 @@ func (u s3Driver) Delete(key string) error {
 }
 
 // DeleteAll deletes all files with the specified key prefix.
-func (u s3Driver) DeleteAll(keyPrefix string) error {
+func (u *s3Driver) DeleteAll(keyPrefix string) error {
 	svc := s3.New(session.New())
 
 	keyPrefix = filepath.ToSlash(keyPrefix)
@@ -74,7 +74,7 @@ func (u s3Driver) DeleteAll(keyPrefix string) error {
 	return nil
 }
 
-func (u s3Driver) Open(name string) (http.File, error) {
+func (u *s3Driver) Open(name string) (http.File, error) {
 	// if the path is '/', move along because we'll just get bucket information
 	if name == "/" {
 		return nil, os.ErrPermission
@@ -103,7 +103,7 @@ func (u s3Driver) Open(name string) (http.File, error) {
 	if getResp.ContentLength != nil {
 		contentLength = *getResp.ContentLength
 	}
-	return s3File{key: key, obj: getResp, ReadSeeker: newLazyReadSeeker(getResp.Body, contentLength)}, nil
+	return &s3File{key: key, obj: getResp, ReadSeeker: newLazyReadSeeker(getResp.Body, contentLength)}, nil
 }
 
 // LazyReadSeeker supports on-demand converting an io.Reader into an io.ReadSeeker.
@@ -190,30 +190,30 @@ type s3File struct {
 	obj *s3.GetObjectOutput
 }
 
-func (f s3File) Close() error {
+func (f *s3File) Close() error {
 	if f.obj.Body != nil {
 		return f.obj.Body.Close()
 	}
 
 	return nil
 }
-func (f s3File) Readdir(count int) ([]os.FileInfo, error) { return []os.FileInfo{}, nil }
-func (f s3File) Stat() (os.FileInfo, error)               { return s3FileInfo{obj: f.obj, key: f.key}, nil }
+func (f *s3File) Readdir(count int) ([]os.FileInfo, error) { return []os.FileInfo{}, nil }
+func (f *s3File) Stat() (os.FileInfo, error)               { return &s3FileInfo{obj: f.obj, key: f.key}, nil }
 
 type s3FileInfo struct {
 	key string
 	obj *s3.GetObjectOutput
 }
 
-func (f s3FileInfo) Name() string { return f.key }
-func (f s3FileInfo) Size() int64 {
+func (f *s3FileInfo) Name() string { return f.key }
+func (f *s3FileInfo) Size() int64 {
 	if f.obj.ContentLength == nil {
 		return 0
 	}
 
 	return *f.obj.ContentLength
 }
-func (f s3FileInfo) Mode() os.FileMode  { return os.ModePerm }
-func (f s3FileInfo) ModTime() time.Time { return *f.obj.LastModified }
-func (f s3FileInfo) IsDir() bool        { return false }
-func (f s3FileInfo) Sys() interface{}   { return f.obj }
+func (f *s3FileInfo) Mode() os.FileMode  { return os.ModePerm }
+func (f *s3FileInfo) ModTime() time.Time { return *f.obj.LastModified }
+func (f *s3FileInfo) IsDir() bool        { return false }
+func (f *s3FileInfo) Sys() interface{}   { return f.obj }

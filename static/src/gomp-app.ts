@@ -7,7 +7,7 @@ import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, SearchFilter } from './models/models.js';
+import { User, SearchFilter, AppConfiguration } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -17,6 +17,7 @@ import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/iron-icons/maps-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -67,13 +68,6 @@ export class GompApp extends PolymerElement {
                 }
                 paper-search-bar {
                     color: var(--light-theme-text-color);
-                }
-                paper-filter-dialog {
-                    --paper-filter-toolbar-background: var(--primary-color);
-                    --paper-filter-toolbar: {
-                        background: var(--primary-color);
-                        color: white;
-                    }
                 }
                 paper-progress {
                     width: 100%;
@@ -136,6 +130,11 @@ export class GompApp extends PolymerElement {
                     paper-dialog {
                         width: 100%;
                     }
+                    paper-search-bar {
+                        --input-styles: {
+                            max-width: 150px;
+                        }
+                    }
                 }
             </style>
 
@@ -153,7 +152,7 @@ export class GompApp extends PolymerElement {
                     </a>
                     <a href="/search" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:view-list" slot="item-icon"></iron-icon>
+                            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
                             Recipes
                         </paper-icon-item>
                     </a>
@@ -303,6 +302,7 @@ export class GompApp extends PolymerElement {
         this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
+        this.addEventListener('app-config-changed', (e: CustomEvent) => this.onAppConfigChanged(e));
 
         super.ready();
         this.appConfigAjax.generateRequest();
@@ -355,7 +355,7 @@ export class GompApp extends PolymerElement {
         }
     }
 
-    protected onShowToast(e: CustomEvent) {
+    protected onShowToast(e: CustomEvent<{message: string}>) {
         this.toast.text = e.detail.message;
         this.toast.open();
     }
@@ -431,7 +431,7 @@ export class GompApp extends PolymerElement {
             break;
         }
     }
-    protected changePageRequested(e: CustomEvent) {
+    protected changePageRequested(e: CustomEvent<{url: string}>) {
         this.changeRoute(e.detail.url);
     }
     protected changeRoute(path: string) {
@@ -450,7 +450,7 @@ export class GompApp extends PolymerElement {
             this.getCurrentUserAjax.generateRequest();
         }
     }
-    protected handleGetCurrentUserResponse(e: CustomEvent) {
+    protected handleGetCurrentUserResponse(e: CustomEvent<{response: User}>) {
         this.currentUser = e.detail.response;
     }
     protected getIsAuthenticated() {
@@ -488,13 +488,16 @@ export class GompApp extends PolymerElement {
     protected onFilter() {
         this.searchFilterDialog.open();
     }
-    protected onHomeLinkClicked(e: CustomEvent) {
+    protected onHomeLinkClicked(e: CustomEvent<{tags: string[]}>) {
         const filter = new SearchFilter();
         filter.tags = e.detail.tags;
         this.setSearchFilter(filter);
         this.changeRoute('/search');
     }
-    protected handleGetAppConfigurationResponse(e: CustomEvent) {
+    protected onAppConfigChanged(e: CustomEvent<AppConfiguration>) {
+        this.title = e.detail.title;
+    }
+    protected handleGetAppConfigurationResponse(e: CustomEvent<{response: AppConfiguration}>) {
         this.title = e.detail.response.title;
     }
     protected searchFilterDialogOpened(e: CustomEvent) {
@@ -507,7 +510,7 @@ export class GompApp extends PolymerElement {
         const filter = {...defaultFilter, ...this.searchFilter};
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
     }
-    protected searchFilterDialogClosed(e: CustomEvent) {
+    protected searchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (e.target !== this.searchFilterDialog) {
             return;
         }

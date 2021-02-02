@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
@@ -24,16 +25,16 @@ type authenticateResponse struct {
 	User  *models.User `json:"user"`
 }
 
-func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	var authRequest authenticateRequest
 	if err := readJSONFromRequest(req, &authRequest); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	user, err := h.model.Users.Authenticate(authRequest.UserName, authRequest.Password)
+	user, err := h.db.Users().Authenticate(authRequest.UserName, authRequest.Password)
 	if err != nil {
-		h.JSON(resp, http.StatusUnauthorized, err.Error())
+		h.Error(resp, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -45,26 +46,26 @@ func (h apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request
 	// Always sign using the 0'th key
 	tokenStr, err := token.SignedString([]byte(h.cfg.SecureKeys[0]))
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 	}
 
-	h.JSON(resp, http.StatusOK, authenticateResponse{Token: tokenStr, User: user})
+	h.OK(resp, authenticateResponse{Token: tokenStr, User: user})
 }
 
-func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
+func (h *apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		userID, err := h.getUserIDFromRequest(req)
 		if err != nil {
-			h.JSON(resp, http.StatusUnauthorized, err.Error())
+			h.Error(resp, http.StatusUnauthorized, err)
 			return
 		}
 
 		user, err := h.verifyUserExists(userID)
 		if err != nil {
-			if err == models.ErrNotFound {
-				h.JSON(resp, http.StatusUnauthorized, errors.New("Invalid user"))
+			if err == db.ErrNotFound {
+				h.Error(resp, http.StatusUnauthorized, errors.New("Invalid user"))
 			} else {
-				h.JSON(resp, http.StatusInternalServerError, err.Error())
+				h.Error(resp, http.StatusInternalServerError, err)
 			}
 			return
 		}
@@ -77,10 +78,10 @@ func (h apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.
 	}
 }
 
-func (h apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
+func (h *apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		if err := h.verifyUserIsAdmin(req, p); err != nil {
-			h.JSON(resp, http.StatusForbidden, err.Error())
+			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
@@ -88,7 +89,7 @@ func (h apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
 	}
 }
 
-func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter.Handle {
+func (h *apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		// Get the user from the request
 		userIDStr := p.ByName("userID")
@@ -103,7 +104,7 @@ func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter
 		// Admin privleges are required if the session user doesn't match the request user
 		if userIDStr != currentUserIDStr {
 			if err := h.verifyUserIsAdmin(req, p); err != nil {
-				h.JSON(resp, http.StatusForbidden, err.Error())
+				h.Error(resp, http.StatusForbidden, err)
 				return
 			}
 		}
@@ -112,7 +113,7 @@ func (h apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter
 	}
 }
 
-func (h apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
+func (h *apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		// Get the user from the request
 		userIDStr := p.ByName("userID")
@@ -126,8 +127,8 @@ func (h apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
 
 		// Don't allow operating on the current user (e.g., for deleting)
 		if userIDStr == currentUserIDStr {
-			msg := fmt.Sprintf("Endpoint '%s' disallowed on current user", req.URL.Path)
-			h.JSON(resp, http.StatusForbidden, msg)
+			err := fmt.Errorf("Endpoint '%s' disallowed on current user", req.URL.Path)
+			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
@@ -135,10 +136,10 @@ func (h apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
 	}
 }
 
-func (h apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
+func (h *apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
 	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 		if err := h.verifyUserIsEditor(req, p); err != nil {
-			h.JSON(resp, http.StatusForbidden, err.Error())
+			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
@@ -146,7 +147,7 @@ func (h apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
 	}
 }
 
-func (h apiHandler) getUserIDFromRequest(req *http.Request) (int64, error) {
+func (h *apiHandler) getUserIDFromRequest(req *http.Request) (int64, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader == "" {
 		return -1, errors.New("Authorization header missing")
@@ -173,7 +174,7 @@ func (h apiHandler) getUserIDFromRequest(req *http.Request) (int64, error) {
 	return -1, err
 }
 
-func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, error) {
+func (h *apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method != jwt.SigningMethodHS256 {
 			return nil, errors.New("Incorrect signing method")
@@ -196,11 +197,11 @@ func (h apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, erro
 	return userID, nil
 }
 
-func (h apiHandler) verifyUserExists(userID int64) (*models.User, error) {
+func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 	// Verify this is a valid user in the DB
-	user, err := h.model.Users.Read(userID)
+	user, err := h.db.Users().Read(userID)
 	if err != nil {
-		if err == models.ErrNotFound {
+		if err == db.ErrNotFound {
 			return nil, err
 		}
 
@@ -211,7 +212,7 @@ func (h apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 	return user, nil
 }
 
-func (h apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) error {
+func (h *apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) error {
 	accessLevelStr := p.ByName("CurrentUserAccessLevel")
 	if accessLevelStr != string(models.AdminUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
@@ -220,7 +221,7 @@ func (h apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) er
 	return nil
 }
 
-func (h apiHandler) verifyUserIsEditor(req *http.Request, p httprouter.Params) error {
+func (h *apiHandler) verifyUserIsEditor(req *http.Request, p httprouter.Params) error {
 	accessLevelStr := p.ByName("CurrentUserAccessLevel")
 	if accessLevelStr != string(models.AdminUserLevel) && accessLevelStr != string(models.EditorUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)

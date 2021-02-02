@@ -5,31 +5,30 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	uuid "github.com/satori/go.uuid"
 )
 
-func (h apiHandler) postUpload(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postUpload(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 	defer file.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Generate a unique name for the image
 	imageExt := filepath.Ext(fileHeader.Filename)
-	imageName := uuid.NewV4().String() + imageExt
+	imageName := uuid.New().String() + imageExt
 
 	fileURL := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	h.upl.Save(imageName, uploadedFileData)
 
-	resp.Header().Set("Location", fileURL)
-	resp.WriteHeader(http.StatusCreated)
+	h.Created(resp, fileURL)
 }

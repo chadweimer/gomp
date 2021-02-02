@@ -22,45 +22,45 @@ type userPutPasswordParameters struct {
 	NewPassword     string `json:"newPassword"`
 }
 
-func (h apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		msg := fmt.Sprintf("getting user from request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	user, err := h.model.Users.Read(userID)
+	user, err := h.db.Users().Read(userID)
 	if err != nil {
-		msg := fmt.Sprintf("reading user: %v", err)
-		h.JSON(resp, http.StatusInternalServerError, msg)
+		fullErr := fmt.Errorf("reading user: %v", err)
+		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return
 	}
 
-	h.JSON(resp, http.StatusOK, user)
+	h.OK(resp, user)
 }
 
-func (h apiHandler) getUsers(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	// Add pagination?
-	users, err := h.model.Users.List()
+	users, err := h.db.Users().List()
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.JSON(resp, http.StatusOK, users)
+	h.OK(resp, users)
 }
 
-func (h apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	newUser := new(userPostParameters)
 	if err := readJSONFromRequest(req, newUser); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		h.JSON(resp, http.StatusInternalServerError, errors.New("Invalid password specified"))
+		h.Error(resp, http.StatusInternalServerError, errors.New("Invalid password specified"))
 		return
 	}
 
@@ -70,113 +70,119 @@ func (h apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p http
 		AccessLevel:  newUser.AccessLevel,
 	}
 
-	if err := h.model.Users.Create(&user); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+	if err := h.db.Users().Create(&user); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.Header().Set("Location", fmt.Sprintf("/api/v1/users/%d", user.ID))
-	resp.WriteHeader(http.StatusCreated)
+	h.Created(resp, fmt.Sprintf("/api/v1/users/%d", user.ID))
 }
 
-func (h apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		msg := fmt.Sprintf("getting user from request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
 	var user models.User
 	if err := readJSONFromRequest(req, &user); err != nil {
-		h.JSON(resp, http.StatusBadRequest, err.Error())
+		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
 	if user.ID != userID {
-		h.JSON(resp, http.StatusBadRequest, errMismatchedID.Error())
+		h.Error(resp, http.StatusBadRequest, errMismatchedID)
 		return
 	}
 
-	if err := h.model.Users.Update(&user); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+	if err := h.db.Users().Update(&user); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }
 
-func (h apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		msg := fmt.Sprintf("getting user from request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	if err := h.model.Users.Delete(userID); err != nil {
-		h.JSON(resp, http.StatusInternalServerError, err.Error())
+	if err := h.db.Users().Delete(userID); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }
 
-func (h apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		msg := fmt.Sprintf("getting user from request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
 	params := new(userPutPasswordParameters)
 	if err := readJSONFromRequest(req, params); err != nil {
-		msg := fmt.Sprintf("invalid request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("invalid request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	err = h.model.Users.UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
+	err = h.db.Users().UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
 	if err != nil {
-		msg := fmt.Sprintf("update failed: %v", err)
-		h.JSON(resp, http.StatusForbidden, msg)
+		fullErr := fmt.Errorf("update failed: %v", err)
+		h.Error(resp, http.StatusForbidden, fullErr)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }
 
-func (h apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		msg := fmt.Sprintf("getting user from request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	userSettings, err := h.model.Users.ReadSettings(userID)
+	userSettings, err := h.db.Users().ReadSettings(userID)
 	if err != nil {
-		msg := fmt.Sprintf("reading user settings: %v", err)
-		h.JSON(resp, http.StatusInternalServerError, msg)
+		fullErr := fmt.Errorf("reading user settings: %v", err)
+		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return
 	}
 
-	h.JSON(resp, http.StatusOK, userSettings)
+	// Default to the application title if the user hasn't set their own
+	if userSettings.HomeTitle == nil {
+		if cfg, err := h.db.AppConfiguration().Read(); err == nil {
+			userSettings.HomeTitle = &cfg.Title
+		}
+	}
+
+	h.OK(resp, userSettings)
 }
 
-func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
 	userID, err := getUserIDForRequest(p)
 	if err != nil {
-		msg := fmt.Sprintf("getting user from request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("getting user from request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
 	userSettings := new(models.UserSettings)
 	if err := readJSONFromRequest(req, userSettings); err != nil {
-		msg := fmt.Sprintf("invalid request: %v", err)
-		h.JSON(resp, http.StatusBadRequest, msg)
+		fullErr := fmt.Errorf("invalid request: %v", err)
+		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
@@ -184,17 +190,17 @@ func (h apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request,
 	if userSettings.UserID == 0 {
 		userSettings.UserID = userID
 	} else if userSettings.UserID != userID {
-		msg := "mismatched user id between request and url"
-		h.JSON(resp, http.StatusBadRequest, msg)
+		err := errors.New("mismatched user id between request and url")
+		h.Error(resp, http.StatusBadRequest, err)
 	}
 
-	if err := h.model.Users.UpdateSettings(userSettings); err != nil {
-		msg := fmt.Sprintf("updating user settings: %v", err)
-		h.JSON(resp, http.StatusInternalServerError, msg)
+	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
+		fullErr := fmt.Errorf("updating user settings: %v", err)
+		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return
 	}
 
-	resp.WriteHeader(http.StatusNoContent)
+	h.NoContent(resp)
 }
 
 func getUserIDForRequest(p httprouter.Params) (int64, error) {
