@@ -35,6 +35,9 @@ export class AdminView extends GompBaseElement {
                     }
                     --paper-tabs-selection-bar-color: var(--accent-color);
                 }
+                iron-pages > :not(.iron-selected) {
+                    pointer-events: none;
+                }
                 .container {
                     padding: 10px;
                 }
