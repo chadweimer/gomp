@@ -96,17 +96,14 @@ export class SearchFilterParameters {
 
         if (filter.states === null || filter.states.length == 0) {
             this.states = SearchState.Active;
-        } else {
-            if (filter.states.indexOf(SearchState.Active) >= 0) {
+        } else if (filter.states.indexOf(SearchState.Active) >= 0) {
+            if (filter.states.indexOf(SearchState.Archived) >= 0) {
+                this.states = SearchState.Any;
+            } else {
                 this.states = SearchState.Active;
             }
-            if (filter.states.indexOf(SearchState.Archived) >= 0) {
-                if (this.states === SearchState.Active) {
-                    this.states = SearchState.Any;
-                } else {
-                    this.states = SearchState.Archived;
-                }
-            }
+        } else if (filter.states.indexOf(SearchState.Archived) >= 0) {
+            this.states = SearchState.Archived;
         }
 
         return this;
