@@ -51,11 +51,16 @@ type SearchFilter struct {
 	SortDir      string   `json:"sortDir" db:"sort_dir"`
 }
 
-// SavedSearchFilter represents a recipe search that is saved in the backing data store
-type SavedSearchFilter struct {
-	SearchFilter
-
+// SavedSearchFilterCompact represents a recipe search that is saved in the backing data store
+// that is suitable for bulk recipe retrieval
+type SavedSearchFilterCompact struct {
 	ID     int64  `json:"id" db:"id"`
 	UserID int64  `json:"userId" db:"user_id"`
 	Name   string `json:"name" db:"name"`
+}
+
+// SavedSearchFilter represents a recipe search that is saved in the backing data store
+type SavedSearchFilter struct {
+	SavedSearchFilterCompact
+	SearchFilter
 }

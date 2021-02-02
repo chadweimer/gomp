@@ -5,7 +5,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { EventWithModel, SavedSearchFilter, User, UserSettings } from './models/models.js';
+import { EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, SearchFilterParameters, User, UserSettings } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -190,7 +190,7 @@ export class SettingsView extends GompBaseElement {
             <paper-dialog id="addSearchFilterDialog" on-iron-overlay-closed="addSearchFilterDialogClosed" with-backdrop="">
                 <h3><iron-icon icon="icons:search"></iron-icon> <span>Add Search Filter</span></h3>
                 <paper-dialog-scrollable>
-                    <paper-input label="Name" always-float-label=""></paper-input>
+                    <paper-input label="Name" always-float-label="" value="{{newFilterName}}"></paper-input>
                     <search-filter id="newSearchFilter"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
@@ -211,7 +211,7 @@ export class SettingsView extends GompBaseElement {
                 </div>
             </paper-dialog>
 
-            <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" icon="icons:delete" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilter.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" icon="icons:delete" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
 
             <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
@@ -220,7 +220,10 @@ export class SettingsView extends GompBaseElement {
             <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
             <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
             <iron-ajax bubbles="" id="getUserSearchFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserSearchFiltersResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="deleteUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilter.id]]" method="DELETE" on-response="handleDeleteUserSearchFilterResponse" on-error="handleDeleteUserSearchFilterError"></iron-ajax>
+            <iron-ajax bubbles="" id="getUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" on-response="handleGetUserSearchFilterResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="postUserSearchFilterAjax" url="/api/v1/users/current/filters" method="POST" on-response="handlePostUserSearchFilterResponse" on-error="handlePostUserSearchFilterError"></iron-ajax>
+            <iron-ajax bubbles="" id="putUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="PUT" on-response="handlePutUserSearchFilterResponse" on-error="handlePutUserSearchFilterError"></iron-ajax>
+            <iron-ajax bubbles="" id="deleteUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="DELETE" on-response="handleDeleteUserSearchFilterResponse" on-error="handleDeleteUserSearchFilterError"></iron-ajax>
 `;
     }
 
@@ -228,8 +231,11 @@ export class SettingsView extends GompBaseElement {
     public currentUser: User = null;
 
     protected userSettings: UserSettings = null;
-    protected filters: SavedSearchFilter[] = [];
+
+    protected filters: SavedSearchFilterCompact[] = [];
+    protected selectedFilterCompact: SavedSearchFilterCompact = null;
     protected selectedFilter: SavedSearchFilter = null;
+    protected newFilterName = '';
 
     private currentPassword = '';
     private newPassword = '';
@@ -274,6 +280,18 @@ export class SettingsView extends GompBaseElement {
     private get getUserSearchFiltersAjax(): IronAjaxElement {
         return this.$.getUserSearchFiltersAjax as IronAjaxElement;
     }
+    private get getUserSearchFilterAjax(): IronAjaxElement {
+        return this.$.getUserSearchFilterAjax as IronAjaxElement;
+    }
+    private get postUserSearchFilterAjax(): IronAjaxElement {
+        return this.$.postUserSearchFilterAjax as IronAjaxElement;
+    }
+    private get putUserSearchFilterAjax(): IronAjaxElement {
+        return this.$.putUserSearchFilterAjax as IronAjaxElement;
+    }
+    private get deleteUserSearchFilterAjax(): IronAjaxElement {
+        return this.$.deleteUserSearchFilterAjax as IronAjaxElement;
+    }
 
     public ready() {
         super.ready();
@@ -281,6 +299,17 @@ export class SettingsView extends GompBaseElement {
         this.set('selectedTab', 0);
 
         if (this.isActive) {
+            this.refresh();
+        }
+    }
+
+    protected isActiveChanged(isActive: boolean) {
+        this.homeImageFile.value = '';
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.repeatPassword = '';
+
+        if (isActive && this.isReady) {
             this.refresh();
         }
     }
@@ -308,34 +337,46 @@ export class SettingsView extends GompBaseElement {
         }
     }
     protected onAddFilterClicked() {
+        this.newSearchFilter.filter = new SearchFilterParameters();
         this.newSearchFilter.refresh();
         this.addSearchFilterDialog.open();
     }
-    protected onEditFilterClicked(e: EventWithModel<{item: SavedSearchFilter}>) {
-        // Don't navigate to "#!"
-        e.preventDefault();
+    protected addSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+        if (e.detail.canceled || !e.detail.confirmed) {
+            return;
+        }
 
-        this.selectedFilter = e.model.item;
-        this.editSearchFilter.refresh();
-        this.editSearchFilterDialog.open();
+        const newFilter = this.newSearchFilter.filter.ToSearchFilter();
+        newFilter.name = this.newFilterName;
+        newFilter.userId = this.currentUser.id;
+        this.postUserSearchFilterAjax.body = JSON.stringify(newFilter) as any;
+        this.postUserSearchFilterAjax.generateRequest();
     }
-    protected onDeleteFilterClicked(e: EventWithModel<{item: SavedSearchFilter}>) {
+    protected onEditFilterClicked(e: EventWithModel<{item: SavedSearchFilterCompact}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.selectedFilter = e.model.item;
+        this.selectedFilterCompact = e.model.item;
+        this.getUserSearchFilterAjax.generateRequest();
+    }
+    protected editSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+        if (e.detail.canceled || !e.detail.confirmed) {
+            return;
+        }
+
+        const updatedFilter = this.editSearchFilter.filter.ToSearchFilter(this.selectedFilter);
+        this.putUserSearchFilterAjax.body = JSON.stringify(updatedFilter) as any;
+        this.putUserSearchFilterAjax.generateRequest();
+    }
+    protected onDeleteFilterClicked(e: EventWithModel<{item: SavedSearchFilterCompact}>) {
+        // Don't navigate to "#!"
+        e.preventDefault();
+
+        this.selectedFilterCompact = e.model.item;
         this.confirmDeleteUserSearchFilterDialog.open();
     }
-
-    protected isActiveChanged(isActive: boolean) {
-        this.homeImageFile.value = '';
-        this.currentPassword = '';
-        this.newPassword = '';
-        this.repeatPassword = '';
-
-        if (isActive && this.isReady) {
-            this.refresh();
-        }
+    protected deleteUserSearchFilter() {
+        this.deleteUserSearchFilterAjax.generateRequest();
     }
 
     protected handlePutPasswordResponse() {
@@ -370,8 +411,35 @@ export class SettingsView extends GompBaseElement {
         this.uploadingDialog.close();
         this.showToast('Upload failed!');
     }
-    protected handleGetUserSearchFiltersResponse(e: CustomEvent<{response: SavedSearchFilter[]}>) {
+    protected handleGetUserSearchFiltersResponse(e: CustomEvent<{response: SavedSearchFilterCompact[]}>) {
         this.filters = e.detail.response;
+    }
+    protected handleGetUserSearchFilterResponse(e: CustomEvent<{response: SavedSearchFilter}>) {
+        this.selectedFilter = e.detail.response;
+        this.editSearchFilter.filter = new SearchFilterParameters().FromSearchFilter(this.selectedFilter);
+        this.editSearchFilter.refresh();
+        this.editSearchFilterDialog.open();
+    }
+    protected handlePostUserSearchFilterResponse() {
+        this.refresh();
+        this.showToast('Search filter added.');
+    }
+    protected handlePostUserSearchFilterError() {
+        this.showToast('Adding search filter failed!');
+    }
+    protected handlePutUserSearchFilterResponse() {
+        this.refresh();
+        this.showToast('Search filter updated.');
+    }
+    protected handlePutUserSearchFilterError() {
+        this.showToast('Updating search filter failed!');
+    }
+    protected handleDeleteUserSearchFilterResponse() {
+        this.refresh();
+        this.showToast('Search filter deleted.');
+    }
+    protected handleDeleteUserSearchFilterError() {
+        this.showToast('Deleting search filter failed!');
     }
 
     private saveSettings() {

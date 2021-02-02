@@ -201,7 +201,7 @@ type UserDriver interface {
 	DeleteSearchFilter(userID int64, filterID int64) error
 
 	// List retrieves all user's saved search filters.
-	ListSearchFilters(userID int64) (*[]models.SavedSearchFilter, error)
+	ListSearchFilters(userID int64) (*[]models.SavedSearchFilterCompact, error)
 }
 
 // RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.

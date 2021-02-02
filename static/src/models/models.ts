@@ -37,16 +37,93 @@ export class SearchFilterParameters {
     tags: string[] = [];
     sortBy = SortBy.Name;
     sortDir = SortDir.Asc;
+
+    public ToSearchFilter(existingFilter: SavedSearchFilter = null): SavedSearchFilter {
+        let withPictures: boolean|null = null;
+        switch (this.pictures) {
+            case SearchPictures.Yes:
+                withPictures = true;
+                break;
+            case SearchPictures.No:
+                withPictures = false;
+                break;
+        }
+
+        const states: string[] = [];
+        switch (this.states) {
+            case SearchState.Active:
+            case SearchState.Archived:
+                states.push(this.states);
+                break;
+            case SearchState.Any:
+                states.push(SearchState.Active);
+                states.push(SearchState.Archived);
+                break;
+        }
+
+        return {
+            id: existingFilter?.id,
+            userId: existingFilter?.userId,
+            name: existingFilter?.name,
+            withPictures: withPictures,
+            query: this.query,
+            fields: this.fields,
+            states: states,
+            tags: this.tags,
+            sortBy: this.sortBy,
+            sortDir: this.sortDir
+        };
+    }
+
+    public FromSearchFilter(filter: SavedSearchFilter): SearchFilterParameters {
+        this.query = filter.query;
+        this.sortBy = filter.sortBy;
+        this.sortDir = filter.sortDir;
+        this.fields = filter.fields?.map(f => SearchField[f]) ?? [];
+        this.tags = filter.tags ?? [];
+
+        switch (filter.withPictures) {
+            case true:
+                this.pictures = SearchPictures.Yes;
+                break;
+            case false:
+                this.pictures = SearchPictures.No;
+                break;
+            default:
+                this.pictures = SearchPictures.Any;
+                break;
+        }
+
+        if (filter.states === null || filter.states.length == 0) {
+            this.states = SearchState.Active;
+        } else {
+            if (filter.states.indexOf(SearchState.Active) >= 0) {
+                this.states = SearchState.Active;
+            }
+            if (filter.states.indexOf(SearchState.Archived) >= 0) {
+                if (this.states === SearchState.Active) {
+                    this.states = SearchState.Any;
+                } else {
+                    this.states = SearchState.Archived;
+                }
+            }
+        }
+
+        return this;
+    }
 }
 
-export interface SavedSearchFilter {
+export interface SavedSearchFilterCompact {
     id: number;
     userId: number;
     name: string;
+}
+
+export interface SavedSearchFilter extends SavedSearchFilterCompact {
     query: string;
     withPictures: boolean|null;
-    fields: SearchField[];
-    states: SearchState[];
+    fields: string[];
+    states: string[];
     tags: string[];
     sortBy: SortBy;
     sortDir: SortDir;
