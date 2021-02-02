@@ -43,7 +43,7 @@ export class HomeView extends GompBaseElement {
                 </header>
                 <home-list is-active="[[isActive]]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
                 <template is="dom-repeat" items="[[searchFilters]]">
-                    <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[isActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-iron-ajax-presend="onAjaxPresend"></home-list>
+                    <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[homeListsActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-iron-ajax-presend="onAjaxPresend"></home-list>
                 </template>
             </section>
 
@@ -59,6 +59,7 @@ export class HomeView extends GompBaseElement {
 
     protected currentUserSettings: UserSettings = null;
     protected searchFilters: SavedSearchFilterCompact[] = [];
+    protected homeListsActive = false;
 
     private get userSettingsAjax(): IronAjaxElement {
         return this.$.userSettingsAjax as IronAjaxElement;
@@ -82,9 +83,13 @@ export class HomeView extends GompBaseElement {
     }
 
     protected isActiveChanged(isActive: boolean) {
-        // TODO: Fix bug where loading bar stays if a saved filter is deleted and the home screen is loaded
         if (isActive && this.isReady) {
             this.refresh();
+        } else {
+            // WORKAROUND: Clear everything when leaving screen so that we avoid errors
+            // if one or more of the filters is deleted before returning
+            this.searchFilters = [];
+            this.homeListsActive = false;
         }
     }
     protected handleGetUserSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
@@ -92,6 +97,7 @@ export class HomeView extends GompBaseElement {
     }
     protected handleGetUserFiltersResponse(e: CustomEvent<{response: SavedSearchFilterCompact[]}>) {
         this.searchFilters = e.detail.response;
+        this.homeListsActive = this.isActive;
     }
 
     protected refresh() {
