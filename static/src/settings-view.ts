@@ -5,7 +5,7 @@ import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, SearchFilterParameters, User, UserSettings } from './models/models.js';
+import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -338,7 +338,7 @@ export class SettingsView extends GompBaseElement {
     }
     protected onAddFilterClicked() {
         this.newFilterName = '';
-        this.newSearchFilter.filter = new SearchFilterParameters();
+        this.newSearchFilter.filter = new DefaultSearchFilter();
         this.newSearchFilter.refresh();
         this.addSearchFilterDialog.open();
     }
@@ -347,9 +347,11 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
-        const newFilter = this.newSearchFilter.filter.ToSearchFilter();
-        newFilter.name = this.newFilterName;
-        newFilter.userId = this.currentUser.id;
+        const newFilter = {
+            ...this.newSearchFilter.filter,
+            userId: this.currentUser.id,
+            name: this.newFilterName,
+        };
         this.postUserSearchFilterAjax.body = JSON.stringify(newFilter) as any;
         this.postUserSearchFilterAjax.generateRequest();
     }
@@ -365,7 +367,12 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
-        const updatedFilter = this.editSearchFilter.filter.ToSearchFilter(this.selectedFilter);
+        const updatedFilter = {
+            ...this.editSearchFilter.filter,
+            id: this.selectedFilter.id,
+            userId: this.selectedFilter.userId,
+            name: this.selectedFilter.name,
+        };
         this.putUserSearchFilterAjax.body = JSON.stringify(updatedFilter) as any;
         this.putUserSearchFilterAjax.generateRequest();
     }
@@ -417,7 +424,7 @@ export class SettingsView extends GompBaseElement {
     }
     protected handleGetUserSearchFilterResponse(e: CustomEvent<{response: SavedSearchFilter}>) {
         this.selectedFilter = e.detail.response;
-        this.editSearchFilter.filter = new SearchFilterParameters().FromSearchFilter(this.selectedFilter);
+        this.editSearchFilter.filter = this.selectedFilter;
         this.editSearchFilter.refresh();
         this.editSearchFilterDialog.open();
     }

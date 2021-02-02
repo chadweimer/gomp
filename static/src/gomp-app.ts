@@ -7,7 +7,7 @@ import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, SearchFilterParameters, AppConfiguration } from './models/models.js';
+import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-layout/app-drawer/app-drawer';
@@ -259,7 +259,7 @@ export class GompApp extends PolymerElement {
     @property({type: Number})
     protected loadingCount = 0;
     @property({type: Object, notify: true})
-    protected searchFilter = new SearchFilterParameters();
+    protected searchFilter: SearchFilter = new DefaultSearchFilter();
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
@@ -488,7 +488,7 @@ export class GompApp extends PolymerElement {
     protected onFilter() {
         this.searchFilterDialog.open();
     }
-    protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilterParameters}>) {
+    protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilter}>) {
         this.setSearchFilter(e.detail.filter);
         this.changeRoute('/search');
     }
@@ -504,7 +504,7 @@ export class GompApp extends PolymerElement {
         }
 
         // Make sure to fill in any missing fields
-        const defaultFilter = new SearchFilterParameters();
+        const defaultFilter = new DefaultSearchFilter();
         const filter = {...defaultFilter, ...this.searchFilter};
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
         this.searchSettings.refresh();
@@ -520,7 +520,7 @@ export class GompApp extends PolymerElement {
         }
     }
     protected onResetSearchFilterClicked() {
-        this.searchSettings.filter = new SearchFilterParameters();
+        this.searchSettings.filter = new DefaultSearchFilter();
         this.searchSettings.refresh();
     }
 
@@ -532,11 +532,11 @@ export class GompApp extends PolymerElement {
         }
     }
 
-    private setSearchFilter(filter: SearchFilterParameters) {
+    private setSearchFilter(filter: SearchFilter) {
         this.set('searchFilter.query', filter.query);
         this.set('searchFilter.fields', filter.fields);
         this.set('searchFilter.tags', filter.tags);
-        this.set('searchFilter.pictures', filter.pictures);
+        this.set('searchFilter.withPictures', filter.withPictures);
         this.set('searchFilter.states', filter.states);
         this.set('searchFilter.sortBy', filter.sortBy);
         this.set('searchFilter.sortDir', filter.sortDir);

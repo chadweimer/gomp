@@ -7,7 +7,6 @@ export enum SearchField {
 export enum SearchState {
     Active = 'active',
     Archived = 'archived',
-    Any = 'any'
 }
 
 export enum SearchPictures {
@@ -29,85 +28,24 @@ export enum SortDir {
     Desc = 'desc'
 }
 
-export class SearchFilterParameters {
-    query = '';
-    fields: SearchField[] = [];
-    pictures = SearchPictures.Any;
-    states = SearchState.Active;
-    tags: string[] = [];
-    sortBy = SortBy.Name;
-    sortDir = SortDir.Asc;
-
-    public ToSearchFilter(existingFilter: SavedSearchFilter = null): SavedSearchFilter {
-        let withPictures: boolean|null = null;
-        switch (this.pictures) {
-            case SearchPictures.Yes:
-                withPictures = true;
-                break;
-            case SearchPictures.No:
-                withPictures = false;
-                break;
-        }
-
-        const states: string[] = [];
-        switch (this.states) {
-            case SearchState.Active:
-            case SearchState.Archived:
-                states.push(this.states);
-                break;
-            case SearchState.Any:
-                states.push(SearchState.Active);
-                states.push(SearchState.Archived);
-                break;
-        }
-
-        return {
-            id: existingFilter?.id,
-            userId: existingFilter?.userId,
-            name: existingFilter?.name,
-            withPictures: withPictures,
-            query: this.query,
-            fields: this.fields,
-            states: states,
-            tags: this.tags,
-            sortBy: this.sortBy,
-            sortDir: this.sortDir
-        };
+export class DefaultSearchFilter implements SearchFilter {
+    constructor() {
+        this.query = '';
+        this.withPictures = null;
+        this.fields = [];
+        this.states = [];
+        this.tags = [];
+        this.sortBy = SortBy.Name;
+        this.sortDir = SortDir.Asc;
     }
 
-    public FromSearchFilter(filter: SavedSearchFilter): SearchFilterParameters {
-        this.query = filter.query;
-        this.sortBy = filter.sortBy;
-        this.sortDir = filter.sortDir;
-        this.fields = filter.fields?.map(f => SearchField[f]) ?? [];
-        this.tags = filter.tags ?? [];
-
-        switch (filter.withPictures) {
-            case true:
-                this.pictures = SearchPictures.Yes;
-                break;
-            case false:
-                this.pictures = SearchPictures.No;
-                break;
-            default:
-                this.pictures = SearchPictures.Any;
-                break;
-        }
-
-        if (filter.states === null || filter.states.length == 0) {
-            this.states = SearchState.Active;
-        } else if (filter.states.indexOf(SearchState.Active) >= 0) {
-            if (filter.states.indexOf(SearchState.Archived) >= 0) {
-                this.states = SearchState.Any;
-            } else {
-                this.states = SearchState.Active;
-            }
-        } else if (filter.states.indexOf(SearchState.Archived) >= 0) {
-            this.states = SearchState.Archived;
-        }
-
-        return this;
-    }
+    query: string;
+    withPictures: boolean|null;
+    fields: SearchField[];
+    states: SearchState[];
+    tags: string[];
+    sortBy: SortBy;
+    sortDir: SortDir;
 }
 
 export interface SavedSearchFilterCompact {
@@ -116,14 +54,17 @@ export interface SavedSearchFilterCompact {
     name: string;
 }
 
-export interface SavedSearchFilter extends SavedSearchFilterCompact {
+export interface SearchFilter {
     query: string;
     withPictures: boolean|null;
-    fields: string[];
-    states: string[];
+    fields: SearchField[];
+    states: SearchState[];
     tags: string[];
     sortBy: SortBy;
     sortDir: SortDir;
+}
+
+export interface SavedSearchFilter extends SavedSearchFilterCompact, SearchFilter {
 }
 
 export interface AppConfiguration {

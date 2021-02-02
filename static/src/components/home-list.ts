@@ -3,7 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import { SavedSearchFilter, SearchFilterParameters, SortBy } from '../models/models.js';
+import { SavedSearchFilter, SearchFilter, SortBy, SortDir } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import './recipe-card.js';
 import '../shared-styles.js';
@@ -86,7 +86,7 @@ export class HomeList extends GompBaseElement {
 
     protected total = 0;
     protected recipes = [];
-    private filterParams: SearchFilterParameters = null;
+    private filter: SearchFilter = null;
 
     private get getFilterAjax(): IronAjaxElement {
         return this.$.getFilterAjax as IronAjaxElement;
@@ -105,31 +105,19 @@ export class HomeList extends GompBaseElement {
         if (newId !== null) {
             this.getFilterAjax.generateRequest();
         } else {
-            this.filterParams = new SearchFilterParameters();
-            this.filterParams.sortBy = SortBy.Random;
-            this.recipesAjax.params = {
-                'dir': SortBy.Random,
-                'page': 1,
-                'count': 6,
-            };
-            this.recipesAjax.generateRequest();
+            this.setFilter({
+                query: '',
+                withPictures: null,
+                fields: [],
+                states: [],
+                tags: [],
+                sortBy: SortBy.Random,
+                sortDir: SortDir.Asc
+            });
         }
     }
     protected handleGetFilterResponse(e: CustomEvent<{response: SavedSearchFilter}>) {
-        const filter = e.detail.response;
-        this.filterParams = new SearchFilterParameters().FromSearchFilter(filter);
-        this.recipesAjax.params = {
-            'q': filter.query,
-            'pictures': filter.withPictures,
-            'fields[]': filter.fields,
-            'tags[]': filter.tags,
-            'states[]': filter.states,
-            'sort': filter.sortBy,
-            'dir': filter.sortDir,
-            'page': 1,
-            'count': 6,
-        };
-        this.recipesAjax.generateRequest();
+        this.setFilter(e.detail.response);
     }
     protected handleGetRecipesRequest() {
         this.total = 0;
@@ -143,6 +131,22 @@ export class HomeList extends GompBaseElement {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {filter: this.filterParams}}));
+        this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {filter: this.filter}}));
+    }
+
+    private setFilter(filter: SearchFilter) {
+        this.filter = filter;
+        this.recipesAjax.params = {
+            'q': this.filter.query,
+            'pictures': this.filter.withPictures,
+            'fields[]': this.filter.fields,
+            'tags[]': this.filter.tags,
+            'states[]': this.filter.states,
+            'sort': this.filter.sortBy,
+            'dir': this.filter.sortDir,
+            'page': 1,
+            'count': 6,
+        };
+        this.recipesAjax.generateRequest();
     }
 }
