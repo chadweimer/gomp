@@ -3,6 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
+import { SavedSearchFilter, SearchFilterParameters, SortBy } from '../models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import './recipe-card.js';
 import '../shared-styles.js';
@@ -72,39 +73,66 @@ export class HomeList extends GompBaseElement {
                 <a class="right" href="#!" on-click="onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
             </article>
 
-            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" params="{&quot;q&quot;:&quot;&quot;, &quot;tags&quot;: [], &quot;sort&quot;: &quot;random&quot;, &quot;dir&quot;: &quot;asc&quot;, &quot;page&quot;: 1, &quot;count&quot;: 6}" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="getFilterAjax" url="/api/v1/users/current/filters/[[filterId]]" on-response="handleGetFilterResponse"></iron-ajax>
+            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
 `;
     }
 
     @property({type: String, notify: true})
     public title = 'Recipes';
 
-    @property({type: Array, notify: true, observer: 'tagsChanged'})
-    public tags = [];
+    @property({type: Number, notify: true, observer: 'filterIdChanged'})
+    public filterId: number|null = null
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
     protected total = 0;
     protected recipes = [];
+    private filterParams: SearchFilterParameters = null;
 
+    private get getFilterAjax(): IronAjaxElement {
+        return this.$.getFilterAjax as IronAjaxElement;
+    }
     private get recipesAjax(): IronAjaxElement {
         return this.$.recipesAjax as IronAjaxElement;
     }
 
-    public refresh() {
-        this.recipesAjax.generateRequest();
+    protected isActiveChanged(isActive: boolean) {
+        if (isActive && this.isReady) {
+            this.filterIdChanged(this.filterId);
+        }
     }
 
-    protected tagsChanged() {
+    protected filterIdChanged(newId: number|null) {
+        if (newId !== null) {
+            this.getFilterAjax.generateRequest();
+        } else {
+            this.filterParams = new SearchFilterParameters();
+            this.filterParams.sortBy = SortBy.Random;
+            this.recipesAjax.params = {
+                'dir': SortBy.Random,
+                'page': 1,
+                'count': 6,
+            };
+            this.recipesAjax.generateRequest();
+        }
+    }
+    protected handleGetFilterResponse(e: CustomEvent<{response: SavedSearchFilter}>) {
+        const filter = e.detail.response;
+        this.filterParams = new SearchFilterParameters().FromSearchFilter(filter);
         this.recipesAjax.params = {
-            'q': '',
-            'tags[]': this.tags,
-            'sort': 'random',
-            'dir': 'asc',
+            'q': filter.query,
+            'pictures': filter.withPictures,
+            'fields[]': filter.fields,
+            'tags[]': filter.tags,
+            'states[]': filter.states,
+            'sort': filter.sortBy,
+            'dir': filter.sortDir,
             'page': 1,
             'count': 6,
         };
+        this.recipesAjax.generateRequest();
     }
     protected handleGetRecipesRequest() {
         this.total = 0;
@@ -118,6 +146,6 @@ export class HomeList extends GompBaseElement {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {tags: this.tags}}));
+        this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {filter: this.filterParams}}));
     }
 }

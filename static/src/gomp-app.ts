@@ -488,10 +488,8 @@ export class GompApp extends PolymerElement {
     protected onFilter() {
         this.searchFilterDialog.open();
     }
-    protected onHomeLinkClicked(e: CustomEvent<{tags: string[]}>) {
-        const filter = new SearchFilterParameters();
-        filter.tags = e.detail.tags;
-        this.setSearchFilter(filter);
+    protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilterParameters}>) {
+        this.setSearchFilter(e.detail.filter);
         this.changeRoute('/search');
     }
     protected onAppConfigChanged(e: CustomEvent<AppConfiguration>) {

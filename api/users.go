@@ -279,6 +279,10 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request, 
 	}
 
 	filter, err := h.db.Users().ReadSearchFilter(userID, filterID)
+	if err == db.ErrNotFound {
+		h.Error(resp, http.StatusNotFound, err)
+		return
+	}
 	if err != nil {
 		fullErr := fmt.Errorf("reading filter: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
