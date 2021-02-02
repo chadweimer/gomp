@@ -324,7 +324,7 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request, 
 		return
 	}
 
-	// TODO: Make sure the filter is for the correct user
+	// Check that the filter exists for the specified user
 	_, err = h.db.Users().ReadSearchFilter(userID, filterID)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
