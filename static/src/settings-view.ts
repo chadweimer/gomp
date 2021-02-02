@@ -195,7 +195,7 @@ export class SettingsView extends GompBaseElement {
                 </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Save</paper-button>
+                    <paper-button dialog-confirm="" disabled$="[[!newFilterName]]">Save</paper-button>
                 </div>
             </paper-dialog>
 
@@ -207,7 +207,7 @@ export class SettingsView extends GompBaseElement {
                 </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Save</paper-button>
+                    <paper-button dialog-confirm="" disabled$="[[!selectedFilter.name]]">Save</paper-button>
                 </div>
             </paper-dialog>
 
