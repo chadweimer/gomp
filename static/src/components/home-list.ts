@@ -17,10 +17,11 @@ export class HomeList extends GompBaseElement {
                     display: block;
                 }
                 article {
-                    margin-top: 1em;
+                    margin-top: 1.5em;
                 }
                 header {
                     font-size: 1.5em;
+                    margin-bottom: 0.25em;
                 }
                 .outerContainer {
                     @apply --layout-horizontal;
@@ -41,9 +42,6 @@ export class HomeList extends GompBaseElement {
                     --recipe-card-rating-size: 16px;
                     font-size: 0.95em;
                 }
-                a {
-                    float: right;
-                }
                 @media screen and (min-width: 993px) {
                     .recipeContainer {
                         width: 16.6%;
@@ -62,7 +60,7 @@ export class HomeList extends GompBaseElement {
             </style>
 
             <article>
-                <header>[[title]]</header>
+                <header><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></header>
                 <div class="outerContainer">
                     <template is="dom-repeat" items="[[recipes]]">
                         <div class="recipeContainer">
@@ -70,7 +68,6 @@ export class HomeList extends GompBaseElement {
                         </div>
                     </template>
                 </div>
-                <a class="right" href="#!" on-click="onLinkClicked">[[title]] ([[total]]) &gt;&gt;</a>
             </article>
 
             <iron-ajax bubbles="" id="getFilterAjax" url="/api/v1/users/current/filters/[[filterId]]" on-response="handleGetFilterResponse"></iron-ajax>
