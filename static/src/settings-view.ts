@@ -337,6 +337,7 @@ export class SettingsView extends GompBaseElement {
         }
     }
     protected onAddFilterClicked() {
+        this.newFilterName = '';
         this.newSearchFilter.filter = new SearchFilterParameters();
         this.newSearchFilter.refresh();
         this.addSearchFilterDialog.open();
