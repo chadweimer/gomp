@@ -5,7 +5,7 @@ CREATE TYPE recipe_sort_dir AS ENUM ('asc', 'desc');
 CREATE TYPE recipe_field_name AS ENUM ('name', 'ingredients', 'description');
 
 CREATE TABLE search_filter (
-    id INTEGER NOT NULL PRIMARY KEY,
+    id SERIAL NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     query TEXT,
