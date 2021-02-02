@@ -324,15 +324,15 @@ func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) err
 
 func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
 	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
-	if _, err := d.readSearchFilterTx(filter.UserID, filter.ID, tx); err == sql.ErrNoRows {
-		return ErrNotFound
+	if _, err := d.readSearchFilterTx(filter.UserID, filter.ID, tx); err != nil {
+		return err
 	}
 
-	stmt := "UPDATE search_filter SET name = $3, query = $4, with_pictures = $5, sort_by = $6, sort_dir = $7 " +
-		"WHERE id = $1 AND user_id = $2"
+	stmt := "UPDATE search_filter SET name = $1, query = $2, with_pictures = $3, sort_by = $4, sort_dir = $5 " +
+		"WHERE id = $6 AND user_id = $7"
 
 	_, err := tx.Exec(
-		stmt, filter.ID, filter.UserID, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
+		stmt, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir, filter.ID, filter.UserID)
 	if err != nil {
 		return err
 	}
