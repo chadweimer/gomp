@@ -122,10 +122,12 @@ func getParam(values url.Values, key string) string {
 
 func getParams(values url.Values, key string) []string {
 	var vals []string
-	var ok bool
-	if vals, ok = values[key]; ok {
-		for i, val := range vals {
-			vals[i], _ = url.QueryUnescape(val)
+	if rawVals, ok := values[key]; ok {
+		for _, rawVal := range rawVals {
+			safeVal, err := url.QueryUnescape(rawVal)
+			if err == nil && safeVal != "" {
+				vals = append(vals, safeVal)
+			}
 		}
 	}
 
