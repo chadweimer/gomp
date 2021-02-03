@@ -195,6 +195,8 @@ export class SearchView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    private pending: {refresh: boolean; rescroll: boolean} = null;
+
     private get settingsDrawer(): AppDrawerElement {
         return this.$.settingsDrawer as AppDrawerElement;
     }
@@ -215,7 +217,24 @@ export class SearchView extends GompBaseElement {
 
         this.refresh();
     }
+
+    protected isActiveChanged(isActive: boolean) {
+        if (!isActive) return;
+
+        if (this.pending?.refresh === true) {
+            this.refresh(this.pending.rescroll);
+        }
+    }
+
     public refresh(rescroll = false) {
+        if (!this.isActive) {
+            this.pending = {
+                refresh: true,
+                rescroll: rescroll
+            };
+            return;
+        }
+
         // Make sure to fill in any missing fields
         const defaultFilter = new DefaultSearchFilter();
         const filter = {...defaultFilter, ...this.filter};
