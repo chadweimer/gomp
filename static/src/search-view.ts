@@ -215,7 +215,7 @@ export class SearchView extends GompBaseElement {
 
         this.refresh();
     }
-    public refresh() {
+    public refresh(rescroll = false) {
         // Make sure to fill in any missing fields
         const defaultFilter = new DefaultSearchFilter();
         const filter = {...defaultFilter, ...this.filter};
@@ -232,17 +232,17 @@ export class SearchView extends GompBaseElement {
             'count': this.getRecipeCount(),
         };
 
-        if (this.isReady) {
+        if (rescroll) {
             this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
         }
     }
 
     protected pageNumChanged() {
-        this.refresh();
+        this.refresh(true);
     }
     protected searchChanged() {
         this.pageNum = 1;
-        this.refresh();
+        this.refresh(true);
     }
     protected getRecipeCount() {
         if (this.searchSettings.viewMode === 'compact') {
