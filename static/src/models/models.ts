@@ -7,7 +7,6 @@ export enum SearchField {
 export enum SearchState {
     Active = 'active',
     Archived = 'archived',
-    Any = 'any'
 }
 
 export enum SearchPictures {
@@ -29,14 +28,43 @@ export enum SortDir {
     Desc = 'desc'
 }
 
-export class SearchFilter {
-    query = '';
-    fields: SearchField[] = [];
-    pictures = SearchPictures.Any;
-    states = SearchState.Active;
-    tags: string[] = [];
-    sortBy = SortBy.Name;
-    sortDir = SortDir.Asc;
+export class DefaultSearchFilter implements SearchFilter {
+    constructor() {
+        this.query = '';
+        this.withPictures = null;
+        this.fields = [];
+        this.states = [];
+        this.tags = [];
+        this.sortBy = SortBy.Name;
+        this.sortDir = SortDir.Asc;
+    }
+
+    query: string;
+    withPictures: boolean|null;
+    fields: SearchField[];
+    states: SearchState[];
+    tags: string[];
+    sortBy: SortBy;
+    sortDir: SortDir;
+}
+
+export interface SavedSearchFilterCompact {
+    id: number;
+    userId: number;
+    name: string;
+}
+
+export interface SearchFilter {
+    query: string;
+    withPictures: boolean|null;
+    fields: SearchField[];
+    states: SearchState[];
+    tags: string[];
+    sortBy: SortBy;
+    sortDir: SortDir;
+}
+
+export interface SavedSearchFilter extends SavedSearchFilterCompact, SearchFilter {
 }
 
 export interface AppConfiguration {

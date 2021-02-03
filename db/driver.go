@@ -128,7 +128,7 @@ type RecipeDriver interface {
 	SetState(id int64, state models.RecipeState) error
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
-	Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error)
+	Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
 }
 
 // TagDriver provides functionality to edit and retrieve tags attached to recipes.
@@ -165,6 +165,13 @@ type UserDriver interface {
 	// id using a dedicated transation that is committed if there are not errors.
 	Update(user *models.User) error
 
+	// Delete removes the specified user from the database using a dedicated transation
+	// that is committed if there are not errors.
+	Delete(id int64) error
+
+	// List retrieves all users in the database.
+	List() (*[]models.User, error)
+
 	// UpdatePassword updates the associated user's password, first verifying that the existing
 	// password is correct, using a dedicated transation that is committed if there are not errors.
 	UpdatePassword(id int64, password, newPassword string) error
@@ -177,12 +184,24 @@ type UserDriver interface {
 	// existing record using a dedicated transation that is committed if there are not errors.
 	UpdateSettings(settings *models.UserSettings) error
 
-	// Delete removes the specified user from the database using a dedicated transation
-	// that is committed if there are not errors.
-	Delete(id int64) error
+	// CreateSearchFilter stores the search filter in the database as a new record using
+	// a dedicated transation that is committed if there are not errors.
+	CreateSearchFilter(filter *models.SavedSearchFilter) error
 
-	// List retrieves all users in the database.
-	List() (*[]models.User, error)
+	// ReadSearchFilter retrieves the information about the search filter from the database, if found.
+	// If no filter exists with the specified ID, a NoRecordFound error is returned.
+	ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error)
+
+	// UpdateSearchFilter stores the filter in the database by updating the existing record with the specified
+	// id using a dedicated transation that is committed if there are not errors.
+	UpdateSearchFilter(filter *models.SavedSearchFilter) error
+
+	// DeleteSearchFilter removes the specified filter from the database using a dedicated transation
+	// that is committed if there are not errors.
+	DeleteSearchFilter(userID int64, filterID int64) error
+
+	// List retrieves all user's saved search filters.
+	ListSearchFilters(userID int64) (*[]models.SavedSearchFilterCompact, error)
 }
 
 // RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.

@@ -170,6 +170,220 @@ func (d *sqlUserDriver) List() (*[]models.User, error) {
 	return &users, nil
 }
 
+func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.createSearchFilterTx(filter, tx)
+	})
+}
+
+func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
+		"VALUES ($1, $2, $3, $4, $5, $6)"
+
+	res, err := tx.Exec(
+		stmt, filter.UserID, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
+	if err != nil {
+		return err
+	}
+	filter.ID, _ = res.LastInsertId()
+
+	d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	d.SetSearchFilterStatesTx(filter.ID, filter.States, tx)
+	if err != nil {
+		return err
+	}
+
+	d.SetSearchFilterTagsTx(filter.ID, filter.Tags, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) SetSearchFilterFieldsTx(filterID int64, fields []string, tx *sqlx.Tx) error {
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err := tx.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterID)
+	if err != nil {
+		return err
+	}
+
+	for _, field := range fields {
+		_, err := tx.Exec(
+			"INSERT INTO search_filter_field (search_filter_id, field_name) VALUES ($1, $2)",
+			filterID, field)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) SetSearchFilterStatesTx(filterID int64, states []string, tx *sqlx.Tx) error {
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err := tx.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterID)
+	if err != nil {
+		return err
+	}
+
+	for _, state := range states {
+		_, err := tx.Exec(
+			"INSERT INTO search_filter_state (search_filter_id, state) VALUES ($1, $2)",
+			filterID, state)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) SetSearchFilterTagsTx(filterID int64, tags []string, tx *sqlx.Tx) error {
+	// Deleting and recreating seems inefficient. Maybe make this smarter.
+	_, err := tx.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterID)
+	if err != nil {
+		return err
+	}
+
+	for _, tag := range tags {
+		_, err := tx.Exec(
+			"INSERT INTO search_filter_tag (search_filter_id, tag) VALUES ($1, $2)",
+			filterID, tag)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error) {
+	var filter *models.SavedSearchFilter
+	err := d.tx(func(tx *sqlx.Tx) error {
+		var theErr error
+		filter, theErr = d.readSearchFilterTx(userID, filterID, tx)
+		return theErr
+	})
+
+	return filter, err
+}
+
+func (d *sqlUserDriver) readSearchFilterTx(userID int64, filterID int64, tx *sqlx.Tx) (*models.SavedSearchFilter, error) {
+	filter := new(models.SavedSearchFilter)
+
+	err := tx.Get(filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterID, userID)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+
+	var fields []string
+	err = tx.Select(
+		&fields,
+		"SELECT field_name FROM search_filter_field WHERE search_filter_id = $1",
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	filter.Fields = fields
+
+	var states []string
+	err = tx.Select(
+		&states,
+		"SELECT state FROM search_filter_state WHERE search_filter_id = $1",
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	filter.States = states
+
+	var tags []string
+	err = tx.Select(
+		&tags,
+		"SELECT tag FROM search_filter_tag WHERE search_filter_id = $1",
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	filter.Tags = tags
+
+	return filter, nil
+}
+
+func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.updateSearchFilterTx(filter, tx)
+	})
+}
+
+func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
+	if _, err := d.readSearchFilterTx(filter.UserID, filter.ID, tx); err != nil {
+		return err
+	}
+
+	stmt := "UPDATE search_filter SET name = $1, query = $2, with_pictures = $3, sort_by = $4, sort_dir = $5 " +
+		"WHERE id = $6 AND user_id = $7"
+
+	_, err := tx.Exec(
+		stmt, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir, filter.ID, filter.UserID)
+	if err != nil {
+		return err
+	}
+
+	d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	if err != nil {
+		return err
+	}
+
+	d.SetSearchFilterStatesTx(filter.ID, filter.States, tx)
+	if err != nil {
+		return err
+	}
+
+	d.SetSearchFilterTagsTx(filter.ID, filter.Tags, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *sqlUserDriver) DeleteSearchFilter(userID int64, filterID int64) error {
+	return d.tx(func(tx *sqlx.Tx) error {
+		return d.deleteSearchFilterTx(userID, filterID, tx)
+	})
+}
+
+func (d *sqlUserDriver) deleteSearchFilterTx(userID int64, filterID int64, tx *sqlx.Tx) error {
+	_, err := tx.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterID, userID)
+	if err == sql.ErrNoRows {
+		return ErrNotFound
+	}
+	return err
+}
+
+// List retrieves all user's saved search filters.
+func (d *sqlUserDriver) ListSearchFilters(userID int64) (*[]models.SavedSearchFilterCompact, error) {
+	var filters []models.SavedSearchFilterCompact
+
+	err := d.Db.Select(
+		&filters,
+		"SELECT id, user_id, name FROM search_filter WHERE user_id = $1 ORDER BY name ASC",
+		userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &filters, nil
+}
+
 func (d *sqlUserDriver) verifyPassword(user *models.User, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return errors.New("username or password invalid")

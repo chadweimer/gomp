@@ -51,6 +51,11 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 	h.apiMux.GET("/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.getRecipeImages))
 	h.apiMux.GET("/api/v1/recipes/:recipeID/notes", h.requireAuthentication(h.getRecipeNotes))
 	h.apiMux.GET("/api/v1/recipes/:recipeID/links", h.requireAuthentication(h.getRecipeLinks))
+	h.apiMux.GET("/api/v1/users/:userID/filters", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserFilters)))
+	h.apiMux.POST("/api/v1/users/:userID/filters", h.requireAuthentication(h.requireAdminUnlessSelf(h.postUserFilter)))
+	h.apiMux.GET("/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserFilter)))
+	h.apiMux.PUT("/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserFilter)))
+	h.apiMux.DELETE("/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.requireAdminUnlessSelf(h.deleteUserFilter)))
 	h.apiMux.GET("/api/v1/tags", h.requireAuthentication(h.getTags))
 
 	// Editor
@@ -117,10 +122,12 @@ func getParam(values url.Values, key string) string {
 
 func getParams(values url.Values, key string) []string {
 	var vals []string
-	var ok bool
-	if vals, ok = values[key]; ok {
-		for i, val := range vals {
-			vals[i], _ = url.QueryUnescape(val)
+	if rawVals, ok := values[key]; ok {
+		for _, rawVal := range rawVals {
+			safeVal, err := url.QueryUnescape(rawVal)
+			if err == nil && safeVal != "" {
+				vals = append(vals, safeVal)
+			}
 		}
 	}
 

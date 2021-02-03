@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -95,7 +94,7 @@ func (d *sqliteRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error 
 	return nil
 }
 
-func (d *sqliteRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.RecipeCompact, int64, error) {
+func (d *sqliteRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := "WHERE r.current_state = 'active'"
 	whereArgs := make([]interface{}, 0)
 	var err error
@@ -141,21 +140,13 @@ func (d *sqliteRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.Recip
 		whereArgs = append(whereArgs, tagsArgs...)
 	}
 
-	if len(filter.Pictures) > 0 {
-		picsParts := make([]string, 0)
-		for _, val := range filter.Pictures {
-			switch strings.ToLower(val) {
-			case "yes":
-				picsParts = append(picsParts, "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
-			case "no":
-				picsParts = append(picsParts, "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)")
-			}
-		}
+	if filter.WithPictures != nil {
 		picsStmt := ""
-		if len(picsParts) > 0 {
-			picsStmt = "(" + strings.Join(picsParts, " OR ") + ")"
+		if *filter.WithPictures {
+			picsStmt = "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
+		} else {
+			picsStmt = "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
 		}
-
 		whereStmt += " AND " + picsStmt
 	}
 
@@ -165,7 +156,7 @@ func (d *sqliteRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.Recip
 		return nil, 0, err
 	}
 
-	offset := filter.Count * (filter.Page - 1)
+	offset := count * (page - 1)
 
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
@@ -195,7 +186,7 @@ func (d *sqliteRecipeDriver) Find(filter *models.RecipesFilter) (*[]models.Recip
 		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 		"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
 		whereStmt + orderStmt)
-	selectArgs := append(whereArgs, filter.Count, offset)
+	selectArgs := append(whereArgs, count, offset)
 
 	var recipes []models.RecipeCompact
 	err = d.sqliteDriver.Db.Select(&recipes, selectStmt, selectArgs...)

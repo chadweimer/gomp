@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer.js';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, RecipeCompact, SearchFilter, SearchPictures, SearchState } from './models/models.js';
+import { User, RecipeCompact, DefaultSearchFilter, SearchFilter } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
 import '@polymer/app-layout/app-drawer-layout/app-drawer-layout.js';
@@ -183,7 +183,7 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true})
     public numPages = 0;
     @property({type: Object, notify: true, observer: 'searchChanged'})
-    public filter = new SearchFilter();
+    public filter: SearchFilter = new DefaultSearchFilter();
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
         viewMode: 'full',
@@ -217,35 +217,15 @@ export class SearchView extends GompBaseElement {
     }
     public refresh() {
         // Make sure to fill in any missing fields
-        const defaultFilter = new SearchFilter();
+        const defaultFilter = new DefaultSearchFilter();
         const filter = {...defaultFilter, ...this.filter};
-
-        const pictures: string[] = [];
-        switch (filter.pictures) {
-            case SearchPictures.Yes:
-            case SearchPictures.No:
-                pictures.push(this.filter.pictures);
-                break;
-        }
-
-        const states: string[] = [];
-        switch (filter.states) {
-            case SearchState.Active:
-            case SearchState.Archived:
-                states.push(this.filter.states);
-                break;
-            case SearchState.Any:
-                states.push(SearchState.Active);
-                states.push(SearchState.Archived);
-                break;
-        }
 
         this.recipesAjax.params = {
             'q': filter.query,
+            'pictures': filter.withPictures,
             'fields[]': filter.fields,
             'tags[]': filter.tags,
-            'pictures[]': pictures,
-            'states[]': states,
+            'states[]': filter.states,
             'sort': filter.sortBy,
             'dir': filter.sortDir,
             'page': this.pageNum,
