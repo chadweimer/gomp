@@ -536,12 +536,6 @@ export class GompApp extends PolymerElement {
     }
 
     private setSearchFilter(filter: SearchFilter) {
-        this.set('searchFilter.query', filter.query);
-        this.set('searchFilter.fields', filter.fields);
-        this.set('searchFilter.tags', filter.tags);
-        this.set('searchFilter.withPictures', filter.withPictures);
-        this.set('searchFilter.states', filter.states);
-        this.set('searchFilter.sortBy', filter.sortBy);
-        this.set('searchFilter.sortDir', filter.sortDir);
+        this.searchFilter = {...filter};
     }
 }
