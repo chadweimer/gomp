@@ -482,15 +482,17 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {
-        this.set('searchFilter.query', e.target.query.trim());
+        // Order is very important here for scrolling purposes
         this.changeRoute('/search');
+        this.set('searchFilter.query', e.target.query.trim());
     }
     protected onFilter() {
         this.searchFilterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilter}>) {
-        this.setSearchFilter(e.detail.filter);
+        // Order is very important here for scrolling purposes
         this.changeRoute('/search');
+        this.setSearchFilter(e.detail.filter);
     }
     protected onAppConfigChanged(e: CustomEvent<AppConfiguration>) {
         this.title = e.detail.title;
@@ -515,8 +517,9 @@ export class GompApp extends PolymerElement {
         }
 
         if (!e.detail.canceled && e.detail.confirmed) {
-            this.setSearchFilter(this.searchSettings.filter);
+            // Order is very important here for scrolling purposes
             this.changeRoute('/search');
+            this.setSearchFilter(this.searchSettings.filter);
         }
     }
     protected onResetSearchFilterClicked() {
