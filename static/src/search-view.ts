@@ -174,7 +174,7 @@ export class SearchView extends GompBaseElement {
           </app-drawer-layout>
 
           <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
-          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
+          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
 `;
     }
 
@@ -231,6 +231,11 @@ export class SearchView extends GompBaseElement {
             'page': this.pageNum,
             'count': this.getRecipeCount(),
         };
+
+        if (this.isReady) {
+            this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
+        }
+
     }
 
     protected pageNumChanged() {
@@ -247,9 +252,6 @@ export class SearchView extends GompBaseElement {
         return 24;
     }
 
-    protected handleGetRecipesRequest() {
-        this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
-    }
     protected handleGetRecipesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[], total: number}}>) {
         this.recipes = e.detail.response.recipes;
         this.totalRecipeCount = e.detail.response.total;
