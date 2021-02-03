@@ -174,7 +174,7 @@ export class SearchView extends GompBaseElement {
           </app-drawer-layout>
 
           <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
-          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
+          <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
 `;
     }
 
@@ -194,6 +194,8 @@ export class SearchView extends GompBaseElement {
     public totalRecipeCount = 0;
     @property({type: Object, notify: true})
     public currentUser: User = null;
+
+    private pending: {refresh: boolean; rescroll: boolean} = null;
 
     private get settingsDrawer(): AppDrawerElement {
         return this.$.settingsDrawer as AppDrawerElement;
@@ -215,7 +217,24 @@ export class SearchView extends GompBaseElement {
 
         this.refresh();
     }
-    public refresh() {
+
+    protected isActiveChanged(isActive: boolean) {
+        if (!isActive) return;
+
+        if (this.pending?.refresh === true) {
+            this.refresh(this.pending.rescroll);
+        }
+    }
+
+    public refresh(rescroll = false) {
+        if (!this.isActive) {
+            this.pending = {
+                refresh: true,
+                rescroll: rescroll
+            };
+            return;
+        }
+
         // Make sure to fill in any missing fields
         const defaultFilter = new DefaultSearchFilter();
         const filter = {...defaultFilter, ...this.filter};
@@ -231,14 +250,18 @@ export class SearchView extends GompBaseElement {
             'page': this.pageNum,
             'count': this.getRecipeCount(),
         };
+
+        if (rescroll) {
+            this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
+        }
     }
 
     protected pageNumChanged() {
-        this.refresh();
+        this.refresh(true);
     }
     protected searchChanged() {
         this.pageNum = 1;
-        this.refresh();
+        this.refresh(true);
     }
     protected getRecipeCount() {
         if (this.searchSettings.viewMode === 'compact') {
@@ -247,9 +270,6 @@ export class SearchView extends GompBaseElement {
         return 24;
     }
 
-    protected handleGetRecipesRequest() {
-        this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
-    }
     protected handleGetRecipesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[], total: number}}>) {
         this.recipes = e.detail.response.recipes;
         this.totalRecipeCount = e.detail.response.total;

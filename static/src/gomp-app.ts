@@ -482,15 +482,17 @@ export class GompApp extends PolymerElement {
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {
-        this.set('searchFilter.query', e.target.query.trim());
+        // Order is very important here for scrolling purposes
         this.changeRoute('/search');
+        this.set('searchFilter.query', e.target.query.trim());
     }
     protected onFilter() {
         this.searchFilterDialog.open();
     }
     protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilter}>) {
-        this.setSearchFilter(e.detail.filter);
+        // Order is very important here for scrolling purposes
         this.changeRoute('/search');
+        this.setSearchFilter(e.detail.filter);
     }
     protected onAppConfigChanged(e: CustomEvent<AppConfiguration>) {
         this.title = e.detail.title;
@@ -515,8 +517,9 @@ export class GompApp extends PolymerElement {
         }
 
         if (!e.detail.canceled && e.detail.confirmed) {
-            this.setSearchFilter(this.searchSettings.filter);
+            // Order is very important here for scrolling purposes
             this.changeRoute('/search');
+            this.setSearchFilter(this.searchSettings.filter);
         }
     }
     protected onResetSearchFilterClicked() {
@@ -533,12 +536,6 @@ export class GompApp extends PolymerElement {
     }
 
     private setSearchFilter(filter: SearchFilter) {
-        this.set('searchFilter.query', filter.query);
-        this.set('searchFilter.fields', filter.fields);
-        this.set('searchFilter.tags', filter.tags);
-        this.set('searchFilter.withPictures', filter.withPictures);
-        this.set('searchFilter.states', filter.states);
-        this.set('searchFilter.sortBy', filter.sortBy);
-        this.set('searchFilter.sortDir', filter.sortDir);
+        this.searchFilter = {...filter};
     }
 }
