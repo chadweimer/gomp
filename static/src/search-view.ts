@@ -235,7 +235,6 @@ export class SearchView extends GompBaseElement {
         if (this.isReady) {
             this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
         }
-
     }
 
     protected pageNumChanged() {
