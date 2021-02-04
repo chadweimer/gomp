@@ -196,7 +196,7 @@ export class SearchView extends GompBaseElement {
     };
     @property({type: Array, notify: true})
     public recipes: RecipeCompact[] = [];
-    @property({type: Number, notify: true})
+    @property({type: Number, notify: true, observer: 'totalChanged'})
     public totalRecipeCount = 0;
     @property({type: Object, notify: true})
     public currentUser: User = null;
@@ -265,6 +265,9 @@ export class SearchView extends GompBaseElement {
     protected searchChanged() {
         this.pageNum = 1;
         this.refresh(true);
+    }
+    protected totalChanged(total: number) {
+        this.dispatchEvent(new CustomEvent('search-result-count-changed', {bubbles: true, composed: true, detail: total}));
     }
     protected getRecipeCount() {
         if (this.searchSettings.viewMode === 'compact') {

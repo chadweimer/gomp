@@ -195,7 +195,7 @@ export class GompApp extends PolymerElement {
                                 <a href="/admin" hidden\$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[searchFilter.query]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                             </app-toolbar>
                         </div>
 
@@ -269,6 +269,8 @@ export class GompApp extends PolymerElement {
     @property({type: Object, notify: true})
     protected currentUser: User = null;
 
+    protected searchResultCount = 0;
+
     private scrollPositionMap: object = {};
 
     private get searchSettings(): SearchFilterElement {
@@ -303,6 +305,7 @@ export class GompApp extends PolymerElement {
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
         this.addEventListener('app-config-changed', (e: CustomEvent) => this.onAppConfigChanged(e));
+        this.addEventListener('search-result-count-changed', (e: CustomEvent) => this.onSearchResultCountChanged(e));
 
         super.ready();
         this.appConfigAjax.generateRequest();
@@ -525,6 +528,9 @@ export class GompApp extends PolymerElement {
     protected onResetSearchFilterClicked() {
         this.searchSettings.filter = new DefaultSearchFilter();
         this.searchSettings.refresh();
+    }
+    protected onSearchResultCountChanged(e: CustomEvent<number>) {
+        this.searchResultCount = e.detail;
     }
 
     protected recipesModified() {
