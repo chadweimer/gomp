@@ -52,8 +52,8 @@ export class SortOrderSelectorElement extends PolymerElement {
     ];
 
     protected availableSortDir = [
-        {name: 'Asc', value: SortDir.Asc},
-        {name: 'Desc', value: SortDir.Desc},
+        {name: 'Asc', value: SortDir.Asc, icon: 'arrow-upward'},
+        {name: 'Desc', value: SortDir.Desc, icon: 'arrow-downward'},
     ];
 
     @property({type: Object, notify: true})
