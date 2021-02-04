@@ -10,17 +10,19 @@ import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
+import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-item-body.js';
 import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import './components/recipe-card.js';
 import './components/pagination-links.js';
 import './components/recipe-rating.js';
+import './components/sort-order-selector.js';
 import './shared-styles.js';
 
 @customElement('search-view')
@@ -43,12 +45,26 @@ export class SearchView extends GompBaseElement {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
+                .pagination {
+                    @apply --layout-horizontal;
+                    @apply --layout-center-justified;
+                }
                 paper-fab.green {
                     --paper-fab-background: var(--paper-green-500);
                     --paper-fab-keyboard-focus-background: var(--paper-green-900);
                     position: fixed;
                     bottom: 16px;
                     right: 16px;
+                }
+                paper-icon-item {
+                    cursor: pointer;
+                }
+                paper-menu-button {
+                    padding: 0px;
+                }
+                paper-button {
+                    color: #ffffff;
+                    background: var(--light-accent-color);
                 }
                 .avatar {
                     width: 32px;
@@ -70,11 +86,7 @@ export class SearchView extends GompBaseElement {
                 @media screen and (min-width: 1200px) {
                     .controlContainer {
                         width: 33%;
-                    }
-                    .pagination {
-                        @apply --layout-horizontal;
-                        @apply --layout-center-justified;
-                        margin: 1em 0.35em;
+                        margin-top: 0.5em;
                     }
                     .recipeContainer {
                         width: 25%;
@@ -83,11 +95,7 @@ export class SearchView extends GompBaseElement {
                 @media screen and (min-width: 992px) and (max-width: 1199px) {
                     .controlContainer {
                         width: 33%;
-                    }
-                    .pagination {
-                        @apply --layout-horizontal;
-                        @apply --layout-center-justified;
-                        margin: 1em 0.35em;
+                        margin-top: 0.5em;
                     }
                     .recipeContainer {
                         width: 33%;
@@ -98,11 +106,7 @@ export class SearchView extends GompBaseElement {
                         @apply --layout-horizontal;
                         @apply --layout-center-justified;
                         width: 100%;
-                    }
-                    .pagination {
-                        @apply --layout-horizontal;
-                        @apply --layout-center-justified;
-                        margin: 0.35em;
+                        margin-top: 0.5em;
                     }
                     .recipeContainer {
                         width: 50%;
@@ -113,11 +117,7 @@ export class SearchView extends GompBaseElement {
                         @apply --layout-horizontal;
                         @apply --layout-center-justified;
                         width: 100%;
-                    }
-                    .pagination {
-                        @apply --layout-horizontal;
-                        @apply --layout-center-justified;
-                        margin: 0.35em;
+                        margin-top: 0.5em;
                     }
                     .recipeContainer {
                         width: 100%;
@@ -128,13 +128,14 @@ export class SearchView extends GompBaseElement {
             <div class="section">
                 <div class="outterContainer">
                     <div class="controlContainer">
-                        <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
-                        <paper-dropdown-menu-light id="viewModeSelector" label="View Mode" always-float-label="">
-                            <paper-listbox slot="dropdown-content" selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="full">
+                        <sort-order-selector use-buttons sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+                        <paper-menu-button>
+                            <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:dashboard"></iron-icon> [[searchSettings.viewMode]]</paper-button>
+                            <paper-listbox slot="dropdown-content"selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="name">
                                 <paper-icon-item name="full"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
                                 <paper-icon-item name="compact"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                             </paper-listbox>
-                        </paper-dropdown-menu-light>
+                        </paper-menu-button>
                     </div>
                     <div class="controlContainer">
                         <div class="pagination">
