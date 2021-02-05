@@ -45,6 +45,9 @@ export class SearchView extends GompBaseElement {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
+                .compactContainer {
+                    margin: 8px;
+                }
                 .pagination {
                     @apply --layout-horizontal;
                     @apply --layout-center-justified;
@@ -72,7 +75,7 @@ export class SearchView extends GompBaseElement {
                     border: 1px solid rgba(0, 0, 0, 0.25);
                     border-radius: 50%;
                 }
-                .compact-rating {
+                .compactRating {
                     --recipe-rating-size: 14px;
                 }
                 recipe-card {
@@ -156,14 +159,14 @@ export class SearchView extends GompBaseElement {
                     </template>
                     <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
                         <template is="dom-repeat" items="[[recipes]]">
-                            <div class="recipeContainer">
+                            <div class="recipeContainer compactContainer">
                                 <a href="/recipes/[[item.id]]">
                                     <paper-icon-item>
                                         <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                                         <paper-item-body>
                                             <div>[[item.name]]</div>
                                             <div secondary="">
-                                                <recipe-rating recipe="{{item}}" class="compact-rating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
+                                                <recipe-rating recipe="{{item}}" class="compactRating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
                                             </div>
                                         </paper-item-body>
                                     </paper-icon-item>
