@@ -163,7 +163,7 @@ export class GompApp extends PolymerElement {
                             Settings
                         </paper-icon-item>
                     </a>
-                    <a href="/admin" tabindex="-1" hidden$="[[!getIsAdmin(currentUser)]]">
+                    <a href="/admin" tabindex="-1" hidden\$="[[!getIsAdmin(currentUser)]]">
                         <paper-icon-item tabindex="-1">
                             <iron-icon icon="icons:lock" slot="item-icon"></iron-icon>
                             Admin
@@ -192,10 +192,10 @@ export class GompApp extends PolymerElement {
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
-                                <a href="/admin" hidden$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
+                                <a href="/admin" hidden\$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                                 <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                                <paper-search-bar icon="search" query="[[searchFilter.query]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
                             </app-toolbar>
                         </div>
 
@@ -222,7 +222,7 @@ export class GompApp extends PolymerElement {
                                 <li><a href="/home">Home</a></li>
                                 <li><a href="/search">Recipes</a></li>
                                 <li><a href="/settings">Settings</a></li>
-                                <li hidden$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
+                                <li hidden\$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
@@ -269,6 +269,8 @@ export class GompApp extends PolymerElement {
     @property({type: Object, notify: true})
     protected currentUser: User = null;
 
+    protected searchResultCount = 0;
+
     private scrollPositionMap: object = {};
 
     private get searchSettings(): SearchFilterElement {
@@ -303,6 +305,7 @@ export class GompApp extends PolymerElement {
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
         this.addEventListener('app-config-changed', (e: CustomEvent) => this.onAppConfigChanged(e));
+        this.addEventListener('search-result-count-changed', (e: CustomEvent) => this.onSearchResultCountChanged(e));
 
         super.ready();
         this.appConfigAjax.generateRequest();
@@ -525,6 +528,9 @@ export class GompApp extends PolymerElement {
     protected onResetSearchFilterClicked() {
         this.searchSettings.filter = new DefaultSearchFilter();
         this.searchSettings.refresh();
+    }
+    protected onSearchResultCountChanged(e: CustomEvent<number>) {
+        this.searchResultCount = e.detail;
     }
 
     protected recipesModified() {
