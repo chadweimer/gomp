@@ -3,7 +3,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, RecipeCompact, DefaultSearchFilter, SearchFilter } from './models/models.js';
+import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, SearchState } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
@@ -45,7 +45,7 @@ export class SearchView extends GompBaseElement {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
-                .compactContainer {
+                .listContainer {
                     margin: 8px;
                 }
                 .pagination {
@@ -75,7 +75,7 @@ export class SearchView extends GompBaseElement {
                     border: 1px solid rgba(0, 0, 0, 0.25);
                     border-radius: 50%;
                 }
-                .compactRating {
+                .listRating {
                     --recipe-rating-size: 14px;
                 }
                 recipe-card {
@@ -132,8 +132,8 @@ export class SearchView extends GompBaseElement {
                 <div class="outterContainer">
                     <div class="controlContainer">
                         <paper-menu-button>
-                            <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[filter.states]]</paper-button>
-                            <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi>
+                            <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[getStateDisplay(filter.states)]]</paper-button>
+                            <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
                                 <paper-icon-item name="active"><iron-icon icon="icons:unarchive" slot="item-icon"></iron-icon> Active</paper-icon-item>
                                 <paper-icon-item name="archived"><iron-icon icon="icons:archive" slot="item-icon"></iron-icon> Archived</paper-icon-item>
                             </paper-listbox>
@@ -141,9 +141,9 @@ export class SearchView extends GompBaseElement {
                         <sort-order-selector use-buttons sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
                         <paper-menu-button>
                             <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:dashboard"></iron-icon> [[searchSettings.viewMode]]</paper-button>
-                            <paper-listbox slot="dropdown-content" selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="name">
-                                <paper-icon-item name="full"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
-                                <paper-icon-item name="compact"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
+                            <paper-listbox slot="dropdown-content" selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="card">
+                                <paper-icon-item name="card"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Card</paper-icon-item>
+                                <paper-icon-item name="list"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> List</paper-icon-item>
                             </paper-listbox>
                         </paper-menu-button>
                     </div>
@@ -157,23 +157,23 @@ export class SearchView extends GompBaseElement {
             </div>
             <div class="section">
                 <div class="outterContainer">
-                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'full')]]" restamp="">
+                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'card')]]" restamp="">
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
                                 <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
                             </div>
                         </template>
                     </template>
-                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'compact')]]" restamp="">
+                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'list')]]" restamp="">
                         <template is="dom-repeat" items="[[recipes]]">
-                            <div class="recipeContainer compactContainer">
+                            <div class="recipeContainer listContainer">
                                 <a href="/recipes/[[item.id]]">
                                     <paper-icon-item>
                                         <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                                         <paper-item-body>
                                             <div>[[item.name]]</div>
                                             <div secondary="">
-                                                <recipe-rating recipe="{{item}}" class="compactRating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
+                                                <recipe-rating recipe="{{item}}" class="listRating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
                                             </div>
                                         </paper-item-body>
                                     </paper-icon-item>
@@ -203,7 +203,7 @@ export class SearchView extends GompBaseElement {
     public filter: SearchFilter = new DefaultSearchFilter();
     @property({type: Object, notify: true, observer: 'searchChanged'})
     public searchSettings = {
-        viewMode: 'full',
+        viewMode: 'card',
     };
     @property({type: Array, notify: true})
     public recipes: RecipeCompact[] = [];
@@ -281,7 +281,7 @@ export class SearchView extends GompBaseElement {
         this.dispatchEvent(new CustomEvent('search-result-count-changed', {bubbles: true, composed: true, detail: total}));
     }
     protected getRecipeCount() {
-        if (this.searchSettings.viewMode === 'compact') {
+        if (this.searchSettings.viewMode === 'list') {
             return 60;
         }
         return 24;
@@ -298,5 +298,18 @@ export class SearchView extends GompBaseElement {
 
     protected updatePagination(_: object|null, total: number) {
         this.numPages = Math.ceil(total / this.getRecipeCount());
+    }
+
+    protected onStatesChanged() {
+        this.notifyPath('filter.states');
+    }
+    protected getStateDisplay(states: SearchState[]) {
+        if (states === null || states.length == 0) {
+            return SearchState.Active;
+        } else if (states.indexOf(SearchState.Active) >= 0 && states.indexOf(SearchState.Archived) >= 0) {
+            return 'all';
+        } else {
+            return states[0];
+        }
     }
 }

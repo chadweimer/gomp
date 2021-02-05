@@ -46,7 +46,7 @@ export class SortOrderSelectorElement extends PolymerElement {
                     </paper-listbox>
                 </paper-dropdown-menu-light>
                 <paper-dropdown-menu-light id="sortDirSelection" always-float-label="">
-                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="name">
+                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="asc">
                         <template is="dom-repeat" items="[[availableSortDir]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                         </template>
@@ -64,8 +64,8 @@ export class SortOrderSelectorElement extends PolymerElement {
                     </paper-listbox>
                 </paper-menu-button>
                 <paper-menu-button>
-                    <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:swap-vert"></iron-icon> [[sortDir]]</paper-button>
-                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="name">
+                    <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="[[getSortDirIcon(sortDir)]]"></iron-icon></paper-button>
+                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="asc">
                         <template is="dom-repeat" items="[[availableSortDir]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                         </template>
@@ -96,4 +96,8 @@ export class SortOrderSelectorElement extends PolymerElement {
 
     @property({type: Object, notify: true})
     public sortDir: SortDir = SortDir.Asc;
+
+    protected getSortDirIcon(sortDir: SortDir) {
+        return this.availableSortDir.find(a => a.value === sortDir)?.icon;
+    }
 }
