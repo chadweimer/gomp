@@ -131,10 +131,17 @@ export class SearchView extends GompBaseElement {
             <div class="section">
                 <div class="outterContainer">
                     <div class="controlContainer">
+                        <paper-menu-button>
+                            <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[filter.states]]</paper-button>
+                            <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi>
+                                <paper-icon-item name="active"><iron-icon icon="icons:unarchive" slot="item-icon"></iron-icon> Active</paper-icon-item>
+                                <paper-icon-item name="archived"><iron-icon icon="icons:archive" slot="item-icon"></iron-icon> Archived</paper-icon-item>
+                            </paper-listbox>
+                        </paper-menu-button>
                         <sort-order-selector use-buttons sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
                         <paper-menu-button>
                             <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:dashboard"></iron-icon> [[searchSettings.viewMode]]</paper-button>
-                            <paper-listbox slot="dropdown-content"selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="name">
+                            <paper-listbox slot="dropdown-content" selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="name">
                                 <paper-icon-item name="full"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Full</paper-icon-item>
                                 <paper-icon-item name="compact"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> Compact</paper-icon-item>
                             </paper-listbox>

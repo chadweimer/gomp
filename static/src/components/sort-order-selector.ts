@@ -57,7 +57,7 @@ export class SortOrderSelectorElement extends PolymerElement {
             <template is="dom-if" if="[[useButtons]]">
                 <paper-menu-button>
                     <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:sort"></iron-icon> [[sortBy]]</paper-button>
-                    <paper-listbox slot="dropdown-content"selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
+                    <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
                         <template is="dom-repeat" items="[[availableSortBy]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                         </template>
@@ -65,7 +65,7 @@ export class SortOrderSelectorElement extends PolymerElement {
                 </paper-menu-button>
                 <paper-menu-button>
                     <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:swap-vert"></iron-icon> [[sortDir]]</paper-button>
-                    <paper-listbox slot="dropdown-content"selected="{{sortDir}}" attr-for-selected="name" fallback-selection="name">
+                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="name">
                         <template is="dom-repeat" items="[[availableSortDir]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                         </template>
