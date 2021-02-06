@@ -137,7 +137,7 @@ export class SearchView extends GompBaseElement {
                     <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'list')]]" restamp="">
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
-                                <a href="/recipes/[[item.id]]">
+                                <a href="/recipes/[[item.id]]/view">
                                     <paper-icon-item>
                                         <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                                         <paper-item-body>
