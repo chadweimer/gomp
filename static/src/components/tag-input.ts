@@ -47,13 +47,13 @@ export class TagInput extends GompBaseElement {
                     <label slot="label">Suggested Tags</label>
                     <div slot="prefix">
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-click="onSuggestedTagClicked" selectable="">[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                            <paper-chip on-click="onSuggestedTagClicked" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
                         </template>
                     </div>
                     <input type="hidden" slot="input">
                 </paper-input-container>
 
-            <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-request="handleGetSettingsRequest" on-response="handleGetSettingsResponse"></iron-ajax>
+            <iron-ajax bubbles id="getSettingsAjax" url="/api/v1/users/current/settings" on-request="handleGetSettingsRequest" on-response="handleGetSettingsResponse"></iron-ajax>
 `;
     }
 

@@ -58,9 +58,9 @@ export class SettingsView extends GompBaseElement {
                     <paper-card>
                         <div class="card-content">
                             <paper-tags-input id="tags" label="Favorite Tags" tags="{{userSettings.favoriteTags}}"></paper-tags-input>
-                            <paper-input label="Home Title" always-float-label="" value="{{userSettings.homeTitle}}"></paper-input>
+                            <paper-input label="Home Title" always-float-label value="{{userSettings.homeTitle}}"></paper-input>
                             <form id="homeImageForm" enctype="multipart/form-data">
-                                <paper-input-container always-float-label="">
+                                <paper-input-container always-float-label>
                                     <label slot="label">Home Image</label>
                                     <iron-input slot="input">
                                         <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
@@ -111,11 +111,11 @@ export class SettingsView extends GompBaseElement {
                     </paper-card>
                     <paper-card>
                         <div class="card-content">
-                            <paper-input label="Username" value="[[currentUser.username]]" always-float-label="" disabled=""></paper-input>
-                            <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label="" disabled=""></paper-input>
-                            <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label=""></paper-password-input>
-                            <paper-password-input label="New Password" value="{{newPassword}}" always-float-label=""></paper-password-input>
-                            <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label=""></paper-password-input>
+                            <paper-input label="Username" value="[[currentUser.username]]" always-float-label disabled></paper-input>
+                            <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label disabled></paper-input>
+                            <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label></paper-password-input>
+                            <paper-password-input label="New Password" value="{{newPassword}}" always-float-label></paper-password-input>
+                            <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label></paper-password-input>
                         </div>
                         <div class="card-actions">
                             <paper-button on-click="onUpdatePasswordClicked">
@@ -127,31 +127,31 @@ export class SettingsView extends GompBaseElement {
                 </iron-pages>
             </div>
 
-            <paper-dialog id="uploadingDialog" with-backdrop="">
-                <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
+            <paper-dialog id="uploadingDialog" with-backdrop>
+                <h3><paper-spinner active></paper-spinner>Uploading</h3>
             </paper-dialog>
 
-            <paper-dialog id="addSearchFilterDialog" on-iron-overlay-closed="addSearchFilterDialogClosed" with-backdrop="">
+            <paper-dialog id="addSearchFilterDialog" on-iron-overlay-closed="addSearchFilterDialogClosed" with-backdrop>
                 <h3><iron-icon icon="icons:search"></iron-icon> <span>Add Search Filter</span></h3>
                 <paper-dialog-scrollable>
-                    <paper-input label="Name" always-float-label="" value="{{newFilterName}}"></paper-input>
+                    <paper-input label="Name" always-float-label value="{{newFilterName}}"></paper-input>
                     <search-filter id="newSearchFilter"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
-                    <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="" disabled\$="[[!newFilterName]]">Save</paper-button>
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm disabled\$="[[!newFilterName]]">Save</paper-button>
                 </div>
             </paper-dialog>
 
-            <paper-dialog id="editSearchFilterDialog" on-iron-overlay-closed="editSearchFilterDialogClosed" with-backdrop="">
+            <paper-dialog id="editSearchFilterDialog" on-iron-overlay-closed="editSearchFilterDialogClosed" with-backdrop>
                 <h3><iron-icon icon="icons:search"></iron-icon> <span>Edit Search Filter</span></h3>
                 <paper-dialog-scrollable>
-                    <paper-input label="Name" always-float-label="" value="{{selectedFilter.name}}"></paper-input>
+                    <paper-input label="Name" always-float-label value="{{selectedFilter.name}}"></paper-input>
                     <search-filter id="editSearchFilter"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
-                    <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="" disabled\$="[[!selectedFilter.name]]">Save</paper-button>
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm disabled\$="[[!selectedFilter.name]]">Save</paper-button>
                 </div>
             </paper-dialog>
 
@@ -159,15 +159,15 @@ export class SettingsView extends GompBaseElement {
 
             <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-            <iron-ajax bubbles="" id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" on-error="handlePutPasswordError"></iron-ajax>
-            <iron-ajax bubbles="" id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
-            <iron-ajax bubbles="" id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
-            <iron-ajax bubbles="" id="getUserSearchFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserSearchFiltersResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="getUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" on-response="handleGetUserSearchFilterResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="postUserSearchFilterAjax" url="/api/v1/users/current/filters" method="POST" on-response="handlePostUserSearchFilterResponse" on-error="handlePostUserSearchFilterError"></iron-ajax>
-            <iron-ajax bubbles="" id="putUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="PUT" on-response="handlePutUserSearchFilterResponse" on-error="handlePutUserSearchFilterError"></iron-ajax>
-            <iron-ajax bubbles="" id="deleteUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="DELETE" on-response="handleDeleteUserSearchFilterResponse" on-error="handleDeleteUserSearchFilterError"></iron-ajax>
+            <iron-ajax bubbles id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" on-error="handlePutPasswordError"></iron-ajax>
+            <iron-ajax bubbles id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
+            <iron-ajax bubbles id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
+            <iron-ajax bubbles id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
+            <iron-ajax bubbles id="getUserSearchFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserSearchFiltersResponse"></iron-ajax>
+            <iron-ajax bubbles id="getUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" on-response="handleGetUserSearchFilterResponse"></iron-ajax>
+            <iron-ajax bubbles id="postUserSearchFilterAjax" url="/api/v1/users/current/filters" method="POST" on-response="handlePostUserSearchFilterResponse" on-error="handlePostUserSearchFilterError"></iron-ajax>
+            <iron-ajax bubbles id="putUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="PUT" on-response="handlePutUserSearchFilterResponse" on-error="handlePutUserSearchFilterError"></iron-ajax>
+            <iron-ajax bubbles id="deleteUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="DELETE" on-response="handleDeleteUserSearchFilterResponse" on-error="handleDeleteUserSearchFilterError"></iron-ajax>
 `;
     }
 

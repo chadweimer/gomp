@@ -31,8 +31,8 @@ export class HomeView extends GompBaseElement {
 
             <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-            <iron-ajax bubbles="" id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="userFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserFiltersResponse"></iron-ajax>
+            <iron-ajax bubbles id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
+            <iron-ajax bubbles id="userFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserFiltersResponse"></iron-ajax>
 `;
     }
 

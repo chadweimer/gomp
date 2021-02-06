@@ -66,8 +66,8 @@ export class HomeList extends GompBaseElement {
                 </div>
             </article>
 
-            <iron-ajax bubbles="" id="getFilterAjax" url="/api/v1/users/current/filters/[[filterId]]" on-response="handleGetFilterResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
+            <iron-ajax bubbles id="getFilterAjax" url="/api/v1/users/current/filters/[[filterId]]" on-response="handleGetFilterResponse"></iron-ajax>
+            <iron-ajax bubbles id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
 `;
     }
 

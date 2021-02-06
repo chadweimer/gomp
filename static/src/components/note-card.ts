@@ -88,7 +88,7 @@ export class NoteCard extends GompBaseElement {
 
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
 
-            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
+            <iron-ajax bubbles id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 

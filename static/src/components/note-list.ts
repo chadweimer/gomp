@@ -44,18 +44,18 @@ export class NoteList extends GompBaseElement {
               <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted" readonly\$="[[readonly]]"></note-card>
           </template>
 
-          <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop="">
+          <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop>
               <h3 class="blue"><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h3>
-              <paper-textarea label="Text" value="{{noteText}}" rows="3" required="" autofocus=""></paper-textarea>
+              <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
               <div class="buttons">
-                  <paper-button dialog-dismiss="">Cancel</paper-button>
-                  <paper-button dialog-confirm="">Save</paper-button>
+                  <paper-button dialog-dismiss>Cancel</paper-button>
+                  <paper-button dialog-confirm>Save</paper-button>
               </div>
           </paper-dialog>
 
-          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]/notes" on-request="handleGetRequest" on-response="handleGetResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="postNoteAjax" url="/api/v1/notes" method="POST" on-response="handlePostNoteResponse" on-error="handlePostNoteError"></iron-ajax>
-          <iron-ajax bubbles="" id="putNoteAjax" url="/api/v1/notes/[[noteId]]" method="PUT" on-response="handlePutNoteResponse" on-error="handlePutNoteError"></iron-ajax>
+          <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]/notes" on-request="handleGetRequest" on-response="handleGetResponse"></iron-ajax>
+          <iron-ajax bubbles id="postNoteAjax" url="/api/v1/notes" method="POST" on-response="handlePostNoteResponse" on-error="handlePostNoteError"></iron-ajax>
+          <iron-ajax bubbles id="putNoteAjax" url="/api/v1/notes/[[noteId]]" method="PUT" on-response="handlePutNoteResponse" on-error="handlePutNoteError"></iron-ajax>
 `;
     }
 

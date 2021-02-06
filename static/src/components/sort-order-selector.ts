@@ -34,14 +34,14 @@ export class SortOrderSelectorElement extends PolymerElement {
             </style>
 
             <template is="dom-if" if="[[!useButtons]]">
-                <paper-dropdown-menu-light id="sortBySelection" label="Sort By" always-float-label="">
+                <paper-dropdown-menu-light id="sortBySelection" label="Sort By" always-float-label>
                     <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
                         <template is="dom-repeat" items="[[availableSortBy]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu-light>
-                <paper-dropdown-menu-light id="sortDirSelection" always-float-label="">
+                <paper-dropdown-menu-light id="sortDirSelection" always-float-label>
                     <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="asc">
                         <template is="dom-repeat" items="[[availableSortDir]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
@@ -52,7 +52,7 @@ export class SortOrderSelectorElement extends PolymerElement {
 
             <template is="dom-if" if="[[useButtons]]">
                 <paper-menu-button>
-                    <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:sort"></iron-icon> [[sortBy]]</paper-button>
+                    <paper-button raised slot="dropdown-trigger"><iron-icon icon="icons:sort"></iron-icon> [[sortBy]]</paper-button>
                     <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
                         <template is="dom-repeat" items="[[availableSortBy]]">
                             <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>

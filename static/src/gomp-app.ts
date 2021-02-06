@@ -113,8 +113,8 @@ export class GompApp extends PolymerElement {
             <app-location route="{{route}}"></app-location>
             <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-            <app-drawer-layout force-narrow="" fullbleed="">
-                <app-drawer id="drawer" slot="drawer" swipe-open="">
+            <app-drawer-layout force-narrow fullbleed>
+                <app-drawer id="drawer" slot="drawer" swipe-open>
                     <app-toolbar>[[title]]</app-toolbar>
                     <a href="/home" tabindex="-1">
                         <paper-icon-item tabindex="-1">
@@ -149,18 +149,18 @@ export class GompApp extends PolymerElement {
                         </paper-icon-item>
                     </a>
                 </app-drawer>
-                <app-header-layout id="mainPanel" fullbleed="" has-scrolling-region="">
-                    <app-header id="mainHeader" slot="header" reveals="" shadow="">
+                <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
+                    <app-header id="mainHeader" slot="header" reveals shadow>
                         <div hidden\$="[[isAuthenticated]]">
                             <app-toolbar>
-                                <div main-title="">[[title]]</div>
+                                <div main-title>[[title]]</div>
                             </app-toolbar>
                         </div>
                         <div hidden\$="[[!isAuthenticated]]">
                             <app-toolbar>
-                                <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle=""></paper-icon-button>
+                                <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
                                 <a href="/" class="hide-on-small-only">[[title]]</a>
-                                <div main-title=""></div>
+                                <div main-title></div>
                                 <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
                                 <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
                                 <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
@@ -171,7 +171,7 @@ export class GompApp extends PolymerElement {
                             </app-toolbar>
                         </div>
 
-                        <paper-progress indeterminate="" hidden\$="[[!loadingCount]]"></paper-progress>
+                        <paper-progress indeterminate hidden\$="[[!loadingCount]]"></paper-progress>
                     </app-header>
 
                     <main>
@@ -203,24 +203,24 @@ export class GompApp extends PolymerElement {
                 </app-header-layout>
             </app-drawer-layout>
 
-            <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop="">
+            <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop>
                 <h3>Search Settings</h3>
                 <paper-dialog-scrollable>
                     <search-filter id="searchSettings"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
-                    <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Apply</paper-button>
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm>Apply</paper-button>
                 </div>
             </paper-dialog>
 
             <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
-            <app-localstorage-document key="searchFilter" data="{{searchFilter}}" session-only=""></app-localstorage-document>
+            <app-localstorage-document key="searchFilter" data="{{searchFilter}}" session-only></app-localstorage-document>
 
-            <iron-ajax bubbles="" id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="getCurrentUserAjax" url="/api/v1/users/current" on-response="handleGetCurrentUserResponse"></iron-ajax>
+            <iron-ajax bubbles id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
+            <iron-ajax bubbles id="getCurrentUserAjax" url="/api/v1/users/current" on-response="handleGetCurrentUserResponse"></iron-ajax>
 `;
     }
 
