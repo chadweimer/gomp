@@ -10,6 +10,7 @@ import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
+import './toggle-icon-button.js';
 import './tag-input.js';
 import '../shared-styles.js';
 
@@ -21,15 +22,8 @@ export class SortOrderSelectorElement extends PolymerElement {
                 :host {
                     display: inline-block;
                 }
-                paper-icon-item {
-                    cursor: pointer;
-                }
                 paper-menu-button {
                     padding: 0px;
-                }
-                paper-button {
-                    color: var(--sort-order-selector-button-color, #ffffff);
-                    background: var(--sort-order-selector-button-background, var(--light-accent-color));
                 }
                 #sortBySelection {
                     width: var(--sort-order-selector-sort-by-width, 125px);
@@ -65,22 +59,22 @@ export class SortOrderSelectorElement extends PolymerElement {
                         </template>
                     </paper-listbox>
                 </paper-menu-button>
-                <paper-button on-click="toggleSortDir" raised><iron-icon icon="[[getSortDirIcon(sortDir)]]"></iron-icon></paper-button>
+                <toggle-icon-button items="[[availableSortDir]]" selected="{{sortDir}}"></toggle-icon-button>
             </template>
 `;
     }
 
     protected availableSortBy = [
         {name: 'Name', value: SortBy.Name, icon: 'av:sort-by-alpha'},
-        {name: 'Rating', value: SortBy.Rating, icon: 'stars'},
+        {name: 'Rating', value: SortBy.Rating, icon: 'icons:stars'},
         {name: 'Created', value: SortBy.Created, icon: 'av:fiber-new'},
-        {name: 'Modified', value: SortBy.Modified, icon: 'update'},
-        {name: 'Random', value: SortBy.Random, icon: 'help'}
+        {name: 'Modified', value: SortBy.Modified, icon: 'icons:update'},
+        {name: 'Random', value: SortBy.Random, icon: 'icons:help'}
     ];
 
     protected availableSortDir = [
-        {name: 'Asc', value: SortDir.Asc, icon: 'arrow-upward'},
-        {name: 'Desc', value: SortDir.Desc, icon: 'arrow-downward'},
+        {name: 'Asc', value: SortDir.Asc, icon: 'icons:arrow-upward'},
+        {name: 'Desc', value: SortDir.Desc, icon: 'icons:arrow-downward'},
     ];
 
     @property({type: Boolean, reflectToAttribute: true})
@@ -91,19 +85,4 @@ export class SortOrderSelectorElement extends PolymerElement {
 
     @property({type: Object, notify: true})
     public sortDir: SortDir = SortDir.Asc;
-
-    protected toggleSortDir() {
-        switch (this.sortDir) {
-            case SortDir.Asc:
-                this.sortDir = SortDir.Desc;
-                break;
-            case SortDir.Desc:
-                this.sortDir = SortDir.Asc;
-                break;
-        }
-    }
-
-    protected getSortDirIcon(sortDir: SortDir) {
-        return this.availableSortDir.find(a => a.value === sortDir)?.icon;
-    }
 }

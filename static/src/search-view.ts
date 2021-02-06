@@ -34,6 +34,8 @@ export class SearchView extends GompBaseElement {
                         min-width: 2.5em;
                         height: 2.5em;
                         margin: 0 0.17em;
+                        color: #ffffff;
+                        background: var(--light-accent-color);
                     }
                 }
                 .section {
@@ -57,15 +59,8 @@ export class SearchView extends GompBaseElement {
                     bottom: 16px;
                     right: 16px;
                 }
-                paper-icon-item {
-                    cursor: pointer;
-                }
                 paper-menu-button {
                     padding: 0px;
-                }
-                paper-button {
-                    color: #ffffff;
-                    background: var(--light-accent-color);
                 }
                 .avatar {
                     width: 32px;
@@ -138,7 +133,7 @@ export class SearchView extends GompBaseElement {
                             </paper-listbox>
                         </paper-menu-button>
                         <sort-order-selector use-buttons sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
-                        <paper-button on-click="toggleViewMode" raised><iron-icon icon="[[getViewModeIcon(searchSettings.viewMode)]]"></iron-icon></paper-button>
+                        <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
                     </div>
                     <div class="controlContainer">
                         <div class="pagination">
@@ -208,6 +203,11 @@ export class SearchView extends GompBaseElement {
     protected availableStates = [
         {name: 'Active', value: SearchState.Active, icon: 'icons:unarchive'},
         {name: 'Archived', value: SearchState.Archived, icon: 'icons:archive'},
+    ];
+
+    protected availableViewModes = [
+        {name: 'Card', value: 'card', icon: 'icons:view-agenda'},
+        {name: 'List', value: 'list', icon: 'icons:view-list'},
     ];
 
     private pending: {refresh: boolean; rescroll: boolean} = null;
@@ -315,27 +315,5 @@ export class SearchView extends GompBaseElement {
     }
     protected searchStateClicked() {
         this.statesDropdown.close();
-    }
-
-    protected toggleViewMode() {
-        switch (this.searchSettings.viewMode) {
-            case 'card':
-                this.set('searchSettings.viewMode', 'list');
-                break;
-            case 'list':
-                this.set('searchSettings.viewMode', 'card');
-                break;
-        }
-    }
-
-    protected getViewModeIcon(viewMode: string) {
-        switch (viewMode) {
-            case 'card':
-                return 'icons:view-agenda';
-            case 'list':
-                return 'icons:view-headline';
-        }
-
-        return null;
     }
 }

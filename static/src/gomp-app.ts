@@ -49,6 +49,10 @@ export class GompApp extends PolymerElement {
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
                     @apply --paper-font-body1;
+
+                    --paper-item: {
+                        cursor: pointer;
+                    }
                 }
                 :host {
                     display: block;
