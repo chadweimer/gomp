@@ -5,9 +5,11 @@ import { SortBy, SortDir } from '../models/models';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
+import '@polymer/paper-menu-button/paper-menu-button.js';
 import './tag-input.js';
 import '../shared-styles.js';
 
@@ -17,7 +19,7 @@ export class SortOrderSelectorElement extends PolymerElement {
         return html`
             <style include="shared-styles">
                 :host {
-                    display: inline;
+                    display: inline-block;
                 }
                 paper-icon-item {
                     cursor: pointer;
@@ -63,14 +65,7 @@ export class SortOrderSelectorElement extends PolymerElement {
                         </template>
                     </paper-listbox>
                 </paper-menu-button>
-                <paper-menu-button>
-                    <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="[[getSortDirIcon(sortDir)]]"></iron-icon></paper-button>
-                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="asc">
-                        <template is="dom-repeat" items="[[availableSortDir]]">
-                            <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
-                        </template>
-                    </paper-listbox>
-                </paper-menu-button>
+                <paper-button on-click="toggleSortDir" raised><iron-icon icon="[[getSortDirIcon(sortDir)]]"></iron-icon></paper-button>
             </template>
 `;
     }
@@ -96,6 +91,17 @@ export class SortOrderSelectorElement extends PolymerElement {
 
     @property({type: Object, notify: true})
     public sortDir: SortDir = SortDir.Asc;
+
+    protected toggleSortDir() {
+        switch (this.sortDir) {
+            case SortDir.Asc:
+                this.sortDir = SortDir.Desc;
+                break;
+            case SortDir.Desc:
+                this.sortDir = SortDir.Asc;
+                break;
+        }
+    }
 
     protected getSortDirIcon(sortDir: SortDir) {
         return this.availableSortDir.find(a => a.value === sortDir)?.icon;

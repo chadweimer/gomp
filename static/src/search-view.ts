@@ -2,23 +2,21 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
+import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, SearchState } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-item/paper-item-body.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-styles/paper-styles.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './components/recipe-card.js';
 import './components/pagination-links.js';
 import './components/recipe-rating.js';
@@ -131,21 +129,16 @@ export class SearchView extends GompBaseElement {
             <div class="section">
                 <div class="outterContainer">
                     <div class="controlContainer">
-                        <paper-menu-button>
+                        <paper-menu-button id="statesDropdown">
                             <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[getStateDisplay(filter.states)]]</paper-button>
                             <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
-                                <paper-icon-item name="active"><iron-icon icon="icons:unarchive" slot="item-icon"></iron-icon> Active</paper-icon-item>
-                                <paper-icon-item name="archived"><iron-icon icon="icons:archive" slot="item-icon"></iron-icon> Archived</paper-icon-item>
+                                <template is="dom-repeat" items="[[availableStates]]">
+                                    <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
+                                </template>
                             </paper-listbox>
                         </paper-menu-button>
                         <sort-order-selector use-buttons sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
-                        <paper-menu-button>
-                            <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:dashboard"></iron-icon> [[searchSettings.viewMode]]</paper-button>
-                            <paper-listbox slot="dropdown-content" selected="{{searchSettings.viewMode}}" attr-for-selected="name" fallback-selection="card">
-                                <paper-icon-item name="card"><iron-icon icon="view-agenda" slot="item-icon"></iron-icon> Card</paper-icon-item>
-                                <paper-icon-item name="list"><iron-icon icon="view-headline" slot="item-icon"></iron-icon> List</paper-icon-item>
-                            </paper-listbox>
-                        </paper-menu-button>
+                        <paper-button on-click="toggleViewMode" raised><iron-icon icon="[[getViewModeIcon(searchSettings.viewMode)]]"></iron-icon></paper-button>
                     </div>
                     <div class="controlContainer">
                         <div class="pagination">
@@ -212,8 +205,16 @@ export class SearchView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    protected availableStates = [
+        {name: 'Active', value: SearchState.Active, icon: 'icons:unarchive'},
+        {name: 'Archived', value: SearchState.Archived, icon: 'icons:archive'},
+    ];
+
     private pending: {refresh: boolean; rescroll: boolean} = null;
 
+    private get statesDropdown(): PaperMenuButton {
+        return this.$.statesDropdown as PaperMenuButton;
+    }
     private get recipesAjax(): IronAjaxElement {
         return this.$.recipesAjax as IronAjaxElement;
     }
@@ -311,5 +312,30 @@ export class SearchView extends GompBaseElement {
         } else {
             return states[0];
         }
+    }
+    protected searchStateClicked() {
+        this.statesDropdown.close();
+    }
+
+    protected toggleViewMode() {
+        switch (this.searchSettings.viewMode) {
+            case 'card':
+                this.set('searchSettings.viewMode', 'list');
+                break;
+            case 'list':
+                this.set('searchSettings.viewMode', 'card');
+                break;
+        }
+    }
+
+    protected getViewModeIcon(viewMode: string) {
+        switch (viewMode) {
+            case 'card':
+                return 'icons:view-agenda';
+            case 'list':
+                return 'icons:view-headline';
+        }
+
+        return null;
     }
 }
