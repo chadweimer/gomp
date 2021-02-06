@@ -41,9 +41,6 @@ export class SearchView extends GompBaseElement {
                 .section {
                     padding: 4px 8px;
                 }
-                .listContainer {
-                    margin: 8px;
-                }
                 paper-menu-button {
                     padding: 0px;
                 }
@@ -139,7 +136,7 @@ export class SearchView extends GompBaseElement {
                     </template>
                     <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'list')]]" restamp="">
                         <template is="dom-repeat" items="[[recipes]]">
-                            <div class="recipeContainer listContainer">
+                            <div class="recipeContainer">
                                 <a href="/recipes/[[item.id]]">
                                     <paper-icon-item>
                                         <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
