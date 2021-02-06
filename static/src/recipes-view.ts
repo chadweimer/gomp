@@ -33,10 +33,6 @@ export class RecipesView extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                    color: var(--primary-text-color);
-                }
-                .container {
-                    padding: 10px;
                 }
                 #confirmArchiveDialog {
                     --confirmation-dialog-title-color: var(--paper-purple-500);
@@ -81,10 +77,6 @@ export class RecipesView extends GompBaseElement {
                     --paper-fab-speed-dial-action-background: var(--paper-purple-500);
                     --paper-fab-speed-dial-action-keyboard-focus-background: var(--paper-purple-900);
                 }
-                .tab-container {
-                    @apply --layout-horizontal;
-                    @apply --layout-wrap;
-                }
                 .tab {
                     margin: 8px;
                 }
@@ -92,42 +84,25 @@ export class RecipesView extends GompBaseElement {
                     .tab {
                         width: calc(50% - 16px);
                     }
-                    paper-dialog {
-                        width: 33%;
-                    }
-                    .container {
-                        width: 67%;
-                        margin: auto;
-                    }
                 }
                 @media screen and (min-width: 601px) and (max-width: 992px) {
                     .tab {
                         width: calc(100% - 16px);
-                    }
-                    paper-dialog {
-                        width: 75%;
-                    }
-                    .container {
-                        width: 80%;
-                        margin: auto;
                     }
                 }
                 @media screen and (max-width: 600px) {
                     .tab {
                         width: calc(100% - 16px);
                     }
-                    paper-dialog {
-                        width: 100%;
-                    }
                 }
             </style>
 
             <app-route id="appRoute" route="{{route}}" pattern="/:recipeId/:mode" data="{{routeData}}"></app-route>
 
-            <div class="container">
+            <div class="container-wide padded-10">
                 <div hidden\$="[[areEqual(mode, 'edit')]]">
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-display>
-                    <div class="tab-container">
+                    <div class="wrap-horizontal">
                         <div id="images" class="tab">
                             <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage" readonly\$="[[!getCanEdit(currentUser)]]"></image-list>
                         </div>

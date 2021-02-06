@@ -34,30 +34,15 @@ export class SearchView extends GompBaseElement {
                         min-width: 2.5em;
                         height: 2.5em;
                         margin: 0 0.17em;
-                        color: #ffffff;
+                        color: white;
                         background: var(--light-accent-color);
                     }
                 }
                 .section {
                     padding: 4px 8px;
                 }
-                .outterContainer {
-                    @apply --layout-horizontal;
-                    @apply --layout-wrap;
-                }
                 .listContainer {
                     margin: 8px;
-                }
-                .pagination {
-                    @apply --layout-horizontal;
-                    @apply --layout-center-justified;
-                }
-                paper-fab.green {
-                    --paper-fab-background: var(--paper-green-500);
-                    --paper-fab-keyboard-focus-background: var(--paper-green-900);
-                    position: fixed;
-                    bottom: 16px;
-                    right: 16px;
                 }
                 paper-menu-button {
                     padding: 0px;
@@ -122,7 +107,7 @@ export class SearchView extends GompBaseElement {
             </style>
 
             <div class="section">
-                <div class="outterContainer">
+                <div class="wrap-horizontal">
                     <div class="controlContainer">
                         <paper-menu-button id="statesDropdown">
                             <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[getStateDisplay(filter.states)]]</paper-button>
@@ -136,7 +121,7 @@ export class SearchView extends GompBaseElement {
                         <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
                     </div>
                     <div class="controlContainer">
-                        <div class="pagination">
+                        <div class="centered-horizontal">
                             <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                         </div>
                     </div>
@@ -144,7 +129,7 @@ export class SearchView extends GompBaseElement {
                 </div>
             </div>
             <div class="section">
-                <div class="outterContainer">
+                <div class="wrap-horizontal">
                     <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'card')]]" restamp="">
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
@@ -172,7 +157,7 @@ export class SearchView extends GompBaseElement {
                 </div>
             </div>
             <div class="section">
-                <div class="pagination">
+                <div class="centered-horizontal">
                     <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                 </div>
             </div>

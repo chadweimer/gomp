@@ -23,10 +23,6 @@ export class HomeList extends GompBaseElement {
                     font-size: 1.5em;
                     margin-bottom: 0.25em;
                 }
-                .outerContainer {
-                    @apply --layout-horizontal;
-                    @apply --layout-wrap;
-                }
                 recipe-card {
                     --recipe-card: {
                         height: 160px;
@@ -61,7 +57,7 @@ export class HomeList extends GompBaseElement {
 
             <article>
                 <header><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></header>
-                <div class="outerContainer">
+                <div class="wrap-horizontal">
                     <template is="dom-repeat" items="[[recipes]]">
                         <div class="recipeContainer">
                             <recipe-card recipe="[[item]]" hide-created-modified-dates readonly\$="[[readonly]]"></recipe-card>

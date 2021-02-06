@@ -13,17 +13,13 @@ export class CreateView extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                    color: var(--primary-text-color);
-                }
-                article {
-                    padding: 8px;
                 }
             </style>
 
-            <article>
+            <div class="container-wide padded-10">
                 <h4>New Recipe</h4>
                 <recipe-edit is-active="[[isActive]]" on-recipe-edit-cancel="editCanceled" on-recipe-edit-save="editSaved"></recipe-edit>
-            </article>
+            </div>
 `;
     }
 

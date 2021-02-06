@@ -53,14 +53,13 @@ export class GompApp extends PolymerElement {
                     --paper-item: {
                         cursor: pointer;
                     }
+
+                    color: var(--primary-text-color);
                 }
                 :host {
                     display: block;
                     background: var(--paper-grey-50);
                     @apply --layout-fullbleed;
-                }
-                iron-pages > :not(.iron-selected) {
-                    pointer-events: none;
                 }
 
                 app-toolbar {
@@ -98,41 +97,10 @@ export class GompApp extends PolymerElement {
                     padding-left: 150px;
                     padding-right: 150px;
                 }
-                @media screen and (min-width: 1200px) {
-                    paper-dialog {
-                        width: 33%;
-                    }
-                }
-                @media screen and (min-width: 992px) and (max-width: 1199px) {
-                    paper-dialog {
-                        width: 50%;
-                    }
-                }
-                @media screen and (min-width: 600px) and (max-width: 991px) {
-                    paper-dialog {
-                        width: 75%;
-                    }
-                }
-                @media screen and (min-width: 992px) {
-                    .hide-on-large-only {
-                        display: none;
-                    }
-                }
-                @media screen and (max-width: 991px) {
-                    .hide-on-med-and-down {
-                        display: none;
-                    }
-                }
                 @media screen and (max-width: 599px) {
-                    .hide-on-small-only {
-                        display: none;
-                    }
                     .indented {
                         padding-left: 15px;
                         padding-right: 15px;
-                    }
-                    paper-dialog {
-                        width: 100%;
                     }
                     paper-search-bar {
                         --input-styles: {

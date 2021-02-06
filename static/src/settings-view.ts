@@ -40,70 +40,14 @@ export class SettingsView extends GompBaseElement {
                     }
                     --paper-tabs-selection-bar-color: var(--accent-color);
                 }
-                iron-pages > :not(.iron-selected) {
-                    pointer-events: none;
-                }
-                .container {
-                    padding: 10px;
-                }
-                .amber {
-                    color: var(--paper-amber-500);
-                }
-                .red {
-                    color: var(--paper-red-500);
-                }
-                .fill {
-                    width: 100%
-                }
-                .left {
-                    text-align: left;
-                }
-                .right {
-                    text-align: right;
-                }
-                img.responsive {
-                    max-width: 100%;
-                    max-height: 20em;
-                    height: auto;
-                }
-                paper-fab.green {
-                    --paper-fab-background: var(--paper-green-500);
-                    --paper-fab-keyboard-focus-background: var(--paper-green-900);
-                    position: fixed;
-                    bottom: 16px;
-                    right: 16px;
-                }
                 paper-button > span {
                     margin-left: 0.5em;
                 }
                 #confirmDeleteUserSearchFilterDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
-                @media screen and (min-width: 993px) {
-                    .container {
-                        width: 50%;
-                        margin: auto;
-                    }
-                    paper-dialog {
-                        width: 33%;
-                    }
-                }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
-                    .container {
-                        width: 75%;
-                        margin: auto;
-                    }
-                    paper-dialog {
-                        width: 75%;
-                    }
-                }
-                @media screen and (max-width: 600px) {
-                    paper-dialog {
-                        width: 100%;
-                    }
-                }
             </style>
-            <div class="container">
+            <div class="container padded-10">
                 <paper-tabs selected="{{selectedTab}}">
                     <paper-tab>Preferences</paper-tab>
                     <paper-tab>Searches</paper-tab>
@@ -135,7 +79,7 @@ export class SettingsView extends GompBaseElement {
                     <paper-card>
                         <div class="card-content">
                             <table class="fill">
-                                <thead class="left">
+                                <thead class="text-left">
                                     <tr>
                                         <th>Name</th>
                                         <th></th>
@@ -145,7 +89,7 @@ export class SettingsView extends GompBaseElement {
                                     <template is="dom-repeat" items="[[filters]]">
                                         <tr>
                                             <td>[[item.name]]</td>
-                                            <td class="right">
+                                            <td class="text-right">
                                                 <a href="#!" tabindex="-1" on-click="onEditFilterClicked">
                                                     <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
                                                 </a>

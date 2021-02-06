@@ -29,7 +29,6 @@ export class NoteCard extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                    color: var(--primary-text-color);
 
                     --paper-card: {
                         width: 100%;
@@ -56,17 +55,8 @@ export class NoteCard extends GompBaseElement {
                     top: 0;
                     right: 0;
                 }
-                .amber {
-                    color: var(--paper-amber-500);
-                }
-                .red {
-                    color: var(--paper-red-500);
-                }
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
-                }
-                paper-icon-item {
-                    cursor: pointer;
                 }
             </style>
 
