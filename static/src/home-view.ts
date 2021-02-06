@@ -17,27 +17,9 @@ export class HomeView extends GompBaseElement {
                 :host {
                     display: block;
                 }
-                section {
-                    padding: 8px;
-                }
-                header {
-                    text-align: center;
-                }
-                img.responsive {
-                    max-height: 20em;
-                    max-width: 100%;
-                    height: auto;
-                }
-                paper-fab.green {
-                    --paper-fab-background: var(--paper-green-500);
-                    --paper-fab-keyboard-focus-background: var(--paper-green-900);
-                    position: fixed;
-                    bottom: 16px;
-                    right: 16px;
-                }
             </style>
-            <section>
-                <header>
+            <div class="padded-10">
+                <header class="text-center">
                     <h1 hidden\$="[[!currentUserSettings.homeTitle]]">[[currentUserSettings.homeTitle]]</h1>
                     <img alt="Home Image" class="responsive" hidden\$="[[!currentUserSettings.homeImageUrl]]" src="[[currentUserSettings.homeImageUrl]]">
                 </header>
@@ -45,7 +27,7 @@ export class HomeView extends GompBaseElement {
                 <template is="dom-repeat" items="[[searchFilters]]">
                     <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[homeListsActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-iron-ajax-presend="onAjaxPresend"></home-list>
                 </template>
-            </section>
+                <div class="padded-10">
 
             <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 

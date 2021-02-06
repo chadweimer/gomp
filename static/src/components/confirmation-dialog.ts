@@ -25,6 +25,9 @@ export class ConfirmationDialog extends PolymerElement {
                 h3 > span {
                     padding-left: 0.25em;
                 }
+                paper-dialog {
+                    width: unset;
+                }
             </style>
 
             <paper-dialog id="dialog" with-backdrop="" on-iron-overlay-closed="onDialogClosed">

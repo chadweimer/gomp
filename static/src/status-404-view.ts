@@ -10,11 +10,12 @@ export class Status404View extends PolymerElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                    padding: 8px;
                 }
             </style>
 
-            <span>Could not locate the requested resource.</span>
+            <div class="padded-10">
+                Could not locate the requested resource.
+            </div>
 `;
     }
 }

@@ -18,31 +18,13 @@ export class RecipeLinkDialog extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
-                paper-dialog h3 {
-                    color: var(--paper-indigo-500);
-                }
                 paper-dialog h3 > span {
                     padding-left: 0.25em;
-                }
-                @media screen and (min-width: 993px) {
-                    paper-dialog {
-                        width: 33%;
-                    }
-                }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
-                    paper-dialog {
-                        width: 75%;
-                    }
-                }
-                @media screen and (max-width: 600px) {
-                    paper-dialog {
-                        width: 100%;
-                    }
                 }
           </style>
 
           <paper-dialog id="dialog" on-iron-overlay-closed="onDialogClosed" with-backdrop="">
-              <h3><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
+              <h3 class="indigo"><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
               <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source="" show-results-on-focus="" required=""></paper-autocomplete>
               <div class="buttons">
                   <paper-button dialog-dismiss="">Cancel</paper-button>

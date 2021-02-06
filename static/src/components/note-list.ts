@@ -33,26 +33,8 @@ export class NoteList extends GompBaseElement {
                 paper-divider {
                     width: 100%;
                 }
-                #noteDialog h3 {
-                    color: var(--paper-blue-500);
-                }
                 #noteDialog h3 > span {
                     padding-left: 0.25em;
-                }
-                @media screen and (min-width: 993px) {
-                    paper-dialog {
-                        width: 33%;
-                    }
-                }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
-                    paper-dialog {
-                        width: 75%;
-                    }
-                }
-                @media screen and (max-width: 600px) {
-                    paper-dialog {
-                        width: 100%;
-                    }
                 }
           </style>
 
@@ -63,7 +45,7 @@ export class NoteList extends GompBaseElement {
           </template>
 
           <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop="">
-              <h3><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h3>
+              <h3 class="blue"><iron-icon icon="editor:insert-comment"></iron-icon> <span>Add Note</span></h3>
               <paper-textarea label="Text" value="{{noteText}}" rows="3" required="" autofocus=""></paper-textarea>
               <div class="buttons">
                   <paper-button dialog-dismiss="">Cancel</paper-button>

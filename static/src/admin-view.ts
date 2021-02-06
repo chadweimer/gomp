@@ -35,27 +35,6 @@ export class AdminView extends GompBaseElement {
                     }
                     --paper-tabs-selection-bar-color: var(--accent-color);
                 }
-                iron-pages > :not(.iron-selected) {
-                    pointer-events: none;
-                }
-                .container {
-                    padding: 10px;
-                }
-                .amber {
-                    color: var(--paper-amber-500);
-                }
-                .red {
-                    color: var(--paper-red-500);
-                }
-                .fill {
-                    width: 100%
-                }
-                .left {
-                    text-align: left;
-                }
-                .right {
-                    text-align: right;
-                }
                 #userDialog h3 > span {
                     padding-left: 0.25em;
                 }
@@ -65,31 +44,8 @@ export class AdminView extends GompBaseElement {
                 paper-password-input {
                     display: block;
                 }
-                @media screen and (min-width: 993px) {
-                    .container {
-                        width: 50%;
-                        margin: auto;
-                    }
-                    paper-dialog {
-                        width: 33%;
-                    }
-                }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
-                    .container {
-                        width: 75%;
-                        margin: auto;
-                    }
-                    paper-dialog {
-                        width: 75%;
-                    }
-                }
-                @media screen and (max-width: 600px) {
-                    paper-dialog {
-                        width: 100%;
-                    }
-                }
             </style>
-            <div class="container">
+            <div class="container padded-10">
                 <paper-tabs selected="{{selectedTab}}">
                     <paper-tab>Configuration</paper-tab>
                     <paper-tab>Users</paper-tab>
@@ -110,7 +66,7 @@ export class AdminView extends GompBaseElement {
                     <paper-card>
                         <div class="card-content">
                             <table class="fill">
-                                <thead class="left">
+                                <thead class="text-left">
                                     <tr>
                                         <th>Email</th>
                                         <th>Access Level</th>
@@ -122,7 +78,7 @@ export class AdminView extends GompBaseElement {
                                         <tr>
                                             <td>[[item.username]]</td>
                                             <td>[[item.accessLevel]]</td>
-                                            <td class="right">
+                                            <td class="text-right">
                                                 <a href="#!" tabindex="-1" on-click="onEditUserClicked">
                                                     <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
                                                 </a>

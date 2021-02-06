@@ -41,9 +41,6 @@ export class ImageList extends GompBaseElement {
                 paper-divider {
                     width: 100%;
                 }
-                #addDialog h3 {
-                    color: var(--paper-teal-500);
-                }
                 #addDialog h3 > span {
                     padding-left: 0.25em;
                 }
@@ -52,12 +49,6 @@ export class ImageList extends GompBaseElement {
                 }
                 #confirmDeleteDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
-                }
-                .blue {
-                    color: var(--paper-blue-500);
-                }
-                .red {
-                    color: var(--paper-red-500);
                 }
                 .imageContainer {
                     margin: 2px;
@@ -68,9 +59,6 @@ export class ImageList extends GompBaseElement {
                     right: 45px;
                     bottom: 5px;
                     margin-right: -45px;
-                }
-                paper-icon-item {
-                    cursor: pointer;
                 }
                 img {
                     width: 150px;
@@ -100,7 +88,7 @@ export class ImageList extends GompBaseElement {
             </template>
 
             <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop="">
-                <h3><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
+                <h3 class="teal"><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
                 <p>Browse for a picture to upload to this recipe.</p><p>
                 </p><form id="addForm" enctype="multipart/form-data">
                     <paper-input-container always-float-label="">

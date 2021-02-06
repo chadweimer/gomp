@@ -49,14 +49,17 @@ export class GompApp extends PolymerElement {
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
                     @apply --paper-font-body1;
+
+                    --paper-item: {
+                        cursor: pointer;
+                    }
+
+                    color: var(--primary-text-color);
                 }
                 :host {
                     display: block;
                     background: var(--paper-grey-50);
                     @apply --layout-fullbleed;
-                }
-                iron-pages > :not(.iron-selected) {
-                    pointer-events: none;
                 }
 
                 app-toolbar {
@@ -94,41 +97,10 @@ export class GompApp extends PolymerElement {
                     padding-left: 150px;
                     padding-right: 150px;
                 }
-                @media screen and (min-width: 1200px) {
-                    paper-dialog {
-                        width: 33%;
-                    }
-                }
-                @media screen and (min-width: 992px) and (max-width: 1199px) {
-                    paper-dialog {
-                        width: 50%;
-                    }
-                }
-                @media screen and (min-width: 600px) and (max-width: 991px) {
-                    paper-dialog {
-                        width: 75%;
-                    }
-                }
-                @media screen and (min-width: 992px) {
-                    .hide-on-large-only {
-                        display: none;
-                    }
-                }
-                @media screen and (max-width: 991px) {
-                    .hide-on-med-and-down {
-                        display: none;
-                    }
-                }
                 @media screen and (max-width: 599px) {
-                    .hide-on-small-only {
-                        display: none;
-                    }
                     .indented {
                         padding-left: 15px;
                         padding-right: 15px;
-                    }
-                    paper-dialog {
-                        width: 100%;
                     }
                     paper-search-bar {
                         --input-styles: {
@@ -205,7 +177,7 @@ export class GompApp extends PolymerElement {
                     <main>
                         <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                             <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" filter="[[searchFilter]]" current-user="[[currentUser]]"></search-view>
+                            <search-view id="searchView" name="search" filter="{{searchFilter}}" current-user="[[currentUser]]"></search-view>
                             <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
                             <create-view name="create" current-user="[[currentUser]]"></create-view>
                             <settings-view name="settings" current-user="[[currentUser]]"></settings-view>

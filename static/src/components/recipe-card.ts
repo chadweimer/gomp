@@ -15,7 +15,6 @@ export class RecipeCard extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                    color: var(--primary-text-color);
                     cursor: pointer;
 
                     --paper-card-header: {
@@ -54,7 +53,7 @@ export class RecipeCard extends GompBaseElement {
                     font-weight: lighter;
                     line-height: 1.2em;
                 }
-                .container {
+                .relative {
                     position: relative;
                 }
                 .state {
@@ -65,23 +64,23 @@ export class RecipeCard extends GompBaseElement {
                 .state[hidden] {
                     display: none !important;
                 }
-          </style>
+            </style>
 
-          <div class="container">
-            <a href\$="/recipes/[[recipe.id]]/view">
-                <paper-card image="[[recipe.thumbnailUrl]]">
-                    <div class="card-content">
-                        <div class="truncate">[[recipe.name]]</div>
-                        <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
-                            <span>[[formatDate(recipe.createdAt)]]</span>
-                            <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
+            <div class="relative">
+                <a href\$="/recipes/[[recipe.id]]/view">
+                    <paper-card image="[[recipe.thumbnailUrl]]">
+                        <div class="card-content">
+                            <div class="truncate">[[recipe.name]]</div>
+                            <div class="subhead" hidden\$="[[hideCreatedModifiedDates]]">
+                                <span>[[formatDate(recipe.createdAt)]]</span>
+                                <span hidden\$="[[!showModifiedDate(recipe)]]">&nbsp; (edited [[formatDate(recipe.modifiedAt)]])</span>
+                            </div>
+                            <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
                         </div>
-                        <recipe-rating recipe="{{recipe}}" readonly\$="[[readonly]]"></recipe-rating>
-                    </div>
-                </paper-card>
-            </a>
-            <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
-        </div>
+                    </paper-card>
+                </a>
+                <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+            </div>
 `;
     }
 

@@ -23,10 +23,6 @@ export class HomeList extends GompBaseElement {
                     font-size: 1.5em;
                     margin-bottom: 0.25em;
                 }
-                .outerContainer {
-                    @apply --layout-horizontal;
-                    @apply --layout-wrap;
-                }
                 recipe-card {
                     --recipe-card: {
                         height: 160px;
@@ -42,17 +38,17 @@ export class HomeList extends GompBaseElement {
                     --recipe-card-rating-size: 16px;
                     font-size: 0.95em;
                 }
-                @media screen and (min-width: 993px) {
+                @media screen and (min-width: 992px) {
                     .recipeContainer {
                         width: 16.6%;
                     }
                 }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
+                @media screen and (min-width: 600px) and (max-width: 991px) {
                     .recipeContainer {
                         width: 33%;
                      }
                 }
-                @media screen and (max-width: 600px) {
+                @media screen and (max-width: 599px) {
                     .recipeContainer {
                         width: 50%;
                     }
@@ -61,7 +57,7 @@ export class HomeList extends GompBaseElement {
 
             <article>
                 <header><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></header>
-                <div class="outerContainer">
+                <div class="wrap-horizontal">
                     <template is="dom-repeat" items="[[recipes]]">
                         <div class="recipeContainer">
                             <recipe-card recipe="[[item]]" hide-created-modified-dates readonly\$="[[readonly]]"></recipe-card>

@@ -19,32 +19,24 @@ export class LoginView extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                    padding: 8px;
                 }
-                .container {
-                    @apply --layout-horizontal;
-                    @apply --layout-center-justified;
-                }
-                .error {
-                    color: red;
-                }
-                @media screen and (min-width: 601px) {
+                @media screen and (min-width: 600px) {
                     paper-card {
                         width: 50%;
                     }
                 }
-                @media screen and (max-width: 600px) {
+                @media screen and (max-width: 599px) {
                     paper-card {
                         width: 100%;
                     }
                 }
             </style>
-            <div class="container">
+            <div class="padded-10 centered-horizontal">
                 <paper-card heading="Login">
                     <div class="card-content">
                         <paper-input name="username" value="{{username}}" label="Email" on-keydown="onInputKeydown" required="" autofocus="" autocomplete=""></paper-input>
                         <paper-password-input name="password" value="{{password}}" label="Password" on-keydown="onInputKeydown" required=""></paper-password-input>
-                        <div class="error">[[errorMessage]]</div>
+                        <div class="red">[[errorMessage]]</div>
                     </div>
                     <div class="card-actions">
                         <paper-button id="loginButton" on-click="onLoginClicked">Login</paper-button>
