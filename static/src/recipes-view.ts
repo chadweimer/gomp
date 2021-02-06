@@ -80,17 +80,17 @@ export class RecipesView extends GompBaseElement {
                 .tab {
                     margin: 8px;
                 }
-                @media screen and (min-width: 993px) {
+                @media screen and (min-width: 992px) {
                     .tab {
                         width: calc(50% - 16px);
                     }
                 }
-                @media screen and (min-width: 601px) and (max-width: 992px) {
+                @media screen and (min-width: 600px) and (max-width: 991px) {
                     .tab {
                         width: calc(100% - 16px);
                     }
                 }
-                @media screen and (max-width: 600px) {
+                @media screen and (max-width: 599px) {
                     .tab {
                         width: calc(100% - 16px);
                     }

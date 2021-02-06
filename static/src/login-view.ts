@@ -20,12 +20,12 @@ export class LoginView extends GompBaseElement {
                 :host {
                     display: block;
                 }
-                @media screen and (min-width: 601px) {
+                @media screen and (min-width: 600px) {
                     paper-card {
                         width: 50%;
                     }
                 }
-                @media screen and (max-width: 600px) {
+                @media screen and (max-width: 599px) {
                     paper-card {
                         width: 100%;
                     }
