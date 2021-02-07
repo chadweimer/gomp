@@ -29,11 +29,11 @@ export class PaginationLinks extends PolymerElement {
                 }
           </style>
 
-          <paper-button id="first" raised="" on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
-          <paper-button id="prev" raised="" on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
-          <paper-button raised="" disabled="">[[pageNum]] of [[numPages]]</paper-button>
-          <paper-button id="next" raised="" on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
-          <paper-button id="last" raised="" on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
+          <paper-button id="first" raised on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
+          <paper-button id="prev" raised on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
+          <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
+          <paper-button id="next" raised on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
+          <paper-button id="last" raised on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
 `;
     }
 

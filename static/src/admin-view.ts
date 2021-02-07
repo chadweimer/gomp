@@ -54,7 +54,7 @@ export class AdminView extends GompBaseElement {
                 <iron-pages selected="[[selectedTab]]">
                     <paper-card>
                         <div class="card-content">
-                            <paper-input label="Application Title" value="{{appConfig.title}}" always-float-label=""></paper-input>
+                            <paper-input label="Application Title" value="{{appConfig.title}}" always-float-label></paper-input>
                         </div>
                         <div class="card-actions">
                         <paper-button on-click="onSaveAppConfigClicked">
@@ -101,28 +101,28 @@ export class AdminView extends GompBaseElement {
                 </iron-pages>
             </div>
 
-            <paper-dialog id="addUserDialog" on-iron-overlay-closed="addUserDialogClosed" with-backdrop="">
+            <paper-dialog id="addUserDialog" on-iron-overlay-closed="addUserDialogClosed" with-backdrop>
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
-                <paper-input label="Email" value="{{user.username}}" always-float-label="" required=""></paper-input>
-                <paper-dropdown-menu-light label="Access Level" always-float-label="" required="">
+                <paper-input label="Email" value="{{user.username}}" always-float-label required></paper-input>
+                <paper-dropdown-menu-light label="Access Level" always-float-label required>
                     <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
                         <paper-item item-name="admin">admin</paper-item>
                         <paper-item item-name="editor">editor</paper-item>
                         <paper-item item-name="viewer">viewer</paper-item>
                     </paper-listbox>
                 </paper-dropdown-menu-light>
-                <paper-password-input label="New Password" value="{{user.password}}" always-float-label="" required=""></paper-password-input>
-                <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label="" required=""></paper-password-input>
+                <paper-password-input label="New Password" value="{{user.password}}" always-float-label required></paper-password-input>
+                <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label required></paper-password-input>
                 <div class="buttons">
-                    <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Save</paper-button>
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm>Save</paper-button>
                 </div>
             </paper-dialog>
 
-            <paper-dialog id="editUserDialog" on-iron-overlay-closed="editUserDialogClosed" with-backdrop="">
+            <paper-dialog id="editUserDialog" on-iron-overlay-closed="editUserDialogClosed" with-backdrop>
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Edit User</span></h3>
-                <paper-input label="Email" value="{{user.username}}" always-float-label="" disabled=""></paper-input>
-                <paper-dropdown-menu-light label="Access Level" always-float-label="" required="">
+                <paper-input label="Email" value="{{user.username}}" always-float-label disabled></paper-input>
+                <paper-dropdown-menu-light label="Access Level" always-float-label required>
                     <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
                         <paper-item item-name="admin">admin</paper-item>
                         <paper-item item-name="editor">editor</paper-item>
@@ -130,19 +130,19 @@ export class AdminView extends GompBaseElement {
                     </paper-listbox>
                 </paper-dropdown-menu-light>
                 <div class="buttons">
-                    <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Save</paper-button>
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm>Save</paper-button>
                 </div>
             </paper-dialog>
 
             <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete '[[user.username]]'?" on-confirmed="deleteUser"></confirmation-dialog>
 
-            <iron-ajax bubbles="" id="getAppConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="putAppConfigAjax" url="/api/v1/app/configuration" method="PUT" on-response="handlePutAppConfigResponse" on-error="handlePutAppConfigError"></iron-ajax>
-            <iron-ajax bubbles="" id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
-            <iron-ajax bubbles="" id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
-            <iron-ajax bubbles="" id="deleteUserAjax" url="/api/v1/users/[[userId]]" method="DELETE" on-response="handleDeleteUserResponse" on-error="handleDeleteUserError"></iron-ajax>
+            <iron-ajax bubbles id="getAppConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigResponse"></iron-ajax>
+            <iron-ajax bubbles id="putAppConfigAjax" url="/api/v1/app/configuration" method="PUT" on-response="handlePutAppConfigResponse" on-error="handlePutAppConfigError"></iron-ajax>
+            <iron-ajax bubbles id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
+            <iron-ajax bubbles id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
+            <iron-ajax bubbles id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
+            <iron-ajax bubbles id="deleteUserAjax" url="/api/v1/users/[[userId]]" method="DELETE" on-response="handleDeleteUserResponse" on-error="handleDeleteUserError"></iron-ajax>
 `;
     }
 

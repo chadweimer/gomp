@@ -30,12 +30,12 @@ export class ConfirmationDialog extends PolymerElement {
                 }
             </style>
 
-            <paper-dialog id="dialog" with-backdrop="" on-iron-overlay-closed="onDialogClosed">
+            <paper-dialog id="dialog" with-backdrop on-iron-overlay-closed="onDialogClosed">
                 <h3><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h3>
                 <p>[[message]]</p>
                 <div class="buttons">
-                    <paper-button dialog-dismiss="">No</paper-button>
-                    <paper-button dialog-confirm="">Yes</paper-button>
+                    <paper-button dialog-dismiss>No</paper-button>
+                    <paper-button dialog-confirm>Yes</paper-button>
                 </div>
             </paper-dialog>
 `;

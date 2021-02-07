@@ -87,33 +87,33 @@ export class ImageList extends GompBaseElement {
                 </div>
             </template>
 
-            <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop="">
+            <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop>
                 <h3 class="teal"><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
                 <p>Browse for a picture to upload to this recipe.</p><p>
                 </p><form id="addForm" enctype="multipart/form-data">
-                    <paper-input-container always-float-label="">
+                    <paper-input-container always-float-label>
                         <label slot="label">Picture</label>
                         <iron-input slot="input">
-                            <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required="">
+                            <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required>
                         </iron-input>
                     </paper-input-container>
                 </form>
                 <div class="buttons">
-                    <paper-button dialog-dismiss="">Cancel</paper-button>
-                    <paper-button dialog-confirm="">Upload</paper-button>
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button dialog-confirm>Upload</paper-button>
                 </div>
             </paper-dialog>
-            <paper-dialog id="uploadingDialog" with-backdrop="">
-                <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
+            <paper-dialog id="uploadingDialog" with-backdrop>
+                <h3><paper-spinner active></paper-spinner>Uploading</h3>
             </paper-dialog>
 
             <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="setMainImage"></confirmation-dialog>
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
 
-            <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]/images" on-request="handleGetImagesRequest" on-response="handleGetImagesResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="addAjax" url="/api/v1/recipes/[[recipeId]]/images" method="POST" on-request="handleAddRequest" on-response="handleAddResponse" on-error="handleAddError"></iron-ajax>
-            <iron-ajax bubbles="" id="setMainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" method="PUT" on-response="handleSetMainImageResponse" on-error="handleSetMainImageError"></iron-ajax>
-            <iron-ajax bubbles="" id="deleteAjax" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
+            <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]/images" on-request="handleGetImagesRequest" on-response="handleGetImagesResponse"></iron-ajax>
+            <iron-ajax bubbles id="addAjax" url="/api/v1/recipes/[[recipeId]]/images" method="POST" on-request="handleAddRequest" on-response="handleAddResponse" on-error="handleAddError"></iron-ajax>
+            <iron-ajax bubbles id="setMainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" method="PUT" on-response="handleSetMainImageResponse" on-error="handleSetMainImageError"></iron-ajax>
+            <iron-ajax bubbles id="deleteAjax" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 

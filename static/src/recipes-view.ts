@@ -117,7 +117,7 @@ export class RecipesView extends GompBaseElement {
                 </div>
             </div>
             <div hidden\$="[[!getCanEdit(currentUser)]]">
-                <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[areEqual(mode, 'edit')]]" with-backdrop="">
+                <paper-fab-speed-dial id="actions" icon="icons:more-vert" hidden\$="[[areEqual(mode, 'edit')]]" with-backdrop>
                     <paper-fab-speed-dial-action class="green" icon="icons:add" on-click="onNewButtonClicked">New</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="red" icon="icons:delete" on-click="onDeleteButtonClicked">Delete</paper-fab-speed-dial-action>
                     <paper-fab-speed-dial-action class="purple" icon="icons:archive" on-click="onArchiveButtonClicked" hidden="[[!areEqual(recipeState, 'active')]]">Archive</paper-fab-speed-dial-action>
@@ -135,8 +135,8 @@ export class RecipesView extends GompBaseElement {
 
             <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
 
-            <iron-ajax bubbles="" id="updateStateAjax" url="/api/v1/recipes/[[recipeId]]/state" method="PUT" on-response="handleUpdateStateResponse"></iron-ajax>
-            <iron-ajax bubbles="" id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
+            <iron-ajax bubbles id="updateStateAjax" url="/api/v1/recipes/[[recipeId]]/state" method="PUT" on-response="handleUpdateStateResponse"></iron-ajax>
+            <iron-ajax bubbles id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
 `;
     }
 

@@ -143,10 +143,10 @@ export class RecipeDisplay extends GompBaseElement {
 
           <confirmation-dialog id="confirmDeleteLinkDialog" icon="delete" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
 
-          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" auto="" id="mainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" on-request="handleGetMainImageRequest" on-response="handleGetMainImageResponse"></iron-ajax>
-          <iron-ajax bubbles="" auto="" id="getLinksAjax" url="/api/v1/recipes/[[recipeId]]/links" on-response="handleGetLinksResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="deleteLinkAjax" method="DELETE" on-response="handleDeleteLinkResponse" on-error="handleDeleteLinkError"></iron-ajax>
+          <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles auto id="mainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" on-request="handleGetMainImageRequest" on-response="handleGetMainImageResponse"></iron-ajax>
+          <iron-ajax bubbles auto id="getLinksAjax" url="/api/v1/recipes/[[recipeId]]/links" on-response="handleGetLinksResponse"></iron-ajax>
+          <iron-ajax bubbles id="deleteLinkAjax" method="DELETE" on-response="handleDeleteLinkResponse" on-error="handleDeleteLinkError"></iron-ajax>
 `;
     }
 

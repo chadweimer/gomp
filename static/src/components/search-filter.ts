@@ -38,7 +38,7 @@ export class SearchFilterElement extends GompBaseElement {
             </style>
 
             <section>
-                <paper-input label="Search Terms" always-float-label="" value="{{filter.query}}"></paper-input>
+                <paper-input label="Search Terms" always-float-label value="{{filter.query}}"></paper-input>
             </section>
             <section class="padded">
                 <label>Fields to Search</label>

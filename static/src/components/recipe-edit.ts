@@ -33,21 +33,21 @@ export class RecipeEdit extends GompBaseElement {
 
           <paper-card>
               <div class="card-content">
-                  <paper-input label="Name" always-float-label="" value="{{recipe.name}}"></paper-input>
+                  <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
                   <form id="mainImageForm" enctype="multipart/form-data">
-                      <paper-input-container hidden\$="[[recipeId]]" always-float-label="">
+                      <paper-input-container hidden\$="[[recipeId]]" always-float-label>
                           <label slot="label">Picture</label>
                           <iron-input slot="input">
                               <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png">
                           </iron-input>
                       </paper-input-container>
                   </form>
-                  <paper-textarea label="Serving Size" always-float-label="" value="{{recipe.servingSize}}"></paper-textarea>
-                  <paper-textarea label="Ingredients" always-float-label="" value="{{recipe.ingredients}}"></paper-textarea>
-                  <paper-textarea label="Directions" always-float-label="" value="{{recipe.directions}}"></paper-textarea>
-                  <paper-textarea label="Storage/Freezer Instructions" always-float-label="" value="{{recipe.storageInstructions}}"></paper-textarea>
-                  <paper-textarea label="Nutrition" always-float-label="" value="{{recipe.nutritionInfo}}"></paper-textarea>
-                  <paper-input label="Source" always-float-label="" value="{{recipe.sourceUrl}}"></paper-input>
+                  <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
+                  <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
+                  <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
+                  <paper-textarea label="Storage/Freezer Instructions" always-float-label value="{{recipe.storageInstructions}}"></paper-textarea>
+                  <paper-textarea label="Nutrition" always-float-label value="{{recipe.nutritionInfo}}"></paper-textarea>
+                  <paper-input label="Source" always-float-label value="{{recipe.sourceUrl}}"></paper-input>
                   <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
               </div>
               <div class="card-actions">
@@ -55,14 +55,14 @@ export class RecipeEdit extends GompBaseElement {
                   <paper-button on-click="onSaveButtonClicked">Save</paper-button>
               </div>
           </paper-card>
-          <paper-dialog id="uploadingDialog" with-backdrop="">
-              <h3><paper-spinner active=""></paper-spinner>Uploading</h3>
+          <paper-dialog id="uploadingDialog" with-backdrop>
+              <h3><paper-spinner active></paper-spinner>Uploading</h3>
           </paper-dialog>
 
-          <iron-ajax bubbles="" auto="" id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="handlePutRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="postAjax" url="/api/v1/recipes" method="POST" on-response="handlePostRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" on-error="handleAddImageResponse"></iron-ajax>
+          <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="handlePutRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles id="postAjax" url="/api/v1/recipes" method="POST" on-response="handlePostRecipeResponse"></iron-ajax>
+          <iron-ajax bubbles id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" on-error="handleAddImageResponse"></iron-ajax>
 `;
     }
 

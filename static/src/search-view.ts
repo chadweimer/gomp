@@ -107,7 +107,7 @@ export class SearchView extends GompBaseElement {
                 <div class="wrap-horizontal">
                     <div class="controlContainer">
                         <paper-menu-button id="statesDropdown">
-                            <paper-button raised="" slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[getStateDisplay(filter.states)]]</paper-button>
+                            <paper-button raised slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[getStateDisplay(filter.states)]]</paper-button>
                             <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
                                 <template is="dom-repeat" items="[[availableStates]]">
                                     <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
@@ -127,14 +127,14 @@ export class SearchView extends GompBaseElement {
             </div>
             <div class="section">
                 <div class="wrap-horizontal">
-                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'card')]]" restamp="">
+                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'card')]]" restamp>
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
                                 <recipe-card recipe="[[item]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-card>
                             </div>
                         </template>
                     </template>
-                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'list')]]" restamp="">
+                    <template is="dom-if" if="[[areEqual(searchSettings.viewMode, 'list')]]" restamp>
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
                                 <a href="/recipes/[[item.id]]/view">
@@ -142,7 +142,7 @@ export class SearchView extends GompBaseElement {
                                         <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
                                         <paper-item-body>
                                             <div>[[item.name]]</div>
-                                            <div secondary="">
+                                            <div secondary>
                                                 <recipe-rating recipe="{{item}}" class="listRating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
                                             </div>
                                         </paper-item-body>
@@ -160,8 +160,8 @@ export class SearchView extends GompBaseElement {
             </div>
             <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
-            <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only=""></app-localstorage-document>
-            <iron-ajax bubbles="" auto="" id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
+            <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only></app-localstorage-document>
+            <iron-ajax bubbles auto id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
 `;
     }
 

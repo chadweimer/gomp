@@ -23,17 +23,17 @@ export class RecipeLinkDialog extends GompBaseElement {
                 }
           </style>
 
-          <paper-dialog id="dialog" on-iron-overlay-closed="onDialogClosed" with-backdrop="">
+          <paper-dialog id="dialog" on-iron-overlay-closed="onDialogClosed" with-backdrop>
               <h3 class="indigo"><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
-              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source="" show-results-on-focus="" required=""></paper-autocomplete>
+              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required></paper-autocomplete>
               <div class="buttons">
-                  <paper-button dialog-dismiss="">Cancel</paper-button>
-                  <paper-button disabled="[[shouldPreventAdd(selectedRecipeId)]]" dialog-confirm="">Add</paper-button>
+                  <paper-button dialog-dismiss>Cancel</paper-button>
+                  <paper-button disabled="[[shouldPreventAdd(selectedRecipeId)]]" dialog-confirm>Add</paper-button>
               </div>
           </paper-dialog>
 
-          <iron-ajax bubbles="" id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse"></iron-ajax>
-          <iron-ajax bubbles="" id="postLinkAjax" url="/api/v1/recipes/[[recipeId]]/links" method="POST" on-response="handlePostLinkResponse" on-error="handlePostLinkError"></iron-ajax>
+          <iron-ajax bubbles id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse"></iron-ajax>
+          <iron-ajax bubbles id="postLinkAjax" url="/api/v1/recipes/[[recipeId]]/links" method="POST" on-response="handlePostLinkResponse" on-error="handlePostLinkError"></iron-ajax>
 `;
     }
 
