@@ -118,11 +118,10 @@ export class SearchView extends GompBaseElement {
                         <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
                     </div>
                     <div class="controlContainer">
-                        <div class="centered-horizontal">
+                        <div class="centered-horizontal hide-on-med-and-down">
                             <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
                         </div>
                     </div>
-                    <div class="controlContainer"></div>
                 </div>
             </div>
             <div class="section">
