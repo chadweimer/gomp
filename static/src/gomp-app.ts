@@ -54,6 +54,9 @@ export class GompApp extends PolymerElement {
                     --paper-item: {
                         cursor: pointer;
                     }
+                    --paper-button: {
+                        color: var(--primary-color);
+                    }
 
                     color: var(--primary-text-color);
                 }

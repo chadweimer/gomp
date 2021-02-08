@@ -26,9 +26,6 @@ export class NoteList extends GompBaseElement {
                 note-card {
                     margin: 5px;
                 }
-                #noteDialog h3 > span {
-                    padding-left: 0.25em;
-                }
           </style>
 
           <template is="dom-repeat" items="[[notes]]">

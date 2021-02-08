@@ -22,9 +22,6 @@ export class ConfirmationDialog extends PolymerElement {
                 h3 {
                     color: var(--confirmation-dialog-title-color, var(--primary-color));
                 }
-                h3 > span {
-                    padding-left: 0.25em;
-                }
                 paper-dialog {
                     width: unset;
                 }

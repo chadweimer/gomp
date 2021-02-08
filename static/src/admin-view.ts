@@ -35,9 +35,6 @@ export class AdminView extends GompBaseElement {
                     }
                     --paper-tabs-selection-bar-color: var(--accent-color);
                 }
-                #userDialog h3 > span {
-                    padding-left: 0.25em;
-                }
                 #confirmDeleteUserDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
@@ -58,7 +55,6 @@ export class AdminView extends GompBaseElement {
                         </div>
                         <div class="card-actions">
                         <paper-button on-click="onSaveAppConfigClicked">
-                            <iron-icon icon="icons:save"></iron-icon>
                             <span>Save</span>
                         <paper-button>
                         </div>
@@ -93,7 +89,6 @@ export class AdminView extends GompBaseElement {
                         </div>
                         <div class="card-actions">
                             <paper-button on-click="onAddUserClicked">
-                                <iron-icon icon="social:person"></iron-icon>
                                 <span>Add</span>
                             <paper-button>
                         </div>

@@ -34,9 +34,6 @@ export class ImageList extends GompBaseElement {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
-                #addDialog h3 > span {
-                    padding-left: 0.25em;
-                }
                 #confirmMainImageDialog {
                     --confirmation-dialog-title-color: var(--paper-blue-500);
                 }
