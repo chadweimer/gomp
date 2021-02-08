@@ -16,6 +16,8 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-icons/editor-icons.js';
 import '@polymer/paper-dialog/paper-dialog.js';
+import '@polymer/paper-tabs/paper-tab.js';
+import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial-action.js';
 import './components/recipe-display.js';
@@ -103,10 +105,16 @@ export class RecipesView extends GompBaseElement {
                 <div hidden\$="[[areEqual(mode, 'edit')]]">
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-display>
                     <div class="wrap-horizontal">
-                        <div id="images" class="tab">
+                        <div class="tab">
+                            <paper-tabs selected="0">
+                                <paper-tab disabled>Pictures</paper-tab>
+                            </paper-tabs>
                             <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage" readonly\$="[[!getCanEdit(currentUser)]]"></image-list>
                         </div>
-                        <div id="notes" class="tab">
+                        <div class="tab">
+                            <paper-tabs selected="0">
+                                <paper-tab disabled>Notes</paper-tab>
+                            </paper-tabs>
                             <note-list id="noteList" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></note-list>
                         </div>
                     </div>

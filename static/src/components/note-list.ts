@@ -11,7 +11,6 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-input/paper-textarea.js';
 import './note-card.js';
 import '../shared-styles.js';
@@ -27,16 +26,11 @@ export class NoteList extends GompBaseElement {
                 note-card {
                     margin: 5px;
                 }
-                paper-divider {
-                    width: 100%;
-                }
                 #noteDialog h3 > span {
                     padding-left: 0.25em;
                 }
           </style>
 
-          <header>Notes</header>
-          <paper-divider></paper-divider>
           <template is="dom-repeat" items="[[notes]]">
               <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted" readonly\$="[[readonly]]"></note-card>
           </template>

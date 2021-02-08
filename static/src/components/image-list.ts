@@ -15,7 +15,6 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-icon-item.js';
@@ -34,9 +33,6 @@ export class ImageList extends GompBaseElement {
                     display: block;
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
-                }
-                paper-divider {
-                    width: 100%;
                 }
                 #addDialog h3 > span {
                     padding-left: 0.25em;
@@ -63,8 +59,6 @@ export class ImageList extends GompBaseElement {
                 }
             </style>
 
-            <header>Pictures</header>
-            <paper-divider></paper-divider>
             <template is="dom-repeat" items="[[images]]">
                 <div class="imageContainer">
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>

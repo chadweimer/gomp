@@ -38,7 +38,6 @@ export class SettingsView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
-                    --paper-tabs-selection-bar-color: var(--accent-color);
                 }
                 paper-button > span {
                     margin-left: 0.5em;

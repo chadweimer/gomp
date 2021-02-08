@@ -48,6 +48,7 @@ export class GompApp extends PolymerElement {
                     --accent-color: var(--paper-teal-500);
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
+                    --paper-tabs-selection-bar-color: var(--accent-color);
                     @apply --paper-font-body1;
 
                     --paper-item: {
