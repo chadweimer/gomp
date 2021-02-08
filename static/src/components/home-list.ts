@@ -49,7 +49,7 @@ export class HomeList extends GompBaseElement {
                 }
             </style>
 
-            <h6><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></h6>
+            <h5><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></h5>
             <div class="wrap-horizontal">
                 <template is="dom-repeat" items="[[recipes]]">
                     <div class="recipeContainer">
