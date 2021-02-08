@@ -13,16 +13,19 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 @apply --paper-font-display1;
             }
             h3 {
-                @apply --paper-font-title;
+                @apply --paper-font-headline;
             }
             h4 {
-                @apply --paper-font-headline;
+                @apply --paper-font-title;
             }
             h5 {
                 @apply --paper-font-subhead;
             }
             h6 {
                 @apply --paper-font-body2;
+            }
+            header {
+                @apply --paper-font-title;
             }
 
             /* HTML Controls */

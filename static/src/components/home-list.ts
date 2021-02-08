@@ -32,9 +32,6 @@ export class HomeList extends GompBaseElement {
                     }
                     --recipe-card-rating-size: 16px;
                 }
-                h3 {
-                    line-height: unset;
-                }
                 @media screen and (min-width: 992px) {
                     .recipeContainer {
                         width: 16.6%;
@@ -52,7 +49,7 @@ export class HomeList extends GompBaseElement {
                 }
             </style>
 
-            <h3><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></h3>
+            <header><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></header>
             <div class="wrap-horizontal">
                 <template is="dom-repeat" items="[[recipes]]">
                     <div class="recipeContainer">

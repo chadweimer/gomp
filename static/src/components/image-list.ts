@@ -35,9 +35,6 @@ export class ImageList extends GompBaseElement {
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
                 }
-                header {
-                    font-size: 1.5em;
-                }
                 paper-divider {
                     width: 100%;
                 }

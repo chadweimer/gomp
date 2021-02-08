@@ -27,9 +27,6 @@ export class NoteList extends GompBaseElement {
                 note-card {
                     margin: 5px;
                 }
-                header {
-                    font-size: 1.5em;
-                }
                 paper-divider {
                     width: 100%;
                 }

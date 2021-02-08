@@ -30,6 +30,9 @@ export class SearchView extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
+
+                    margin: 10px;
+
                     --paper-button: {
                         min-width: 2.5em;
                         height: 2.5em;
@@ -39,7 +42,7 @@ export class SearchView extends GompBaseElement {
                     }
                 }
                 .section {
-                    padding: 4px 8px;
+                    padding: 4px 0px;
                 }
                 paper-menu-button {
                     padding: 0px;
@@ -62,41 +65,33 @@ export class SearchView extends GompBaseElement {
                     padding-left: 3px;
                 }
                 @media screen and (min-width: 1200px) {
-                    .controlContainer {
-                        width: 33%;
-                        margin-top: 0.5em;
-                    }
                     .recipeContainer {
                         width: 25%;
                     }
                 }
                 @media screen and (min-width: 992px) and (max-width: 1199px) {
-                    .controlContainer {
-                        width: 33%;
-                        margin-top: 0.5em;
-                    }
                     .recipeContainer {
                         width: 33%;
                     }
                 }
-                @media screen and (min-width: 600px) and (max-width: 991px) {
+                @media screen and (min-width: 992px) {
+                    .controlContainer {
+                        width: 33%;
+                    }
+                }
+                @media screen and (max-width: 991px) {
                     .controlContainer {
                         @apply --layout-horizontal;
                         @apply --layout-center-justified;
                         width: 100%;
-                        margin-top: 0.5em;
                     }
+                }
+                @media screen and (min-width: 600px) and (max-width: 991px) {
                     .recipeContainer {
                         width: 50%;
                     }
                 }
                 @media screen and (max-width: 599px) {
-                    .controlContainer {
-                        @apply --layout-horizontal;
-                        @apply --layout-center-justified;
-                        width: 100%;
-                        margin-top: 0.5em;
-                    }
                     .recipeContainer {
                         width: 100%;
                     }
@@ -153,8 +148,13 @@ export class SearchView extends GompBaseElement {
                 </div>
             </div>
             <div class="section">
-                <div class="centered-horizontal">
-                    <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
+                <div class="wrap-horizontal">
+                    <div class="controlContainer"></div>
+                    <div class="controlContainer">
+                        <div class="centered-horizontal">
+                            <pagination-links page-num="{{pageNum}}" num-pages="[[numPages]]"></pagination-links>
+                        </div>
+                    </div>
                 </div>
             </div>
             <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
