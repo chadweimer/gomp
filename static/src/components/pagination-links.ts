@@ -1,13 +1,14 @@
 'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
+import { GompBaseElement } from '../common/gomp-base-element.js':
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '../shared-styles.js';
 
 @customElement('pagination-links')
-export class PaginationLinks extends PolymerElement {
+export class PaginationLinks extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
