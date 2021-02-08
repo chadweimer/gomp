@@ -18,22 +18,17 @@ export class PaginationLinks extends PolymerElement {
                 :host[hidden] {
                     display: none !important;
                 }
-                paper-button {
-                    font-weight: 600;
-                    text-transform: lowercase;
-                    vertical-align: top;
-                }
                 paper-button:not([disabled]) {
                     color: #ffffff;
                     background: var(--light-accent-color);
                 }
           </style>
 
-          <paper-button id="first" raised on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
-          <paper-button id="prev" raised on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
           <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
-          <paper-button id="next" raised on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
-          <paper-button id="last" raised on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
 `;
     }
 
@@ -42,31 +37,6 @@ export class PaginationLinks extends PolymerElement {
     @property({type: Number, notify: true})
     public numPages = 10;
 
-    private get first(): PaperButtonElement {
-        return this.$.first as PaperButtonElement;
-    }
-    private get prev(): PaperButtonElement {
-        return this.$.prev as PaperButtonElement;
-    }
-    private get next(): PaperButtonElement {
-        return this.$.next as PaperButtonElement;
-    }
-    private get last(): PaperButtonElement {
-        return this.$.last as PaperButtonElement;
-    }
-
-    static get observers() {
-        return [
-            'pagesChanged(pageNum, numPages)',
-        ];
-    }
-
-    protected pagesChanged() {
-        this.first.disabled = this.pageNum === 1;
-        this.prev.disabled = this.pageNum === 1;
-        this.next.disabled = this.pageNum === this.numPages;
-        this.last.disabled = this.pageNum === this.numPages;
-    }
     protected goFirst() {
         this.pageNum = 1;
     }
