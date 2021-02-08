@@ -17,6 +17,9 @@ export class PaginationLinks extends PolymerElement {
                 :host[hidden] {
                     display: none !important;
                 }
+                paper-button {
+                    vertical-align: top;
+                }
                 paper-button:not([disabled]) {
                     color: #ffffff;
                     background: var(--light-accent-color);
