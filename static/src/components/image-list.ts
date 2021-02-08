@@ -80,8 +80,8 @@ export class ImageList extends GompBaseElement {
 
             <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop>
                 <h3 class="teal"><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
-                <p>Browse for a picture to upload to this recipe.</p><p>
-                </p><form id="addForm" enctype="multipart/form-data">
+                <p>Browse for a picture to upload to this recipe.</p>
+                <form id="addForm" enctype="multipart/form-data">
                     <paper-input-container always-float-label>
                         <label slot="label">Picture</label>
                         <iron-input slot="input">
