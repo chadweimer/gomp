@@ -164,16 +164,28 @@ export class RecipeDisplay extends GompBaseElement {
 
         if (!options || options.recipe) {
             this.recipe = null;
-            this.recipe = await this.AjaxGet<Recipe>(`/api/v1/recipes/${this.recipeId}`);
+            try {
+                this.recipe = await this.AjaxGet(`/api/v1/recipes/${this.recipeId}`);
+            } catch (e) {
+                console.error(e);
+            }
         }
         if (!options || options.links) {
             this.links = null;
-            this.links = await this.AjaxGet<RecipeCompact[]>(`/api/v1/recipes/${this.recipeId}/links`);
-            this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
+            try {
+                this.links = await this.AjaxGet(`/api/v1/recipes/${this.recipeId}/links`);
+                this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
+            } catch (e) {
+                console.error(e);
+            }
         }
         if (!options || options.mainImage) {
             this.mainImage = null;
-            this.mainImage = await this.AjaxGet<object|null>(`/api/v1/recipes/${this.recipeId}/image`);
+            try {
+                this.mainImage = await this.AjaxGet(`/api/v1/recipes/${this.recipeId}/image`);
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 
@@ -195,8 +207,9 @@ export class RecipeDisplay extends GompBaseElement {
         try {
             await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}/links/${el.dataset.id}`);
             await this.refresh({links: true});
-        } catch {
+        } catch (e) {
             this.showToast('Removing link failed!');
+            console.error(e);
         }
     }
 
