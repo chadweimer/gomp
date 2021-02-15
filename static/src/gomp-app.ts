@@ -271,9 +271,11 @@ export class GompApp extends PolymerElement {
         this.addEventListener('recipes-modified', () => this.recipesModified());
         this.addEventListener('change-page', (e: CustomEvent) => this.changePageRequested(e));
         this.addEventListener('iron-ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
-        this.addEventListener('iron-ajax-request', () => this.onAjaxRequest());
+        this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
         this.addEventListener('iron-ajax-response', () => this.onAjaxResponse());
+        this.addEventListener('ajax-response', () => this.onAjaxResponse());
         this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
+        this.addEventListener('ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
         this.addEventListener('app-config-changed', (e: CustomEvent) => this.onAppConfigChanged(e));
@@ -310,20 +312,17 @@ export class GompApp extends PolymerElement {
     protected onAjaxPresend(e: CustomEvent) {
         const jwtToken = localStorage.getItem('jwtToken');
         e.detail.options.headers = {Authorization: 'Bearer ' + jwtToken};
-    }
-    protected onAjaxRequest() {
+
         this.loadingCount++;
     }
     protected onAjaxResponse() {
-        this.loadingCount--;
-        if (this.loadingCount < 0) {
-            this.loadingCount = 0;
+        if (this.loadingCount > 0) {
+            this.loadingCount--;
         }
     }
     protected onAjaxError(e: CustomEvent) {
-        this.loadingCount--;
-        if (this.loadingCount < 0) {
-            this.loadingCount = 0;
+        if (this.loadingCount > 0) {
+            this.loadingCount--;
         }
         if ((!this.route || this.route.path !== '/login') && e.detail.request.xhr.status === 401) {
             this.logout();

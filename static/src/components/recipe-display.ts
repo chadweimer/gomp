@@ -1,11 +1,9 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-card/paper-card.js';
@@ -142,11 +140,6 @@ export class RecipeDisplay extends GompBaseElement {
           </paper-card>
 
           <confirmation-dialog id="confirmDeleteLinkDialog" icon="delete" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
-
-          <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles auto id="mainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" on-request="handleGetMainImageRequest" on-response="handleGetMainImageResponse"></iron-ajax>
-          <iron-ajax bubbles auto id="getLinksAjax" url="/api/v1/recipes/[[recipeId]]/links" on-response="handleGetLinksResponse"></iron-ajax>
-          <iron-ajax bubbles id="deleteLinkAjax" method="DELETE" on-response="handleDeleteLinkResponse" on-error="handleDeleteLinkError"></iron-ajax>
 `;
     }
 
@@ -163,32 +156,24 @@ export class RecipeDisplay extends GompBaseElement {
     private get confirmDeleteLinkDialog(): ConfirmationDialog {
         return this.$.confirmDeleteLinkDialog as ConfirmationDialog;
     }
-    private get getAjax(): IronAjaxElement {
-        return this.$.getAjax as IronAjaxElement;
-    }
-    private get getLinksAjax(): IronAjaxElement {
-        return this.$.getLinksAjax as IronAjaxElement;
-    }
-    private get mainImageAjax(): IronAjaxElement {
-        return this.$.mainImageAjax as IronAjaxElement;
-    }
-    private get deleteLinkAjax(): IronAjaxElement {
-        return this.$.deleteLinkAjax as IronAjaxElement;
-    }
 
-    public refresh(options?: {recipe?: boolean, links?: boolean, mainImage?: boolean}) {
+    public async refresh(options?: {recipe?: boolean, links?: boolean, mainImage?: boolean}) {
         if (!this.recipeId) {
             return;
         }
 
         if (!options || options.recipe) {
-            this.getAjax.generateRequest();
+            this.recipe = null;
+            this.recipe = await this.AjaxGet<Recipe>(`/api/v1/recipes/${this.recipeId}`);
         }
         if (!options || options.links) {
-            this.getLinksAjax.generateRequest();
+            this.links = null;
+            this.links = await this.AjaxGet<RecipeCompact[]>(`/api/v1/recipes/${this.recipeId}/links`);
+            this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
         }
         if (!options || options.mainImage) {
-            this.mainImageAjax.generateRequest();
+            this.mainImage = null;
+            this.mainImage = await this.AjaxGet<object|null>(`/api/v1/recipes/${this.recipeId}/image`);
         }
     }
 
@@ -203,35 +188,18 @@ export class RecipeDisplay extends GompBaseElement {
         this.confirmDeleteLinkDialog.dataset.id = e.model.item.id.toString();
         this.confirmDeleteLinkDialog.open();
     }
-    protected deleteLink(e: Event) {
+
+    protected async deleteLink(e: Event) {
         const el = e.target as HTMLElement;
 
-        this.deleteLinkAjax.url = '/api/v1/recipes/' + this.recipeId + '/links/' + el.dataset.id;
-        this.deleteLinkAjax.generateRequest();
+        try {
+            await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}/links/${el.dataset.id}`);
+            await this.refresh({links: true});
+        } catch {
+            this.showToast('Removing link failed!');
+        }
     }
 
-    protected handleGetRecipeRequest() {
-        this.recipe = null;
-    }
-    protected handleGetRecipeResponse(e: CustomEvent<{response: Recipe}>) {
-        this.recipe = e.detail.response;
-        this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
-    }
-    protected handleGetMainImageRequest() {
-        this.mainImage = null;
-    }
-    protected handleGetMainImageResponse(e: CustomEvent) {
-        this.mainImage = e.detail.response;
-    }
-    protected handleGetLinksResponse(e: CustomEvent<{response: RecipeCompact[]}>) {
-        this.links = e.detail.response;
-    }
-    protected handleDeleteLinkResponse() {
-        this.refresh({links: true});
-    }
-    protected handleDeleteLinkError() {
-        this.showToast('Removing link failed!');
-    }
     protected showModifiedDate(recipe: Recipe) {
         if (!recipe) {
             return false;
