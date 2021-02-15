@@ -1,10 +1,8 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/paper-fab/paper-fab.js';
 import './components/home-list.js';
 import './shared-styles.js';
@@ -30,9 +28,6 @@ export class HomeView extends GompBaseElement {
                 <div class="padded-10">
 
             <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
-
-            <iron-ajax bubbles id="userSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetUserSettingsResponse"></iron-ajax>
-            <iron-ajax bubbles id="userFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserFiltersResponse"></iron-ajax>
 `;
     }
 
@@ -43,14 +38,9 @@ export class HomeView extends GompBaseElement {
     protected searchFilters: SavedSearchFilterCompact[] = [];
     protected homeListsActive = false;
 
-    private get userSettingsAjax(): IronAjaxElement {
-        return this.$.userSettingsAjax as IronAjaxElement;
-    }
-    private get userFiltersAjax(): IronAjaxElement {
-        return this.$.userFiltersAjax as IronAjaxElement;
-    }
-
     public ready() {
+        this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
+
         super.ready();
 
         if (this.isActive) {
@@ -61,7 +51,7 @@ export class HomeView extends GompBaseElement {
     protected onAjaxPresend(e: CustomEvent) {
         // WORKAROUND: Force bubble the ajax presend so that the jwt is properly filled in.
         // This is necessary due to something about dom-repeat
-        this.dispatchEvent(new CustomEvent('iron-ajax-presend', {bubbles: true, composed: true, detail: e.detail}));
+        this.dispatchEvent(new CustomEvent('ajax-presend', {bubbles: true, composed: true, detail: e.detail}));
     }
 
     protected isActiveChanged(isActive: boolean) {
@@ -74,16 +64,18 @@ export class HomeView extends GompBaseElement {
             this.homeListsActive = false;
         }
     }
-    protected handleGetUserSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
-        this.currentUserSettings = e.detail.response;
-    }
-    protected handleGetUserFiltersResponse(e: CustomEvent<{response: SavedSearchFilterCompact[]}>) {
-        this.searchFilters = e.detail.response;
-        this.homeListsActive = this.isActive;
-    }
 
-    protected refresh() {
-        this.userSettingsAjax.generateRequest();
-        this.userFiltersAjax.generateRequest();
+    private async refresh() {
+        try {
+            this.currentUserSettings = await this.AjaxGet('/api/v1/users/current/settings');
+        } catch (e) {
+            console.error(e);
+        }
+        try {
+            this.searchFilters = await this.AjaxGet('/api/v1/users/current/filters');
+        } catch (e) {
+            console.error(e);
+        }
+        this.homeListsActive = this.isActive;
     }
 }
