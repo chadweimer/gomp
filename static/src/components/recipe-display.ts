@@ -165,7 +165,7 @@ export class RecipeDisplay extends GompBaseElement {
         if (!options || options.recipe) {
             this.recipe = null;
             try {
-                this.recipe = await this.AjaxGet(`/api/v1/recipes/${this.recipeId}`);
+                this.recipe = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}`);
             } catch (e) {
                 console.error(e);
             }
@@ -173,7 +173,7 @@ export class RecipeDisplay extends GompBaseElement {
         if (!options || options.links) {
             this.links = null;
             try {
-                this.links = await this.AjaxGet(`/api/v1/recipes/${this.recipeId}/links`);
+                this.links = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}/links`);
                 this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
             } catch (e) {
                 console.error(e);
@@ -182,7 +182,7 @@ export class RecipeDisplay extends GompBaseElement {
         if (!options || options.mainImage) {
             this.mainImage = null;
             try {
-                this.mainImage = await this.AjaxGet(`/api/v1/recipes/${this.recipeId}/image`);
+                this.mainImage = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}/image`);
             } catch (e) {
                 console.error(e);
             }

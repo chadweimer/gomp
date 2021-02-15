@@ -180,8 +180,8 @@ export class AdminView extends GompBaseElement {
     }
 
     private async refresh() {
-        this.appConfig = await this.AjaxGet('/api/v1/app/configuration');
-        this.users = await this.AjaxGet('/api/v1/users');
+        this.appConfig = await this.AjaxGetWithResult('/api/v1/app/configuration');
+        this.users = await this.AjaxGetWithResult('/api/v1/users');
     }
 
     protected async onSaveAppConfigClicked() {

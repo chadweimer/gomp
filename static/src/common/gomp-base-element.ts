@@ -40,12 +40,16 @@ export abstract class GompBaseElement extends PolymerElement {
         return new Date(dateStr).toLocaleDateString();
     }
 
-    protected async AjaxGet<TResult>(url: string, queryObj?: any) {
+    protected async AjaxGet(url: string, queryObj?: any) {
         const query = new URLSearchParams(queryObj);
         const fullUrl = `${url}?${query.toString()}`;
 
         const init: RequestInit = {};
-        const resp = await this.ajaxFetch(fullUrl, init);
+        return await this.ajaxFetch(fullUrl, init);
+    }
+
+    protected async AjaxGetWithResult<TResult>(url: string, queryObj?: any) {
+        const resp = await this.AjaxGet(url, queryObj);
         const result = await resp.json() as TResult;
         return result;
     }
@@ -55,7 +59,7 @@ export abstract class GompBaseElement extends PolymerElement {
             method: 'PUT',
             body: JSON.stringify(body)
         };
-        await this.ajaxFetch(url, init);
+        return await this.ajaxFetch(url, init);
     }
 
     protected async AjaxPost<TBody>(url: string, body: TBody) {
@@ -63,24 +67,16 @@ export abstract class GompBaseElement extends PolymerElement {
             method: 'POST',
             body: JSON.stringify(body)
         };
-        await this.ajaxFetch(url, init);
+        return await this.ajaxFetch(url, init);
     }
 
     protected async AjaxPostWithLocation<TBody>(url: string, body: TBody) {
-        const init: RequestInit = {
-            method: 'POST',
-            body: JSON.stringify(body)
-        };
-        const resp = await this.ajaxFetch(url, init);
+        const resp = await this.AjaxPost(url, body);
         return resp.headers.get('Location');
     }
 
     protected async AjaxPostWithResult<TBody, TResult>(url: string, body: TBody) {
-        const init: RequestInit = {
-            method: 'POST',
-            body: JSON.stringify(body)
-        };
-        const resp = await this.ajaxFetch(url, init);
+        const resp = await this.AjaxPost(url, body);
         const result = await resp.json() as TResult;
         return result;
     }
@@ -89,7 +85,7 @@ export abstract class GompBaseElement extends PolymerElement {
         const init: RequestInit = {
             method: 'DELETE'
         };
-        await this.ajaxFetch(url, init);
+        return await this.ajaxFetch(url, init);
     }
 
     private async ajaxFetch(url: string, init?: RequestInit) {
