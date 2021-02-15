@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-ajax/iron-ajax.js';
-import '@cwmr/iron-star-rating/iron-star-rating.js';
+import '@cwmr/mwc-star-rating';
 import '../shared-styles.js';
 
 @customElement('recipe-rating')
@@ -13,11 +13,11 @@ export class RecipeRating extends GompBaseElement {
         return html`
             <style include="shared-styles">
                :host {
-                   --star-rating-size: var(--recipe-rating-size);
+                   --mwc-star-rating-size: var(--recipe-rating-size);
                 }
           </style>
 
-          <iron-star-rating value="[[recipe.averageRating]]" on-rating-selected="starRatingSelected" readonly\$="[[readonly]]"></iron-star-rating>
+          <mwc-star-rating value="[[recipe.averageRating]]" on-rating-selected="starRatingSelected" readonly\$="[[readonly]]"></mwc-star-rating>
 
           <iron-ajax bubbles id="rateAjax" url="/api/v1/recipes/[[recipe.id]]/rating" method="PUT" on-response="handlePutRecipeRatingResponse" on-error="handlePutRecipeRatingError"></iron-ajax>
 `;
