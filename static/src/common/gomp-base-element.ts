@@ -63,8 +63,26 @@ export abstract class GompBaseElement extends PolymerElement {
             method: 'POST',
             body: JSON.stringify(body)
         };
+        await this.ajaxFetch(url, init);
+    }
+
+    protected async AjaxPostWithLocation<TBody>(url: string, body: TBody) {
+        const init: RequestInit = {
+            method: 'POST',
+            body: JSON.stringify(body)
+        };
         const resp = await this.ajaxFetch(url, init);
         return resp.headers.get('Location');
+    }
+
+    protected async AjaxPostWithResult<TBody, TResult>(url: string, body: TBody) {
+        const init: RequestInit = {
+            method: 'POST',
+            body: JSON.stringify(body)
+        };
+        const resp = await this.ajaxFetch(url, init);
+        const result = await resp.json() as TResult;
+        return result;
     }
 
     protected async AjaxDelete(url: string) {

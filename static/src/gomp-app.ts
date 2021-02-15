@@ -452,7 +452,7 @@ export class GompApp extends PolymerElement {
     protected logout() {
         localStorage.clear();
         sessionStorage.clear();
-        this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true, detail: {user: null}}));
+        this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true}));
         this.changeRoute('/login');
     }
     protected onSearch(e: any) {
