@@ -1,11 +1,9 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, RecipeState } from './models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
@@ -160,7 +158,6 @@ export class SearchView extends GompBaseElement {
             <a href="/create" hidden\$="[[!getCanEdit(currentUser)]]"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 
             <app-localstorage-document key="searchSettings" data="{{searchSettings}}" session-only></app-localstorage-document>
-            <iron-ajax bubbles auto id="recipesAjax" url="/api/v1/recipes" on-response="handleGetRecipesResponse" on-error="handleGetRecipesError" debounce-duration="100"></iron-ajax>
 `;
     }
 
@@ -196,9 +193,6 @@ export class SearchView extends GompBaseElement {
     private get statesDropdown(): PaperMenuButton {
         return this.$.statesDropdown as PaperMenuButton;
     }
-    private get recipesAjax(): IronAjaxElement {
-        return this.$.recipesAjax as IronAjaxElement;
-    }
 
     static get observers() {
         return [
@@ -211,7 +205,9 @@ export class SearchView extends GompBaseElement {
     public ready() {
         super.ready();
 
-        this.refresh();
+        if (this.isActive) {
+            this.refresh();
+        }
     }
 
     protected isActiveChanged(isActive: boolean) {
@@ -222,7 +218,7 @@ export class SearchView extends GompBaseElement {
         }
     }
 
-    public refresh(rescroll = false) {
+    public async refresh(rescroll = false) {
         if (!this.isActive) {
             this.pending = {
                 refresh: true,
@@ -235,29 +231,38 @@ export class SearchView extends GompBaseElement {
         const defaultFilter = new DefaultSearchFilter();
         const filter = {...defaultFilter, ...this.filter};
 
-        this.recipesAjax.params = {
-            'q': filter.query,
-            'pictures': filter.withPictures,
-            'fields[]': filter.fields,
-            'tags[]': filter.tags,
-            'states[]': filter.states,
-            'sort': filter.sortBy,
-            'dir': filter.sortDir,
-            'page': this.pageNum,
-            'count': this.getRecipeCount(),
-        };
+        this.recipes = [];
+        this.totalRecipeCount = 0;
+        try {
+            const filterQuery = {
+                'q': filter.query,
+                'pictures': filter.withPictures,
+                'fields[]': filter.fields,
+                'tags[]': filter.tags,
+                'states[]': filter.states,
+                'sort': filter.sortBy,
+                'dir': filter.sortDir,
+                'page': this.pageNum,
+                'count': this.getRecipeCount(),
+            };
+            const response: {total: number, recipes: RecipeCompact[]} = await this.AjaxGetWithResult('/api/v1/recipes', filterQuery);
+            this.recipes = response.recipes;
+            this.totalRecipeCount = response.total;
+        } catch (e) {
+            console.error(e);
+        }
 
         if (rescroll) {
             this.dispatchEvent(new CustomEvent('scroll-top', {bubbles: true, composed: true}));
         }
     }
 
-    protected pageNumChanged() {
-        this.refresh(true);
+    protected async pageNumChanged() {
+        await this.refresh(true);
     }
-    protected searchChanged() {
+    protected async searchChanged() {
         this.pageNum = 1;
-        this.refresh(true);
+        await this.refresh(true);
     }
     protected totalChanged(total: number) {
         this.dispatchEvent(new CustomEvent('search-result-count-changed', {bubbles: true, composed: true, detail: total}));
@@ -267,15 +272,6 @@ export class SearchView extends GompBaseElement {
             return 60;
         }
         return 24;
-    }
-
-    protected handleGetRecipesResponse(e: CustomEvent<{response: {recipes: RecipeCompact[], total: number}}>) {
-        this.recipes = e.detail.response.recipes;
-        this.totalRecipeCount = e.detail.response.total;
-    }
-    protected handleGetRecipesError() {
-        this.recipes = [];
-        this.totalRecipeCount = 0;
     }
 
     protected updatePagination(_: object|null, total: number) {

@@ -1,11 +1,9 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { UserSettings } from '../models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-input/paper-input-container.js';
@@ -52,8 +50,6 @@ export class TagInput extends GompBaseElement {
                     </div>
                     <input type="hidden" slot="input">
                 </paper-input-container>
-
-            <iron-ajax bubbles id="getSettingsAjax" url="/api/v1/users/current/settings" on-request="handleGetSettingsRequest" on-response="handleGetSettingsResponse"></iron-ajax>
 `;
     }
 
@@ -62,15 +58,22 @@ export class TagInput extends GompBaseElement {
 
     protected suggestedTags: string[] = [];
 
-    private get getSettingsAjax(): IronAjaxElement {
-        return this.$.getSettingsAjax as IronAjaxElement;
-    }
     private get tagsElement(): PaperTagsInput {
         return this.$.tags as PaperTagsInput;
     }
 
-    public refresh() {
-        this.getSettingsAjax.generateRequest();
+    public async refresh() {
+        this.suggestedTags = [];
+        try {
+            const userSettings: UserSettings = await this.AjaxGetWithResult('/api/v1/users/current/settings');
+            if (this.tags === null || this.tags.length === 0) {
+                this.suggestedTags = userSettings.favoriteTags;
+            } else {
+                this.suggestedTags = userSettings.favoriteTags.filter(t => this.tags.indexOf(t) === -1);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     protected onSuggestedTagClicked(e: {model: {item: string}}) {
@@ -80,16 +83,6 @@ export class TagInput extends GompBaseElement {
         const suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
         if (suggestedTagIndex > -1) {
             this.splice('suggestedTags', suggestedTagIndex, 1);
-        }
-    }
-    protected handleGetSettingsRequest() {
-        this.suggestedTags = [];
-    }
-    protected handleGetSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
-        if (this.tags === null || this.tags.length === 0) {
-            this.suggestedTags = e.detail.response.favoriteTags;
-        } else {
-            this.suggestedTags = e.detail.response.favoriteTags.filter(t => this.tags.indexOf(t) === -1);
         }
     }
 }

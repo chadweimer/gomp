@@ -1,9 +1,8 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { Recipe } from '../models/models.js';
 import '@cwmr/mwc-star-rating';
 import '../shared-styles.js';
 
@@ -18,31 +17,25 @@ export class RecipeRating extends GompBaseElement {
           </style>
 
           <mwc-star-rating value="[[recipe.averageRating]]" on-rating-selected="starRatingSelected" readonly\$="[[readonly]]"></mwc-star-rating>
-
-          <iron-ajax bubbles id="rateAjax" url="/api/v1/recipes/[[recipe.id]]/rating" method="PUT" on-response="handlePutRecipeRatingResponse" on-error="handlePutRecipeRatingError"></iron-ajax>
 `;
     }
 
     @property({type: Object, notify: true})
-    public recipe: object|null = null;
+    public recipe: Recipe = null;
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    private get rateAjax(): IronAjaxElement {
-        return this.$.rateAjax as IronAjaxElement;
-    }
-
-    protected starRatingSelected(e: CustomEvent) {
-        this.rateAjax.body = e.detail.rating;
-        this.rateAjax.generateRequest();
-    }
-    protected handlePutRecipeRatingResponse() {
-        this.set('recipe.averageRating', parseFloat(this.rateAjax.body.toString()));
-        this.showToast('Rating changed.');
-        this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-    }
-    protected handlePutRecipeRatingError() {
-        this.showToast('Changing rating failed!');
+    protected async starRatingSelected(e: CustomEvent<{rating: number}>) {
+        const newRating = e.detail.rating;
+        try {
+            await this.AjaxPut(`/api/v1/recipes/${this.recipe.id}/rating`, newRating);
+            this.set('recipe.averageRating', newRating);
+            this.showToast('Rating changed.');
+            this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+        } catch (e) {
+            this.showToast('Changing rating failed!');
+            console.error(e);
+        }
     }
 }
