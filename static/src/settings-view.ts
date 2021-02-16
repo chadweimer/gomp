@@ -242,16 +242,8 @@ export class SettingsView extends GompBaseElement {
             // First determine if an image must be uploaded first
             if (this.homeImageFile.value) {
                 try {
-                    // We start by uploading the image, after which the rest of the settings will be saved
-                    const req = this.AjaxPostWithLocation('/api/v1/uploads', new FormData(this.homeImageForm));
-
-                    // Show an indicator to the user
                     this.uploadingDialog.open();
-
-                    // Then wait for the upload to complete
-                    const location = await req;
-
-                    // And close the indicator
+                    const location = await this.AjaxPostWithLocation('/api/v1/uploads', new FormData(this.homeImageForm));
                     this.uploadingDialog.close();
 
                     this.homeImageFile.value = '';

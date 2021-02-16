@@ -145,16 +145,16 @@ export class RecipeEdit extends GompBaseElement {
                 }
 
                 if (this.mainImage.value) {
+                    this.uploadingDialog.open();
                     await this.AjaxPost(`/api/v1/recipes/${newRecipeId}/images`, new FormData(this.mainImageForm));
+                    this.uploadingDialog.close();
                 }
                 this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: `/recipes/${newRecipeId}/view`}}));
             }
             this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
         } catch (e) {
+            this.uploadingDialog.close();
             console.error(e);
         }
-    }
-    protected handleAddImageRequest() {
-        this.uploadingDialog.open();
     }
 }
