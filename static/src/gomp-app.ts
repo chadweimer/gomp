@@ -324,7 +324,7 @@ export class GompApp extends PolymerElement {
         if (this.loadingCount > 0) {
             this.loadingCount--;
         }
-        if ((!this.route || this.route.path !== '/login') && e.detail.request.xhr.status === 401) {
+        if ((!this.route || this.route.path !== '/login') && (e.detail.request?.xhr?.status === 401 || e.detail.response?.status === 401)) {
             this.logout();
         }
     }

@@ -41,8 +41,8 @@ export abstract class GompBaseElement extends PolymerElement {
     }
 
     protected async AjaxGet(url: string, queryObj?: any) {
-        const query = new URLSearchParams(queryObj);
-        const fullUrl = `${url}?${query.toString()}`;
+        const queryString = this.convertToQueryString(queryObj);
+        const fullUrl = `${url}?${queryString}`;
 
         const init: RequestInit = {};
         return await this.ajaxFetch(fullUrl, init);
@@ -98,14 +98,39 @@ export abstract class GompBaseElement extends PolymerElement {
             return null;
         }
 
+        let resp: Response;
         try {
-            const resp = await fetch(url, init);
-            this.dispatchEvent(new CustomEvent('ajax-response', {bubbles: true, composed: true, detail: resp}));
+            resp = await fetch(url, init);
 
-            return resp;
+            if (resp.ok) {
+                this.dispatchEvent(new CustomEvent('ajax-response', {bubbles: true, composed: true, detail: resp}));
+                return resp;
+            } else {
+                const errorMsg = await resp.text();
+                throw new Error(`${resp.statusText}: ${errorMsg}`);
+            }
         } catch (e) {
-            this.dispatchEvent(new CustomEvent('ajax-error', {bubbles: true, composed: true, detail: e}));
+            this.dispatchEvent(new CustomEvent('ajax-error', {bubbles: true, composed: true, detail: {error: e, response: resp}}));
             throw e;
         }
+    }
+
+    private convertToQueryString(obj: any) {
+        const queryParts = [];
+
+        for (let param in obj) {
+            const value = obj[param];
+            param = encodeURIComponent(param);
+
+            if (Array.isArray(value)) {
+                value.forEach(item => queryParts.push(param + '=' + encodeURIComponent(item)));
+            } else if (value !== null) {
+                queryParts.push(param + '=' + encodeURIComponent(value));
+            } else {
+                queryParts.push(param);
+            }
+        }
+
+        return queryParts.join('&');
     }
 }

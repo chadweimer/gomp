@@ -23,7 +23,7 @@ export class HomeView extends GompBaseElement {
                 </header>
                 <home-list is-active="[[isActive]]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
                 <template is="dom-repeat" items="[[searchFilters]]">
-                    <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[homeListsActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-iron-ajax-presend="onAjaxPresend"></home-list>
+                    <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[homeListsActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-ajax-presend="onAjaxPresend"></home-list>
                 </template>
                 <div class="padded-10">
 
@@ -39,8 +39,6 @@ export class HomeView extends GompBaseElement {
     protected homeListsActive = false;
 
     public ready() {
-        this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
-
         super.ready();
 
         if (this.isActive) {
