@@ -1,13 +1,11 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { RecipeImage } from '../models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/image-icons.js';
@@ -109,11 +107,6 @@ export class ImageList extends GompBaseElement {
 
             <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="setMainImage"></confirmation-dialog>
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
-
-            <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]/images" on-request="handleGetImagesRequest" on-response="handleGetImagesResponse"></iron-ajax>
-            <iron-ajax bubbles id="addAjax" url="/api/v1/recipes/[[recipeId]]/images" method="POST" on-request="handleAddRequest" on-response="handleAddResponse" on-error="handleAddError"></iron-ajax>
-            <iron-ajax bubbles id="setMainImageAjax" url="/api/v1/recipes/[[recipeId]]/image" method="PUT" on-response="handleSetMainImageResponse" on-error="handleSetMainImageError"></iron-ajax>
-            <iron-ajax bubbles id="deleteAjax" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 
@@ -140,35 +133,40 @@ export class ImageList extends GompBaseElement {
     private get confirmDeleteDialog(): ConfirmationDialog {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
     }
-    private get getAjax(): IronAjaxElement {
-        return this.$.getAjax as IronAjaxElement;
-    }
-    private get addAjax(): IronAjaxElement {
-        return this.$.addAjax as IronAjaxElement;
-    }
-    private get deleteAjax(): IronAjaxElement {
-        return this.$.deleteAjax as IronAjaxElement;
-    }
-    private get setMainImageAjax(): IronAjaxElement {
-        return this.$.setMainImageAjax as IronAjaxElement;
-    }
 
-    public refresh() {
+    public async refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        this.getAjax.generateRequest();
+        this.images = [];
+        try {
+            this.images = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}/images`);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     public add() {
         this.addDialog.open();
     }
 
-    protected addDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (!e.detail.canceled && e.detail.confirmed) {
-            this.addAjax.body = new FormData(this.addForm);
-            this.addAjax.generateRequest();
+    protected async addDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+        if (e.detail.canceled || !e.detail.confirmed) {
+            return;
+        }
+
+        try {
+            this.uploadingDialog.open();
+            await this.AjaxPost(`/api/v1/recipes/${this.recipeId}`, new FormData(this.addForm));
+            this.uploadingDialog.close();
+            this.dispatchEvent(new CustomEvent('image-added'));
+            this.showToast('Upload complete.');
+            await this.refresh();
+        } catch (e) {
+            this.uploadingDialog.close();
+            this.showToast('Upload failed!');
+            console.error(e);
         }
     }
     protected onSetMainImageClicked(e: Event) {
@@ -182,11 +180,18 @@ export class ImageList extends GompBaseElement {
         this.confirmMainImageDialog.dataset.id = menu.dataset.id;
         this.confirmMainImageDialog.open();
     }
-    protected setMainImage(e: Event) {
+    protected async setMainImage(e: Event) {
         const el = e.target as HTMLElement;
 
-        this.setMainImageAjax.body = parseInt(el.dataset.id, 10) as any;
-        this.setMainImageAjax.generateRequest();
+        const imageId = parseInt(el.dataset.id, 10) as any;
+        try {
+            await this.AjaxPut(`/api/v1/recipes/${this.recipeId}/image`, imageId);
+            this.dispatchEvent(new CustomEvent('main-image-changed'));
+            this.showToast('Main picture changed.');
+        } catch (e) {
+            this.showToast('Changing main picture failed!');
+            console.error(e);
+        }
     }
     protected onDeleteClicked(e: Event) {
         // Don't navigate to "#!"
@@ -199,45 +204,17 @@ export class ImageList extends GompBaseElement {
         this.confirmDeleteDialog.dataset.id = menu.dataset.id;
         this.confirmDeleteDialog.open();
     }
-    protected deleteImage(e: Event) {
+    protected async deleteImage(e: Event) {
         const el = e.target as HTMLElement;
 
-        this.deleteAjax.url = '/api/v1/images/' + el.dataset.id;
-        this.deleteAjax.generateRequest();
-    }
-
-    protected handleGetImagesRequest() {
-        this.images = [];
-    }
-    protected handleGetImagesResponse(e: CustomEvent<{response: RecipeImage[]}>) {
-        this.images = e.detail.response;
-    }
-    protected handleAddRequest() {
-        this.uploadingDialog.open();
-    }
-    protected handleAddResponse() {
-        this.uploadingDialog.close();
-        this.refresh();
-        this.dispatchEvent(new CustomEvent('image-added'));
-        this.showToast('Upload complete.');
-    }
-    protected handleAddError() {
-        this.uploadingDialog.close();
-        this.showToast('Upload failed!');
-    }
-    protected handleSetMainImageResponse() {
-        this.dispatchEvent(new CustomEvent('main-image-changed'));
-        this.showToast('Main picture changed.');
-    }
-    protected handleSetMainImageError() {
-        this.showToast('Changing main picture failed!');
-    }
-    protected handleDeleteResponse() {
-        this.refresh();
-        this.dispatchEvent(new CustomEvent('image-deleted'));
-        this.showToast('Picture deleted.');
-    }
-    protected handleDeleteError() {
-        this.showToast('Deleting picture failed!');
+        try {
+            await this.AjaxDelete(`/api/v1/images/${el.dataset.id}`);
+            this.dispatchEvent(new CustomEvent('image-deleted'));
+            this.showToast('Picture deleted.');
+            await this.refresh();
+        } catch (e) {
+            this.showToast('Deleting picture failed!');
+            console.error(e);
+        }
     }
 }

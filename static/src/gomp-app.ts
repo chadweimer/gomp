@@ -1,11 +1,11 @@
 'use strict';
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
 import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
+import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
@@ -14,7 +14,6 @@ import '@polymer/app-layout/app-drawer/app-drawer';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/maps-icons.js';
@@ -39,7 +38,7 @@ import './shared-styles.js';
 setPassiveTouchGestures(true);
 
 @customElement('gomp-app')
-export class GompApp extends PolymerElement {
+export class GompApp extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -218,9 +217,6 @@ export class GompApp extends PolymerElement {
             <paper-toast id="toast" class="fit-bottom"></paper-toast>
 
             <app-localstorage-document key="searchFilter" data="{{searchFilter}}" session-only></app-localstorage-document>
-
-            <iron-ajax bubbles id="appConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigurationResponse"></iron-ajax>
-            <iron-ajax bubbles id="getCurrentUserAjax" url="/api/v1/users/current" on-response="handleGetCurrentUserResponse"></iron-ajax>
 `;
     }
 
@@ -251,17 +247,11 @@ export class GompApp extends PolymerElement {
     private get searchFilterDialog(): PaperDialogElement {
         return this.$.searchFilterDialog as PaperDialogElement;
     }
-    private get appConfigAjax(): IronAjaxElement {
-        return this.$.appConfigAjax as IronAjaxElement;
-    }
     private get toast(): PaperToastElement {
         return this.$.toast as PaperToastElement;
     }
     private get drawer(): AppDrawerElement {
         return this.$.drawer as AppDrawerElement;
-    }
-    private get getCurrentUserAjax(): IronAjaxElement {
-        return this.$.getCurrentUserAjax as IronAjaxElement;
     }
 
     public ready() {
@@ -270,11 +260,8 @@ export class GompApp extends PolymerElement {
         this.addEventListener('iron-overlay-opened', (e) => this.patchOverlay(e));
         this.addEventListener('recipes-modified', () => this.recipesModified());
         this.addEventListener('change-page', (e: CustomEvent) => this.changePageRequested(e));
-        this.addEventListener('iron-ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
         this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
-        this.addEventListener('iron-ajax-response', () => this.onAjaxResponse());
         this.addEventListener('ajax-response', () => this.onAjaxResponse());
-        this.addEventListener('iron-ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('ajax-error', (e: CustomEvent) => this.onAjaxError(e));
         this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
@@ -282,8 +269,17 @@ export class GompApp extends PolymerElement {
         this.addEventListener('search-result-count-changed', (e: CustomEvent) => this.onSearchResultCountChanged(e));
 
         super.ready();
-        this.appConfigAjax.generateRequest();
+        this.refresh();
         this.onCurrentUserChanged();
+    }
+
+    private async refresh() {
+        try {
+            const appConfig: AppConfiguration = await this.AjaxGetWithResult('/api/v1/app/configuration');
+            this.title = appConfig.title;
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     protected titleChanged(title: string) {
@@ -324,7 +320,7 @@ export class GompApp extends PolymerElement {
         if (this.loadingCount > 0) {
             this.loadingCount--;
         }
-        if ((!this.route || this.route.path !== '/login') && (e.detail.request?.xhr?.status === 401 || e.detail.response?.status === 401)) {
+        if ((!this.route || this.route.path !== '/login') && e.detail.response?.status === 401) {
             this.logout();
         }
     }
@@ -417,15 +413,16 @@ export class GompApp extends PolymerElement {
 
         this.logout();
     }
-    protected onCurrentUserChanged() {
+    protected async onCurrentUserChanged() {
         if (!this.getIsAuthenticated()) {
             this.currentUser = null;
         } else {
-            this.getCurrentUserAjax.generateRequest();
+            try {
+                this.currentUser = await this.AjaxGetWithResult('/api/v1/users/current');
+            } catch (e) {
+                console.error(e);
+            }
         }
-    }
-    protected handleGetCurrentUserResponse(e: CustomEvent<{response: User}>) {
-        this.currentUser = e.detail.response;
     }
     protected getIsAuthenticated() {
         const jwtToken = localStorage.getItem('jwtToken');
@@ -470,9 +467,6 @@ export class GompApp extends PolymerElement {
     }
     protected onAppConfigChanged(e: CustomEvent<AppConfiguration>) {
         this.title = e.detail.title;
-    }
-    protected handleGetAppConfigurationResponse(e: CustomEvent<{response: AppConfiguration}>) {
-        this.title = e.detail.response.title;
     }
     protected searchFilterDialogOpened(e: CustomEvent) {
         if (e.target !== this.searchFilterDialog) {
