@@ -250,7 +250,7 @@ export class RecipesView extends GompBaseElement {
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/edit`}}));
     }
     protected editComplete() {
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}view`}}));
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/view`}}));
     }
     protected onAddLinkButtonClicked() {
         this.recipeLinkDialog.open();
