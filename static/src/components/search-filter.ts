@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { TagInput } from './tag-input.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchField, SearchState, SearchPictures, DefaultSearchFilter, SearchFilter } from '../models/models';
+import { SearchField, RecipeState, SearchPictures, DefaultSearchFilter, SearchFilter } from '../models/models';
 import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
@@ -85,8 +85,8 @@ export class SearchFilterElement extends GompBaseElement {
     ];
 
     protected availableStates = [
-        {name: 'Active', value: SearchState.Active},
-        {name: 'Archived', value: SearchState.Archived}
+        {name: 'Active', value: RecipeState.Active},
+        {name: 'Archived', value: RecipeState.Archived}
     ];
 
     protected availablePictures = [
@@ -144,10 +144,10 @@ export class SearchFilterElement extends GompBaseElement {
         this.set('filter.fields', selectedFields);
     }
 
-    protected isStateSelected(value: SearchState) {
+    protected isStateSelected(value: RecipeState) {
         return this.filter.states.indexOf(value) >= 0;
     }
-    protected statesChanged(selectedStates: SearchState[]) {
+    protected statesChanged(selectedStates: RecipeState[]) {
         this.availableStates.forEach(state => {
             const cb = this.shadowRoot.querySelector('#' + state.value) as PaperCheckboxElement;
             if (cb) {
@@ -156,7 +156,7 @@ export class SearchFilterElement extends GompBaseElement {
         });
     }
     protected selectedStateChanged() {
-        const selectedStates: SearchState[] = [];
+        const selectedStates: RecipeState[] = [];
         this.availableStates.forEach(state => {
             const cb = this.shadowRoot.querySelector('#' + state.value) as PaperCheckboxElement;
             if (cb?.checked) {

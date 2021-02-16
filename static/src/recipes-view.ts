@@ -1,7 +1,6 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { RecipeDisplay } from './components/recipe-display.js';
 import { ImageList } from './components/image-list.js';
@@ -9,8 +8,7 @@ import { NoteList } from './components/note-list.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { RecipeEdit } from './components/recipe-edit.js';
 import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
-import { User, Recipe } from './models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { User, Recipe, RecipeState } from './models/models.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
@@ -134,9 +132,6 @@ export class RecipesView extends GompBaseElement {
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
             <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
-
-            <iron-ajax bubbles id="updateStateAjax" url="/api/v1/recipes/[[recipeId]]/state" method="PUT" on-response="handleUpdateStateResponse"></iron-ajax>
-            <iron-ajax bubbles id="deleteAjax" url="/api/v1/recipes/[[recipeId]]" method="DELETE" on-response="handleDeleteRecipeResponse"></iron-ajax>
 `;
     }
 
@@ -177,12 +172,6 @@ export class RecipesView extends GompBaseElement {
     }
     private get actions(): any {
         return this.$.actions as any;
-    }
-    private get updateStateAjax(): IronAjaxElement {
-        return this.$.updateStateAjax as IronAjaxElement;
-    }
-    private get deleteAjax(): IronAjaxElement {
-        return this.$.deleteAjax as IronAjaxElement;
     }
 
     static get observers() {
@@ -231,31 +220,37 @@ export class RecipesView extends GompBaseElement {
         this.confirmArchiveDialog.open();
         this.actions.close();
     }
-    protected archiveRecipe() {
-        this.updateStateAjax.body = JSON.stringify('archived') as any;
-        this.updateStateAjax.generateRequest();
+    protected async archiveRecipe() {
+        await this.setRecipeState(RecipeState.Archived);
     }
     protected onUnarchiveButtonClicked() {
         this.confirmUnarchiveDialog.open();
         this.actions.close();
     }
-    protected unarchiveRecipe() {
-        this.updateStateAjax.body = JSON.stringify('active') as any;
-        this.updateStateAjax.generateRequest();
+    protected async unarchiveRecipe() {
+        await this.setRecipeState(RecipeState.Active);
     }
     protected onDeleteButtonClicked() {
         this.confirmDeleteDialog.open();
         this.actions.close();
     }
-    protected deleteRecipe() {
-        this.deleteAjax.generateRequest();
+    protected async deleteRecipe() {
+        try {
+            await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}`);
+            this.showToast('Recipe deleted.');
+            this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+            this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+        } catch (e) {
+            this.showToast('Deleting recipe failed!');
+            console.error(e);
+        }
     }
     protected onEditButtonClicked() {
         this.actions.close();
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/edit'}}));
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/edit`}}));
     }
     protected editComplete() {
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/recipes/' + this.recipeId + '/view'}}));
+        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}view`}}));
     }
     protected onAddLinkButtonClicked() {
         this.recipeLinkDialog.open();
@@ -276,15 +271,18 @@ export class RecipesView extends GompBaseElement {
     protected onLinkAdded() {
         this.recipeDisplay.refresh({links: true});
     }
-    protected handleUpdateStateResponse() {
-        this.recipeDisplay.refresh({recipe: true});
-        this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-    }
-    protected handleDeleteRecipeResponse() {
-        this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
-    }
 
+    private async setRecipeState(state: RecipeState) {
+        try {
+            await this.AjaxPut(`/api/v1/recipes/${this.recipeId}/state`, state);
+            this.showToast('Recipe state changed.');
+            this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+            await this.recipeDisplay.refresh({recipe: true});
+        } catch (e) {
+            this.showToast('Changing recipe state failed!');
+            console.error(e);
+        }
+    }
     private onRecipeLoaded(e: CustomEvent<{recipe: Recipe}>) {
         this.recipeState = e.detail.recipe?.state;
     }

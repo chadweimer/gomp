@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, SearchState } from './models/models.js';
+import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, RecipeState } from './models/models.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
@@ -182,8 +182,8 @@ export class SearchView extends GompBaseElement {
     public currentUser: User = null;
 
     protected availableStates = [
-        {name: 'Active', value: SearchState.Active, icon: 'icons:unarchive'},
-        {name: 'Archived', value: SearchState.Archived, icon: 'icons:archive'},
+        {name: 'Active', value: RecipeState.Active, icon: 'icons:unarchive'},
+        {name: 'Archived', value: RecipeState.Archived, icon: 'icons:archive'},
     ];
 
     protected availableViewModes = [
@@ -285,10 +285,10 @@ export class SearchView extends GompBaseElement {
     protected onStatesChanged() {
         this.notifyPath('filter.states');
     }
-    protected getStateDisplay(states: SearchState[]) {
+    protected getStateDisplay(states: RecipeState[]) {
         if (states === null || states.length == 0) {
-            return SearchState.Active;
-        } else if (states.indexOf(SearchState.Active) >= 0 && states.indexOf(SearchState.Archived) >= 0) {
+            return RecipeState.Active;
+        } else if (states.indexOf(RecipeState.Active) >= 0 && states.indexOf(RecipeState.Archived) >= 0) {
             return 'all';
         } else {
             return states[0];

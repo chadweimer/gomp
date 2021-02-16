@@ -166,6 +166,7 @@ export class RecipeDisplay extends GompBaseElement {
             this.recipe = null;
             try {
                 this.recipe = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}`);
+                this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
             } catch (e) {
                 console.error(e);
             }
@@ -174,7 +175,6 @@ export class RecipeDisplay extends GompBaseElement {
             this.links = null;
             try {
                 this.links = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}/links`);
-                this.dispatchEvent(new CustomEvent('recipe-loaded', {bubbles: true, composed: true, detail: {recipe: this.recipe}}));
             } catch (e) {
                 console.error(e);
             }

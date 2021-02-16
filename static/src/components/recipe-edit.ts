@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import { Recipe, SearchState } from '../models/models.js';
+import { Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
 import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-input/iron-input.js';
@@ -120,7 +120,7 @@ export class RecipeEdit extends GompBaseElement {
             this.recipe = {
                 id: null,
                 name: '',
-                state: SearchState.Active,
+                state: RecipeState.Active,
                 createdAt: null,
                 modifiedAt: null,
                 servingSize: '',
