@@ -1,12 +1,10 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-input/iron-input.js';
@@ -158,16 +156,6 @@ export class SettingsView extends GompBaseElement {
             <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" icon="icons:delete" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
 
             <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
-
-            <iron-ajax bubbles id="putPasswordAjax" url="/api/v1/users/current/password" method="PUT" on-response="handlePutPasswordResponse" on-error="handlePutPasswordError"></iron-ajax>
-            <iron-ajax bubbles id="getSettingsAjax" url="/api/v1/users/current/settings" on-response="handleGetSettingsResponse"></iron-ajax>
-            <iron-ajax bubbles id="putSettingsAjax" url="/api/v1/users/current/settings" method="PUT" on-response="handlePutSettingsResponse" on-error="handlePutSettingsError"></iron-ajax>
-            <iron-ajax bubbles id="postImageAjax" url="/api/v1/uploads" method="POST" on-request="handlePostImageRequest" on-response="handlePostImageResponse" on-error="handlePostImageError"></iron-ajax>
-            <iron-ajax bubbles id="getUserSearchFiltersAjax" url="/api/v1/users/current/filters" on-response="handleGetUserSearchFiltersResponse"></iron-ajax>
-            <iron-ajax bubbles id="getUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" on-response="handleGetUserSearchFilterResponse"></iron-ajax>
-            <iron-ajax bubbles id="postUserSearchFilterAjax" url="/api/v1/users/current/filters" method="POST" on-response="handlePostUserSearchFilterResponse" on-error="handlePostUserSearchFilterError"></iron-ajax>
-            <iron-ajax bubbles id="putUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="PUT" on-response="handlePutUserSearchFilterResponse" on-error="handlePutUserSearchFilterError"></iron-ajax>
-            <iron-ajax bubbles id="deleteUserSearchFilterAjax" url="/api/v1/users/current/filters/[[selectedFilterCompact.id]]" method="DELETE" on-response="handleDeleteUserSearchFilterResponse" on-error="handleDeleteUserSearchFilterError"></iron-ajax>
 `;
     }
 
@@ -209,33 +197,6 @@ export class SettingsView extends GompBaseElement {
     private get editSearchFilter(): SearchFilterElement {
         return this.$.editSearchFilter as SearchFilterElement;
     }
-    private get getSettingsAjax(): IronAjaxElement {
-        return this.$.getSettingsAjax as IronAjaxElement;
-    }
-    private get putPasswordAjax(): IronAjaxElement {
-        return this.$.putPasswordAjax as IronAjaxElement;
-    }
-    private get putSettingsAjax(): IronAjaxElement {
-        return this.$.putSettingsAjax as IronAjaxElement;
-    }
-    private get postImageAjax(): IronAjaxElement {
-        return this.$.postImageAjax as IronAjaxElement;
-    }
-    private get getUserSearchFiltersAjax(): IronAjaxElement {
-        return this.$.getUserSearchFiltersAjax as IronAjaxElement;
-    }
-    private get getUserSearchFilterAjax(): IronAjaxElement {
-        return this.$.getUserSearchFilterAjax as IronAjaxElement;
-    }
-    private get postUserSearchFilterAjax(): IronAjaxElement {
-        return this.$.postUserSearchFilterAjax as IronAjaxElement;
-    }
-    private get putUserSearchFilterAjax(): IronAjaxElement {
-        return this.$.putUserSearchFilterAjax as IronAjaxElement;
-    }
-    private get deleteUserSearchFilterAjax(): IronAjaxElement {
-        return this.$.deleteUserSearchFilterAjax as IronAjaxElement;
-    }
 
     public ready() {
         super.ready();
@@ -258,26 +219,58 @@ export class SettingsView extends GompBaseElement {
         }
     }
 
-    protected onUpdatePasswordClicked() {
+    protected async onUpdatePasswordClicked() {
         if (this.newPassword !== this.repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
         }
 
-        this.putPasswordAjax.body = JSON.stringify({
+        const passwordDetails = {
             currentPassword: this.currentPassword,
             newPassword: this.newPassword,
-        }) as any;
-        this.putPasswordAjax.generateRequest();
+        };
+        try {
+            await this.AjaxPut('/api/v1/users/current/password', passwordDetails);
+            this.showToast('Password updated.');
+        } catch (e) {
+            this.showToast('Password update failed!');
+            console.error(e);
+        }
     }
-    protected onSaveButtonClicked() {
-        // If there's no image to upload, go directly to saving
-        if (!this.homeImageFile.value) {
-            this.saveSettings();
-        } else {
-            // We start by uploading the image, after which the rest of the settings will be saved
-            this.postImageAjax.body = new FormData(this.homeImageForm);
-            this.postImageAjax.generateRequest();
+    protected async onSaveButtonClicked() {
+        try {
+            // First determine if an image must be uploaded first
+            if (this.homeImageFile.value) {
+                try {
+                    // We start by uploading the image, after which the rest of the settings will be saved
+                    const req = this.AjaxPostWithLocation('/api/v1/uploads', new FormData(this.homeImageForm));
+
+                    // Show an indicator to the user
+                    this.uploadingDialog.open();
+
+                    // Then wait for the upload to complete
+                    const location = await req;
+
+                    // And close the indicator
+                    this.uploadingDialog.close();
+
+                    this.homeImageFile.value = '';
+                    this.showToast('Upload complete.');
+
+                    this.userSettings.homeImageUrl = location;
+                } catch (e) {
+                    this.uploadingDialog.close();
+                    this.showToast('Upload failed!');
+                    throw e;
+                }
+            }
+
+            await this.AjaxPut('/api/v1/users/current/settings', this.userSettings);
+            this.showToast('Settings updated.');
+            await this.refresh();
+        } catch (e) {
+            this.showToast('Updating settings failed!');
+            console.error(e);
         }
     }
     protected onAddFilterClicked() {
@@ -286,7 +279,7 @@ export class SettingsView extends GompBaseElement {
         this.newSearchFilter.refresh();
         this.addSearchFilterDialog.open();
     }
-    protected addSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+    protected async addSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (e.detail.canceled || !e.detail.confirmed) {
             return;
         }
@@ -296,17 +289,30 @@ export class SettingsView extends GompBaseElement {
             userId: this.currentUser.id,
             name: this.newFilterName,
         };
-        this.postUserSearchFilterAjax.body = JSON.stringify(newFilter) as any;
-        this.postUserSearchFilterAjax.generateRequest();
+        try {
+            await this.AjaxPost('/api/v1/users/current/filters', newFilter);
+            this.showToast('Search filter added.');
+            await this.refresh();
+        } catch (e) {
+            this.showToast('Adding search filter failed!');
+            console.error(e);
+        }
     }
-    protected onEditFilterClicked(e: EventWithModel<{item: SavedSearchFilterCompact}>) {
+    protected async onEditFilterClicked(e: EventWithModel<{item: SavedSearchFilterCompact}>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
         this.selectedFilterCompact = e.model.item;
-        this.getUserSearchFilterAjax.generateRequest();
+        try {
+            this.selectedFilter = await this.AjaxGetWithResult(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
+            this.editSearchFilter.filter = this.selectedFilter;
+            this.editSearchFilter.refresh();
+            this.editSearchFilterDialog.open();
+        } catch (e) {
+            console.error(e);
+        }
     }
-    protected editSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+    protected async editSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (e.detail.canceled || !e.detail.confirmed) {
             return;
         }
@@ -317,8 +323,14 @@ export class SettingsView extends GompBaseElement {
             userId: this.selectedFilter.userId,
             name: this.selectedFilter.name,
         };
-        this.putUserSearchFilterAjax.body = JSON.stringify(updatedFilter) as any;
-        this.putUserSearchFilterAjax.generateRequest();
+        try {
+            await this.AjaxPut(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`, updatedFilter);
+            this.showToast('Search filter updated.');
+            await this.refresh();
+        } catch (e) {
+            this.showToast('Updating search filter failed!');
+            console.error(e);
+        }
     }
     protected onDeleteFilterClicked(e: EventWithModel<{item: SavedSearchFilterCompact}>) {
         // Don't navigate to "#!"
@@ -327,80 +339,27 @@ export class SettingsView extends GompBaseElement {
         this.selectedFilterCompact = e.model.item;
         this.confirmDeleteUserSearchFilterDialog.open();
     }
-    protected deleteUserSearchFilter() {
-        this.deleteUserSearchFilterAjax.generateRequest();
+    protected async deleteUserSearchFilter() {
+        try {
+            await this.AjaxDelete(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
+            this.showToast('Search filter deleted.');
+            await this.refresh();
+        } catch (e) {
+            this.showToast('Deleting search filter failed!');
+            console.error(e);
+        }
     }
 
-    protected handlePutPasswordResponse() {
-        this.showToast('Password updated.');
-    }
-    protected handlePutPasswordError() {
-        this.showToast('Password update failed!');
-    }
-    protected handleGetSettingsResponse(e: CustomEvent<{response: UserSettings}>) {
-        this.userSettings = e.detail.response;
-    }
-    protected handlePutSettingsResponse() {
-        this.refresh();
-        this.showToast('Settings changed.');
-    }
-    protected handlePutSettingsError() {
-        this.showToast('Updating settings failed!');
-    }
-    protected handlePostImageRequest() {
-        this.uploadingDialog.open();
-    }
-    protected handlePostImageResponse(_: CustomEvent, req: any) {
-        this.uploadingDialog.close();
-        this.homeImageFile.value = '';
-        this.showToast('Upload complete.');
-
-        const location = req.xhr.getResponseHeader('Location');
-        this.userSettings.homeImageUrl = location;
-        this.saveSettings();
-    }
-    protected handlePostImageError() {
-        this.uploadingDialog.close();
-        this.showToast('Upload failed!');
-    }
-    protected handleGetUserSearchFiltersResponse(e: CustomEvent<{response: SavedSearchFilterCompact[]}>) {
-        this.filters = e.detail.response;
-    }
-    protected handleGetUserSearchFilterResponse(e: CustomEvent<{response: SavedSearchFilter}>) {
-        this.selectedFilter = e.detail.response;
-        this.editSearchFilter.filter = this.selectedFilter;
-        this.editSearchFilter.refresh();
-        this.editSearchFilterDialog.open();
-    }
-    protected handlePostUserSearchFilterResponse() {
-        this.refresh();
-        this.showToast('Search filter added.');
-    }
-    protected handlePostUserSearchFilterError() {
-        this.showToast('Adding search filter failed!');
-    }
-    protected handlePutUserSearchFilterResponse() {
-        this.refresh();
-        this.showToast('Search filter updated.');
-    }
-    protected handlePutUserSearchFilterError() {
-        this.showToast('Updating search filter failed!');
-    }
-    protected handleDeleteUserSearchFilterResponse() {
-        this.refresh();
-        this.showToast('Search filter deleted.');
-    }
-    protected handleDeleteUserSearchFilterError() {
-        this.showToast('Deleting search filter failed!');
-    }
-
-    private saveSettings() {
-        this.putSettingsAjax.body = JSON.stringify(this.userSettings) as any;
-        this.putSettingsAjax.generateRequest();
-    }
-
-    protected refresh() {
-        this.getSettingsAjax.generateRequest();
-        this.getUserSearchFiltersAjax.generateRequest();
+    private async refresh() {
+        try {
+            this.userSettings = await this.AjaxGetWithResult('/api/v1/users/current/settings');
+        } catch (e) {
+            console.error(e);
+        }
+        try {
+            this.filters = await this.AjaxGetWithResult('/api/v1/users/current/filters');
+        } catch (e) {
+            console.error(e);
+        }
     }
 }
