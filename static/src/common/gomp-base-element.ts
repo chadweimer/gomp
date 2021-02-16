@@ -67,7 +67,9 @@ export abstract class GompBaseElement extends PolymerElement {
     protected async AjaxPost<TBody>(url: string, body: TBody) {
         const init: RequestInit = {
             method: 'POST',
-            body: JSON.stringify(body)
+            body: body instanceof FormData
+                ? body
+                : JSON.stringify(body)
         };
         return await this.ajaxFetch(url, init);
     }
