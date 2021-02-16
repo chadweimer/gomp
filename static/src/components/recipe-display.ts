@@ -206,6 +206,7 @@ export class RecipeDisplay extends GompBaseElement {
 
         try {
             await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}/links/${el.dataset.id}`);
+            this.showToast('Link removed.');
             await this.refresh({links: true});
         } catch (e) {
             this.showToast('Removing link failed!');
