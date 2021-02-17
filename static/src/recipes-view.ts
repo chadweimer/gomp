@@ -16,13 +16,13 @@ import '@polymer/iron-icons/editor-icons.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial-action.js';
+import './common/shared-styles.js';
 import './components/recipe-display.js';
 import './components/image-list.js';
 import './components/note-list.js';
 import './components/confirmation-dialog.js';
 import './components/recipe-edit.js';
 import './components/recipe-link-dialog.js';
-import './shared-styles.js';
 
 @customElement('recipes-view')
 export class RecipesView extends GompBaseElement {

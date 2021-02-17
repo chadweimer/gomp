@@ -21,7 +21,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import './confirmation-dialog.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('image-list')
 export class ImageList extends GompBaseElement {

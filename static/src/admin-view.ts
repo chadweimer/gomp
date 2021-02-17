@@ -18,8 +18,8 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-tabs/paper-tab.js';
 import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
+import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
-import './shared-styles.js';
 
 @customElement('admin-view')
 export class AdminView extends GompBaseElement {

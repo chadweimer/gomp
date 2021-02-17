@@ -13,7 +13,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-input/paper-textarea.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import './tag-input.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('recipe-edit')
 export class RecipeEdit extends GompBaseElement {

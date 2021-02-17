@@ -4,8 +4,8 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
 import '@polymer/paper-fab/paper-fab.js';
+import './common/shared-styles.js';
 import './components/home-list.js';
-import './shared-styles.js';
 
 @customElement('home-view')
 export class HomeView extends GompBaseElement {

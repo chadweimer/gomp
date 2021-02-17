@@ -15,11 +15,11 @@ import '@polymer/paper-item/paper-item-body.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-styles/paper-styles.js';
+import './common/shared-styles.js';
 import './components/recipe-card.js';
 import './components/pagination-links.js';
 import './components/recipe-rating.js';
 import './components/sort-order-selector.js';
-import './shared-styles.js';
 
 @customElement('search-view')
 export class SearchView extends GompBaseElement {

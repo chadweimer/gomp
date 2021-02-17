@@ -21,9 +21,9 @@ import '@polymer/paper-tabs/paper-tab.js';
 import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
+import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
 import './components/search-filter.js';
-import './shared-styles.js';
 
 @customElement('settings-view')
 export class SettingsView extends GompBaseElement {

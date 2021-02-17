@@ -13,7 +13,7 @@ import '@cwmr/paper-chip/paper-chips-section.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
 import './recipe-rating.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('recipe-display')
 export class RecipeDisplay extends GompBaseElement {

@@ -5,7 +5,7 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/av-icons.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('toggle-icon-button')
 export class ToggleIconButton extends PolymerElement {

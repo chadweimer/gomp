@@ -9,7 +9,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('recipe-link-dialog')
 export class RecipeLinkDialog extends GompBaseElement {

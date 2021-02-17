@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact, SearchFilter, SortBy, SortDir } from '../models/models.js';
 import './recipe-card.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('home-list')
 export class HomeList extends GompBaseElement {

@@ -4,7 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Recipe } from '../models/models.js';
 import '@cwmr/mwc-star-rating';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('recipe-rating')
 export class RecipeRating extends GompBaseElement {

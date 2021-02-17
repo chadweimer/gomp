@@ -8,7 +8,7 @@ import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-input/paper-input.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
-import './shared-styles.js';
+import './common/shared-styles.js';
 
 @customElement('login-view')
 export class LoginView extends GompBaseElement {

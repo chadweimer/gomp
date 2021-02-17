@@ -18,7 +18,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('note-card')
 export class NoteCard extends GompBaseElement {

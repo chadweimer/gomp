@@ -12,7 +12,7 @@ import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-input/paper-textarea.js';
 import './note-card.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('note-list')
 export class NoteList extends GompBaseElement {

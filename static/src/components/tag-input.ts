@@ -9,7 +9,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-input/paper-input-container.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('tag-input')
 export class TagInput extends GompBaseElement {
