@@ -13,15 +13,10 @@ export class HomeList extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-                }
-                article {
+
                     margin-top: 1.5em;
-                }
-                header {
-                    font-size: 1.5em;
-                    margin-bottom: 0.25em;
-                }
-                recipe-card {
+                    font-size: 0.95em;
+
                     --recipe-card: {
                         height: 160px;
                         width: 96%;
@@ -34,7 +29,6 @@ export class HomeList extends GompBaseElement {
                         padding: 8px;
                     }
                     --recipe-card-rating-size: 16px;
-                    font-size: 0.95em;
                 }
                 @media screen and (min-width: 992px) {
                     .recipeContainer {
@@ -53,16 +47,14 @@ export class HomeList extends GompBaseElement {
                 }
             </style>
 
-            <article>
-                <header><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></header>
-                <div class="wrap-horizontal">
-                    <template is="dom-repeat" items="[[recipes]]">
-                        <div class="recipeContainer">
-                            <recipe-card recipe="[[item]]" hide-created-modified-dates readonly\$="[[readonly]]"></recipe-card>
-                        </div>
-                    </template>
-                </div>
-            </article>
+            <header><a href="#!" on-click="onLinkClicked">[[title]] ([[total]])</a></header>
+            <div class="wrap-horizontal">
+                <template is="dom-repeat" items="[[recipes]]">
+                    <div class="recipeContainer">
+                        <recipe-card recipe="[[item]]" hide-created-modified-dates readonly\$="[[readonly]]"></recipe-card>
+                    </div>
+                </template>
+            </div>
 `;
     }
 

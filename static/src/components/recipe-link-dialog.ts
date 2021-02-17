@@ -16,8 +16,11 @@ export class RecipeLinkDialog extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
-                paper-dialog h3 > span {
-                    padding-left: 0.25em;
+                :host {
+                    display: block;
+                }
+                :host[hidden] {
+                    display: none !important;
                 }
           </style>
 

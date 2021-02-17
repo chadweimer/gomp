@@ -36,10 +36,6 @@ export class SettingsView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
-                    --paper-tabs-selection-bar-color: var(--accent-color);
-                }
-                paper-button > span {
-                    margin-left: 0.5em;
                 }
                 #confirmDeleteUserSearchFilterDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
@@ -69,7 +65,6 @@ export class SettingsView extends GompBaseElement {
                         </div>
                         <div class="card-actions">
                             <paper-button on-click="onSaveButtonClicked">
-                                <iron-icon icon="icons:save"></iron-icon>
                                 <span>Save</span>
                             <paper-button>
                         </div>
@@ -102,7 +97,6 @@ export class SettingsView extends GompBaseElement {
                         </div>
                         <div class="card-actions">
                             <paper-button on-click="onAddFilterClicked">
-                                <iron-icon icon="icons:search"></iron-icon>
                                 <span>Add</span>
                             <paper-button>
                         </div>
@@ -117,7 +111,6 @@ export class SettingsView extends GompBaseElement {
                         </div>
                         <div class="card-actions">
                             <paper-button on-click="onUpdatePasswordClicked">
-                                <iron-icon icon="icons:lock-outline"></iron-icon>
                                 <span>Update Password</span>
                             <paper-button>
                         </div>

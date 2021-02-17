@@ -1,14 +1,14 @@
 'use strict';
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperButtonElement } from '@polymer/paper-button/paper-button.js';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '../common/shared-styles.js';
 
 @customElement('pagination-links')
-export class PaginationLinks extends PolymerElement {
+export class PaginationLinks extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -19,8 +19,6 @@ export class PaginationLinks extends PolymerElement {
                     display: none !important;
                 }
                 paper-button {
-                    font-weight: 600;
-                    text-transform: lowercase;
                     vertical-align: top;
                 }
                 paper-button:not([disabled]) {
@@ -29,11 +27,11 @@ export class PaginationLinks extends PolymerElement {
                 }
           </style>
 
-          <paper-button id="first" raised on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
-          <paper-button id="prev" raised on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
           <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
-          <paper-button id="next" raised on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
-          <paper-button id="last" raised on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
 `;
     }
 
@@ -42,31 +40,6 @@ export class PaginationLinks extends PolymerElement {
     @property({type: Number, notify: true})
     public numPages = 10;
 
-    private get first(): PaperButtonElement {
-        return this.$.first as PaperButtonElement;
-    }
-    private get prev(): PaperButtonElement {
-        return this.$.prev as PaperButtonElement;
-    }
-    private get next(): PaperButtonElement {
-        return this.$.next as PaperButtonElement;
-    }
-    private get last(): PaperButtonElement {
-        return this.$.last as PaperButtonElement;
-    }
-
-    static get observers() {
-        return [
-            'pagesChanged(pageNum, numPages)',
-        ];
-    }
-
-    protected pagesChanged() {
-        this.first.disabled = this.pageNum === 1;
-        this.prev.disabled = this.pageNum === 1;
-        this.next.disabled = this.pageNum === this.numPages;
-        this.last.disabled = this.pageNum === this.numPages;
-    }
     protected goFirst() {
         this.pageNum = 1;
     }

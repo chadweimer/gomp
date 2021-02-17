@@ -13,7 +13,6 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-icon-item.js';
@@ -32,15 +31,6 @@ export class ImageList extends GompBaseElement {
                     display: block;
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
-                }
-                header {
-                    font-size: 1.5em;
-                }
-                paper-divider {
-                    width: 100%;
-                }
-                #addDialog h3 > span {
-                    padding-left: 0.25em;
                 }
                 #confirmMainImageDialog {
                     --confirmation-dialog-title-color: var(--paper-blue-500);
@@ -64,8 +54,6 @@ export class ImageList extends GompBaseElement {
                 }
             </style>
 
-            <header>Pictures</header>
-            <paper-divider></paper-divider>
             <template is="dom-repeat" items="[[images]]">
                 <div class="imageContainer">
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
@@ -87,8 +75,8 @@ export class ImageList extends GompBaseElement {
 
             <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop>
                 <h3 class="teal"><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
-                <p>Browse for a picture to upload to this recipe.</p><p>
-                </p><form id="addForm" enctype="multipart/form-data">
+                <p>Browse for a picture to upload to this recipe.</p>
+                <form id="addForm" enctype="multipart/form-data">
                     <paper-input-container always-float-label>
                         <label slot="label">Picture</label>
                         <iron-input slot="input">

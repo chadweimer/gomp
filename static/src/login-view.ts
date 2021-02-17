@@ -32,7 +32,7 @@ export class LoginView extends GompBaseElement {
             <div class="padded-10 centered-horizontal">
                 <paper-card heading="Login">
                     <div class="card-content">
-                        <paper-input name="username" value="{{username}}" label="Email" on-keydown="onInputKeydown" required autofocus autocomplete></paper-input>
+                        <paper-input name="username" value="{{username}}" label="Email" type="email" on-keydown="onInputKeydown" required autofocus autocomplete></paper-input>
                         <paper-password-input name="password" value="{{password}}" label="Password" on-keydown="onInputKeydown" required></paper-password-input>
                         <div class="red">[[errorMessage]]</div>
                     </div>

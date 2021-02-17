@@ -46,8 +46,13 @@ export class GompApp extends GompBaseElement {
                     --accent-color: var(--paper-teal-500);
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
+                    --paper-tabs-selection-bar-color: var(--accent-color);
+
                     --paper-item: {
                         cursor: pointer;
+                    }
+                    --paper-button: {
+                        color: var(--primary-color);
                     }
 
                     display: block;
