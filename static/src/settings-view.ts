@@ -345,10 +345,6 @@ export class SettingsView extends GompBaseElement {
     private async refresh() {
         try {
             this.userSettings = await this.AjaxGetWithResult('/api/v1/users/current/settings');
-        } catch (e) {
-            console.error(e);
-        }
-        try {
             this.filters = await this.AjaxGetWithResult('/api/v1/users/current/filters');
         } catch (e) {
             console.error(e);

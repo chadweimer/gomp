@@ -66,10 +66,6 @@ export class HomeView extends GompBaseElement {
     private async refresh() {
         try {
             this.currentUserSettings = await this.AjaxGetWithResult('/api/v1/users/current/settings');
-        } catch (e) {
-            console.error(e);
-        }
-        try {
             this.searchFilters = await this.AjaxGetWithResult('/api/v1/users/current/filters');
         } catch (e) {
             console.error(e);
