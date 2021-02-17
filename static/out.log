@@ -1,0 +1,16 @@
+
+> gomp@3.0.0 build /home/cwmr/Repos/gomp/static
+> tsc && polymer build
+
+[31merror[39m:	Promise rejection: SyntaxError: Unexpected token } in JSON at position 857
+[31merror[39m:	SyntaxError: Unexpected token } in JSON at position 857
+    at JSON.parse (<anonymous>)
+    at Function.loadOptionsFromFile (/home/cwmr/Repos/gomp/static/node_modules/polymer-cli/node_modules/polymer-project-config/lib/index.js:225:35)
+    at new PolymerCli (/home/cwmr/Repos/gomp/static/node_modules/polymer-cli/lib/polymer-cli.js:105:56)
+    at Object.<anonymous> (/home/cwmr/Repos/gomp/static/node_modules/polymer-cli/lib/run.js:37:17)
+    at Generator.next (<anonymous>)
+    at /home/cwmr/Repos/gomp/static/node_modules/polymer-cli/lib/run.js:20:71
+    at new Promise (<anonymous>)
+    at __awaiter (/home/cwmr/Repos/gomp/static/node_modules/polymer-cli/lib/run.js:16:12)
+    at /home/cwmr/Repos/gomp/static/node_modules/polymer-cli/lib/run.js:35:8
+    at Object.<anonymous> (/home/cwmr/Repos/gomp/static/node_modules/polymer-cli/lib/run.js:52:4)
