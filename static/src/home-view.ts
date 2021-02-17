@@ -23,7 +23,7 @@ export class HomeView extends GompBaseElement {
                 </header>
                 <home-list is-active="[[isActive]]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
                 <template is="dom-repeat" items="[[searchFilters]]">
-                    <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[homeListsActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-ajax-presend="onAjaxPresend" on-ajax-response="onAjaxResponse" on-ajax-error="onAjaxError"></home-list>
+                    <home-list title="[[item.name]]" filter-id="[[item.id]]" is-active="[[homeListsActive]]" readonly\$="[[!getCanEdit(currentUser)]]" on-ajax-presend="onAjaxEvent" on-ajax-response="onAjaxEvent" on-ajax-error="onAjaxEvent"></home-list>
                 </template>
                 <div class="padded-10">
 
@@ -46,20 +46,10 @@ export class HomeView extends GompBaseElement {
         }
     }
 
-    protected onAjaxPresend(e: CustomEvent) {
+    protected onAjaxEvent(e: CustomEvent) {
         // WORKAROUND: Force bubble the ajax events
         // This is necessary due to something about dom-repeat
-        this.dispatchEvent(new CustomEvent('ajax-presend', {bubbles: true, composed: true, detail: e.detail}));
-    }
-    protected onAjaxResponse(e: CustomEvent) {
-        // WORKAROUND: Force bubble the ajax events
-        // This is necessary due to something about dom-repeat
-        this.dispatchEvent(new CustomEvent('ajax-response', {bubbles: true, composed: true, detail: e.detail}));
-    }
-    protected onAjaxError(e: CustomEvent) {
-        // WORKAROUND: Force bubble the ajax events
-        // This is necessary due to something about dom-repeat
-        this.dispatchEvent(new CustomEvent('ajax-error', {bubbles: true, composed: true, detail: e.detail}));
+        this.dispatchEvent(new CustomEvent(e.type, {bubbles: true, composed: true, detail: e.detail}));
     }
 
     protected isActiveChanged(isActive: boolean) {
