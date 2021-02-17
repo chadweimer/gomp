@@ -187,13 +187,13 @@ export class RecipesView extends GompBaseElement {
         super.ready();
     }
 
-    public refresh() {
+    public async refresh() {
         if (this.mode === 'edit') {
-            this.recipeEdit.refresh();
+            await this.recipeEdit.refresh();
         } else {
-            this.recipeDisplay.refresh(null);
-            this.imageList.refresh();
-            this.noteList.refresh();
+            await this.recipeDisplay.refresh(null);
+            await this.imageList.refresh();
+            await this.noteList.refresh();
         }
     }
 
@@ -205,11 +205,11 @@ export class RecipesView extends GompBaseElement {
     protected recipeIdChanged(recipeId: string) {
         this.recipeId = recipeId;
     }
-    protected modeChanged(mode: string) {
+    protected async modeChanged(mode: string) {
         this.mode = mode;
 
         if (this.isActive) {
-            this.refresh();
+            await this.refresh();
         }
     }
     protected onNewButtonClicked() {
@@ -264,12 +264,12 @@ export class RecipesView extends GompBaseElement {
         this.actions.close();
         this.noteList.add();
     }
-    protected refreshMainImage() {
-        this.recipeDisplay.refresh({mainImage: true});
+    protected async refreshMainImage() {
+        await this.recipeDisplay.refresh({mainImage: true});
         this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
-    protected onLinkAdded() {
-        this.recipeDisplay.refresh({links: true});
+    protected async onLinkAdded() {
+        await this.recipeDisplay.refresh({links: true});
     }
 
     private async setRecipeState(state: RecipeState) {

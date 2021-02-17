@@ -81,25 +81,10 @@ export class RecipeEdit extends GompBaseElement {
         super.ready();
 
         if (this.isActive) {
-            this.tagsInput.refresh();
+            this.refresh();
         }
     }
     public async refresh() {
-        if (!this.recipeId) {
-            return;
-        }
-
-        this.recipe = null;
-        try {
-            this.recipe = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}`);
-        } catch (e) {
-            console.error(e);
-        }
-        await this.tagsInput.refresh();
-    }
-
-    protected isActiveChanged(isActive: boolean) {
-        this.mainImage.value = '';
         if (!this.recipeId) {
             this.recipe = {
                 id: null,
@@ -116,9 +101,21 @@ export class RecipeEdit extends GompBaseElement {
                 tags: [],
                 averageRating: 0,
             };
+        } else {
+            this.recipe = null;
+            try {
+                this.recipe = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}`);
+            } catch (e) {
+                console.error(e);
+            }
         }
+        await this.tagsInput.refresh();
+    }
+
+    protected isActiveChanged(isActive: boolean) {
+        this.mainImage.value = '';
         if (isActive && this.isReady) {
-            this.tagsInput.refresh();
+            this.refresh();
         }
     }
     protected onCancelButtonClicked() {
