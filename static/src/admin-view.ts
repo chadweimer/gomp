@@ -97,7 +97,7 @@ export class AdminView extends GompBaseElement {
 
             <paper-dialog id="addUserDialog" on-iron-overlay-closed="addUserDialogClosed" with-backdrop>
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
-                <paper-input label="Email" value="{{user.username}}" always-float-label required></paper-input>
+                <paper-input label="Email" value="{{user.username}}" type="email" always-float-label required></paper-input>
                 <paper-dropdown-menu-light label="Access Level" always-float-label required>
                     <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
                         <paper-item item-name="admin">admin</paper-item>
@@ -115,7 +115,7 @@ export class AdminView extends GompBaseElement {
 
             <paper-dialog id="editUserDialog" on-iron-overlay-closed="editUserDialogClosed" with-backdrop>
                 <h3><iron-icon icon="social:person"></iron-icon> <span>Edit User</span></h3>
-                <paper-input label="Email" value="{{user.username}}" always-float-label disabled></paper-input>
+                <paper-input label="Email" value="{{user.username}}" type="email" always-float-label disabled></paper-input>
                 <paper-dropdown-menu-light label="Access Level" always-float-label required>
                     <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
                         <paper-item item-name="admin">admin</paper-item>
