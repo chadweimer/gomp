@@ -12,7 +12,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './toggle-icon-button.js';
 import './tag-input.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('sort-order-selector')
 export class SortOrderSelectorElement extends PolymerElement {

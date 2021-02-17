@@ -26,7 +26,7 @@
   },
   "main": "index.html",
   "dependencies": {
-    "@cwmr/iron-star-rating": "^3.1.4",
+    "@cwmr/mwc-star-rating": "^0.3.0",
     "@cwmr/paper-autocomplete": "^4.0.0",
     "@cwmr/paper-chip": "^3.0.0",
     "@cwmr/paper-divider": "^3.0.0",

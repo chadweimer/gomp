@@ -1,7 +1,6 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
@@ -19,8 +18,8 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-tabs/paper-tab.js';
 import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
+import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
-import './shared-styles.js';
 
 @customElement('admin-view')
 export class AdminView extends GompBaseElement {
@@ -131,13 +130,6 @@ export class AdminView extends GompBaseElement {
             </paper-dialog>
 
             <confirmation-dialog id="confirmDeleteUserDialog" icon="icons:delete" title="Delete User?" message="Are you sure you want to delete '[[user.username]]'?" on-confirmed="deleteUser"></confirmation-dialog>
-
-            <iron-ajax bubbles id="getAppConfigAjax" url="/api/v1/app/configuration" on-response="handleGetAppConfigResponse"></iron-ajax>
-            <iron-ajax bubbles id="putAppConfigAjax" url="/api/v1/app/configuration" method="PUT" on-response="handlePutAppConfigResponse" on-error="handlePutAppConfigError"></iron-ajax>
-            <iron-ajax bubbles id="getUsersAjax" url="/api/v1/users" on-response="handleGetUsersResponse"></iron-ajax>
-            <iron-ajax bubbles id="postUserAjax" url="/api/v1/users" method="POST" on-response="handlePostUserResponse" on-error="handlePostUserError"></iron-ajax>
-            <iron-ajax bubbles id="putUserAjax" url="/api/v1/users/[[userId]]" method="PUT" on-response="handlePutUserResponse" on-error="handlePutUserError"></iron-ajax>
-            <iron-ajax bubbles id="deleteUserAjax" url="/api/v1/users/[[userId]]" method="DELETE" on-response="handleDeleteUserResponse" on-error="handleDeleteUserError"></iron-ajax>
 `;
     }
 
@@ -166,25 +158,6 @@ export class AdminView extends GompBaseElement {
         return this.$.confirmDeleteUserDialog as ConfirmationDialog;
     }
 
-    private get getAppConfigAjax(): IronAjaxElement {
-        return this.$.getAppConfigAjax as IronAjaxElement;
-    }
-    private get putAppConfigAjax(): IronAjaxElement {
-        return this.$.putAppConfigAjax as IronAjaxElement;
-    }
-    private get getUsersAjax(): IronAjaxElement {
-        return this.$.getUsersAjax as IronAjaxElement;
-    }
-    private get postUserAjax(): IronAjaxElement {
-        return this.$.postUserAjax as IronAjaxElement;
-    }
-    private get putUserAjax(): IronAjaxElement {
-        return this.$.putUserAjax as IronAjaxElement;
-    }
-    private get deleteUserAjax(): IronAjaxElement {
-        return this.$.deleteUserAjax as IronAjaxElement;
-    }
-
     public ready() {
         super.ready();
 
@@ -201,50 +174,24 @@ export class AdminView extends GompBaseElement {
         }
     }
 
-    protected refresh() {
-        this.getAppConfigAjax.generateRequest();
-        this.getUsersAjax.generateRequest();
+    private async refresh() {
+        try {
+            this.appConfig = await this.AjaxGetWithResult('/api/v1/app/configuration');
+            this.users = await this.AjaxGetWithResult('/api/v1/users');
+        } catch (e) {
+            console.error(e);
+        }
     }
 
-    protected handleGetAppConfigResponse(e: CustomEvent) {
-        this.appConfig = e.detail.response;
-    }
-    protected handlePutAppConfigResponse() {
-        this.showToast('Configuration changed.');
-        this.dispatchEvent(new CustomEvent('app-config-changed', {bubbles: true, composed: true, detail: this.appConfig}));
-    }
-    protected handlePutAppConfigError() {
-        this.showToast('Updating configuration failed!');
-    }
-
-    protected handleGetUsersResponse(e: CustomEvent) {
-        this.users = e.detail.response;
-    }
-    protected handlePostUserResponse() {
-        this.refresh();
-        this.showToast('User created.');
-    }
-    protected handlePostUserError() {
-        this.showToast('Creating user failed!');
-    }
-    protected handlePutUserResponse() {
-        this.refresh();
-        this.showToast('User updated.');
-    }
-    protected handlePutUserError() {
-        this.showToast('Updating user failed!');
-    }
-    protected handleDeleteUserResponse() {
-        this.refresh();
-        this.showToast('User deleted.');
-    }
-    protected handleDeleteUserError() {
-        this.showToast('Deleting user failed!');
-    }
-
-    protected onSaveAppConfigClicked() {
-        this.putAppConfigAjax.body = JSON.stringify(this.appConfig) as any;
-        this.putAppConfigAjax.generateRequest();
+    protected async onSaveAppConfigClicked() {
+        try {
+            await this.AjaxPut('/api/v1/app/configuration', this.appConfig);
+            this.showToast('Configuration changed.');
+            this.dispatchEvent(new CustomEvent('app-config-changed', {bubbles: true, composed: true, detail: this.appConfig}));
+        } catch (e) {
+            this.showToast('Updating configuration failed!');
+            console.error(e);
+        }
     }
 
     protected onAddUserClicked() {
@@ -258,19 +205,26 @@ export class AdminView extends GompBaseElement {
         this.addUserDialog.open();
     }
 
-    protected addUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+    protected async addUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
             if (this.user.password !== this.user.repeatPassword) {
                 this.showToast('Passwords don\'t match.');
                 return;
             }
 
-            this.postUserAjax.body = JSON.stringify({
+            const userDetails = {
                 username: this.user.username,
                 accessLevel: this.user.accessLevel,
                 password: this.user.password
-            }) as any;
-            this.postUserAjax.generateRequest();
+            };
+            try {
+                await this.AjaxPost('/api/v1/users', userDetails);
+                this.showToast('User created.');
+                await this.refresh();
+            } catch (e) {
+                this.showToast('Creating user failed!');
+                console.error(e);
+            }
         }
     }
 
@@ -290,14 +244,21 @@ export class AdminView extends GompBaseElement {
         this.editUserDialog.open();
     }
 
-    protected editUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+    protected async editUserDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
         if (!e.detail.canceled && e.detail.confirmed) {
-            this.putUserAjax.body = JSON.stringify({
+            const userDetails = {
                 id: this.userId,
                 username: this.user.username,
                 accessLevel: this.user.accessLevel
-            }) as any;
-            this.putUserAjax.generateRequest();
+            };
+            try {
+                await this.AjaxPut(`/api/v1/users/${this.userId}`, userDetails);
+                this.showToast('User updated.');
+                await this.refresh();
+            } catch (e) {
+                this.showToast('Updating user failed!');
+                console.error(e);
+            }
         }
     }
 
@@ -316,7 +277,14 @@ export class AdminView extends GompBaseElement {
         };
         this.confirmDeleteUserDialog.open();
     }
-    protected deleteUser() {
-        this.deleteUserAjax.generateRequest();
+    protected async deleteUser() {
+        try {
+            await this.AjaxDelete(`/api/v1/users/${this.userId}`);
+            this.showToast('User deleted.');
+            await this.refresh();
+        } catch (e) {
+            this.showToast('Deleting user failed!');
+            console.error(e);
+        }
     }
 }

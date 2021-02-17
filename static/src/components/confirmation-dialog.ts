@@ -6,7 +6,7 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('confirmation-dialog')
 export class ConfirmationDialog extends PolymerElement {

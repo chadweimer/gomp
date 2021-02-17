@@ -1,16 +1,14 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperButtonElement } from '@polymer/paper-button/paper-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-input/paper-input.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
-import './shared-styles.js';
+import './common/shared-styles.js';
 
 @customElement('login-view')
 export class LoginView extends GompBaseElement {
@@ -43,8 +41,6 @@ export class LoginView extends GompBaseElement {
                     </div>
                 </paper-card>
             </div>
-
-            <iron-ajax bubbles id="authAjax" url="/api/v1/auth" method="POST" on-request="handlePostAuthRequest" on-response="handlePostAuthResponse" on-error="handlePostAuthError"></iron-ajax>
 `;
     }
 
@@ -58,9 +54,6 @@ export class LoginView extends GompBaseElement {
     private get loginButton(): PaperButtonElement {
         return this.$.loginButton as PaperButtonElement;
     }
-    private get authAjax(): IronAjaxElement {
-        return this.$.authAjax as IronAjaxElement;
-    }
 
     protected isActiveChanged(isActive: boolean) {
         if (isActive) {
@@ -69,25 +62,26 @@ export class LoginView extends GompBaseElement {
             this.errorMessage = '';
         }
     }
-    protected onLoginClicked() {
-        this.authAjax.body = JSON.stringify({username: this.username, password: this.password}) as any;
-        this.authAjax.generateRequest();
-    }
-    protected onInputKeydown(e: KeyboardEvent) {
-        if (e.keyCode === 13) {
-            this.loginButton.click();
+    protected async onLoginClicked() {
+        const authDetails = {
+            username: this.username,
+            password: this.password
+        };
+        try {
+            this.errorMessage = '';
+            const response: {token: string} = await this.AjaxPostWithResult('/api/v1/auth', authDetails);
+            localStorage.setItem('jwtToken', response.token);
+            this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true}));
+            this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
+        } catch (e) {
+            this.password = '';
+            this.errorMessage = 'Login failed. Check your username and password and try again.';
+            console.error(e);
         }
     }
-    protected handlePostAuthRequest() {
-        this.errorMessage = '';
-    }
-    protected handlePostAuthResponse(e: CustomEvent) {
-        localStorage.setItem('jwtToken', e.detail.response.token);
-        this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true, detail: {user: e.detail.response.user}}));
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
-    }
-    protected handlePostAuthError() {
-        this.password = '';
-        this.errorMessage = 'Login failed. Check your username and password and try again.';
+    protected onInputKeydown(e: KeyboardEvent) {
+        if (e.key === 'Enter') {
+            this.loginButton.click();
+        }
     }
 }

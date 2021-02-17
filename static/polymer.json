@@ -6,13 +6,14 @@
         "*"
     ],
     "fragments": [
+        "src/admin-view.js",
         "src/create-view.js",
         "src/home-view.js",
         "src/login-view.js",
         "src/recipes-view.js",
         "src/search-view.js",
         "src/settings-view.js",
-        "src/admin-view.js"
+        "src/status-404-view.js"
     ],
     "extraDependencies": [
         "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js",
@@ -20,7 +21,13 @@
     ],
     "builds": [{
         "name": "default",
-        "preset": "es6-unbundled"
+        "browserCapabilities": ["es2018", "push"],
+        "js": {"minify": true, "compile": false},
+        "css": {"minify": true},
+        "html": {"minify": true},
+        "bundle": false,
+        "addServiceWorker": true,
+        "addPushManifest": true
     }],
     "moduleResolution": "node",
     "npm": true,
