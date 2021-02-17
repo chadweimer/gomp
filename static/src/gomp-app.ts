@@ -10,7 +10,6 @@ import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '@polymer/app-layout/app-layout.js';
-import '@polymer/app-layout/app-drawer/app-drawer';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
@@ -42,22 +41,19 @@ export class GompApp extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
-                :host > * {
+                :host {
                     --primary-color: var(--paper-deep-purple-500);
                     --accent-color: var(--paper-teal-500);
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
-                    @apply --paper-font-body1;
-
                     --paper-item: {
                         cursor: pointer;
                     }
 
-                    color: var(--primary-text-color);
-                }
-                :host {
                     display: block;
                     background: var(--paper-grey-50);
+                    color: var(--primary-text-color);
+                    @apply --paper-font-body1;
                     @apply --layout-fullbleed;
                 }
 
@@ -69,7 +65,7 @@ export class GompApp extends GompBaseElement {
                     color: white;
                 }
                 paper-search-bar {
-                    color: var(--light-theme-text-color);
+                    color: var(--primary-text-color);
                 }
                 paper-progress {
                     width: 100%;
