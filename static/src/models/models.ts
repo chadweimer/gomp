@@ -4,7 +4,7 @@ export enum SearchField {
     Directions = 'directions'
 }
 
-export enum SearchState {
+export enum RecipeState {
     Active = 'active',
     Archived = 'archived',
 }
@@ -42,7 +42,7 @@ export class DefaultSearchFilter implements SearchFilter {
     query: string;
     withPictures: boolean|null;
     fields: SearchField[];
-    states: SearchState[];
+    states: RecipeState[];
     tags: string[];
     sortBy: SortBy;
     sortDir: SortDir;
@@ -58,7 +58,7 @@ export interface SearchFilter {
     query: string;
     withPictures: boolean|null;
     fields: SearchField[];
-    states: SearchState[];
+    states: RecipeState[];
     tags: string[];
     sortBy: SortBy;
     sortDir: SortDir;

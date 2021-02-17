@@ -1,12 +1,10 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Note } from '../models/models.js';
 import { NoteCard } from './note-card.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
@@ -14,7 +12,7 @@ import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@polymer/paper-input/paper-textarea.js';
 import './note-card.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('note-list')
 export class NoteList extends GompBaseElement {
@@ -52,10 +50,6 @@ export class NoteList extends GompBaseElement {
                   <paper-button dialog-confirm>Save</paper-button>
               </div>
           </paper-dialog>
-
-          <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]/notes" on-request="handleGetRequest" on-response="handleGetResponse"></iron-ajax>
-          <iron-ajax bubbles id="postNoteAjax" url="/api/v1/notes" method="POST" on-response="handlePostNoteResponse" on-error="handlePostNoteError"></iron-ajax>
-          <iron-ajax bubbles id="putNoteAjax" url="/api/v1/notes/[[noteId]]" method="PUT" on-response="handlePutNoteResponse" on-error="handlePutNoteError"></iron-ajax>
 `;
     }
 
@@ -72,22 +66,18 @@ export class NoteList extends GompBaseElement {
     private get noteDialog(): PaperDialogElement {
         return this.$.noteDialog as PaperDialogElement;
     }
-    private get getAjax(): IronAjaxElement {
-        return this.$.getAjax as IronAjaxElement;
-    }
-    private get putNoteAjax(): IronAjaxElement {
-        return this.$.putNoteAjax as IronAjaxElement;
-    }
-    private get postNoteAjax(): IronAjaxElement {
-        return this.$.postNoteAjax as IronAjaxElement;
-    }
 
-    public refresh() {
+    public async refresh() {
         if (!this.recipeId) {
             return;
         }
 
-        this.getAjax.generateRequest();
+        this.notes = [];
+        try{
+            this.notes = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}/notes`);
+        } catch (e) {
+            console.error(e);
+        }
     }
     public add() {
         this.noteId = null;
@@ -95,21 +85,37 @@ export class NoteList extends GompBaseElement {
         this.noteDialog.open();
     }
 
-    protected noteDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (!e.detail.canceled && e.detail.confirmed) {
-            if (this.noteId) {
-                this.putNoteAjax.body = JSON.stringify({
+    protected async noteDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+        if (e.detail.canceled || !e.detail.confirmed) {
+            return;
+        }
+
+        if (this.noteId) {
+            try {
+                const note = {
                     id: this.noteId,
                     recipeId: parseInt(this.recipeId, 10),
                     text: this.noteText,
-                }) as any;
-                this.putNoteAjax.generateRequest();
-            } else {
-                this.postNoteAjax.body = JSON.stringify({
+                };
+                await this.AjaxPut(`/api/v1/notes/${this.noteId}`, note);
+                this.showToast('Note updated.');
+                await this.refresh();
+            } catch (e) {
+                this.showToast('Updating note failed!');
+                console.error(e);
+            }
+        } else {
+            try {
+                const note = {
                     recipeId: parseInt(this.recipeId, 10),
                     text: this.noteText,
-                }) as any;
-                this.postNoteAjax.generateRequest();
+                };
+                await this.AjaxPost('/api/v1/notes', note);
+                this.showToast('Note created.');
+                await this.refresh();
+            } catch (e) {
+                this.showToast('Creating note failed!');
+                console.error(e);
             }
         }
     }
@@ -122,27 +128,7 @@ export class NoteList extends GompBaseElement {
         this.noteText = noteCard.note.text;
         this.noteDialog.open();
     }
-    protected noteDeleted() {
-        this.refresh();
-    }
-    protected handleGetRequest() {
-        this.notes = [];
-    }
-    protected handleGetResponse(e: CustomEvent<{response: Note[]}>) {
-        this.notes = e.detail.response;
-    }
-    protected handlePostNoteResponse() {
-        this.refresh();
-        this.showToast('Note created.');
-    }
-    protected handlePostNoteError() {
-        this.showToast('Creating note failed!');
-    }
-    protected handlePutNoteResponse() {
-        this.refresh();
-        this.showToast('Note updated.');
-    }
-    protected handlePutNoteError() {
-        this.showToast('Updating note failed!');
+    protected async noteDeleted() {
+        await this.refresh();
     }
 }

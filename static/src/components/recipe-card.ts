@@ -6,7 +6,7 @@ import { RecipeCompact } from '../models/models.js';
 import '@polymer/paper-card/paper-card.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import './recipe-rating.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('recipe-card')
 export class RecipeCard extends GompBaseElement {

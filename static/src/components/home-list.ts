@@ -1,12 +1,10 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import { SavedSearchFilter, SearchFilter, SortBy, SortDir } from '../models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
+import { RecipeCompact, SearchFilter, SortBy, SortDir } from '../models/models.js';
 import './recipe-card.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('home-list')
 export class HomeList extends GompBaseElement {
@@ -65,9 +63,6 @@ export class HomeList extends GompBaseElement {
                     </template>
                 </div>
             </article>
-
-            <iron-ajax bubbles id="getFilterAjax" url="/api/v1/users/current/filters/[[filterId]]" on-response="handleGetFilterResponse"></iron-ajax>
-            <iron-ajax bubbles id="recipesAjax" url="/api/v1/recipes" on-request="handleGetRecipesRequest" on-response="handleGetRecipesResponse"></iron-ajax>
 `;
     }
 
@@ -84,44 +79,29 @@ export class HomeList extends GompBaseElement {
     protected recipes = [];
     private filter: SearchFilter = null;
 
-    private get getFilterAjax(): IronAjaxElement {
-        return this.$.getFilterAjax as IronAjaxElement;
-    }
-    private get recipesAjax(): IronAjaxElement {
-        return this.$.recipesAjax as IronAjaxElement;
-    }
-
     protected isActiveChanged(isActive: boolean) {
         if (isActive && this.isReady) {
             this.filterIdChanged(this.filterId);
         }
     }
 
-    protected filterIdChanged(newId: number|null) {
-        if (newId !== null) {
-            this.getFilterAjax.generateRequest();
-        } else {
-            this.setFilter({
-                query: '',
-                withPictures: null,
-                fields: [],
-                states: [],
-                tags: [],
-                sortBy: SortBy.Random,
-                sortDir: SortDir.Asc
-            });
+    protected async filterIdChanged(newId: number|null) {
+        try {
+            const filter: SearchFilter = newId !== null
+                ? await this.AjaxGetWithResult(`/api/v1/users/current/filters/${newId}`)
+                : {
+                    query: '',
+                    withPictures: null,
+                    fields: [],
+                    states: [],
+                    tags: [],
+                    sortBy: SortBy.Random,
+                    sortDir: SortDir.Asc
+                };
+            await this.setFilter(filter);
+        } catch (e) {
+            console.error(e);
         }
-    }
-    protected handleGetFilterResponse(e: CustomEvent<{response: SavedSearchFilter}>) {
-        this.setFilter(e.detail.response);
-    }
-    protected handleGetRecipesRequest() {
-        this.total = 0;
-        this.recipes = [];
-    }
-    protected handleGetRecipesResponse(e: CustomEvent) {
-        this.total = e.detail.response.total;
-        this.recipes = e.detail.response.recipes;
     }
     protected onLinkClicked(e: Event) {
         // Don't navigate to "#!"
@@ -130,19 +110,27 @@ export class HomeList extends GompBaseElement {
         this.dispatchEvent(new CustomEvent('home-list-link-clicked', {bubbles: true, composed: true, detail: {filter: this.filter}}));
     }
 
-    private setFilter(filter: SearchFilter) {
+    private async setFilter(filter: SearchFilter) {
         this.filter = filter;
-        this.recipesAjax.params = {
-            'q': this.filter.query,
-            'pictures': this.filter.withPictures,
-            'fields[]': this.filter.fields,
-            'tags[]': this.filter.tags,
-            'states[]': this.filter.states,
-            'sort': this.filter.sortBy,
-            'dir': this.filter.sortDir,
-            'page': 1,
-            'count': 6,
-        };
-        this.recipesAjax.generateRequest();
+        this.total = 0;
+        this.recipes = [];
+        try {
+            const filterQuery = {
+                'q': this.filter.query,
+                'pictures': this.filter.withPictures,
+                'fields[]': this.filter.fields,
+                'tags[]': this.filter.tags,
+                'states[]': this.filter.states,
+                'sort': this.filter.sortBy,
+                'dir': this.filter.sortDir,
+                'page': 1,
+                'count': 6,
+            };
+            const response: {total: number, recipes: RecipeCompact[]} = await this.AjaxGetWithResult('/api/v1/recipes', filterQuery);
+            this.total = response.total;
+            this.recipes = response.recipes;
+        } catch (e) {
+            console.error(e);
+        }
     }
 }

@@ -1,12 +1,10 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import { Recipe, SearchState } from '../models/models.js';
+import { Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
@@ -15,7 +13,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-input/paper-textarea.js';
 import '@polymer/paper-spinner/paper-spinner.js';
 import './tag-input.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('recipe-edit')
 export class RecipeEdit extends GompBaseElement {
@@ -58,18 +56,12 @@ export class RecipeEdit extends GompBaseElement {
           <paper-dialog id="uploadingDialog" with-backdrop>
               <h3><paper-spinner active></paper-spinner>Uploading</h3>
           </paper-dialog>
-
-          <iron-ajax bubbles auto id="getAjax" url="/api/v1/recipes/[[recipeId]]" on-request="handleGetRecipeRequest" on-response="handleGetRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles id="putAjax" url="/api/v1/recipes/[[recipeId]]" method="PUT" on-response="handlePutRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles id="postAjax" url="/api/v1/recipes" method="POST" on-response="handlePostRecipeResponse"></iron-ajax>
-          <iron-ajax bubbles id="addImageAjax" url="/api/v1/recipes/[[newRecipeId]]/images" method="POST" on-request="handleAddImageRequest" on-response="handleAddImageResponse" on-error="handleAddImageResponse"></iron-ajax>
 `;
     }
 
     @property({type: String})
     public recipeId: string|null = null;
 
-    protected newRecipeId = NaN;
     protected recipe: Recipe = null;
 
     private get tagsInput(): TagInput {
@@ -84,43 +76,20 @@ export class RecipeEdit extends GompBaseElement {
     private get uploadingDialog(): PaperDialogElement {
         return this.$.uploadingDialog as PaperDialogElement;
     }
-    private get getAjax(): IronAjaxElement {
-        return this.$.getAjax as IronAjaxElement;
-    }
-    private get putAjax(): IronAjaxElement {
-        return this.$.putAjax as IronAjaxElement;
-    }
-    private get postAjax(): IronAjaxElement {
-        return this.$.postAjax as IronAjaxElement;
-    }
-    private get addImageAjax(): IronAjaxElement {
-        return this.$.addImageAjax as IronAjaxElement;
-    }
 
     public ready() {
         super.ready();
 
         if (this.isActive) {
-            this.tagsInput.refresh();
+            this.refresh();
         }
     }
-    public refresh() {
-        if (!this.recipeId) {
-            return;
-        }
-
-        this.getAjax.generateRequest();
-        this.tagsInput.refresh();
-    }
-
-    protected isActiveChanged(isActive: boolean) {
-        this.newRecipeId = NaN;
-        this.mainImage.value = '';
+    public async refresh() {
         if (!this.recipeId) {
             this.recipe = {
                 id: null,
                 name: '',
-                state: SearchState.Active,
+                state: RecipeState.Active,
                 createdAt: null,
                 modifiedAt: null,
                 servingSize: '',
@@ -132,61 +101,57 @@ export class RecipeEdit extends GompBaseElement {
                 tags: [],
                 averageRating: 0,
             };
+        } else {
+            this.recipe = null;
+            try {
+                this.recipe = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}`);
+            } catch (e) {
+                console.error(e);
+            }
         }
+        await this.tagsInput.refresh();
+    }
+
+    protected isActiveChanged(isActive: boolean) {
+        this.mainImage.value = '';
         if (isActive && this.isReady) {
-            this.tagsInput.refresh();
+            this.refresh();
         }
     }
     protected onCancelButtonClicked() {
         this.dispatchEvent(new CustomEvent('recipe-edit-cancel'));
     }
-    protected onSaveButtonClicked() {
-        if (this.recipeId) {
-            this.putAjax.body = JSON.stringify(this.recipe) as any;
-            this.putAjax.generateRequest();
-        } else {
-            this.postAjax.body = JSON.stringify(this.recipe) as any;
-            this.postAjax.generateRequest();
-        }
-    }
-    protected handleGetRecipeRequest() {
-        if (this.recipeId) {
-            this.recipe = null;
-        }
-    }
-    protected handleGetRecipeResponse(e: CustomEvent) {
-        this.recipe = e.detail.response;
-    }
-    protected handlePutRecipeResponse() {
-        this.onSaveComplete();
-    }
-    protected handlePostRecipeResponse(e: CustomEvent) {
-        const temp = document.createElement('a');
-        temp.href = e.detail.xhr.getResponseHeader('Location');
-        const path = temp.pathname;
+    protected async onSaveButtonClicked() {
+        try {
+            if (this.recipeId) {
+                await this.AjaxPut(`/api/v1/recipes/${this.recipeId}`, this.recipe);
+                this.dispatchEvent(new CustomEvent('recipe-edit-save'));
+            } else {
+                const location = await this.AjaxPostWithLocation('/api/v1/recipes', this.recipe);
 
-        this.newRecipeId = NaN;
-        const newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
-        if (newRecipeIdMatch) {
-            this.newRecipeId = parseInt(newRecipeIdMatch[1], 10);
-        }
+                const temp = document.createElement('a');
+                temp.href = location;
+                const path = temp.pathname;
 
-        if (this.mainImage.value) {
-            this.addImageAjax.body = new FormData(this.mainImageForm);
-            this.addImageAjax.generateRequest();
-        } else {
-            this.onSaveComplete();
+                let newRecipeId = NaN;
+                const newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
+                if (newRecipeIdMatch) {
+                    newRecipeId = parseInt(newRecipeIdMatch[1], 10);
+                } else {
+                    throw new Error(`Unexpected path: ${path}`);
+                }
+
+                if (this.mainImage.value) {
+                    this.uploadingDialog.open();
+                    await this.AjaxPost(`/api/v1/recipes/${newRecipeId}/images`, new FormData(this.mainImageForm));
+                    this.uploadingDialog.close();
+                }
+                this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: {redirectUrl: `/recipes/${newRecipeId}/view`}}));
+            }
+            this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
+        } catch (e) {
+            this.uploadingDialog.close();
+            console.error(e);
         }
-    }
-    protected handleAddImageRequest() {
-        this.uploadingDialog.open();
-    }
-    protected handleAddImageResponse() {
-        this.uploadingDialog.close();
-        this.onSaveComplete();
-    }
-    protected onSaveComplete() {
-        this.dispatchEvent(new CustomEvent('recipe-edit-save', {detail: this.newRecipeId ? {redirectUrl: '/recipes/' + this.newRecipeId + '/view'} : null}));
-        this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
     }
 }

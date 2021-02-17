@@ -1,12 +1,10 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
-import { IronAjaxElement } from '@polymer/iron-ajax/iron-ajax.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { Note } from '../models/models.js';
-import '@polymer/iron-ajax/iron-ajax.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-icon/iron-icon.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -20,7 +18,7 @@ import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
-import '../shared-styles.js';
+import '../common/shared-styles.js';
 
 @customElement('note-card')
 export class NoteCard extends GompBaseElement {
@@ -87,8 +85,6 @@ export class NoteCard extends GompBaseElement {
             </paper-card>
 
             <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
-
-            <iron-ajax bubbles id="deleteAjax" url="/api/v1/notes/[[note.id]]" method="DELETE" on-response="handleDeleteResponse" on-error="handleDeleteError"></iron-ajax>
 `;
     }
 
@@ -100,9 +96,6 @@ export class NoteCard extends GompBaseElement {
 
     private get confirmDeleteDialog(): ConfirmationDialog {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
-    }
-    private get deleteAjax(): IronAjaxElement {
-        return this.$.deleteAjax as IronAjaxElement;
     }
 
     protected onEditClicked(e: Event) {
@@ -125,8 +118,15 @@ export class NoteCard extends GompBaseElement {
 
         this.confirmDeleteDialog.open();
     }
-    protected deleteNote() {
-        this.deleteAjax.generateRequest();
+    protected async deleteNote() {
+        try {
+            await this.AjaxDelete(`/api/v1/notes/${this.note.id}`);
+            this.dispatchEvent(new CustomEvent('note-card-deleted'));
+            this.showToast('Note deleted.');
+        } catch (e) {
+            this.showToast('Deleting note failed!');
+            console.error(e);
+        }
     }
 
     protected showModifiedDate(note: Note) {
@@ -134,13 +134,5 @@ export class NoteCard extends GompBaseElement {
             return false;
         }
         return note.modifiedAt !== note.createdAt;
-    }
-
-    protected handleDeleteResponse() {
-        this.dispatchEvent(new CustomEvent('note-card-deleted'));
-        this.showToast('Note deleted.');
-    }
-    protected handleDeleteError() {
-        this.showToast('Deleting note failed!');
     }
 }
