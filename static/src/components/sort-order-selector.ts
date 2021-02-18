@@ -65,7 +65,7 @@ export class SortOrderSelectorElement extends PolymerElement {
     protected availableSortBy = [
         {name: 'Name', value: SortBy.Name, icon: 'sort_by_alpha'},
         {name: 'Rating', value: SortBy.Rating, icon: 'stars'},
-        {name: 'Created', value: SortBy.Created, icon: 'fiber-new'},
+        {name: 'Created', value: SortBy.Created, icon: 'fiber_new'},
         {name: 'Modified', value: SortBy.Modified, icon: 'update'},
         {name: 'Random', value: SortBy.Random, icon: 'help'}
     ];
