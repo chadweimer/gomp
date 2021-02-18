@@ -179,13 +179,13 @@ export class SearchView extends GompBaseElement {
     public currentUser: User = null;
 
     protected availableStates = [
-        {name: 'Active', value: RecipeState.Active, icon: 'icons:unarchive'},
-        {name: 'Archived', value: RecipeState.Archived, icon: 'icons:archive'},
+        {name: 'Active', value: RecipeState.Active, icon: 'unarchive'},
+        {name: 'Archived', value: RecipeState.Archived, icon: 'archive'},
     ];
 
     protected availableViewModes = [
-        {name: 'Card', value: 'card', icon: 'icons:view-agenda'},
-        {name: 'List', value: 'list', icon: 'icons:view-list'},
+        {name: 'Card', value: 'card', icon: 'view_agenda'},
+        {name: 'List', value: 'list', icon: 'view_list'},
     ];
 
     private pending: {refresh: boolean; rescroll: boolean} = null;
