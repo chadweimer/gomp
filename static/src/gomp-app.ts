@@ -142,7 +142,7 @@ export class GompApp extends GompBaseElement {
                     <paper-divider></paper-divider>
                     <a href="#!" tabindex="-1" on-click="onLogoutClicked">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
+                            <mwc-icon slot="item-icon">exit_to_app</mwc-icon>
                             Logout
                         </paper-icon-item>
                     </a>
