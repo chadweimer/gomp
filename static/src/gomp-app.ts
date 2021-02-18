@@ -13,9 +13,7 @@ import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/maps-icons.js';
+import '@material/mwc-icon';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -118,26 +116,26 @@ export class GompApp extends GompBaseElement {
                     <app-toolbar>[[title]]</app-toolbar>
                     <a href="/home" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:home" slot="item-icon"></iron-icon>
+                            <mwc-icon slot="item-icon">home</mwc-icon>
                             Home
                         </paper-icon-item>
                     </a>
                     <a href="/search" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
+                            <mwc-icon slot="item-icon">restaurant</mwc-icon>
                             Recipes
                         </paper-icon-item>
                     </a>
                     <paper-divider></paper-divider>
                     <a href="/settings" tabindex="-1">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:settings" slot="item-icon"></iron-icon>
+                            <mwc-icon slot="item-icon">settings</mwc-icon>
                             Settings
                         </paper-icon-item>
                     </a>
                     <a href="/admin" tabindex="-1" hidden\$="[[!getIsAdmin(currentUser)]]">
                         <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:lock" slot="item-icon"></iron-icon>
+                            <mwc-icon slot="item-icon">lock</mwc-icon>
                             Admin
                         </paper-icon-item>
                     </a>
