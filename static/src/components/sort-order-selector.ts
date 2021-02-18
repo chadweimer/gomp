@@ -65,16 +65,16 @@ export class SortOrderSelectorElement extends PolymerElement {
     }
 
     protected availableSortBy = [
-        {name: 'Name', value: SortBy.Name, icon: 'av:sort-by-alpha'},
-        {name: 'Rating', value: SortBy.Rating, icon: 'icons:stars'},
-        {name: 'Created', value: SortBy.Created, icon: 'av:fiber-new'},
-        {name: 'Modified', value: SortBy.Modified, icon: 'icons:update'},
-        {name: 'Random', value: SortBy.Random, icon: 'icons:help'}
+        {name: 'Name', value: SortBy.Name, icon: 'sort_by_alpha'},
+        {name: 'Rating', value: SortBy.Rating, icon: 'stars'},
+        {name: 'Created', value: SortBy.Created, icon: 'fiber-new'},
+        {name: 'Modified', value: SortBy.Modified, icon: 'update'},
+        {name: 'Random', value: SortBy.Random, icon: 'help'}
     ];
 
     protected availableSortDir = [
-        {name: 'Asc', value: SortDir.Asc, icon: 'icons:arrow-upward'},
-        {name: 'Desc', value: SortDir.Desc, icon: 'icons:arrow-downward'},
+        {name: 'Asc', value: SortDir.Asc, icon: 'arrow_upward'},
+        {name: 'Desc', value: SortDir.Desc, icon: 'arrow_downward'},
     ];
 
     @property({type: Boolean, reflectToAttribute: true})
