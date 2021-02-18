@@ -6,11 +6,8 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { RecipeImage } from '../models/models.js';
+import '@material/mwc-icon';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/image-icons.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -63,10 +60,10 @@ export class ImageList extends GompBaseElement {
                         <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                         <paper-listbox slot="dropdown-content">
                             <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
-                                <paper-icon-item tabindex="-1"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
+                                <paper-icon-item tabindex="-1"><mwc-icon class="blue" slot="item-icon">photo_library</mwc-icon> Set as main picture</paper-icon-item>
                             </a>
                             <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                                <paper-icon-item tabindex="-1"><mwc-icon class="red" slot="item-icon">delete</mwc-icon> Delete</paper-icon-item>
                             </a>
                         </paper-listbox>
                     </paper-menu-button>
@@ -74,7 +71,7 @@ export class ImageList extends GompBaseElement {
             </template>
 
             <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop>
-                <h3 class="teal"><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
+                <h3 class="teal"><mwc-icon class="middle-vertical">add_a_photo</mwc-icon> <span>Upload Picture</span></h3>
                 <p>Browse for a picture to upload to this recipe.</p>
                 <form id="addForm" enctype="multipart/form-data">
                     <paper-input-container always-float-label>

@@ -103,6 +103,9 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 @apply --layout-horizontal;
                 @apply --layout-wrap;
             }
+            .middle-vertical {
+                vertical-align: middle;
+            }
 
             @media screen and (min-width: 1200px) {
                 paper-dialog {

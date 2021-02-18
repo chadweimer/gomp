@@ -4,8 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item-body.js';
@@ -69,7 +68,6 @@ export class RecipeDisplay extends GompBaseElement {
                     font-weight: lighter;
                 }
                 .state {
-                    vertical-align: middle;
                     margin-left: 1em;
                 }
                 .state[hidden] {
@@ -83,7 +81,7 @@ export class RecipeDisplay extends GompBaseElement {
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
-                        <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+                        <paper-chip class="state middle-vertical" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
                     </h2>
                     <section hidden\$="[[!recipe.servingSize]]">
                         <label>Serving Size</label>
@@ -123,7 +121,7 @@ export class RecipeDisplay extends GompBaseElement {
                                 <paper-item-body>
                                     <a href="/recipes/[[item.id]]/view">[[item.name]]</a>
                                 </paper-item-body>
-                                <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><iron-icon icon="icons:cancel"></iron-icon></a>
+                                <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><mwc-icon>cancel</mwc-icon></a>
                             </paper-icon-item>
                         </template>
                         <paper-divider></paper-divider>

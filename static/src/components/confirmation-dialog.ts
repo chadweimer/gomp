@@ -2,8 +2,7 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '../common/shared-styles.js';
@@ -28,7 +27,7 @@ export class ConfirmationDialog extends PolymerElement {
             </style>
 
             <paper-dialog id="dialog" with-backdrop on-iron-overlay-closed="onDialogClosed">
-                <h3><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h3>
+                <h3><mwc-icon class="middle-vertical">[[icon]]</mwc-icon> <span>[[title]]</span></h3>
                 <p>[[message]]</p>
                 <div class="buttons">
                     <paper-button dialog-dismiss>No</paper-button>

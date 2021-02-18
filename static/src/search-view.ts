@@ -4,10 +4,9 @@ import { customElement, property } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, RecipeState } from './models/models.js';
+import '@material/mwc-icon';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-item/paper-icon-item.js';
@@ -100,10 +99,10 @@ export class SearchView extends GompBaseElement {
                 <div class="wrap-horizontal">
                     <div class="controlContainer">
                         <paper-menu-button id="statesDropdown">
-                            <paper-button raised slot="dropdown-trigger"><iron-icon icon="icons:filter-list"></iron-icon> [[getStateDisplay(filter.states)]]</paper-button>
+                            <paper-button raised slot="dropdown-trigger"><mwc-icon>filter_list</mwc-icon> [[getStateDisplay(filter.states)]]</paper-button>
                             <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
                                 <template is="dom-repeat" items="[[availableStates]]">
-                                    <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
+                                    <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>
                                 </template>
                             </paper-listbox>
                         </paper-menu-button>

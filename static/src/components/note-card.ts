@@ -5,10 +5,8 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { Note } from '../models/models.js';
+import '@material/mwc-icon';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/communication-icons.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -61,14 +59,14 @@ export class NoteCard extends GompBaseElement {
             <paper-card>
                 <div class="card-content">
                     <div>
-                        <iron-icon icon="communication:comment"></iron-icon>
+                        <mwc-icon>comment</mwc-icon>
                         <span>[[formatDate(note.createdAt)]]</span>
                         <div hidden\$="[[readonly]]">
                             <paper-menu-button id="noteMenu" horizontal-align="right">
                                 <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                                 <paper-listbox slot="dropdown-content">
-                                    <paper-icon-item tabindex="-1" on-click="onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                                    <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
+                                    <paper-icon-item tabindex="-1" on-click="onEditClicked"><mwc-icon class="amber" slot="item-icon">create</mwc-icon> Edit</paper-icon-item>
+                                    <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><mwc-icon class="red" slot="item-icon">delete</mwc-icon> Delete</paper-icon-item>
                                 </paper-listbox>
                             </paper-menu-button>
                         </div>

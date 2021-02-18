@@ -2,8 +2,7 @@
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
 import '@polymer/paper-button/paper-button.js';
 import '../common/shared-styles.js';
 
@@ -27,11 +26,11 @@ export class PaginationLinks extends GompBaseElement {
                 }
           </style>
 
-          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goFirst"><iron-icon icon="icons:first-page"></iron-icon></paper-button>
-          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goPrev"><iron-icon icon="icons:chevron-left"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goFirst"><mwc-icon>first_page</mwc-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, 1)]]" on-click="goPrev"><mwc-icon>chevron_left</mwc-icon></paper-button>
           <paper-button raised disabled>[[pageNum]] of [[numPages]]</paper-button>
-          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goNext"><iron-icon icon="icons:chevron-right"></iron-icon></paper-button>
-          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goLast"><iron-icon icon="icons:last-page"></iron-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goNext"><mwc-icon>chevron_right</mwc-icon></paper-button>
+          <paper-button raised disabled\$="[[areEqual(pageNum, numPages)]]" on-click="goLast"><mwc-icon>last_page</mwc-icon></paper-button>
 `;
     }
 

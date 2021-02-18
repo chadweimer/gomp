@@ -4,8 +4,7 @@ import { customElement, property } from '@polymer/decorators';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
@@ -25,7 +24,7 @@ export class RecipeLinkDialog extends GompBaseElement {
           </style>
 
           <paper-dialog id="dialog" on-iron-overlay-closed="onDialogClosed" with-backdrop>
-              <h3 class="indigo"><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
+              <h3 class="indigo"><mwc-icon>link</mwc-icon> <span>Link to Another Recipe</span></h3>
               <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required></paper-autocomplete>
               <div class="buttons">
                   <paper-button dialog-dismiss>Cancel</paper-button>

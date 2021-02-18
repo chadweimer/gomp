@@ -5,9 +5,7 @@ import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, EventWithModel, AppConfiguration } from './models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/social-icons.js';
+import '@material/mwc-icon';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
@@ -75,10 +73,10 @@ export class AdminView extends GompBaseElement {
                                             <td>[[item.accessLevel]]</td>
                                             <td class="text-right">
                                                 <a href="#!" tabindex="-1" on-click="onEditUserClicked">
-                                                    <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
+                                                    <mwc-icon class="amber" slot="item-icon">create</mwc-icon>
                                                 </a>
                                                 <a href="#!" tabindex="-1" on-click="onDeleteUserClicked">
-                                                    <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
+                                                    <mwc-icon class="red" slot="item-icon">delete</mwc-icon>
                                                 </a>
                                             </td>
                                         </tr>
@@ -96,7 +94,7 @@ export class AdminView extends GompBaseElement {
             </div>
 
             <paper-dialog id="addUserDialog" on-iron-overlay-closed="addUserDialogClosed" with-backdrop>
-                <h3><iron-icon icon="social:person"></iron-icon> <span>Add User</span></h3>
+                <h3><mwc-icon class="middle-vertical">person</mwc-icon> <span>Add User</span></h3>
                 <paper-input label="Email" value="{{user.username}}" type="email" always-float-label required></paper-input>
                 <paper-dropdown-menu-light label="Access Level" always-float-label required>
                     <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
@@ -114,7 +112,7 @@ export class AdminView extends GompBaseElement {
             </paper-dialog>
 
             <paper-dialog id="editUserDialog" on-iron-overlay-closed="editUserDialogClosed" with-backdrop>
-                <h3><iron-icon icon="social:person"></iron-icon> <span>Edit User</span></h3>
+                <h3><mwc-icon class="middle-vertical">person</mwc-icon> <span>Edit User</span></h3>
                 <paper-input label="Email" value="{{user.username}}" type="email" always-float-label disabled></paper-input>
                 <paper-dropdown-menu-light label="Access Level" always-float-label required>
                     <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">

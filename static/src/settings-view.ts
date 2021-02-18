@@ -5,8 +5,7 @@ import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-button/paper-button.js';
@@ -84,10 +83,10 @@ export class SettingsView extends GompBaseElement {
                                             <td>[[item.name]]</td>
                                             <td class="text-right">
                                                 <a href="#!" tabindex="-1" on-click="onEditFilterClicked">
-                                                    <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
+                                                    <mwc-icon class="amber" slot="item-icon">create</mwc-icon>
                                                 </a>
                                                 <a href="#!" tabindex="-1" on-click="onDeleteFilterClicked">
-                                                    <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
+                                                    <mwc-icon class="red" slot="item-icon">delete</mwc-icon>
                                                 </a>
                                             </td>
                                         </tr>
@@ -123,7 +122,7 @@ export class SettingsView extends GompBaseElement {
             </paper-dialog>
 
             <paper-dialog id="addSearchFilterDialog" on-iron-overlay-closed="addSearchFilterDialogClosed" with-backdrop>
-                <h3><iron-icon icon="icons:search"></iron-icon> <span>Add Search Filter</span></h3>
+                <h3><mwc-icon class="middle-vertical">search</mwc-icon> <span>Add Search Filter</span></h3>
                 <paper-dialog-scrollable>
                     <paper-input label="Name" always-float-label value="{{newFilterName}}"></paper-input>
                     <search-filter id="newSearchFilter"></search-filter>
@@ -135,7 +134,7 @@ export class SettingsView extends GompBaseElement {
             </paper-dialog>
 
             <paper-dialog id="editSearchFilterDialog" on-iron-overlay-closed="editSearchFilterDialogClosed" with-backdrop>
-                <h3><iron-icon icon="icons:search"></iron-icon> <span>Edit Search Filter</span></h3>
+                <h3><mwc-icon class="middle-vertical">search</mwc-icon> <span>Edit Search Filter</span></h3>
                 <paper-dialog-scrollable>
                     <paper-input label="Name" always-float-label value="{{selectedFilter.name}}"></paper-input>
                     <search-filter id="editSearchFilter"></search-filter>
