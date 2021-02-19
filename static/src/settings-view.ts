@@ -134,7 +134,7 @@ export class SettingsView extends GompBaseElement {
                 <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
             </mwc-dialog>
 
-            <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" icon="icons:delete" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
 
             <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 `;
@@ -310,7 +310,7 @@ export class SettingsView extends GompBaseElement {
         e.preventDefault();
 
         this.selectedFilterCompact = e.model.item;
-        this.confirmDeleteUserSearchFilterDialog.open();
+        this.confirmDeleteUserSearchFilterDialog.show();
     }
     protected async deleteUserSearchFilter() {
         try {

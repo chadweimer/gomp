@@ -1,16 +1,16 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { RecipeImage } from '../models/models.js';
 import '@material/mwc-button';
+import '@material/mwc-dialog';
 import '@material/mwc-icon';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-input/iron-input.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-icon-item.js';
@@ -71,28 +71,27 @@ export class ImageList extends GompBaseElement {
                 </div>
             </template>
 
-            <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop>
-                <h3 class="teal"><mwc-icon class="middle-vertical">add_a_photo</mwc-icon> <span>Upload Picture</span></h3>
-                <p>Browse for a picture to upload to this recipe.</p>
-                <form id="addForm" enctype="multipart/form-data">
-                    <paper-input-container always-float-label>
-                        <label slot="label">Picture</label>
-                        <iron-input slot="input">
-                            <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required>
-                        </iron-input>
-                    </paper-input-container>
-                </form>
-                <div class="buttons">
-                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
-                    <mwc-button label="Upload" dialog-confirm></mwc-button>
+            <mwc-dialog id="addDialog" heading="Upload Picture" on-closed="addDialogClosed">
+                <div>
+                    <p>Browse for a picture to upload to this recipe.</p>
+                    <form id="addForm" enctype="multipart/form-data">
+                        <paper-input-container always-float-label>
+                            <label slot="label">Picture</label>
+                            <iron-input slot="input">
+                                <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required>
+                            </iron-input>
+                        </paper-input-container>
+                    </form>
                 </div>
-            </paper-dialog>
-            <paper-dialog id="uploadingDialog" with-backdrop>
-                <h3><paper-spinner active></paper-spinner>Uploading</h3>
-            </paper-dialog>
+                <mwc-button slot="primaryAction" label="Upload" dialogAction="upload"></mwc-button>
+                <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+            </mwc-dialog>
+            <mwc-dialog id="uploadingDialog">
+                <paper-spinner active></paper-spinner>Uploading
+            </mwc-dialog>
 
             <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="setMainImage"></confirmation-dialog>
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
 `;
     }
 
@@ -107,11 +106,11 @@ export class ImageList extends GompBaseElement {
     private get addForm(): HTMLFormElement {
         return this.$.addForm as HTMLFormElement;
     }
-    private get uploadingDialog(): PaperDialogElement {
-        return this.$.uploadingDialog as PaperDialogElement;
+    private get uploadingDialog(): Dialog {
+        return this.$.uploadingDialog as Dialog;
     }
-    private get addDialog(): PaperDialogElement {
-        return this.$.addDialog as PaperDialogElement;
+    private get addDialog(): Dialog {
+        return this.$.addDialog as Dialog;
     }
     private get confirmMainImageDialog(): ConfirmationDialog {
         return this.$.confirmMainImageDialog as ConfirmationDialog;
@@ -134,16 +133,16 @@ export class ImageList extends GompBaseElement {
     }
 
     public add() {
-        this.addDialog.open();
+        this.addDialog.show();
     }
 
-    protected async addDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async addDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'upload') {
             return;
         }
 
         try {
-            this.uploadingDialog.open();
+            this.uploadingDialog.show();
             await this.AjaxPost(`/api/v1/recipes/${this.recipeId}`, new FormData(this.addForm));
             this.uploadingDialog.close();
             this.dispatchEvent(new CustomEvent('image-added'));
@@ -164,7 +163,7 @@ export class ImageList extends GompBaseElement {
         menu.close();
 
         this.confirmMainImageDialog.dataset.id = menu.dataset.id;
-        this.confirmMainImageDialog.open();
+        this.confirmMainImageDialog.show();
     }
     protected async setMainImage(e: Event) {
         const el = e.target as HTMLElement;
@@ -188,7 +187,7 @@ export class ImageList extends GompBaseElement {
         menu.close();
 
         this.confirmDeleteDialog.dataset.id = menu.dataset.id;
-        this.confirmDeleteDialog.open();
+        this.confirmDeleteDialog.show();
     }
     protected async deleteImage(e: Event) {
         const el = e.target as HTMLElement;

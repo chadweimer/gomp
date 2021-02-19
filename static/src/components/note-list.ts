@@ -1,13 +1,13 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Note } from '../models/models.js';
 import { NoteCard } from './note-card.js';
 import '@material/mwc-button';
+import '@material/mwc-dialog';
 import '@material/mwc-icon';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-input/paper-textarea.js';
 import './note-card.js';
 import '../common/shared-styles.js';
@@ -29,14 +29,11 @@ export class NoteList extends GompBaseElement {
               <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted" readonly\$="[[readonly]]"></note-card>
           </template>
 
-          <paper-dialog id="noteDialog" on-iron-overlay-closed="noteDialogClosed" with-backdrop>
-              <h3 class="blue"><mwc-icon>insert_comment</mwc-icon> <span>Add Note</span></h3>
+          <mwc-dialog id="noteDialog" heading="Add Note" on-closed="noteDialogClosed">
               <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
-              <div class="buttons">
-                <mwc-button label="Cancel" dialog-dismiss></mwc-button>
-                <mwc-button label="Save" dialog-confirm></mwc-button>
-              </div>
-          </paper-dialog>
+              <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+              <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+          </mwc-dialog>
 `;
     }
 
@@ -50,8 +47,8 @@ export class NoteList extends GompBaseElement {
     protected noteText = '';
     protected notes: Note[] = [];
 
-    private get noteDialog(): PaperDialogElement {
-        return this.$.noteDialog as PaperDialogElement;
+    private get noteDialog(): Dialog {
+        return this.$.noteDialog as Dialog;
     }
 
     public async refresh() {
@@ -69,11 +66,11 @@ export class NoteList extends GompBaseElement {
     public add() {
         this.noteId = null;
         this.noteText = '';
-        this.noteDialog.open();
+        this.noteDialog.show();
     }
 
-    protected async noteDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async noteDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'save') {
             return;
         }
 
@@ -113,7 +110,7 @@ export class NoteList extends GompBaseElement {
 
         this.noteId = noteCard.note.id;
         this.noteText = noteCard.note.text;
-        this.noteDialog.open();
+        this.noteDialog.show();
     }
     protected async noteDeleted() {
         await this.refresh();

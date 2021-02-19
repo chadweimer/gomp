@@ -4,7 +4,6 @@ import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
-import '@material/mwc-icon';
 import '../common/shared-styles.js';
 
 @customElement('confirmation-dialog')
@@ -34,8 +33,6 @@ export class ConfirmationDialog extends PolymerElement {
     }
 
     @property({type: String})
-    public icon = 'help';
-    @property({type: String})
     public title = 'Are you sure?';
     @property({type: String})
     public message = 'Are you sure you want to perform the requested operation?';
@@ -44,7 +41,7 @@ export class ConfirmationDialog extends PolymerElement {
         return this.$.dialog as Dialog;
     }
 
-    public open() {
+    public show() {
         this.dialog.show();
     }
 

@@ -137,7 +137,7 @@ export class RecipeDisplay extends GompBaseElement {
                 </div>
           </paper-card>
 
-          <confirmation-dialog id="confirmDeleteLinkDialog" icon="delete" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
+          <confirmation-dialog id="confirmDeleteLinkDialog" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
 `;
     }
 
@@ -196,7 +196,7 @@ export class RecipeDisplay extends GompBaseElement {
         e.preventDefault();
 
         this.confirmDeleteLinkDialog.dataset.id = e.model.item.id.toString();
-        this.confirmDeleteLinkDialog.open();
+        this.confirmDeleteLinkDialog.show();
     }
 
     protected async deleteLink(e: Event) {

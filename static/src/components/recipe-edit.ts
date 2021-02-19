@@ -1,14 +1,14 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
 import '@material/mwc-button';
+import '@material/mwc-dialog';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-input/paper-textarea.js';
 import '@polymer/paper-spinner/paper-spinner.js';
@@ -53,9 +53,9 @@ export class RecipeEdit extends GompBaseElement {
                     <mwc-button label="Save" dialog-confirm on-click="onSaveButtonClicked"></mwc-button>
                 </div>
             </paper-card>
-            <paper-dialog id="uploadingDialog" with-backdrop>
-                <h3><paper-spinner active></paper-spinner>Uploading</h3>
-            </paper-dialog>
+            <mwc-dialog id="uploadingDialog">
+                <paper-spinner active></paper-spinner>Uploading
+            </mwc-dialog>
 `;
     }
 
@@ -73,8 +73,8 @@ export class RecipeEdit extends GompBaseElement {
     private get mainImageForm(): HTMLFormElement {
         return this.$.mainImageForm as HTMLFormElement;
     }
-    private get uploadingDialog(): PaperDialogElement {
-        return this.$.uploadingDialog as PaperDialogElement;
+    private get uploadingDialog(): Dialog {
+        return this.$.uploadingDialog as Dialog;
     }
 
     public ready() {
@@ -142,7 +142,7 @@ export class RecipeEdit extends GompBaseElement {
                 }
 
                 if (this.mainImage.value) {
-                    this.uploadingDialog.open();
+                    this.uploadingDialog.show();
                     await this.AjaxPost(`/api/v1/recipes/${newRecipeId}/images`, new FormData(this.mainImageForm));
                     this.uploadingDialog.close();
                 }

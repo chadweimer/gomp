@@ -108,12 +108,12 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
             }
 
             @media screen and (min-width: 1200px) {
-                paper-dialog {
+                mwc-dialog {
                     width: 33%;
                 }
             }
             @media screen and (min-width: 992px) and (max-width: 1199px) {
-                paper-dialog {
+                mwc-dialog {
                     width: 50%;
                 }
             }
@@ -131,7 +131,7 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 }
             }
             @media screen and (min-width: 600px) and (max-width: 991px) {
-                paper-dialog {
+                mwc-dialog {
                     width: 75%;
                 }
                 .container {
@@ -152,7 +152,7 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 .hide-on-small-only {
                     display: none;
                 }
-                paper-dialog {
+                mwc-dialog {
                     width: 100%;
                 }
             }

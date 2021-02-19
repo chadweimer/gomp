@@ -13,7 +13,6 @@ import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-icons/editor-icons.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-tabs/paper-tab.js';
 import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
@@ -135,9 +134,9 @@ export class RecipesView extends GompBaseElement {
                 </paper-fab-speed-dial>
             </div>
 
-            <confirmation-dialog id="confirmArchiveDialog" icon="icons:archive" title="Archive Recipe?" message="Are you sure you want to archive this recipe?" on-confirmed="archiveRecipe"></confirmation-dialog>
-            <confirmation-dialog id="confirmUnarchiveDialog" icon="icons:unarchive" title="Unarchive Recipe?" message="Are you sure you want to unarchive this recipe?" on-confirmed="unarchiveRecipe"></confirmation-dialog>
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmArchiveDialog" title="Archive Recipe?" message="Are you sure you want to archive this recipe?" on-confirmed="archiveRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmUnarchiveDialog" title="Unarchive Recipe?" message="Are you sure you want to unarchive this recipe?" on-confirmed="unarchiveRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
             <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
 `;
@@ -225,21 +224,21 @@ export class RecipesView extends GompBaseElement {
         this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/create'}}));
     }
     protected onArchiveButtonClicked() {
-        this.confirmArchiveDialog.open();
+        this.confirmArchiveDialog.show();
         this.actions.close();
     }
     protected async archiveRecipe() {
         await this.setRecipeState(RecipeState.Archived);
     }
     protected onUnarchiveButtonClicked() {
-        this.confirmUnarchiveDialog.open();
+        this.confirmUnarchiveDialog.show();
         this.actions.close();
     }
     protected async unarchiveRecipe() {
         await this.setRecipeState(RecipeState.Active);
     }
     protected onDeleteButtonClicked() {
-        this.confirmDeleteDialog.open();
+        this.confirmDeleteDialog.show();
         this.actions.close();
     }
     protected async deleteRecipe() {

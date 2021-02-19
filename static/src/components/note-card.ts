@@ -10,7 +10,6 @@ import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-listbox/paper-listbox.js';
@@ -82,7 +81,7 @@ export class NoteCard extends GompBaseElement {
                 </div>
             </paper-card>
 
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
 `;
     }
 
@@ -114,7 +113,7 @@ export class NoteCard extends GompBaseElement {
         const menu = el.closest('#noteMenu') as PaperMenuButton;
         menu.close();
 
-        this.confirmDeleteDialog.open();
+        this.confirmDeleteDialog.show();
     }
     protected async deleteNote() {
         try {
