@@ -109,12 +109,12 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
 
             @media screen and (min-width: 1200px) {
                 mwc-dialog {
-                    width: 33%;
+                    --mdc-dialog-min-width: 33vw;
                 }
             }
             @media screen and (min-width: 992px) and (max-width: 1199px) {
                 mwc-dialog {
-                    width: 50%;
+                    --mdc-dialog-min-width: 50vw;
                 }
             }
             @media screen and (min-width: 992px) {
@@ -132,7 +132,7 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
             }
             @media screen and (min-width: 600px) and (max-width: 991px) {
                 mwc-dialog {
-                    width: 75%;
+                    --mdc-dialog-min-width: 75vw;
                 }
                 .container {
                     width: 75%;
@@ -153,7 +153,7 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                     display: none;
                 }
                 mwc-dialog {
-                    width: 100%;
+                    --mdc-dialog-min-width: 95vw;
                 }
             }
         </style>

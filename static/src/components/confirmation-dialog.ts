@@ -20,7 +20,7 @@ export class ConfirmationDialog extends PolymerElement {
                     display: none !important;
                 }
                 mwc-dialog {
-                    width: unset;
+                    --mdc-dialog-min-width: unset;
                 }
             </style>
 
