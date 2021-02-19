@@ -114,7 +114,7 @@ export class GompApp extends GompBaseElement {
             <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
             <mwc-top-app-bar>
-                <mwc-icon-button icon="menu" slot="navigationIcon" on-click="onMenuClicked"></mwc-icon-button>
+                <mwc-icon-button icon="menu" slot="navigationIcon" class="hide-on-large-only" on-click="onMenuClicked"></mwc-icon-button>
 
                 <a href="/" slot="title" class="hide-on-small-only">[[title]]</a>
 
@@ -397,7 +397,7 @@ export class GompApp extends GompBaseElement {
         this.set('route.path', path);
     }
     protected onMenuClicked() {
-        this.drawer.open = true;
+        this.drawer.open = !this.drawer.open;
     }
     protected onLogoutClicked(e: Event) {
         // Don't navigate to "#!"
