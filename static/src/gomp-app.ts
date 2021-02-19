@@ -128,8 +128,7 @@ export class GompApp extends GompBaseElement {
                 <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
 
                 <div>
-                    <mwc-drawer id="drawer" hasHeader type="modal">
-                        <span slot="title">[[title]]</span>
+                    <mwc-drawer id="drawer" type="modal">
                         <div>
                             <a href="/home" tabindex="-1">
                                 <paper-icon-item tabindex="-1">
