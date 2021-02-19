@@ -8,10 +8,10 @@ import { Note } from '../models/models.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@material/mwc-button';
 import '@material/mwc-icon';
+import '@material/mwc-icon-button';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './confirmation-dialog.js';
@@ -62,7 +62,7 @@ export class NoteCard extends GompBaseElement {
                         <span>[[formatDate(note.createdAt)]]</span>
                         <div hidden\$="[[readonly]]">
                             <paper-menu-button id="noteMenu" horizontal-align="right">
-                                <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                                <mwc-icon-button icon="more_vert" slot="dropdown-trigger"></mwc-icon-button>
                                 <paper-listbox slot="dropdown-content">
                                     <paper-icon-item tabindex="-1" on-click="onEditClicked"><mwc-icon class="amber" slot="item-icon">create</mwc-icon> Edit</paper-icon-item>
                                     <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><mwc-icon class="red" slot="item-icon">delete</mwc-icon> Delete</paper-icon-item>

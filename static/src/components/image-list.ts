@@ -9,9 +9,9 @@ import { RecipeImage } from '../models/models.js';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
+import '@material/mwc-icon-button';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-input/iron-input.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
@@ -58,7 +58,7 @@ export class ImageList extends GompBaseElement {
                 </div>
                 <div hidden\$="[[readonly]]">
                     <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
-                        <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
+                        <mwc-icon-button icon="more_vert" slot="dropdown-trigger"></mwc-icon-button>
                         <paper-listbox slot="dropdown-content">
                             <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
                                 <paper-icon-item tabindex="-1"><mwc-icon class="blue" slot="item-icon">photo_library</mwc-icon> Set as main picture</paper-icon-item>

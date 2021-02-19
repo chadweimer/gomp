@@ -21,7 +21,6 @@ import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-progress/paper-progress.js';
@@ -50,7 +49,6 @@ export class GompApp extends GompBaseElement {
 
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
-                    --paper-tabs-selection-bar-color: var(--accent-color);
 
                     --paper-item: {
                         cursor: pointer;
@@ -126,73 +124,71 @@ export class GompApp extends GompBaseElement {
 
                 <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
 
-                <div>
-                    <mwc-drawer id="drawer" type="modal">
-                        <div>
-                            <a href="/home" tabindex="-1">
-                                <paper-icon-item tabindex="-1">
-                                    <mwc-icon slot="item-icon">home</mwc-icon>
-                                    Home
-                                </paper-icon-item>
-                            </a>
-                            <a href="/search" tabindex="-1">
-                                <paper-icon-item tabindex="-1">
-                                    <mwc-icon slot="item-icon">restaurant</mwc-icon>
-                                    Recipes
-                                </paper-icon-item>
-                            </a>
-                            <paper-divider></paper-divider>
-                            <a href="/settings" tabindex="-1">
-                                <paper-icon-item tabindex="-1">
-                                    <mwc-icon slot="item-icon">settings</mwc-icon>
-                                    Settings
-                                </paper-icon-item>
-                            </a>
-                            <a href="/admin" tabindex="-1" hidden\$="[[!getIsAdmin(currentUser)]]">
-                                <paper-icon-item tabindex="-1">
-                                    <mwc-icon slot="item-icon">lock</mwc-icon>
-                                    Admin
-                                </paper-icon-item>
-                            </a>
-                            <paper-divider></paper-divider>
-                            <a href="#!" tabindex="-1" on-click="onLogoutClicked">
-                                <paper-icon-item tabindex="-1">
-                                    <mwc-icon slot="item-icon">exit_to_app</mwc-icon>
-                                    Logout
-                                </paper-icon-item>
-                            </a>
-                        </div>
-                        <div slot="appContent">
-                            <paper-progress indeterminate hidden\$="[[!loadingCount]]"></paper-progress>
-                            <main>
-                                <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
-                                    <home-view name="home" current-user="[[currentUser]]"></home-view>
-                                    <search-view id="searchView" name="search" filter="{{searchFilter}}" current-user="[[currentUser]]"></search-view>
-                                    <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
-                                    <create-view name="create" current-user="[[currentUser]]"></create-view>
-                                    <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
-                                    <admin-view name="admin" current-user="[[currentUser]]"></admin-view>
-                                    <login-view name="login"></login-view>
-                                    <status-404-view name="status-404"></status-404-view>
-                                </iron-pages>
-                            </main>
+                <mwc-drawer id="drawer" type="modal">
+                    <div>
+                        <a href="/home" tabindex="-1">
+                            <paper-icon-item tabindex="-1">
+                                <mwc-icon slot="item-icon">home</mwc-icon>
+                                Home
+                            </paper-icon-item>
+                        </a>
+                        <a href="/search" tabindex="-1">
+                            <paper-icon-item tabindex="-1">
+                                <mwc-icon slot="item-icon">restaurant</mwc-icon>
+                                Recipes
+                            </paper-icon-item>
+                        </a>
+                        <paper-divider></paper-divider>
+                        <a href="/settings" tabindex="-1">
+                            <paper-icon-item tabindex="-1">
+                                <mwc-icon slot="item-icon">settings</mwc-icon>
+                                Settings
+                            </paper-icon-item>
+                        </a>
+                        <a href="/admin" tabindex="-1" hidden\$="[[!getIsAdmin(currentUser)]]">
+                            <paper-icon-item tabindex="-1">
+                                <mwc-icon slot="item-icon">lock</mwc-icon>
+                                Admin
+                            </paper-icon-item>
+                        </a>
+                        <paper-divider></paper-divider>
+                        <a href="#!" tabindex="-1" on-click="onLogoutClicked">
+                            <paper-icon-item tabindex="-1">
+                                <mwc-icon slot="item-icon">exit_to_app</mwc-icon>
+                                Logout
+                            </paper-icon-item>
+                        </a>
+                    </div>
+                    <div slot="appContent">
+                        <paper-progress indeterminate hidden\$="[[!loadingCount]]"></paper-progress>
+                        <main>
+                            <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
+                                <home-view name="home" current-user="[[currentUser]]"></home-view>
+                                <search-view id="searchView" name="search" filter="{{searchFilter}}" current-user="[[currentUser]]"></search-view>
+                                <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
+                                <create-view name="create" current-user="[[currentUser]]"></create-view>
+                                <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
+                                <admin-view name="admin" current-user="[[currentUser]]"></admin-view>
+                                <login-view name="login"></login-view>
+                                <status-404-view name="status-404"></status-404-view>
+                            </iron-pages>
+                        </main>
 
-                            <footer>
-                                <div class="indented" hidden\$="[[!isAuthenticated]]">
-                                    <h4>Links</h4>
-                                    <ul>
-                                        <li><a href="/home">Home</a></li>
-                                        <li><a href="/search">Recipes</a></li>
-                                        <li><a href="/settings">Settings</a></li>
-                                        <li hidden\$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
-                                        <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
-                                    </ul>
-                                </div>
-                                <div class="copyright indented">Copyright © 2016-2020 Chad Weimer</div>
-                            </footer>
-                        </div>
-                    </mwc-drawer>
-                </div>
+                        <footer>
+                            <div class="indented" hidden\$="[[!isAuthenticated]]">
+                                <h4>Links</h4>
+                                <ul>
+                                    <li><a href="/home">Home</a></li>
+                                    <li><a href="/search">Recipes</a></li>
+                                    <li><a href="/settings">Settings</a></li>
+                                    <li hidden\$="[[!getIsAdmin(currentUser)]]"><a href="/admin">Admin</a></li>
+                                    <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
+                                </ul>
+                            </div>
+                            <div class="copyright indented">Copyright © 2016-2021 Chad Weimer</div>
+                        </footer>
+                    </div>
+                </mwc-drawer>
             </mwc-top-app-bar>
 
             <mwc-dialog id="searchFilterDialog" heading="Search Settings" on-opened="searchFilterDialogOpened" on-closed="searchFilterDialogClosed">
