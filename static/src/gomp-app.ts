@@ -122,7 +122,7 @@ export class GompApp extends GompBaseElement {
                 <a href="/admin" slot="actionItems" hidden\$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
                 <a href="#!" slot="actionItems" hidden\$="[[!isAuthenticated]]" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
 
-                <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+                <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" always-show-clear on-paper-search-search="onSearch" on-paper-search-clear="onClearSearch" on-paper-search-filter="onFilter"></paper-search-bar>
 
                 <mwc-drawer id="drawer" type="modal">
                     <div>
@@ -439,6 +439,11 @@ export class GompApp extends GompBaseElement {
         sessionStorage.clear();
         this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true}));
         this.changeRoute('/login');
+    }
+    protected onClearSearch() {
+        // Order is very important here for scrolling purposes
+        this.changeRoute('/search');
+        this.setSearchFilter(new DefaultSearchFilter());
     }
     protected onSearch(e: any) {
         // Order is very important here for scrolling purposes
