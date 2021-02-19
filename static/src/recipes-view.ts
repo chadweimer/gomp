@@ -9,12 +9,12 @@ import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { RecipeEdit } from './components/recipe-edit.js';
 import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
 import { User, Recipe, RecipeState } from './models/models.js';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-icons/editor-icons.js';
-import '@polymer/paper-tabs/paper-tab.js';
-import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial-action.js';
 import './common/shared-styles.js';
@@ -32,6 +32,10 @@ export class RecipesView extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
+                }
+                .disabled {
+                    pointer-events: none;
+                    user-select: none;
                 }
                 #confirmArchiveDialog {
                     --confirmation-dialog-title-color: var(--paper-purple-500);
@@ -103,15 +107,15 @@ export class RecipesView extends GompBaseElement {
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-display>
                     <div class="wrap-horizontal">
                         <div class="tab">
-                            <paper-tabs selected="0">
-                                <paper-tab disabled>Pictures</paper-tab>
-                            </paper-tabs>
+                            <mwc-tab-bar activeIndex="0">
+                                <mwc-tab label="Pictures" class="disabled"></mwc-tab>
+                            </mwc-tab-bar>
                             <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage" readonly\$="[[!getCanEdit(currentUser)]]"></image-list>
                         </div>
                         <div class="tab">
-                            <paper-tabs selected="0">
-                                <paper-tab disabled>Notes</paper-tab>
-                            </paper-tabs>
+                            <mwc-tab-bar activeIndex="0">
+                                <mwc-tab label="Notes" class="disabled"></mwc-tab>
+                            </mwc-tab-bar>
                             <note-list id="noteList" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></note-list>
                         </div>
                     </div>

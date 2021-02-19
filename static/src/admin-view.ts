@@ -8,13 +8,13 @@ import { User, EventWithModel, AppConfiguration } from './models/models.js';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
-import '@polymer/paper-tabs/paper-tab.js';
-import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
@@ -30,7 +30,6 @@ export class AdminView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
-                    --paper-tabs-selection-bar-color: var(--accent-color);
                 }
                 #confirmDeleteUserDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
@@ -40,10 +39,10 @@ export class AdminView extends GompBaseElement {
                 }
             </style>
             <div class="container padded-10">
-                <paper-tabs selected="{{selectedTab}}">
-                    <paper-tab>Configuration</paper-tab>
-                    <paper-tab>Users</paper-tab>
-                </paper-tabs>
+                <mwc-tab-bar id="tabBar" activeIndex="[[selectedTab]]">
+                    <mwc-tab label="Configuration"></mwc-tab>
+                    <mwc-tab label="Users"></mwc-tab>
+                </mwc-tab-bar>
 
                 <iron-pages selected="[[selectedTab]]">
                     <paper-card>
@@ -128,10 +127,9 @@ export class AdminView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    protected selectedTab = 0;
     protected appConfig: AppConfiguration = null;
-
     protected users: User[] = [];
-
     protected userId: number|null = null;
     protected user: {
         username: string,
@@ -153,7 +151,7 @@ export class AdminView extends GompBaseElement {
     public ready() {
         super.ready();
 
-        this.set('selectedTab', 0);
+        this.$.tabBar.addEventListener('MDCTabBar:activated', (e: CustomEvent) => this.onTabActivated(e));
 
         if (this.isActive) {
             this.refresh();
@@ -173,6 +171,10 @@ export class AdminView extends GompBaseElement {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    protected onTabActivated(e: CustomEvent<{index: number}>) {
+        this.selectedTab = e.detail.index;
     }
 
     protected async onSaveAppConfigClicked() {

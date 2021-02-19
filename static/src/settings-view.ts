@@ -8,16 +8,15 @@ import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
 import '@material/mwc-icon';
 import '@material/mwc-dialog';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@material/mwc-button';
-import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-spinner/paper-spinner.js';
-import '@polymer/paper-tabs/paper-tab.js';
-import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import './common/shared-styles.js';
@@ -41,11 +40,11 @@ export class SettingsView extends GompBaseElement {
                 }
             </style>
             <div class="container padded-10">
-                <paper-tabs selected="{{selectedTab}}">
-                    <paper-tab>Preferences</paper-tab>
-                    <paper-tab>Searches</paper-tab>
-                    <paper-tab>Security</paper-tab>
-                </paper-tabs>
+                <mwc-tab-bar id="tabBar" activeIndex="[[selectedTab]]">
+                    <mwc-tab label="Preferences"></mwc-tab>
+                    <mwc-tab label="Searches"></mwc-tab>
+                    <mwc-tab label="Security"></mwc-tab>
+                </mwc-tab-bar>
 
                 <iron-pages selected="[[selectedTab]]">
                     <paper-card>
@@ -143,6 +142,7 @@ export class SettingsView extends GompBaseElement {
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    protected selectedTab = 0;
     protected userSettings: UserSettings = null;
 
     protected filters: SavedSearchFilterCompact[] = [];
@@ -182,7 +182,7 @@ export class SettingsView extends GompBaseElement {
     public ready() {
         super.ready();
 
-        this.set('selectedTab', 0);
+        this.$.tabBar.addEventListener('MDCTabBar:activated', (e: CustomEvent) => this.onTabActivated(e));
 
         if (this.isActive) {
             this.refresh();
@@ -198,6 +198,10 @@ export class SettingsView extends GompBaseElement {
         if (isActive && this.isReady) {
             this.refresh();
         }
+    }
+
+    protected onTabActivated(e: CustomEvent<{index: number}>) {
+        this.selectedTab = e.detail.index;
     }
 
     protected async onUpdatePasswordClicked() {
