@@ -35,6 +35,7 @@
     "@cwmr/paper-search": "^3.0.1",
     "@cwmr/paper-tags-input": "^3.1.2",
     "@material/mwc-button": "^0.20.0",
+    "@material/mwc-dialog": "^0.20.0",
     "@material/mwc-drawer": "^0.20.0",
     "@material/mwc-icon": "^0.20.0",
     "@material/mwc-icon-button": "^0.20.0",

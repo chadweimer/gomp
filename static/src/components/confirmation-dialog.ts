@@ -1,10 +1,10 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import '@material/mwc-button';
+import '@material/mwc-dialog';
 import '@material/mwc-icon';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '../common/shared-styles.js';
 
 @customElement('confirmation-dialog')
@@ -14,26 +14,22 @@ export class ConfirmationDialog extends PolymerElement {
             <style include="shared-styles">
                 :host {
                     display: block;
+
+                    --mdc-dialog-heading-ink-color: var(--confirmation-dialog-title-color);
                 }
                 :host[hidden] {
                     display: none !important;
                 }
-                h3 {
-                    color: var(--confirmation-dialog-title-color, var(--primary-color));
-                }
-                paper-dialog {
+                mwc-dialog {
                     width: unset;
                 }
             </style>
 
-            <paper-dialog id="dialog" with-backdrop on-iron-overlay-closed="onDialogClosed">
-                <h3><mwc-icon class="middle-vertical">[[icon]]</mwc-icon> <span>[[title]]</span></h3>
+            <mwc-dialog id="dialog" heading="[[title]]" on-closed="onDialogClosed">
                 <p>[[message]]</p>
-                <div class="buttons">
-                    <mwc-button label="No" dialog-dismiss></mwc-button>
-                    <mwc-button label="Yes" dialog-confirm></mwc-button>
-                </div>
-            </paper-dialog>
+                <mwc-button label="Yes" slot="primaryAction" dialogAction="yes"></mwc-button>
+                <mwc-button label="No" slot="secondaryAction" dialogAction="cancel"></mwc-button>
+            </mwc-dialog>
 `;
     }
 
@@ -44,16 +40,16 @@ export class ConfirmationDialog extends PolymerElement {
     @property({type: String})
     public message = 'Are you sure you want to perform the requested operation?';
 
-    private get dialog(): PaperDialogElement {
-        return this.$.dialog as PaperDialogElement;
+    private get dialog(): Dialog {
+        return this.$.dialog as Dialog;
     }
 
     public open() {
-        this.dialog.open();
+        this.dialog.show();
     }
 
-    protected onDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (!e.detail.canceled && e.detail.confirmed) {
+    protected onDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action === 'yes') {
             this.dispatchEvent(new CustomEvent('confirmed'));
         } else {
             this.dispatchEvent(new CustomEvent('dismissed'));
