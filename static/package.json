@@ -36,6 +36,7 @@
     "@cwmr/paper-tags-input": "^3.1.2",
     "@material/mwc-button": "^0.20.0",
     "@material/mwc-icon": "^0.20.0",
+    "@material/mwc-snackbar": "^0.20.0",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/app-route": "^3.0.0",
     "@polymer/app-storage": "^3.0.3",
@@ -58,7 +59,6 @@
     "@polymer/paper-radio-group": "^3.0.1",
     "@polymer/paper-spinner": "^3.0.2",
     "@polymer/paper-tabs": "^3.1.0",
-    "@polymer/paper-toast": "^3.0.0",
     "@polymer/polymer": "^3.4.1",
     "@webcomponents/webcomponentsjs": "^2.4.3",
     "web-animations-js": "^2.3.2"

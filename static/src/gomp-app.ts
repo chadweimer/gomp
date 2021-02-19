@@ -1,16 +1,17 @@
 'use strict';
+import { Snackbar } from '@material/mwc-snackbar';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { customElement, property } from '@polymer/decorators';
 import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
 import { PaperDialogElement } from '@polymer/paper-dialog';
-import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
 import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import '@material/mwc-button';
+import '@material/mwc-snackbar';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
@@ -25,7 +26,6 @@ import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
-import '@polymer/paper-toast/paper-toast.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import './common/shared-styles.js';
 import './components/search-filter.js';
@@ -214,7 +214,7 @@ export class GompApp extends GompBaseElement {
                 </div>
             </paper-dialog>
 
-            <paper-toast id="toast" class="fit-bottom"></paper-toast>
+            <mwc-snackbar id="toast"></mwc-snackbar>
 
             <app-localstorage-document key="searchFilter" data="{{searchFilter}}" session-only></app-localstorage-document>
 `;
@@ -247,8 +247,8 @@ export class GompApp extends GompBaseElement {
     private get searchFilterDialog(): PaperDialogElement {
         return this.$.searchFilterDialog as PaperDialogElement;
     }
-    private get toast(): PaperToastElement {
-        return this.$.toast as PaperToastElement;
+    private get toast(): Snackbar {
+        return this.$.toast as Snackbar;
     }
     private get drawer(): AppDrawerElement {
         return this.$.drawer as AppDrawerElement;
@@ -326,8 +326,8 @@ export class GompApp extends GompBaseElement {
     }
 
     protected onShowToast(e: CustomEvent<{message: string}>) {
-        this.toast.text = e.detail.message;
-        this.toast.open();
+        this.toast.labelText = e.detail.message;
+        this.toast.show();
     }
 
     private getScrollPosition() {
