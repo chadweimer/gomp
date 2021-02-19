@@ -1,16 +1,16 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
 import '@material/mwc-icon';
+import '@material/mwc-dialog';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@material/mwc-button';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-fab/paper-fab.js';
@@ -111,33 +111,28 @@ export class SettingsView extends GompBaseElement {
                 </iron-pages>
             </div>
 
-            <paper-dialog id="uploadingDialog" with-backdrop>
-                <h3><paper-spinner active></paper-spinner>Uploading</h3>
-            </paper-dialog>
+            <mwc-dialog id="uploadingDialog">
+                <paper-spinner active></paper-spinner>Uploading
+            </mwc-dialog>
 
-            <paper-dialog id="addSearchFilterDialog" on-iron-overlay-closed="addSearchFilterDialogClosed" with-backdrop>
-                <h3><mwc-icon class="middle-vertical">search</mwc-icon> <span>Add Search Filter</span></h3>
-                <paper-dialog-scrollable>
+            <mwc-dialog id="addSearchFilterDialog" header="Add Search Filter" on-closed="addSearchFilterDialogClosed">
+                <div>
                     <paper-input label="Name" always-float-label value="{{newFilterName}}"></paper-input>
                     <search-filter id="newSearchFilter"></search-filter>
-                </paper-dialog-scrollable>
-                <div class="buttons">
-                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
-                    <mwc-button label="Save" dialog-confirm disabled\$="[[!newFilterName]]"></mwc-button>
                 </div>
-            </paper-dialog>
+                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+                <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+                </div>
+            </mwc-dialog>
 
-            <paper-dialog id="editSearchFilterDialog" on-iron-overlay-closed="editSearchFilterDialogClosed" with-backdrop>
-                <h3><mwc-icon class="middle-vertical">search</mwc-icon> <span>Edit Search Filter</span></h3>
-                <paper-dialog-scrollable>
+            <mwc-dialog id="editSearchFilterDialog" header="Edit Search Filter" on-closed="editSearchFilterDialogClosed">
+                <div>
                     <paper-input label="Name" always-float-label value="{{selectedFilter.name}}"></paper-input>
                     <search-filter id="editSearchFilter"></search-filter>
-                </paper-dialog-scrollable>
-                <div class="buttons">
-                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
-                    <mwc-button label="Save" dialog-confirm disabled\$="[[!selectedFilter.name]]"></mwc-button>
                 </div>
-            </paper-dialog>
+                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+                <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+            </mwc-dialog>
 
             <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" icon="icons:delete" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
 
@@ -165,23 +160,23 @@ export class SettingsView extends GompBaseElement {
     private get homeImageFile(): HTMLInputElement {
         return this.$.homeImageFile as HTMLInputElement;
     }
-    private get uploadingDialog(): PaperDialogElement {
-        return this.$.uploadingDialog as PaperDialogElement;
+    private get uploadingDialog(): Dialog {
+        return this.$.uploadingDialog as Dialog;
     }
-    private get addSearchFilterDialog(): PaperDialogElement {
-        return this.$.addSearchFilterDialog as PaperDialogElement;
+    private get addSearchFilterDialog(): Dialog {
+        return this.$.addSearchFilterDialog as Dialog;
     }
     private get newSearchFilter(): SearchFilterElement {
         return this.$.newSearchFilter as SearchFilterElement;
     }
-    private get editSearchFilterDialog(): PaperDialogElement {
-        return this.$.editSearchFilterDialog as PaperDialogElement;
-    }
-    private get confirmDeleteUserSearchFilterDialog(): PaperDialogElement {
-        return this.$.confirmDeleteUserSearchFilterDialog as PaperDialogElement;
+    private get editSearchFilterDialog(): Dialog {
+        return this.$.editSearchFilterDialog as Dialog;
     }
     private get editSearchFilter(): SearchFilterElement {
         return this.$.editSearchFilter as SearchFilterElement;
+    }
+    private get confirmDeleteUserSearchFilterDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteUserSearchFilterDialog as ConfirmationDialog;
     }
 
     public ready() {
@@ -228,7 +223,7 @@ export class SettingsView extends GompBaseElement {
             // First determine if an image must be uploaded first
             if (this.homeImageFile.value) {
                 try {
-                    this.uploadingDialog.open();
+                    this.uploadingDialog.show();
                     const location = await this.AjaxPostWithLocation('/api/v1/uploads', new FormData(this.homeImageForm));
                     this.uploadingDialog.close();
 
@@ -255,10 +250,10 @@ export class SettingsView extends GompBaseElement {
         this.newFilterName = '';
         this.newSearchFilter.filter = new DefaultSearchFilter();
         this.newSearchFilter.refresh();
-        this.addSearchFilterDialog.open();
+        this.addSearchFilterDialog.show();
     }
-    protected async addSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async addSearchFilterDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'save') {
             return;
         }
 
@@ -285,13 +280,13 @@ export class SettingsView extends GompBaseElement {
             this.selectedFilter = await this.AjaxGetWithResult(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
             this.editSearchFilter.filter = this.selectedFilter;
             this.editSearchFilter.refresh();
-            this.editSearchFilterDialog.open();
+            this.editSearchFilterDialog.show();
         } catch (e) {
             console.error(e);
         }
     }
-    protected async editSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async editSearchFilterDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'save') {
             return;
         }
 
