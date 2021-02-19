@@ -1,10 +1,10 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { Drawer } from '@material/mwc-drawer';
 import { Snackbar } from '@material/mwc-snackbar';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
@@ -12,6 +12,7 @@ import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import '@material/mwc-button';
 import '@material/mwc-icon-button';
+import '@material/mwc-dialog';
 import '@material/mwc-drawer';
 import '@material/mwc-icon';
 import '@material/mwc-snackbar';
@@ -20,8 +21,6 @@ import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
@@ -196,17 +195,14 @@ export class GompApp extends GompBaseElement {
                 </div>
             </mwc-top-app-bar>
 
-            <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop>
-                <h3>Search Settings</h3>
-                <paper-dialog-scrollable>
-                    <search-filter id="searchSettings"></search-filter>
-                </paper-dialog-scrollable>
-                <div class="buttons">
+            <mwc-dialog id="searchFilterDialog" heading="Search Settings" on-opened="searchFilterDialogOpened" on-closed="searchFilterDialogClosed">
+                <search-filter id="searchSettings"></search-filter>
+                <mwc-button slot="primaryAction" label="Apply" dialogAction="apply"></mwc-button>
+                <span slot="secondaryAction">
                     <mwc-button label="Reset" on-click="onResetSearchFilterClicked"></mwc-button>
-                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
-                    <mwc-button label="Apply" dialog-confirm></mwc-button>
-                </div>
-            </paper-dialog>
+                    <mwc-button label="Cancel" dialogAction="cancel"></mwc-button>
+                </span>
+            </mwc-dialog>
 
             <mwc-snackbar id="toast"></mwc-snackbar>
 
@@ -238,8 +234,8 @@ export class GompApp extends GompBaseElement {
     private get searchSettings(): SearchFilterElement {
         return this.$.searchSettings as SearchFilterElement;
     }
-    private get searchFilterDialog(): PaperDialogElement {
-        return this.$.searchFilterDialog as PaperDialogElement;
+    private get searchFilterDialog(): Dialog {
+        return this.$.searchFilterDialog as Dialog;
     }
     private get toast(): Snackbar {
         return this.$.toast as Snackbar;
@@ -454,7 +450,7 @@ export class GompApp extends GompBaseElement {
         this.set('searchFilter.query', e.target.query.trim());
     }
     protected onFilter() {
-        this.searchFilterDialog.open();
+        this.searchFilterDialog.show();
     }
     protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilter}>) {
         // Order is very important here for scrolling purposes
@@ -475,12 +471,12 @@ export class GompApp extends GompBaseElement {
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
         this.searchSettings.refresh();
     }
-    protected searchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+    protected searchFilterDialogClosed(e: CustomEvent<{action: string}>) {
         if (e.target !== this.searchFilterDialog) {
             return;
         }
 
-        if (!e.detail.canceled && e.detail.confirmed) {
+        if (e.detail.action === 'apply') {
             // Order is very important here for scrolling purposes
             this.changeRoute('/search');
             this.setSearchFilter(this.searchSettings.filter);
