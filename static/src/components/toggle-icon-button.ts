@@ -1,8 +1,8 @@
 'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
+import '@material/mwc-button';
 import '@material/mwc-icon';
-import '@polymer/paper-button/paper-button.js';
 import '../common/shared-styles.js';
 
 @customElement('toggle-icon-button')
@@ -15,7 +15,7 @@ export class ToggleIconButton extends PolymerElement {
                 }
             </style>
 
-            <paper-button on-click="toggle" raised><mwc-icon>[[getIcon(selected)]]</mwc-icon></paper-button>
+            <mwc-button on-click="toggle" raised><mwc-icon>[[getIcon(selected)]]</mwc-icon></mwc-button>
 `;
     }
 

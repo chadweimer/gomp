@@ -5,8 +5,8 @@ import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
+import '@material/mwc-button';
 import '@polymer/iron-input/iron-input.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-input/paper-input.js';
@@ -27,35 +27,35 @@ export class RecipeEdit extends GompBaseElement {
                         width: 100%;
                     }
                 }
-          </style>
+            </style>
 
-          <paper-card>
-              <div class="card-content">
-                  <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
-                  <form id="mainImageForm" enctype="multipart/form-data">
-                      <paper-input-container hidden\$="[[recipeId]]" always-float-label>
-                          <label slot="label">Picture</label>
-                          <iron-input slot="input">
-                              <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png">
-                          </iron-input>
-                      </paper-input-container>
-                  </form>
-                  <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
-                  <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
-                  <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
-                  <paper-textarea label="Storage/Freezer Instructions" always-float-label value="{{recipe.storageInstructions}}"></paper-textarea>
-                  <paper-textarea label="Nutrition" always-float-label value="{{recipe.nutritionInfo}}"></paper-textarea>
-                  <paper-input label="Source" always-float-label value="{{recipe.sourceUrl}}"></paper-input>
-                  <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
-              </div>
-              <div class="card-actions">
-                  <paper-button on-click="onCancelButtonClicked">Cancel</paper-button>
-                  <paper-button on-click="onSaveButtonClicked">Save</paper-button>
-              </div>
-          </paper-card>
-          <paper-dialog id="uploadingDialog" with-backdrop>
-              <h3><paper-spinner active></paper-spinner>Uploading</h3>
-          </paper-dialog>
+            <paper-card>
+                <div class="card-content">
+                    <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
+                    <form id="mainImageForm" enctype="multipart/form-data">
+                        <paper-input-container hidden\$="[[recipeId]]" always-float-label>
+                            <label slot="label">Picture</label>
+                            <iron-input slot="input">
+                                <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png">
+                            </iron-input>
+                        </paper-input-container>
+                    </form>
+                    <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
+                    <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
+                    <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
+                    <paper-textarea label="Storage/Freezer Instructions" always-float-label value="{{recipe.storageInstructions}}"></paper-textarea>
+                    <paper-textarea label="Nutrition" always-float-label value="{{recipe.nutritionInfo}}"></paper-textarea>
+                    <paper-input label="Source" always-float-label value="{{recipe.sourceUrl}}"></paper-input>
+                    <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
+                </div>
+                <div class="card-actions">
+                    <mwc-button label="Cancel" dialog-dismiss on-click="onCancelButtonClicked"></mwc-button>
+                    <mwc-button label="Save" dialog-confirm on-click="onSaveButtonClicked"></mwc-button>
+                </div>
+            </paper-card>
+            <paper-dialog id="uploadingDialog" with-backdrop>
+                <h3><paper-spinner active></paper-spinner>Uploading</h3>
+            </paper-dialog>
 `;
     }
 

@@ -2,8 +2,8 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
+import '@material/mwc-button';
 import '@material/mwc-icon';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '../common/shared-styles.js';
 
@@ -30,8 +30,8 @@ export class ConfirmationDialog extends PolymerElement {
                 <h3><mwc-icon class="middle-vertical">[[icon]]</mwc-icon> <span>[[title]]</span></h3>
                 <p>[[message]]</p>
                 <div class="buttons">
-                    <paper-button dialog-dismiss>No</paper-button>
-                    <paper-button dialog-confirm>Yes</paper-button>
+                    <mwc-button label="No" dialog-dismiss></mwc-button>
+                    <mwc-button label="Yes" dialog-confirm></mwc-button>
                 </div>
             </paper-dialog>
 `;

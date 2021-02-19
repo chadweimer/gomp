@@ -8,14 +8,15 @@ import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
-import '@webcomponents/shadycss/entrypoints/apply-shim.js';
+import '@cwmr/paper-divider/paper-divider.js';
+import '@cwmr/paper-search/paper-search-bar.js';
+import '@material/mwc-button';
 import '@polymer/app-layout/app-layout.js';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@material/mwc-icon';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -25,8 +26,7 @@ import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@polymer/paper-toast/paper-toast.js';
-import '@cwmr/paper-divider/paper-divider.js';
-import '@cwmr/paper-search/paper-search-bar.js';
+import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import './common/shared-styles.js';
 import './components/search-filter.js';
 
@@ -41,16 +41,17 @@ export class GompApp extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     --primary-color: var(--paper-deep-purple-500);
+                    --mdc-theme-primary: var(--primary-color);
+
                     --accent-color: var(--paper-teal-500);
+                    --mdc-theme-secondary: var(--accent-color);
+
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
                     --paper-tabs-selection-bar-color: var(--accent-color);
 
                     --paper-item: {
                         cursor: pointer;
-                    }
-                    --paper-button: {
-                        color: var(--primary-color);
                     }
 
                     display: block;
@@ -207,9 +208,9 @@ export class GompApp extends GompBaseElement {
                     <search-filter id="searchSettings"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
-                    <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Apply</paper-button>
+                    <mwc-button label="Reset" on-click="onResetSearchFilterClicked"></mwc-button>
+                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                    <mwc-button label="Apply" dialog-confirm></mwc-button>
                 </div>
             </paper-dialog>
 

@@ -4,10 +4,10 @@ import { customElement, property } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, RecipeState } from './models/models.js';
+import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item-body.js';
@@ -19,6 +19,7 @@ import './components/recipe-card.js';
 import './components/pagination-links.js';
 import './components/recipe-rating.js';
 import './components/sort-order-selector.js';
+import './components/toggle-icon-button.js';
 
 @customElement('search-view')
 export class SearchView extends GompBaseElement {
@@ -30,13 +31,8 @@ export class SearchView extends GompBaseElement {
 
                     margin: 10px;
 
-                    --paper-button: {
-                        min-width: 2.5em;
-                        height: 2.5em;
-                        margin: 0 0.17em;
-                        color: white;
-                        background: var(--light-accent-color);
-                    }
+                    --mdc-theme-primary: var(--accent-color);
+                    --mdc-button-horizontal-padding: 4px;
                 }
                 .section {
                     padding: 4px 0px;
@@ -99,7 +95,7 @@ export class SearchView extends GompBaseElement {
                 <div class="wrap-horizontal">
                     <div class="controlContainer">
                         <paper-menu-button id="statesDropdown">
-                            <paper-button raised slot="dropdown-trigger"><mwc-icon>filter_list</mwc-icon> [[getStateDisplay(filter.states)]]</paper-button>
+                            <mwc-button raised slot="dropdown-trigger" icon="filter_list" label="[[getStateDisplay(filter.states)]]"></mwc-button>
                             <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
                                 <template is="dom-repeat" items="[[availableStates]]">
                                     <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>

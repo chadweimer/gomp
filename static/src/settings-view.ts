@@ -8,7 +8,7 @@ import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilt
 import '@material/mwc-icon';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-button/paper-button.js';
+import '@material/mwc-button';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
@@ -63,9 +63,7 @@ export class SettingsView extends GompBaseElement {
                             <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onSaveButtonClicked">
-                                <span>Save</span>
-                            <paper-button>
+                            <mwc-button label="Save" on-click="onSaveButtonClicked"></mwc-button>
                         </div>
                     </paper-card>
                     <paper-card>
@@ -95,9 +93,7 @@ export class SettingsView extends GompBaseElement {
                             </table>
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onAddFilterClicked">
-                                <span>Add</span>
-                            <paper-button>
+                            <mwc-button label="Add" on-click="onAddFilterClicked"></mwc-button>
                         </div>
                     </paper-card>
                     <paper-card>
@@ -109,9 +105,7 @@ export class SettingsView extends GompBaseElement {
                             <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label></paper-password-input>
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onUpdatePasswordClicked">
-                                <span>Update Password</span>
-                            <paper-button>
+                            <mwc-button label="Update Password" on-click="onUpdatePasswordClicked"></mwc-button>
                         </div>
                     </paper-card>
                 </iron-pages>
@@ -128,8 +122,8 @@ export class SettingsView extends GompBaseElement {
                     <search-filter id="newSearchFilter"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm disabled\$="[[!newFilterName]]">Save</paper-button>
+                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                    <mwc-button label="Save" dialog-confirm disabled\$="[[!newFilterName]]"></mwc-button>
                 </div>
             </paper-dialog>
 
@@ -140,8 +134,8 @@ export class SettingsView extends GompBaseElement {
                     <search-filter id="editSearchFilter"></search-filter>
                 </paper-dialog-scrollable>
                 <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm disabled\$="[[!selectedFilter.name]]">Save</paper-button>
+                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                    <mwc-button label="Save" dialog-confirm disabled\$="[[!selectedFilter.name]]"></mwc-button>
                 </div>
             </paper-dialog>
 

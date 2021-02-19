@@ -4,10 +4,10 @@ import { customElement, property } from '@polymer/decorators';
 import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
-import '@material/mwc-icon';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
+import '@material/mwc-button';
+import '@material/mwc-icon';
+import '@polymer/paper-dialog/paper-dialog.js';
 import '../common/shared-styles.js';
 
 @customElement('recipe-link-dialog')
@@ -27,8 +27,8 @@ export class RecipeLinkDialog extends GompBaseElement {
               <h3 class="indigo"><mwc-icon>link</mwc-icon> <span>Link to Another Recipe</span></h3>
               <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required></paper-autocomplete>
               <div class="buttons">
-                  <paper-button dialog-dismiss>Cancel</paper-button>
-                  <paper-button disabled="[[shouldPreventAdd(selectedRecipeId)]]" dialog-confirm>Add</paper-button>
+                  <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                  <mwc-button label="Add" disabled="[[shouldPreventAdd(selectedRecipeId)]]" dialog-confirm></mwc-button>
               </div>
           </paper-dialog>
 `;

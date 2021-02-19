@@ -5,8 +5,8 @@ import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Note } from '../models/models.js';
 import { NoteCard } from './note-card.js';
+import '@material/mwc-button';
 import '@material/mwc-icon';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-input/paper-textarea.js';
 import './note-card.js';
@@ -33,8 +33,8 @@ export class NoteList extends GompBaseElement {
               <h3 class="blue"><mwc-icon>insert_comment</mwc-icon> <span>Add Note</span></h3>
               <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
               <div class="buttons">
-                  <paper-button dialog-dismiss>Cancel</paper-button>
-                  <paper-button dialog-confirm>Save</paper-button>
+                <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                <mwc-button label="Save" dialog-confirm></mwc-button>
               </div>
           </paper-dialog>
 `;

@@ -2,8 +2,8 @@
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { SortBy, SortDir } from '../models/models';
+import '@material/mwc-button';
 import '@material/mwc-icon';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
@@ -50,7 +50,7 @@ export class SortOrderSelectorElement extends PolymerElement {
 
             <template is="dom-if" if="[[useButtons]]">
                 <paper-menu-button>
-                    <paper-button raised slot="dropdown-trigger"><mwc-icon>sort</mwc-icon> [[sortBy]]</paper-button>
+                    <mwc-button raised slot="dropdown-trigger" icon="sort" label="[[sortBy]]"></mwc-button>
                     <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
                         <template is="dom-repeat" items="[[availableSortBy]]">
                             <paper-icon-item name="[[item.value]]"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>

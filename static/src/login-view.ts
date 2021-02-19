@@ -1,10 +1,9 @@
 'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperButtonElement } from '@polymer/paper-button/paper-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import '@material/mwc-button';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-input/paper-input.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
@@ -37,7 +36,7 @@ export class LoginView extends GompBaseElement {
                         <div class="red">[[errorMessage]]</div>
                     </div>
                     <div class="card-actions">
-                        <paper-button id="loginButton" on-click="onLoginClicked">Login</paper-button>
+                        <mwc-button label="Login" on-click="onLoginClicked"></mwc-button>
                     </div>
                 </paper-card>
             </div>
@@ -50,10 +49,6 @@ export class LoginView extends GompBaseElement {
     public password = '';
     @property({type: String, notify: true})
     public errorMessage = '';
-
-    private get loginButton(): PaperButtonElement {
-        return this.$.loginButton as PaperButtonElement;
-    }
 
     protected isActiveChanged(isActive: boolean) {
         if (isActive) {
@@ -81,7 +76,7 @@ export class LoginView extends GompBaseElement {
     }
     protected onInputKeydown(e: KeyboardEvent) {
         if (e.key === 'Enter') {
-            this.loginButton.click();
+            this.onLoginClicked();
         }
     }
 }

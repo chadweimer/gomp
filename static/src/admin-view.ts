@@ -5,8 +5,8 @@ import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, EventWithModel, AppConfiguration } from './models/models.js';
+import '@material/mwc-button';
 import '@material/mwc-icon';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
@@ -51,9 +51,7 @@ export class AdminView extends GompBaseElement {
                             <paper-input label="Application Title" value="{{appConfig.title}}" always-float-label></paper-input>
                         </div>
                         <div class="card-actions">
-                        <paper-button on-click="onSaveAppConfigClicked">
-                            <span>Save</span>
-                        <paper-button>
+                            <mwc-button label="Save" on-click="onSaveAppConfigClicked"></mwc-button>
                         </div>
                     </paper-card>
                     <paper-card>
@@ -85,9 +83,7 @@ export class AdminView extends GompBaseElement {
                             </table>
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onAddUserClicked">
-                                <span>Add</span>
-                            <paper-button>
+                            <mwc-button label="Add" on-click="onAddUserClicked"></mwc-button>
                         </div>
                     </paper-card>
                 </iron-pages>
@@ -106,8 +102,8 @@ export class AdminView extends GompBaseElement {
                 <paper-password-input label="New Password" value="{{user.password}}" always-float-label required></paper-password-input>
                 <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label required></paper-password-input>
                 <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Save</paper-button>
+                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                    <mwc-button label="Save" dialog-confirm></mwc-button>
                 </div>
             </paper-dialog>
 
@@ -122,8 +118,8 @@ export class AdminView extends GompBaseElement {
                     </paper-listbox>
                 </paper-dropdown-menu-light>
                 <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Save</paper-button>
+                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                    <mwc-button label="Save" dialog-confirm></mwc-button>
                 </div>
             </paper-dialog>
 

@@ -5,16 +5,16 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { Note } from '../models/models.js';
+import '@cwmr/paper-divider/paper-divider.js';
+import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';
 

@@ -6,6 +6,7 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { RecipeImage } from '../models/models.js';
+import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-input/iron-input.js';
@@ -82,8 +83,8 @@ export class ImageList extends GompBaseElement {
                     </paper-input-container>
                 </form>
                 <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Upload</paper-button>
+                    <mwc-button label="Cancel" dialog-dismiss></mwc-button>
+                    <mwc-button label="Upload" dialog-confirm></mwc-button>
                 </div>
             </paper-dialog>
             <paper-dialog id="uploadingDialog" with-backdrop>
