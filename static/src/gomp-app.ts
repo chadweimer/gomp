@@ -25,7 +25,6 @@ import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
@@ -67,6 +66,7 @@ export class GompApp extends GompBaseElement {
                     --mdc-theme-primary: var(--accent-color);
                 }
                 mwc-top-app-bar > a {
+                    --mdc-theme-text-primary-on-background: var(--mdc-theme-on-primary);
                     color: var(--mdc-theme-on-primary);
                 }
                 paper-search-bar {
@@ -163,11 +163,12 @@ export class GompApp extends GompBaseElement {
 
                         <a href="/" slot="title" class="hide-on-small-only">[[title]]</a>
 
-                        <a href="/home" slot="actionItems" hidden\$="[[!isAuthenticated]]"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
-                        <a href="/search" slot="actionItems" hidden\$="[[!isAuthenticated]]"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
-                        <a href="/settings" slot="actionItems" hidden\$="[[!isAuthenticated]]"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
-                        <a href="/admin" slot="actionItems" hidden\$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
-                        <a href="#!" slot="actionItems" hidden\$="[[!isAuthenticated]]" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                        <a href="/home" slot="actionItems" hidden\$="[[!isAuthenticated]]"><mwc-list-item class="hide-on-med-and-down">Home</mwc-list-item></a>
+                        <a href="/search" slot="actionItems" hidden\$="[[!isAuthenticated]]"><mwc-list-item class="hide-on-med-and-down">Recipes</mwc-list-item></a>
+                        <a href="/settings" slot="actionItems" hidden\$="[[!isAuthenticated]]"><mwc-list-item class="hide-on-med-and-down">Settings</mwc-list-item></a>
+                        <a href="/admin" slot="actionItems" hidden\$="[[!getIsAdmin(currentUser)]]"><mwc-list-item class="hide-on-med-and-down">Admin</mwc-list-item></a>
+
+                        <a href="#!" slot="actionItems" hidden\$="[[!isAuthenticated]]" on-click="onLogoutClicked"><mwc-list-item class="hide-on-med-and-down">Logout</mwc-list-item></a>
 
                         <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" always-show-clear on-paper-search-search="onSearch" on-paper-search-clear="onClearSearch" on-paper-search-filter="onFilter"></paper-search-bar>
 
