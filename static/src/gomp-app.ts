@@ -16,6 +16,7 @@ import '@material/mwc-icon-button';
 import '@material/mwc-dialog';
 import '@material/mwc-drawer';
 import '@material/mwc-icon';
+import '@material/mwc-linear-progress';
 import '@material/mwc-snackbar';
 import '@material/mwc-top-app-bar';
 import '@polymer/app-route/app-location.js';
@@ -24,7 +25,6 @@ import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
 import '@webcomponents/shadycss/entrypoints/apply-shim.js';
@@ -62,6 +62,9 @@ export class GompApp extends GompBaseElement {
                     @apply --layout-fullbleed;
                 }
 
+                mwc-linear-progress {
+                    --mdc-theme-primary: var(--accent-color);
+                }
                 mwc-top-app-bar > a {
                     color: var(--mdc-theme-on-primary);
                 }
@@ -70,9 +73,6 @@ export class GompApp extends GompBaseElement {
                 }
                 paper-search-bar[hidden] {
                     display: none !important;
-                }
-                paper-progress {
-                    width: 100%;
                 }
                 main {
                     @apply --layout-flex;
@@ -170,7 +170,7 @@ export class GompApp extends GompBaseElement {
 
                         <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" always-show-clear on-paper-search-search="onSearch" on-paper-search-clear="onClearSearch" on-paper-search-filter="onFilter"></paper-search-bar>
 
-                        <paper-progress indeterminate hidden\$="[[!loadingCount]]"></paper-progress>
+                        <mwc-linear-progress indeterminate closed\$="[[!loadingCount]]"></mwc-linear-progress>
                         <main>
                             <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
                                 <home-view name="home" current-user="[[currentUser]]"></home-view>
