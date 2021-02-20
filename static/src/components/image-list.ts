@@ -6,6 +6,7 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { RecipeImage } from '../models/models.js';
+import '@material/mwc-circular-progress';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
@@ -16,7 +17,6 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
-import '@polymer/paper-spinner/paper-spinner.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';
 
@@ -29,6 +29,9 @@ export class ImageList extends GompBaseElement {
                     display: block;
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
+                }
+                #uploadingDialog {
+                    --mdc-dialog-min-width: unset;
                 }
                 #confirmMainImageDialog {
                     --confirmation-dialog-title-color: var(--paper-blue-500);
@@ -86,8 +89,8 @@ export class ImageList extends GompBaseElement {
                 <mwc-button slot="primaryAction" label="Upload" dialogAction="upload"></mwc-button>
                 <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
             </mwc-dialog>
-            <mwc-dialog id="uploadingDialog">
-                <paper-spinner active></paper-spinner>Uploading
+            <mwc-dialog id="uploadingDialog" heading="Uploading" hideActions>
+                <mwc-circular-progress indeterminate></mwc-circular-progress>
             </mwc-dialog>
 
             <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="setMainImage"></confirmation-dialog>

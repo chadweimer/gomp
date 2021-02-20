@@ -35,6 +35,7 @@
     "@cwmr/paper-search": "^3.1.0",
     "@cwmr/paper-tags-input": "^3.1.2",
     "@material/mwc-button": "^0.20.0",
+    "@material/mwc-circular-progress": "^0.20.0",
     "@material/mwc-dialog": "^0.20.0",
     "@material/mwc-drawer": "^0.20.0",
     "@material/mwc-icon": "^0.20.0",
@@ -59,7 +60,6 @@
     "@polymer/paper-progress": "^3.0.0",
     "@polymer/paper-radio-button": "^3.0.1",
     "@polymer/paper-radio-group": "^3.0.1",
-    "@polymer/paper-spinner": "^3.0.2",
     "@polymer/polymer": "^3.4.1",
     "@webcomponents/webcomponentsjs": "^2.4.3",
     "web-animations-js": "^2.3.2"

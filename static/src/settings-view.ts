@@ -6,8 +6,9 @@ import { GompBaseElement } from './common/gomp-base-element.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
-import '@material/mwc-icon';
+import '@material/mwc-circular-progress';
 import '@material/mwc-dialog';
+import '@material/mwc-icon';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
 import '@polymer/iron-input/iron-input.js';
@@ -16,7 +17,6 @@ import '@material/mwc-button';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-spinner/paper-spinner.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import './common/shared-styles.js';
@@ -34,6 +34,9 @@ export class SettingsView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
+                }
+                #uploadingDialog {
+                    --mdc-dialog-min-width: unset;
                 }
                 #confirmDeleteUserSearchFilterDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
@@ -110,8 +113,8 @@ export class SettingsView extends GompBaseElement {
                 </iron-pages>
             </div>
 
-            <mwc-dialog id="uploadingDialog">
-                <paper-spinner active></paper-spinner>Uploading
+            <mwc-dialog id="uploadingDialog" heading="Uploading" hideActions>
+                <mwc-circular-progress indeterminate></mwc-circular-progress>
             </mwc-dialog>
 
             <mwc-dialog id="addSearchFilterDialog" heading="Add Search Filter" on-closed="addSearchFilterDialogClosed">

@@ -5,13 +5,13 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
+import '@material/mwc-circular-progress';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-input/paper-textarea.js';
-import '@polymer/paper-spinner/paper-spinner.js';
 import './tag-input.js';
 import '../common/shared-styles.js';
 
@@ -26,6 +26,9 @@ export class RecipeEdit extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
+                }
+                #uploadingDialog {
+                    --mdc-dialog-min-width: unset;
                 }
             </style>
 
@@ -53,8 +56,8 @@ export class RecipeEdit extends GompBaseElement {
                     <mwc-button label="Save" dialog-confirm on-click="onSaveButtonClicked"></mwc-button>
                 </div>
             </paper-card>
-            <mwc-dialog id="uploadingDialog">
-                <paper-spinner active></paper-spinner>Uploading
+            <mwc-dialog id="uploadingDialog" heading="Uploading" hideActions>
+                <mwc-circular-progress indeterminate></mwc-circular-progress>
             </mwc-dialog>
 `;
     }
