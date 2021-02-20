@@ -17,13 +17,14 @@ import '@material/mwc-dialog';
 import '@material/mwc-drawer';
 import '@material/mwc-icon';
 import '@material/mwc-linear-progress';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@material/mwc-snackbar';
 import '@material/mwc-top-app-bar';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-item/paper-icon-item.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
@@ -122,40 +123,40 @@ export class GompApp extends GompBaseElement {
             <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
             <mwc-drawer id="drawer" type="modal">
-                <div>
+                <mwc-list activatable>
                     <a href="/home" tabindex="-1">
-                        <paper-icon-item tabindex="-1">
-                            <mwc-icon slot="item-icon">home</mwc-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'home')]]">
+                            <mwc-icon slot="graphic">home</mwc-icon>
                             Home
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
                     <a href="/search" tabindex="-1">
-                        <paper-icon-item tabindex="-1">
-                            <mwc-icon slot="item-icon">restaurant</mwc-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[isIn(page, 'search', 'recipes', 'create')]]">
+                            <mwc-icon slot="graphic">restaurant</mwc-icon>
                             Recipes
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
                     <paper-divider></paper-divider>
                     <a href="/settings" tabindex="-1">
-                        <paper-icon-item tabindex="-1">
-                            <mwc-icon slot="item-icon">settings</mwc-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'settings')]]">
+                            <mwc-icon slot="graphic">settings</mwc-icon>
                             Settings
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
                     <a href="/admin" tabindex="-1" hidden\$="[[!getIsAdmin(currentUser)]]">
-                        <paper-icon-item tabindex="-1">
-                            <mwc-icon slot="item-icon">lock</mwc-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'admin')]]">
+                            <mwc-icon slot="graphic">lock</mwc-icon>
                             Admin
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
                     <paper-divider></paper-divider>
                     <a href="#!" tabindex="-1" on-click="onLogoutClicked">
-                        <paper-icon-item tabindex="-1">
-                            <mwc-icon slot="item-icon">exit_to_app</mwc-icon>
+                        <mwc-list-item graphic="icon">
+                            <mwc-icon slot="graphic">exit_to_app</mwc-icon>
                             Logout
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
-                </div>
+                </mwc-list>
                 <div id="mainContent" slot="appContent">
                     <mwc-top-app-bar id="appBar">
                         <mwc-icon-button icon="menu" slot="navigationIcon" class="hide-on-large-only" on-click="onMenuClicked"></mwc-icon-button>

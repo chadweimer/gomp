@@ -36,6 +36,10 @@ export abstract class GompBaseElement extends PolymerElement {
         return a === b;
     }
 
+    protected isIn(a: any, ...b: any[]) {
+        return b.includes(a);
+    }
+
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
     }
