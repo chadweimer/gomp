@@ -22,18 +22,18 @@ export class SearchFilterElement extends GompBaseElement {
                     display: block;
                 }
                 section.padded {
-                    padding: 0.5em 0;
+                    padding: 0.33em 0;
                 }
                 label {
                     color: var(--secondary-text-color);
-                    font-size: 0.85em;
+                    font-size: 0.75em;
                 }
                 .selection {
                     padding: 0.5em;
                 }
                 .note {
                     color: var(--secondary-text-color);
-                    font-size: 0.75em;
+                    font-size: 0.7em;
                 }
             </style>
 
@@ -72,8 +72,11 @@ export class SearchFilterElement extends GompBaseElement {
             <section>
                 <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
             </section>
-            <section>
-                <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+            <section class="padded">
+                <label>Sort</label>
+                <div>
+                    <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+                </div>
             </section>
 `;
     }

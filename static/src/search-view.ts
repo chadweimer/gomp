@@ -102,7 +102,7 @@ export class SearchView extends GompBaseElement {
                                 </template>
                             </paper-listbox>
                         </paper-menu-button>
-                        <sort-order-selector use-buttons sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+                        <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
                         <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
                     </div>
                     <div class="controlContainer">
