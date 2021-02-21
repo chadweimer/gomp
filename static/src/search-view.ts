@@ -88,16 +88,18 @@ export class SearchView extends GompBaseElement {
             <div class="section">
                 <div class="wrap-horizontal">
                     <div class="controlContainer">
-                        <paper-menu-button id="statesDropdown">
-                            <mwc-button raised slot="dropdown-trigger" icon="filter_list" label="[[getStateDisplay(filter.states)]]"></mwc-button>
-                            <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
-                                <template is="dom-repeat" items="[[availableStates]]">
-                                    <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>
-                                </template>
-                            </paper-listbox>
-                        </paper-menu-button>
-                        <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
-                        <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
+                        <div>
+                            <paper-menu-button id="statesDropdown">
+                                <mwc-button raised slot="dropdown-trigger" icon="filter_list" label="[[getStateDisplay(filter.states)]]"></mwc-button>
+                                <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
+                                    <template is="dom-repeat" items="[[availableStates]]">
+                                        <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>
+                                    </template>
+                                </paper-listbox>
+                            </paper-menu-button>
+                            <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+                            <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
+                        </div>
                     </div>
                     <div class="controlContainer">
                         <div class="centered-horizontal hide-on-med-and-down">
