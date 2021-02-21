@@ -6,6 +6,7 @@ import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, RecipeState } from './models/models.js';
 import '@material/mwc-button';
 import '@material/mwc-icon';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-fab/paper-fab.js';
@@ -32,7 +33,7 @@ export class SearchView extends GompBaseElement {
                     margin: 10px;
 
                     --mdc-theme-primary: var(--accent-color);
-                    --mdc-button-horizontal-padding: 4px;
+                    --mdc-button-horizontal-padding: 8px;
                 }
                 .section {
                     padding: 4px 0px;
@@ -40,22 +41,15 @@ export class SearchView extends GompBaseElement {
                 paper-menu-button {
                     padding: 0px;
                 }
-                .avatar {
-                    width: 32px;
-                    height: 32px;
-                    border: 1px solid rgba(0, 0, 0, 0.25);
-                    border-radius: 50%;
-                }
                 .listRating {
                     --recipe-rating-size: 14px;
+                }
+                .item-inset {
+                    padding-left: 16px;
                 }
                 recipe-card {
                     width: 96%;
                     margin: 2%;
-                }
-                #viewModeSelector {
-                    width: 100px;
-                    padding-left: 3px;
                 }
                 @media screen and (min-width: 1200px) {
                     .recipeContainer {
@@ -125,15 +119,11 @@ export class SearchView extends GompBaseElement {
                         <template is="dom-repeat" items="[[recipes]]">
                             <div class="recipeContainer">
                                 <a href="/recipes/[[item.id]]/view">
-                                    <paper-icon-item>
-                                        <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                        <paper-item-body>
-                                            <div>[[item.name]]</div>
-                                            <div secondary>
-                                                <recipe-rating recipe="{{item}}" class="listRating" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-rating>
-                                            </div>
-                                        </paper-item-body>
-                                    </paper-icon-item>
+                                    <mwc-list-item graphic="avatar" noninteractive>
+                                        <img src="[[item.thumbnailUrl]]" slot="graphic">
+                                        <div class="item-inset">[[item.name]]</div>
+                                        <recipe-rating recipe="{{item}}" class="listRating item-inset" readonly></recipe-rating>
+                                    </mwc-list-item>
                                 </a>
                             </div>
                         </template>
