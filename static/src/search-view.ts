@@ -10,8 +10,6 @@ import '@material/mwc-list/mwc-list-item';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-fab/paper-fab.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-item/paper-item-body.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-styles/paper-styles.js';
@@ -89,11 +87,11 @@ export class SearchView extends GompBaseElement {
                 <div class="wrap-horizontal">
                     <div class="controlContainer">
                         <div>
-                            <paper-menu-button id="statesDropdown">
+                            <paper-menu-button id="statesDropdown" ignore-select>
                                 <mwc-button raised slot="dropdown-trigger" icon="filter_list" label="[[getStateDisplay(filter.states)]]"></mwc-button>
                                 <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
                                     <template is="dom-repeat" items="[[availableStates]]">
-                                        <paper-icon-item name="[[item.value]]" on-click="searchStateClicked"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>
+                                        <mwc-list-item name="[[item.value]]" graphic="icon" activated\$="[[isInArray(item.value, filter.states)]]" on-clicks="searchStateClicked"><mwc-icon slot="graphic">[[item.icon]]</mwc-icon> [[item.name]]</mwc-list-item>
                                     </template>
                                 </paper-listbox>
                             </paper-menu-button>

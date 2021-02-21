@@ -33,10 +33,13 @@ export abstract class GompBaseElement extends PolymerElement {
     }
 
     protected areEqual(a: any, b: any) {
-        return a === b;
+        return a == b;
     }
 
     protected isIn(a: any, ...b: any[]) {
+        return b.includes(a);
+    }
+    protected isInArray(a: any, b: any[]) {
         return b.includes(a);
     }
 

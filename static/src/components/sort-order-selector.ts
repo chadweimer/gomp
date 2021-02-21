@@ -1,17 +1,18 @@
 'use strict';
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import { SortBy, SortDir } from '../models/models';
 import '@material/mwc-button';
 import '@material/mwc-icon';
-import '@polymer/paper-item/paper-icon-item.js';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './toggle-icon-button.js';
 import '../common/shared-styles.js';
 
 @customElement('sort-order-selector')
-export class SortOrderSelectorElement extends PolymerElement {
+export class SortOrderSelectorElement extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -27,7 +28,7 @@ export class SortOrderSelectorElement extends PolymerElement {
                 <mwc-button raised slot="dropdown-trigger" icon="sort" label="[[sortBy]]"></mwc-button>
                 <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
                     <template is="dom-repeat" items="[[availableSortBy]]">
-                        <paper-icon-item name="[[item.value]]"><mwc-icon slot="item-icon">[[item.icon]]</mwc-icon> [[item.name]]</paper-icon-item>
+                        <mwc-list-item name="[[item.value]]" graphic="icon" activated\$="[[areEqual(sortBy, item.value)]]"><mwc-icon slot="graphic">[[item.icon]]</mwc-icon> [[item.name]]</mwc-list-item>
                     </template>
                 </paper-listbox>
             </paper-menu-button>
