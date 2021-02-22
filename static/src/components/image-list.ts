@@ -148,7 +148,7 @@ export class ImageList extends GompBaseElement {
 
         try {
             this.uploadingDialog.show();
-            await this.AjaxPost(`/api/v1/recipes/${this.recipeId}`, new FormData(this.addForm));
+            await this.AjaxPost(`/api/v1/recipes/${this.recipeId}/images`, new FormData(this.addForm));
             this.uploadingDialog.close();
             this.dispatchEvent(new CustomEvent('image-added'));
             this.showToast('Upload complete.');
