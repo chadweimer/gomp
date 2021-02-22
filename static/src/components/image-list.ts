@@ -11,11 +11,11 @@ import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
 import '@material/mwc-icon-button';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';
@@ -60,16 +60,18 @@ export class ImageList extends GompBaseElement {
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
                 </div>
                 <div hidden\$="[[readonly]]">
-                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
+                    <paper-menu-button id="imageMenu" dynamic-align class="menu" horizontal-align="right" data-id\$="[[item.id]]">
                         <mwc-icon-button icon="more_vert" slot="dropdown-trigger"></mwc-icon-button>
-                        <paper-listbox slot="dropdown-content">
-                            <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
-                                <paper-icon-item tabindex="-1"><mwc-icon class="blue" slot="item-icon">photo_library</mwc-icon> Set as main picture</paper-icon-item>
-                            </a>
-                            <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                <paper-icon-item tabindex="-1"><mwc-icon class="red" slot="item-icon">delete</mwc-icon> Delete</paper-icon-item>
-                            </a>
-                        </paper-listbox>
+                        <mwc-list slot="dropdown-content">
+                            <mwc-list-item graphic="icon" tabindex="-1" on-click="onSetMainImageClicked">
+                                <mwc-icon slot="graphic" class="blue">photo_library</mwc-icon>
+                                Set as main picture
+                            </mwc-list-item>
+                            <mwc-list-item graphic="icon" tabindex="-1" on-click="onDeleteClicked">
+                                <mwc-icon slot="graphic" class="red">delete</mwc-icon>
+                                Delete
+                            </mwc-list-item>
+                        </mwc-list>
                     </paper-menu-button>
                 </div>
             </template>

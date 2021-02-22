@@ -9,10 +9,10 @@ import '@cwmr/paper-divider/paper-divider.js';
 import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@material/mwc-icon-button';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';
@@ -61,12 +61,18 @@ export class NoteCard extends GompBaseElement {
                         <mwc-icon>comment</mwc-icon>
                         <span>[[formatDate(note.createdAt)]]</span>
                         <div hidden\$="[[readonly]]">
-                            <paper-menu-button id="noteMenu" horizontal-align="right">
+                            <paper-menu-button id="noteMenu" dynamic-align horizontal-align="right">
                                 <mwc-icon-button icon="more_vert" slot="dropdown-trigger"></mwc-icon-button>
-                                <paper-listbox slot="dropdown-content">
-                                    <paper-icon-item tabindex="-1" on-click="onEditClicked"><mwc-icon class="amber" slot="item-icon">create</mwc-icon> Edit</paper-icon-item>
-                                    <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><mwc-icon class="red" slot="item-icon">delete</mwc-icon> Delete</paper-icon-item>
-                                </paper-listbox>
+                                <mwc-list slot="dropdown-content">
+                                    <mwc-list-item graphic="icon" tabindex="-1" on-click="onEditClicked">
+                                        <mwc-icon slot="graphic" class="amber">create</mwc-icon>
+                                        Edit
+                                    </mwc-list-item>
+                                    <mwc-list-item graphic="icon" tabindex="-1" on-click="onDeleteClicked">
+                                        <mwc-icon slot="graphic" class="red">delete</mwc-icon>
+                                        Delete
+                                    </mwc-list-item>
+                                </mwc-list>
                             </paper-menu-button>
                         </div>
                     </div>

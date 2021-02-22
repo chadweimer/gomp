@@ -1,12 +1,14 @@
 'use strict';
+import { RequestSelectedDetail } from '@material/mwc-list/mwc-list-item';
+import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { SortBy, SortDir } from '../models/models';
 import '@material/mwc-button';
 import '@material/mwc-icon';
+import '@material/mwc-list/mwc-list';
 import '@material/mwc-list/mwc-list-item';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './toggle-icon-button.js';
 import '../common/shared-styles.js';
@@ -24,13 +26,16 @@ export class SortOrderSelectorElement extends GompBaseElement {
                 }
             </style>
 
-            <paper-menu-button>
+            <paper-menu-button id="sortByMenu" dynamic-align>
                 <mwc-button raised slot="dropdown-trigger" icon="sort" label="[[sortBy]]"></mwc-button>
-                <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
+                <mwc-list slot="dropdown-content" activatable>
                     <template is="dom-repeat" items="[[availableSortBy]]">
-                        <mwc-list-item name="[[item.value]]" graphic="icon" activated\$="[[areEqual(sortBy, item.value)]]"><mwc-icon slot="graphic">[[item.icon]]</mwc-icon> [[item.name]]</mwc-list-item>
+                        <mwc-list-item value="[[item.value]]" graphic="icon" selected\$="[[areEqual(sortBy, item.value)]]" activated\$="[[areEqual(sortBy, item.value)]]" on-request-selected="onSortBySelected">
+                            <mwc-icon slot="graphic">[[item.icon]]</mwc-icon>
+                            [[item.name]]
+                        </mwc-list-item>
                     </template>
-                </paper-listbox>
+                </mwc-list>
             </paper-menu-button>
             <toggle-icon-button items="[[availableSortDir]]" selected="{{sortDir}}"></toggle-icon-button>
 `;
@@ -54,4 +59,18 @@ export class SortOrderSelectorElement extends GompBaseElement {
 
     @property({type: Object, notify: true})
     public sortDir: SortDir = SortDir.Asc;
+
+    private get sortByMenu() {
+        return this.$.sortByMenu as PaperMenuButton;
+    }
+
+    protected onSortBySelected(e: CustomEvent<RequestSelectedDetail>) {
+        if (e.detail.source === 'interaction') {
+            if (e.detail.selected) {
+                const item = e.target as unknown as {value: SortBy};
+                this.sortBy = item.value;
+            }
+            this.sortByMenu.close();
+        }
+    }
 }
