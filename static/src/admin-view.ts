@@ -30,6 +30,9 @@ export class AdminView extends GompBaseElement {
                     --paper-card: {
                         width: 100%;
                     }
+                    --paper-item: {
+                        cursor: pointer;
+                    }
                 }
                 #confirmDeleteUserDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);

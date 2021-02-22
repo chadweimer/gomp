@@ -51,10 +51,6 @@ export class GompApp extends GompBaseElement {
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
 
-                    --paper-item: {
-                        cursor: pointer;
-                    }
-
                     display: block;
                     background: var(--paper-grey-50);
                     color: var(--primary-text-color);
