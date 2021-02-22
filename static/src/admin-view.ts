@@ -4,7 +4,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
-import { User, EventWithModel, AppConfiguration } from './models/models.js';
+import { User, EventWithModel, AppConfiguration, AccessLevel } from './models/models.js';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
@@ -93,9 +93,9 @@ export class AdminView extends GompBaseElement {
                     <paper-input label="Email" value="{{user.username}}" type="email" always-float-label required></paper-input>
                     <paper-dropdown-menu-light label="Access Level" always-float-label required>
                         <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
-                            <paper-item item-name="admin">admin</paper-item>
-                            <paper-item item-name="editor">editor</paper-item>
-                            <paper-item item-name="viewer">viewer</paper-item>
+                            <template is="dom-repeat" items="[[availableAccessLevels]]">
+                                <paper-item item-name="[[item.value]]">[[item.name]]</paper-item>
+                            </template>
                         </paper-listbox>
                     </paper-dropdown-menu-light>
                     <paper-password-input label="New Password" value="{{user.password}}" always-float-label required></paper-password-input>
@@ -110,9 +110,9 @@ export class AdminView extends GompBaseElement {
                     <paper-input label="Email" value="{{user.username}}" type="email" always-float-label disabled></paper-input>
                     <paper-dropdown-menu-light label="Access Level" always-float-label required>
                         <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
-                            <paper-item item-name="admin">admin</paper-item>
-                            <paper-item item-name="editor">editor</paper-item>
-                            <paper-item item-name="viewer">viewer</paper-item>
+                            <template is="dom-repeat" items="[[availableAccessLevels]]">
+                                <paper-item item-name="[[item.value]]">[[item.name]]</paper-item>
+                            </template>
                         </paper-listbox>
                     </paper-dropdown-menu-light>
                 </div>
@@ -123,6 +123,12 @@ export class AdminView extends GompBaseElement {
             <confirmation-dialog id="confirmDeleteUserDialog" title="Delete User?" message="Are you sure you want to delete '[[user.username]]'?" on-confirmed="deleteUser"></confirmation-dialog>
 `;
     }
+
+    protected availableAccessLevels = [
+        {name: 'Administrator', value: AccessLevel.Administrator},
+        {name: 'Editor', value: AccessLevel.Editor},
+        {name: 'Viewer', value: AccessLevel.Viewer}
+    ];
 
     @property({type: Object, notify: true})
     public currentUser: User = null;
@@ -192,7 +198,7 @@ export class AdminView extends GompBaseElement {
         this.userId = null;
         this.user = {
             username: '',
-            accessLevel: 'editor',
+            accessLevel: AccessLevel.Editor,
             password: '',
             repeatPassword: ''
         };

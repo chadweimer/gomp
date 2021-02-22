@@ -1,16 +1,16 @@
 'use strict';
+import { MultiSelectedEvent } from '@material/mwc-list/mwc-list-foundation';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, RecipeCompact, DefaultSearchFilter, SearchFilter, RecipeState } from './models/models.js';
 import '@material/mwc-button';
 import '@material/mwc-icon';
+import '@material/mwc-list/mwc-list';
 import '@material/mwc-list/mwc-list-item';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/paper-fab/paper-fab.js';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import '@polymer/paper-styles/paper-styles.js';
 import './common/shared-styles.js';
@@ -89,11 +89,11 @@ export class SearchView extends GompBaseElement {
                         <div>
                             <paper-menu-button id="statesDropdown" ignore-select>
                                 <mwc-button raised slot="dropdown-trigger" icon="filter_list" label="[[getStateDisplay(filter.states)]]"></mwc-button>
-                                <paper-listbox slot="dropdown-content" selected-values="{{filter.states}}" attr-for-selected="name" multi on-selected-values-changed="onStatesChanged">
+                                <mwc-list slot="dropdown-content" multi activatable on-selected="onSearchStatesSelected">
                                     <template is="dom-repeat" items="[[availableStates]]">
-                                        <mwc-list-item name="[[item.value]]" graphic="icon" activated\$="[[isInArray(item.value, filter.states)]]" on-clicks="searchStateClicked"><mwc-icon slot="graphic">[[item.icon]]</mwc-icon> [[item.name]]</mwc-list-item>
+                                        <mwc-list-item name="[[item.value]]" graphic="icon" selected\$="[[isInArray(item.value, filter.states)]]" activated\$="[[isInArray(item.value, filter.states)]]" on-clicks="searchStateClicked"><mwc-icon slot="graphic">[[item.icon]]</mwc-icon> [[item.name]]</mwc-list-item>
                                     </template>
-                                </paper-listbox>
+                                </mwc-list>
                             </paper-menu-button>
                             <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
                             <toggle-icon-button items="[[availableViewModes]]" selected="{{searchSettings.viewMode}}"></toggle-icon-button>
@@ -174,10 +174,6 @@ export class SearchView extends GompBaseElement {
     ];
 
     private pending: {refresh: boolean; rescroll: boolean} = null;
-
-    private get statesDropdown(): PaperMenuButton {
-        return this.$.statesDropdown as PaperMenuButton;
-    }
 
     static get observers() {
         return [
@@ -275,7 +271,19 @@ export class SearchView extends GompBaseElement {
             return states[0];
         }
     }
-    protected searchStateClicked() {
-        this.statesDropdown.close();
+    protected onSearchStatesSelected(e: MultiSelectedEvent) {
+        e.detail.diff.removed.forEach(i => {
+            const state = this.availableStates[i]?.value;
+            if (state) {
+                this.filter.states = this.filter.states.filter(x => x !== state);
+            }
+        });
+        e.detail.diff.added.forEach(i => {
+            const state = this.availableStates[i]?.value;
+            if (state) {
+                this.filter.states.push(state);
+            }
+        });
+        this.notifyPath('filter.states');
     }
 }
