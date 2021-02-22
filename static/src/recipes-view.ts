@@ -225,7 +225,7 @@ export class RecipesView extends GompBaseElement {
     }
     protected onNewButtonClicked() {
         this.actions.close();
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/create'}}));
+        this.navigateTo('/create');
     }
     protected onArchiveButtonClicked() {
         this.confirmArchiveDialog.show();
@@ -250,7 +250,7 @@ export class RecipesView extends GompBaseElement {
             await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}`);
             this.showToast('Recipe deleted.');
             this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-            this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+            this.navigateTo('/search');
         } catch (e) {
             this.showToast('Deleting recipe failed!');
             console.error(e);
@@ -258,10 +258,10 @@ export class RecipesView extends GompBaseElement {
     }
     protected onEditButtonClicked() {
         this.actions.close();
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/edit`}}));
+        this.navigateTo(`/recipes/${this.recipeId}/edit`);
     }
     protected editComplete() {
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/view`}}));
+        this.navigateTo(`/recipes/${this.recipeId}/view`);
     }
     protected onAddLinkButtonClicked() {
         this.recipeLinkDialog.open();

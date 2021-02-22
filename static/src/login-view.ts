@@ -67,7 +67,7 @@ export class LoginView extends GompBaseElement {
             const response: {token: string} = await this.AjaxPostWithResult('/api/v1/auth', authDetails);
             localStorage.setItem('jwtToken', response.token);
             this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true}));
-            this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/home'}}));
+            this.navigateTo('/home');
         } catch (e) {
             this.password = '';
             this.errorMessage = 'Login failed. Check your username and password and try again.';

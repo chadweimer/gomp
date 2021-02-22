@@ -27,11 +27,9 @@ export class CreateView extends GompBaseElement {
     public currentUser: User = null;
 
     protected editCanceled() {
-        this.dispatchEvent(
-            new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+        this.navigateTo('/search');
     }
     protected editSaved(e: CustomEvent<{redirectUrl: string}>) {
-        this.dispatchEvent(
-            new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: e.detail.redirectUrl}}));
+        this.navigateTo(e.detail.redirectUrl);
     }
 }
