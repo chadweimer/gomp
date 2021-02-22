@@ -5,7 +5,6 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { Note } from '../models/models.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@material/mwc-icon-button';
@@ -76,10 +75,10 @@ export class NoteCard extends GompBaseElement {
                             </paper-menu-button>
                         </div>
                     </div>
-                    <paper-divider></paper-divider>
+                    <li divider role="separator"></li>
                     <p class="note-content">[[note.text]]</p>
                     <div hidden\$="[[!showModifiedDate(note)]]">
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                         <div class="note-footer">
                             <span>edited [[formatDate(note.modifiedAt)]]</span>
                         </div>

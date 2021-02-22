@@ -109,6 +109,15 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
             .middle-vertical {
                 vertical-align: middle;
             }
+            li[divider] {
+                list-style: none;
+                height: 0;
+                margin: 0;
+                border: none;
+                border-bottom-width: 1px;
+                border-bottom-style: solid;
+                border-bottom-color: rgba(0, 0, 0, 0.12);
+            }
 
             @media screen and (min-width: 1200px) {
                 mwc-dialog {

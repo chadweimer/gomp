@@ -8,7 +8,6 @@ import '@material/mwc-icon';
 import '@material/mwc-list/mwc-list-item';
 import '@polymer/paper-card/paper-card.js';
 import '@cwmr/paper-chip/paper-chips-section.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
 import './recipe-rating.js';
 import '../common/shared-styles.js';
@@ -83,32 +82,32 @@ export class RecipeDisplay extends GompBaseElement {
                     <section hidden\$="[[!recipe.servingSize]]">
                         <label>Serving Size</label>
                         <p class="plain-text">[[recipe.servingSize]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section>
                         <label>Ingredients</label>
                         <p class="plain-text">[[recipe.ingredients]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section>
                         <label>Directions</label>
                         <p class="plain-text">[[recipe.directions]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[!recipe.storageInstructions]]">
                         <label>Storage/Freezer Instructions</label>
                         <p class="plain-text">[[recipe.storageInstructions]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[!recipe.nutritionInfo]]">
                         <label>Nutrition</label>
                         <p class="plain-text">[[recipe.nutritionInfo]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[!recipe.sourceUrl]]">
                         <label>Source</label>
                         <p class="section"><a target="_blank" href\$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[isEmpty(links)]]">
                         <label>Related Recipes</label>
@@ -121,11 +120,11 @@ export class RecipeDisplay extends GompBaseElement {
                                 <a href="#!" slot="meta" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><mwc-icon>cancel</mwc-icon></a>
                             </mwc-list-item>
                         </template>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[isEmpty(recipe.tags)]]">
                         <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <div class="footer" >
                         <span>[[formatDate(recipe.createdAt)]]</span>

@@ -9,7 +9,6 @@ import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './sort-order-selector.js';
 import './tag-input.js';
 
@@ -48,7 +47,7 @@ export class SearchFilterElement extends GompBaseElement {
                     </template>
                 </div>
                 <span class="note">All listed fields will be included if no selection is made</span>
-                <paper-divider></paper-divider>
+                <li divider role="separator"></li>
             </section>
             <section class="padded">
                 <label>States</label>
@@ -58,7 +57,7 @@ export class SearchFilterElement extends GompBaseElement {
                     </template>
                 </div>
                 <span class="note">Only active will be included if no selection is made</span>
-                <paper-divider></paper-divider>
+                <li divider role="separator"></li>
             </section>
             <section class="padded">
                 <label>Pictures</label>
@@ -67,7 +66,7 @@ export class SearchFilterElement extends GompBaseElement {
                         <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isPictureSelected(item.value)]]" on-change="selectedPictureChanged">[[item.name]]</paper-checkbox>
                     </template>
                 </div>
-                <paper-divider></paper-divider>
+                <li divider role="separator"></li>
             </section>
             <section>
                 <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
