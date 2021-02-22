@@ -1,3 +1,3 @@
 #!/bin/bash
 
-BASE_ASSETS_PATH=static/build/default build/linux/amd64/gomp
+BASE_ASSETS_PATH=static/build/default go run gomp.go
