@@ -42,9 +42,6 @@ export class SearchView extends GompBaseElement {
                 .listRating {
                     --recipe-rating-size: 14px;
                 }
-                .item-inset {
-                    padding-left: 16px;
-                }
                 recipe-card {
                     width: 96%;
                     margin: 2%;

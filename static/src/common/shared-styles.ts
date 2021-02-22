@@ -60,6 +60,9 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
             .padded-10 {
                 padding: 10px;
             }
+            .item-inset {
+                padding-left: 16px;
+            }
 
             /* Colors */
             .amber {
