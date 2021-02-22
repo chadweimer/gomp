@@ -271,7 +271,10 @@ export class GompApp extends GompBaseElement {
 
         // Need to explicitly set this to get the correct behavior
         // since the app bar is not the root elemenet
-        this.appBar.scrollTarget = this.mainContent;
+        const scrollContainer = this.getScrollContainer();
+        if (scrollContainer !== null) {
+            this.appBar.scrollTarget = scrollContainer;
+        }
 
         this.refresh();
         this.onCurrentUserChanged();
@@ -342,9 +345,9 @@ export class GompApp extends GompBaseElement {
     }
     private setScrollPosition(pos: {x: number, y: number}) {
         const scrollContainer = this.getScrollContainer();
-        scrollContainer.scroll(pos.x, pos.y);
+        scrollContainer?.scroll(pos.x, pos.y);
     }
-    private getScrollContainer(): Element|null {
+    private getScrollContainer(): HTMLElement|null {
         return this.mainContent;
     }
     protected routeDataChanged(routeData: {page: string}, oldRouteData: {page: string}) {
