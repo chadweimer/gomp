@@ -9,7 +9,6 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import '@material/mwc-button';
 import '@material/mwc-icon-button';
@@ -132,7 +131,7 @@ export class GompApp extends GompBaseElement {
                             Recipes
                         </mwc-list-item>
                     </a>
-                    <paper-divider></paper-divider>
+                    <li divider role="separator"></li>
                     <a href="/settings" tabindex="-1">
                         <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'settings')]]">
                             <mwc-icon slot="graphic">settings</mwc-icon>
@@ -145,7 +144,7 @@ export class GompApp extends GompBaseElement {
                             Admin
                         </mwc-list-item>
                     </a>
-                    <paper-divider></paper-divider>
+                    <li divider role="separator"></li>
                     <a href="#!" tabindex="-1" on-click="onLogoutClicked">
                         <mwc-list-item graphic="icon">
                             <mwc-icon slot="graphic">exit_to_app</mwc-icon>
