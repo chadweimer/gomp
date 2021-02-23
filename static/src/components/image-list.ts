@@ -83,7 +83,7 @@ export class ImageList extends GompBaseElement {
                         <paper-input-container always-float-label>
                             <label slot="label">Picture</label>
                             <iron-input slot="input">
-                                <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required>
+                                <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required dialogInitialFocus>
                             </iron-input>
                         </paper-input-container>
                     </form>

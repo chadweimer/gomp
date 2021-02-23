@@ -27,7 +27,7 @@ export class ConfirmationDialog extends PolymerElement {
             <mwc-dialog id="dialog" heading="[[title]]" on-closed="onDialogClosed">
                 <p>[[message]]</p>
                 <mwc-button label="Yes" slot="primaryAction" dialogAction="yes"></mwc-button>
-                <mwc-button label="No" slot="secondaryAction" dialogAction="cancel"></mwc-button>
+                <mwc-button label="No" slot="secondaryAction" dialogAction="cancel" dialogInitialFocus></mwc-button>
             </mwc-dialog>
 `;
     }

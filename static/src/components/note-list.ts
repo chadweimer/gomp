@@ -30,7 +30,7 @@ export class NoteList extends GompBaseElement {
           </template>
 
           <mwc-dialog id="noteDialog" heading="Add Note" on-closed="noteDialogClosed">
-              <paper-textarea label="Text" value="{{noteText}}" rows="3" required autofocus></paper-textarea>
+              <paper-textarea label="Text" value="{{noteText}}" rows="3" required dialogInitialFocus></paper-textarea>
               <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
               <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
           </mwc-dialog>

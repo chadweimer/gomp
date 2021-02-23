@@ -93,7 +93,7 @@ export class AdminView extends GompBaseElement {
 
             <mwc-dialog id="addUserDialog" heading="Add User" on-closed="addUserDialogClosed">
                 <div>
-                    <paper-input label="Email" value="{{user.username}}" type="email" always-float-label required></paper-input>
+                    <paper-input label="Email" value="{{user.username}}" type="email" always-float-label required dialogInitialFocus></paper-input>
                     <paper-dropdown-menu-light label="Access Level" always-float-label required>
                         <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
                             <template is="dom-repeat" items="[[availableAccessLevels]]">
@@ -111,7 +111,7 @@ export class AdminView extends GompBaseElement {
             <mwc-dialog id="editUserDialog" heading="Edit User" on-closed="editUserDialogClosed">
                 <div>
                     <paper-input label="Email" value="{{user.username}}" type="email" always-float-label disabled></paper-input>
-                    <paper-dropdown-menu-light label="Access Level" always-float-label required>
+                    <paper-dropdown-menu-light label="Access Level" always-float-label required dialogInitialFocus>
                         <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
                             <template is="dom-repeat" items="[[availableAccessLevels]]">
                                 <paper-item item-name="[[item.value]]">[[item.name]]</paper-item>
@@ -206,6 +206,7 @@ export class AdminView extends GompBaseElement {
             repeatPassword: ''
         };
         this.addUserDialog.show();
+        this.addUserDialog.focus();
     }
 
     protected async addUserDialogClosed(e: CustomEvent<{action: string}>) {
@@ -247,6 +248,7 @@ export class AdminView extends GompBaseElement {
             repeatPassword: null
         };
         this.editUserDialog.show();
+        this.editUserDialog.focus();
     }
 
     protected async editUserDialogClosed(e: CustomEvent<{action: string}>) {

@@ -24,7 +24,7 @@ export class RecipeLinkDialog extends GompBaseElement {
           </style>
 
           <mwc-dialog id="dialog" heading="Link to Another Recipe" on-closed="onDialogClosed">
-              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required></paper-autocomplete>
+              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required dialogInitialFocus></paper-autocomplete>
               <mwc-button slot="primaryAction" label="Add" dialogAction="add"></mwc-button>
               <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
           </mwc-dialog>

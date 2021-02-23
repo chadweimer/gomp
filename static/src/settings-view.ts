@@ -119,7 +119,7 @@ export class SettingsView extends GompBaseElement {
 
             <mwc-dialog id="addSearchFilterDialog" heading="Add Search Filter" on-closed="addSearchFilterDialogClosed">
                 <div>
-                    <paper-input label="Name" always-float-label value="{{newFilterName}}"></paper-input>
+                    <paper-input label="Name" always-float-label value="{{newFilterName}}" dialogInitialFocus></paper-input>
                     <search-filter id="newSearchFilter"></search-filter>
                 </div>
                 <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
@@ -129,7 +129,7 @@ export class SettingsView extends GompBaseElement {
 
             <mwc-dialog id="editSearchFilterDialog" heading="Edit Search Filter" on-closed="editSearchFilterDialogClosed">
                 <div>
-                    <paper-input label="Name" always-float-label value="{{selectedFilter.name}}"></paper-input>
+                    <paper-input label="Name" always-float-label value="{{selectedFilter.name}}" dialogInitialFocus></paper-input>
                     <search-filter id="editSearchFilter"></search-filter>
                 </div>
                 <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
