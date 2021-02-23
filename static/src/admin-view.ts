@@ -206,7 +206,6 @@ export class AdminView extends GompBaseElement {
             repeatPassword: ''
         };
         this.addUserDialog.show();
-        this.addUserDialog.focus();
     }
 
     protected async addUserDialogClosed(e: CustomEvent<{action: string}>) {
@@ -248,7 +247,6 @@ export class AdminView extends GompBaseElement {
             repeatPassword: null
         };
         this.editUserDialog.show();
-        this.editUserDialog.focus();
     }
 
     protected async editUserDialogClosed(e: CustomEvent<{action: string}>) {
