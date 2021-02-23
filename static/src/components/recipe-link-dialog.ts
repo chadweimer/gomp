@@ -17,6 +17,10 @@ export class RecipeLinkDialog extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
+
+                    --paper-autocomplete-suggestions-wrapper: {
+                         position: static;
+                     }
                 }
                 :host[hidden] {
                     display: none !important;
