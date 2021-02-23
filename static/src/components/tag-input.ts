@@ -43,7 +43,7 @@ export class TagInput extends GompBaseElement {
                     <label slot="label">Suggested Tags</label>
                     <div slot="prefix">
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-click="onSuggestedTagClicked" selectable>[[item]] <mwc-icon class="middle-vertical">add_circle</mwc-icon></paper-chip>
+                            <paper-chip on-click="onSuggestedTagClicked" selectable><mwc-icon class="middle-vertical">add_circle</mwc-icon> [[item]]</paper-chip>
                         </template>
                     </div>
                     <input type="hidden" slot="input">

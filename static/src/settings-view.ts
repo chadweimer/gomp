@@ -15,7 +15,6 @@ import '@polymer/iron-input/iron-input.js';
 import '@polymer/iron-pages/iron-pages.js';
 import '@material/mwc-button';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
@@ -137,8 +136,6 @@ export class SettingsView extends GompBaseElement {
             </mwc-dialog>
 
             <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
-
-            <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
 `;
     }
 
