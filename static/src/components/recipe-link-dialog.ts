@@ -17,17 +17,13 @@ export class RecipeLinkDialog extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
-
-                    --paper-autocomplete-suggestions-wrapper: {
-                         position: static;
-                     }
                 }
                 :host[hidden] {
                     display: none !important;
                 }
           </style>
 
-          <mwc-dialog id="dialog" heading="Link to Another Recipe" on-closed="onDialogClosed">
+          <mwc-dialog id="dialog" heading="Link to Another Recipe" on-opening="onDialogOpening" on-closed="onDialogClosed">
               <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required dialogInitialFocus></paper-autocomplete>
               <mwc-button slot="primaryAction" label="Add" dialogAction="add"></mwc-button>
               <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
@@ -85,6 +81,17 @@ export class RecipeLinkDialog extends GompBaseElement {
     }
     protected onAutocompleteSelected(e: CustomEvent<{value: number}>) {
         this.selectedRecipeId = e.detail.value;
+    }
+    protected onDialogOpening() {
+        // WORKAROUND: Allow the suggestion overlay to leave the dialog bounds
+        const surface = this.dialog.shadowRoot.querySelector('.mdc-dialog__surface') as HTMLElement;
+        if (surface) {
+            surface.style.overflow = 'visible';
+        }
+        const content = this.dialog.shadowRoot.querySelector('.mdc-dialog__content') as HTMLElement;
+        if (content) {
+            content.style.overflow = 'visible';
+        }
     }
     protected async onDialogClosed(e: CustomEvent<{action: string}>) {
         if (e.detail.action !== 'add') {
