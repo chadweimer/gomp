@@ -256,7 +256,6 @@ export class GompApp extends GompBaseElement {
     public ready() {
         this.addEventListener('scroll-top', () => this.setScrollPosition({x: 0, y: 0}));
         this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this.onHomeLinkClicked(e));
-        this.addEventListener('iron-overlay-opened', (e) => this.patchOverlay(e));
         this.addEventListener('recipes-modified', () => this.recipesModified());
         this.addEventListener('change-page', (e: CustomEvent) => this.changePageRequested(e));
         this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
@@ -298,17 +297,6 @@ export class GompApp extends GompBaseElement {
         const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
         if (appTitle !== null) {
             appTitle.setAttribute('content', title);
-        }
-    }
-
-    // https://github.com/PolymerElements/paper-dialog/issues/7
-    protected patchOverlay(e: any) {
-        const path = e.path || (e.composedPath && e.composedPath());
-        if (path) {
-            const overlay = path[0];
-            if (overlay.withBackdrop) {
-                overlay.parentNode.insertBefore(overlay.backdropElement, overlay);
-            }
         }
     }
 
