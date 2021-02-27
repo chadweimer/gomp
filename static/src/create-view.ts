@@ -1,4 +1,3 @@
-'use strict';
 import { customElement, property } from '@polymer/decorators';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { GompBaseElement } from './common/gomp-base-element.js';

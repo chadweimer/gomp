@@ -1,4 +1,3 @@
-'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import '@material/mwc-button';

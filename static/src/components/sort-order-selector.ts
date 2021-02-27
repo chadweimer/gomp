@@ -1,4 +1,3 @@
-'use strict';
 import { RequestSelectedDetail } from '@material/mwc-list/mwc-list-item';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { html } from '@polymer/polymer/polymer-element.js';

@@ -1,4 +1,3 @@
-'use strict';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { customElement } from '@polymer/decorators';
 import './common/shared-styles.js';

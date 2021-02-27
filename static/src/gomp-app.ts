@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { Drawer } from '@material/mwc-drawer';
 import { Snackbar } from '@material/mwc-snackbar';

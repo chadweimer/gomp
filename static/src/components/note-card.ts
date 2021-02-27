@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';

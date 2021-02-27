@@ -1,4 +1,3 @@
-'use strict';
 import { MultiSelectedEvent } from '@material/mwc-list/mwc-list-foundation';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
