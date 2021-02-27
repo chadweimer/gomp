@@ -1,11 +1,9 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
+import '@material/mwc-button';
+import '@material/mwc-dialog';
 import '../common/shared-styles.js';
 
 @customElement('confirmation-dialog')
@@ -15,46 +13,40 @@ export class ConfirmationDialog extends PolymerElement {
             <style include="shared-styles">
                 :host {
                     display: block;
+
+                    --mdc-dialog-heading-ink-color: var(--confirmation-dialog-title-color);
                 }
                 :host[hidden] {
                     display: none !important;
                 }
-                h3 {
-                    color: var(--confirmation-dialog-title-color, var(--primary-color));
-                }
-                paper-dialog {
-                    width: unset;
+                mwc-dialog {
+                    --mdc-dialog-min-width: unset;
                 }
             </style>
 
-            <paper-dialog id="dialog" with-backdrop on-iron-overlay-closed="onDialogClosed">
-                <h3><iron-icon icon="[[icon]]"></iron-icon> <span>[[title]]</span></h3>
+            <mwc-dialog id="dialog" heading="[[title]]" on-closed="onDialogClosed">
                 <p>[[message]]</p>
-                <div class="buttons">
-                    <paper-button dialog-dismiss>No</paper-button>
-                    <paper-button dialog-confirm>Yes</paper-button>
-                </div>
-            </paper-dialog>
+                <mwc-button label="Yes" slot="primaryAction" dialogAction="yes"></mwc-button>
+                <mwc-button label="No" slot="secondaryAction" dialogAction="cancel" dialogInitialFocus></mwc-button>
+            </mwc-dialog>
 `;
     }
 
-    @property({type: String})
-    public icon = 'help';
     @property({type: String})
     public title = 'Are you sure?';
     @property({type: String})
     public message = 'Are you sure you want to perform the requested operation?';
 
-    private get dialog(): PaperDialogElement {
-        return this.$.dialog as PaperDialogElement;
+    private get dialog(): Dialog {
+        return this.$.dialog as Dialog;
     }
 
-    public open() {
-        this.dialog.open();
+    public show() {
+        this.dialog.show();
     }
 
-    protected onDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (!e.detail.canceled && e.detail.confirmed) {
+    protected onDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action === 'yes') {
             this.dispatchEvent(new CustomEvent('confirmed'));
         } else {
             this.dispatchEvent(new CustomEvent('dismissed'));

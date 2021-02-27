@@ -1,21 +1,20 @@
 'use strict';
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { RequestSelectedDetail } from '@material/mwc-list/mwc-list-item';
+import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
+import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
+import { GompBaseElement } from '../common/gomp-base-element.js';
 import { SortBy, SortDir } from '../models/models';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/av-icons.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-listbox/paper-listbox.js';
+import '@material/mwc-button';
+import '@material/mwc-icon';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './toggle-icon-button.js';
-import './tag-input.js';
 import '../common/shared-styles.js';
 
 @customElement('sort-order-selector')
-export class SortOrderSelectorElement extends PolymerElement {
+export class SortOrderSelectorElement extends GompBaseElement {
     static get template() {
         return html`
             <style include="shared-styles">
@@ -25,64 +24,53 @@ export class SortOrderSelectorElement extends PolymerElement {
                 paper-menu-button {
                     padding: 0px;
                 }
-                #sortBySelection {
-                    width: var(--sort-order-selector-sort-by-width, 125px);
-                }
-                #sortDirSelection {
-                    width: var(--sort-order-selector-sort-dir-width, 75px);
-                }
             </style>
 
-            <template is="dom-if" if="[[!useButtons]]">
-                <paper-dropdown-menu-light id="sortBySelection" label="Sort By" always-float-label>
-                    <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
-                        <template is="dom-repeat" items="[[availableSortBy]]">
-                            <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
-                        </template>
-                    </paper-listbox>
-                </paper-dropdown-menu-light>
-                <paper-dropdown-menu-light id="sortDirSelection" always-float-label>
-                    <paper-listbox slot="dropdown-content" selected="{{sortDir}}" attr-for-selected="name" fallback-selection="asc">
-                        <template is="dom-repeat" items="[[availableSortDir]]">
-                            <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
-                        </template>
-                    </paper-listbox>
-                </paper-dropdown-menu-light>
-            </template>
-
-            <template is="dom-if" if="[[useButtons]]">
-                <paper-menu-button>
-                    <paper-button raised slot="dropdown-trigger"><iron-icon icon="icons:sort"></iron-icon> [[sortBy]]</paper-button>
-                    <paper-listbox slot="dropdown-content" selected="{{sortBy}}" attr-for-selected="name" fallback-selection="name">
-                        <template is="dom-repeat" items="[[availableSortBy]]">
-                            <paper-icon-item name="[[item.value]]"><iron-icon icon\$="[[item.icon]]" slot="item-icon"></iron-icon> [[item.name]]</paper-icon-item>
-                        </template>
-                    </paper-listbox>
-                </paper-menu-button>
-                <toggle-icon-button items="[[availableSortDir]]" selected="{{sortDir}}"></toggle-icon-button>
-            </template>
+            <paper-menu-button id="sortByMenu" dynamic-align>
+                <mwc-button raised slot="dropdown-trigger" icon="sort" label="[[sortBy]]"></mwc-button>
+                <mwc-list slot="dropdown-content" activatable>
+                    <template is="dom-repeat" items="[[availableSortBy]]">
+                        <mwc-list-item value="[[item.value]]" graphic="icon" selected\$="[[areEqual(sortBy, item.value)]]" activated\$="[[areEqual(sortBy, item.value)]]" on-request-selected="onSortBySelected">
+                            <mwc-icon slot="graphic">[[item.icon]]</mwc-icon>
+                            [[item.name]]
+                        </mwc-list-item>
+                    </template>
+                </mwc-list>
+            </paper-menu-button>
+            <toggle-icon-button items="[[availableSortDir]]" selected="{{sortDir}}"></toggle-icon-button>
 `;
     }
 
     protected availableSortBy = [
-        {name: 'Name', value: SortBy.Name, icon: 'av:sort-by-alpha'},
-        {name: 'Rating', value: SortBy.Rating, icon: 'icons:stars'},
-        {name: 'Created', value: SortBy.Created, icon: 'av:fiber-new'},
-        {name: 'Modified', value: SortBy.Modified, icon: 'icons:update'},
-        {name: 'Random', value: SortBy.Random, icon: 'icons:help'}
+        {name: 'Name', value: SortBy.Name, icon: 'sort_by_alpha'},
+        {name: 'Rating', value: SortBy.Rating, icon: 'stars'},
+        {name: 'Created', value: SortBy.Created, icon: 'fiber_new'},
+        {name: 'Modified', value: SortBy.Modified, icon: 'update'},
+        {name: 'Random', value: SortBy.Random, icon: 'help'}
     ];
 
     protected availableSortDir = [
-        {name: 'Asc', value: SortDir.Asc, icon: 'icons:arrow-upward'},
-        {name: 'Desc', value: SortDir.Desc, icon: 'icons:arrow-downward'},
+        {name: 'Asc', value: SortDir.Asc, icon: 'arrow_upward'},
+        {name: 'Desc', value: SortDir.Desc, icon: 'arrow_downward'},
     ];
-
-    @property({type: Boolean, reflectToAttribute: true})
-    public useButtons = false;
 
     @property({type: Object, notify: true})
     public sortBy: SortBy = SortBy.Name;
 
     @property({type: Object, notify: true})
     public sortDir: SortDir = SortDir.Asc;
+
+    private get sortByMenu() {
+        return this.$.sortByMenu as PaperMenuButton;
+    }
+
+    protected onSortBySelected(e: CustomEvent<RequestSelectedDetail>) {
+        if (e.detail.source === 'interaction') {
+            if (e.detail.selected) {
+                const item = e.target as unknown as {value: SortBy};
+                this.sortBy = item.value;
+            }
+            this.sortByMenu.close();
+        }
+    }
 }

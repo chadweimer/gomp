@@ -9,7 +9,6 @@ import '@polymer/paper-checkbox/paper-checkbox.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-radio-button/paper-radio-button.js';
 import '@polymer/paper-radio-group/paper-radio-group.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './sort-order-selector.js';
 import './tag-input.js';
 
@@ -21,34 +20,34 @@ export class SearchFilterElement extends GompBaseElement {
                 :host {
                     display: block;
                 }
-                section.padded {
-                    padding: 0.5em 0;
+                .padded {
+                    padding: 0.33em 0;
                 }
                 label {
                     color: var(--secondary-text-color);
-                    font-size: 0.85em;
+                    font-size: 0.75em;
                 }
                 .selection {
                     padding: 0.5em;
                 }
                 .note {
                     color: var(--secondary-text-color);
-                    font-size: 0.75em;
+                    font-size: 0.7em;
                 }
             </style>
 
             <section>
                 <paper-input label="Search Terms" always-float-label value="{{filter.query}}"></paper-input>
             </section>
+            <section>
+                <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
+            </section>
             <section class="padded">
-                <label>Fields to Search</label>
-                <div>
-                    <template is="dom-repeat" items="[[availableFields]]">
-                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
-                    </template>
+                <label>Sort</label>
+                <div class="padded">
+                    <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
                 </div>
-                <span class="note">All listed fields will be included if no selection is made</span>
-                <paper-divider></paper-divider>
+                <li divider role="separator"></li>
             </section>
             <section class="padded">
                 <label>States</label>
@@ -58,7 +57,7 @@ export class SearchFilterElement extends GompBaseElement {
                     </template>
                 </div>
                 <span class="note">Only active will be included if no selection is made</span>
-                <paper-divider></paper-divider>
+                <li divider role="separator"></li>
             </section>
             <section class="padded">
                 <label>Pictures</label>
@@ -67,13 +66,17 @@ export class SearchFilterElement extends GompBaseElement {
                         <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isPictureSelected(item.value)]]" on-change="selectedPictureChanged">[[item.name]]</paper-checkbox>
                     </template>
                 </div>
-                <paper-divider></paper-divider>
+                <li divider role="separator"></li>
             </section>
-            <section>
-                <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
-            </section>
-            <section>
-                <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+            <section class="padded">
+                <label>Fields to Search</label>
+                <div>
+                    <template is="dom-repeat" items="[[availableFields]]">
+                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
+                    </template>
+                </div>
+                <span class="note">All listed fields will be included if no selection is made</span>
+                <li divider role="separator"></li>
             </section>
 `;
     }

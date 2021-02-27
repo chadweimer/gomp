@@ -4,8 +4,7 @@ import {customElement, property } from '@polymer/decorators';
 import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { UserSettings } from '../models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
 import '@polymer/paper-input/paper-input-container.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
@@ -22,9 +21,8 @@ export class TagInput extends GompBaseElement {
                 :host[hidden] {
                     display: none !important;
                 }
-                iron-icon {
-                    --iron-icon-height: 20px;
-                    --iron-icon-width: 20px;
+                mwc-icon {
+                    --mdc-icon-size: 20px;
                     color: var(--paper-green-400);
                 }
                 paper-chip {
@@ -45,7 +43,7 @@ export class TagInput extends GompBaseElement {
                     <label slot="label">Suggested Tags</label>
                     <div slot="prefix">
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-click="onSuggestedTagClicked" selectable>[[item]] <iron-icon icon="icons:add-circle"></iron-icon></paper-chip>
+                            <paper-chip on-click="onSuggestedTagClicked" selectable><mwc-icon class="middle-vertical">add_circle</mwc-icon> [[item]]</paper-chip>
                         </template>
                     </div>
                     <input type="hidden" slot="input">

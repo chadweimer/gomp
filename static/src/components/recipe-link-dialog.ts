@@ -1,14 +1,13 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
+import '@material/mwc-button';
+import '@material/mwc-dialog';
+import '@material/mwc-icon';
 import '../common/shared-styles.js';
 
 @customElement('recipe-link-dialog')
@@ -24,14 +23,11 @@ export class RecipeLinkDialog extends GompBaseElement {
                 }
           </style>
 
-          <paper-dialog id="dialog" on-iron-overlay-closed="onDialogClosed" with-backdrop>
-              <h3 class="indigo"><iron-icon icon="icons:link"></iron-icon> <span>Link to Another Recipe</span></h3>
-              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required></paper-autocomplete>
-              <div class="buttons">
-                  <paper-button dialog-dismiss>Cancel</paper-button>
-                  <paper-button disabled="[[shouldPreventAdd(selectedRecipeId)]]" dialog-confirm>Add</paper-button>
-              </div>
-          </paper-dialog>
+          <mwc-dialog id="dialog" heading="Link to Another Recipe" on-opening="onDialogOpening" on-closed="onDialogClosed">
+              <paper-autocomplete id="recipeSearcher" label="Find Recipe" on-autocomplete-change="onAutocompleteChange" on-autocomplete-selected="onAutocompleteSelected" remote-source show-results-on-focus required dialogInitialFocus></paper-autocomplete>
+              <mwc-button slot="primaryAction" label="Add" dialogAction="add"></mwc-button>
+              <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+          </mwc-dialog>
 `;
     }
 
@@ -40,8 +36,8 @@ export class RecipeLinkDialog extends GompBaseElement {
     @property({type: Number})
     public selectedRecipeId: number|null = null;
 
-    private get dialog(): PaperDialogElement {
-        return this.$.dialog as PaperDialogElement;
+    private get dialog(): Dialog {
+        return this.$.dialog as Dialog;
     }
 
     public open() {
@@ -49,7 +45,7 @@ export class RecipeLinkDialog extends GompBaseElement {
         recipeSearcher.suggestions([]);
         recipeSearcher.clear();
 
-        this.dialog.open();
+        this.dialog.show();
     }
 
     protected async onAutocompleteChange(e: CustomEvent<{text: string}>) {
@@ -86,8 +82,19 @@ export class RecipeLinkDialog extends GompBaseElement {
     protected onAutocompleteSelected(e: CustomEvent<{value: number}>) {
         this.selectedRecipeId = e.detail.value;
     }
-    protected async onDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected onDialogOpening() {
+        // WORKAROUND: Allow the suggestion overlay to leave the dialog bounds
+        const surface = this.dialog.shadowRoot.querySelector('.mdc-dialog__surface') as HTMLElement;
+        if (surface) {
+            surface.style.overflow = 'visible';
+        }
+        const content = this.dialog.shadowRoot.querySelector('.mdc-dialog__content') as HTMLElement;
+        if (content) {
+            content.style.overflow = 'visible';
+        }
+    }
+    protected async onDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'add') {
             return;
         }
 

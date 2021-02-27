@@ -1,24 +1,21 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
+import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-circular-progress';
+import '@material/mwc-dialog';
+import '@material/mwc-icon';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 import '@polymer/iron-input/iron-input.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@material/mwc-button';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-fab/paper-fab.js';
 import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-spinner/paper-spinner.js';
-import '@polymer/paper-tabs/paper-tab.js';
-import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import './common/shared-styles.js';
@@ -37,16 +34,19 @@ export class SettingsView extends GompBaseElement {
                         width: 100%;
                     }
                 }
+                #uploadingDialog {
+                    --mdc-dialog-min-width: unset;
+                }
                 #confirmDeleteUserSearchFilterDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
             </style>
             <div class="container padded-10">
-                <paper-tabs selected="{{selectedTab}}">
-                    <paper-tab>Preferences</paper-tab>
-                    <paper-tab>Searches</paper-tab>
-                    <paper-tab>Security</paper-tab>
-                </paper-tabs>
+                <mwc-tab-bar id="tabBar" activeIndex="[[selectedTab]]">
+                    <mwc-tab label="Preferences"></mwc-tab>
+                    <mwc-tab label="Searches"></mwc-tab>
+                    <mwc-tab label="Security"></mwc-tab>
+                </mwc-tab-bar>
 
                 <iron-pages selected="[[selectedTab]]">
                     <paper-card>
@@ -64,9 +64,7 @@ export class SettingsView extends GompBaseElement {
                             <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onSaveButtonClicked">
-                                <span>Save</span>
-                            <paper-button>
+                            <mwc-button label="Save" on-click="onSaveButtonClicked"></mwc-button>
                         </div>
                     </paper-card>
                     <paper-card>
@@ -84,10 +82,10 @@ export class SettingsView extends GompBaseElement {
                                             <td>[[item.name]]</td>
                                             <td class="text-right">
                                                 <a href="#!" tabindex="-1" on-click="onEditFilterClicked">
-                                                    <iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon>
+                                                    <mwc-icon class="amber" slot="item-icon">create</mwc-icon>
                                                 </a>
                                                 <a href="#!" tabindex="-1" on-click="onDeleteFilterClicked">
-                                                    <iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon>
+                                                    <mwc-icon class="red" slot="item-icon">delete</mwc-icon>
                                                 </a>
                                             </td>
                                         </tr>
@@ -96,9 +94,7 @@ export class SettingsView extends GompBaseElement {
                             </table>
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onAddFilterClicked">
-                                <span>Add</span>
-                            <paper-button>
+                            <mwc-button label="Add" on-click="onAddFilterClicked"></mwc-button>
                         </div>
                     </paper-card>
                     <paper-card>
@@ -110,51 +106,43 @@ export class SettingsView extends GompBaseElement {
                             <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label></paper-password-input>
                         </div>
                         <div class="card-actions">
-                            <paper-button on-click="onUpdatePasswordClicked">
-                                <span>Update Password</span>
-                            <paper-button>
+                            <mwc-button label="Update Password" on-click="onUpdatePasswordClicked"></mwc-button>
                         </div>
                     </paper-card>
                 </iron-pages>
             </div>
 
-            <paper-dialog id="uploadingDialog" with-backdrop>
-                <h3><paper-spinner active></paper-spinner>Uploading</h3>
-            </paper-dialog>
+            <mwc-dialog id="uploadingDialog" heading="Uploading" hideActions>
+                <mwc-circular-progress indeterminate></mwc-circular-progress>
+            </mwc-dialog>
 
-            <paper-dialog id="addSearchFilterDialog" on-iron-overlay-closed="addSearchFilterDialogClosed" with-backdrop>
-                <h3><iron-icon icon="icons:search"></iron-icon> <span>Add Search Filter</span></h3>
-                <paper-dialog-scrollable>
-                    <paper-input label="Name" always-float-label value="{{newFilterName}}"></paper-input>
+            <mwc-dialog id="addSearchFilterDialog" heading="Add Search Filter" on-closed="addSearchFilterDialogClosed">
+                <div>
+                    <paper-input label="Name" always-float-label value="{{newFilterName}}" dialogInitialFocus></paper-input>
                     <search-filter id="newSearchFilter"></search-filter>
-                </paper-dialog-scrollable>
-                <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm disabled\$="[[!newFilterName]]">Save</paper-button>
                 </div>
-            </paper-dialog>
+                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+                <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+                </div>
+            </mwc-dialog>
 
-            <paper-dialog id="editSearchFilterDialog" on-iron-overlay-closed="editSearchFilterDialogClosed" with-backdrop>
-                <h3><iron-icon icon="icons:search"></iron-icon> <span>Edit Search Filter</span></h3>
-                <paper-dialog-scrollable>
-                    <paper-input label="Name" always-float-label value="{{selectedFilter.name}}"></paper-input>
+            <mwc-dialog id="editSearchFilterDialog" heading="Edit Search Filter" on-closed="editSearchFilterDialogClosed">
+                <div>
+                    <paper-input label="Name" always-float-label value="{{selectedFilter.name}}" dialogInitialFocus></paper-input>
                     <search-filter id="editSearchFilter"></search-filter>
-                </paper-dialog-scrollable>
-                <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm disabled\$="[[!selectedFilter.name]]">Save</paper-button>
                 </div>
-            </paper-dialog>
+                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+                <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+            </mwc-dialog>
 
-            <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" icon="icons:delete" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
-
-            <a href="/create"><paper-fab icon="icons:add" class="green"></paper-fab></a>
+            <confirmation-dialog id="confirmDeleteUserSearchFilterDialog" title="Delete Search Filter?" message="Are you sure you want to delete '[[selectedFilterCompact.name]]'?" on-confirmed="deleteUserSearchFilter"></confirmation-dialog>
 `;
     }
 
     @property({type: Object, notify: true})
     public currentUser: User = null;
 
+    protected selectedTab = 0;
     protected userSettings: UserSettings = null;
 
     protected filters: SavedSearchFilterCompact[] = [];
@@ -172,29 +160,29 @@ export class SettingsView extends GompBaseElement {
     private get homeImageFile(): HTMLInputElement {
         return this.$.homeImageFile as HTMLInputElement;
     }
-    private get uploadingDialog(): PaperDialogElement {
-        return this.$.uploadingDialog as PaperDialogElement;
+    private get uploadingDialog(): Dialog {
+        return this.$.uploadingDialog as Dialog;
     }
-    private get addSearchFilterDialog(): PaperDialogElement {
-        return this.$.addSearchFilterDialog as PaperDialogElement;
+    private get addSearchFilterDialog(): Dialog {
+        return this.$.addSearchFilterDialog as Dialog;
     }
     private get newSearchFilter(): SearchFilterElement {
         return this.$.newSearchFilter as SearchFilterElement;
     }
-    private get editSearchFilterDialog(): PaperDialogElement {
-        return this.$.editSearchFilterDialog as PaperDialogElement;
-    }
-    private get confirmDeleteUserSearchFilterDialog(): PaperDialogElement {
-        return this.$.confirmDeleteUserSearchFilterDialog as PaperDialogElement;
+    private get editSearchFilterDialog(): Dialog {
+        return this.$.editSearchFilterDialog as Dialog;
     }
     private get editSearchFilter(): SearchFilterElement {
         return this.$.editSearchFilter as SearchFilterElement;
+    }
+    private get confirmDeleteUserSearchFilterDialog(): ConfirmationDialog {
+        return this.$.confirmDeleteUserSearchFilterDialog as ConfirmationDialog;
     }
 
     public ready() {
         super.ready();
 
-        this.set('selectedTab', 0);
+        this.$.tabBar.addEventListener('MDCTabBar:activated', (e: CustomEvent) => this.onTabActivated(e));
 
         if (this.isActive) {
             this.refresh();
@@ -210,6 +198,10 @@ export class SettingsView extends GompBaseElement {
         if (isActive && this.isReady) {
             this.refresh();
         }
+    }
+
+    protected onTabActivated(e: CustomEvent<{index: number}>) {
+        this.selectedTab = e.detail.index;
     }
 
     protected async onUpdatePasswordClicked() {
@@ -235,7 +227,7 @@ export class SettingsView extends GompBaseElement {
             // First determine if an image must be uploaded first
             if (this.homeImageFile.value) {
                 try {
-                    this.uploadingDialog.open();
+                    this.uploadingDialog.show();
                     const location = await this.AjaxPostWithLocation('/api/v1/uploads', new FormData(this.homeImageForm));
                     this.uploadingDialog.close();
 
@@ -262,10 +254,10 @@ export class SettingsView extends GompBaseElement {
         this.newFilterName = '';
         this.newSearchFilter.filter = new DefaultSearchFilter();
         this.newSearchFilter.refresh();
-        this.addSearchFilterDialog.open();
+        this.addSearchFilterDialog.show();
     }
-    protected async addSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async addSearchFilterDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'save') {
             return;
         }
 
@@ -292,13 +284,13 @@ export class SettingsView extends GompBaseElement {
             this.selectedFilter = await this.AjaxGetWithResult(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
             this.editSearchFilter.filter = this.selectedFilter;
             this.editSearchFilter.refresh();
-            this.editSearchFilterDialog.open();
+            this.editSearchFilterDialog.show();
         } catch (e) {
             console.error(e);
         }
     }
-    protected async editSearchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async editSearchFilterDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'save') {
             return;
         }
 
@@ -322,7 +314,7 @@ export class SettingsView extends GompBaseElement {
         e.preventDefault();
 
         this.selectedFilterCompact = e.model.item;
-        this.confirmDeleteUserSearchFilterDialog.open();
+        this.confirmDeleteUserSearchFilterDialog.show();
     }
     protected async deleteUserSearchFilter() {
         try {

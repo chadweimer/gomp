@@ -5,18 +5,14 @@ import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { Note } from '../models/models.js';
+import '@material/mwc-button';
+import '@material/mwc-icon';
+import '@material/mwc-icon-button';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/communication-icons.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';
 
@@ -61,22 +57,28 @@ export class NoteCard extends GompBaseElement {
             <paper-card>
                 <div class="card-content">
                     <div>
-                        <iron-icon icon="communication:comment"></iron-icon>
+                        <mwc-icon>comment</mwc-icon>
                         <span>[[formatDate(note.createdAt)]]</span>
                         <div hidden\$="[[readonly]]">
-                            <paper-menu-button id="noteMenu" horizontal-align="right">
-                                <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
-                                <paper-listbox slot="dropdown-content">
-                                    <paper-icon-item tabindex="-1" on-click="onEditClicked"><iron-icon class="amber" icon="icons:create" slot="item-icon"></iron-icon> Edit</paper-icon-item>
-                                    <paper-icon-item tabindex="-1" on-click="onDeleteClicked"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                                </paper-listbox>
+                            <paper-menu-button id="noteMenu" dynamic-align horizontal-align="right">
+                                <mwc-icon-button icon="more_vert" slot="dropdown-trigger"></mwc-icon-button>
+                                <mwc-list slot="dropdown-content">
+                                    <mwc-list-item graphic="icon" tabindex="-1" on-click="onEditClicked">
+                                        <mwc-icon slot="graphic" class="amber">create</mwc-icon>
+                                        Edit
+                                    </mwc-list-item>
+                                    <mwc-list-item graphic="icon" tabindex="-1" on-click="onDeleteClicked">
+                                        <mwc-icon slot="graphic" class="red">delete</mwc-icon>
+                                        Delete
+                                    </mwc-list-item>
+                                </mwc-list>
                             </paper-menu-button>
                         </div>
                     </div>
-                    <paper-divider></paper-divider>
+                    <li divider role="separator"></li>
                     <p class="note-content">[[note.text]]</p>
                     <div hidden\$="[[!showModifiedDate(note)]]">
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                         <div class="note-footer">
                             <span>edited [[formatDate(note.modifiedAt)]]</span>
                         </div>
@@ -84,7 +86,7 @@ export class NoteCard extends GompBaseElement {
                 </div>
             </paper-card>
 
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" title="Delete Note?" message="Are you sure you want to delete this note?" on-confirmed="deleteNote"></confirmation-dialog>
 `;
     }
 
@@ -116,7 +118,7 @@ export class NoteCard extends GompBaseElement {
         const menu = el.closest('#noteMenu') as PaperMenuButton;
         menu.close();
 
-        this.confirmDeleteDialog.open();
+        this.confirmDeleteDialog.show();
     }
     protected async deleteNote() {
         try {

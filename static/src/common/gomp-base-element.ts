@@ -19,6 +19,11 @@ export abstract class GompBaseElement extends PolymerElement {
         this.dispatchEvent(new CustomEvent('show-toast', {bubbles: true, composed: true, detail: {message}}));
     }
 
+    protected navigateTo(url: string) {
+        this.dispatchEvent(
+            new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: url}}));
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected isActiveChanged(_: boolean) {
         // Nothing to do in base
@@ -33,7 +38,14 @@ export abstract class GompBaseElement extends PolymerElement {
     }
 
     protected areEqual(a: any, b: any) {
-        return a === b;
+        return a == b;
+    }
+
+    protected isIn(a: any, ...b: any[]) {
+        return b.includes(a);
+    }
+    protected isInArray(a: any, b: any[]) {
+        return b.includes(a);
     }
 
     protected formatDate(dateStr: string) {

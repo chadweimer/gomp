@@ -9,13 +9,12 @@ import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { RecipeEdit } from './components/recipe-edit.js';
 import { RecipeLinkDialog } from './components/recipe-link-dialog.js';
 import { User, Recipe, RecipeState } from './models/models.js';
+import '@material/mwc-tab';
+import '@material/mwc-tab-bar';
 import '@polymer/app-route/app-route.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-icons/editor-icons.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-tabs/paper-tab.js';
-import '@polymer/paper-tabs/paper-tabs.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial.js';
 import '@cwmr/paper-fab-speed-dial/paper-fab-speed-dial-action.js';
 import './common/shared-styles.js';
@@ -33,6 +32,10 @@ export class RecipesView extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     display: block;
+                }
+                .disabled {
+                    pointer-events: none;
+                    user-select: none;
                 }
                 #confirmArchiveDialog {
                     --confirmation-dialog-title-color: var(--paper-purple-500);
@@ -104,15 +107,15 @@ export class RecipesView extends GompBaseElement {
                     <recipe-display id="recipeDisplay" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></recipe-display>
                     <div class="wrap-horizontal">
                         <div class="tab">
-                            <paper-tabs selected="0">
-                                <paper-tab disabled>Pictures</paper-tab>
-                            </paper-tabs>
+                            <mwc-tab-bar activeIndex="0">
+                                <mwc-tab label="Pictures" class="disabled"></mwc-tab>
+                            </mwc-tab-bar>
                             <image-list id="imageList" recipe-id="[[recipeId]]" on-image-added="refreshMainImage" on-image-deleted="refreshMainImage" on-main-image-changed="refreshMainImage" readonly\$="[[!getCanEdit(currentUser)]]"></image-list>
                         </div>
                         <div class="tab">
-                            <paper-tabs selected="0">
-                                <paper-tab disabled>Notes</paper-tab>
-                            </paper-tabs>
+                            <mwc-tab-bar activeIndex="0">
+                                <mwc-tab label="Notes" class="disabled"></mwc-tab>
+                            </mwc-tab-bar>
                             <note-list id="noteList" recipe-id="[[recipeId]]" readonly\$="[[!getCanEdit(currentUser)]]"></note-list>
                         </div>
                     </div>
@@ -135,9 +138,9 @@ export class RecipesView extends GompBaseElement {
                 </paper-fab-speed-dial>
             </div>
 
-            <confirmation-dialog id="confirmArchiveDialog" icon="icons:archive" title="Archive Recipe?" message="Are you sure you want to archive this recipe?" on-confirmed="archiveRecipe"></confirmation-dialog>
-            <confirmation-dialog id="confirmUnarchiveDialog" icon="icons:unarchive" title="Unarchive Recipe?" message="Are you sure you want to unarchive this recipe?" on-confirmed="unarchiveRecipe"></confirmation-dialog>
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmArchiveDialog" title="Archive Recipe?" message="Are you sure you want to archive this recipe?" on-confirmed="archiveRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmUnarchiveDialog" title="Unarchive Recipe?" message="Are you sure you want to unarchive this recipe?" on-confirmed="unarchiveRecipe"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" title="Delete Recipe?" message="Are you sure you want to delete this recipe?" on-confirmed="deleteRecipe"></confirmation-dialog>
 
             <recipe-link-dialog id="recipeLinkDialog" recipe-id="[[recipeId]]" on-link-added="onLinkAdded"></recipe-link-dialog>
 `;
@@ -222,24 +225,24 @@ export class RecipesView extends GompBaseElement {
     }
     protected onNewButtonClicked() {
         this.actions.close();
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/create'}}));
+        this.navigateTo('/create');
     }
     protected onArchiveButtonClicked() {
-        this.confirmArchiveDialog.open();
+        this.confirmArchiveDialog.show();
         this.actions.close();
     }
     protected async archiveRecipe() {
         await this.setRecipeState(RecipeState.Archived);
     }
     protected onUnarchiveButtonClicked() {
-        this.confirmUnarchiveDialog.open();
+        this.confirmUnarchiveDialog.show();
         this.actions.close();
     }
     protected async unarchiveRecipe() {
         await this.setRecipeState(RecipeState.Active);
     }
     protected onDeleteButtonClicked() {
-        this.confirmDeleteDialog.open();
+        this.confirmDeleteDialog.show();
         this.actions.close();
     }
     protected async deleteRecipe() {
@@ -247,7 +250,7 @@ export class RecipesView extends GompBaseElement {
             await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}`);
             this.showToast('Recipe deleted.');
             this.dispatchEvent(new CustomEvent('recipes-modified', {bubbles: true, composed: true}));
-            this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: '/search'}}));
+            this.navigateTo('/search');
         } catch (e) {
             this.showToast('Deleting recipe failed!');
             console.error(e);
@@ -255,10 +258,10 @@ export class RecipesView extends GompBaseElement {
     }
     protected onEditButtonClicked() {
         this.actions.close();
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/edit`}}));
+        this.navigateTo(`/recipes/${this.recipeId}/edit`);
     }
     protected editComplete() {
-        this.dispatchEvent(new CustomEvent('change-page', {bubbles: true, composed: true, detail: {url: `/recipes/${this.recipeId}/view`}}));
+        this.navigateTo(`/recipes/${this.recipeId}/view`);
     }
     protected onAddLinkButtonClicked() {
         this.recipeLinkDialog.open();

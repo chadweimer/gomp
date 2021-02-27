@@ -4,13 +4,10 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import '@material/mwc-icon';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-item/paper-item-body.js';
 import '@cwmr/paper-chip/paper-chips-section.js';
-import '@cwmr/paper-divider/paper-divider.js';
 import './confirmation-dialog.js';
 import './recipe-rating.js';
 import '../common/shared-styles.js';
@@ -46,12 +43,6 @@ export class RecipeDisplay extends GompBaseElement {
                     height: 64px;
                     border-radius: 50%;
                 }
-                .avatar {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: 50%;
-                    border: 1px solid rgba(0, 0, 0, 0.25);
-                }
                 recipe-rating {
                     position: absolute;
                     top: 5px;
@@ -69,11 +60,14 @@ export class RecipeDisplay extends GompBaseElement {
                     font-weight: lighter;
                 }
                 .state {
-                    vertical-align: middle;
                     margin-left: 1em;
                 }
                 .state[hidden] {
                     display: none !important;
+                }
+                mwc-list-item.partially-interactive {
+                    --mdc-ripple-color: transparent;
+                    cursor: default;
                 }
             </style>
 
@@ -83,54 +77,54 @@ export class RecipeDisplay extends GompBaseElement {
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
-                        <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+                        <paper-chip class="state middle-vertical" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
                     </h2>
                     <section hidden\$="[[!recipe.servingSize]]">
                         <label>Serving Size</label>
                         <p class="plain-text">[[recipe.servingSize]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section>
                         <label>Ingredients</label>
                         <p class="plain-text">[[recipe.ingredients]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section>
                         <label>Directions</label>
                         <p class="plain-text">[[recipe.directions]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[!recipe.storageInstructions]]">
                         <label>Storage/Freezer Instructions</label>
                         <p class="plain-text">[[recipe.storageInstructions]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[!recipe.nutritionInfo]]">
                         <label>Nutrition</label>
                         <p class="plain-text">[[recipe.nutritionInfo]]</p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[!recipe.sourceUrl]]">
                         <label>Source</label>
                         <p class="section"><a target="_blank" href\$="[[recipe.sourceUrl]]" class="hideable-content">[[recipe.sourceUrl]]</a></p>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[isEmpty(links)]]">
                         <label>Related Recipes</label>
                         <template is="dom-repeat" items="[[links]]">
-                            <paper-icon-item>
-                                <img src="[[item.thumbnailUrl]]" class="avatar" slot="item-icon">
-                                <paper-item-body>
+                            <mwc-list-item class="partially-interactive" graphic="avatar" hasMeta tabindex="-1">
+                                <img src="[[item.thumbnailUrl]]" slot="graphic">
+                                <div class="item-inset">
                                     <a href="/recipes/[[item.id]]/view">[[item.name]]</a>
-                                </paper-item-body>
-                                <a href="#!" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><iron-icon icon="icons:cancel"></iron-icon></a>
-                            </paper-icon-item>
+                                </div>
+                                <a href="#!" slot="meta" on-click="onRemoveLinkClicked" hidden\$="[[readonly]]"><mwc-icon>cancel</mwc-icon></a>
+                            </mwc-list-item>
                         </template>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[isEmpty(recipe.tags)]]">
                         <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
-                        <paper-divider></paper-divider>
+                        <li divider role="separator"></li>
                     </section>
                     <div class="footer" >
                         <span>[[formatDate(recipe.createdAt)]]</span>
@@ -139,7 +133,7 @@ export class RecipeDisplay extends GompBaseElement {
                 </div>
           </paper-card>
 
-          <confirmation-dialog id="confirmDeleteLinkDialog" icon="delete" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
+          <confirmation-dialog id="confirmDeleteLinkDialog" title="Delete Link?" message="Are you sure you want to delete this link?" on-confirmed="deleteLink"></confirmation-dialog>
 `;
     }
 
@@ -198,7 +192,7 @@ export class RecipeDisplay extends GompBaseElement {
         e.preventDefault();
 
         this.confirmDeleteLinkDialog.dataset.id = e.model.item.id.toString();
-        this.confirmDeleteLinkDialog.open();
+        this.confirmDeleteLinkDialog.show();
     }
 
     protected async deleteLink(e: Event) {

@@ -1,24 +1,22 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
-import { PaperDialogElement } from '@polymer/paper-dialog/paper-dialog.js';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { RecipeImage } from '../models/models.js';
+import '@material/mwc-circular-progress';
+import '@material/mwc-button';
+import '@material/mwc-dialog';
+import '@material/mwc-icon';
+import '@material/mwc-icon-button';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/image-icons.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/image-icons.js';
 import '@polymer/iron-input/iron-input.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
-import '@polymer/paper-spinner/paper-spinner.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';
 
@@ -31,6 +29,9 @@ export class ImageList extends GompBaseElement {
                     display: block;
                     @apply --layout-horizontal;
                     @apply --layout-wrap;
+                }
+                #uploadingDialog {
+                    --mdc-dialog-min-width: unset;
                 }
                 #confirmMainImageDialog {
                     --confirmation-dialog-title-color: var(--paper-blue-500);
@@ -59,42 +60,43 @@ export class ImageList extends GompBaseElement {
                     <a target="_blank" href\$="[[item.url]]"><img src="[[item.thumbnailUrl]]" alt="[[item.name]]"></a>
                 </div>
                 <div hidden\$="[[readonly]]">
-                    <paper-menu-button id="imageMenu" class="menu" horizontal-align="right" data-id\$="[[item.id]]">
-                        <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
-                        <paper-listbox slot="dropdown-content">
-                            <a href="#!" tabindex="-1" on-click="onSetMainImageClicked">
-                                <paper-icon-item tabindex="-1"><iron-icon class="blue" icon="image:photo-library" slot="item-icon"></iron-icon> Set as main picture</paper-icon-item>
-                            </a>
-                            <a href="#!" tabindex="-1" on-click="onDeleteClicked">
-                                <paper-icon-item tabindex="-1"><iron-icon class="red" icon="icons:delete" slot="item-icon"></iron-icon> Delete</paper-icon-item>
-                            </a>
-                        </paper-listbox>
+                    <paper-menu-button id="imageMenu" dynamic-align class="menu" horizontal-align="right" data-id\$="[[item.id]]">
+                        <mwc-icon-button icon="more_vert" slot="dropdown-trigger"></mwc-icon-button>
+                        <mwc-list slot="dropdown-content">
+                            <mwc-list-item graphic="icon" tabindex="-1" on-click="onSetMainImageClicked">
+                                <mwc-icon slot="graphic" class="blue">photo_library</mwc-icon>
+                                Set as main picture
+                            </mwc-list-item>
+                            <mwc-list-item graphic="icon" tabindex="-1" on-click="onDeleteClicked">
+                                <mwc-icon slot="graphic" class="red">delete</mwc-icon>
+                                Delete
+                            </mwc-list-item>
+                        </mwc-list>
                     </paper-menu-button>
                 </div>
             </template>
 
-            <paper-dialog id="addDialog" on-iron-overlay-closed="addDialogClosed" with-backdrop>
-                <h3 class="teal"><iron-icon icon="image:add-a-photo"></iron-icon> <span>Upload Picture</span></h3>
-                <p>Browse for a picture to upload to this recipe.</p>
-                <form id="addForm" enctype="multipart/form-data">
-                    <paper-input-container always-float-label>
-                        <label slot="label">Picture</label>
-                        <iron-input slot="input">
-                            <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required>
-                        </iron-input>
-                    </paper-input-container>
-                </form>
-                <div class="buttons">
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Upload</paper-button>
+            <mwc-dialog id="addDialog" heading="Upload Picture" on-closed="addDialogClosed">
+                <div>
+                    <p>Browse for a picture to upload to this recipe.</p>
+                    <form id="addForm" enctype="multipart/form-data">
+                        <paper-input-container always-float-label>
+                            <label slot="label">Picture</label>
+                            <iron-input slot="input">
+                                <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required dialogInitialFocus>
+                            </iron-input>
+                        </paper-input-container>
+                    </form>
                 </div>
-            </paper-dialog>
-            <paper-dialog id="uploadingDialog" with-backdrop>
-                <h3><paper-spinner active></paper-spinner>Uploading</h3>
-            </paper-dialog>
+                <mwc-button slot="primaryAction" label="Upload" dialogAction="upload"></mwc-button>
+                <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
+            </mwc-dialog>
+            <mwc-dialog id="uploadingDialog" heading="Uploading" hideActions>
+                <mwc-circular-progress indeterminate></mwc-circular-progress>
+            </mwc-dialog>
 
             <confirmation-dialog id="confirmMainImageDialog" title="Change Main Picture?" message="Are you sure you want to make this the main picture for the recipe?" on-confirmed="setMainImage"></confirmation-dialog>
-            <confirmation-dialog id="confirmDeleteDialog" icon="delete" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
+            <confirmation-dialog id="confirmDeleteDialog" title="Delete Picture?" message="Are you sure you want to delete this picture?" on-confirmed="deleteImage"></confirmation-dialog>
 `;
     }
 
@@ -109,11 +111,11 @@ export class ImageList extends GompBaseElement {
     private get addForm(): HTMLFormElement {
         return this.$.addForm as HTMLFormElement;
     }
-    private get uploadingDialog(): PaperDialogElement {
-        return this.$.uploadingDialog as PaperDialogElement;
+    private get uploadingDialog(): Dialog {
+        return this.$.uploadingDialog as Dialog;
     }
-    private get addDialog(): PaperDialogElement {
-        return this.$.addDialog as PaperDialogElement;
+    private get addDialog(): Dialog {
+        return this.$.addDialog as Dialog;
     }
     private get confirmMainImageDialog(): ConfirmationDialog {
         return this.$.confirmMainImageDialog as ConfirmationDialog;
@@ -136,17 +138,17 @@ export class ImageList extends GompBaseElement {
     }
 
     public add() {
-        this.addDialog.open();
+        this.addDialog.show();
     }
 
-    protected async addDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
-        if (e.detail.canceled || !e.detail.confirmed) {
+    protected async addDialogClosed(e: CustomEvent<{action: string}>) {
+        if (e.detail.action !== 'upload') {
             return;
         }
 
         try {
-            this.uploadingDialog.open();
-            await this.AjaxPost(`/api/v1/recipes/${this.recipeId}`, new FormData(this.addForm));
+            this.uploadingDialog.show();
+            await this.AjaxPost(`/api/v1/recipes/${this.recipeId}/images`, new FormData(this.addForm));
             this.uploadingDialog.close();
             this.dispatchEvent(new CustomEvent('image-added'));
             this.showToast('Upload complete.');
@@ -166,7 +168,7 @@ export class ImageList extends GompBaseElement {
         menu.close();
 
         this.confirmMainImageDialog.dataset.id = menu.dataset.id;
-        this.confirmMainImageDialog.open();
+        this.confirmMainImageDialog.show();
     }
     protected async setMainImage(e: Event) {
         const el = e.target as HTMLElement;
@@ -190,7 +192,7 @@ export class ImageList extends GompBaseElement {
         menu.close();
 
         this.confirmDeleteDialog.dataset.id = menu.dataset.id;
-        this.confirmDeleteDialog.open();
+        this.confirmDeleteDialog.show();
     }
     protected async deleteImage(e: Event) {
         const el = e.target as HTMLElement;

@@ -60,6 +60,9 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
             .padded-10 {
                 padding: 10px;
             }
+            .item-inset {
+                padding-left: 16px;
+            }
 
             /* Colors */
             .amber {
@@ -103,15 +106,27 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 @apply --layout-horizontal;
                 @apply --layout-wrap;
             }
+            .middle-vertical {
+                vertical-align: middle;
+            }
+            li[divider] {
+                list-style: none;
+                height: 0;
+                margin: 0;
+                border: none;
+                border-bottom-width: 1px;
+                border-bottom-style: solid;
+                border-bottom-color: rgba(0, 0, 0, 0.12);
+            }
 
             @media screen and (min-width: 1200px) {
-                paper-dialog {
-                    width: 33%;
+                mwc-dialog {
+                    --mdc-dialog-min-width: 33vw;
                 }
             }
             @media screen and (min-width: 992px) and (max-width: 1199px) {
-                paper-dialog {
-                    width: 50%;
+                mwc-dialog {
+                    --mdc-dialog-min-width: 50vw;
                 }
             }
             @media screen and (min-width: 992px) {
@@ -128,8 +143,8 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 }
             }
             @media screen and (min-width: 600px) and (max-width: 991px) {
-                paper-dialog {
-                    width: 75%;
+                mwc-dialog {
+                    --mdc-dialog-min-width: 75vw;
                 }
                 .container {
                     width: 75%;
@@ -149,8 +164,8 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 .hide-on-small-only {
                     display: none;
                 }
-                paper-dialog {
-                    width: 100%;
+                mwc-dialog {
+                    --mdc-dialog-min-width: 95vw;
                 }
             }
         </style>

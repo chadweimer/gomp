@@ -28,12 +28,18 @@ export enum SortDir {
     Desc = 'desc'
 }
 
+export enum AccessLevel {
+    Administrator = 'admin',
+    Editor = 'editor',
+    Viewer = 'viewer'
+}
+
 export class DefaultSearchFilter implements SearchFilter {
     constructor() {
         this.query = '';
         this.withPictures = null;
-        this.fields = [];
-        this.states = [];
+        this.fields = [SearchField.Name, SearchField.Ingredients, SearchField.Directions];
+        this.states = [RecipeState.Active];
         this.tags = [];
         this.sortBy = SortBy.Name;
         this.sortDir = SortDir.Asc;

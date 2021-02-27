@@ -1,34 +1,32 @@
 'use strict';
+import { Dialog } from '@material/mwc-dialog';
+import { Drawer } from '@material/mwc-drawer';
+import { Snackbar } from '@material/mwc-snackbar';
+import { TopAppBar } from '@material/mwc-top-app-bar';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
 import { customElement, property } from '@polymer/decorators';
-import { AppDrawerElement } from '@polymer/app-layout/app-drawer/app-drawer';
-import { PaperDialogElement } from '@polymer/paper-dialog';
-import { PaperToastElement } from '@polymer/paper-toast/paper-toast.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
-import '@webcomponents/shadycss/entrypoints/apply-shim.js';
-import '@polymer/app-layout/app-layout.js';
+import '@cwmr/paper-search/paper-search-bar.js';
+import '@material/mwc-button';
+import '@material/mwc-icon-button';
+import '@material/mwc-dialog';
+import '@material/mwc-drawer';
+import '@material/mwc-icon';
+import '@material/mwc-linear-progress';
+import '@material/mwc-list/mwc-list';
+import '@material/mwc-list/mwc-list-item';
+import '@material/mwc-snackbar';
+import '@material/mwc-top-app-bar';
 import '@polymer/app-route/app-location.js';
 import '@polymer/app-route/app-route.js';
 import '@polymer/app-storage/app-localstorage/app-localstorage-document.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
-import '@polymer/iron-icons/maps-icons.js';
 import '@polymer/iron-pages/iron-pages.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
-import '@polymer/paper-icon-button/paper-icon-button.js';
-import '@polymer/paper-item/paper-icon-item.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-progress/paper-progress.js';
 import '@polymer/paper-styles/default-theme.js';
 import '@polymer/paper-styles/paper-styles.js';
-import '@polymer/paper-toast/paper-toast.js';
-import '@cwmr/paper-divider/paper-divider.js';
-import '@cwmr/paper-search/paper-search-bar.js';
+import '@webcomponents/shadycss/entrypoints/apply-shim.js';
 import './common/shared-styles.js';
 import './components/search-filter.js';
 
@@ -43,17 +41,14 @@ export class GompApp extends GompBaseElement {
             <style include="shared-styles">
                 :host {
                     --primary-color: var(--paper-deep-purple-500);
+                    --mdc-theme-primary: var(--primary-color);
+                    --mdc-theme-on-primary: white;
+
                     --accent-color: var(--paper-teal-500);
+                    --mdc-theme-secondary: var(--accent-color);
+
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
-                    --paper-tabs-selection-bar-color: var(--accent-color);
-
-                    --paper-item: {
-                        cursor: pointer;
-                    }
-                    --paper-button: {
-                        color: var(--primary-color);
-                    }
 
                     display: block;
                     background: var(--paper-grey-50);
@@ -62,18 +57,18 @@ export class GompApp extends GompBaseElement {
                     @apply --layout-fullbleed;
                 }
 
-                app-toolbar {
-                    background: var(--primary-color);
-                    color: white;
+                mwc-linear-progress {
+                    --mdc-theme-primary: var(--accent-color);
                 }
-                app-toolbar a {
-                    color: white;
+                mwc-top-app-bar > a {
+                    --mdc-theme-text-primary-on-background: var(--mdc-theme-on-primary);
+                    color: var(--mdc-theme-on-primary);
                 }
                 paper-search-bar {
                     color: var(--primary-text-color);
                 }
-                paper-progress {
-                    width: 100%;
+                paper-search-bar[hidden] {
+                    display: none !important;
                 }
                 main {
                     @apply --layout-flex;
@@ -97,6 +92,15 @@ export class GompApp extends GompBaseElement {
                     padding-left: 150px;
                     padding-right: 150px;
                 }
+                #mainContent {
+                    display: flex;
+                    height: 100%;
+                    flex-flow: column;
+                    overflow: auto;
+                }
+                #appBar {
+                    flex: 1 1 auto;
+                }
                 @media screen and (max-width: 599px) {
                     .indented {
                         padding-left: 15px;
@@ -113,79 +117,70 @@ export class GompApp extends GompBaseElement {
             <app-location route="{{route}}"></app-location>
             <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-            <app-drawer-layout force-narrow fullbleed>
-                <app-drawer id="drawer" slot="drawer" swipe-open>
-                    <app-toolbar>[[title]]</app-toolbar>
+            <mwc-drawer id="drawer" type="modal">
+                <mwc-list activatable>
                     <a href="/home" tabindex="-1">
-                        <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:home" slot="item-icon"></iron-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'home')]]">
+                            <mwc-icon slot="graphic">home</mwc-icon>
                             Home
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
                     <a href="/search" tabindex="-1">
-                        <paper-icon-item tabindex="-1">
-                            <iron-icon icon="maps:restaurant" slot="item-icon"></iron-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[isIn(page, 'search', 'recipes', 'create')]]">
+                            <mwc-icon slot="graphic">restaurant</mwc-icon>
                             Recipes
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
-                    <paper-divider></paper-divider>
+                    <li divider role="separator"></li>
                     <a href="/settings" tabindex="-1">
-                        <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:settings" slot="item-icon"></iron-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'settings')]]">
+                            <mwc-icon slot="graphic">settings</mwc-icon>
                             Settings
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
                     <a href="/admin" tabindex="-1" hidden\$="[[!getIsAdmin(currentUser)]]">
-                        <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:lock" slot="item-icon"></iron-icon>
+                        <mwc-list-item graphic="icon" activated\$="[[areEqual(page, 'admin')]]">
+                            <mwc-icon slot="graphic">lock</mwc-icon>
                             Admin
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
-                    <paper-divider></paper-divider>
+                    <li divider role="separator"></li>
                     <a href="#!" tabindex="-1" on-click="onLogoutClicked">
-                        <paper-icon-item tabindex="-1">
-                            <iron-icon icon="icons:exit-to-app" slot="item-icon"></iron-icon>
+                        <mwc-list-item graphic="icon">
+                            <mwc-icon slot="graphic">exit_to_app</mwc-icon>
                             Logout
-                        </paper-icon-item>
+                        </mwc-list-item>
                     </a>
-                </app-drawer>
-                <app-header-layout id="mainPanel" fullbleed has-scrolling-region>
-                    <app-header id="mainHeader" slot="header" reveals shadow>
-                        <div hidden\$="[[isAuthenticated]]">
-                            <app-toolbar>
-                                <div main-title>[[title]]</div>
-                            </app-toolbar>
-                        </div>
-                        <div hidden\$="[[!isAuthenticated]]">
-                            <app-toolbar>
-                                <paper-icon-button class="menu-button hide-on-large-only" icon="menu" drawer-toggle></paper-icon-button>
-                                <a href="/" class="hide-on-small-only">[[title]]</a>
-                                <div main-title></div>
-                                <a href="/home"><paper-item name="home" class="hide-on-med-and-down">Home</paper-item></a>
-                                <a href="/search"><paper-item name="search" class="hide-on-med-and-down">Recipes</paper-item></a>
-                                <a href="/settings"><paper-item name="settings" class="hide-on-med-and-down">Settings</paper-item></a>
-                                <a href="/admin" hidden\$="[[!getIsAdmin(currentUser)]]"><paper-item name="admin" class="hide-on-med-and-down">Admin</paper-item></a>
-                                <a href="#!" on-click="onLogoutClicked"><paper-item name="logout" class="hide-on-med-and-down">Logout</paper-item></a>
+                </mwc-list>
+                <div id="mainContent" slot="appContent">
+                    <mwc-top-app-bar id="appBar">
+                        <mwc-icon-button icon="menu" slot="navigationIcon" class="hide-on-large-only" on-click="onMenuClicked"></mwc-icon-button>
 
-                                <paper-search-bar icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" on-paper-search-search="onSearch" on-paper-search-clear="onSearch" on-paper-search-filter="onFilter"></paper-search-bar>
-                            </app-toolbar>
-                        </div>
+                        <a href="/" slot="title" class="hide-on-small-only">[[title]]</a>
 
-                        <paper-progress indeterminate hidden\$="[[!loadingCount]]"></paper-progress>
-                    </app-header>
+                        <a href="/home" slot="actionItems" hidden\$="[[!isAuthenticated]]"><mwc-list-item class="hide-on-med-and-down">Home</mwc-list-item></a>
+                        <a href="/search" slot="actionItems" hidden\$="[[!isAuthenticated]]"><mwc-list-item class="hide-on-med-and-down">Recipes</mwc-list-item></a>
+                        <a href="/settings" slot="actionItems" hidden\$="[[!isAuthenticated]]"><mwc-list-item class="hide-on-med-and-down">Settings</mwc-list-item></a>
+                        <a href="/admin" slot="actionItems" hidden\$="[[!getIsAdmin(currentUser)]]"><mwc-list-item class="hide-on-med-and-down">Admin</mwc-list-item></a>
 
-                    <main>
-                        <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
-                            <home-view name="home" current-user="[[currentUser]]"></home-view>
-                            <search-view id="searchView" name="search" filter="{{searchFilter}}" current-user="[[currentUser]]"></search-view>
-                            <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
-                            <create-view name="create" current-user="[[currentUser]]"></create-view>
-                            <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
-                            <admin-view name="admin" current-user="[[currentUser]]"></admin-view>
-                            <login-view name="login"></login-view>
-                            <status-404-view name="status-404"></status-404-view>
-                        </iron-pages>
-                    </main>
+                        <a href="#!" slot="actionItems" hidden\$="[[!isAuthenticated]]" on-click="onLogoutClicked"><mwc-list-item class="hide-on-med-and-down">Logout</mwc-list-item></a>
+
+                        <paper-search-bar slot="actionItems" hidden\$="[[!isAuthenticated]]" icon="search" query="[[searchFilter.query]]" nr-selected-filters="[[searchResultCount]]" always-show-clear on-paper-search-search="onSearch" on-paper-search-clear="onClearSearch" on-paper-search-filter="onFilter"></paper-search-bar>
+
+                        <mwc-linear-progress indeterminate closed\$="[[!loadingCount]]"></mwc-linear-progress>
+                        <main>
+                            <iron-pages selected="[[page]]" attr-for-selected="name" selected-attribute="is-active" fallback-selection="status-404">
+                                <home-view name="home" current-user="[[currentUser]]"></home-view>
+                                <search-view id="searchView" name="search" filter="{{searchFilter}}" current-user="[[currentUser]]"></search-view>
+                                <recipes-view name="recipes" route="[[subroute]]" current-user="[[currentUser]]"></recipes-view>
+                                <create-view name="create" current-user="[[currentUser]]"></create-view>
+                                <settings-view name="settings" current-user="[[currentUser]]"></settings-view>
+                                <admin-view name="admin" current-user="[[currentUser]]"></admin-view>
+                                <login-view name="login"></login-view>
+                                <status-404-view name="status-404"></status-404-view>
+                            </iron-pages>
+                        </main>
+                    </mwc-top-app-bar>
 
                     <footer>
                         <div class="indented" hidden\$="[[!isAuthenticated]]">
@@ -198,24 +193,21 @@ export class GompApp extends GompBaseElement {
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
-                        <div class="copyright indented">Copyright © 2016-2020 Chad Weimer</div>
+                        <div class="copyright indented">Copyright © 2016-2021 Chad Weimer</div>
                     </footer>
-                </app-header-layout>
-            </app-drawer-layout>
-
-            <paper-dialog id="searchFilterDialog" on-iron-overlay-opened="searchFilterDialogOpened" on-iron-overlay-closed="searchFilterDialogClosed" with-backdrop>
-                <h3>Search Settings</h3>
-                <paper-dialog-scrollable>
-                    <search-filter id="searchSettings"></search-filter>
-                </paper-dialog-scrollable>
-                <div class="buttons">
-                    <paper-button on-click="onResetSearchFilterClicked">Reset</paper-button>
-                    <paper-button dialog-dismiss>Cancel</paper-button>
-                    <paper-button dialog-confirm>Apply</paper-button>
                 </div>
-            </paper-dialog>
+            </mwc-drawer>
 
-            <paper-toast id="toast" class="fit-bottom"></paper-toast>
+            <mwc-dialog id="searchFilterDialog" heading="Search Settings" on-opened="searchFilterDialogOpened" on-closed="searchFilterDialogClosed">
+                <search-filter id="searchSettings"></search-filter>
+                <mwc-button slot="primaryAction" label="Apply" dialogAction="apply"></mwc-button>
+                <span slot="secondaryAction">
+                    <mwc-button label="Reset" on-click="onResetSearchFilterClicked"></mwc-button>
+                    <mwc-button label="Cancel" dialogAction="cancel"></mwc-button>
+                </span>
+            </mwc-dialog>
+
+            <mwc-snackbar id="toast"></mwc-snackbar>
 
             <app-localstorage-document key="searchFilter" data="{{searchFilter}}" session-only></app-localstorage-document>
 `;
@@ -245,20 +237,25 @@ export class GompApp extends GompBaseElement {
     private get searchSettings(): SearchFilterElement {
         return this.$.searchSettings as SearchFilterElement;
     }
-    private get searchFilterDialog(): PaperDialogElement {
-        return this.$.searchFilterDialog as PaperDialogElement;
+    private get searchFilterDialog(): Dialog {
+        return this.$.searchFilterDialog as Dialog;
     }
-    private get toast(): PaperToastElement {
-        return this.$.toast as PaperToastElement;
+    private get toast(): Snackbar {
+        return this.$.toast as Snackbar;
     }
-    private get drawer(): AppDrawerElement {
-        return this.$.drawer as AppDrawerElement;
+    private get drawer(): Drawer {
+        return this.$.drawer as Drawer;
+    }
+    private get appBar(): TopAppBar {
+        return this.$.appBar as TopAppBar;
+    }
+    private get mainContent(): HTMLElement {
+        return this.$.mainContent as HTMLElement;
     }
 
     public ready() {
         this.addEventListener('scroll-top', () => this.setScrollPosition({x: 0, y: 0}));
         this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this.onHomeLinkClicked(e));
-        this.addEventListener('iron-overlay-opened', (e) => this.patchOverlay(e));
         this.addEventListener('recipes-modified', () => this.recipesModified());
         this.addEventListener('change-page', (e: CustomEvent) => this.changePageRequested(e));
         this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
@@ -270,6 +267,14 @@ export class GompApp extends GompBaseElement {
         this.addEventListener('search-result-count-changed', (e: CustomEvent) => this.onSearchResultCountChanged(e));
 
         super.ready();
+
+        // Need to explicitly set this to get the correct behavior
+        // since the app bar is not the root elemenet
+        const scrollContainer = this.getScrollContainer();
+        if (scrollContainer !== null) {
+            this.appBar.scrollTarget = scrollContainer;
+        }
+
         this.refresh();
         this.onCurrentUserChanged();
     }
@@ -295,17 +300,6 @@ export class GompApp extends GompBaseElement {
         }
     }
 
-    // https://github.com/PolymerElements/paper-dialog/issues/7
-    protected patchOverlay(e: any) {
-        const path = e.path || (e.composedPath && e.composedPath());
-        if (path) {
-            const overlay = path[0];
-            if (overlay.withBackdrop) {
-                overlay.parentNode.insertBefore(overlay.backdropElement, overlay);
-            }
-        }
-    }
-
     protected onAjaxPresend(e: CustomEvent) {
         const jwtToken = localStorage.getItem('jwtToken');
         e.detail.options.headers = {Authorization: 'Bearer ' + jwtToken};
@@ -327,8 +321,8 @@ export class GompApp extends GompBaseElement {
     }
 
     protected onShowToast(e: CustomEvent<{message: string}>) {
-        this.toast.text = e.detail.message;
-        this.toast.open();
+        this.toast.labelText = e.detail.message;
+        this.toast.show();
     }
 
     private getScrollPosition() {
@@ -339,18 +333,14 @@ export class GompApp extends GompBaseElement {
     }
     private setScrollPosition(pos: {x: number, y: number}) {
         const scrollContainer = this.getScrollContainer();
-        scrollContainer.scroll(pos.x, pos.y);
+        scrollContainer?.scroll(pos.x, pos.y);
     }
-    private getScrollContainer(): Element|null {
-        // This is pretty brittle, as in using an interal element from the elements template,
-        // but so far it's the only known way to get at the scoll position
-        return this.$.mainPanel.shadowRoot.querySelector('#contentContainer');
+    private getScrollContainer(): HTMLElement|null {
+        return this.mainContent;
     }
     protected routeDataChanged(routeData: {page: string}, oldRouteData: {page: string}) {
         // Close a non-persistent drawer when the page & route are changed.
-        if (!this.drawer.persistent) {
-            this.drawer.close();
-        }
+        this.drawer.open = false;
 
         const scrollMap = this.scrollPositionMap;
 
@@ -408,6 +398,9 @@ export class GompApp extends GompBaseElement {
     protected changeRoute(path: string) {
         this.set('route.path', path);
     }
+    protected onMenuClicked() {
+        this.drawer.open = !this.drawer.open;
+    }
     protected onLogoutClicked(e: Event) {
         // Don't navigate to "#!"
         e.preventDefault();
@@ -453,13 +446,18 @@ export class GompApp extends GompBaseElement {
         this.dispatchEvent(new CustomEvent('authentication-changed', {bubbles: true, composed: true}));
         this.changeRoute('/login');
     }
+    protected onClearSearch() {
+        // Order is very important here for scrolling purposes
+        this.changeRoute('/search');
+        this.setSearchFilter(new DefaultSearchFilter());
+    }
     protected onSearch(e: any) {
         // Order is very important here for scrolling purposes
         this.changeRoute('/search');
         this.set('searchFilter.query', e.target.query.trim());
     }
     protected onFilter() {
-        this.searchFilterDialog.open();
+        this.searchFilterDialog.show();
     }
     protected onHomeLinkClicked(e: CustomEvent<{filter: SearchFilter}>) {
         // Order is very important here for scrolling purposes
@@ -480,12 +478,12 @@ export class GompApp extends GompBaseElement {
         this.searchSettings.filter = JSON.parse(JSON.stringify(filter));
         this.searchSettings.refresh();
     }
-    protected searchFilterDialogClosed(e: CustomEvent<{canceled: boolean; confirmed: boolean}>) {
+    protected searchFilterDialogClosed(e: CustomEvent<{action: string}>) {
         if (e.target !== this.searchFilterDialog) {
             return;
         }
 
-        if (!e.detail.canceled && e.detail.confirmed) {
+        if (e.detail.action === 'apply') {
             // Order is very important here for scrolling purposes
             this.changeRoute('/search');
             this.setSearchFilter(this.searchSettings.filter);
