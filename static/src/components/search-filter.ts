@@ -20,7 +20,7 @@ export class SearchFilterElement extends GompBaseElement {
                 :host {
                     display: block;
                 }
-                section.padded {
+                .padded {
                     padding: 0.33em 0;
                 }
                 label {
@@ -39,14 +39,14 @@ export class SearchFilterElement extends GompBaseElement {
             <section>
                 <paper-input label="Search Terms" always-float-label value="{{filter.query}}"></paper-input>
             </section>
+            <section>
+                <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
+            </section>
             <section class="padded">
-                <label>Fields to Search</label>
-                <div>
-                    <template is="dom-repeat" items="[[availableFields]]">
-                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
-                    </template>
+                <label>Sort</label>
+                <div class="padded">
+                    <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
                 </div>
-                <span class="note">All listed fields will be included if no selection is made</span>
                 <li divider role="separator"></li>
             </section>
             <section class="padded">
@@ -68,14 +68,15 @@ export class SearchFilterElement extends GompBaseElement {
                 </div>
                 <li divider role="separator"></li>
             </section>
-            <section>
-                <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
-            </section>
             <section class="padded">
-                <label>Sort</label>
+                <label>Fields to Search</label>
                 <div>
-                    <sort-order-selector sort-by="{{filter.sortBy}}" sort-dir="{{filter.sortDir}}"></sort-order-selector>
+                    <template is="dom-repeat" items="[[availableFields]]">
+                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
+                    </template>
                 </div>
+                <span class="note">All listed fields will be included if no selection is made</span>
+                <li divider role="separator"></li>
             </section>
 `;
     }
