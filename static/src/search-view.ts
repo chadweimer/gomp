@@ -63,9 +63,10 @@ export class SearchView extends GompBaseElement {
                 }
                 @media screen and (max-width: 991px) {
                     .controlContainer {
+                        width: 100%;
+
                         @apply --layout-horizontal;
                         @apply --layout-center-justified;
-                        width: 100%;
                     }
                 }
                 @media screen and (min-width: 600px) and (max-width: 991px) {
@@ -158,7 +159,7 @@ export class SearchView extends GompBaseElement {
     @property({type: Number, notify: true, observer: 'totalChanged'})
     public totalRecipeCount = 0;
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
     protected availableStates = [
         {name: 'Active', value: RecipeState.Active, icon: 'unarchive'},
@@ -170,7 +171,7 @@ export class SearchView extends GompBaseElement {
         {name: 'List', value: 'list', icon: 'view_list'},
     ];
 
-    private pending: {refresh: boolean; rescroll: boolean} = null;
+    private pending: {refresh: boolean; rescroll: boolean}|null = null;
 
     static get observers() {
         return [

@@ -37,7 +37,7 @@ export class ConfirmationDialog extends PolymerElement {
     @property({type: String})
     public message = 'Are you sure you want to perform the requested operation?';
 
-    private get dialog(): Dialog {
+    private get dialog() {
         return this.$.dialog as Dialog;
     }
 

@@ -68,8 +68,8 @@ export class HomeList extends GompBaseElement {
     public readonly = false;
 
     protected total = 0;
-    protected recipes = [];
-    private filter: SearchFilter = null;
+    protected recipes: RecipeCompact[] = [];
+    private filter: SearchFilter|null = null;
 
     protected isActiveChanged(isActive: boolean) {
         if (isActive && this.isReady) {

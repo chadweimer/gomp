@@ -56,7 +56,7 @@ export class TagInput extends GompBaseElement {
 
     protected suggestedTags: string[] = [];
 
-    private get tagsElement(): PaperTagsInput {
+    private get tagsElement() {
         return this.$.tags as PaperTagsInput;
     }
 

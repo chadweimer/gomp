@@ -52,12 +52,12 @@ export class RecipeDisplay extends GompBaseElement {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
                 .footer {
-                    @apply --layout-horizontal;
-                    @apply --layout-end-justified;
-
                     color: var(--secondary-text-color);
                     font-size: 0.8em;
                     font-weight: lighter;
+
+                    @apply --layout-horizontal;
+                    @apply --layout-end-justified;
                 }
                 .state {
                     margin-left: 1em;
@@ -143,11 +143,11 @@ export class RecipeDisplay extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected recipe: Recipe = null;
+    protected recipe: Recipe|null = null;
     protected mainImage: object|null = null;
     protected links: RecipeCompact[] = [];
 
-    private get confirmDeleteLinkDialog(): ConfirmationDialog {
+    private get confirmDeleteLinkDialog() {
         return this.$.confirmDeleteLinkDialog as ConfirmationDialog;
     }
 
@@ -166,7 +166,7 @@ export class RecipeDisplay extends GompBaseElement {
             }
         }
         if (!options || options.links) {
-            this.links = null;
+            this.links = [];
             try {
                 this.links = await this.AjaxGetWithResult(`/api/v1/recipes/${this.recipeId}/links`);
             } catch (e) {
@@ -191,7 +191,7 @@ export class RecipeDisplay extends GompBaseElement {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id.toString();
+        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id!.toString();
         this.confirmDeleteLinkDialog.show();
     }
 

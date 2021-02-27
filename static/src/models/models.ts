@@ -85,13 +85,13 @@ export interface User {
 
 export interface UserSettings {
     userId: string;
-    homeTitle: string;
-    homeImageUrl: string;
+    homeTitle: string|null;
+    homeImageUrl: string|null;
     favoriteTags: string[];
 }
 
 interface RecipeBase {
-    id: number;
+    id: number|null;
     name: string;
     state: string;
     createdAt: string;

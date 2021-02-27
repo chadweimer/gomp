@@ -65,18 +65,18 @@ export class RecipeEdit extends GompBaseElement {
     @property({type: String})
     public recipeId: string|null = null;
 
-    protected recipe: Recipe = null;
+    protected recipe: Recipe|null = null;
 
-    private get tagsInput(): TagInput {
+    private get tagsInput() {
         return this.$.tagsInput as TagInput;
     }
-    private get mainImage(): HTMLInputElement {
+    private get mainImage() {
         return this.$.mainImage as HTMLInputElement;
     }
-    private get mainImageForm(): HTMLFormElement {
+    private get mainImageForm() {
         return this.$.mainImageForm as HTMLFormElement;
     }
-    private get uploadingDialog(): Dialog {
+    private get uploadingDialog() {
         return this.$.uploadingDialog as Dialog;
     }
 
@@ -93,8 +93,8 @@ export class RecipeEdit extends GompBaseElement {
                 id: null,
                 name: '',
                 state: RecipeState.Active,
-                createdAt: null,
-                modifiedAt: null,
+                createdAt: '',
+                modifiedAt: '',
                 servingSize: '',
                 ingredients: '',
                 directions: '',

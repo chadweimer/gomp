@@ -21,12 +21,16 @@ export class RecipeRating extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public recipe: Recipe = null;
+    public recipe: Recipe|null = null;
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
     protected async starRatingSelected(e: CustomEvent<{rating: number}>) {
+        if (this.recipe === null) {
+            return;
+        }
+
         const newRating = e.detail.rating;
         try {
             await this.AjaxPut(`/api/v1/recipes/${this.recipe.id}/rating`, newRating);

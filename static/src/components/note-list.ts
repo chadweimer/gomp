@@ -43,11 +43,11 @@ export class NoteList extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected noteId: number = null;
+    protected noteId: number|null = null;
     protected noteText = '';
     protected notes: Note[] = [];
 
-    private get noteDialog(): Dialog {
+    private get noteDialog() {
         return this.$.noteDialog as Dialog;
     }
 
@@ -107,6 +107,9 @@ export class NoteList extends GompBaseElement {
         e.preventDefault();
 
         const noteCard = e.target as NoteCard;
+        if (noteCard.note === null) {
+            return;
+        }
 
         this.noteId = noteCard.note.id;
         this.noteText = noteCard.note.text;

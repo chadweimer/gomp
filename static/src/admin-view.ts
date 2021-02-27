@@ -134,10 +134,10 @@ export class AdminView extends GompBaseElement {
     ];
 
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
     protected selectedTab = 0;
-    protected appConfig: AppConfiguration = null;
+    protected appConfig: AppConfiguration|null = null;
     protected users: User[] = [];
     protected userId: number|null = null;
     protected user: {
@@ -147,20 +147,20 @@ export class AdminView extends GompBaseElement {
         repeatPassword: string
     }|null = null;
 
-    private get addUserDialog(): Dialog {
+    private get addUserDialog() {
         return this.$.addUserDialog as Dialog;
     }
-    private get editUserDialog(): Dialog {
+    private get editUserDialog() {
         return this.$.editUserDialog as Dialog;
     }
-    private get confirmDeleteUserDialog(): ConfirmationDialog {
+    private get confirmDeleteUserDialog() {
         return this.$.confirmDeleteUserDialog as ConfirmationDialog;
     }
 
     public ready() {
         super.ready();
 
-        this.$.tabBar.addEventListener('MDCTabBar:activated', (e: CustomEvent) => this.onTabActivated(e));
+        this.$.tabBar.addEventListener('MDCTabBar:activated', e => this.onTabActivated(e as CustomEvent));
 
         if (this.isActive) {
             this.refresh();
@@ -213,15 +213,16 @@ export class AdminView extends GompBaseElement {
             return;
         }
 
-        if (this.user.password !== this.user.repeatPassword) {
+        const user = this.user!;
+        if (user.password !== user.repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
         }
 
         const userDetails = {
-            username: this.user.username,
-            accessLevel: this.user.accessLevel,
-            password: this.user.password
+            username: user.username,
+            accessLevel: user.accessLevel,
+            password: user.password
         };
         try {
             await this.AjaxPost('/api/v1/users', userDetails);
@@ -243,8 +244,8 @@ export class AdminView extends GompBaseElement {
         this.user = {
             username: selectedUser.username,
             accessLevel: selectedUser.accessLevel,
-            password: null,
-            repeatPassword: null
+            password: '',
+            repeatPassword: ''
         };
         this.editUserDialog.show();
     }
@@ -254,10 +255,11 @@ export class AdminView extends GompBaseElement {
             return;
         }
 
+        const user = this.user!;
         const userDetails = {
             id: this.userId,
-            username: this.user.username,
-            accessLevel: this.user.accessLevel
+            username: user.username,
+            accessLevel: user.accessLevel
         };
         try {
             await this.AjaxPut(`/api/v1/users/${this.userId}`, userDetails);
@@ -279,8 +281,8 @@ export class AdminView extends GompBaseElement {
         this.user = {
             username: selectedUser.username,
             accessLevel: selectedUser.accessLevel,
-            password: null,
-            repeatPassword: null
+            password: '',
+            repeatPassword: ''
         };
         this.confirmDeleteUserDialog.show();
     }

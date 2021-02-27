@@ -140,49 +140,49 @@ export class SettingsView extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
     protected selectedTab = 0;
-    protected userSettings: UserSettings = null;
+    protected userSettings: UserSettings|null = null;
 
     protected filters: SavedSearchFilterCompact[] = [];
-    protected selectedFilterCompact: SavedSearchFilterCompact = null;
-    protected selectedFilter: SavedSearchFilter = null;
+    protected selectedFilterCompact: SavedSearchFilterCompact|null = null;
+    protected selectedFilter: SavedSearchFilter|null = null;
     protected newFilterName = '';
 
     private currentPassword = '';
     private newPassword = '';
     private repeatPassword = '';
 
-    private get homeImageForm(): HTMLFormElement {
+    private get homeImageForm() {
         return this.$.homeImageForm as HTMLFormElement;
     }
-    private get homeImageFile(): HTMLInputElement {
+    private get homeImageFile() {
         return this.$.homeImageFile as HTMLInputElement;
     }
-    private get uploadingDialog(): Dialog {
+    private get uploadingDialog() {
         return this.$.uploadingDialog as Dialog;
     }
-    private get addSearchFilterDialog(): Dialog {
+    private get addSearchFilterDialog() {
         return this.$.addSearchFilterDialog as Dialog;
     }
-    private get newSearchFilter(): SearchFilterElement {
+    private get newSearchFilter() {
         return this.$.newSearchFilter as SearchFilterElement;
     }
-    private get editSearchFilterDialog(): Dialog {
+    private get editSearchFilterDialog() {
         return this.$.editSearchFilterDialog as Dialog;
     }
-    private get editSearchFilter(): SearchFilterElement {
+    private get editSearchFilter() {
         return this.$.editSearchFilter as SearchFilterElement;
     }
-    private get confirmDeleteUserSearchFilterDialog(): ConfirmationDialog {
+    private get confirmDeleteUserSearchFilterDialog() {
         return this.$.confirmDeleteUserSearchFilterDialog as ConfirmationDialog;
     }
 
     public ready() {
         super.ready();
 
-        this.$.tabBar.addEventListener('MDCTabBar:activated', (e: CustomEvent) => this.onTabActivated(e));
+        this.$.tabBar.addEventListener('MDCTabBar:activated', e => this.onTabActivated(e as CustomEvent));
 
         if (this.isActive) {
             this.refresh();
@@ -234,7 +234,9 @@ export class SettingsView extends GompBaseElement {
                     this.homeImageFile.value = '';
                     this.showToast('Upload complete.');
 
-                    this.userSettings.homeImageUrl = location;
+                    if (this.userSettings !== null) {
+                        this.userSettings.homeImageUrl = location;
+                    }
                 } catch (e) {
                     this.uploadingDialog.close();
                     this.showToast('Upload failed!');
@@ -263,7 +265,7 @@ export class SettingsView extends GompBaseElement {
 
         const newFilter = {
             ...this.newSearchFilter.filter,
-            userId: this.currentUser.id,
+            userId: this.currentUser!.id,
             name: this.newFilterName,
         };
         try {
@@ -282,7 +284,7 @@ export class SettingsView extends GompBaseElement {
         this.selectedFilterCompact = e.model.item;
         try {
             this.selectedFilter = await this.AjaxGetWithResult(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
-            this.editSearchFilter.filter = this.selectedFilter;
+            this.editSearchFilter.filter = this.selectedFilter!;
             this.editSearchFilter.refresh();
             this.editSearchFilterDialog.show();
         } catch (e) {
@@ -294,14 +296,15 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
+        const selectedFilter = this.selectedFilter!;
         const updatedFilter = {
             ...this.editSearchFilter.filter,
-            id: this.selectedFilter.id,
-            userId: this.selectedFilter.userId,
-            name: this.selectedFilter.name,
+            id: selectedFilter.id,
+            userId: selectedFilter.userId,
+            name: selectedFilter.name,
         };
         try {
-            await this.AjaxPut(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`, updatedFilter);
+            await this.AjaxPut(`/api/v1/users/current/filters/${updatedFilter.id}`, updatedFilter);
             this.showToast('Search filter updated.');
             await this.refresh();
         } catch (e) {
@@ -317,6 +320,10 @@ export class SettingsView extends GompBaseElement {
         this.confirmDeleteUserSearchFilterDialog.show();
     }
     protected async deleteUserSearchFilter() {
+        if (this.selectedFilterCompact === null) {
+            return;
+        }
+
         try {
             await this.AjaxDelete(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
             this.showToast('Search filter deleted.');

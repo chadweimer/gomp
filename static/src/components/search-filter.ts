@@ -101,7 +101,7 @@ export class SearchFilterElement extends GompBaseElement {
     @property({type: Object, notify: true})
     public filter: SearchFilter = new DefaultSearchFilter();
 
-    private get tagsInput(): TagInput {
+    private get tagsInput() {
         return this.$.tagsInput as TagInput;
     }
 
@@ -130,7 +130,7 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected fieldsChanged(selectedFields: SearchField[]) {
         this.availableFields.forEach(field => {
-            const cb = this.shadowRoot.querySelector('#' + field.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + field.value) as PaperCheckboxElement;
             if (cb) {
                 cb.checked = selectedFields !== null && selectedFields.indexOf(field.value) >= 0;
             }
@@ -139,7 +139,7 @@ export class SearchFilterElement extends GompBaseElement {
     protected selectedFieldChanged() {
         const selectedFields: SearchField[] = [];
         this.availableFields.forEach(field => {
-            const cb = this.shadowRoot.querySelector('#' + field.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + field.value) as PaperCheckboxElement;
             if (cb?.checked) {
                 selectedFields.push(field.value);
             }
@@ -152,7 +152,7 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected statesChanged(selectedStates: RecipeState[]) {
         this.availableStates.forEach(state => {
-            const cb = this.shadowRoot.querySelector('#' + state.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + state.value) as PaperCheckboxElement;
             if (cb) {
                 cb.checked = selectedStates !== null && selectedStates.indexOf(state.value) >= 0;
             }
@@ -161,7 +161,7 @@ export class SearchFilterElement extends GompBaseElement {
     protected selectedStateChanged() {
         const selectedStates: RecipeState[] = [];
         this.availableStates.forEach(state => {
-            const cb = this.shadowRoot.querySelector('#' + state.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + state.value) as PaperCheckboxElement;
             if (cb?.checked) {
                 selectedStates.push(state.value);
             }
@@ -181,7 +181,7 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected picturesChanged(withPictures: boolean|null) {
         this.availablePictures.forEach(picture => {
-            const cb = this.shadowRoot.querySelector('#' + picture.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + picture.value) as PaperCheckboxElement;
             if (cb) {
                 switch (picture.value) {
                     case SearchPictures.Yes:
@@ -199,7 +199,7 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected selectedPictureChanged() {
         this.availablePictures.forEach(picture => {
-            const cb = this.shadowRoot.querySelector('#' + picture.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + picture.value) as PaperCheckboxElement;
             if (cb?.checked) {
                 switch (picture.value) {
                     case SearchPictures.Yes:
