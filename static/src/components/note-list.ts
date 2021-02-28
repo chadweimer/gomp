@@ -106,7 +106,8 @@ export class NoteList extends GompBaseElement {
         e.preventDefault();
 
         const noteCard = e.target as NoteCard;
-        if (noteCard.note === null) {
+        if (!noteCard.note) {
+            console.error('Cannot edit a null note');
             return;
         }
 

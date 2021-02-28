@@ -233,7 +233,7 @@ export class SettingsView extends GompBaseElement {
                     this.homeImageFile.value = '';
                     this.showToast('Upload complete.');
 
-                    if (this.userSettings !== null) {
+                    if (this.userSettings) {
                         this.userSettings.homeImageUrl = location;
                     }
                 } catch (e) {
@@ -328,7 +328,8 @@ export class SettingsView extends GompBaseElement {
         this.confirmDeleteUserSearchFilterDialog.show();
     }
     protected async deleteUserSearchFilter() {
-        if (this.selectedFilterCompact === null) {
+        if (!this.selectedFilterCompact) {
+            console.error('Cannot delete a null search filter');
             return;
         }
 

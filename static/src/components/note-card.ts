@@ -120,7 +120,8 @@ export class NoteCard extends GompBaseElement {
         this.confirmDeleteDialog.show();
     }
     protected async deleteNote() {
-        if (this.note === null) {
+        if (!this.note) {
+            console.error('Cannot delete a null note');
             return;
         }
 
@@ -134,7 +135,7 @@ export class NoteCard extends GompBaseElement {
         }
     }
 
-    protected showModifiedDate(note: Note) {
+    protected showModifiedDate(note: Note|null|undefined) {
         if (!note) {
             return false;
         }

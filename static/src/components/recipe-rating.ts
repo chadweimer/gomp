@@ -26,7 +26,8 @@ export class RecipeRating extends GompBaseElement {
     public readonly = false;
 
     protected async starRatingSelected(e: CustomEvent<{rating: number}>) {
-        if (this.recipe === null) {
+        if (!this.recipe) {
+            console.error('Cannot set the rating on a null recipe');
             return;
         }
 

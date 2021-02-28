@@ -127,11 +127,11 @@ export class SearchFilterElement extends GompBaseElement {
     protected isFieldSelected(value: SearchField) {
         return this.filter.fields.indexOf(value) >= 0;
     }
-    protected fieldsChanged(selectedFields: SearchField[]) {
+    protected fieldsChanged(selectedFields: SearchField[]|null|undefined) {
         this.availableFields.forEach(field => {
             const cb = this.shadowRoot?.querySelector('#' + field.value) as PaperCheckboxElement;
             if (cb) {
-                cb.checked = selectedFields !== null && selectedFields.indexOf(field.value) >= 0;
+                cb.checked = selectedFields && selectedFields.indexOf(field.value) >= 0;
             }
         });
     }
@@ -149,11 +149,11 @@ export class SearchFilterElement extends GompBaseElement {
     protected isStateSelected(value: RecipeState) {
         return this.filter.states.indexOf(value) >= 0;
     }
-    protected statesChanged(selectedStates: RecipeState[]) {
+    protected statesChanged(selectedStates: RecipeState[]|null|undefined) {
         this.availableStates.forEach(state => {
             const cb = this.shadowRoot?.querySelector('#' + state.value) as PaperCheckboxElement;
             if (cb) {
-                cb.checked = selectedStates !== null && selectedStates.indexOf(state.value) >= 0;
+                cb.checked = selectedStates && selectedStates.indexOf(state.value) >= 0;
             }
         });
     }

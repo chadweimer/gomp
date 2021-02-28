@@ -270,7 +270,7 @@ export class GompApp extends GompBaseElement {
         // Need to explicitly set this to get the correct behavior
         // since the app bar is not the root elemenet
         const scrollContainer = this.getScrollContainer();
-        if (scrollContainer !== null) {
+        if (scrollContainer) {
             this.appBar.scrollTarget = scrollContainer;
         }
 
@@ -290,11 +290,11 @@ export class GompApp extends GompBaseElement {
     protected titleChanged(title: string) {
         document.title = title;
         const appName = document.querySelector('meta[name="application-name"]');
-        if (appName !== null) {
+        if (appName) {
             appName.setAttribute('content', title);
         }
         const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-        if (appTitle !== null) {
+        if (appTitle) {
             appTitle.setAttribute('content', title);
         }
     }
@@ -326,7 +326,7 @@ export class GompApp extends GompBaseElement {
 
     private getScrollPosition() {
         const scrollContainer = this.getScrollContainer();
-        return scrollContainer !== null
+        return scrollContainer
             ? {x: scrollContainer.scrollLeft, y: scrollContainer.scrollTop}
             : null;
     }

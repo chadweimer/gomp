@@ -78,7 +78,7 @@ export class HomeList extends GompBaseElement {
 
     protected async filterIdChanged(newId: number|null) {
         try {
-            const filter: SearchFilter = newId !== null
+            const filter: SearchFilter = newId
                 ? await this.AjaxGetWithResult(`/api/v1/users/current/filters/${newId}`)
                 : {
                     query: '',
