@@ -75,7 +75,7 @@ export class NoteList extends GompBaseElement {
 
         if (this.noteId) {
             try {
-                const note = {
+                const note: Note = {
                     id: this.noteId,
                     recipeId: parseInt(this.recipeId, 10),
                     text: this.noteText,
@@ -89,7 +89,7 @@ export class NoteList extends GompBaseElement {
             }
         } else {
             try {
-                const note = {
+                const note: Note = {
                     recipeId: parseInt(this.recipeId, 10),
                     text: this.noteText,
                 };
@@ -110,7 +110,7 @@ export class NoteList extends GompBaseElement {
             return;
         }
 
-        this.noteId = noteCard.note.id;
+        this.noteId = noteCard.note.id ?? null;
         this.noteText = noteCard.note.text;
         this.noteDialog.show();
     }

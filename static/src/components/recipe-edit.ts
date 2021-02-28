@@ -89,11 +89,8 @@ export class RecipeEdit extends GompBaseElement {
     public async refresh() {
         if (!this.recipeId) {
             this.recipe = {
-                id: null,
                 name: '',
                 state: RecipeState.Active,
-                createdAt: '',
-                modifiedAt: '',
                 servingSize: '',
                 ingredients: '',
                 directions: '',

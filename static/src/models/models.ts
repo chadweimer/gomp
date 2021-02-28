@@ -55,7 +55,7 @@ export class DefaultSearchFilter implements SearchFilter {
 }
 
 export interface SavedSearchFilterCompact {
-    id: number;
+    id?: number;
     userId: number;
     name: string;
 }
@@ -78,24 +78,24 @@ export interface AppConfiguration {
 }
 
 export interface User {
-    id: number;
+    id?: number;
     username: string;
     accessLevel: string;
 }
 
 export interface UserSettings {
     userId: string;
-    homeTitle: string|null;
-    homeImageUrl: string|null;
+    homeTitle: string;
+    homeImageUrl: string;
     favoriteTags: string[];
 }
 
 interface RecipeBase {
-    id: number|null;
+    id?: number;
     name: string;
     state: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt?: string;
+    modifiedAt?: string;
     averageRating: number;
 }
 
@@ -114,21 +114,21 @@ export interface RecipeCompact extends RecipeBase {
 }
 
 export interface Note {
-    id: number;
+    id?: number;
     recipeId: number;
     text: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt?: string;
+    modifiedAt?: string;
 }
 
 export interface RecipeImage {
-    id: number;
+    id?: number;
     recipeId: number;
     name: string;
     url: string;
     thumbnailUrl: string;
-    createdAt: string;
-    modifiedAt: string;
+    createdAt?: string;
+    modifiedAt?: string;
 }
 
 export interface EventWithModel<T = any> extends Event {

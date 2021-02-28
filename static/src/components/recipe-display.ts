@@ -190,7 +190,7 @@ export class RecipeDisplay extends GompBaseElement {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id!.toString();
+        this.confirmDeleteLinkDialog.dataset.id = e.model.item.id?.toString();
         this.confirmDeleteLinkDialog.show();
     }
 

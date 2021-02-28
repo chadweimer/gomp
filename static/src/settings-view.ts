@@ -262,9 +262,14 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
+        if (!this.currentUser) {
+            console.error('Cannot save a search filter for a null user');
+            return;
+        }
+
         const newFilter = {
             ...this.newSearchFilter.filter,
-            userId: this.currentUser!.id,
+            userId: this.currentUser.id,
             name: this.newFilterName,
         };
         try {
@@ -282,8 +287,8 @@ export class SettingsView extends GompBaseElement {
 
         this.selectedFilterCompact = e.model.item;
         try {
-            this.selectedFilter = await this.AjaxGetWithResult(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
-            this.editSearchFilter.filter = this.selectedFilter!;
+            this.selectedFilter = await this.AjaxGetWithResult<SavedSearchFilter>(`/api/v1/users/current/filters/${this.selectedFilterCompact.id}`);
+            this.editSearchFilter.filter = this.selectedFilter;
             this.editSearchFilter.refresh();
             this.editSearchFilterDialog.show();
         } catch (e) {
@@ -295,12 +300,16 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
-        const selectedFilter = this.selectedFilter!;
+        if (!this.selectedFilter) {
+            console.error('Attempted to edit a null search filter');
+            return;
+        }
+
         const updatedFilter = {
             ...this.editSearchFilter.filter,
-            id: selectedFilter.id,
-            userId: selectedFilter.userId,
-            name: selectedFilter.name,
+            id: this.selectedFilter.id,
+            userId: this.selectedFilter.userId,
+            name: this.selectedFilter.name,
         };
         try {
             await this.AjaxPut(`/api/v1/users/current/filters/${updatedFilter.id}`, updatedFilter);

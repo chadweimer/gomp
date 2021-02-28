@@ -61,13 +61,13 @@ export class RecipeLinkDialog extends GompBaseElement {
                     'page': 1,
                     'count': 20,
                 };
-                const response: {total: number, recipes: RecipeCompact[]} = await this.AjaxGetWithResult('/api/v1/recipes', filterQuery);
+                const response: {total: number; recipes: RecipeCompact[]} = await this.AjaxGetWithResult('/api/v1/recipes', filterQuery);
                 const recipes = response.recipes;
 
-                const suggestions: {value: number; text: string;}[] = [];
+                const suggestions: {value: number; text: string}[] = [];
                 if (recipes) {
                     recipes.forEach(recipe => {
-                        suggestions.push({value: recipe.id!, text: recipe.name});
+                        suggestions.push({value: recipe.id ?? 0, text: recipe.name});
                     });
                 }
 

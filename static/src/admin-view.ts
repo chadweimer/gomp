@@ -212,16 +212,20 @@ export class AdminView extends GompBaseElement {
             return;
         }
 
-        const user = this.user!;
-        if (user.password !== user.repeatPassword) {
+        if (!this.user) {
+            console.error('Attempted to add a null user');
+            return;
+        }
+
+        if (this.user.password !== this.user.repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
         }
 
         const userDetails = {
-            username: user.username,
-            accessLevel: user.accessLevel,
-            password: user.password
+            username: this.user.username,
+            accessLevel: this.user.accessLevel,
+            password: this.user.password
         };
         try {
             await this.AjaxPost('/api/v1/users', userDetails);
@@ -239,7 +243,7 @@ export class AdminView extends GompBaseElement {
 
         const selectedUser = e.model.item;
 
-        this.userId = selectedUser.id;
+        this.userId = selectedUser.id ?? null;
         this.user = {
             username: selectedUser.username,
             accessLevel: selectedUser.accessLevel,
@@ -254,11 +258,15 @@ export class AdminView extends GompBaseElement {
             return;
         }
 
-        const user = this.user!;
+        if (!this.user) {
+            console.error('Attempted to edit a null user');
+            return;
+        }
+
         const userDetails = {
             id: this.userId,
-            username: user.username,
-            accessLevel: user.accessLevel
+            username: this.user.username,
+            accessLevel: this.user.accessLevel
         };
         try {
             await this.AjaxPut(`/api/v1/users/${this.userId}`, userDetails);
@@ -276,7 +284,7 @@ export class AdminView extends GompBaseElement {
 
         const selectedUser = e.model.item;
 
-        this.userId = selectedUser.id;
+        this.userId = selectedUser.id ?? null;
         this.user = {
             username: selectedUser.username,
             accessLevel: selectedUser.accessLevel,
