@@ -28,7 +28,7 @@ export abstract class GompBaseElement extends PolymerElement {
         // Nothing to do in base
     }
 
-    protected getCanEdit(user: User|null): boolean {
+    protected getCanEdit(user: User|null|undefined): boolean {
         if (!user?.accessLevel) {
             return false;
         }
