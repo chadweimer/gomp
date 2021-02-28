@@ -172,6 +172,7 @@ export class ImageList extends GompBaseElement {
     protected async setMainImage(e: Event) {
         const el = e.target as HTMLElement;
         if (!el.dataset.id) {
+            console.error('Cannot determine id of image to set');
             return;
         }
 
