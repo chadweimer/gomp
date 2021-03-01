@@ -52,8 +52,8 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 	h.OK(resp, authenticateResponse{Token: tokenStr, User: user})
 }
 
-func (h *apiHandler) requireAuthentication(handler http.HandlerFunc) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		userID, err := h.getUserIDFromRequest(req)
 		if err != nil {
 			h.Error(resp, http.StatusUnauthorized, err)
@@ -76,23 +76,23 @@ func (h *apiHandler) requireAuthentication(handler http.HandlerFunc) http.Handle
 		ctx = context.WithValue(ctx, "CurrentUserAccessLevel", string(user.AccessLevel))
 
 		req = req.WithContext(ctx)
-		handler(resp, req)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) requireAdmin(handler http.HandlerFunc) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) requireAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsAdmin(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) requireAdminUnlessSelf(handler http.HandlerFunc) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		// Get the user from the request
 		userIDStr := ctx.Value("userID")
@@ -112,12 +112,12 @@ func (h *apiHandler) requireAdminUnlessSelf(handler http.HandlerFunc) http.Handl
 			}
 		}
 
-		handler(resp, req)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) disallowSelf(handler http.HandlerFunc) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) disallowSelf(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 		// Get the user from the request
 		userIDStr := ctx.Value("userID")
@@ -136,19 +136,19 @@ func (h *apiHandler) disallowSelf(handler http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		handler(resp, req)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) requireEditor(handler http.HandlerFunc) http.HandlerFunc {
-	return func(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) requireEditor(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsEditor(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
 func (h *apiHandler) getUserIDFromRequest(req *http.Request) (int64, error) {
