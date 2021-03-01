@@ -6,12 +6,12 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
 )
 
 func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -42,8 +42,8 @@ func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
+	noteIDStr := chi.URLParam(req, "noteID")
+	noteID, err := strconv.ParseInt(noteIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -69,8 +69,8 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
+	noteIDStr := chi.URLParam(req, "noteID")
+	noteID, err := strconv.ParseInt(noteIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

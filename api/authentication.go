@@ -13,7 +13,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/julienschmidt/httprouter"
 )
 
 type authenticateRequest struct {
@@ -72,35 +71,33 @@ func (h *apiHandler) requireAuthentication(handler http.HandlerFunc) http.Handle
 		}
 
 		// Add the user's ID and access level to the list of params
-		p := httprouter.ParamsFromContext(req.Context())
-		p = append(p, httprouter.Param{Key: "CurrentUserID", Value: strconv.FormatInt(user.ID, 10)})
-		p = append(p, httprouter.Param{Key: "CurrentUserAccessLevel", Value: string(user.AccessLevel)})
+		ctx := req.Context()
+		ctx = context.WithValue(ctx, "CurrentUserID", strconv.FormatInt(user.ID, 10))
+		ctx = context.WithValue(ctx, "CurrentUserAccessLevel", string(user.AccessLevel))
 
-		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
+		req = req.WithContext(ctx)
 		handler(resp, req)
 	}
 }
 
 func (h *apiHandler) requireAdmin(handler http.HandlerFunc) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		p := httprouter.ParamsFromContext(req.Context())
-		if err := h.verifyUserIsAdmin(req, p); err != nil {
+		if err := h.verifyUserIsAdmin(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
 		handler(resp, req)
 	}
 }
 
 func (h *apiHandler) requireAdminUnlessSelf(handler http.HandlerFunc) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		p := httprouter.ParamsFromContext(req.Context())
+		ctx := req.Context()
 		// Get the user from the request
-		userIDStr := p.ByName("userID")
+		userIDStr := ctx.Value("userID")
 		// Get the user from the current session
-		currentUserIDStr := p.ByName("CurrentUserID")
+		currentUserIDStr := ctx.Value("CurrentUserID")
 
 		// Special case for a URL like /api/v1/users/current
 		if userIDStr == "current" {
@@ -109,24 +106,23 @@ func (h *apiHandler) requireAdminUnlessSelf(handler http.HandlerFunc) http.Handl
 
 		// Admin privleges are required if the session user doesn't match the request user
 		if userIDStr != currentUserIDStr {
-			if err := h.verifyUserIsAdmin(req, p); err != nil {
+			if err := h.verifyUserIsAdmin(req); err != nil {
 				h.Error(resp, http.StatusForbidden, err)
 				return
 			}
 		}
 
-		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
 		handler(resp, req)
 	}
 }
 
 func (h *apiHandler) disallowSelf(handler http.HandlerFunc) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		p := httprouter.ParamsFromContext(req.Context())
+		ctx := req.Context()
 		// Get the user from the request
-		userIDStr := p.ByName("userID")
+		userIDStr := ctx.Value("userID")
 		// Get the user from the current session
-		currentUserIDStr := p.ByName("CurrentUserID")
+		currentUserIDStr := ctx.Value("CurrentUserID")
 
 		// Special case for a URL like /api/v1/users/current
 		if userIDStr == "current" {
@@ -140,20 +136,17 @@ func (h *apiHandler) disallowSelf(handler http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
 		handler(resp, req)
 	}
 }
 
 func (h *apiHandler) requireEditor(handler http.HandlerFunc) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		p := httprouter.ParamsFromContext(req.Context())
-		if err := h.verifyUserIsEditor(req, p); err != nil {
+		if err := h.verifyUserIsEditor(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
 		handler(resp, req)
 	}
 }
@@ -223,8 +216,8 @@ func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 	return user, nil
 }
 
-func (h *apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) error {
-	accessLevelStr := p.ByName("CurrentUserAccessLevel")
+func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
+	accessLevelStr := req.Context().Value("CurrentUserAccessLevel")
 	if accessLevelStr != string(models.AdminUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
 	}
@@ -232,8 +225,8 @@ func (h *apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) e
 	return nil
 }
 
-func (h *apiHandler) verifyUserIsEditor(req *http.Request, p httprouter.Params) error {
-	accessLevelStr := p.ByName("CurrentUserAccessLevel")
+func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
+	accessLevelStr := req.Context().Value("CurrentUserAccessLevel")
 	if accessLevelStr != string(models.AdminUserLevel) && accessLevelStr != string(models.EditorUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)
 	}

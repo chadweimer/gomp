@@ -43,7 +43,7 @@ func main() {
 
 	apiHandler := api.NewHandler(renderer, cfg, upl, dbDriver)
 
-	r.Mount("/api/v1", apiHandler)
+	r.Mount("/api", apiHandler)
 
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(fs)))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))

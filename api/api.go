@@ -11,7 +11,7 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
 	"github.com/unrolled/render"
 )
 
@@ -26,7 +26,7 @@ type apiHandler struct {
 	cfg    *conf.Config
 	upl    upload.Driver
 	db     db.Driver
-	apiMux *httprouter.Router
+	r      chi.Router
 }
 
 // NewHandler returns a new instance of http.Handler
@@ -36,61 +36,63 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 		cfg:    cfg,
 		upl:    upl,
 		db:     db,
-		apiMux: httprouter.New(),
+		r:      chi.NewRouter(),
 	}
 
-	// Public
-	h.apiMux.HandlerFunc("GET", "/api/v1/app/configuration", h.getAppConfiguration)
-	h.apiMux.HandlerFunc("POST", "/api/v1/auth", h.postAuthenticate)
-	h.apiMux.NotFound = http.HandlerFunc(h.notFound)
+	h.r.Route("/v1", func(r chi.Router) {
+		// Public
+		r.Get("/app/configuration", h.getAppConfiguration)
+		r.Post("/auth", h.postAuthenticate)
+		r.NotFound(h.notFound)
 
-	// Authenticated
-	h.apiMux.HandlerFunc("GET", "/api/v1/recipes", h.requireAuthentication(h.getRecipes))
-	h.apiMux.HandlerFunc("GET", "/api/v1/recipes/:recipeID", h.requireAuthentication(h.getRecipe))
-	h.apiMux.HandlerFunc("GET", "/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.getRecipeMainImage))
-	h.apiMux.HandlerFunc("GET", "/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.getRecipeImages))
-	h.apiMux.HandlerFunc("GET", "/api/v1/recipes/:recipeID/notes", h.requireAuthentication(h.getRecipeNotes))
-	h.apiMux.HandlerFunc("GET", "/api/v1/recipes/:recipeID/links", h.requireAuthentication(h.getRecipeLinks))
-	h.apiMux.HandlerFunc("GET", "/api/v1/users/:userID/filters", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserFilters)))
-	h.apiMux.HandlerFunc("POST", "/api/v1/users/:userID/filters", h.requireAuthentication(h.requireAdminUnlessSelf(h.postUserFilter)))
-	h.apiMux.HandlerFunc("GET", "/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserFilter)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserFilter)))
-	h.apiMux.HandlerFunc("DELETE", "/api/v1/users/:userID/filters/:filterID", h.requireAuthentication(h.requireAdminUnlessSelf(h.deleteUserFilter)))
-	h.apiMux.HandlerFunc("GET", "/api/v1/tags", h.requireAuthentication(h.getTags))
+		// Authenticated
+		r.Get("/recipes", h.requireAuthentication(h.getRecipes))
+		r.Get("/recipes/{recipeID}", h.requireAuthentication(h.getRecipe))
+		r.Get("/recipes/{recipeID}/image", h.requireAuthentication(h.getRecipeMainImage))
+		r.Get("/recipes/{recipeID}/images", h.requireAuthentication(h.getRecipeImages))
+		r.Get("/recipes/{recipeID}/notes", h.requireAuthentication(h.getRecipeNotes))
+		r.Get("/recipes/{recipeID}/links", h.requireAuthentication(h.getRecipeLinks))
+		r.Get("/users/{userID}/filters", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserFilters)))
+		r.Post("/users/{userID}/filters", h.requireAuthentication(h.requireAdminUnlessSelf(h.postUserFilter)))
+		r.Get("/users/{userID}/filters/{filterID}", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserFilter)))
+		r.Put("/users/{userID}/filters/{filterID}", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserFilter)))
+		r.Delete("/users/{userID}/filters/{filterID}", h.requireAuthentication(h.requireAdminUnlessSelf(h.deleteUserFilter)))
+		r.Get("/tags", h.requireAuthentication(h.getTags))
 
-	// Editor
-	h.apiMux.HandlerFunc("POST", "/api/v1/recipes", h.requireAuthentication(h.requireEditor(h.postRecipe)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/recipes/:recipeID", h.requireAuthentication(h.requireEditor(h.putRecipe)))
-	h.apiMux.HandlerFunc("DELETE", "/api/v1/recipes/:recipeID", h.requireAuthentication(h.requireEditor(h.deleteRecipe)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/recipes/:recipeID/state", h.requireAuthentication(h.requireEditor(h.putRecipeState)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/recipes/:recipeID/rating", h.requireAuthentication(h.requireEditor(h.putRecipeRating)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/recipes/:recipeID/image", h.requireAuthentication(h.requireEditor(h.putRecipeMainImage)))
-	h.apiMux.HandlerFunc("POST", "/api/v1/recipes/:recipeID/images", h.requireAuthentication(h.requireEditor(h.postRecipeImage)))
-	h.apiMux.HandlerFunc("POST", "/api/v1/recipes/:recipeID/links", h.requireAuthentication(h.requireEditor(h.postRecipeLink)))
-	h.apiMux.HandlerFunc("DELETE", "/api/v1/recipes/:recipeID/links/:destRecipeID", h.requireAuthentication(h.requireEditor(h.deleteRecipeLink)))
-	h.apiMux.HandlerFunc("DELETE", "/api/v1/images/:imageID", h.requireAuthentication(h.requireEditor(h.deleteImage)))
-	h.apiMux.HandlerFunc("POST", "/api/v1/notes", h.requireAuthentication(h.requireEditor(h.postNote)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/notes/:noteID", h.requireAuthentication(h.requireEditor(h.putNote)))
-	h.apiMux.HandlerFunc("DELETE", "/api/v1/notes/:noteID", h.requireAuthentication(h.requireEditor(h.deleteNote)))
-	h.apiMux.HandlerFunc("POST", "/api/v1/uploads", h.requireAuthentication(h.requireEditor(h.postUpload)))
+		// Editor
+		r.Post("/recipes", h.requireAuthentication(h.requireEditor(h.postRecipe)))
+		r.Put("/recipes/{recipeID}", h.requireAuthentication(h.requireEditor(h.putRecipe)))
+		r.Delete("/recipes/{recipeID}", h.requireAuthentication(h.requireEditor(h.deleteRecipe)))
+		r.Put("/recipes/{recipeID}/state", h.requireAuthentication(h.requireEditor(h.putRecipeState)))
+		r.Put("/recipes/{recipeID}/rating", h.requireAuthentication(h.requireEditor(h.putRecipeRating)))
+		r.Put("/recipes/{recipeID}/image", h.requireAuthentication(h.requireEditor(h.putRecipeMainImage)))
+		r.Post("/recipes/{recipeID}/images", h.requireAuthentication(h.requireEditor(h.postRecipeImage)))
+		r.Post("/recipes/{recipeID}/links", h.requireAuthentication(h.requireEditor(h.postRecipeLink)))
+		r.Delete("/recipes/{recipeID}/links/{destRecipeID}", h.requireAuthentication(h.requireEditor(h.deleteRecipeLink)))
+		r.Delete("/images/{imageID}", h.requireAuthentication(h.requireEditor(h.deleteImage)))
+		r.Post("/notes", h.requireAuthentication(h.requireEditor(h.postNote)))
+		r.Put("/notes/{noteID}", h.requireAuthentication(h.requireEditor(h.putNote)))
+		r.Delete("/notes/{noteID}", h.requireAuthentication(h.requireEditor(h.deleteNote)))
+		r.Post("/uploads", h.requireAuthentication(h.requireEditor(h.postUpload)))
 
-	// Admin
-	h.apiMux.HandlerFunc("PUT", "/api/v1/app/configuration", h.requireAuthentication(h.requireAdmin(h.putAppConfiguration)))
-	h.apiMux.HandlerFunc("GET", "/api/v1/users", h.requireAuthentication(h.requireAdmin(h.getUsers)))
-	h.apiMux.HandlerFunc("POST", "/api/v1/users", h.requireAuthentication(h.requireAdmin(h.postUser)))
-	h.apiMux.HandlerFunc("GET", "/api/v1/users/:userID", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUser)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/users/:userID", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUser)))
-	h.apiMux.HandlerFunc("DELETE", "/api/v1/users/:userID", h.requireAuthentication(h.requireAdmin(h.disallowSelf(h.deleteUser))))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/users/:userID/password", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserPassword)))
-	h.apiMux.HandlerFunc("GET", "/api/v1/users/:userID/settings", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserSettings)))
-	h.apiMux.HandlerFunc("PUT", "/api/v1/users/:userID/settings", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserSettings)))
+		// Admin
+		r.Put("/app/configuration", h.requireAuthentication(h.requireAdmin(h.putAppConfiguration)))
+		r.Get("/users", h.requireAuthentication(h.requireAdmin(h.getUsers)))
+		r.Post("/users", h.requireAuthentication(h.requireAdmin(h.postUser)))
+		r.Get("/users/{userID}", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUser)))
+		r.Put("/users/{userID}", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUser)))
+		r.Delete("/users/{userID}", h.requireAuthentication(h.requireAdmin(h.disallowSelf(h.deleteUser))))
+		r.Put("/users/{userID}/password", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserPassword)))
+		r.Get("/users/{userID}/settings", h.requireAuthentication(h.requireAdminUnlessSelf(h.getUserSettings)))
+		r.Put("/users/{userID}/settings", h.requireAuthentication(h.requireAdminUnlessSelf(h.putUserSettings)))
+	})
 
 	return &h
 }
 
 func (h *apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-Type", "application/json")
-	h.apiMux.ServeHTTP(resp, req)
+	h.r.ServeHTTP(resp, req)
 }
 
 func (h *apiHandler) OK(resp http.ResponseWriter, v interface{}) {

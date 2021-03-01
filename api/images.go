@@ -10,13 +10,13 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
-	"github.com/julienschmidt/httprouter"
 )
 
 func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -32,8 +32,8 @@ func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -53,8 +53,8 @@ func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Requ
 }
 
 func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -75,8 +75,7 @@ func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Requ
 	h.NoContent(resp)
 }
 func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeIDStr := p.ByName("recipeID")
+	recipeIDStr := chi.URLParam(req, "recipeID")
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		fullErr := fmt.Errorf("failed to parse recipeID from URL, value = %s: %v", recipeIDStr, err)
@@ -129,8 +128,8 @@ func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	imageID, err := strconv.ParseInt(p.ByName("imageID"), 10, 64)
+	imageIDStr := chi.URLParam(req, "imageID")
+	imageID, err := strconv.ParseInt(imageIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

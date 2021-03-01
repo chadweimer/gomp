@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
 )
 
 func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -26,8 +26,8 @@ func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -48,14 +48,15 @@ func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	destRecipeID, err := strconv.ParseInt(p.ByName("destRecipeID"), 10, 64)
+	destRecipeIDStr := req.Context().Value("destRecipeID").(string)
+	destRecipeID, err := strconv.ParseInt(destRecipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

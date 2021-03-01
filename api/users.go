@@ -8,7 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,8 +24,7 @@ type userPutPasswordParameters struct {
 }
 
 func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -81,8 +80,7 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -109,8 +107,7 @@ func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -126,8 +123,7 @@ func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -152,8 +148,7 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -178,8 +173,7 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -210,11 +204,11 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func getUserIDForRequest(p httprouter.Params) (int64, error) {
+func getUserIDForRequest(req *http.Request) (int64, error) {
 	// Get the user from the request
-	userIDStr := p.ByName("userID")
+	userIDStr := chi.URLParam(req, "userID")
 	// Get the user from the current session
-	currentUserIDStr := p.ByName("CurrentUserID")
+	currentUserIDStr := req.Context().Value("CurrentUserID").(string)
 
 	// Special case for a URL like /api/v1/users/current
 	if userIDStr == "current" {
@@ -225,8 +219,7 @@ func getUserIDForRequest(p httprouter.Params) (int64, error) {
 }
 
 func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -243,8 +236,7 @@ func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -273,15 +265,15 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	filterIDStr := chi.URLParam(req, "filterID")
+	filterID, err := strconv.ParseInt(filterIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -302,15 +294,15 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) 
 }
 
 func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	filterIDStr := chi.URLParam(req, "filterID")
+	filterID, err := strconv.ParseInt(filterIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -358,15 +350,15 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 }
 
 func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request) {
-	p := httprouter.ParamsFromContext(req.Context())
-	userID, err := getUserIDForRequest(p)
+	userID, err := getUserIDForRequest(req)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	filterIDStr := chi.URLParam(req, "filterID")
+	filterID, err := strconv.ParseInt(filterIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
