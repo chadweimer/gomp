@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -25,7 +26,7 @@ type authenticateResponse struct {
 	User  *models.User `json:"user"`
 }
 
-func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request) {
 	var authRequest authenticateRequest
 	if err := readJSONFromRequest(req, &authRequest); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -52,8 +53,8 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 	h.OK(resp, authenticateResponse{Token: tokenStr, User: user})
 }
 
-func (h *apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) requireAuthentication(handler http.HandlerFunc) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
 		userID, err := h.getUserIDFromRequest(req)
 		if err != nil {
 			h.Error(resp, http.StatusUnauthorized, err)
@@ -71,26 +72,31 @@ func (h *apiHandler) requireAuthentication(handler httprouter.Handle) httprouter
 		}
 
 		// Add the user's ID and access level to the list of params
+		p := httprouter.ParamsFromContext(req.Context())
 		p = append(p, httprouter.Param{Key: "CurrentUserID", Value: strconv.FormatInt(user.ID, 10)})
 		p = append(p, httprouter.Param{Key: "CurrentUserAccessLevel", Value: string(user.AccessLevel)})
 
-		handler(resp, req, p)
+		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
+		handler(resp, req)
 	}
 }
 
-func (h *apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) requireAdmin(handler http.HandlerFunc) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		p := httprouter.ParamsFromContext(req.Context())
 		if err := h.verifyUserIsAdmin(req, p); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req, p)
+		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
+		handler(resp, req)
 	}
 }
 
-func (h *apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) requireAdminUnlessSelf(handler http.HandlerFunc) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		p := httprouter.ParamsFromContext(req.Context())
 		// Get the user from the request
 		userIDStr := p.ByName("userID")
 		// Get the user from the current session
@@ -109,12 +115,14 @@ func (h *apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httproute
 			}
 		}
 
-		handler(resp, req, p)
+		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
+		handler(resp, req)
 	}
 }
 
-func (h *apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) disallowSelf(handler http.HandlerFunc) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		p := httprouter.ParamsFromContext(req.Context())
 		// Get the user from the request
 		userIDStr := p.ByName("userID")
 		// Get the user from the current session
@@ -132,18 +140,21 @@ func (h *apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
 			return
 		}
 
-		handler(resp, req, p)
+		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
+		handler(resp, req)
 	}
 }
 
-func (h *apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) requireEditor(handler http.HandlerFunc) http.HandlerFunc {
+	return func(resp http.ResponseWriter, req *http.Request) {
+		p := httprouter.ParamsFromContext(req.Context())
 		if err := h.verifyUserIsEditor(req, p); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req, p)
+		req = req.WithContext(context.WithValue(req.Context(), httprouter.ParamsKey, p))
+		handler(resp, req)
 	}
 }
 

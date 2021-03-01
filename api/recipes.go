@@ -16,7 +16,7 @@ type getRecipesResponse struct {
 	Total   int64                   `json:"total"`
 }
 
-func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 	query := getParam(req.URL.Query(), "q")
 	fields := getParams(req.URL.Query(), "fields[]")
 	tags := getParams(req.URL.Query(), "tags[]")
@@ -67,7 +67,8 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request, p h
 	h.OK(resp, getRecipesResponse{Recipes: recipes, Total: total})
 }
 
-func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request) {
+	p := httprouter.ParamsFromContext(req.Context())
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -87,7 +88,7 @@ func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request, p ht
 	h.OK(resp, recipe)
 }
 
-func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request) {
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, &recipe); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -102,7 +103,8 @@ func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request, p h
 	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d", recipe.ID))
 }
 
-func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
+	p := httprouter.ParamsFromContext(req.Context())
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -128,7 +130,8 @@ func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request, p ht
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
+	p := httprouter.ParamsFromContext(req.Context())
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -149,7 +152,8 @@ func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request, p
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request) {
+	p := httprouter.ParamsFromContext(req.Context())
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -170,7 +174,8 @@ func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request,
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request) {
+	p := httprouter.ParamsFromContext(req.Context())
 	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

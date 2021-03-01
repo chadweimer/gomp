@@ -6,10 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/google/uuid"
-	"github.com/julienschmidt/httprouter"
 )
 
-func (h *apiHandler) postUpload(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postUpload(resp http.ResponseWriter, req *http.Request) {
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
