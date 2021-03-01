@@ -15,9 +15,9 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/unrolled/render"
-	"github.com/urfave/negroni"
 )
 
 func main() {
@@ -34,25 +34,21 @@ func main() {
 	dbDriver := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 
-	n := negroni.New()
-	n.Use(negroni.NewRecovery())
+	r := chi.NewRouter()
+	r.Use(middleware.Recoverer)
 	if cfg.IsDevelopment {
-		n.Use(negroni.NewLogger())
+		r.Use(middleware.Logger)
 	}
 
 	apiHandler := api.NewHandler(renderer, cfg, upl, dbDriver)
 
-	mainMux := httprouter.New()
-	mainMux.Handler("GET", "/api/*apipath", apiHandler)
-	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
-	mainMux.Handler("POST", "/api/*apipath", apiHandler)
-	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath)))
-	mainMux.ServeFiles("/uploads/*filepath", upl)
-	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+	r.Mount("/api/v1", apiHandler)
+
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath)))))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))
+	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
-	})
-	n.UseHandler(mainMux)
+	}))
 
 	// subscribe to SIGINT signals
 	stopChan := make(chan os.Signal)
@@ -66,7 +62,7 @@ func main() {
 	defer cancel()
 
 	log.Printf("Starting server on port :%d", cfg.Port)
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: n}
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: r}
 	go srv.ListenAndServe()
 
 	// Wait for a stop signal
