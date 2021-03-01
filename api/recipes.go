@@ -8,7 +8,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/go-chi/chi"
 )
 
 type getRecipesResponse struct {
@@ -68,8 +67,7 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, recipeIDKey)
-	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -104,8 +102,7 @@ func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, recipeIDKey)
-	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -131,8 +128,7 @@ func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, recipeIDKey)
-	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -153,8 +149,7 @@ func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, recipeIDKey)
-	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -175,8 +170,7 @@ func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, recipeIDKey)
-	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

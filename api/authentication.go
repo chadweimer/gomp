@@ -13,7 +13,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/chi"
 )
 
 type authenticateRequest struct {
@@ -73,8 +72,8 @@ func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
 
 		// Add the user's ID and access level to the list of params
 		ctx := req.Context()
-		ctx = context.WithValue(ctx, currentUserIDKey, strconv.FormatInt(user.ID, 10))
-		ctx = context.WithValue(ctx, currentUserAccessLevelKey, string(user.AccessLevel))
+		ctx = context.WithValue(ctx, currentUserIDKey, user.ID)
+		ctx = context.WithValue(ctx, currentUserAccessLevelKey, user.AccessLevel)
 
 		req = req.WithContext(ctx)
 		next.ServeHTTP(resp, req)
@@ -94,18 +93,19 @@ func (h *apiHandler) requireAdmin(next http.Handler) http.Handler {
 
 func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		// Get the user from the request
-		userIDStr := chi.URLParam(req, userIDKey)
-		// Get the user from the current session
-		currentUserIDStr := req.Context().Value(currentUserIDKey).(string)
-
-		// Special case for a URL like /api/v1/users/current
-		if userIDStr == "current" {
-			userIDStr = currentUserIDStr
+		urlID, err := getResourceIDFromURL(req, userIDKey)
+		if err != nil {
+			h.Error(resp, http.StatusBadRequest, err)
+			return
+		}
+		ctxID, err := getResourceIDFromCtx(req, currentUserIDKey)
+		if err != nil {
+			h.Error(resp, http.StatusUnauthorized, err)
+			return
 		}
 
 		// Admin privleges are required if the session user doesn't match the request user
-		if userIDStr != currentUserIDStr {
+		if urlID != ctxID {
 			if err := h.verifyUserIsAdmin(req); err != nil {
 				h.Error(resp, http.StatusForbidden, err)
 				return
@@ -118,18 +118,19 @@ func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 
 func (h *apiHandler) disallowSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		// Get the user from the request
-		userIDStr := chi.URLParam(req, userIDKey)
-		// Get the user from the current session
-		currentUserIDStr := req.Context().Value(currentUserIDKey).(string)
-
-		// Special case for a URL like /api/v1/users/current
-		if userIDStr == "current" {
-			userIDStr = currentUserIDStr
+		urlID, err := getResourceIDFromURL(req, userIDKey)
+		if err != nil {
+			h.Error(resp, http.StatusBadRequest, err)
+			return
+		}
+		ctxID, err := getResourceIDFromCtx(req, currentUserIDKey)
+		if err != nil {
+			h.Error(resp, http.StatusUnauthorized, err)
+			return
 		}
 
 		// Don't allow operating on the current user (e.g., for deleting)
-		if userIDStr == currentUserIDStr {
+		if urlID == ctxID {
 			err := fmt.Errorf("Endpoint '%s' disallowed on current user", req.URL.Path)
 			h.Error(resp, http.StatusForbidden, err)
 			return
@@ -216,8 +217,8 @@ func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 }
 
 func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
-	accessLevelStr := req.Context().Value(currentUserAccessLevelKey)
-	if accessLevelStr != string(models.AdminUserLevel) {
+	accessLevel := req.Context().Value(currentUserAccessLevelKey).(models.UserLevel)
+	if accessLevel != models.AdminUserLevel {
 		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
 	}
 
@@ -225,8 +226,8 @@ func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
 }
 
 func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
-	accessLevelStr := req.Context().Value(currentUserAccessLevelKey)
-	if accessLevelStr != string(models.AdminUserLevel) && accessLevelStr != string(models.EditorUserLevel) {
+	accessLevel := req.Context().Value(currentUserAccessLevelKey).(models.UserLevel)
+	if accessLevel != models.AdminUserLevel && accessLevel != models.EditorUserLevel {
 		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)
 	}
 

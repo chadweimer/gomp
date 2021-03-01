@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
@@ -173,4 +174,23 @@ func getParams(values url.Values, key string) []string {
 
 func readJSONFromRequest(req *http.Request, data interface{}) error {
 	return json.NewDecoder(req.Body).Decode(data)
+}
+
+func getResourceIDFromURL(req *http.Request, idKey string) (int64, error) {
+	idStr := chi.URLParam(req, idKey)
+
+	// Special case for userID
+	if idKey == userIDKey && idStr == "current" {
+		return getResourceIDFromCtx(req, currentUserIDKey)
+	}
+
+	return strconv.ParseInt(idStr, 10, 64)
+}
+
+func getResourceIDFromCtx(req *http.Request, idKey string) (int64, error) {
+	id, ok := req.Context().Value(idKey).(int64)
+	if !ok {
+		return 0, fmt.Errorf("value of %s is not an integer", idKey)
+	}
+	return id, nil
 }

@@ -3,15 +3,12 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/go-chi/chi"
 )
 
 func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, recipeIDKey)
-	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -42,8 +39,7 @@ func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
-	noteIDStr := chi.URLParam(req, noteIDKey)
-	noteID, err := strconv.ParseInt(noteIDStr, 10, 64)
+	noteID, err := getResourceIDFromURL(req, noteIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -69,8 +65,7 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request) {
-	noteIDStr := chi.URLParam(req, noteIDKey)
-	noteID, err := strconv.ParseInt(noteIDStr, 10, 64)
+	noteID, err := getResourceIDFromURL(req, noteIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
