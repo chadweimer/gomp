@@ -40,6 +40,7 @@ func main() {
 	if cfg.IsDevelopment {
 		r.Use(middleware.Logger)
 	}
+	r.Use(middleware.StripSlashes)
 
 	apiHandler := api.NewHandler(renderer, cfg, upl, dbDriver)
 
