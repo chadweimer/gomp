@@ -15,7 +15,7 @@ import (
 )
 
 func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -32,7 +32,7 @@ func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -53,7 +53,7 @@ func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Requ
 }
 
 func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -75,7 +75,7 @@ func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Requ
 	h.NoContent(resp)
 }
 func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		fullErr := fmt.Errorf("failed to parse recipeID from URL, value = %s: %v", recipeIDStr, err)
@@ -128,7 +128,7 @@ func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request) {
-	imageIDStr := chi.URLParam(req, "imageID")
+	imageIDStr := chi.URLParam(req, imageIDKey)
 	imageID, err := strconv.ParseInt(imageIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

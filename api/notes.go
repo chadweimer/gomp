@@ -10,7 +10,7 @@ import (
 )
 
 func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -42,7 +42,7 @@ func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
-	noteIDStr := chi.URLParam(req, "noteID")
+	noteIDStr := chi.URLParam(req, noteIDKey)
 	noteID, err := strconv.ParseInt(noteIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -69,7 +69,7 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request) {
-	noteIDStr := chi.URLParam(req, "noteID")
+	noteIDStr := chi.URLParam(req, noteIDKey)
 	noteID, err := strconv.ParseInt(noteIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

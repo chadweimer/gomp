@@ -9,7 +9,7 @@ import (
 )
 
 func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -26,7 +26,7 @@ func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -48,14 +48,14 @@ func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request) {
-	recipeIDStr := chi.URLParam(req, "recipeID")
+	recipeIDStr := chi.URLParam(req, recipeIDKey)
 	recipeID, err := strconv.ParseInt(recipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	destRecipeIDStr := req.Context().Value("destRecipeID").(string)
+	destRecipeIDStr := chi.URLParam(req, destRecipeIDKey)
 	destRecipeID, err := strconv.ParseInt(destRecipeIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

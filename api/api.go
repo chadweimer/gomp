@@ -21,6 +21,21 @@ var errMismatchedID = errors.New("The id in the path does not match the one spec
 
 // ---- End Standard Errors ----
 
+// ---- Begin Route Keys ----
+
+const (
+	currentUserIDKey          string = "CurrentUserID"
+	currentUserAccessLevelKey string = "CurrentUserAccessLevel"
+	destRecipeIDKey           string = "destRecipeID"
+	filterIDKey               string = "filterID"
+	imageIDKey                string = "imageID"
+	noteIDKey                 string = "noteID"
+	recipeIDKey               string = "recipeID"
+	userIDKey                 string = "userID"
+)
+
+// ---- End Route Keys ----
+
 type apiHandler struct {
 	rnd *render.Render
 	cfg *conf.Config

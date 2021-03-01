@@ -13,6 +13,7 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/go-chi/chi"
 )
 
 type authenticateRequest struct {
@@ -72,8 +73,8 @@ func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
 
 		// Add the user's ID and access level to the list of params
 		ctx := req.Context()
-		ctx = context.WithValue(ctx, "CurrentUserID", strconv.FormatInt(user.ID, 10))
-		ctx = context.WithValue(ctx, "CurrentUserAccessLevel", string(user.AccessLevel))
+		ctx = context.WithValue(ctx, currentUserIDKey, strconv.FormatInt(user.ID, 10))
+		ctx = context.WithValue(ctx, currentUserAccessLevelKey, string(user.AccessLevel))
 
 		req = req.WithContext(ctx)
 		next.ServeHTTP(resp, req)
@@ -93,11 +94,10 @@ func (h *apiHandler) requireAdmin(next http.Handler) http.Handler {
 
 func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		ctx := req.Context()
 		// Get the user from the request
-		userIDStr := ctx.Value("userID")
+		userIDStr := chi.URLParam(req, userIDKey)
 		// Get the user from the current session
-		currentUserIDStr := ctx.Value("CurrentUserID")
+		currentUserIDStr := req.Context().Value(currentUserIDKey).(string)
 
 		// Special case for a URL like /api/v1/users/current
 		if userIDStr == "current" {
@@ -118,11 +118,10 @@ func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 
 func (h *apiHandler) disallowSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		ctx := req.Context()
 		// Get the user from the request
-		userIDStr := ctx.Value("userID")
+		userIDStr := chi.URLParam(req, userIDKey)
 		// Get the user from the current session
-		currentUserIDStr := ctx.Value("CurrentUserID")
+		currentUserIDStr := req.Context().Value(currentUserIDKey).(string)
 
 		// Special case for a URL like /api/v1/users/current
 		if userIDStr == "current" {
@@ -217,7 +216,7 @@ func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 }
 
 func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
-	accessLevelStr := req.Context().Value("CurrentUserAccessLevel")
+	accessLevelStr := req.Context().Value(currentUserAccessLevelKey)
 	if accessLevelStr != string(models.AdminUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
 	}
@@ -226,7 +225,7 @@ func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
 }
 
 func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
-	accessLevelStr := req.Context().Value("CurrentUserAccessLevel")
+	accessLevelStr := req.Context().Value(currentUserAccessLevelKey)
 	if accessLevelStr != string(models.AdminUserLevel) && accessLevelStr != string(models.EditorUserLevel) {
 		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)
 	}

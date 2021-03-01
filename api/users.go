@@ -258,7 +258,7 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	filterIDStr := chi.URLParam(req, "filterID")
+	filterIDStr := chi.URLParam(req, filterIDKey)
 	filterID, err := strconv.ParseInt(filterIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -287,7 +287,7 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	filterIDStr := chi.URLParam(req, "filterID")
+	filterIDStr := chi.URLParam(req, filterIDKey)
 	filterID, err := strconv.ParseInt(filterIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -343,7 +343,7 @@ func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	filterIDStr := chi.URLParam(req, "filterID")
+	filterIDStr := chi.URLParam(req, filterIDKey)
 	filterID, err := strconv.ParseInt(filterIDStr, 10, 64)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -360,9 +360,9 @@ func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Reques
 
 func getUserIDForRequest(req *http.Request) (int64, error) {
 	// Get the user from the request
-	userIDStr := chi.URLParam(req, "userID")
+	userIDStr := chi.URLParam(req, userIDKey)
 	// Get the user from the current session
-	currentUserIDStr := req.Context().Value("CurrentUserID").(string)
+	currentUserIDStr := req.Context().Value(currentUserIDKey).(string)
 
 	// Special case for a URL like /api/v1/users/current
 	if userIDStr == "current" {
