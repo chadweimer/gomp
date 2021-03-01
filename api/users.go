@@ -204,20 +204,6 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func getUserIDForRequest(req *http.Request) (int64, error) {
-	// Get the user from the request
-	userIDStr := chi.URLParam(req, "userID")
-	// Get the user from the current session
-	currentUserIDStr := req.Context().Value("CurrentUserID").(string)
-
-	// Special case for a URL like /api/v1/users/current
-	if userIDStr == "current" {
-		userIDStr = currentUserIDStr
-	}
-
-	return strconv.ParseInt(userIDStr, 10, 64)
-}
-
 func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request) {
 	userID, err := getUserIDForRequest(req)
 	if err != nil {
@@ -370,4 +356,18 @@ func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Reques
 	}
 
 	h.NoContent(resp)
+}
+
+func getUserIDForRequest(req *http.Request) (int64, error) {
+	// Get the user from the request
+	userIDStr := chi.URLParam(req, "userID")
+	// Get the user from the current session
+	currentUserIDStr := req.Context().Value("CurrentUserID").(string)
+
+	// Special case for a URL like /api/v1/users/current
+	if userIDStr == "current" {
+		userIDStr = currentUserIDStr
+	}
+
+	return strconv.ParseInt(userIDStr, 10, 64)
 }
