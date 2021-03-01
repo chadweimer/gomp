@@ -18,7 +18,9 @@ export class HomeView extends GompBaseElement {
             <div class="padded-10">
                 <header class="text-center">
                     <h1 hidden\$="[[!currentUserSettings.homeTitle]]">[[currentUserSettings.homeTitle]]</h1>
-                    <img alt="Home Image" class="responsive" hidden\$="[[!currentUserSettings.homeImageUrl]]" src="[[currentUserSettings.homeImageUrl]]">
+                    <template is="dom-if" if="[[currentUserSettings.homeImageUrl]]">
+                        <img alt="Home Image" class="responsive" src="[[currentUserSettings.homeImageUrl]]">
+                    </template>
                 </header>
                 <home-list is-active="[[isActive]]" readonly\$="[[!getCanEdit(currentUser)]]"></home-list>
                 <template is="dom-repeat" items="[[searchFilters]]">
