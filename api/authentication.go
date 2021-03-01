@@ -75,8 +75,7 @@ func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, currentUserIDKey, user.ID)
 		ctx = context.WithValue(ctx, currentUserAccessLevelKey, user.AccessLevel)
 
-		req = req.WithContext(ctx)
-		next.ServeHTTP(resp, req)
+		next.ServeHTTP(resp, req.WithContext(ctx))
 	})
 }
 
