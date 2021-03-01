@@ -184,7 +184,12 @@ func getResourceIDFromURL(req *http.Request, idKey string) (int64, error) {
 		return getResourceIDFromCtx(req, currentUserIDKey)
 	}
 
-	return strconv.ParseInt(idStr, 10, 64)
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse %s from URL, value = %s: %v", idKey, idStr, err)
+	}
+
+	return id, nil
 }
 
 func getResourceIDFromCtx(req *http.Request, idKey string) (int64, error) {
