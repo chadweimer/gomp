@@ -26,6 +26,7 @@ func main() {
 	if err = cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}
+	fs := upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath))
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	renderer := render.New(render.Options{
 		IsDevelopment: cfg.IsDevelopment,
@@ -44,7 +45,7 @@ func main() {
 
 	r.Mount("/api/v1", apiHandler)
 
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath)))))
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(fs)))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))
 	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
