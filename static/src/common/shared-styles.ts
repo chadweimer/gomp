@@ -43,6 +43,27 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 max-height: 20em;
                 height: auto;
             }
+            span.chip {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 16px;
+                margin: 4px;
+                background-color: var(--paper-grey-300);
+                font-size: 12px;
+            }
+            span.chip.selectable {
+                cursor: pointer;
+            }
+            span.chip.selectable:hover {
+                background-color: var(--paper-grey-400);
+            }
+            span.chip.green {
+                background-color: var(--paper-green-100) !important;
+            }
+            span.chip.green:hover {
+                color: white !important;
+                background-color: var(--paper-green-500) !important;
+            }
 
             /* Web Components */
             iron-pages > :not(.iron-selected) {

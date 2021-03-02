@@ -4,7 +4,6 @@ import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { UserSettings } from '../models/models.js';
 import '@material/mwc-icon';
-import '@cwmr/paper-chip/paper-chip.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import '../common/shared-styles.js';
 
@@ -21,18 +20,7 @@ export class TagInput extends GompBaseElement {
                 }
                 mwc-icon {
                     --mdc-icon-size: 20px;
-                    color: var(--paper-green-400);
-                }
-                paper-chip {
-                    margin: 4px;
-                    padding-right: 6px;
-                    cursor: pointer;
-                    @apply layout-horizontal;
-                    background-color: var(--paper-green-100);
-                }
-                paper-chip[selectable]:hover {
-                    color: white !important;
-                    background-color: var(--paper-green-600);
+                    color: var(--paper-green-300);
                 }
                 label {
                     color: var(--secondary-text-color);
@@ -45,7 +33,7 @@ export class TagInput extends GompBaseElement {
                     <label>Suggested Tags</label>
                     <div>
                         <template is="dom-repeat" items="[[suggestedTags]]">
-                            <paper-chip on-click="onSuggestedTagClicked" selectable><mwc-icon class="middle-vertical">add_circle</mwc-icon> [[item]]</paper-chip>
+                            <span class="chip green selectable" on-click="onSuggestedTagClicked"><mwc-icon class="middle-vertical">add_circle</mwc-icon> [[item]]</span>
                         </template>
                     </div>
                     <li divider role="separator"></li>

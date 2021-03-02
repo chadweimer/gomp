@@ -3,7 +3,6 @@ import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
 import '@polymer/paper-card/paper-card.js';
-import '@cwmr/paper-chip/paper-chip.js';
 import './recipe-rating.js';
 import '../common/shared-styles.js';
 
@@ -78,7 +77,7 @@ export class RecipeCard extends GompBaseElement {
                         </div>
                     </paper-card>
                 </a>
-                <paper-chip class="state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+                <span class="chip state" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</span>
             </div>
 `;
     }
