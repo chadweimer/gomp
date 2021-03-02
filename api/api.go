@@ -141,7 +141,7 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 	return r
 }
 
-func (h *apiHandler) Write(resp http.ResponseWriter, status int, v interface{}) {
+func (h *apiHandler) JSON(resp http.ResponseWriter, status int, v interface{}) {
 	resp.WriteHeader(status)
 	enc := json.NewEncoder(resp)
 	if h.cfg.IsDevelopment {
@@ -151,7 +151,7 @@ func (h *apiHandler) Write(resp http.ResponseWriter, status int, v interface{}) 
 }
 
 func (h *apiHandler) OK(resp http.ResponseWriter, v interface{}) {
-	h.Write(resp, http.StatusOK, v)
+	h.JSON(resp, http.StatusOK, v)
 }
 
 func (h *apiHandler) NoContent(resp http.ResponseWriter) {
@@ -165,7 +165,7 @@ func (h *apiHandler) Created(resp http.ResponseWriter, location string) {
 
 func (h *apiHandler) Error(resp http.ResponseWriter, status int, err error) {
 	log.Print(err.Error())
-	h.Write(resp, status, err.Error())
+	h.JSON(resp, status, err.Error())
 }
 
 func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
