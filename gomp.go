@@ -21,6 +21,9 @@ import (
 )
 
 func main() {
+	// Write logs to Stdout instead of Stderr
+	log.SetOutput(os.Stdout)
+
 	var err error
 	cfg := conf.Load()
 	if err = cfg.Validate(); err != nil {
