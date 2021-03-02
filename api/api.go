@@ -60,7 +60,6 @@ type apiHandler struct {
 	cfg *conf.Config
 	upl upload.Driver
 	db  db.Driver
-	r   chi.Router
 }
 
 // NewHandler returns a new instance of http.Handler
