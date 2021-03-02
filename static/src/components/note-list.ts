@@ -43,13 +43,11 @@ export class NoteList extends GompBaseElement {
 
     @query('#noteTextInput')
     private noteTextInput!: TextArea;
-
     @query('#noteDialog')
     private noteDialog!: Dialog;
 
     @property({type: String})
     public recipeId = '';
-
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
