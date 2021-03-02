@@ -10,7 +10,6 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.9.0
 	github.com/mattn/go-sqlite3 v1.14.6
-	github.com/unrolled/render v1.0.3
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/image v0.0.0-20200618115811-c13761719519 // indirect
 )

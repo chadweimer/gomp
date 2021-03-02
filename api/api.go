@@ -14,7 +14,6 @@ import (
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/unrolled/render"
 )
 
 // ---- Begin Standard Errors ----
@@ -56,16 +55,14 @@ var (
 // ---- End Context Keys ----
 
 type apiHandler struct {
-	rnd *render.Render
 	cfg *conf.Config
 	upl upload.Driver
 	db  db.Driver
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler {
+func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler {
 	h := apiHandler{
-		rnd: renderer,
 		cfg: cfg,
 		upl: upl,
 		db:  db,
@@ -144,8 +141,17 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 	return r
 }
 
+func (h *apiHandler) Write(resp http.ResponseWriter, status int, v interface{}) {
+	resp.WriteHeader(status)
+	enc := json.NewEncoder(resp)
+	if h.cfg.IsDevelopment {
+		enc.SetIndent("", "  ")
+	}
+	enc.Encode(v)
+}
+
 func (h *apiHandler) OK(resp http.ResponseWriter, v interface{}) {
-	h.rnd.JSON(resp, http.StatusOK, v)
+	h.Write(resp, http.StatusOK, v)
 }
 
 func (h *apiHandler) NoContent(resp http.ResponseWriter) {
@@ -159,7 +165,7 @@ func (h *apiHandler) Created(resp http.ResponseWriter, location string) {
 
 func (h *apiHandler) Error(resp http.ResponseWriter, status int, err error) {
 	log.Print(err.Error())
-	h.rnd.JSON(resp, status, err.Error())
+	h.Write(resp, status, err.Error())
 }
 
 func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {

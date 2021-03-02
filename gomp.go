@@ -17,7 +17,6 @@ import (
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/unrolled/render"
 )
 
 func main() {
@@ -31,10 +30,6 @@ func main() {
 	}
 	fs := upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath))
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
-	renderer := render.New(render.Options{
-		IsDevelopment: cfg.IsDevelopment,
-		IndentJSON:    true,
-	})
 	dbDriver := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	defer dbDriver.Close()
@@ -46,7 +41,7 @@ func main() {
 	}
 	r.Use(middleware.StripSlashes)
 
-	r.Mount("/api", api.NewHandler(renderer, cfg, upl, dbDriver))
+	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(fs)))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))
 	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
