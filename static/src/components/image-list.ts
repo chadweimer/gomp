@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
@@ -108,19 +107,19 @@ export class ImageList extends GompBaseElement {
 
     protected images: RecipeImage[] = [];
 
-    private get addForm(): HTMLFormElement {
+    private get addForm() {
         return this.$.addForm as HTMLFormElement;
     }
-    private get uploadingDialog(): Dialog {
+    private get uploadingDialog() {
         return this.$.uploadingDialog as Dialog;
     }
-    private get addDialog(): Dialog {
+    private get addDialog() {
         return this.$.addDialog as Dialog;
     }
-    private get confirmMainImageDialog(): ConfirmationDialog {
+    private get confirmMainImageDialog() {
         return this.$.confirmMainImageDialog as ConfirmationDialog;
     }
-    private get confirmDeleteDialog(): ConfirmationDialog {
+    private get confirmDeleteDialog() {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
     }
 
@@ -172,8 +171,12 @@ export class ImageList extends GompBaseElement {
     }
     protected async setMainImage(e: Event) {
         const el = e.target as HTMLElement;
+        if (!el.dataset.id) {
+            console.error('Cannot determine id of image to set');
+            return;
+        }
 
-        const imageId = parseInt(el.dataset.id, 10) as any;
+        const imageId = parseInt(el.dataset.id, 10);
         try {
             await this.AjaxPut(`/api/v1/recipes/${this.recipeId}/image`, imageId);
             this.dispatchEvent(new CustomEvent('main-image-changed'));

@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
@@ -37,7 +36,7 @@ export class ConfirmationDialog extends PolymerElement {
     @property({type: String})
     public message = 'Are you sure you want to perform the requested operation?';
 
-    private get dialog(): Dialog {
+    private get dialog() {
         return this.$.dialog as Dialog;
     }
 

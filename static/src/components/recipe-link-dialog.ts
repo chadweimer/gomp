@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
@@ -36,7 +35,7 @@ export class RecipeLinkDialog extends GompBaseElement {
     @property({type: Number})
     public selectedRecipeId: number|null = null;
 
-    private get dialog(): Dialog {
+    private get dialog() {
         return this.$.dialog as Dialog;
     }
 
@@ -62,13 +61,13 @@ export class RecipeLinkDialog extends GompBaseElement {
                     'page': 1,
                     'count': 20,
                 };
-                const response: {total: number, recipes: RecipeCompact[]} = await this.AjaxGetWithResult('/api/v1/recipes', filterQuery);
+                const response: {total: number; recipes: RecipeCompact[]} = await this.AjaxGetWithResult('/api/v1/recipes', filterQuery);
                 const recipes = response.recipes;
 
-                const suggestions: {value: number; text: string;}[] = [];
+                const suggestions: {value: number; text: string}[] = [];
                 if (recipes) {
                     recipes.forEach(recipe => {
-                        suggestions.push({value: recipe.id, text: recipe.name});
+                        suggestions.push({value: recipe.id ?? 0, text: recipe.name});
                     });
                 }
 
@@ -84,11 +83,11 @@ export class RecipeLinkDialog extends GompBaseElement {
     }
     protected onDialogOpening() {
         // WORKAROUND: Allow the suggestion overlay to leave the dialog bounds
-        const surface = this.dialog.shadowRoot.querySelector('.mdc-dialog__surface') as HTMLElement;
+        const surface = this.dialog.shadowRoot?.querySelector('.mdc-dialog__surface') as HTMLElement;
         if (surface) {
             surface.style.overflow = 'visible';
         }
-        const content = this.dialog.shadowRoot.querySelector('.mdc-dialog__content') as HTMLElement;
+        const content = this.dialog.shadowRoot?.querySelector('.mdc-dialog__content') as HTMLElement;
         if (content) {
             content.style.overflow = 'visible';
         }

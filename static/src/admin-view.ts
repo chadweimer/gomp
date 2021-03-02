@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
@@ -134,10 +133,10 @@ export class AdminView extends GompBaseElement {
     ];
 
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
     protected selectedTab = 0;
-    protected appConfig: AppConfiguration = null;
+    protected appConfig: AppConfiguration|null = null;
     protected users: User[] = [];
     protected userId: number|null = null;
     protected user: {
@@ -147,20 +146,20 @@ export class AdminView extends GompBaseElement {
         repeatPassword: string
     }|null = null;
 
-    private get addUserDialog(): Dialog {
+    private get addUserDialog() {
         return this.$.addUserDialog as Dialog;
     }
-    private get editUserDialog(): Dialog {
+    private get editUserDialog() {
         return this.$.editUserDialog as Dialog;
     }
-    private get confirmDeleteUserDialog(): ConfirmationDialog {
+    private get confirmDeleteUserDialog() {
         return this.$.confirmDeleteUserDialog as ConfirmationDialog;
     }
 
     public ready() {
         super.ready();
 
-        this.$.tabBar.addEventListener('MDCTabBar:activated', (e: CustomEvent) => this.onTabActivated(e));
+        this.$.tabBar.addEventListener('MDCTabBar:activated', e => this.onTabActivated(e as CustomEvent));
 
         if (this.isActive) {
             this.refresh();
@@ -213,6 +212,11 @@ export class AdminView extends GompBaseElement {
             return;
         }
 
+        if (!this.user) {
+            console.error('Attempted to add a null user');
+            return;
+        }
+
         if (this.user.password !== this.user.repeatPassword) {
             this.showToast('Passwords don\'t match.');
             return;
@@ -239,18 +243,23 @@ export class AdminView extends GompBaseElement {
 
         const selectedUser = e.model.item;
 
-        this.userId = selectedUser.id;
+        this.userId = selectedUser.id ?? null;
         this.user = {
             username: selectedUser.username,
             accessLevel: selectedUser.accessLevel,
-            password: null,
-            repeatPassword: null
+            password: '',
+            repeatPassword: ''
         };
         this.editUserDialog.show();
     }
 
     protected async editUserDialogClosed(e: CustomEvent<{action: string}>) {
         if (e.detail.action !== 'save') {
+            return;
+        }
+
+        if (!this.user) {
+            console.error('Attempted to edit a null user');
             return;
         }
 
@@ -275,12 +284,12 @@ export class AdminView extends GompBaseElement {
 
         const selectedUser = e.model.item;
 
-        this.userId = selectedUser.id;
+        this.userId = selectedUser.id ?? null;
         this.user = {
             username: selectedUser.username,
             accessLevel: selectedUser.accessLevel,
-            password: null,
-            repeatPassword: null
+            password: '',
+            repeatPassword: ''
         };
         this.confirmDeleteUserDialog.show();
     }

@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
@@ -68,8 +67,8 @@ export class HomeList extends GompBaseElement {
     public readonly = false;
 
     protected total = 0;
-    protected recipes = [];
-    private filter: SearchFilter = null;
+    protected recipes: RecipeCompact[] = [];
+    private filter: SearchFilter|null = null;
 
     protected isActiveChanged(isActive: boolean) {
         if (isActive && this.isReady) {
@@ -79,7 +78,7 @@ export class HomeList extends GompBaseElement {
 
     protected async filterIdChanged(newId: number|null) {
         try {
-            const filter: SearchFilter = newId !== null
+            const filter: SearchFilter = newId
                 ? await this.AjaxGetWithResult(`/api/v1/users/current/filters/${newId}`)
                 : {
                     query: '',

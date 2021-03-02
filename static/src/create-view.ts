@@ -1,4 +1,3 @@
-'use strict';
 import { customElement, property } from '@polymer/decorators';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
@@ -24,7 +23,7 @@ export class CreateView extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
     protected editCanceled() {
         this.navigateTo('/search');

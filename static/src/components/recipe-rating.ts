@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
@@ -21,12 +20,17 @@ export class RecipeRating extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public recipe: Recipe = null;
+    public recipe: Recipe|null = null;
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
     protected async starRatingSelected(e: CustomEvent<{rating: number}>) {
+        if (!this.recipe) {
+            console.error('Cannot set the rating on a null recipe');
+            return;
+        }
+
         const newRating = e.detail.rating;
         try {
             await this.AjaxPut(`/api/v1/recipes/${this.recipe.id}/rating`, newRating);

@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { Drawer } from '@material/mwc-drawer';
 import { Snackbar } from '@material/mwc-snackbar';
@@ -224,54 +223,54 @@ export class GompApp extends GompBaseElement {
     @property({type: Boolean})
     protected isAuthenticated = false;
     @property({type: Object})
-    protected route: {path: string}|null|undefined = null;
+    protected route: {path: string}|null = null;
     @property({type: Object, observer: 'routeDataChanged'})
-    protected routeData: {page: string};
+    protected routeData: {page: string}|null = null;
     @property({type: Object, notify: true})
-    protected currentUser: User = null;
+    protected currentUser: User|null = null;
 
     protected searchResultCount = 0;
 
-    private scrollPositionMap: object = {};
+    private scrollPositionMap: {[key: string]: {x: number; y: number}|null|undefined} = {};
 
-    private get searchSettings(): SearchFilterElement {
+    private get searchSettings() {
         return this.$.searchSettings as SearchFilterElement;
     }
-    private get searchFilterDialog(): Dialog {
+    private get searchFilterDialog() {
         return this.$.searchFilterDialog as Dialog;
     }
-    private get toast(): Snackbar {
+    private get toast() {
         return this.$.toast as Snackbar;
     }
-    private get drawer(): Drawer {
+    private get drawer() {
         return this.$.drawer as Drawer;
     }
-    private get appBar(): TopAppBar {
+    private get appBar() {
         return this.$.appBar as TopAppBar;
     }
-    private get mainContent(): HTMLElement {
+    private get mainContent() {
         return this.$.mainContent as HTMLElement;
     }
 
     public ready() {
         this.addEventListener('scroll-top', () => this.setScrollPosition({x: 0, y: 0}));
-        this.addEventListener('home-list-link-clicked', (e: CustomEvent) => this.onHomeLinkClicked(e));
+        this.addEventListener('home-list-link-clicked', e => this.onHomeLinkClicked(e as CustomEvent));
         this.addEventListener('recipes-modified', () => this.recipesModified());
-        this.addEventListener('change-page', (e: CustomEvent) => this.changePageRequested(e));
-        this.addEventListener('ajax-presend', (e: CustomEvent) => this.onAjaxPresend(e));
+        this.addEventListener('change-page', e => this.changePageRequested(e as CustomEvent));
+        this.addEventListener('ajax-presend', e => this.onAjaxPresend(e as CustomEvent));
         this.addEventListener('ajax-response', () => this.onAjaxResponse());
-        this.addEventListener('ajax-error', (e: CustomEvent) => this.onAjaxError(e));
-        this.addEventListener('show-toast', (e: CustomEvent) => this.onShowToast(e));
+        this.addEventListener('ajax-error', e => this.onAjaxError(e as CustomEvent));
+        this.addEventListener('show-toast', e => this.onShowToast(e as CustomEvent));
         this.addEventListener('authentication-changed', () => this.onCurrentUserChanged());
-        this.addEventListener('app-config-changed', (e: CustomEvent) => this.onAppConfigChanged(e));
-        this.addEventListener('search-result-count-changed', (e: CustomEvent) => this.onSearchResultCountChanged(e));
+        this.addEventListener('app-config-changed', e => this.onAppConfigChanged(e as CustomEvent));
+        this.addEventListener('search-result-count-changed', e => this.onSearchResultCountChanged(e as CustomEvent));
 
         super.ready();
 
         // Need to explicitly set this to get the correct behavior
         // since the app bar is not the root elemenet
         const scrollContainer = this.getScrollContainer();
-        if (scrollContainer !== null) {
+        if (scrollContainer) {
             this.appBar.scrollTarget = scrollContainer;
         }
 
@@ -291,11 +290,11 @@ export class GompApp extends GompBaseElement {
     protected titleChanged(title: string) {
         document.title = title;
         const appName = document.querySelector('meta[name="application-name"]');
-        if (appName !== null) {
+        if (appName) {
             appName.setAttribute('content', title);
         }
         const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-        if (appTitle !== null) {
+        if (appTitle) {
             appTitle.setAttribute('content', title);
         }
     }
@@ -327,7 +326,7 @@ export class GompApp extends GompBaseElement {
 
     private getScrollPosition() {
         const scrollContainer = this.getScrollContainer();
-        return scrollContainer !== null
+        return scrollContainer
             ? {x: scrollContainer.scrollLeft, y: scrollContainer.scrollTop}
             : null;
     }
@@ -354,8 +353,9 @@ export class GompApp extends GompBaseElement {
         this.page = routeData?.page || 'home';
 
         // IMPORTANT: This must come after changing the page, so that we scroll the new content
-        if (scrollMap[routeData.page] != null) {
-            this.setScrollPosition(scrollMap[routeData.page]);
+        const pos = scrollMap[routeData.page];
+        if (pos) {
+            this.setScrollPosition(pos);
         } else if (this.isConnected) {
             this.setScrollPosition({x: 0, y: 0});
         }

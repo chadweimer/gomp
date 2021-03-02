@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
@@ -43,11 +42,11 @@ export class NoteList extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected noteId: number = null;
+    protected noteId: number|null = null;
     protected noteText = '';
     protected notes: Note[] = [];
 
-    private get noteDialog(): Dialog {
+    private get noteDialog() {
         return this.$.noteDialog as Dialog;
     }
 
@@ -76,7 +75,7 @@ export class NoteList extends GompBaseElement {
 
         if (this.noteId) {
             try {
-                const note = {
+                const note: Note = {
                     id: this.noteId,
                     recipeId: parseInt(this.recipeId, 10),
                     text: this.noteText,
@@ -90,7 +89,7 @@ export class NoteList extends GompBaseElement {
             }
         } else {
             try {
-                const note = {
+                const note: Note = {
                     recipeId: parseInt(this.recipeId, 10),
                     text: this.noteText,
                 };
@@ -107,8 +106,12 @@ export class NoteList extends GompBaseElement {
         e.preventDefault();
 
         const noteCard = e.target as NoteCard;
+        if (!noteCard.note) {
+            console.error('Cannot edit a null note');
+            return;
+        }
 
-        this.noteId = noteCard.note.id;
+        this.noteId = noteCard.note.id ?? null;
         this.noteText = noteCard.note.text;
         this.noteDialog.show();
     }

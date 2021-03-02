@@ -1,4 +1,3 @@
-'use strict';
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
@@ -65,18 +64,18 @@ export class RecipeEdit extends GompBaseElement {
     @property({type: String})
     public recipeId: string|null = null;
 
-    protected recipe: Recipe = null;
+    protected recipe: Recipe|null = null;
 
-    private get tagsInput(): TagInput {
+    private get tagsInput() {
         return this.$.tagsInput as TagInput;
     }
-    private get mainImage(): HTMLInputElement {
+    private get mainImage() {
         return this.$.mainImage as HTMLInputElement;
     }
-    private get mainImageForm(): HTMLFormElement {
+    private get mainImageForm() {
         return this.$.mainImageForm as HTMLFormElement;
     }
-    private get uploadingDialog(): Dialog {
+    private get uploadingDialog() {
         return this.$.uploadingDialog as Dialog;
     }
 
@@ -90,11 +89,8 @@ export class RecipeEdit extends GompBaseElement {
     public async refresh() {
         if (!this.recipeId) {
             this.recipe = {
-                id: null,
                 name: '',
                 state: RecipeState.Active,
-                createdAt: null,
-                modifiedAt: null,
                 servingSize: '',
                 ingredients: '',
                 directions: '',

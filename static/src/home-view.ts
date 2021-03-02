@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
@@ -32,9 +31,9 @@ export class HomeView extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
-    protected currentUserSettings: UserSettings = null;
+    protected currentUserSettings: UserSettings|null = null;
     protected searchFilters: SavedSearchFilterCompact[] = [];
     protected homeListsActive = false;
 

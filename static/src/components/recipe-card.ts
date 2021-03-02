@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
@@ -85,7 +84,7 @@ export class RecipeCard extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public recipe: RecipeCompact = null;
+    public recipe: RecipeCompact|null = null;
 
     @property({type: Boolean, notify: true})
     public hideCreatedModifiedDates = false;

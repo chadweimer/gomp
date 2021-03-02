@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import {customElement, property } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
@@ -36,13 +35,13 @@ export class NoteCard extends GompBaseElement {
                     white-space: pre-wrap;
                 }
                 .note-footer {
-                    @apply --layout-horizontal;
-                    @apply --layout-end-justified;
-
                     margin-top: 0.5em;
                     color: var(--secondary-text-color);
                     font-size: 0.8em;
                     font-weight: lighter;
+
+                    @apply --layout-horizontal;
+                    @apply --layout-end-justified;
                 }
                 paper-menu-button {
                     position: absolute;
@@ -91,12 +90,12 @@ export class NoteCard extends GompBaseElement {
     }
 
     @property({type: Object, notify: true})
-    public note: Note = null;
+    public note: Note|null = null;
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    private get confirmDeleteDialog(): ConfirmationDialog {
+    private get confirmDeleteDialog() {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
     }
 
@@ -121,6 +120,11 @@ export class NoteCard extends GompBaseElement {
         this.confirmDeleteDialog.show();
     }
     protected async deleteNote() {
+        if (!this.note) {
+            console.error('Cannot delete a null note');
+            return;
+        }
+
         try {
             await this.AjaxDelete(`/api/v1/notes/${this.note.id}`);
             this.dispatchEvent(new CustomEvent('note-card-deleted'));
@@ -131,7 +135,7 @@ export class NoteCard extends GompBaseElement {
         }
     }
 
-    protected showModifiedDate(note: Note) {
+    protected showModifiedDate(note: Note|null|undefined) {
         if (!note) {
             return false;
         }

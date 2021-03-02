@@ -1,4 +1,3 @@
-'use strict';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
 import { User } from '../models/models.js';
@@ -29,7 +28,7 @@ export abstract class GompBaseElement extends PolymerElement {
         // Nothing to do in base
     }
 
-    protected getCanEdit(user: User): boolean {
+    protected getCanEdit(user: User|null|undefined): boolean {
         if (!user?.accessLevel) {
             return false;
         }
@@ -88,7 +87,7 @@ export abstract class GompBaseElement extends PolymerElement {
 
     protected async AjaxPostWithLocation<TBody>(url: string, body: TBody) {
         const resp = await this.AjaxPost(url, body);
-        return resp.headers.get('Location');
+        return resp.headers.get('Location') ?? '';
     }
 
     protected async AjaxPostWithResult<TBody, TResult>(url: string, body: TBody) {
@@ -105,12 +104,9 @@ export abstract class GompBaseElement extends PolymerElement {
     }
 
     private async ajaxFetch(url: string, init?: RequestInit) {
-        const shouldProceed = this.dispatchEvent(new CustomEvent('ajax-presend', {bubbles: true, composed: true, cancelable: true, detail: {options: init}}));
-        if (!shouldProceed) {
-            return null;
-        }
+        this.dispatchEvent(new CustomEvent('ajax-presend', {bubbles: true, composed: true, detail: {options: init}}));
 
-        let resp: Response;
+        let resp: Response|null = null;
         try {
             resp = await fetch(url, init);
 

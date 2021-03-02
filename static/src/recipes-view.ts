@@ -1,4 +1,3 @@
-'use strict';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
@@ -153,32 +152,32 @@ export class RecipesView extends GompBaseElement {
     @property({type: String, notify: true})
     protected mode = '';
     @property({type: Object, notify: true})
-    public currentUser: User = null;
+    public currentUser: User|null = null;
 
-    protected recipeState: string = null;
+    protected recipeState: string|null = null;
 
-    private get recipeDisplay(): RecipeDisplay {
+    private get recipeDisplay() {
         return this.$.recipeDisplay as RecipeDisplay;
     }
-    private get imageList(): ImageList {
+    private get imageList() {
         return this.$.imageList as ImageList;
     }
-    private get noteList(): NoteList {
+    private get noteList() {
         return this.$.noteList as NoteList;
     }
-    private get recipeEdit(): RecipeEdit {
+    private get recipeEdit() {
         return this.$.recipeEdit as RecipeEdit;
     }
-    private get confirmArchiveDialog(): ConfirmationDialog {
+    private get confirmArchiveDialog() {
         return this.$.confirmArchiveDialog as ConfirmationDialog;
     }
-    private get confirmUnarchiveDialog(): ConfirmationDialog {
+    private get confirmUnarchiveDialog() {
         return this.$.confirmUnarchiveDialog as ConfirmationDialog;
     }
-    private get confirmDeleteDialog(): ConfirmationDialog {
+    private get confirmDeleteDialog() {
         return this.$.confirmDeleteDialog as ConfirmationDialog;
     }
-    private get recipeLinkDialog(): RecipeLinkDialog {
+    private get recipeLinkDialog() {
         return this.$.recipeLinkDialog as RecipeLinkDialog;
     }
     private get actions(): any {
@@ -193,7 +192,7 @@ export class RecipesView extends GompBaseElement {
     }
 
     public ready() {
-        this.addEventListener('recipe-loaded', (e: CustomEvent) => this.onRecipeLoaded(e));
+        this.addEventListener('recipe-loaded', e => this.onRecipeLoaded(e as CustomEvent));
 
         super.ready();
     }
@@ -202,7 +201,7 @@ export class RecipesView extends GompBaseElement {
         if (this.mode === 'edit') {
             await this.recipeEdit.refresh();
         } else {
-            await this.recipeDisplay.refresh(null);
+            await this.recipeDisplay.refresh();
             await this.imageList.refresh();
             await this.noteList.refresh();
         }
