@@ -13,7 +13,7 @@ CREATE INDEX search_filter_user_id_idx ON search_filter(user_id);
 
 CREATE TABLE search_filter_field (
     search_filter_id INTEGER NOT NULL,
-    field_name TEXT CHECK(field_name IN ('name', 'ingredients', 'description')),
+    field_name TEXT CHECK(field_name IN ('name', 'ingredients', 'directions')),
     UNIQUE(search_filter_id, field_name),
     FOREIGN KEY(search_filter_id) REFERENCES search_filter(id) ON DELETE CASCADE
 );

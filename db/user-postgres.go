@@ -38,17 +38,17 @@ func (d *postgresUserDriver) createSearchFilterTx(filter *models.SavedSearchFilt
 		return err
 	}
 
-	d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	err = d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
 
-	d.SetSearchFilterStatesTx(filter.ID, filter.States, tx)
+	err = d.SetSearchFilterStatesTx(filter.ID, filter.States, tx)
 	if err != nil {
 		return err
 	}
 
-	d.SetSearchFilterTagsTx(filter.ID, filter.Tags, tx)
+	err = d.SetSearchFilterTagsTx(filter.ID, filter.Tags, tx)
 	if err != nil {
 		return err
 	}
