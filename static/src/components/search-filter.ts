@@ -20,18 +20,18 @@ export class SearchFilterElement extends GompBaseElement {
                     display: block;
                 }
                 .padded {
-                    padding: 0.33em 0;
+                    padding: 5px 0;
                 }
                 label {
                     color: var(--secondary-text-color);
-                    font-size: 0.75em;
+                    font-size: 12px;
                 }
                 .selection {
-                    padding: 0.5em;
+                    padding: 5px;
                 }
                 .note {
                     color: var(--secondary-text-color);
-                    font-size: 0.7em;
+                    font-size: 10px;
                 }
             </style>
 

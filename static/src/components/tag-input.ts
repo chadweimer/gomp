@@ -4,7 +4,6 @@ import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { UserSettings } from '../models/models.js';
 import '@material/mwc-icon';
-import '@polymer/paper-input/paper-input-container.js';
 import '@cwmr/paper-chip/paper-chip.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import '../common/shared-styles.js';
@@ -35,23 +34,27 @@ export class TagInput extends GompBaseElement {
                     color: white !important;
                     background-color: var(--paper-green-600);
                 }
+                label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
+                }
                 </style>
 
-                <paper-tags-input id="tags" tags="{{tags}}"></paper-tags-input>
-                <paper-input-container always-float-label="true">
-                    <label slot="label">Suggested Tags</label>
-                    <div slot="prefix">
+                <paper-tags-input id="tagsInput" tags="{{tags}}"></paper-tags-input>
+                <div>
+                    <label>Suggested Tags</label>
+                    <div>
                         <template is="dom-repeat" items="[[suggestedTags]]">
                             <paper-chip on-click="onSuggestedTagClicked" selectable><mwc-icon class="middle-vertical">add_circle</mwc-icon> [[item]]</paper-chip>
                         </template>
                     </div>
-                    <input type="hidden" slot="input">
-                </paper-input-container>
+                    <li divider role="separator"></li>
+                </div>
 `;
     }
 
-    @query('#tagsElement')
-    private tagsElement!: PaperTagsInput;
+    @query('#tagsInput')
+    private tagsInput!: PaperTagsInput;
 
     @property({type: Array, notify: true})
     public tags: string[] = [];
@@ -73,7 +76,7 @@ export class TagInput extends GompBaseElement {
     }
 
     protected onSuggestedTagClicked(e: {model: {item: string}}) {
-        this.tagsElement.addTag(e.model.item);
+        this.tagsInput.addTag(e.model.item);
 
         // Remove the tag from the suggestion list
         const suggestedTagIndex = this.suggestedTags.indexOf(e.model.item);
