@@ -39,6 +39,13 @@ export class SettingsView extends GompBaseElement {
                 #confirmDeleteUserSearchFilterDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
+                .padded {
+                    padding: 5px 0;
+                }
+                label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
+                }
             </style>
             <div class="container padded-10">
                 <mwc-tab-bar id="tabBar" activeIndex="[[selectedTab]]">
@@ -53,12 +60,13 @@ export class SettingsView extends GompBaseElement {
                             <paper-tags-input id="tags" label="Favorite Tags" tags="{{userSettings.favoriteTags}}"></paper-tags-input>
                             <paper-input label="Home Title" always-float-label value="{{userSettings.homeTitle}}"></paper-input>
                             <form id="homeImageForm" enctype="multipart/form-data">
-                                <paper-input-container always-float-label>
-                                    <label slot="label">Home Image</label>
-                                    <iron-input slot="input">
+                                <div class="padded">
+                                    <label>Home Image</label>
+                                    <div class="padded">
                                         <input id="homeImageFile" name="file_content" type="file" accept=".jpg,.jpeg,.png">
-                                    </iron-input>
-                                </paper-input-container>
+                                    </div>
+                                    <li divider role="separator"></li>
+                                </div>
                             </form>
                             <img alt="Home Image" src="[[userSettings.homeImageUrl]]" class="responsive" hidden\$="[[!userSettings.homeImageUrl]]">
                         </div>

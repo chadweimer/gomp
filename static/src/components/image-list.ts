@@ -41,6 +41,9 @@ export class ImageList extends GompBaseElement {
                 .imageContainer {
                     margin: 2px;
                 }
+                .padded {
+                    padding: 5px 0;
+                }
                 .menu {
                     position: relative;
                     color: white;
@@ -51,6 +54,10 @@ export class ImageList extends GompBaseElement {
                 img {
                     width: 150px;
                     height: 150px;
+                }
+                label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
                 }
             </style>
 
@@ -79,12 +86,13 @@ export class ImageList extends GompBaseElement {
                 <div>
                     <p>Browse for a picture to upload to this recipe.</p>
                     <form id="addForm" enctype="multipart/form-data">
-                        <paper-input-container always-float-label>
-                            <label slot="label">Picture</label>
-                            <iron-input slot="input">
+                        <div class="padded">
+                            <label>Picture</label>
+                            <div class="padded">
                                 <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required dialogInitialFocus>
-                            </iron-input>
-                        </paper-input-container>
+                            </div>
+                            <li divider role="separator"></li>
+                        </div>
                     </form>
                 </div>
                 <mwc-button slot="primaryAction" label="Upload" dialogAction="upload"></mwc-button>

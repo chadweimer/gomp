@@ -29,18 +29,26 @@ export class RecipeEdit extends GompBaseElement {
                 #uploadingDialog {
                     --mdc-dialog-min-width: unset;
                 }
+                .padded {
+                    padding: 5px 0;
+                }
+                label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
+                }
             </style>
 
             <paper-card>
                 <div class="card-content">
                     <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
                     <form id="mainImageForm" enctype="multipart/form-data">
-                        <paper-input-container hidden\$="[[recipeId]]" always-float-label>
-                            <label slot="label">Picture</label>
-                            <iron-input slot="input">
+                        <div hidden\$="[[recipeid]]" class="padded">
+                            <label>Picture</label>
+                            <div class="padded">
                                 <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png">
-                            </iron-input>
-                        </paper-input-container>
+                            </div>
+                            <li divider role="separator"></li>
+                        </div>
                     </form>
                     <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
                     <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
