@@ -5,10 +5,9 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/julienschmidt/httprouter"
 )
 
-func (h *apiHandler) getTags(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getTags(resp http.ResponseWriter, req *http.Request) {
 	sortBy := getParam(req.URL.Query(), "sort")
 	sortDir := getParam(req.URL.Query(), "dir")
 	count, err := strconv.ParseInt(getParam(req.URL.Query(), "count"), 10, 64)

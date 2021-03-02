@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -12,7 +13,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/julienschmidt/httprouter"
 )
 
 type authenticateRequest struct {
@@ -25,7 +25,7 @@ type authenticateResponse struct {
 	User  *models.User `json:"user"`
 }
 
-func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request) {
 	var authRequest authenticateRequest
 	if err := readJSONFromRequest(req, &authRequest); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -52,9 +52,14 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 	h.OK(resp, authenticateResponse{Token: tokenStr, User: user})
 }
 
-func (h *apiHandler) requireAuthentication(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		userID, err := h.getUserIDFromRequest(req)
+func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		token, err := h.getAuthTokenFromRequest(req)
+		if err != nil {
+			h.Error(resp, http.StatusUnauthorized, err)
+			return
+		}
+		userID, err := h.getUserIDFromToken(token)
 		if err != nil {
 			h.Error(resp, http.StatusUnauthorized, err)
 			return
@@ -63,7 +68,7 @@ func (h *apiHandler) requireAuthentication(handler httprouter.Handle) httprouter
 		user, err := h.verifyUserExists(userID)
 		if err != nil {
 			if err == db.ErrNotFound {
-				h.Error(resp, http.StatusUnauthorized, errors.New("Invalid user"))
+				h.Error(resp, http.StatusUnauthorized, errors.New("invalid user"))
 			} else {
 				h.Error(resp, http.StatusInternalServerError, err)
 			}
@@ -71,127 +76,126 @@ func (h *apiHandler) requireAuthentication(handler httprouter.Handle) httprouter
 		}
 
 		// Add the user's ID and access level to the list of params
-		p = append(p, httprouter.Param{Key: "CurrentUserID", Value: strconv.FormatInt(user.ID, 10)})
-		p = append(p, httprouter.Param{Key: "CurrentUserAccessLevel", Value: string(user.AccessLevel)})
+		ctx := req.Context()
+		ctx = context.WithValue(ctx, currentUserIDCtxKey, user.ID)
+		ctx = context.WithValue(ctx, currentUserAccessLevelCtxKey, user.AccessLevel)
 
-		handler(resp, req, p)
-	}
+		next.ServeHTTP(resp, req.WithContext(ctx))
+	})
 }
 
-func (h *apiHandler) requireAdmin(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		if err := h.verifyUserIsAdmin(req, p); err != nil {
+func (h *apiHandler) requireAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		if err := h.verifyUserIsAdmin(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req, p)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) requireAdminUnlessSelf(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		// Get the user from the request
-		userIDStr := p.ByName("userID")
-		// Get the user from the current session
-		currentUserIDStr := p.ByName("CurrentUserID")
-
-		// Special case for a URL like /api/v1/users/current
-		if userIDStr == "current" {
-			userIDStr = currentUserIDStr
+func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		urlID, err := getResourceIDFromURL(req, userIDKey)
+		if err != nil {
+			h.Error(resp, http.StatusBadRequest, err)
+			return
+		}
+		ctxID, err := getResourceIDFromCtx(req, currentUserIDCtxKey)
+		if err != nil {
+			h.Error(resp, http.StatusUnauthorized, err)
+			return
 		}
 
 		// Admin privleges are required if the session user doesn't match the request user
-		if userIDStr != currentUserIDStr {
-			if err := h.verifyUserIsAdmin(req, p); err != nil {
+		if urlID != ctxID {
+			if err := h.verifyUserIsAdmin(req); err != nil {
 				h.Error(resp, http.StatusForbidden, err)
 				return
 			}
 		}
 
-		handler(resp, req, p)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) disallowSelf(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		// Get the user from the request
-		userIDStr := p.ByName("userID")
-		// Get the user from the current session
-		currentUserIDStr := p.ByName("CurrentUserID")
-
-		// Special case for a URL like /api/v1/users/current
-		if userIDStr == "current" {
-			userIDStr = currentUserIDStr
+func (h *apiHandler) disallowSelf(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		urlID, err := getResourceIDFromURL(req, userIDKey)
+		if err != nil {
+			h.Error(resp, http.StatusBadRequest, err)
+			return
+		}
+		ctxID, err := getResourceIDFromCtx(req, currentUserIDCtxKey)
+		if err != nil {
+			h.Error(resp, http.StatusUnauthorized, err)
+			return
 		}
 
 		// Don't allow operating on the current user (e.g., for deleting)
-		if userIDStr == currentUserIDStr {
-			err := fmt.Errorf("Endpoint '%s' disallowed on current user", req.URL.Path)
+		if urlID == ctxID {
+			err := fmt.Errorf("endpoint '%s' disallowed on current user", req.URL.Path)
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req, p)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) requireEditor(handler httprouter.Handle) httprouter.Handle {
-	return func(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		if err := h.verifyUserIsEditor(req, p); err != nil {
+func (h *apiHandler) requireEditor(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		if err := h.verifyUserIsEditor(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
 			return
 		}
 
-		handler(resp, req, p)
-	}
+		next.ServeHTTP(resp, req)
+	})
 }
 
-func (h *apiHandler) getUserIDFromRequest(req *http.Request) (int64, error) {
+func (h *apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader == "" {
-		return -1, errors.New("Authorization header missing")
+		return nil, errors.New("authorization header missing")
 	}
 
 	authHeaderParts := strings.Split(authHeader, " ")
 	if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
-		return -1, errors.New("Authorization header must be in the form 'Bearer {token}'")
+		return nil, errors.New("authorization header must be in the form 'Bearer {token}'")
 	}
 
 	tokenStr := authHeaderParts[1]
 
 	// Try each key when validating the token
-	var err error
-	var userID int64
-	for _, key := range h.cfg.SecureKeys {
-		userID, err = h.getUserIDFromToken(tokenStr, key)
-		if err == nil {
-			// We got the user from the token, so proceed
-			return userID, nil
+	for i, key := range h.cfg.SecureKeys {
+		token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+			if token.Method != jwt.SigningMethodHS256 {
+				return nil, errors.New("incorrect signing method")
+			}
+
+			return []byte(key), nil
+		})
+		if err != nil {
+			log.Printf("Failed parsing JWT token with key at index %d: '%+v'", i, err)
+			if i < (len(h.cfg.SecureKeys) + 1) {
+				log.Print("Will try again with next key")
+			}
+		} else if token.Valid {
+			return token, nil
 		}
 	}
 
-	return -1, err
+	return nil, errors.New("invalid token")
 }
 
-func (h *apiHandler) getUserIDFromToken(tokenStr string, key string) (int64, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if token.Method != jwt.SigningMethodHS256 {
-			return nil, errors.New("Incorrect signing method")
-		}
-
-		return []byte(key), nil
-	})
-	if err != nil || !token.Valid {
-		log.Printf("Invalid JWT token: '%+v'", err)
-		return -1, errors.New("Invalid token")
-	}
-
+func (h *apiHandler) getUserIDFromToken(token *jwt.Token) (int64, error) {
 	claims := token.Claims.(*jwt.StandardClaims)
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
 		log.Printf("Invalid claims: '%+v'", err)
-		return -1, errors.New("Invalid claims")
+		return -1, errors.New("invalid claims")
 	}
 
 	return userID, nil
@@ -206,25 +210,25 @@ func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 		}
 
 		log.Printf("Error retrieving user info: '%+v'", err)
-		return nil, errors.New("Error retrieving user info")
+		return nil, errors.New("error retrieving user info")
 	}
 
 	return user, nil
 }
 
-func (h *apiHandler) verifyUserIsAdmin(req *http.Request, p httprouter.Params) error {
-	accessLevelStr := p.ByName("CurrentUserAccessLevel")
-	if accessLevelStr != string(models.AdminUserLevel) {
-		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
+func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
+	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.UserLevel)
+	if accessLevel != models.AdminUserLevel {
+		return fmt.Errorf("endpoint '%s' requires admin rights", req.URL.Path)
 	}
 
 	return nil
 }
 
-func (h *apiHandler) verifyUserIsEditor(req *http.Request, p httprouter.Params) error {
-	accessLevelStr := p.ByName("CurrentUserAccessLevel")
-	if accessLevelStr != string(models.AdminUserLevel) && accessLevelStr != string(models.EditorUserLevel) {
-		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)
+func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
+	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.UserLevel)
+	if accessLevel != models.AdminUserLevel && accessLevel != models.EditorUserLevel {
+		return fmt.Errorf("endpoint '%s' requires edit rights", req.URL.Path)
 	}
 
 	return nil

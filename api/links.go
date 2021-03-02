@@ -3,13 +3,10 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
-
-	"github.com/julienschmidt/httprouter"
 )
 
-func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request) {
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -24,8 +21,8 @@ func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request,
 	h.OK(resp, recipes)
 }
 
-func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request) {
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -45,14 +42,14 @@ func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request,
 	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/links/%d", recipeID, destRecipeID))
 }
 
-func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request) {
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	destRecipeID, err := strconv.ParseInt(p.ByName("destRecipeID"), 10, 64)
+	destRecipeID, err := getResourceIDFromURL(req, destRecipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

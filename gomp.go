@@ -15,44 +15,38 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/julienschmidt/httprouter"
-	"github.com/unrolled/render"
-	"github.com/urfave/negroni"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
+	// Write logs to Stdout instead of Stderr
+	log.SetOutput(os.Stdout)
+
 	var err error
 	cfg := conf.Load()
 	if err = cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}
+	fs := upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath))
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
-	renderer := render.New(render.Options{
-		IsDevelopment: cfg.IsDevelopment,
-		IndentJSON:    true,
-	})
 	dbDriver := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
+	defer dbDriver.Close()
 
-	n := negroni.New()
-	n.Use(negroni.NewRecovery())
+	r := chi.NewRouter()
+	r.Use(middleware.Recoverer)
 	if cfg.IsDevelopment {
-		n.Use(negroni.NewLogger())
+		r.Use(middleware.Logger)
 	}
+	r.Use(middleware.StripSlashes)
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, dbDriver)
-
-	mainMux := httprouter.New()
-	mainMux.Handler("GET", "/api/*apipath", apiHandler)
-	mainMux.Handler("PUT", "/api/*apipath", apiHandler)
-	mainMux.Handler("POST", "/api/*apipath", apiHandler)
-	mainMux.Handler("DELETE", "/api/*apipath", apiHandler)
-	mainMux.ServeFiles("/static/*filepath", upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath)))
-	mainMux.ServeFiles("/uploads/*filepath", upl)
-	mainMux.NotFound = http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(fs)))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))
+	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
-	})
-	n.UseHandler(mainMux)
+	}))
 
 	// subscribe to SIGINT signals
 	stopChan := make(chan os.Signal)
@@ -66,14 +60,13 @@ func main() {
 	defer cancel()
 
 	log.Printf("Starting server on port :%d", cfg.Port)
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: n}
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: r}
 	go srv.ListenAndServe()
 
 	// Wait for a stop signal
 	<-stopChan
 	log.Print("Shutting down server...")
 
-	// Shutdown the http server and close the database connection
+	// Shutdown the http server
 	srv.Shutdown(ctx)
-	dbDriver.Close()
 }

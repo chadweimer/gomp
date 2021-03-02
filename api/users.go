@@ -4,11 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
-	"github.com/julienschmidt/httprouter"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,8 +21,8 @@ type userPutPasswordParameters struct {
 	NewPassword     string `json:"newPassword"`
 }
 
-func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -41,7 +39,7 @@ func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request, p http
 	h.OK(resp, user)
 }
 
-func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
 	// Add pagination?
 	users, err := h.db.Users().List()
 	if err != nil {
@@ -52,7 +50,7 @@ func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request, p htt
 	h.OK(resp, users)
 }
 
-func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 	newUser := new(userPostParameters)
 	if err := readJSONFromRequest(req, newUser); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -79,8 +77,8 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request, p htt
 	h.Created(resp, fmt.Sprintf("/api/v1/users/%d", user.ID))
 }
 
-func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -106,8 +104,8 @@ func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request, p http
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -122,8 +120,8 @@ func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request, p h
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -147,8 +145,8 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -172,8 +170,8 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 	h.OK(resp, userSettings)
 }
 
-func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -204,22 +202,8 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func getUserIDForRequest(p httprouter.Params) (int64, error) {
-	// Get the user from the request
-	userIDStr := p.ByName("userID")
-	// Get the user from the current session
-	currentUserIDStr := p.ByName("CurrentUserID")
-
-	// Special case for a URL like /api/v1/users/current
-	if userIDStr == "current" {
-		userIDStr = currentUserIDStr
-	}
-
-	return strconv.ParseInt(userIDStr, 10, 64)
-}
-
-func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -235,8 +219,8 @@ func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request,
 	h.OK(resp, searches)
 }
 
-func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -264,15 +248,15 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request,
 	h.Created(resp, fmt.Sprintf("/api/v1/users/%d/filters/%d", filter.UserID, filter.ID))
 }
 
-func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	filterID, err := getResourceIDFromURL(req, filterIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -292,15 +276,15 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request, 
 	h.OK(resp, filter)
 }
 
-func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	filterID, err := getResourceIDFromURL(req, filterIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -347,15 +331,15 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request, 
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	userID, err := getUserIDForRequest(p)
+func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request) {
+	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := strconv.ParseInt(p.ByName("filterID"), 10, 64)
+	filterID, err := getResourceIDFromURL(req, filterIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

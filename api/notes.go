@@ -3,14 +3,12 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/julienschmidt/httprouter"
 )
 
-func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	recipeID, err := strconv.ParseInt(p.ByName("recipeID"), 10, 64)
+func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {
+	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -25,7 +23,7 @@ func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request,
 	h.OK(resp, notes)
 }
 
-func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
+func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -40,8 +38,8 @@ func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request, p htt
 	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/notes/%d", note.RecipeID, note.ID))
 }
 
-func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
+func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
+	noteID, err := getResourceIDFromURL(req, noteIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -66,8 +64,8 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request, p http
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	noteID, err := strconv.ParseInt(p.ByName("noteID"), 10, 64)
+func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request) {
+	noteID, err := getResourceIDFromURL(req, noteIDKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
