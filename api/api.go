@@ -12,7 +12,7 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/unrolled/render"
 )
 
