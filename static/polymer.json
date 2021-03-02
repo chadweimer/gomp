@@ -1,19 +1,20 @@
 {
     "entrypoint": "index.html",
-    "shell": "src/gomp-app.js",
+    "shell": "dist/gomp-app.js",
     "sources": [
-        "src/**/*",
-        "*"
+        "dist/**/*",
+        "*",
+        "!*.json"
     ],
     "fragments": [
-        "src/admin-view.js",
-        "src/create-view.js",
-        "src/home-view.js",
-        "src/login-view.js",
-        "src/recipes-view.js",
-        "src/search-view.js",
-        "src/settings-view.js",
-        "src/status-404-view.js"
+        "dist/admin-view.js",
+        "dist/create-view.js",
+        "dist/home-view.js",
+        "dist/login-view.js",
+        "dist/recipes-view.js",
+        "dist/search-view.js",
+        "dist/settings-view.js",
+        "dist/status-404-view.js"
     ],
     "extraDependencies": [
         "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js",
