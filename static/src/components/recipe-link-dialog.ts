@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
@@ -30,14 +30,13 @@ export class RecipeLinkDialog extends GompBaseElement {
 `;
     }
 
+    @query('#dialog')
+    private dialog!: Dialog;
+
     @property({type: String})
     public recipeId = '';
     @property({type: Number})
     public selectedRecipeId: number|null = null;
-
-    private get dialog() {
-        return this.$.dialog as Dialog;
-    }
 
     public open() {
         const recipeSearcher = this.$.recipeSearcher as any;

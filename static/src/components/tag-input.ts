@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import {customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { PaperTagsInput } from '@cwmr/paper-tags-input/paper-tags-input.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { UserSettings } from '../models/models.js';
@@ -50,14 +50,13 @@ export class TagInput extends GompBaseElement {
 `;
     }
 
+    @query('#tagsElement')
+    private tagsElement!: PaperTagsInput;
+
     @property({type: Array, notify: true})
     public tags: string[] = [];
 
     protected suggestedTags: string[] = [];
-
-    private get tagsElement() {
-        return this.$.tags as PaperTagsInput;
-    }
 
     public async refresh() {
         this.suggestedTags = [];

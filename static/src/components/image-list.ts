@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
@@ -99,6 +99,17 @@ export class ImageList extends GompBaseElement {
 `;
     }
 
+    @query('#addForm')
+    private addForm!: HTMLFormElement;
+    @query('#uploadingDialog')
+    private uploadingDialog!: Dialog;
+    @query('#addDialog')
+    private addDialog!: Dialog;
+    @query('#confirmMainImageDialog')
+    private confirmMainImageDialog!: ConfirmationDialog;
+    @query('#confirmDeleteDialog')
+    private confirmDeleteDialog!: ConfirmationDialog;
+
     @property({type: String})
     public recipeId = '';
 
@@ -106,22 +117,6 @@ export class ImageList extends GompBaseElement {
     public readonly = false;
 
     protected images: RecipeImage[] = [];
-
-    private get addForm() {
-        return this.$.addForm as HTMLFormElement;
-    }
-    private get uploadingDialog() {
-        return this.$.uploadingDialog as Dialog;
-    }
-    private get addDialog() {
-        return this.$.addDialog as Dialog;
-    }
-    private get confirmMainImageDialog() {
-        return this.$.confirmMainImageDialog as ConfirmationDialog;
-    }
-    private get confirmDeleteDialog() {
-        return this.$.confirmDeleteDialog as ConfirmationDialog;
-    }
 
     public async refresh() {
         if (!this.recipeId) {

@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import {customElement, property } from '@polymer/decorators';
+import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
 import '@polymer/paper-card/paper-card.js';

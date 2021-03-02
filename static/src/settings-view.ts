@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { SearchFilterElement } from './components/search-filter.js';
@@ -138,6 +138,23 @@ export class SettingsView extends GompBaseElement {
 `;
     }
 
+    @query('#homeImageForm')
+    private homeImageForm!: HTMLFormElement;
+    @query('#homeImageFile')
+    private homeImageFile!: HTMLInputElement;
+    @query('#uploadingDialog')
+    private uploadingDialog!: Dialog;
+    @query('#addSearchFilterDialog')
+    private addSearchFilterDialog!: Dialog;
+    @query('#newSearchFilter')
+    private newSearchFilter!: SearchFilterElement;
+    @query('#editSearchFilterDialog')
+    private editSearchFilterDialog!: Dialog;
+    @query('#editSearchFilter')
+    private editSearchFilter!: SearchFilterElement;
+    @query('#confirmDeleteUserSearchFilterDialog')
+    private confirmDeleteUserSearchFilterDialog!: ConfirmationDialog;
+
     @property({type: Object, notify: true})
     public currentUser: User|null = null;
 
@@ -152,31 +169,6 @@ export class SettingsView extends GompBaseElement {
     private currentPassword = '';
     private newPassword = '';
     private repeatPassword = '';
-
-    private get homeImageForm() {
-        return this.$.homeImageForm as HTMLFormElement;
-    }
-    private get homeImageFile() {
-        return this.$.homeImageFile as HTMLInputElement;
-    }
-    private get uploadingDialog() {
-        return this.$.uploadingDialog as Dialog;
-    }
-    private get addSearchFilterDialog() {
-        return this.$.addSearchFilterDialog as Dialog;
-    }
-    private get newSearchFilter() {
-        return this.$.newSearchFilter as SearchFilterElement;
-    }
-    private get editSearchFilterDialog() {
-        return this.$.editSearchFilterDialog as Dialog;
-    }
-    private get editSearchFilter() {
-        return this.$.editSearchFilter as SearchFilterElement;
-    }
-    private get confirmDeleteUserSearchFilterDialog() {
-        return this.$.confirmDeleteUserSearchFilterDialog as ConfirmationDialog;
-    }
 
     public ready() {
         super.ready();

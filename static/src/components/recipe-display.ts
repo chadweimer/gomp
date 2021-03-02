@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
@@ -136,6 +136,9 @@ export class RecipeDisplay extends GompBaseElement {
 `;
     }
 
+    @query('#confirmDeleteLinkDialog')
+    private confirmDeleteLinkDialog!: ConfirmationDialog;
+
     @property({type: String})
     public recipeId = '';
 
@@ -145,10 +148,6 @@ export class RecipeDisplay extends GompBaseElement {
     protected recipe: Recipe|null = null;
     protected mainImage: object|null = null;
     protected links: RecipeCompact[] = [];
-
-    private get confirmDeleteLinkDialog() {
-        return this.$.confirmDeleteLinkDialog as ConfirmationDialog;
-    }
 
     public async refresh(options?: {recipe?: boolean, links?: boolean, mainImage?: boolean}) {
         if (!this.recipeId) {

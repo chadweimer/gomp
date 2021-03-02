@@ -1,7 +1,7 @@
 import { RequestSelectedDetail } from '@material/mwc-list/mwc-list-item';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { SortBy, SortDir } from '../models/models';
 import '@material/mwc-button';
@@ -53,15 +53,14 @@ export class SortOrderSelectorElement extends GompBaseElement {
         {name: 'Desc', value: SortDir.Desc, icon: 'arrow_downward'},
     ];
 
+    @query('#sortByMenu')
+    private sortByMenu!: PaperMenuButton;
+
     @property({type: Object, notify: true})
     public sortBy: SortBy = SortBy.Name;
 
     @property({type: Object, notify: true})
     public sortDir: SortDir = SortDir.Asc;
-
-    private get sortByMenu() {
-        return this.$.sortByMenu as PaperMenuButton;
-    }
 
     protected onSortBySelected(e: CustomEvent<RequestSelectedDetail>) {
         if (e.detail.source === 'interaction') {

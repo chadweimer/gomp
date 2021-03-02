@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { User, EventWithModel, AppConfiguration, AccessLevel } from './models/models.js';
@@ -132,6 +132,13 @@ export class AdminView extends GompBaseElement {
         {name: 'Viewer', value: AccessLevel.Viewer}
     ];
 
+    @query('#addUserDialog')
+    private addUserDialog!: Dialog;
+    @query('#editUserDialog')
+    private editUserDialog!: Dialog;
+    @query('#confirmDeleteUserDialog')
+    private confirmDeleteUserDialog!: ConfirmationDialog;
+
     @property({type: Object, notify: true})
     public currentUser: User|null = null;
 
@@ -145,16 +152,6 @@ export class AdminView extends GompBaseElement {
         password: string,
         repeatPassword: string
     }|null = null;
-
-    private get addUserDialog() {
-        return this.$.addUserDialog as Dialog;
-    }
-    private get editUserDialog() {
-        return this.$.editUserDialog as Dialog;
-    }
-    private get confirmDeleteUserDialog() {
-        return this.$.confirmDeleteUserDialog as ConfirmationDialog;
-    }
 
     public ready() {
         super.ready();

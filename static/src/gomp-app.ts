@@ -4,7 +4,7 @@ import { Snackbar } from '@material/mwc-snackbar';
 import { TopAppBar } from '@material/mwc-top-app-bar';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
@@ -212,6 +212,19 @@ export class GompApp extends GompBaseElement {
 `;
     }
 
+    @query('#searchSettings')
+    private searchSettings!: SearchFilterElement;
+    @query('#searchFilterDialog')
+    private searchFilterDialog!: Dialog;
+    @query('#toast')
+    private toast!: Snackbar;
+    @query('#drawer')
+    private drawer!: Drawer;
+    @query('#appBar')
+    private appBar!: TopAppBar;
+    @query('#mainContent')
+    private mainContent!: HTMLElement;
+
     @property({type: String, observer: 'titleChanged'})
     public title = 'GOMP: Go Meal Planner';
     @property({type: String, observer: 'pageChanged'})
@@ -232,25 +245,6 @@ export class GompApp extends GompBaseElement {
     protected searchResultCount = 0;
 
     private scrollPositionMap: {[key: string]: {x: number; y: number}|null|undefined} = {};
-
-    private get searchSettings() {
-        return this.$.searchSettings as SearchFilterElement;
-    }
-    private get searchFilterDialog() {
-        return this.$.searchFilterDialog as Dialog;
-    }
-    private get toast() {
-        return this.$.toast as Snackbar;
-    }
-    private get drawer() {
-        return this.$.drawer as Drawer;
-    }
-    private get appBar() {
-        return this.$.appBar as TopAppBar;
-    }
-    private get mainContent() {
-        return this.$.mainContent as HTMLElement;
-    }
 
     public ready() {
         this.addEventListener('scroll-top', () => this.setScrollPosition({x: 0, y: 0}));

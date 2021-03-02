@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
@@ -61,23 +61,19 @@ export class RecipeEdit extends GompBaseElement {
 `;
     }
 
+    @query('#tagsInput')
+    private tagsInput!: TagInput;
+    @query('#mainImage')
+    private mainImage!: HTMLInputElement;
+    @query('#mainImageForm')
+    private mainImageForm!: HTMLFormElement;
+    @query('#uploadingDialog')
+    private uploadingDialog!: Dialog;
+
     @property({type: String})
     public recipeId: string|null = null;
 
     protected recipe: Recipe|null = null;
-
-    private get tagsInput() {
-        return this.$.tagsInput as TagInput;
-    }
-    private get mainImage() {
-        return this.$.mainImage as HTMLInputElement;
-    }
-    private get mainImageForm() {
-        return this.$.mainImageForm as HTMLFormElement;
-    }
-    private get uploadingDialog() {
-        return this.$.uploadingDialog as Dialog;
-    }
 
     public ready() {
         super.ready();
