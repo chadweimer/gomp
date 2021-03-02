@@ -37,6 +37,7 @@ func main() {
 	})
 	dbDriver := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
+	defer dbDriver.Close()
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
@@ -71,7 +72,6 @@ func main() {
 	<-stopChan
 	log.Print("Shutting down server...")
 
-	// Shutdown the http server and close the database connection
+	// Shutdown the http server
 	srv.Shutdown(ctx)
-	dbDriver.Close()
 }
