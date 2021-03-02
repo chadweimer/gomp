@@ -72,8 +72,8 @@ func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
 
 		// Add the user's ID and access level to the list of params
 		ctx := req.Context()
-		ctx = context.WithValue(ctx, currentUserIDKey, user.ID)
-		ctx = context.WithValue(ctx, currentUserAccessLevelKey, user.AccessLevel)
+		ctx = context.WithValue(ctx, currentUserIDCtxKey, user.ID)
+		ctx = context.WithValue(ctx, currentUserAccessLevelCtxKey, user.AccessLevel)
 
 		next.ServeHTTP(resp, req.WithContext(ctx))
 	})
@@ -97,7 +97,7 @@ func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 			h.Error(resp, http.StatusBadRequest, err)
 			return
 		}
-		ctxID, err := getResourceIDFromCtx(req, currentUserIDKey)
+		ctxID, err := getResourceIDFromCtx(req, currentUserIDCtxKey)
 		if err != nil {
 			h.Error(resp, http.StatusUnauthorized, err)
 			return
@@ -122,7 +122,7 @@ func (h *apiHandler) disallowSelf(next http.Handler) http.Handler {
 			h.Error(resp, http.StatusBadRequest, err)
 			return
 		}
-		ctxID, err := getResourceIDFromCtx(req, currentUserIDKey)
+		ctxID, err := getResourceIDFromCtx(req, currentUserIDCtxKey)
 		if err != nil {
 			h.Error(resp, http.StatusUnauthorized, err)
 			return
@@ -216,7 +216,7 @@ func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 }
 
 func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
-	accessLevel := req.Context().Value(currentUserAccessLevelKey).(models.UserLevel)
+	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.UserLevel)
 	if accessLevel != models.AdminUserLevel {
 		return fmt.Errorf("Endpoint '%s' requires admin rights", req.URL.Path)
 	}
@@ -225,7 +225,7 @@ func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
 }
 
 func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
-	accessLevel := req.Context().Value(currentUserAccessLevelKey).(models.UserLevel)
+	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.UserLevel)
 	if accessLevel != models.AdminUserLevel && accessLevel != models.EditorUserLevel {
 		return fmt.Errorf("Endpoint '%s' requires edit rights", req.URL.Path)
 	}

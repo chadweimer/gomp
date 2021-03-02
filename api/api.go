@@ -18,24 +18,41 @@ import (
 
 // ---- Begin Standard Errors ----
 
-var errMismatchedID = errors.New("The id in the path does not match the one specified in the request body")
+var errMismatchedID = errors.New("id in the path does not match the one specified in the request body")
 
 // ---- End Standard Errors ----
 
 // ---- Begin Route Keys ----
 
+type routeKey string
+
 const (
-	currentUserIDKey          string = "CurrentUserID"
-	currentUserAccessLevelKey string = "CurrentUserAccessLevel"
-	destRecipeIDKey           string = "destRecipeID"
-	filterIDKey               string = "filterID"
-	imageIDKey                string = "imageID"
-	noteIDKey                 string = "noteID"
-	recipeIDKey               string = "recipeID"
-	userIDKey                 string = "userID"
+	destRecipeIDKey routeKey = "destRecipeID"
+	filterIDKey     routeKey = "filterID"
+	imageIDKey      routeKey = "imageID"
+	noteIDKey       routeKey = "noteID"
+	recipeIDKey     routeKey = "recipeID"
+	userIDKey       routeKey = "userID"
 )
 
 // ---- End Route Keys ----
+
+// ---- Begin Context Keys ----
+
+type contextKey struct {
+	key string
+}
+
+func (k *contextKey) String() string {
+	return "gomp context key: " + k.key
+}
+
+var (
+	currentUserIDCtxKey          = &contextKey{"CurrentUserID"}
+	currentUserAccessLevelCtxKey = &contextKey{"CurrentUserAccessLevel"}
+)
+
+// ---- End Context Keys ----
 
 type apiHandler struct {
 	rnd *render.Render
@@ -176,12 +193,12 @@ func readJSONFromRequest(req *http.Request, data interface{}) error {
 	return json.NewDecoder(req.Body).Decode(data)
 }
 
-func getResourceIDFromURL(req *http.Request, idKey string) (int64, error) {
-	idStr := chi.URLParam(req, idKey)
+func getResourceIDFromURL(req *http.Request, idKey routeKey) (int64, error) {
+	idStr := chi.URLParam(req, string(idKey))
 
 	// Special case for userID
 	if idKey == userIDKey && idStr == "current" {
-		return getResourceIDFromCtx(req, currentUserIDKey)
+		return getResourceIDFromCtx(req, currentUserIDCtxKey)
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -192,7 +209,7 @@ func getResourceIDFromURL(req *http.Request, idKey string) (int64, error) {
 	return id, nil
 }
 
-func getResourceIDFromCtx(req *http.Request, idKey string) (int64, error) {
+func getResourceIDFromCtx(req *http.Request, idKey *contextKey) (int64, error) {
 	id, ok := req.Context().Value(idKey).(int64)
 	if !ok {
 		return 0, fmt.Errorf("value of %s is not an integer", idKey)
