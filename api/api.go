@@ -13,6 +13,7 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/unrolled/render"
 )
 
@@ -69,10 +70,11 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 		cfg: cfg,
 		upl: upl,
 		db:  db,
-		r:   chi.NewRouter(),
 	}
 
-	h.r.Route("/v1", func(r chi.Router) {
+	r := chi.NewRouter()
+	r.Use(middleware.SetHeader("Content-Type", "application/json"))
+	r.Route("/v1", func(r chi.Router) {
 		// Public
 		r.Get("/app/configuration", h.getAppConfiguration)
 		r.Post("/auth", h.postAuthenticate)
@@ -140,12 +142,7 @@ func NewHandler(renderer *render.Render, cfg *conf.Config, upl upload.Driver, db
 		})
 	})
 
-	return &h
-}
-
-func (h *apiHandler) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	resp.Header().Set("Content-Type", "application/json")
-	h.r.ServeHTTP(resp, req)
+	return r
 }
 
 func (h *apiHandler) OK(resp http.ResponseWriter, v interface{}) {

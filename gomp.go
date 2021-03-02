@@ -45,10 +45,7 @@ func main() {
 	}
 	r.Use(middleware.StripSlashes)
 
-	apiHandler := api.NewHandler(renderer, cfg, upl, dbDriver)
-
-	r.Mount("/api", apiHandler)
-
+	r.Mount("/api", api.NewHandler(renderer, cfg, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(fs)))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))
 	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
