@@ -1,13 +1,14 @@
 import { Dialog } from '@material/mwc-dialog';
+import { TextArea } from '@material/mwc-textarea';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { Note } from '../models/models.js';
 import { NoteCard } from './note-card.js';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
-import '@polymer/paper-input/paper-textarea.js';
+import '@material/mwc-textarea';
 import './note-card.js';
 import '../common/shared-styles.js';
 
@@ -22,6 +23,9 @@ export class NoteList extends GompBaseElement {
                 note-card {
                     margin: 5px;
                 }
+                mwc-textarea {
+                    width: 100%;
+                }
           </style>
 
           <template is="dom-repeat" items="[[notes]]">
@@ -29,12 +33,19 @@ export class NoteList extends GompBaseElement {
           </template>
 
           <mwc-dialog id="noteDialog" heading="Add Note" on-closed="noteDialogClosed">
-              <paper-textarea label="Text" value="{{noteText}}" rows="3" required dialogInitialFocus></paper-textarea>
-              <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+              <mwc-textarea id="noteTextInput" label="Text" rows="3" dialogInitialFocus></mwc-textarea>
+
+              <mwc-button slot="primaryAction" label="Save" on-click="onSaveClicked"></mwc-button>
               <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
           </mwc-dialog>
 `;
     }
+
+    @query('#noteTextInput')
+    private noteTextInput!: TextArea;
+
+    @query('#noteDialog')
+    private noteDialog!: Dialog;
 
     @property({type: String})
     public recipeId = '';
@@ -42,13 +53,8 @@ export class NoteList extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected noteId: number|null = null;
-    protected noteText = '';
     protected notes: Note[] = [];
-
-    private get noteDialog() {
-        return this.$.noteDialog as Dialog;
-    }
+    private noteId: number|null = null;
 
     public async refresh() {
         if (!this.recipeId) {
@@ -62,23 +68,27 @@ export class NoteList extends GompBaseElement {
             console.error(e);
         }
     }
+
     public add() {
-        this.noteId = null;
-        this.noteText = '';
-        this.noteDialog.show();
+        this.openDialog();
     }
 
-    protected async noteDialogClosed(e: CustomEvent<{action: string}>) {
-        if (e.detail.action !== 'save') {
+    protected async onSaveClicked() {
+        const noteText = this.noteTextInput.value.trim();
+        if (noteText === '') {
+            this.noteTextInput.setCustomValidity('Text is required');
+            this.noteTextInput.reportValidity();
             return;
         }
+
+        this.noteDialog.close();
 
         if (this.noteId) {
             try {
                 const note: Note = {
                     id: this.noteId,
                     recipeId: parseInt(this.recipeId, 10),
-                    text: this.noteText,
+                    text: noteText,
                 };
                 await this.AjaxPut(`/api/v1/notes/${this.noteId}`, note);
                 this.showToast('Note updated.');
@@ -91,7 +101,7 @@ export class NoteList extends GompBaseElement {
             try {
                 const note: Note = {
                     recipeId: parseInt(this.recipeId, 10),
-                    text: this.noteText,
+                    text: noteText,
                 };
                 await this.AjaxPost('/api/v1/notes', note);
                 this.showToast('Note created.');
@@ -102,6 +112,7 @@ export class NoteList extends GompBaseElement {
             }
         }
     }
+
     protected editNoteTapped(e: Event) {
         e.preventDefault();
 
@@ -111,11 +122,18 @@ export class NoteList extends GompBaseElement {
             return;
         }
 
-        this.noteId = noteCard.note.id ?? null;
-        this.noteText = noteCard.note.text;
-        this.noteDialog.show();
+        this.openDialog(noteCard.note);
     }
+
     protected async noteDeleted() {
         await this.refresh();
+    }
+
+    private openDialog(note?: Note) {
+        this.noteId = note?.id ?? null;
+        this.noteTextInput.value = note?.text ?? '';
+        this.noteTextInput.setCustomValidity('');
+        this.noteTextInput.reportValidity();
+        this.noteDialog.show();
     }
 }
