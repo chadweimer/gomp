@@ -81,15 +81,7 @@ export class RecipeLinkDialog extends GompBaseElement {
         this.selectedRecipeId = e.detail.value;
     }
     protected onDialogOpening() {
-        // WORKAROUND: Allow the suggestion overlay to leave the dialog bounds
-        const surface = this.dialog.shadowRoot?.querySelector('.mdc-dialog__surface') as HTMLElement;
-        if (surface) {
-            surface.style.overflow = 'visible';
-        }
-        const content = this.dialog.shadowRoot?.querySelector('.mdc-dialog__content') as HTMLElement;
-        if (content) {
-            content.style.overflow = 'visible';
-        }
+        this.hackDialogForInnerOverlays(this.dialog);
     }
     protected async onDialogClosed(e: CustomEvent<{action: string}>) {
         if (e.detail.action !== 'add') {

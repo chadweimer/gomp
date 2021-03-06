@@ -1,4 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
+import { Select } from '@material/mwc-select';
+import { TextField } from '@material/mwc-textfield';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property, query } from '@polymer/decorators';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
@@ -7,13 +9,12 @@ import { User, EventWithModel, AppConfiguration, AccessLevel } from './models/mo
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
+import '@material/mwc-select';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
+import '@material/mwc-textfield';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-dropdown-menu/paper-dropdown-menu-light.js';
 import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-item/paper-item.js';
-import '@polymer/paper-listbox/paper-listbox.js';
 import '@cwmr/paper-password-input/paper-password-input.js';
 import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
@@ -90,35 +91,33 @@ export class AdminView extends GompBaseElement {
                 </iron-pages>
             </div>
 
-            <mwc-dialog id="addUserDialog" heading="Add User" on-closed="addUserDialogClosed">
+            <mwc-dialog id="addUserDialog" heading="Add User" on-opening="addUserDialogOpening">
                 <div>
-                    <paper-input label="Email" value="{{user.username}}" type="email" always-float-label required dialogInitialFocus></paper-input>
-                    <paper-dropdown-menu-light label="Access Level" always-float-label required>
-                        <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
-                            <template is="dom-repeat" items="[[availableAccessLevels]]">
-                                <paper-item item-name="[[item.value]]">[[item.name]]</paper-item>
-                            </template>
-                        </paper-listbox>
-                    </paper-dropdown-menu-light>
-                    <paper-password-input label="New Password" value="{{user.password}}" always-float-label required></paper-password-input>
-                    <paper-password-input label="Confirm Password" value="{{user.repeatPassword}}" always-float-label required></paper-password-input>
+                    <mwc-textfield id="addUserUsername" label="Email" type="email" value="[[user.username]]" required dialogInitialFocus></mwc-textfield>
+                    <mwc-select id="addUserAccessLevel" label="Access Level" value="[[user.accessLevel]]" required>
+                        <template is="dom-repeat" items="[[availableAccessLevels]]">
+                            <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
+                        </template>
+                    </mwc-select>
+                    <paper-password-input id="addUserPassword" label="New Password" value="{{user.password}}" always-float-label required></paper-password-input>
+                    <paper-password-input id="addUserRepeatPassword" label="Confirm Password" value="{{user.repeatPassword}}" always-float-label required></paper-password-input>
                 </div>
-                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+
+                <mwc-button slot="primaryAction" label="Save" on-click="onAddUserSaveClicked"></mwc-button>
                 <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
             </mwc-dialog>
 
-            <mwc-dialog id="editUserDialog" heading="Edit User" on-closed="editUserDialogClosed">
+            <mwc-dialog id="editUserDialog" heading="Edit User" on-opening="editUserDialogOpening">
                 <div>
                     <paper-input label="Email" value="{{user.username}}" type="email" always-float-label disabled></paper-input>
-                    <paper-dropdown-menu-light label="Access Level" always-float-label required dialogInitialFocus>
-                        <paper-listbox slot="dropdown-content" attr-for-selected="item-name" selected="{{user.accessLevel}}" fallback-selection="editor">
-                            <template is="dom-repeat" items="[[availableAccessLevels]]">
-                                <paper-item item-name="[[item.value]]">[[item.name]]</paper-item>
-                            </template>
-                        </paper-listbox>
-                    </paper-dropdown-menu-light>
+                    <mwc-select label="Access Level" value="[[user.accessLevel]]" required>
+                        <template is="dom-repeat" items="[[availableAccessLevels]]">
+                            <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
+                        </template>
+                    </mwc-select>
                 </div>
-                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+
+                <mwc-button slot="primaryAction" label="Save" on-click="onEditUserSaveClicked"></mwc-button>
                 <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
             </mwc-dialog>
 
@@ -134,6 +133,14 @@ export class AdminView extends GompBaseElement {
 
     @query('#addUserDialog')
     private addUserDialog!: Dialog;
+    @query('#addUserUsername')
+    private addUserUsername!: TextField;
+    @query('#addUserAccessLevel')
+    private addUserAccessLevel!: Select;
+    @query('#addUserPassword')
+    private addUserPassword!: {value: string};
+    @query('#addUserRepeatPassword')
+    private addUserRepeatPassword!: {value: string};
     @query('#editUserDialog')
     private editUserDialog!: Dialog;
     @query('#confirmDeleteUserDialog')
@@ -204,25 +211,23 @@ export class AdminView extends GompBaseElement {
         this.addUserDialog.show();
     }
 
-    protected async addUserDialogClosed(e: CustomEvent<{action: string}>) {
-        if (e.detail.action !== 'save') {
+    protected addUserDialogOpening() {
+        this.hackDialogForInnerOverlays(this.addUserDialog);
+    }
+
+    protected async onAddUserSaveClicked() {
+        if (this.addUserPassword.value !== this.addUserRepeatPassword.value) {
+            //this.addUserRepeatPassword.setCustomValidity('Text is required');
+            //this.addUserRepeatPassword.reportValidity();
             return;
         }
 
-        if (!this.user) {
-            console.error('Attempted to add a null user');
-            return;
-        }
-
-        if (this.user.password !== this.user.repeatPassword) {
-            this.showToast('Passwords don\'t match.');
-            return;
-        }
+        this.addUserDialog.close();
 
         const userDetails = {
-            username: this.user.username,
-            accessLevel: this.user.accessLevel,
-            password: this.user.password
+            username: this.addUserUsername.value,
+            accessLevel: this.addUserAccessLevel.value,
+            password: this.addUserPassword.value
         };
         try {
             await this.AjaxPost('/api/v1/users', userDetails);
@@ -250,11 +255,11 @@ export class AdminView extends GompBaseElement {
         this.editUserDialog.show();
     }
 
-    protected async editUserDialogClosed(e: CustomEvent<{action: string}>) {
-        if (e.detail.action !== 'save') {
-            return;
-        }
+    protected editUserDialogOpening() {
+        this.hackDialogForInnerOverlays(this.editUserDialog);
+    }
 
+    protected async onEditUserSaveClicked() {
         if (!this.user) {
             console.error('Attempted to edit a null user');
             return;
@@ -290,6 +295,7 @@ export class AdminView extends GompBaseElement {
         };
         this.confirmDeleteUserDialog.show();
     }
+
     protected async deleteUser() {
         try {
             await this.AjaxDelete(`/api/v1/users/${this.userId}`);
