@@ -93,14 +93,16 @@ export class AdminView extends GompBaseElement {
 
             <mwc-dialog id="addUserDialog" heading="Add User" on-opening="addUserDialogOpening">
                 <div>
-                    <mwc-textfield id="addUserUsername" label="Email" type="email" value="[[user.username]]" required dialogInitialFocus></mwc-textfield>
-                    <mwc-select id="addUserAccessLevel" label="Access Level" value="[[user.accessLevel]]" required>
-                        <template is="dom-repeat" items="[[availableAccessLevels]]">
-                            <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
-                        </template>
-                    </mwc-select>
-                    <paper-password-input id="addUserPassword" label="New Password" value="{{user.password}}" always-float-label required></paper-password-input>
-                    <paper-password-input id="addUserRepeatPassword" label="Confirm Password" value="{{user.repeatPassword}}" always-float-label required></paper-password-input>
+                    <p><mwc-textfield id="addUserUsername" class="fill" label="Email" type="email" value="[[user.username]]" dialogInitialFocus></mwc-textfield></p>
+                    <p>
+                        <mwc-select id="addUserAccessLevel" label="Access Level" value="[[user.accessLevel]]">
+                            <template is="dom-repeat" items="[[availableAccessLevels]]">
+                                <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
+                            </template>
+                        </mwc-select>
+                    </p>
+                    <p><mwc-textfield id="addUserPassword" class="fill" label="New Password" type="password" iconTrailing="visibility_off" value="[[user.password]]"></mwc-textfield></p>
+                    <p><mwc-textfield id="addUserRepeatPassword" class="fill" label="Confirm Password" type="password" iconTrailing="visibility_off" value="[[user.repeatPassword]]"></mwc-textfield></p>
                 </div>
 
                 <mwc-button slot="primaryAction" label="Save" on-click="onAddUserSaveClicked"></mwc-button>
@@ -138,9 +140,9 @@ export class AdminView extends GompBaseElement {
     @query('#addUserAccessLevel')
     private addUserAccessLevel!: Select;
     @query('#addUserPassword')
-    private addUserPassword!: {value: string};
+    private addUserPassword!: TextField;
     @query('#addUserRepeatPassword')
-    private addUserRepeatPassword!: {value: string};
+    private addUserRepeatPassword!: TextField;
     @query('#editUserDialog')
     private editUserDialog!: Dialog;
     @query('#confirmDeleteUserDialog')
@@ -216,10 +218,22 @@ export class AdminView extends GompBaseElement {
     }
 
     protected async onAddUserSaveClicked() {
-        if (this.addUserPassword.value !== this.addUserRepeatPassword.value) {
-            //this.addUserRepeatPassword.setCustomValidity('Text is required');
-            //this.addUserRepeatPassword.reportValidity();
+        const username = this.addUserUsername.value.trim();
+        if (username === '') {
+            this.addUserUsername.setCustomValidity('Text is required');
+            this.addUserUsername.reportValidity();
             return;
+        } else {
+            this.addUserUsername.setCustomValidity('');
+            this.addUserUsername.reportValidity();
+        }
+        if (this.addUserPassword.value !== this.addUserRepeatPassword.value) {
+            this.addUserRepeatPassword.setCustomValidity('Passwords do not match');
+            this.addUserRepeatPassword.reportValidity();
+            return;
+        } else {
+            this.addUserRepeatPassword.setCustomValidity('');
+            this.addUserRepeatPassword.reportValidity();
         }
 
         this.addUserDialog.close();

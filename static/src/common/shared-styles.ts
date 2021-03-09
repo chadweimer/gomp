@@ -113,11 +113,6 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 text-align: center;
             }
 
-            /* Table Layout */
-            table.fill {
-                width: 100%
-            }
-
             /* Layout */
             .centered-horizontal {
                 @apply --layout-horizontal;
@@ -138,6 +133,9 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 border-bottom-width: 1px;
                 border-bottom-style: solid;
                 border-bottom-color: rgba(0, 0, 0, 0.12);
+            }
+            .fill {
+                width: 100%;
             }
 
             @media screen and (min-width: 1200px) {
