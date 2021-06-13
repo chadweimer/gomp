@@ -177,6 +177,14 @@ func (d *postgresRecipeDriver) Find(filter *models.SearchFilter, page int64, cou
 	if filter.SortDir == models.SortDirDesc {
 		orderStmt += " DESC"
 	}
+	// Need a special case for rating, since the way the execution plan works can
+	// cause uncertain results due to many recipes having the same rating (ties).
+	// By adding an additional sort to show recently modified recipes first,
+	// this ensures a consistent result.
+	if filter.SortBy == models.SortRecipeByRating {
+		orderStmt += ", r.modified_at DESC"
+	}
+
 	orderStmt += " LIMIT ? OFFSET ?"
 
 	selectStmt := d.postgresDriver.Db.Rebind("SELECT " +
