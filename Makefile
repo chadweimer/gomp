@@ -1,3 +1,5 @@
+NPROCS = $(shell grep -c 'processor' /proc/cpuinfo)
+MAKEFLAGS += -j$(NPROCS)
 BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
 BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
@@ -15,10 +17,14 @@ GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-g
 .DEFAULT_GOAL := rebuild
 
 .PHONY: rebuild
-rebuild: clean build
+rebuild:
+	$(MAKE) clean
+	$(MAKE) build
 
 .PHONY: reinstall
-reinstall: uninstall install
+reinstall:
+	$(MAKE) uninstall
+	$(MAKE) install
 
 .PHONY: install
 install: static/node_modules
