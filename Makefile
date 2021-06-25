@@ -18,29 +18,41 @@ GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-g
 
 .PHONY: rebuild
 rebuild:
-	$(MAKE) clean
-	$(MAKE) build
+	@$(MAKE) clean
+	@$(MAKE) build
 
 .PHONY: reinstall
 reinstall:
-	$(MAKE) uninstall
-	$(MAKE) install
+	@$(MAKE) uninstall
+	@$(MAKE) install
 
 .PHONY: install
-install: static/node_modules
+install: install-node install-go
+
+.PHONY: install-node
+install-node: static/node_modules
 
 static/node_modules:
 	cd static && npm install --silent
 
+.PHONY: install-go
+install-go:
+	go get ./...
+
 .PHONY: uninstall
 uninstall:
-	cd static && npm run clear
-	rm -rf node_modules
+	cd static && npm run clear && rm -rf node_modules
 
 .PHONY: lint
-lint: install
-	go vet ./...
+lint: lint-node lint-go
+
+.PHONY: lint-node
+lint-node: install
 	cd static && npm run lint
+
+.PHONY: lint-go
+lint-go:
+	go vet ./...
 
 .PHONY: build
 build: build-linux-amd64 build-linux-arm build-linux-arm64 build-windows-amd64
@@ -52,7 +64,7 @@ clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 clean-client:
 	cd static && npm run clean
 
-$(CLIENT_BUILD_DIR): static/node_modules
+$(CLIENT_BUILD_DIR): install-node
 	cd static && npm run build
 
 .PHONY: clean-linux-amd64
@@ -63,7 +75,7 @@ clean-linux-amd64: clean-client
 .PHONY: build-linux-amd64
 build-linux-amd64: $(BUILD_LIN_AMD64_DIR)
 
-$(BUILD_LIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
+$(BUILD_LIN_AMD64_DIR): install-go $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_AMD64) go build -o $(BUILD_LIN_AMD64_DIR)/gomp $(GO_LIN_LD_FLAGS)
 	mkdir -p $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
 	mkdir -p $(BUILD_LIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_LIN_AMD64_DIR)/static
@@ -79,7 +91,7 @@ clean-linux-arm: clean-client
 .PHONY: build-linux-arm
 build-linux-arm: $(BUILD_LIN_ARM_DIR)
 
-$(BUILD_LIN_ARM_DIR): $(CLIENT_BUILD_DIR)
+$(BUILD_LIN_ARM_DIR): install-go $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_ARM) go build -o $(BUILD_LIN_ARM_DIR)/gomp $(GO_LIN_LD_FLAGS)
 	mkdir -p $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARM_DIR)/$(DB_MIGRATIONS_REL_DIR)
 	mkdir -p $(BUILD_LIN_ARM_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_LIN_ARM_DIR)/static
@@ -95,7 +107,7 @@ clean-linux-arm64: clean-client
 .PHONY: build-linux-arm64
 build-linux-arm64: $(BUILD_LIN_ARM64_DIR)
 
-$(BUILD_LIN_ARM64_DIR): $(CLIENT_BUILD_DIR)
+$(BUILD_LIN_ARM64_DIR): install-go $(CLIENT_BUILD_DIR)
 	$(GO_ENV_LIN_ARM64) go build -o $(BUILD_LIN_ARM64_DIR)/gomp $(GO_LIN_LD_FLAGS)
 	mkdir -p $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_LIN_ARM64_DIR)/$(DB_MIGRATIONS_REL_DIR)
 	mkdir -p $(BUILD_LIN_ARM64_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_LIN_ARM64_DIR)/static
@@ -111,7 +123,7 @@ clean-windows-amd64: clean-client
 .PHONY: build-windows-amd64
 build-windows-amd64: $(BUILD_WIN_AMD64_DIR)
 
-$(BUILD_WIN_AMD64_DIR): $(CLIENT_BUILD_DIR)
+$(BUILD_WIN_AMD64_DIR): install-go $(CLIENT_BUILD_DIR)
 	$(GO_ENV_WIN_AMD64) go build -o $(BUILD_WIN_AMD64_DIR)/gomp.exe
 	mkdir -p $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR) && cp -R $(DB_MIGRATIONS_REL_DIR)/* $(BUILD_WIN_AMD64_DIR)/$(DB_MIGRATIONS_REL_DIR)
 	mkdir -p $(BUILD_WIN_AMD64_DIR)/static && cp -R $(CLIENT_BUILD_DIR)/* $(BUILD_WIN_AMD64_DIR)/static
