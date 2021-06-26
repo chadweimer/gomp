@@ -2,9 +2,9 @@
 	"version": "2.0.0",
 	"tasks": [
         {
-            "label": "Rebuild",
+            "label": "Build",
             "type": "shell",
-            "command": "make rebuild",
+            "command": "make",
             "problemMatcher": [
                 "$go",
                 "$tsc"
@@ -15,9 +15,16 @@
             }
         },
         {
-            "label": "Rebuild linux/amd64",
+            "label": "Clean",
             "type": "shell",
-            "command": "make rebuild-linux-amd64",
+            "command": "make clean",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Build linux/amd64",
+            "type": "shell",
+            "command": "make build-linux-amd64",
             "problemMatcher": [
                 "$go",
                 "$tsc"

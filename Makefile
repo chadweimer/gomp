@@ -15,23 +15,25 @@ GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
 GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc
 GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
 
+GO_FILES := $(wildcard *.go) $(wildcard **/*.go)
+CLIENT_FILES := $(wildcard static/*) $(wildcard static/src/*)  $(wildcard static/src/**/*)
+
 .DEFAULT_GOAL := build
 
-# ---- INSTALL ----
+exp:
+	@echo "$(CLIENT_FILES)"
 
-.PHONY: reinstall
-reinstall:
-	@$(MAKE) uninstall
-	@$(MAKE) install
+# ---- INSTALL ----
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
 
-$(CLIENT_INSTALL_DIR):
+$(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
 
 .PHONY: uninstall
-	cd static && npm run clear && rm -rf node_modules
+	cd static && npm run clear
+	rm -rf $(CLIENT_INSTALL_DIR)
 
 
 # ---- LINT ----
@@ -57,14 +59,9 @@ build: $(BUILD_LIN_AMD64_DIR) $(BUILD_LIN_ARM_DIR) $(BUILD_LIN_ARM64_DIR) $(BUIL
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	rm -rf $(BUILD_DIR)
 
-.PHONY: rebuild
-rebuild:
-	@$(MAKE) clean
-	@$(MAKE) build
-
 # - GENERIC ARCH -
 
-$(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR)
+$(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_FILES)
 	cd static && npm run build
 
 $(BUILD_DIR)/%/db/migrations:
@@ -81,7 +78,7 @@ clean-client:
 
 $(BUILD_LIN_AMD64_DIR): $(BUILD_LIN_AMD64_DIR)/gomp $(BUILD_LIN_AMD64_DIR)/db/migrations $(BUILD_LIN_AMD64_DIR)/static
 
-$(BUILD_LIN_AMD64_DIR)/gomp:
+$(BUILD_LIN_AMD64_DIR)/gomp: go.mod $(GO_FILES)
 	$(GO_ENV_LIN_AMD64) go build -o $@ $(GO_LIN_LD_FLAGS)
 
 .PHONY: clean-linux-amd64
@@ -90,16 +87,11 @@ clean-linux-amd64: clean-client
 	rm -rf $(BUILD_LIN_AMD64_DIR)
 	rm -f $(BUILD_DIR)/gomp-linux-amd64.tar.gz
 
-.PHONY: rebuild-linux-amd64
-rebuild-linux-amd64:
-	@$(MAKE) clean-linux-amd64
-	@$(MAKE) $(BUILD_LIN_AMD64_DIR)
-
 # - ARM32 -
 
 $(BUILD_LIN_ARM_DIR): $(BUILD_LIN_ARM_DIR)/gomp $(BUILD_LIN_ARM_DIR)/db/migrations $(BUILD_LIN_ARM_DIR)/static
 
-$(BUILD_LIN_ARM_DIR)/gomp:
+$(BUILD_LIN_ARM_DIR)/gomp: go.mod $(GO_FILES)
 	$(GO_ENV_LIN_ARM) go build -o $@ $(GO_LIN_LD_FLAGS)
 
 .PHONY: clean-linux-arm
@@ -108,16 +100,11 @@ clean-linux-arm: clean-client
 	rm -rf $(BUILD_LIN_ARM_DIR)
 	rm -f $(BUILD_DIR)/gomp-linux-arm.tar.gz
 
-.PHONY: rebuild-linux-arm
-rebuild-linux-arm:
-	@$(MAKE) clean-linux-arm
-	@$(MAKE) $(BUILD_LIN_ARM_DIR)
-
 # - ARM64 -
 
 $(BUILD_LIN_ARM64_DIR): $(BUILD_LIN_ARM64_DIR)/gomp $(BUILD_LIN_ARM64_DIR)/db/migrations $(BUILD_LIN_ARM64_DIR)/static
 
-$(BUILD_LIN_ARM64_DIR)/gomp:
+$(BUILD_LIN_ARM64_DIR)/gomp: go.mod $(GO_FILES)
 	$(GO_ENV_LIN_ARM64) go build -o $@ $(GO_LIN_LD_FLAGS)
 
 .PHONY: clean-linux-arm64
@@ -126,16 +113,11 @@ clean-linux-arm64: clean-client
 	rm -rf $(BUILD_LIN_ARM64_DIR)
 	rm -f $(BUILD_DIR)/gomp-linux-arm64.tar.gz
 
-.PHONY: rebuild-linux-arm64
-rebuild-linux-arm64:
-	@$(MAKE) clean-linux-arm64
-	@$(MAKE) $(BUILD_LIN_ARM64_DIR)
-
 # - WINDOWS -
 
 $(BUILD_WIN_AMD64_DIR): $(BUILD_WIN_AMD64_DIR)/gomp.exe $(BUILD_WIN_AMD64_DIR)/db/migrations $(BUILD_WIN_AMD64_DIR)/static
 
-$(BUILD_WIN_AMD64_DIR)/gomp.exe:
+$(BUILD_WIN_AMD64_DIR)/gomp.exe: go.mod $(GO_FILES)
 	$(GO_ENV_WIN_AMD64) go build -o $@
 
 .PHONY: clean-windows-amd64
@@ -143,11 +125,6 @@ clean-windows-amd64: clean-client
 	$(GO_ENV_WIN_AMD64) go clean -i ./...
 	rm -rf $(BUILD_WIN_AMD64_DIR)
 	rm -f $(BUILD_DIR)/gomp-windows-amd64.zip
-
-.PHONY: rebuild-windows-amd64
-rebuild-windows-amd64:
-	@$(MAKE) clean-windows-amd64
-	@$(MAKE) $(BUILD_WIN_AMD64_DIR)
 
 
 # ---- DOCKER ----
