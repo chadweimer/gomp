@@ -29,6 +29,7 @@ $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
 
 .PHONY: uninstall
+uninstall:
 	cd static && npm run clear
 	rm -rf $(CLIENT_INSTALL_DIR)
 
