@@ -6,6 +6,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         openssh-client \
         zip \
+        binfmt-support \
+        qemu-user-static \
         gcc-arm-linux-gnueabihf \
         libc6-dev-armhf-cross \
         gcc-aarch64-linux-gnu \
