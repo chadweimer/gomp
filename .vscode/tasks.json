@@ -24,7 +24,7 @@
         {
             "label": "Build linux/amd64",
             "type": "shell",
-            "command": "make build-linux-amd64",
+            "command": "make build/linux/amd64",
             "problemMatcher": [
                 "$go",
                 "$tsc"
