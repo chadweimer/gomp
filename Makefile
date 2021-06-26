@@ -167,13 +167,13 @@ endif
 archive: $(BUILD_DIR)/gomp-linux-amd64.tar.gz $(BUILD_DIR)/gomp-linux-arm.tar.gz $(BUILD_DIR)/gomp-linux-arm64.tar.gz $(BUILD_DIR)/gomp-windows-amd64.zip
 
 $(BUILD_DIR)/gomp-linux-amd64.tar.gz: $(BUILD_LIN_AMD64_DIR)
-	tar -C $< -zcf $(BUILD_DIR)/gomp-linux-amd64.tar.gz .
+	tar -C $< -zcf $@ .
 
 $(BUILD_DIR)/gomp-linux-arm.tar.gz: $(BUILD_LIN_ARM_DIR)
-	tar -C $< -zcf $(BUILD_DIR)/gomp-linux-arm.tar.gz .
+	tar -C $< -zcf $@ .
 
 $(BUILD_DIR)/gomp-linux-arm64.tar.gz: $(BUILD_LIN_ARM64_DIR)
-	tar -C $< -zcf $(BUILD_DIR)/gomp-linux-arm64.tar.gz .
+	tar -C $< -zcf $@ .
 
 $(BUILD_DIR)/gomp-windows-amd64.zip: $(BUILD_WIN_AMD64_DIR)
-	cd $< && zip -rq ../../gomp-windows-amd64.zip *
+	cd $< && zip -rq ../../../$@ *
