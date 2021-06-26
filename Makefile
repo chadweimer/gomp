@@ -16,6 +16,7 @@ GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc
 GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
 
 GO_FILES := $(wildcard *.go) $(wildcard **/*.go)
+DB_MIGRATION_FILES := $(wildcard db/migrations/*) $(wildcard db/migrations/**/*)
 CLIENT_FILES := $(wildcard static/*) $(wildcard static/src/*)  $(wildcard static/src/**/*)
 
 .DEFAULT_GOAL := build
@@ -62,7 +63,7 @@ clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_FILES)
 	cd static && npm run build
 
-$(BUILD_DIR)/%/db/migrations:
+$(BUILD_DIR)/%/db/migrations: $(DB_MIGRATION_FILES)
 	mkdir -p $@ && cp -R db/migrations/* $@
 
 $(BUILD_DIR)/%/static: $(CLIENT_BUILD_DIR)
