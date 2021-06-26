@@ -20,9 +20,6 @@ CLIENT_FILES := $(wildcard static/*) $(wildcard static/src/*)  $(wildcard static
 
 .DEFAULT_GOAL := build
 
-exp:
-	@echo "$(CLIENT_FILES)"
-
 # ---- INSTALL ----
 
 .PHONY: install
