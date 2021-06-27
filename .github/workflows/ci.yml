@@ -30,7 +30,7 @@ jobs:
       - run: make lint
       - run: make build docker BUILD_VERSION="v0.0.0 (master)" DOCKER_TAG=latest
         if: startswith(github.ref, 'refs/heads/master')
-      - run: make build docker BUILD_VERSION="v0.0.0 (pr$(echo $GITHUB_REF | sed -e 's/^refs\/pull\///'))" DOCKER_TAG=dev
+      - run: make build docker BUILD_VERSION="v0.0.0 ($(echo $GITHUB_REF | sed -e 's/^refs\/pull\///'))" DOCKER_TAG=dev
         if: startswith(github.ref, 'refs/pull/')
       - run: make build docker BUILD_VERSION="v$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')" DOCKER_TAG="$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')"
         if: startswith(github.ref, 'refs/tags/')
