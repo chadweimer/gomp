@@ -27,12 +27,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: sudo apt-get update && sudo apt-get install zip gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gcc-aarch64-linux-gnu libc6-dev-arm64-cross gcc-mingw-w64-x86-64
-      - run: make lint && make
-      - run: make docker DOCKER_TAG=latest
+      - run: make lint
+      - run: make make build docker BUILD_VERSION="v0.0.0 (master)" DOCKER_TAG=latest
         if: startswith(github.ref, 'refs/heads/master')
-      - run: make docker DOCKER_TAG=dev
+      - run: make build docker BUILD_VERSION="v0.0.0 (pr$(echo $GITHUB_REF | sed -e 's/^refs\/pull\///'))" DOCKER_TAG=dev
         if: startswith(github.ref, 'refs/pull/')
-      - run: make docker DOCKER_TAG=$(echo "$GITHUB_REF" | sed -e "s/^refs\/tags\///")
+      - run: make build docker BUILD_VERSION="v$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')" DOCKER_TAG="$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')"
         if: startswith(github.ref, 'refs/tags/')
       - run: make archive
         if: startsWith(github.ref, 'refs/tags/')

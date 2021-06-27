@@ -73,6 +73,10 @@ export interface SearchFilter {
 export interface SavedSearchFilter extends SavedSearchFilterCompact, SearchFilter {
 }
 
+export interface AppInfo {
+    version: string;
+}
+
 export interface AppConfiguration {
     title: string;
 }
