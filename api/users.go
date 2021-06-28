@@ -59,7 +59,7 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, errors.New("Invalid password specified"))
+		h.Error(resp, http.StatusInternalServerError, errors.New("invalid password specified"))
 		return
 	}
 

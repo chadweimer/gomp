@@ -1,6 +1,8 @@
 NPROCS = $(shell grep -c 'processor' /proc/cpuinfo)
 MAKEFLAGS += -j$(NPROCS)
 
+BUILD_VERSION=
+
 BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
 BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
@@ -9,7 +11,9 @@ BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 CLIENT_INSTALL_DIR=static/node_modules
 CLIENT_BUILD_DIR=static/build/default
 
-GO_LIN_LD_FLAGS=-ldflags '-extldflags "-static -static-libgcc"'
+GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
+GO_LIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
+GO_WIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS)"
 GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
 GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
 GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc
@@ -17,7 +21,7 @@ GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-g
 
 GO_FILES := $(wildcard *.go) $(wildcard **/*.go)
 DB_MIGRATION_FILES := $(wildcard db/migrations/*) $(wildcard db/migrations/**/*)
-CLIENT_FILES := $(wildcard static/*) $(wildcard static/src/*)  $(wildcard static/src/**/*)
+CLIENT_FILES := $(wildcard static/*) $(wildcard static/src/*) $(wildcard static/src/**/*)
 
 .DEFAULT_GOAL := build
 
@@ -116,7 +120,7 @@ clean-linux-arm64: clean-client
 $(BUILD_WIN_AMD64_DIR): $(BUILD_WIN_AMD64_DIR)/gomp.exe $(BUILD_WIN_AMD64_DIR)/db/migrations $(BUILD_WIN_AMD64_DIR)/static
 
 $(BUILD_WIN_AMD64_DIR)/gomp.exe: go.mod $(GO_FILES)
-	$(GO_ENV_WIN_AMD64) go build -o $@
+	$(GO_ENV_WIN_AMD64) go build -o $@ $(GO_WIN_LD_FLAGS)
 
 .PHONY: clean-windows-amd64
 clean-windows-amd64: clean-client

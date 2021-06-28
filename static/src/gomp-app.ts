@@ -7,7 +7,7 @@ import { setPassiveTouchGestures } from '@polymer/polymer/lib/utils/settings.js'
 import { customElement, property } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { SearchFilterElement } from './components/search-filter.js';
-import { User, DefaultSearchFilter, AppConfiguration, SearchFilter } from './models/models.js';
+import { User, DefaultSearchFilter, AppConfiguration, SearchFilter, AppInfo } from './models/models.js';
 import '@cwmr/paper-search/paper-search-bar.js';
 import '@material/mwc-button';
 import '@material/mwc-icon-button';
@@ -192,7 +192,7 @@ export class GompApp extends GompBaseElement {
                                 <li><a href="#!" on-click="onLogoutClicked">Logout</a></li>
                             </ul>
                         </div>
-                        <div class="copyright indented">Copyright © 2016-2021 Chad Weimer</div>
+                        <div class="copyright indented">GOMP: Go Meal Plannner [[appInfo.version]]. Copyright © 2016-2021 Chad Weimer</div>
                     </footer>
                 </div>
             </mwc-drawer>
@@ -229,6 +229,7 @@ export class GompApp extends GompBaseElement {
     @property({type: Object, notify: true})
     protected currentUser: User|null = null;
 
+    protected appInfo: AppInfo = {version: ''}
     protected searchResultCount = 0;
 
     private scrollPositionMap: {[key: string]: {x: number; y: number}|null|undefined} = {};
@@ -274,8 +275,17 @@ export class GompApp extends GompBaseElement {
             this.appBar.scrollTarget = scrollContainer;
         }
 
+        this.getAppInfo();
         this.refresh();
         this.onCurrentUserChanged();
+    }
+
+    private async getAppInfo() {
+        try {
+            this.appInfo = await this.AjaxGetWithResult('/api/v1/app/info');
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     private async refresh() {

@@ -72,6 +72,7 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
 	r.Route("/v1", func(r chi.Router) {
 		// Public
+		r.Get("/app/info", h.getAppInfo)
 		r.Get("/app/configuration", h.getAppConfiguration)
 		r.Post("/auth", h.postAuthenticate)
 		r.NotFound(h.notFound)
