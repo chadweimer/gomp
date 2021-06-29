@@ -1,18 +1,18 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/docker-existing-dockerfile
 {
-    "name": "Existing Dockerfile",
+    "name": "Standard",
 
-    // Sets the run context to one level up instead of the .devcontainer folder.
-    "context": "..",
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile",
+        "args": {
+            "GO_VERSION": "1.16",
+            "NODE_VERSION": "14",
+            "DEVCONTAINER_VERSION": "0.184.0"
+        }
+    },
 
-    // Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
-    "dockerFile": "Dockerfile",
-
-    // Set *default* container specific settings.json values on container create.
-    "settings": {},
-
-    // Add the IDs of extensions you want installed when the container is created.
     "extensions": [
         "christian-kohler.npm-intellisense",
         "davidanson.vscode-markdownlint",
@@ -27,12 +27,10 @@
         "spmeesseman.vscode-taskexplorer"
     ],
 
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
     "forwardPorts": [
         5000
     ],
 
-    // Uncomment the next line to run commands after the container is created - for example installing curl.
     "postCreateCommand": "docker buildx create --use --name crossbuild",
 
     "runArgs": [
@@ -40,15 +38,12 @@
         // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
         "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"
     ],
-
-    // Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
         "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind"
     ],
 
-    // Uncomment to connect as a non-root user if you've added one. See https://aka.ms/vscode-remote/containers/non-root.
-    "remoteUser": "node",
+    "remoteUser": "vscode",
 
     // Needed for docker
     "overrideCommand": false
