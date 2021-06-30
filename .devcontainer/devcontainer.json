@@ -40,7 +40,7 @@
     ],
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind",
-        "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind"
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind"
     ],
 
     "remoteUser": "vscode",
