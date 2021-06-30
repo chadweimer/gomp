@@ -9,7 +9,6 @@ ARG DEVCONTAINER_VERSION="0.184.0"
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
-        openssh-client \
         zip \
         binfmt-support \
         qemu-user-static \
