@@ -14,18 +14,19 @@
     },
 
     "extensions": [
-        "christian-kohler.npm-intellisense",
-        "davidanson.vscode-markdownlint",
-        "dbaeumer.vscode-eslint",
-        "editorconfig.editorconfig",
-        "eg2.vscode-npm-script",
-        "golang.go",
-        "justinribeiro.polymer2snippets",
-        "ms-azuretools.vscode-docker",
-        "polymer.polymer-ide",
-        "redhat.vscode-yaml",
-        "spmeesseman.vscode-taskexplorer"
-    ],
+		"christian-kohler.npm-intellisense",
+		"davidanson.vscode-markdownlint",
+		"dbaeumer.vscode-eslint",
+		"eamodio.gitlens",
+		"editorconfig.editorconfig",
+		"eg2.vscode-npm-script",
+		"golang.go",
+		"justinribeiro.polymer2snippets",
+		"ms-azuretools.vscode-docker",
+		"polymer.polymer-ide",
+		"redhat.vscode-yaml",
+		"spmeesseman.vscode-taskexplorer"
+	],
 
     "forwardPorts": [
         5000
