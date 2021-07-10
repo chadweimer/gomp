@@ -153,7 +153,7 @@ Currently PostgreSQL and SQLite are supported.
 
 ## Building
 
-This repository uses make. The simplest way to build the entire project is to simply issue the following command at the root of the repository:
+This repository uses make. The simplest way to build the entire project is to issue the following command at the root of the repository:
 
 ```bash
 make
