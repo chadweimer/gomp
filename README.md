@@ -153,23 +153,49 @@ Currently PostgreSQL and SQLite are supported.
 
 ## Building
 
+This repository uses make. The simplest way to build the entire project is to simply issue the following command at the root of the repository:
+
+```bash
+make
+```
+
+The sections below describe additional operations that are available, though it is not a complete list. Refer the the [Makefile](Makefile) for more.
+
 ### Installing Dependencies
 
 ```bash
-make [re]install
+make install
+```
+
+The equivalent for uninstalling is `make uninstall`.
+
+### Linting
+
+```bash
+make lint
 ```
 
 ### Compiling
 
 ```bash
-make [re]build
+make build
 ```
 
-### Docker Images
+The equivalent for cleaning is `make clean`.
+
+### Building Docker Images
 
 ```bash
 make docker
 ```
+
+### Creating Release Archives
+
+```bash
+make archive
+```
+
+These archives are deleted (cleaned) by the same `clean` target as above.
 
 ## Credits
 
