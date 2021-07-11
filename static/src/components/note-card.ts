@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import {customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
@@ -89,15 +89,14 @@ export class NoteCard extends GompBaseElement {
 `;
     }
 
+    @query('#confirmDeleteDialog')
+    private confirmDeleteDialog!: ConfirmationDialog;
+
     @property({type: Object, notify: true})
     public note: Note|null = null;
 
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
-
-    private get confirmDeleteDialog() {
-        return this.$.confirmDeleteDialog as ConfirmationDialog;
-    }
 
     protected onEditClicked(e: Event) {
         // Don't navigate to "#!"

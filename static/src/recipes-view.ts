@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { RecipeDisplay } from './components/recipe-display.js';
 import { ImageList } from './components/image-list.js';
@@ -145,6 +145,25 @@ export class RecipesView extends GompBaseElement {
 `;
     }
 
+    @query('#recipeDisplay')
+    private recipeDisplay!: RecipeDisplay;
+    @query('#imageList')
+    private imageList!: ImageList;
+    @query('#noteList')
+    private noteList!: NoteList;
+    @query('#recipeEdit')
+    private recipeEdit!: RecipeEdit;
+    @query('#confirmArchiveDialog')
+    private confirmArchiveDialog!: ConfirmationDialog;
+    @query('#confirmUnarchiveDialog')
+    private confirmUnarchiveDialog!: ConfirmationDialog;
+    @query('#confirmDeleteDialog')
+    private confirmDeleteDialog!: ConfirmationDialog;
+    @query('#recipeLinkDialog')
+    private recipeLinkDialog!: RecipeLinkDialog;
+    @query('#actions')
+    private actions!: any;
+
     @property({type: Object, notify: true})
     public route: object = {};
     @property({type: String, notify: true})
@@ -155,34 +174,6 @@ export class RecipesView extends GompBaseElement {
     public currentUser: User|null = null;
 
     protected recipeState: string|null = null;
-
-    private get recipeDisplay() {
-        return this.$.recipeDisplay as RecipeDisplay;
-    }
-    private get imageList() {
-        return this.$.imageList as ImageList;
-    }
-    private get noteList() {
-        return this.$.noteList as NoteList;
-    }
-    private get recipeEdit() {
-        return this.$.recipeEdit as RecipeEdit;
-    }
-    private get confirmArchiveDialog() {
-        return this.$.confirmArchiveDialog as ConfirmationDialog;
-    }
-    private get confirmUnarchiveDialog() {
-        return this.$.confirmUnarchiveDialog as ConfirmationDialog;
-    }
-    private get confirmDeleteDialog() {
-        return this.$.confirmDeleteDialog as ConfirmationDialog;
-    }
-    private get recipeLinkDialog() {
-        return this.$.recipeLinkDialog as RecipeLinkDialog;
-    }
-    private get actions(): any {
-        return this.$.actions as any;
-    }
 
     static get observers() {
         return [

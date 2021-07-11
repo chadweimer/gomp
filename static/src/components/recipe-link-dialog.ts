@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { RecipeCompact } from '../models/models.js';
 import '@cwmr/paper-autocomplete/paper-autocomplete.js';
@@ -30,14 +30,13 @@ export class RecipeLinkDialog extends GompBaseElement {
 `;
     }
 
+    @query('#dialog')
+    private dialog!: Dialog;
+
     @property({type: String})
     public recipeId = '';
     @property({type: Number})
     public selectedRecipeId: number|null = null;
-
-    private get dialog() {
-        return this.$.dialog as Dialog;
-    }
 
     public open() {
         const recipeSearcher = this.$.recipeSearcher as any;
@@ -82,15 +81,7 @@ export class RecipeLinkDialog extends GompBaseElement {
         this.selectedRecipeId = e.detail.value;
     }
     protected onDialogOpening() {
-        // WORKAROUND: Allow the suggestion overlay to leave the dialog bounds
-        const surface = this.dialog.shadowRoot?.querySelector('.mdc-dialog__surface') as HTMLElement;
-        if (surface) {
-            surface.style.overflow = 'visible';
-        }
-        const content = this.dialog.shadowRoot?.querySelector('.mdc-dialog__content') as HTMLElement;
-        if (content) {
-            content.style.overflow = 'visible';
-        }
+        this.hackDialogForInnerOverlays(this.dialog);
     }
     protected async onDialogClosed(e: CustomEvent<{action: string}>) {
         if (e.detail.action !== 'add') {

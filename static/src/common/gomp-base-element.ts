@@ -1,6 +1,7 @@
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
 import { User } from '../models/models.js';
+import { Dialog } from '@material/mwc-dialog';
 
 export abstract class GompBaseElement extends PolymerElement {
     @property({type: Boolean, notify: true})
@@ -49,6 +50,18 @@ export abstract class GompBaseElement extends PolymerElement {
 
     protected formatDate(dateStr: string) {
         return new Date(dateStr).toLocaleDateString();
+    }
+
+    protected hackDialogForInnerOverlays(dialog: Dialog) {
+        // WORKAROUND: Allow the suggestion overlay to leave the dialog bounds
+        const surface = dialog.shadowRoot?.querySelector('.mdc-dialog__surface') as HTMLElement;
+        if (surface) {
+            surface.style.overflow = 'visible';
+        }
+        const content = dialog.shadowRoot?.querySelector('.mdc-dialog__content') as HTMLElement;
+        if (content) {
+            content.style.overflow = 'visible';
+        }
     }
 
     protected async AjaxGet(url: string, queryObj?: any) {

@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { TagInput } from './tag-input.js';
 import { GompBaseElement } from '../common/gomp-base-element';
@@ -20,18 +20,18 @@ export class SearchFilterElement extends GompBaseElement {
                     display: block;
                 }
                 .padded {
-                    padding: 0.33em 0;
+                    padding: 5px 0;
                 }
                 label {
                     color: var(--secondary-text-color);
-                    font-size: 0.75em;
+                    font-size: 12px;
                 }
                 .selection {
-                    padding: 0.5em;
+                    padding: 5px;
                 }
                 .note {
                     color: var(--secondary-text-color);
-                    font-size: 0.7em;
+                    font-size: 10px;
                 }
             </style>
 
@@ -97,12 +97,11 @@ export class SearchFilterElement extends GompBaseElement {
         {name: 'Any', value: SearchPictures.Any}
     ];
 
+    @query('#tagsInput')
+    private tagsInput!: TagInput;
+
     @property({type: Object, notify: true})
     public filter: SearchFilter = new DefaultSearchFilter();
-
-    private get tagsInput() {
-        return this.$.tagsInput as TagInput;
-    }
 
     static get observers() {
         return [

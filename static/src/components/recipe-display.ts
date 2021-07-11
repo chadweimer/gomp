@@ -1,12 +1,11 @@
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
 import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
 import '@material/mwc-icon';
 import '@material/mwc-list/mwc-list-item';
 import '@polymer/paper-card/paper-card.js';
-import '@cwmr/paper-chip/paper-chips-section.js';
 import './confirmation-dialog.js';
 import './recipe-rating.js';
 import '../common/shared-styles.js';
@@ -76,7 +75,7 @@ export class RecipeDisplay extends GompBaseElement {
                     <h2>
                         <a target="_blank" href\$="[[mainImage.url]]"><img src="[[mainImage.thumbnailUrl]]" class="main-image"></a>
                         [[recipe.name]]
-                        <paper-chip class="state middle-vertical" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</paper-chip>
+                        <span class="chip state middle-vertical" hidden\$="[[areEqual(recipe.state, 'active')]]">[[recipe.state]]</span>
                     </h2>
                     <section hidden\$="[[!recipe.servingSize]]">
                         <label>Serving Size</label>
@@ -122,7 +121,9 @@ export class RecipeDisplay extends GompBaseElement {
                         <li divider role="separator"></li>
                     </section>
                     <section hidden\$="[[isEmpty(recipe.tags)]]">
-                        <paper-chips-section labels="[[recipe.tags]]"></paper-chips-section>
+                        <template is="dom-repeat" items="[[recipe.tags]]">
+                            <span class="chip">[[item]]</span>
+                        </template>
                         <li divider role="separator"></li>
                     </section>
                     <div class="footer" >
@@ -136,6 +137,9 @@ export class RecipeDisplay extends GompBaseElement {
 `;
     }
 
+    @query('#confirmDeleteLinkDialog')
+    private confirmDeleteLinkDialog!: ConfirmationDialog;
+
     @property({type: String})
     public recipeId = '';
 
@@ -145,10 +149,6 @@ export class RecipeDisplay extends GompBaseElement {
     protected recipe: Recipe|null = null;
     protected mainImage: object|null = null;
     protected links: RecipeCompact[] = [];
-
-    private get confirmDeleteLinkDialog() {
-        return this.$.confirmDeleteLinkDialog as ConfirmationDialog;
-    }
 
     public async refresh(options?: {recipe?: boolean, links?: boolean, mainImage?: boolean}) {
         if (!this.recipeId) {

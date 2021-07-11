@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import {customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
 import '../common/shared-styles.js';
@@ -31,14 +31,13 @@ export class ConfirmationDialog extends PolymerElement {
 `;
     }
 
+    @query('#dialog')
+    private dialog!: Dialog;
+
     @property({type: String})
     public title = 'Are you sure?';
     @property({type: String})
     public message = 'Are you sure you want to perform the requested operation?';
-
-    private get dialog() {
-        return this.$.dialog as Dialog;
-    }
 
     public show() {
         this.dialog.show();

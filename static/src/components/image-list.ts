@@ -1,6 +1,6 @@
 import { Dialog } from '@material/mwc-dialog';
 import { html } from '@polymer/polymer/polymer-element.js';
-import { customElement, property } from '@polymer/decorators';
+import { customElement, property, query } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
@@ -41,6 +41,9 @@ export class ImageList extends GompBaseElement {
                 .imageContainer {
                     margin: 2px;
                 }
+                .padded {
+                    padding: 5px 0;
+                }
                 .menu {
                     position: relative;
                     color: white;
@@ -51,6 +54,10 @@ export class ImageList extends GompBaseElement {
                 img {
                     width: 150px;
                     height: 150px;
+                }
+                label {
+                    color: var(--secondary-text-color);
+                    font-size: 12px;
                 }
             </style>
 
@@ -79,12 +86,13 @@ export class ImageList extends GompBaseElement {
                 <div>
                     <p>Browse for a picture to upload to this recipe.</p>
                     <form id="addForm" enctype="multipart/form-data">
-                        <paper-input-container always-float-label>
-                            <label slot="label">Picture</label>
-                            <iron-input slot="input">
+                        <div class="padded">
+                            <label>Picture</label>
+                            <div class="padded">
                                 <input name="file_content" type="file" accept=".jpg,.jpeg,.png" required dialogInitialFocus>
-                            </iron-input>
-                        </paper-input-container>
+                            </div>
+                            <li divider role="separator"></li>
+                        </div>
                     </form>
                 </div>
                 <mwc-button slot="primaryAction" label="Upload" dialogAction="upload"></mwc-button>
@@ -99,6 +107,17 @@ export class ImageList extends GompBaseElement {
 `;
     }
 
+    @query('#addForm')
+    private addForm!: HTMLFormElement;
+    @query('#uploadingDialog')
+    private uploadingDialog!: Dialog;
+    @query('#addDialog')
+    private addDialog!: Dialog;
+    @query('#confirmMainImageDialog')
+    private confirmMainImageDialog!: ConfirmationDialog;
+    @query('#confirmDeleteDialog')
+    private confirmDeleteDialog!: ConfirmationDialog;
+
     @property({type: String})
     public recipeId = '';
 
@@ -106,22 +125,6 @@ export class ImageList extends GompBaseElement {
     public readonly = false;
 
     protected images: RecipeImage[] = [];
-
-    private get addForm() {
-        return this.$.addForm as HTMLFormElement;
-    }
-    private get uploadingDialog() {
-        return this.$.uploadingDialog as Dialog;
-    }
-    private get addDialog() {
-        return this.$.addDialog as Dialog;
-    }
-    private get confirmMainImageDialog() {
-        return this.$.confirmMainImageDialog as ConfirmationDialog;
-    }
-    private get confirmDeleteDialog() {
-        return this.$.confirmDeleteDialog as ConfirmationDialog;
-    }
 
     public async refresh() {
         if (!this.recipeId) {

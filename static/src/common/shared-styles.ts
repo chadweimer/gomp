@@ -43,6 +43,27 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 max-height: 20em;
                 height: auto;
             }
+            span.chip {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 16px;
+                margin: 4px;
+                background-color: var(--paper-grey-300);
+                font-size: 12px;
+            }
+            span.chip.selectable {
+                cursor: pointer;
+            }
+            span.chip.selectable:hover {
+                background-color: var(--paper-grey-400);
+            }
+            span.chip.green {
+                background-color: var(--paper-green-100) !important;
+            }
+            span.chip.green:hover {
+                color: white !important;
+                background-color: var(--paper-green-500) !important;
+            }
 
             /* Web Components */
             iron-pages > :not(.iron-selected) {
@@ -92,11 +113,6 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 text-align: center;
             }
 
-            /* Table Layout */
-            table.fill {
-                width: 100%
-            }
-
             /* Layout */
             .centered-horizontal {
                 @apply --layout-horizontal;
@@ -117,6 +133,9 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 border-bottom-width: 1px;
                 border-bottom-style: solid;
                 border-bottom-color: rgba(0, 0, 0, 0.12);
+            }
+            .fill {
+                width: 100%;
             }
 
             @media screen and (min-width: 1200px) {
