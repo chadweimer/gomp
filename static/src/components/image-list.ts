@@ -14,7 +14,6 @@ import '@material/mwc-list/mwc-list';
 import '@material/mwc-list/mwc-list-item';
 import '@polymer/iron-flex-layout/iron-flex-layout.js';
 import '@polymer/iron-input/iron-input.js';
-import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-menu-button/paper-menu-button.js';
 import './confirmation-dialog.js';
 import '../common/shared-styles.js';

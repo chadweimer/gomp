@@ -195,7 +195,7 @@ export class AdminView extends GompBaseElement {
     protected async onSaveAppConfigClicked() {
         const appTitle = this.appTitle.value.trim();
         if (appTitle === '') {
-            this.appTitle.setCustomValidity('Text is required');
+            this.appTitle.setCustomValidity('Required');
             this.appTitle.reportValidity();
             return;
         } else {
@@ -234,7 +234,7 @@ export class AdminView extends GompBaseElement {
     protected async onAddUserSaveClicked() {
         const username = this.addUserUsername.value.trim();
         if (username === '') {
-            this.addUserUsername.setCustomValidity('Text is required');
+            this.addUserUsername.setCustomValidity('Required');
             this.addUserUsername.reportValidity();
             return;
         } else {

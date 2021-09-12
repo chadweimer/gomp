@@ -31,7 +31,7 @@ export class LoginView extends GompBaseElement {
                 <paper-card heading="Login">
                     <div class="card-content">
                         <p><mwc-textfield id="username" name="username" class="fill" label="Email" type="email" on-keydown="onInputKeydown" autofocus autocomplete></mwc-textfield></p>
-                        <p><mwc-textfield id="password" name="password" class="fill" label="Password" type="password" on-keydown="onInputKeydown" required></mwc-textfield></p>
+                        <p><mwc-textfield id="password" name="password" class="fill" label="Password" type="password" iconTrailing="visibility_off" on-keydown="onInputKeydown" required></mwc-textfield></p>
                         <div class="red">[[errorMessage]]</div>
                     </div>
                     <div class="card-actions">
@@ -60,7 +60,7 @@ export class LoginView extends GompBaseElement {
     protected async onLoginClicked() {
         const username = this.username.value.trim();
         if (username === '') {
-            this.username.setCustomValidity('Username is required');
+            this.username.setCustomValidity('Required');
             this.username.reportValidity();
             return;
         } else {
@@ -69,7 +69,7 @@ export class LoginView extends GompBaseElement {
         }
         const password = this.password.value.trim();
         if (password === '') {
-            this.password.setCustomValidity('Password is required');
+            this.password.setCustomValidity('Required');
             this.password.reportValidity();
             return;
         } else {

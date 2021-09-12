@@ -1,21 +1,20 @@
 import { Dialog } from '@material/mwc-dialog';
+import { TextField } from '@material/mwc-textfield';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from './common/gomp-base-element.js';
 import { ConfirmationDialog } from './components/confirmation-dialog.js';
 import { SearchFilterElement } from './components/search-filter.js';
 import { DefaultSearchFilter, EventWithModel, SavedSearchFilter, SavedSearchFilterCompact, User, UserSettings } from './models/models.js';
+import '@material/mwc-button';
 import '@material/mwc-circular-progress';
 import '@material/mwc-dialog';
 import '@material/mwc-icon';
 import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
-import '@polymer/iron-input/iron-input.js';
+import '@material/mwc-textfield';
 import '@polymer/iron-pages/iron-pages.js';
-import '@material/mwc-button';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-input/paper-input.js';
-import '@cwmr/paper-password-input/paper-password-input.js';
 import '@cwmr/paper-tags-input/paper-tags-input.js';
 import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
@@ -58,7 +57,7 @@ export class SettingsView extends GompBaseElement {
                     <paper-card>
                         <div class="card-content">
                             <paper-tags-input id="tags" label="Favorite Tags" tags="{{userSettings.favoriteTags}}"></paper-tags-input>
-                            <paper-input label="Home Title" always-float-label value="{{userSettings.homeTitle}}"></paper-input>
+                            <p><mwx-textfield id="homeTitle" class="fill" label="Home Title" value="[[userSettings.homeTitle]]"></mwc-textfield></p>
                             <form id="homeImageForm" enctype="multipart/form-data">
                                 <div class="padded">
                                     <label>Home Image</label>
@@ -106,11 +105,11 @@ export class SettingsView extends GompBaseElement {
                     </paper-card>
                     <paper-card>
                         <div class="card-content">
-                            <paper-input label="Username" value="[[currentUser.username]]" always-float-label disabled></paper-input>
-                            <paper-input label="Access Level" value="[[currentUser.accessLevel]]" always-float-label disabled></paper-input>
-                            <paper-password-input label="Current Password" value="{{currentPassword}}" always-float-label></paper-password-input>
-                            <paper-password-input label="New Password" value="{{newPassword}}" always-float-label></paper-password-input>
-                            <paper-password-input label="Confirm Password" value="{{repeatPassword}}" always-float-label></paper-password-input>
+                            <p><mwc-textfield class="fill" label="Username" value="[[currentUser.username]]" disabled></mwc-textfield></p>
+                            <p><mwc-textfield class="fill" label="Access Level" value="[[currentUser.accessLevel]]" disabled></mwc-textfield></p>
+                            <p><mwc-textfield id="currentPassword" class="fill" label="Current Password" type="password" iconTrailing="visibility_off"></mwc-textfield></p>
+                            <p><mwc-textfield id="newPassword" class="fill" label="New Password" type="password" iconTrailing="visibility_off"></mwc-textfield></p>
+                            <p><mwc-textfield id="repeatPassword" class="fill" label="Confirm Password" type="password" iconTrailing="visibility_off"></mwc-textfield></p>
                         </div>
                         <div class="card-actions">
                             <mwc-button label="Update Password" on-click="onUpdatePasswordClicked"></mwc-button>
@@ -123,22 +122,22 @@ export class SettingsView extends GompBaseElement {
                 <mwc-circular-progress indeterminate></mwc-circular-progress>
             </mwc-dialog>
 
-            <mwc-dialog id="addSearchFilterDialog" heading="Add Search Filter" on-closed="addSearchFilterDialogClosed">
+            <mwc-dialog id="addSearchFilterDialog" heading="Add Search Filter">
                 <div>
-                    <paper-input label="Name" always-float-label value="{{newFilterName}}" dialogInitialFocus></paper-input>
+                    <p><mwc-textfield id="addSearchFilterName" class="fill" label="Name" dialogInitialFocus></mwc-textfield></p>
                     <search-filter id="newSearchFilter"></search-filter>
                 </div>
-                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+                <mwc-button slot="primaryAction" label="Save" on-click="onAddSearchFilterSaveClicked"></mwc-button>
                 <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
                 </div>
             </mwc-dialog>
 
-            <mwc-dialog id="editSearchFilterDialog" heading="Edit Search Filter" on-closed="editSearchFilterDialogClosed">
+            <mwc-dialog id="editSearchFilterDialog" heading="Edit Search Filter">
                 <div>
-                    <paper-input label="Name" always-float-label value="{{selectedFilter.name}}" dialogInitialFocus></paper-input>
+                <p><mwc-textfield id="editSearchFilterName" class="fill" label="Name" value="[[selectedFilter.name]]" dialogInitialFocus></mwc-textfield></p>
                     <search-filter id="editSearchFilter"></search-filter>
                 </div>
-                <mwc-button slot="primaryAction" label="Save" dialogAction="save"></mwc-button>
+                <mwc-button slot="primaryAction" label="Save" on-click="onEditSearchFilterSaveClicked"></mwc-button>
                 <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
             </mwc-dialog>
 
@@ -148,6 +147,8 @@ export class SettingsView extends GompBaseElement {
 
     @query('#homeImageForm')
     private homeImageForm!: HTMLFormElement;
+    @query('#homeTitle')
+    private homeTitle!: TextField;
     @query('#homeImageFile')
     private homeImageFile!: HTMLInputElement;
     @query('#uploadingDialog')
@@ -156,12 +157,22 @@ export class SettingsView extends GompBaseElement {
     private addSearchFilterDialog!: Dialog;
     @query('#newSearchFilter')
     private newSearchFilter!: SearchFilterElement;
+    @query('#addSearchFilterName')
+    private addSearchFilterName!: TextField;
     @query('#editSearchFilterDialog')
     private editSearchFilterDialog!: Dialog;
     @query('#editSearchFilter')
     private editSearchFilter!: SearchFilterElement;
+    @query('#editSearchFilterName')
+    private editSearchFilterName!: TextField;
     @query('#confirmDeleteUserSearchFilterDialog')
     private confirmDeleteUserSearchFilterDialog!: ConfirmationDialog;
+    @query('#currentPassword')
+    private currentPassword!: TextField;
+    @query('#newPassword')
+    private newPassword!: TextField;
+    @query('#repeatPassword')
+    private repeatPassword!: TextField;
 
     @property({type: Object, notify: true})
     public currentUser: User|null = null;
@@ -172,11 +183,6 @@ export class SettingsView extends GompBaseElement {
     protected filters: SavedSearchFilterCompact[] = [];
     protected selectedFilterCompact: SavedSearchFilterCompact|null = null;
     protected selectedFilter: SavedSearchFilter|null = null;
-    protected newFilterName = '';
-
-    private currentPassword = '';
-    private newPassword = '';
-    private repeatPassword = '';
 
     public ready() {
         super.ready();
@@ -190,9 +196,9 @@ export class SettingsView extends GompBaseElement {
 
     protected isActiveChanged(isActive: boolean) {
         this.homeImageFile.value = '';
-        this.currentPassword = '';
-        this.newPassword = '';
-        this.repeatPassword = '';
+        this.currentPassword.value = '';
+        this.newPassword.value = '';
+        this.repeatPassword.value = '';
 
         if (isActive && this.isReady) {
             this.refresh();
@@ -204,14 +210,41 @@ export class SettingsView extends GompBaseElement {
     }
 
     protected async onUpdatePasswordClicked() {
-        if (this.newPassword !== this.repeatPassword) {
-            this.showToast('Passwords don\'t match.');
+        const currentPassword = this.currentPassword.value.trim();
+        if (currentPassword === '') {
+            this.currentPassword.setCustomValidity('Required');
+            this.currentPassword.reportValidity();
             return;
+        } else {
+            this.currentPassword.setCustomValidity('');
+            this.currentPassword.reportValidity();
+        }
+        const newPassword = this.newPassword.value.trim();
+        if (newPassword === '') {
+            this.newPassword.setCustomValidity('Required');
+            this.newPassword.reportValidity();
+            return;
+        } else {
+            this.newPassword.setCustomValidity('');
+            this.newPassword.reportValidity();
+        }
+        const repeatPassword = this.repeatPassword.value.trim();
+        if (repeatPassword === '') {
+            this.repeatPassword.setCustomValidity('Required');
+            this.repeatPassword.reportValidity();
+            return;
+        } else if (this.newPassword !== this.repeatPassword) {
+            this.repeatPassword.setCustomValidity('Passwords don\'t match');
+            this.repeatPassword.reportValidity();
+            return;
+        } else {
+            this.repeatPassword.setCustomValidity('');
+            this.repeatPassword.reportValidity();
         }
 
         const passwordDetails = {
-            currentPassword: this.currentPassword,
-            newPassword: this.newPassword,
+            currentPassword: currentPassword,
+            newPassword: newPassword,
         };
         try {
             await this.AjaxPut('/api/v1/users/current/password', passwordDetails);
@@ -222,6 +255,19 @@ export class SettingsView extends GompBaseElement {
         }
     }
     protected async onSaveButtonClicked() {
+        const homeTitle = this.currentPassword.value.trim();
+        if (homeTitle === '') {
+            this.homeTitle.setCustomValidity('Required');
+            this.homeTitle.reportValidity();
+            return;
+        } else {
+            if (this.userSettings) {
+                this.userSettings.homeTitle = homeTitle;
+            }
+            this.homeTitle.setCustomValidity('');
+            this.homeTitle.reportValidity();
+        }
+
         try {
             // First determine if an image must be uploaded first
             if (this.homeImageFile.value) {
@@ -252,25 +298,33 @@ export class SettingsView extends GompBaseElement {
         }
     }
     protected onAddFilterClicked() {
-        this.newFilterName = '';
+        this.addSearchFilterName.value = '';
         this.newSearchFilter.filter = new DefaultSearchFilter();
         this.newSearchFilter.refresh();
         this.addSearchFilterDialog.show();
     }
-    protected async addSearchFilterDialogClosed(e: CustomEvent<{action: string}>) {
-        if (e.detail.action !== 'save') {
-            return;
-        }
-
+    protected async onAddSearchFilterSaveClicked() {
         if (!this.currentUser) {
             console.error('Cannot save a search filter for a null user');
             return;
         }
 
+        const filterName = this.addSearchFilterName.value.trim();
+        if (filterName === '') {
+            this.addSearchFilterName.setCustomValidity('Required');
+            this.addSearchFilterName.reportValidity();
+            return;
+        } else {
+            this.addSearchFilterName.setCustomValidity('');
+            this.addSearchFilterName.reportValidity();
+        }
+
+        this.addSearchFilterDialog.close();
+
         const newFilter = {
             ...this.newSearchFilter.filter,
             userId: this.currentUser.id,
-            name: this.newFilterName,
+            name: filterName,
         };
         try {
             await this.AjaxPost('/api/v1/users/current/filters', newFilter);
@@ -295,21 +349,29 @@ export class SettingsView extends GompBaseElement {
             console.error(e);
         }
     }
-    protected async editSearchFilterDialogClosed(e: CustomEvent<{action: string}>) {
-        if (e.detail.action !== 'save') {
-            return;
-        }
-
+    protected async onEditSearchFilterSaveClicked() {
         if (!this.selectedFilter) {
             console.error('Attempted to edit a null search filter');
             return;
         }
 
+        const filterName = this.editSearchFilterName.value.trim();
+        if (filterName === '') {
+            this.editSearchFilterName.setCustomValidity('Required');
+            this.editSearchFilterName.reportValidity();
+            return;
+        } else {
+            this.editSearchFilterName.setCustomValidity('');
+            this.editSearchFilterName.reportValidity();
+        }
+
+        this.editSearchFilterDialog.close();
+
         const updatedFilter = {
             ...this.editSearchFilter.filter,
             id: this.selectedFilter.id,
             userId: this.selectedFilter.userId,
-            name: this.selectedFilter.name,
+            name: filterName,
         };
         try {
             await this.AjaxPut(`/api/v1/users/current/filters/${updatedFilter.id}`, updatedFilter);
