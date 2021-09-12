@@ -32,7 +32,7 @@ export class NoteList extends GompBaseElement {
               <note-card note="[[item]]" on-note-card-edit="editNoteTapped" on-note-card-deleted="noteDeleted" readonly\$="[[readonly]]"></note-card>
           </template>
 
-          <mwc-dialog id="noteDialog" heading="Add Note" on-closed="noteDialogClosed">
+          <mwc-dialog id="noteDialog" heading="Add Note">
               <mwc-textarea id="noteTextInput" label="Text" rows="3" dialogInitialFocus></mwc-textarea>
 
               <mwc-button slot="primaryAction" label="Save" on-click="onSaveClicked"></mwc-button>
