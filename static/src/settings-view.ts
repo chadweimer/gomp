@@ -210,30 +210,16 @@ export class SettingsView extends GompBaseElement {
     }
 
     protected async onUpdatePasswordClicked() {
-        const currentPassword = this.currentPassword.value.trim();
-        if (currentPassword === '') {
-            this.currentPassword.setCustomValidity('Required');
-            this.currentPassword.reportValidity();
-            return;
-        } else {
-            this.currentPassword.setCustomValidity('');
-            this.currentPassword.reportValidity();
-        }
-        const newPassword = this.newPassword.value.trim();
-        if (newPassword === '') {
-            this.newPassword.setCustomValidity('Required');
-            this.newPassword.reportValidity();
-            return;
-        } else {
-            this.newPassword.setCustomValidity('');
-            this.newPassword.reportValidity();
-        }
-        const repeatPassword = this.repeatPassword.value.trim();
-        if (repeatPassword === '') {
-            this.repeatPassword.setCustomValidity('Required');
-            this.repeatPassword.reportValidity();
-            return;
-        } else if (this.newPassword !== this.repeatPassword) {
+        const currentPassword = this.getRequiredTextFieldValue(this.currentPassword);
+        if (currentPassword == undefined) return;
+
+        const newPassword = this.getRequiredTextFieldValue(this.newPassword);
+        if (newPassword == undefined) return;
+
+        const repeatPassword = this.getRequiredTextFieldValue(this.repeatPassword);
+        if (repeatPassword == undefined) return;
+
+        if (newPassword !== repeatPassword) {
             this.repeatPassword.setCustomValidity('Passwords don\'t match');
             this.repeatPassword.reportValidity();
             return;
@@ -255,17 +241,11 @@ export class SettingsView extends GompBaseElement {
         }
     }
     protected async onSaveButtonClicked() {
-        const homeTitle = this.currentPassword.value.trim();
-        if (homeTitle === '') {
-            this.homeTitle.setCustomValidity('Required');
-            this.homeTitle.reportValidity();
-            return;
-        } else {
-            if (this.userSettings) {
-                this.userSettings.homeTitle = homeTitle;
-            }
-            this.homeTitle.setCustomValidity('');
-            this.homeTitle.reportValidity();
+        const homeTitle = this.getRequiredTextFieldValue(this.homeTitle);
+        if (homeTitle == undefined) return;
+
+        if (this.userSettings) {
+            this.userSettings.homeTitle = homeTitle;
         }
 
         try {
@@ -309,15 +289,8 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
-        const filterName = this.addSearchFilterName.value.trim();
-        if (filterName === '') {
-            this.addSearchFilterName.setCustomValidity('Required');
-            this.addSearchFilterName.reportValidity();
-            return;
-        } else {
-            this.addSearchFilterName.setCustomValidity('');
-            this.addSearchFilterName.reportValidity();
-        }
+        const filterName = this.getRequiredTextFieldValue(this.addSearchFilterName);
+        if (filterName == undefined) return;
 
         this.addSearchFilterDialog.close();
 
@@ -355,15 +328,8 @@ export class SettingsView extends GompBaseElement {
             return;
         }
 
-        const filterName = this.editSearchFilterName.value.trim();
-        if (filterName === '') {
-            this.editSearchFilterName.setCustomValidity('Required');
-            this.editSearchFilterName.reportValidity();
-            return;
-        } else {
-            this.editSearchFilterName.setCustomValidity('');
-            this.editSearchFilterName.reportValidity();
-        }
+        const filterName = this.getRequiredTextFieldValue(this.editSearchFilterName);
+        if (filterName == undefined) return;
 
         this.editSearchFilterDialog.close();
 

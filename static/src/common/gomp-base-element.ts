@@ -2,6 +2,7 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
 import { User } from '../models/models.js';
 import { Dialog } from '@material/mwc-dialog';
+import { TextField } from '@material/mwc-textfield';
 
 export abstract class GompBaseElement extends PolymerElement {
     @property({type: Boolean, notify: true})
@@ -153,5 +154,18 @@ export abstract class GompBaseElement extends PolymerElement {
         }
 
         return queryParts.join('&');
+    }
+
+    protected getRequiredTextFieldValue(field: TextField): string|undefined {
+        const val = field.value.trim();
+        if (val === '') {
+            field.setCustomValidity('Required');
+            field.reportValidity();
+            return undefined;
+        } else {
+            field.setCustomValidity('');
+            field.reportValidity();
+            return val;
+        }
     }
 }

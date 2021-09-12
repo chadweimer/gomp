@@ -58,24 +58,11 @@ export class LoginView extends GompBaseElement {
         }
     }
     protected async onLoginClicked() {
-        const username = this.username.value.trim();
-        if (username === '') {
-            this.username.setCustomValidity('Required');
-            this.username.reportValidity();
-            return;
-        } else {
-            this.username.setCustomValidity('');
-            this.username.reportValidity();
-        }
-        const password = this.password.value.trim();
-        if (password === '') {
-            this.password.setCustomValidity('Required');
-            this.password.reportValidity();
-            return;
-        } else {
-            this.password.setCustomValidity('');
-            this.password.reportValidity();
-        }
+        const username = this.getRequiredTextFieldValue(this.username);
+        if (username == undefined) return;
+
+        const password = this.getRequiredTextFieldValue(this.password);
+        if (password == undefined) return;
 
         const authDetails = {
             username: username,

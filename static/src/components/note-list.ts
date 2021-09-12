@@ -72,12 +72,8 @@ export class NoteList extends GompBaseElement {
     }
 
     protected async onSaveClicked() {
-        const noteText = this.noteTextInput.value.trim();
-        if (noteText === '') {
-            this.noteTextInput.setCustomValidity('Required');
-            this.noteTextInput.reportValidity();
-            return;
-        }
+        const noteText = this.getRequiredTextFieldValue(this.noteTextInput);
+        if (noteText == undefined) return;
 
         this.noteDialog.close();
 

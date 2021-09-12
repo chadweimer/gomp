@@ -193,15 +193,8 @@ export class AdminView extends GompBaseElement {
     }
 
     protected async onSaveAppConfigClicked() {
-        const appTitle = this.appTitle.value.trim();
-        if (appTitle === '') {
-            this.appTitle.setCustomValidity('Required');
-            this.appTitle.reportValidity();
-            return;
-        } else {
-            this.appTitle.setCustomValidity('');
-            this.appTitle.reportValidity();
-        }
+        const appTitle = this.getRequiredTextFieldValue(this.appTitle);
+        if (appTitle == undefined) return;
 
         this.appConfig = {
             title: appTitle
@@ -232,15 +225,9 @@ export class AdminView extends GompBaseElement {
     }
 
     protected async onAddUserSaveClicked() {
-        const username = this.addUserUsername.value.trim();
-        if (username === '') {
-            this.addUserUsername.setCustomValidity('Required');
-            this.addUserUsername.reportValidity();
-            return;
-        } else {
-            this.addUserUsername.setCustomValidity('');
-            this.addUserUsername.reportValidity();
-        }
+        const username = this.getRequiredTextFieldValue(this.addUserUsername);
+        if (username == undefined) return;
+
         if (this.addUserPassword.value !== this.addUserRepeatPassword.value) {
             this.addUserRepeatPassword.setCustomValidity('Passwords do not match');
             this.addUserRepeatPassword.reportValidity();
