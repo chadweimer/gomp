@@ -4,8 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/models"
 )
+
+func (h *apiHandler) getAppInfo(resp http.ResponseWriter, req *http.Request) {
+	info := models.AppInfo{
+		Version: metadata.BuildVersion,
+	}
+
+	h.OK(resp, info)
+}
 
 func (h *apiHandler) getAppConfiguration(resp http.ResponseWriter, req *http.Request) {
 	cfg, err := h.db.AppConfiguration().Read()

@@ -14,6 +14,7 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -22,6 +23,9 @@ import (
 func main() {
 	// Write logs to Stdout instead of Stderr
 	log.SetOutput(os.Stdout)
+
+	// Write the app metadata to logs
+	log.Printf("Starting application: BuildVersion=%s", metadata.BuildVersion)
 
 	var err error
 	cfg := conf.Load()
