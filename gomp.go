@@ -53,7 +53,7 @@ func main() {
 	}))
 
 	// subscribe to SIGINT signals
-	stopChan := make(chan os.Signal)
+	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
 	timeout := 10 * time.Second
