@@ -14,8 +14,6 @@ import '@material/mwc-tab';
 import '@material/mwc-tab-bar';
 import '@material/mwc-textfield';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-input/paper-input.js';
-import '@cwmr/paper-password-input/paper-password-input.js';
 import './common/shared-styles.js';
 import './components/confirmation-dialog.js';
 
@@ -37,9 +35,6 @@ export class AdminView extends GompBaseElement {
                 #confirmDeleteUserDialog {
                     --confirmation-dialog-title-color: var(--paper-red-500);
                 }
-                paper-password-input {
-                    display: block;
-                }
             </style>
             <div class="container padded-10">
                 <mwc-tab-bar id="tabBar" activeIndex="[[selectedTab]]">
@@ -50,7 +45,7 @@ export class AdminView extends GompBaseElement {
                 <iron-pages selected="[[selectedTab]]">
                     <paper-card>
                         <div class="card-content">
-                            <paper-input label="Application Title" value="{{appConfig.title}}" always-float-label></paper-input>
+                            <mwc-textfield id="appTitle" class="fill" label="Application Title" value="[[appConfig.title]]"></mwc-textfield>
                         </div>
                         <div class="card-actions">
                             <mwc-button label="Save" on-click="onSaveAppConfigClicked"></mwc-button>
@@ -111,12 +106,14 @@ export class AdminView extends GompBaseElement {
 
             <mwc-dialog id="editUserDialog" heading="Edit User" on-opening="editUserDialogOpening">
                 <div>
-                    <paper-input label="Email" value="{{user.username}}" type="email" always-float-label disabled></paper-input>
-                    <mwc-select label="Access Level" value="[[user.accessLevel]]" required>
-                        <template is="dom-repeat" items="[[availableAccessLevels]]">
-                            <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
-                        </template>
-                    </mwc-select>
+                    <p><mwc-textfield class="fill" label="Email" type="email" value="[[user.username]]" disabled></mwc-textfield></p>
+                    <p>
+                        <mwc-select id="editUserAccessLevel" label="Access Level" value="[[user.accessLevel]]">
+                            <template is="dom-repeat" items="[[availableAccessLevels]]">
+                                <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
+                            </template>
+                        </mwc-select>
+                    </p>
                 </div>
 
                 <mwc-button slot="primaryAction" label="Save" on-click="onEditUserSaveClicked"></mwc-button>
@@ -133,6 +130,8 @@ export class AdminView extends GompBaseElement {
         {name: 'Viewer', value: AccessLevel.Viewer}
     ];
 
+    @query('#appTitle')
+    private appTitle!: TextField;
     @query('#addUserDialog')
     private addUserDialog!: Dialog;
     @query('#addUserUsername')
@@ -145,6 +144,8 @@ export class AdminView extends GompBaseElement {
     private addUserRepeatPassword!: TextField;
     @query('#editUserDialog')
     private editUserDialog!: Dialog;
+    @query('#editUserAccessLevel')
+    private editUserAccessLevel!: Select;
     @query('#confirmDeleteUserDialog')
     private confirmDeleteUserDialog!: ConfirmationDialog;
 
@@ -192,6 +193,19 @@ export class AdminView extends GompBaseElement {
     }
 
     protected async onSaveAppConfigClicked() {
+        const appTitle = this.appTitle.value.trim();
+        if (appTitle === '') {
+            this.appTitle.setCustomValidity('Text is required');
+            this.appTitle.reportValidity();
+            return;
+        } else {
+            this.appTitle.setCustomValidity('');
+            this.appTitle.reportValidity();
+        }
+
+        this.appConfig = {
+            title: appTitle
+        };
         try {
             await this.AjaxPut('/api/v1/app/configuration', this.appConfig);
             this.showToast('Configuration changed.');
@@ -274,15 +288,17 @@ export class AdminView extends GompBaseElement {
     }
 
     protected async onEditUserSaveClicked() {
-        if (!this.user) {
+        this.editUserDialog.close();
+
+        if (!this.user || this.userId == null) {
             console.error('Attempted to edit a null user');
             return;
         }
 
-        const userDetails = {
+        const userDetails: User = {
             id: this.userId,
             username: this.user.username,
-            accessLevel: this.user.accessLevel
+            accessLevel: this.editUserAccessLevel.value
         };
         try {
             await this.AjaxPut(`/api/v1/users/${this.userId}`, userDetails);
