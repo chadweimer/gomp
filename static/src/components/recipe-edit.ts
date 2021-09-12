@@ -7,7 +7,6 @@ import { TagInput } from './tag-input.js';
 import '@material/mwc-circular-progress';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
-import '@polymer/iron-input/iron-input.js';
 import '@polymer/paper-card/paper-card.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-input/paper-textarea.js';
