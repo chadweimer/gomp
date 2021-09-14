@@ -26,9 +26,6 @@ export class SearchFilterElement extends GompBaseElement {
                     color: var(--secondary-text-color);
                     font-size: 12px;
                 }
-                .selection {
-                    padding: 5px;
-                }
                 .note {
                     color: var(--secondary-text-color);
                     font-size: 10px;
@@ -53,7 +50,7 @@ export class SearchFilterElement extends GompBaseElement {
                 <div>
                     <template is="dom-repeat" items="[[availableStates]]">
                         <mwc-formfield label="[[item.name]]">
-                            <mwc-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isStateSelected(item.value)]]" on-change="selectedStateChanged"></mwc-checkbox>
+                            <mwc-checkbox id\$="[[item.value]]" checked\$="[[isStateSelected(item.value)]]" on-change="selectedStateChanged"></mwc-checkbox>
                         <mwc-formfield>
                     </template>
                 </div>
@@ -65,7 +62,7 @@ export class SearchFilterElement extends GompBaseElement {
                 <div>
                     <template is="dom-repeat" items="[[availablePictures]]">
                         <mwc-formfield label="[[item.name]]">
-                            <mwc-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isPictureSelected(item.value)]]" on-change="selectedPictureChanged"></mwc-checkbox>
+                            <mwc-checkbox id\$="[[item.value]]" checked\$="[[isPictureSelected(item.value)]]" on-change="selectedPictureChanged"></mwc-checkbox>
                         <mwc-formfield>
                     </template>
                 </div>
@@ -76,7 +73,7 @@ export class SearchFilterElement extends GompBaseElement {
                 <div>
                     <template is="dom-repeat" items="[[availableFields]]">
                         <mwc-formfield label="[[item.name]]">
-                            <mwc-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged"></mwc-checkbox>
+                            <mwc-checkbox id\$="[[item.value]]" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged"></mwc-checkbox>
                         <mwc-formfield>
                     </template>
                 </div>
