@@ -138,3 +138,7 @@ export interface RecipeImage {
 export interface EventWithModel<T = any> extends Event {
     model: T;
 }
+
+export interface EventWithTarget<T extends EventTarget> extends Event {
+    target: T;
+}

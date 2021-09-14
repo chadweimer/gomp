@@ -1,13 +1,13 @@
+import { Checkbox } from '@material/mwc-checkbox';
+import { TextField } from '@material/mwc-textfield';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property, query } from '@polymer/decorators';
-import { PaperCheckboxElement } from '@polymer/paper-checkbox/paper-checkbox.js';
 import { TagInput } from './tag-input.js';
 import { GompBaseElement } from '../common/gomp-base-element';
-import { SearchField, RecipeState, SearchPictures, DefaultSearchFilter, SearchFilter } from '../models/models';
-import '@polymer/paper-checkbox/paper-checkbox.js';
-import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-radio-button/paper-radio-button.js';
-import '@polymer/paper-radio-group/paper-radio-group.js';
+import { SearchField, RecipeState, SearchPictures, DefaultSearchFilter, SearchFilter, EventWithTarget } from '../models/models';
+import '@material/mwc-checkbox';
+import '@material/mwc-formfield';
+import '@material/mwc-textfield';
 import './sort-order-selector.js';
 import './tag-input.js';
 
@@ -36,7 +36,7 @@ export class SearchFilterElement extends GompBaseElement {
             </style>
 
             <section>
-                <paper-input label="Search Terms" always-float-label value="{{filter.query}}"></paper-input>
+                <mwc-textfield class="fill" label="Search Terms" value="[[filter.query]]" on-change="queryChanged"></mwc-textfield>
             </section>
             <section>
                 <tag-input id="tagsInput" tags="{{filter.tags}}"></tag-input>
@@ -52,7 +52,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>States</label>
                 <div>
                     <template is="dom-repeat" items="[[availableStates]]">
-                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isStateSelected(item.value)]]" on-change="selectedStateChanged">[[item.name]]</paper-checkbox>
+                        <mwc-formfield label="[[item.name]]">
+                            <mwc-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isStateSelected(item.value)]]" on-change="selectedStateChanged"></mwc-checkbox>
+                        <mwc-formfield>
                     </template>
                 </div>
                 <span class="note">Only active will be included if no selection is made</span>
@@ -62,7 +64,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>Pictures</label>
                 <div>
                     <template is="dom-repeat" items="[[availablePictures]]">
-                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isPictureSelected(item.value)]]" on-change="selectedPictureChanged">[[item.name]]</paper-checkbox>
+                        <mwc-formfield label="[[item.name]]">
+                            <mwc-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isPictureSelected(item.value)]]" on-change="selectedPictureChanged"></mwc-checkbox>
+                        <mwc-formfield>
                     </template>
                 </div>
                 <li divider role="separator"></li>
@@ -71,7 +75,9 @@ export class SearchFilterElement extends GompBaseElement {
                 <label>Fields to Search</label>
                 <div>
                     <template is="dom-repeat" items="[[availableFields]]">
-                        <paper-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged">[[item.name]]</paper-checkbox>
+                        <mwc-formfield label="[[item.name]]">
+                            <mwc-checkbox id\$="[[item.value]]" class="selection" checked\$="[[isFieldSelected(item.value)]]" on-change="selectedFieldChanged"></mwc-checkbox>
+                        <mwc-formfield>
                     </template>
                 </div>
                 <span class="note">All listed fields will be included if no selection is made</span>
@@ -123,21 +129,25 @@ export class SearchFilterElement extends GompBaseElement {
         this.tagsInput.refresh();
     }
 
+    protected queryChanged(e: EventWithTarget<TextField>) {
+        this.set('filter.query', e.target.value);
+    }
+
     protected isFieldSelected(value: SearchField) {
         return this.filter.fields.indexOf(value) >= 0;
     }
     protected fieldsChanged(selectedFields: SearchField[]|null|undefined) {
         this.availableFields.forEach(field => {
-            const cb = this.shadowRoot?.querySelector('#' + field.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + field.value) as Checkbox;
             if (cb) {
-                cb.checked = selectedFields && selectedFields.indexOf(field.value) >= 0;
+                cb.checked = !!selectedFields && selectedFields.indexOf(field.value) >= 0;
             }
         });
     }
     protected selectedFieldChanged() {
         const selectedFields: SearchField[] = [];
         this.availableFields.forEach(field => {
-            const cb = this.shadowRoot?.querySelector('#' + field.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + field.value) as Checkbox;
             if (cb?.checked) {
                 selectedFields.push(field.value);
             }
@@ -150,16 +160,16 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected statesChanged(selectedStates: RecipeState[]|null|undefined) {
         this.availableStates.forEach(state => {
-            const cb = this.shadowRoot?.querySelector('#' + state.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + state.value) as Checkbox;
             if (cb) {
-                cb.checked = selectedStates && selectedStates.indexOf(state.value) >= 0;
+                cb.checked = !!selectedStates && selectedStates.indexOf(state.value) >= 0;
             }
         });
     }
     protected selectedStateChanged() {
         const selectedStates: RecipeState[] = [];
         this.availableStates.forEach(state => {
-            const cb = this.shadowRoot?.querySelector('#' + state.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + state.value) as Checkbox;
             if (cb?.checked) {
                 selectedStates.push(state.value);
             }
@@ -179,7 +189,7 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected picturesChanged(withPictures: boolean|null) {
         this.availablePictures.forEach(picture => {
-            const cb = this.shadowRoot?.querySelector('#' + picture.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + picture.value) as Checkbox;
             if (cb) {
                 switch (picture.value) {
                     case SearchPictures.Yes:
@@ -197,7 +207,7 @@ export class SearchFilterElement extends GompBaseElement {
     }
     protected selectedPictureChanged() {
         this.availablePictures.forEach(picture => {
-            const cb = this.shadowRoot?.querySelector('#' + picture.value) as PaperCheckboxElement;
+            const cb = this.shadowRoot?.querySelector('#' + picture.value) as Checkbox;
             if (cb?.checked) {
                 switch (picture.value) {
                     case SearchPictures.Yes:

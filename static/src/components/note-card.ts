@@ -3,7 +3,7 @@ import { customElement, property, query } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
-import { Note } from '../models/models.js';
+import { EventWithTarget, Note } from '../models/models.js';
 import '@material/mwc-button';
 import '@material/mwc-icon';
 import '@material/mwc-icon-button';
@@ -98,22 +98,20 @@ export class NoteCard extends GompBaseElement {
     @property({type: Boolean, reflectToAttribute: true})
     public readonly = false;
 
-    protected onEditClicked(e: Event) {
+    protected onEditClicked(e: EventWithTarget<HTMLElement>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const el = e.target as HTMLElement;
-        const menu = el.closest('#noteMenu') as PaperMenuButton;
+        const menu = e.target.closest('#noteMenu') as PaperMenuButton;
         menu.close();
 
         this.dispatchEvent(new CustomEvent('note-card-edit'));
     }
-    protected onDeleteClicked(e: Event) {
+    protected onDeleteClicked(e: EventWithTarget<HTMLElement>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const el = e.target as HTMLElement;
-        const menu = el.closest('#noteMenu') as PaperMenuButton;
+        const menu = e.target.closest('#noteMenu') as PaperMenuButton;
         menu.close();
 
         this.confirmDeleteDialog.show();

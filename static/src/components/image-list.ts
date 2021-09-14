@@ -4,7 +4,7 @@ import { customElement, property, query } from '@polymer/decorators';
 import { PaperMenuButton } from '@polymer/paper-menu-button/paper-menu-button.js';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
-import { RecipeImage } from '../models/models.js';
+import { EventWithTarget, RecipeImage } from '../models/models.js';
 import '@material/mwc-circular-progress';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
@@ -160,25 +160,23 @@ export class ImageList extends GompBaseElement {
             console.error(e);
         }
     }
-    protected onSetMainImageClicked(e: Event) {
+    protected onSetMainImageClicked(e: EventWithTarget<HTMLElement>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const el = e.target as HTMLElement;
-        const menu = el.closest('#imageMenu') as PaperMenuButton;
+        const menu = e.target.closest('#imageMenu') as PaperMenuButton;
         menu.close();
 
         this.confirmMainImageDialog.dataset.id = menu.dataset.id;
         this.confirmMainImageDialog.show();
     }
-    protected async setMainImage(e: Event) {
-        const el = e.target as HTMLElement;
-        if (!el.dataset.id) {
+    protected async setMainImage(e: EventWithTarget<HTMLElement>) {
+        if (!e.target.dataset.id) {
             console.error('Cannot determine id of image to set');
             return;
         }
 
-        const imageId = parseInt(el.dataset.id, 10);
+        const imageId = parseInt(e.target.dataset.id, 10);
         try {
             await this.AjaxPut(`/api/v1/recipes/${this.recipeId}/image`, imageId);
             this.dispatchEvent(new CustomEvent('main-image-changed'));
@@ -188,22 +186,19 @@ export class ImageList extends GompBaseElement {
             console.error(e);
         }
     }
-    protected onDeleteClicked(e: Event) {
+    protected onDeleteClicked(e: EventWithTarget<HTMLElement>) {
         // Don't navigate to "#!"
         e.preventDefault();
 
-        const el = e.target as HTMLElement;
-        const menu = el.closest('#imageMenu') as PaperMenuButton;
+        const menu = e.target.closest('#imageMenu') as PaperMenuButton;
         menu.close();
 
         this.confirmDeleteDialog.dataset.id = menu.dataset.id;
         this.confirmDeleteDialog.show();
     }
-    protected async deleteImage(e: Event) {
-        const el = e.target as HTMLElement;
-
+    protected async deleteImage(e: EventWithTarget<HTMLElement>) {
         try {
-            await this.AjaxDelete(`/api/v1/images/${el.dataset.id}`);
+            await this.AjaxDelete(`/api/v1/images/${e.target.dataset.id}`);
             this.dispatchEvent(new CustomEvent('image-deleted'));
             this.showToast('Picture deleted.');
             await this.refresh();

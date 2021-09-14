@@ -3,7 +3,7 @@ import { TextArea } from '@material/mwc-textarea';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import { Note } from '../models/models.js';
+import { EventWithTarget, Note } from '../models/models.js';
 import { NoteCard } from './note-card.js';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
@@ -107,16 +107,15 @@ export class NoteList extends GompBaseElement {
         }
     }
 
-    protected editNoteTapped(e: Event) {
+    protected editNoteTapped(e: EventWithTarget<NoteCard>) {
         e.preventDefault();
 
-        const noteCard = e.target as NoteCard;
-        if (!noteCard.note) {
+        if (!e.target.note) {
             console.error('Cannot edit a null note');
             return;
         }
 
-        this.openDialog(noteCard.note);
+        this.openDialog(e.target.note);
     }
 
     protected async noteDeleted() {

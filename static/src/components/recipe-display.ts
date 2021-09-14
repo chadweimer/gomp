@@ -2,7 +2,7 @@ import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
 import { ConfirmationDialog } from './confirmation-dialog.js';
-import { EventWithModel, Recipe, RecipeCompact } from '../models/models.js';
+import { EventWithModel, EventWithTarget, Recipe, RecipeCompact } from '../models/models.js';
 import '@material/mwc-icon';
 import '@material/mwc-list/mwc-list-item';
 import '@polymer/paper-card/paper-card.js';
@@ -194,11 +194,9 @@ export class RecipeDisplay extends GompBaseElement {
         this.confirmDeleteLinkDialog.show();
     }
 
-    protected async deleteLink(e: Event) {
-        const el = e.target as HTMLElement;
-
+    protected async deleteLink(e: EventWithTarget<HTMLElement>) {
         try {
-            await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}/links/${el.dataset.id}`);
+            await this.AjaxDelete(`/api/v1/recipes/${this.recipeId}/links/${e.target.dataset.id}`);
             this.showToast('Link removed.');
             await this.refresh({links: true});
         } catch (e) {
