@@ -2,6 +2,7 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { property } from '@polymer/decorators';
 import { User } from '../models/models.js';
 import { Dialog } from '@material/mwc-dialog';
+import { TextArea } from '@material/mwc-textarea';
 import { TextField } from '@material/mwc-textfield';
 
 export abstract class GompBaseElement extends PolymerElement {
@@ -62,6 +63,18 @@ export abstract class GompBaseElement extends PolymerElement {
         const content = dialog.shadowRoot?.querySelector('.mdc-dialog__content') as HTMLElement;
         if (content) {
             content.style.overflow = 'visible';
+        }
+    }
+
+    protected async hackAutoSizeTextarea(textArea: TextArea, minRows = 1, maxRows: number|undefined = undefined) {
+        const inner = textArea.shadowRoot?.querySelector('textarea');
+        if (!inner) return;
+
+        inner.rows = minRows;
+        await null;
+        while (inner.scrollHeight > inner.offsetHeight && (!maxRows || inner.rows < maxRows)) {
+            inner.rows++;
+            await null;
         }
     }
 

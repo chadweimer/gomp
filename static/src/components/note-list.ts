@@ -33,7 +33,7 @@ export class NoteList extends GompBaseElement {
           </template>
 
           <mwc-dialog id="noteDialog" heading="Add Note">
-              <mwc-textarea id="noteTextInput" label="Text" rows="3" dialogInitialFocus></mwc-textarea>
+              <mwc-textarea id="noteTextInput" label="Text" rows="1" on-input="onTextAreaInput" dialogInitialFocus></mwc-textarea>
 
               <mwc-button slot="primaryAction" label="Save" on-click="onSaveClicked"></mwc-button>
               <mwc-button slot="secondaryAction" label="Cancel" dialogAction="cancel"></mwc-button>
@@ -128,5 +128,9 @@ export class NoteList extends GompBaseElement {
         this.noteTextInput.setCustomValidity('');
         this.noteTextInput.reportValidity();
         this.noteDialog.show();
+    }
+
+    protected async onTextAreaInput(e: EventWithTarget<TextArea>) {
+        await this.hackAutoSizeTextarea(e.target, 1, 5);
     }
 }

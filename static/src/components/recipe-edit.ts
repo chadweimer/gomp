@@ -1,15 +1,17 @@
 import { Dialog } from '@material/mwc-dialog';
+import { TextArea } from '@material/mwc-textarea';
+import { TextField } from '@material/mwc-textfield';
 import { html } from '@polymer/polymer/polymer-element.js';
 import { customElement, property, query } from '@polymer/decorators';
 import { GompBaseElement } from '../common/gomp-base-element.js';
-import { Recipe, RecipeState } from '../models/models.js';
+import { EventWithTarget, Recipe, RecipeState } from '../models/models.js';
 import { TagInput } from './tag-input.js';
 import '@material/mwc-circular-progress';
 import '@material/mwc-button';
 import '@material/mwc-dialog';
+import '@material/mwc-textarea';
+import '@material/mwc-textfield';
 import '@polymer/paper-card/paper-card.js';
-import '@polymer/paper-input/paper-input.js';
-import '@polymer/paper-input/paper-textarea.js';
 import './tag-input.js';
 import '../common/shared-styles.js';
 
@@ -39,7 +41,7 @@ export class RecipeEdit extends GompBaseElement {
 
             <paper-card>
                 <div class="card-content">
-                    <paper-input label="Name" always-float-label value="{{recipe.name}}"></paper-input>
+                    <p><mwc-textfield class="fill" label="Name" value="[[recipe.name]]" on-change="nameChanged"></mwc-textfield></p>
                     <form id="mainImageForm" enctype="multipart/form-data">
                         <div hidden\$="[[recipeid]]" class="padded">
                             <label>Picture</label>
@@ -49,12 +51,12 @@ export class RecipeEdit extends GompBaseElement {
                             <li divider role="separator"></li>
                         </div>
                     </form>
-                    <paper-textarea label="Serving Size" always-float-label value="{{recipe.servingSize}}"></paper-textarea>
-                    <paper-textarea label="Ingredients" always-float-label value="{{recipe.ingredients}}"></paper-textarea>
-                    <paper-textarea label="Directions" always-float-label value="{{recipe.directions}}"></paper-textarea>
-                    <paper-textarea label="Storage/Freezer Instructions" always-float-label value="{{recipe.storageInstructions}}"></paper-textarea>
-                    <paper-textarea label="Nutrition" always-float-label value="{{recipe.nutritionInfo}}"></paper-textarea>
-                    <paper-input label="Source" always-float-label value="{{recipe.sourceUrl}}"></paper-input>
+                    <p><mwc-textarea class="fill" label="Serving Size" value="[[recipe.servingSize]]" rows="1" on-input="onTextAreaInput" on-change="servingSizeChanged"></mwc-textarea></p>
+                    <p><mwc-textarea class="fill" label="Ingredients" value="[[recipe.ingredients]]" rows="1" on-input="onTextAreaInput" on-change="ingredientsChanged"></mwc-textarea></p>
+                    <p><mwc-textarea class="fill" label="Directions" value="[[recipe.directions]]" rows="1" on-input="onTextAreaInput" on-change="directionsChanged"></mwc-textarea></p>
+                    <p><mwc-textarea class="fill" label="Storage/Freezer Instructions" value="[[recipe.storageInstructions]]" rows="1" on-input="onTextAreaInput" on-change="storageInstructionsChanged"></mwc-textarea></p>
+                    <p><mwc-textarea class="fill" label="Nutrition" value="[[recipe.nutritionInfo]]" rows="1" on-input="onTextAreaInput" on-change="nutritionChanged"></mwc-textarea></p>
+                    <p><mwc-textfield class="fill" label="Source" value="[[recipe.sourceUrl]]" on-change="sourceUrlChanged"></mwc-textfield></p>
                     <tag-input id="tagsInput" tags="{{recipe.tags}}"></tag-input>
                 </div>
                 <div class="card-actions">
@@ -120,6 +122,29 @@ export class RecipeEdit extends GompBaseElement {
             this.refresh();
         }
     }
+
+    protected nameChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.name', e.target.value);
+    }
+    protected sourceUrlChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.sourceUrl', e.target.value);
+    }
+    protected servingSizeChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.servingSize', e.target.value);
+    }
+    protected ingredientsChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.ingredients', e.target.value);
+    }
+    protected directionsChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.directions', e.target.value);
+    }
+    protected storageInstructionsChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.storageInstructions', e.target.value);
+    }
+    protected nutritionChanged(e: EventWithTarget<TextField>) {
+        this.set('recipe.nutritionInfo', e.target.value);
+    }
+
     protected onCancelButtonClicked() {
         this.dispatchEvent(new CustomEvent('recipe-edit-cancel'));
     }
@@ -155,5 +180,9 @@ export class RecipeEdit extends GompBaseElement {
             this.uploadingDialog.close();
             console.error(e);
         }
+    }
+
+    protected async onTextAreaInput(e: EventWithTarget<TextArea>) {
+        await this.hackAutoSizeTextarea(e.target);
     }
 }
