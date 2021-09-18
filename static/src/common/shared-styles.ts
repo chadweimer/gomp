@@ -76,6 +76,9 @@ $documentContainer.innerHTML = `<dom-module id="shared-styles">
                 bottom: 16px;
                 right: 16px;
             }
+            mwc-checkbox {
+                --mdc-theme-secondary: var(--mdc-theme-primary);
+            }
 
             /* Padding and Margins */
             .padded-10 {

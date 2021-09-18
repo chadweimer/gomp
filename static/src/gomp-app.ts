@@ -49,6 +49,9 @@ export class GompApp extends GompBaseElement {
                     --light-accent-color: var(--paper-teal-300);
                     --dark-accent-color: var(--paper-teal-700);
 
+                    --mdc-text-field-fill-color: white;
+                    --mdc-select-fill-color: white;
+
                     display: block;
                     background: var(--paper-grey-50);
                     color: var(--primary-text-color);
