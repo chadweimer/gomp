@@ -87,7 +87,7 @@ export class AdminView extends GompBaseElement {
                 <div>
                     <p><mwc-textfield id="addUserUsername" class="fill" label="Email" type="email" value="[[user.username]]" dialogInitialFocus></mwc-textfield></p>
                     <p>
-                        <mwc-select id="addUserAccessLevel" label="Access Level" value="[[user.accessLevel]]">
+                        <mwc-select id="addUserAccessLevel" class="fill" label="Access Level" value="[[user.accessLevel]]">
                             <template is="dom-repeat" items="[[availableAccessLevels]]">
                                 <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
                             </template>
@@ -105,7 +105,7 @@ export class AdminView extends GompBaseElement {
                 <div>
                     <p><mwc-textfield class="fill" label="Email" type="email" value="[[user.username]]" disabled></mwc-textfield></p>
                     <p>
-                        <mwc-select id="editUserAccessLevel" label="Access Level" value="[[user.accessLevel]]">
+                        <mwc-select id="editUserAccessLevel" class="fill" label="Access Level" value="[[user.accessLevel]]">
                             <template is="dom-repeat" items="[[availableAccessLevels]]">
                                 <mwc-list-item value="[[item.value]]">[[item.name]]</mwc-list-item>
                             </template>
