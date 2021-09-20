@@ -97,10 +97,6 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
-.scroll-root {
-  overflow-y: auto;
-}
-
 @media screen and (min-width: 992px) {
   .container {
       width: 50%;

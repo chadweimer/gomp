@@ -8,9 +8,9 @@ export class PageCreateRecipe {
 
   render() {
     return (
-      <div class="scroll-root">
+      <ion-content scroll-y>
         <recipe-editor></recipe-editor>
-      </div>
+      </ion-content>
     );
   }
 
