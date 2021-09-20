@@ -50,7 +50,12 @@ export async function ajaxDelete(target: EventTarget, url: string) {
   return await ajaxFetch(target, url, init);
 }
 
-async function ajaxFetch(target: EventTarget, url: string, init?: RequestInit) {
+async function ajaxFetch(target: EventTarget, url: string, init: RequestInit) {
+  const jwtToken = localStorage.getItem('jwtToken');
+  if (jwtToken) {
+    init.headers = { Authorization: 'Bearer ' + jwtToken };
+  }
+
   target.dispatchEvent(new CustomEvent('ajax-presend', { bubbles: true, composed: true, detail: { options: init } }));
 
   let resp: Response | null = null;
