@@ -8,8 +8,8 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { AppConfiguration, AppInfo } from "./global/models";
 export namespace Components {
     interface AppRoot {
-        "appConfig": AppConfiguration;
-        "appInfo": AppInfo;
+        "appConfig": AppConfiguration | null;
+        "appInfo": AppInfo | null;
     }
     interface PageAdmin {
     }
@@ -115,8 +115,8 @@ declare global {
 }
 declare namespace LocalJSX {
     interface AppRoot {
-        "appConfig"?: AppConfiguration;
-        "appInfo"?: AppInfo;
+        "appConfig"?: AppConfiguration | null;
+        "appInfo"?: AppInfo | null;
     }
     interface PageAdmin {
     }
