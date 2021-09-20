@@ -10,6 +10,7 @@
 @import '~@ionic/core/css/core.css';
 
 /** Basic CSS for apps built with Ionic */
+@import '~@ionic/core/css/display.css';
 @import '~@ionic/core/css/normalize.css';
 @import '~@ionic/core/css/structure.css';
 @import '~@ionic/core/css/typography.css';
@@ -97,9 +98,6 @@
 }
 
 @media screen and (min-width: 992px) {
-  .hide-on-large-only {
-      display: none;
-  }
   .container {
       width: 50%;
       margin: auto;
@@ -109,7 +107,7 @@
       margin: auto;
   }
 }
-@media screen and (min-width: 600px) and (max-width: 991px) {
+@media screen and (min-width: 576px) and (max-width: 991.98px) {
   .container {
       width: 75%;
       margin: auto;
@@ -117,15 +115,5 @@
   .container-wide {
       width: 80%;
       margin: auto;
-  }
-}
-@media screen and (max-width: 991px) {
-  .hide-on-med-and-down {
-      display: none;
-  }
-}
-@media screen and (max-width: 599px) {
-  .hide-on-small-only {
-      display: none;
   }
 }

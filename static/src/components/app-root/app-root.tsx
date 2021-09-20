@@ -83,17 +83,17 @@ export class AppRoot {
           <ion-header>
             <ion-toolbar color="primary">
               <ion-buttons slot="start">
-                <ion-menu-button class="hide-on-large-only"></ion-menu-button>
+                <ion-menu-button class="ion-hide-lg-up"></ion-menu-button>
               </ion-buttons>
 
-              <ion-title class="hide-on-small-only">{this.appConfig?.title}</ion-title>
+              <ion-title class="ion-hide-sm-down">{this.appConfig?.title}</ion-title>
 
               <ion-buttons slot="end">
-                <ion-button href="/" class="hide-on-med-and-down">Home</ion-button>
-                <ion-button href="/recipes" class="hide-on-med-and-down">Recipes <ion-badge>99</ion-badge></ion-button>
-                <ion-button href="/settings" class="hide-on-med-and-down">Settings</ion-button>
-                <ion-button href="/admin" class="hide-on-med-and-down">Admin</ion-button>
-                <ion-button class="hide-on-med-and-down">Logout</ion-button>
+                <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
+                <ion-button href="/recipes" class="ion-hide-lg-down">Recipes <ion-badge>99</ion-badge></ion-button>
+                <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
+                <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
+                <ion-button class="ion-hide-lg-down">Logout</ion-button>
                 <ion-searchbar show-clear-button="always"></ion-searchbar>
               </ion-buttons>
             </ion-toolbar>
