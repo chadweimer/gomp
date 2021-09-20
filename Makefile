@@ -9,7 +9,7 @@ BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
 BUILD_LIN_ARM64_DIR=$(BUILD_DIR)/linux/arm64
 BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 CLIENT_INSTALL_DIR=static/node_modules
-CLIENT_BUILD_DIR=static/www
+CLIENT_BUILD_DIR=static/www/static
 
 GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
 GO_LIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
