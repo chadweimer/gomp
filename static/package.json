@@ -1,8 +1,8 @@
 {
-  "name": "gomp2",
+  "name": "gomp",
   "private": true,
   "version": "0.0.1",
-  "description": "gomp2",
+  "description": "GOMP: Go Meal Planner - A web-based recipe book",
   "license": "MIT",
   "files": [
     "dist/"

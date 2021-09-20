@@ -17,6 +17,8 @@ export class AppRoot {
     this.appConfig = {
       title: 'Wine & Cats'
     };
+
+    // TODO: Set meta 'title' and 'apple-mobile-web-app-title'
   }
 
   render() {
