@@ -48,11 +48,6 @@ export class AppRoot {
         </ion-router>
 
         <ion-menu side="start" content-id="main-content">
-          <ion-header>
-            <ion-toolbar>
-              <ion-title>{this.appConfig?.title}</ion-title>
-            </ion-toolbar>
-          </ion-header>
           <ion-content>
             <ion-list>
               <ion-item href="/" lines="none">
@@ -77,6 +72,10 @@ export class AppRoot {
               </ion-item>
             </ion-list>
           </ion-content>
+
+          <ion-footer color="medium" class="ion-text-center ion-padding">
+            <div class="copyright">GOMP: Go Meal Plannner {this.appInfo?.version ?? 'vUNKNOWN'}. Copyright © 2016-2021 Chad Weimer</div>
+          </ion-footer>
         </ion-menu>
 
         <div class="ion-page" id="main-content">
@@ -125,10 +124,6 @@ export class AppRoot {
 
             </ion-tabs>
           </ion-content>
-
-          <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {this.appInfo?.version ?? 'vUNKNOWN'}. Copyright © 2016-2021 Chad Weimer</div>
-          </ion-footer>
         </div>
       </ion-app>
     );

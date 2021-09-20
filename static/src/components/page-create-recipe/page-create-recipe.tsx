@@ -8,7 +8,9 @@ export class PageCreateRecipe {
 
   render() {
     return (
-      <recipe-editor></recipe-editor>
+      <div class="scroll-root">
+        <recipe-editor></recipe-editor>
+      </div>
     );
   }
 
