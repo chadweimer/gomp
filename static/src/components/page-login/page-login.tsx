@@ -40,6 +40,8 @@ export class PageLogin {
   }
 
   private async onLoginClicked() {
+    const router = document.querySelector('ion-router');
+
     const authDetails = {
       username: this.email,
       password: this.password
@@ -49,11 +51,11 @@ export class PageLogin {
       const response: { token: string } = await ajaxPostWithResult(this.el, '/api/v1/auth', authDetails);
       localStorage.setItem('jwtToken', response.token);
       //this.dispatchEvent(new CustomEvent('authentication-changed', { bubbles: true, composed: true }));
-      //this.navigateTo('/home');
-    } catch (e) {
+      await router.push('/', 'forward');
+    } catch (ex) {
       this.password = '';
       //this.errorMessage = 'Login failed. Check your username and password and try again.';
-      console.error(e);
+      console.error(ex);
     }
   }
 

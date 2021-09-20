@@ -78,7 +78,7 @@ export class AppRoot {
                 <ion-icon name="lock-closed" slot="start"></ion-icon>
                 <ion-label>Admin</ion-label>
               </ion-item>
-              <ion-item href="/admin" lines="none">
+              <ion-item href="/login" lines="none">
                 <ion-icon name="log-out" slot="start"></ion-icon>
                 <ion-label>Logout</ion-label>
               </ion-item>
@@ -104,7 +104,7 @@ export class AppRoot {
                 <ion-button href="/recipes" class="ion-hide-lg-down">Recipes <ion-badge>99</ion-badge></ion-button>
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
                 <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
-                <ion-button class="ion-hide-lg-down">Logout</ion-button>
+                <ion-button href="/login" class="ion-hide-lg-down">Logout</ion-button>
                 <ion-searchbar show-clear-button="always"></ion-searchbar>
               </ion-buttons>
             </ion-toolbar>
