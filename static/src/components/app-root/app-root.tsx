@@ -1,24 +1,32 @@
 import { Component, h, Prop } from '@stencil/core';
 import { AppConfiguration, AppInfo } from '../../global/models';
+import { ajaxGetWithResult } from '../../helpers/ajax';
 
 @Component({
   tag: 'app-root',
   styleUrl: 'app-root.css',
 })
 export class AppRoot {
-  @Prop() appInfo: AppInfo;
-  @Prop() appConfig: AppConfiguration;
+  @Prop() appInfo: AppInfo | null;
+  @Prop() appConfig: AppConfiguration | null;
 
-  constructor() {
-    // TODO: Retrieve these
-    this.appInfo = {
-      version: 'v0.0.0'
-    };
-    this.appConfig = {
-      title: 'Wine & Cats'
-    };
+  async connectedCallback() {
+    try {
+      this.appInfo = await ajaxGetWithResult(this as unknown as EventTarget, '/api/v1/app/info');
+      this.appConfig = await ajaxGetWithResult(this as unknown as EventTarget, '/api/v1/app/configuration');
 
-    // TODO: Set meta 'title' and 'apple-mobile-web-app-title'
+      document.title = this.appConfig.title;
+      const appName = document.querySelector('meta[name="application-name"]');
+      if (appName) {
+        appName.setAttribute('content', document.title);
+      }
+      const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appTitle) {
+        appTitle.setAttribute('content', document.title);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   render() {
