@@ -13,6 +13,7 @@ export class AppRoot {
 
   @Element() el: HTMLElement;
   router!: HTMLIonRouterElement;
+  menu!: HTMLIonMenuElement;
 
   async componentWillLoad() {
     await this.loadAppConfiguration();
@@ -21,7 +22,7 @@ export class AppRoot {
   render() {
     return (
       <ion-app>
-        <ion-router useHash={false} ref={el => this.router = el}>
+        <ion-router useHash={false} ref={el => this.router = el} onIonRouteWillChange={() => this.onPageChanging()}>
           <ion-route url="/login" component="tab-login">
             <ion-route component="page-login" />
           </ion-route>
@@ -38,15 +39,24 @@ export class AppRoot {
           </ion-route>
 
           <ion-route url="/settings" component="tab-settings">
-            <ion-route component="page-settings" />
+            <ion-route component="page-settings">
+              <ion-route component="tab-settings-preferences" />
+              <ion-route url="/preferences" component="tab-settings-preferences" />
+              <ion-route url="/searches" component="tab-settings-searches" />
+              <ion-route url="/security" component="tab-settings-security" />
+            </ion-route>
           </ion-route>
 
           <ion-route url="/admin" component="tab-admin">
-            <ion-route component="page-admin" />
+            <ion-route component="page-admin">
+              <ion-route component="tab-admin-configuration" />
+              <ion-route url="/configuration" component="tab-admin-configuration" />
+              <ion-route url="/users" component="tab-admin-users" />
+            </ion-route>
           </ion-route>
         </ion-router>
 
-        <ion-menu side="start" content-id="main-content">
+        <ion-menu side="start" content-id="main-content" ref={el => this.menu = el}>
           <ion-content>
             <ion-list>
               <ion-item href="/" lines="none">
@@ -99,7 +109,7 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-tabs class="ion-padding">
+            <ion-tabs>
 
               <ion-tab tab="tab-login">
                 <ion-nav />
@@ -167,6 +177,10 @@ export class AppRoot {
     } catch (ex) {
       console.error(ex);
     }
+  }
+
+  onPageChanging() {
+    this.menu.close();
   }
 
   logout() {

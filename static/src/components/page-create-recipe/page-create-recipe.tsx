@@ -8,7 +8,7 @@ export class PageCreateRecipe {
 
   render() {
     return (
-      <ion-content>
+      <ion-content class="ion-padding">
         <recipe-editor></recipe-editor>
       </ion-content>
     );
