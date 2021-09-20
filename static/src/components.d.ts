@@ -5,11 +5,9 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { AppConfiguration, AppInfo, UserSettings } from "./global/models";
+import { UserSettings } from "./global/models";
 export namespace Components {
     interface AppRoot {
-        "appConfig": AppConfiguration | null;
-        "appInfo": AppInfo | null;
     }
     interface PageAdmin {
     }
@@ -116,8 +114,6 @@ declare global {
 }
 declare namespace LocalJSX {
     interface AppRoot {
-        "appConfig"?: AppConfiguration | null;
-        "appInfo"?: AppInfo | null;
     }
     interface PageAdmin {
     }

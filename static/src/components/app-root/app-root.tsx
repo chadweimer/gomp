@@ -1,4 +1,4 @@
-import { Component, Element, h, Prop } from '@stencil/core';
+import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppConfiguration, AppInfo } from '../../global/models';
 import { ajaxGetWithResult } from '../../helpers/ajax';
 
@@ -7,34 +7,21 @@ import { ajaxGetWithResult } from '../../helpers/ajax';
   styleUrl: 'app-root.css',
 })
 export class AppRoot {
-  @Prop() appInfo: AppInfo | null;
-  @Prop() appConfig: AppConfiguration | null;
+  @State() appInfo: AppInfo | null;
+  @State() appConfig: AppConfiguration | null;
+  @State() loadingCount = 0;
 
   @Element() el: HTMLElement;
+  router!: HTMLIonRouterElement;
 
-  async connectedCallback() {
-    try {
-      this.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
-      this.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
-
-      document.title = this.appConfig.title;
-      const appName = document.querySelector('meta[name="application-name"]');
-      if (appName) {
-        appName.setAttribute('content', document.title);
-      }
-      const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (appTitle) {
-        appTitle.setAttribute('content', document.title);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  async componentWillLoad() {
+    await this.loadAppConfiguration();
   }
 
   render() {
     return (
       <ion-app>
-        <ion-router useHash={false}>
+        <ion-router useHash={false} ref={el => this.router = el}>
           <ion-route url="/login" component="tab-login">
             <ion-route component="page-login" />
           </ion-route>
@@ -108,7 +95,7 @@ export class AppRoot {
                 <ion-searchbar show-clear-button="always"></ion-searchbar>
               </ion-buttons>
             </ion-toolbar>
-            <ion-progress-bar type="indeterminate" color="secondary"></ion-progress-bar>
+            <ion-progress-bar type="indeterminate" color="secondary" hidden={this.loadingCount === 0}></ion-progress-bar>
           </ion-header>
 
           <ion-content>
@@ -139,5 +126,52 @@ export class AppRoot {
         </div>
       </ion-app>
     );
+  }
+
+  @Listen('ajax-presend')
+  onAjaxPresend() {
+    this.loadingCount++;
+  }
+
+  @Listen('ajax-response')
+  onAjaxResponse() {
+    if (this.loadingCount > 0) {
+      this.loadingCount--;
+    }
+  }
+
+  @Listen('ajax-error')
+  onAjaxError(e: CustomEvent) {
+    if (this.loadingCount > 0) {
+      this.loadingCount--;
+    }
+    if (e.detail.response?.status === 401) {
+      this.logout();
+    }
+  }
+
+  async loadAppConfiguration() {
+    try {
+      this.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
+      this.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
+
+      document.title = this.appConfig.title;
+      const appName = document.querySelector('meta[name="application-name"]');
+      if (appName) {
+        appName.setAttribute('content', document.title);
+      }
+      const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appTitle) {
+        appTitle.setAttribute('content', document.title);
+      }
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  logout() {
+    localStorage.clear();
+    sessionStorage.clear();
+    this.router.push('/login');
   }
 }

@@ -51,7 +51,7 @@ export class PageLogin {
       const response: { token: string } = await ajaxPostWithResult(this.el, '/api/v1/auth', authDetails);
       localStorage.setItem('jwtToken', response.token);
       //this.dispatchEvent(new CustomEvent('authentication-changed', { bubbles: true, composed: true }));
-      await router.push('/', 'forward');
+      await router.push('/');
     } catch (ex) {
       this.password = '';
       //this.errorMessage = 'Login failed. Check your username and password and try again.';
