@@ -1,4 +1,4 @@
-import { Component, h, Prop } from '@stencil/core';
+import { Component, Element, h, Prop } from '@stencil/core';
 import { AppConfiguration, AppInfo } from '../../global/models';
 import { ajaxGetWithResult } from '../../helpers/ajax';
 
@@ -10,10 +10,12 @@ export class AppRoot {
   @Prop() appInfo: AppInfo | null;
   @Prop() appConfig: AppConfiguration | null;
 
+  @Element() el: HTMLElement;
+
   async connectedCallback() {
     try {
-      this.appInfo = await ajaxGetWithResult(this as unknown as EventTarget, '/api/v1/app/info');
-      this.appConfig = await ajaxGetWithResult(this as unknown as EventTarget, '/api/v1/app/configuration');
+      this.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
+      this.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
 
       document.title = this.appConfig.title;
       const appName = document.querySelector('meta[name="application-name"]');
