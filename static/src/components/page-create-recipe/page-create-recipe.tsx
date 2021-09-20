@@ -8,7 +8,7 @@ export class PageCreateRecipe {
 
   render() {
     return (
-      <ion-content scroll-y>
+      <ion-content>
         <recipe-editor></recipe-editor>
       </ion-content>
     );
