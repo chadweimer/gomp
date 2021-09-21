@@ -22,19 +22,23 @@ export class PageLogin {
             <ion-label>Email</ion-label>
             <ion-input value={this.email}
               onIonChange={e => this.email = e.detail.value}
-              onKeyDown={e => this.onInputKeyDown(e)}></ion-input>
+              onKeyDown={e => this.onInputKeyDown(e)} />
           </ion-item>
           <ion-item>
-            <ion-icon slot="end" name="eye-off"></ion-icon>
+            <ion-icon slot="end" name="eye-off" />
             <ion-label>Password</ion-label>
             <ion-input type="password" value={this.password}
               onIonChange={e => this.password = e.detail.value}
-              onKeyDown={e => this.onInputKeyDown(e)}></ion-input>
+              onKeyDown={e => this.onInputKeyDown(e)} />
           </ion-item>
         </ion-card-content>
-        <ion-item>
-          <ion-button slot="start" fill="clear" size="default" onClick={() => this.onLoginClicked()}>Login</ion-button>
-        </ion-item>
+        <ion-footer>
+          <ion-toolbar>
+            <ion-buttons slot="primary">
+              <ion-button color="primary" onClick={() => this.onLoginClicked()}>Login</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-footer>
       </ion-card>
     );
   }

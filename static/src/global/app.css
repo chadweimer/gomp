@@ -97,6 +97,10 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
+.fill {
+  width: 100%;
+}
+
 @media screen and (min-width: 992px) {
   .container {
       width: 50%;

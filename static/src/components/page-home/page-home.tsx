@@ -28,7 +28,7 @@ export class PageHome {
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
         <ion-fab-button color="success" href="/recipes/new">
-          <ion-icon icon="add"></ion-icon>
+          <ion-icon icon="add" />
         </ion-fab-button>
       </ion-fab>
     ];

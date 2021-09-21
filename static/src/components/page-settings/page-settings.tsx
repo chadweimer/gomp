@@ -1,10 +1,20 @@
-import { Component, h } from '@stencil/core';
+import { Component, Element, h, State } from '@stencil/core';
+import { SavedSearchFilterCompact, UserSettings } from '../../global/models';
+import { ajaxGetWithResult } from '../../helpers/ajax';
 
 @Component({
   tag: 'page-settings',
   styleUrl: 'page-settings.css'
 })
 export class PageSettings {
+  @State() settings: UserSettings | null;
+  @State() filters: SavedSearchFilterCompact[] | null;
+
+  @Element() el: HTMLElement;
+
+  async connectedCallback() {
+    await this.loadUserSettings();
+  }
 
   render() {
     return (
@@ -45,4 +55,12 @@ export class PageSettings {
     );
   }
 
+  async loadUserSettings() {
+    try {
+      this.settings = await ajaxGetWithResult(this.el, '/api/v1/users/current/settings');
+      this.filters = await ajaxGetWithResult(this.el, '/api/v1/users/current/filters');
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
 }

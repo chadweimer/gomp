@@ -60,23 +60,23 @@ export class AppRoot {
           <ion-content>
             <ion-list>
               <ion-item href="/" lines="none">
-                <ion-icon name="home" slot="start"></ion-icon>
+                <ion-icon name="home" slot="start" />
                 <ion-label>Home</ion-label>
               </ion-item>
               <ion-item href="/recipes" lines="full">
-                <ion-icon name="restaurant" slot="start"></ion-icon>
+                <ion-icon name="restaurant" slot="start" />
                 <ion-label>Recipes</ion-label>
               </ion-item>
               <ion-item href="/settings" lines="none">
-                <ion-icon name="settings" slot="start"></ion-icon>
+                <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
               <ion-item href="/admin" lines="full">
-                <ion-icon name="lock-closed" slot="start"></ion-icon>
+                <ion-icon name="lock-closed" slot="start" />
                 <ion-label>Admin</ion-label>
               </ion-item>
               <ion-item lines="none" button onClick={() => this.logout()}>
-                <ion-icon name="log-out" slot="start"></ion-icon>
+                <ion-icon name="log-out" slot="start" />
                 <ion-label>Logout</ion-label>
               </ion-item>
             </ion-list>
@@ -91,7 +91,7 @@ export class AppRoot {
           <ion-header>
             <ion-toolbar color="primary">
               <ion-buttons slot="start">
-                <ion-menu-button class="ion-hide-lg-up"></ion-menu-button>
+                <ion-menu-button class="ion-hide-lg-up" />
               </ion-buttons>
 
               <ion-title class="ion-hide-sm-down">{this.appConfig?.title}</ion-title>
@@ -102,10 +102,10 @@ export class AppRoot {
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
                 <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-                <ion-searchbar show-clear-button="always"></ion-searchbar>
+                <ion-searchbar show-clear-button="always" />
               </ion-buttons>
             </ion-toolbar>
-            <ion-progress-bar type="indeterminate" color="secondary" hidden={this.loadingCount === 0}></ion-progress-bar>
+            <ion-progress-bar type="indeterminate" color="secondary" hidden={this.loadingCount === 0} />
           </ion-header>
 
           <ion-content>
