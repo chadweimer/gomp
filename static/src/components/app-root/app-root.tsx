@@ -1,14 +1,12 @@
 import { Component, Element, h, Listen, State } from '@stencil/core';
-import { AppConfiguration, AppInfo } from '../../global/models';
 import { ajaxGetWithResult } from '../../helpers/ajax';
+import state from '../../store';
 
 @Component({
   tag: 'app-root',
   styleUrl: 'app-root.css',
 })
 export class AppRoot {
-  @State() appInfo: AppInfo | null;
-  @State() appConfig: AppConfiguration | null;
   @State() loadingCount = 0;
 
   @Element() el: HTMLElement;
@@ -33,7 +31,6 @@ export class AppRoot {
 
           <ion-route url="/recipes" component="tab-recipes">
             <ion-route component="page-search" />
-            <ion-route url="/new" component="page-create-recipe" />
             <ion-route url="/:id/view" component="page-view-recipe" />
             <ion-route url="/:id/edit" component="page-edit-recipe" />
           </ion-route>
@@ -83,7 +80,7 @@ export class AppRoot {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {this.appInfo?.version ?? 'vUNKNOWN'}. Copyright © 2016-2021 Chad Weimer</div>
+            <div class="copyright">GOMP: Go Meal Plannner {state.appInfo.version}. Copyright © 2016-2021 Chad Weimer</div>
           </ion-footer>
         </ion-menu>
 
@@ -94,7 +91,7 @@ export class AppRoot {
                 <ion-menu-button class="ion-hide-lg-up" />
               </ion-buttons>
 
-              <ion-title class="ion-hide-sm-down">{this.appConfig?.title}</ion-title>
+              <ion-title class="ion-hide-sm-down">{state.appConfig.title}</ion-title>
 
               <ion-buttons slot="end">
                 <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
@@ -162,10 +159,10 @@ export class AppRoot {
 
   async loadAppConfiguration() {
     try {
-      this.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
-      this.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
+      state.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
+      state.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
 
-      document.title = this.appConfig.title;
+      document.title = state.appConfig.title;
       const appName = document.querySelector('meta[name="application-name"]');
       if (appName) {
         appName.setAttribute('content', document.title);

@@ -5,13 +5,11 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { UserSettings } from "./global/models";
+import { UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
     interface PageAdmin {
-    }
-    interface PageCreateRecipe {
     }
     interface PageEditRecipe {
     }
@@ -45,12 +43,6 @@ declare global {
     var HTMLPageAdminElement: {
         prototype: HTMLPageAdminElement;
         new (): HTMLPageAdminElement;
-    };
-    interface HTMLPageCreateRecipeElement extends Components.PageCreateRecipe, HTMLStencilElement {
-    }
-    var HTMLPageCreateRecipeElement: {
-        prototype: HTMLPageCreateRecipeElement;
-        new (): HTMLPageCreateRecipeElement;
     };
     interface HTMLPageEditRecipeElement extends Components.PageEditRecipe, HTMLStencilElement {
     }
@@ -109,7 +101,6 @@ declare global {
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
         "page-admin": HTMLPageAdminElement;
-        "page-create-recipe": HTMLPageCreateRecipeElement;
         "page-edit-recipe": HTMLPageEditRecipeElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
@@ -125,8 +116,6 @@ declare namespace LocalJSX {
     interface AppRoot {
     }
     interface PageAdmin {
-    }
-    interface PageCreateRecipe {
     }
     interface PageEditRecipe {
     }
@@ -150,7 +139,6 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "app-root": AppRoot;
         "page-admin": PageAdmin;
-        "page-create-recipe": PageCreateRecipe;
         "page-edit-recipe": PageEditRecipe;
         "page-home": PageHome;
         "page-login": PageLogin;
@@ -168,7 +156,6 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
-            "page-create-recipe": LocalJSX.PageCreateRecipe & JSXBase.HTMLAttributes<HTMLPageCreateRecipeElement>;
             "page-edit-recipe": LocalJSX.PageEditRecipe & JSXBase.HTMLAttributes<HTMLPageEditRecipeElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;

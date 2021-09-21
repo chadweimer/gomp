@@ -1,16 +1,15 @@
 import { modalController } from '@ionic/core';
 import { Component, Element, h, State } from '@stencil/core';
-import { AppConfiguration, User } from '../../global/models';
-import { ajaxGetWithResult } from '../../helpers/ajax';
+import { AppConfiguration, User } from '../../models';
+import { ajaxGetWithResult, ajaxPut } from '../../helpers/ajax';
+import state from '../../store';
 
 @Component({
   tag: 'page-admin',
   styleUrl: 'page-admin.css'
 })
 export class PageAdmin {
-  @State() appConfig: AppConfiguration = {
-    title: "GOMP: Go Meal Planner"
-  };
+  @State() appTitle = "GOMP: Go Meal Planner";
   @State() users: User[] = [];
 
   @Element() el: HTMLElement;
@@ -31,17 +30,17 @@ export class PageAdmin {
                   <ion-card class="container-wide">
                     <ion-card-content>
                       <ion-item>
-                        <ion-label color="primary">Application Title</ion-label>
-                        <ion-input value={this.appConfig.title} onIonChange={e => this.appConfig.title = e.detail.value} />
+                        <ion-label position="floating">Application Title</ion-label>
+                        <ion-input value={this.appTitle} onIonChange={e => this.appTitle = e.detail.value} />
                       </ion-item>
                     </ion-card-content>
                     <ion-footer>
                       <ion-toolbar>
                         <ion-buttons slot="primary">
-                          <ion-button color="primary">Save</ion-button>
+                          <ion-button color="primary" onClick={() => this.onSaveConfigurationClicked()}>Save</ion-button>
                         </ion-buttons>
                         <ion-buttons slot="secondary">
-                          <ion-button color="danger">Reset</ion-button>
+                          <ion-button color="danger" onClick={() => this.loadAppConfiguration()}>Reset</ion-button>
                         </ion-buttons>
                       </ion-toolbar>
                     </ion-footer>
@@ -98,7 +97,20 @@ export class PageAdmin {
 
   async loadAppConfiguration() {
     try {
-      this.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
+      const appConfig = await ajaxGetWithResult<AppConfiguration>(this.el, '/api/v1/app/configuration');
+      this.appTitle = appConfig.title;
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  async onSaveConfigurationClicked() {
+    try {
+      const appConfig: AppConfiguration = {
+        title: this.appTitle
+      };
+      await ajaxPut(this.el, '/api/v1/app/configuration', appConfig);
+      state.appConfig = appConfig;
     } catch (ex) {
       console.error(ex);
     }

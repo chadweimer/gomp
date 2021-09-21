@@ -1,6 +1,7 @@
 import { Component, Element, h, Prop } from '@stencil/core';
-import { UserSettings } from '../../global/models';
+import { UserSettings } from '../../models';
 import { ajaxGetWithResult } from '../../helpers/ajax';
+import { modalController } from '@ionic/core';
 
 @Component({
   tag: 'page-home',
@@ -29,11 +30,18 @@ export class PageHome {
       </ion-content>,
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-        <ion-fab-button color="success" href="/recipes/new">
+        <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
           <ion-icon icon="add" />
         </ion-fab-button>
       </ion-fab>
     ];
+  }
+
+  async onNewRecipeClicked() {
+    const modal = await modalController.create({
+      component: 'recipe-editor',
+    });
+    await modal.present();
   }
 
 }

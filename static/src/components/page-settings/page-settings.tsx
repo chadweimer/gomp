@@ -1,5 +1,5 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { SavedSearchFilterCompact, UserSettings } from '../../global/models';
+import { SavedSearchFilterCompact, UserSettings } from '../../models';
 import { ajaxGetWithResult } from '../../helpers/ajax';
 
 @Component({

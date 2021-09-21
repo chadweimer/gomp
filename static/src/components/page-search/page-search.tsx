@@ -1,3 +1,4 @@
+import { modalController } from '@ionic/core';
 import { Component, h } from '@stencil/core';
 
 @Component({
@@ -8,8 +9,19 @@ export class PageSearch {
 
   render() {
     return (
-      <span>Search</span>
+      <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+        <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
+          <ion-icon icon="add" />
+        </ion-fab-button>
+      </ion-fab>
     );
+  }
+
+  async onNewRecipeClicked() {
+    const modal = await modalController.create({
+      component: 'recipe-editor',
+    });
+    await modal.present();
   }
 
 }
