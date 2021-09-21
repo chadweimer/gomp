@@ -47,11 +47,11 @@ export class UserEditor {
 
         <ion-content>
           <ion-item>
-            <ion-label position="floating">Email</ion-label>
+            <ion-label position="stacked">Email</ion-label>
             <ion-input type="email" value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} required />
           </ion-item>
           <ion-item>
-            <ion-label position="floating">Access Level</ion-label>
+            <ion-label position="stacked">Access Level</ion-label>
             <ion-select value={this.accessLevel} interface="popover" onIonChange={e => this.accessLevel = e.detail.value}>
               {this.availableAccessLevels.map(level =>
                 <ion-select-option value={level.value}>{level.name}</ion-select-option>
@@ -68,11 +68,11 @@ export class UserEditor {
     if (this.user === null) {
       return [
         <ion-item>
-          <ion-label position="floating">Password</ion-label>
+          <ion-label position="stacked">Password</ion-label>
           <ion-input type="password" onIonChange={e => this.password = e.detail.value} required />
         </ion-item>,
         <ion-item>
-          <ion-label position="floating">Confirm Password</ion-label>
+          <ion-label position="stacked">Confirm Password</ion-label>
           <ion-input type="password" onIonChange={e => this.repeatPassword = e.detail.value} ref={el => this.repeatPasswordInput = el} required />
         </ion-item>,
       ];

@@ -25,7 +25,7 @@ export class RecipeEditor {
 
       <ion-content>
         <ion-item>
-          <ion-label position="floating">Name</ion-label>
+          <ion-label position="stacked">Name</ion-label>
           <ion-input />
         </ion-item>
         <ion-item lines="full">
@@ -35,27 +35,27 @@ export class RecipeEditor {
           </form>
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Serving Size</ion-label>
+          <ion-label position="stacked">Serving Size</ion-label>
           <ion-input />
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Ingredients</ion-label>
+          <ion-label position="stacked">Ingredients</ion-label>
           <ion-textarea auto-grow />
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Directions</ion-label>
+          <ion-label position="stacked">Directions</ion-label>
           <ion-textarea auto-grow />
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Storage/Freezer Instructions</ion-label>
+          <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
           <ion-textarea auto-grow />
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Nutrition</ion-label>
+          <ion-label position="stacked">Nutrition</ion-label>
           <ion-textarea auto-grow />
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Source</ion-label>
+          <ion-label position="stacked">Source</ion-label>
           <ion-input type="url" />
         </ion-item>
       </ion-content>

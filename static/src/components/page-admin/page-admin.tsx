@@ -32,7 +32,7 @@ export class PageAdmin {
                     <ion-card>
                       <ion-card-content>
                         <ion-item>
-                          <ion-label position="floating">Application Title</ion-label>
+                          <ion-label position="stacked">Application Title</ion-label>
                           <ion-input value={this.appTitle} onIonChange={e => this.appTitle = e.detail.value} required />
                         </ion-item>
                       </ion-card-content>
