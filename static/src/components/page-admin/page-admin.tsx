@@ -47,7 +47,7 @@ export class PageAdmin {
         </ion-tab>
 
         <ion-tab tab="tab-admin-users">
-          <ion-content class="ion-padding">
+          <ion-content>
             <ion-grid>
               <ion-row>
                 {this.users.map(user =>
