@@ -1,7 +1,7 @@
-import { modalController } from '@ionic/core';
+import { alertController, modalController } from '@ionic/core';
 import { Component, Element, h, State } from '@stencil/core';
-import { AppConfiguration, User } from '../../models';
-import { ajaxGetWithResult, ajaxPut } from '../../helpers/ajax';
+import { AppConfiguration, NewUser, User } from '../../models';
+import { ajaxDelete, ajaxGetWithResult, ajaxPost, ajaxPut } from '../../helpers/ajax';
 import state from '../../store';
 
 @Component({
@@ -64,8 +64,10 @@ export class PageAdmin {
                             <h2>{user.username}</h2>
                             <p>{user.accessLevel}</p>
                           </ion-label>
-                          <ion-buttons><ion-button slot="end" fill="clear" color="warning"><ion-icon name="create" /></ion-button>
-                            <ion-button slot="end" fill="clear" color="danger"><ion-icon name="trash" /></ion-button></ion-buttons>
+                          <ion-buttons>
+                            <ion-button slot="end" fill="clear" color="warning" onClick={() => this.onEditUserClicked(user)}><ion-icon name="create" /></ion-button>
+                            <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteUserClicked(user)}><ion-icon name="trash" /></ion-button>
+                          </ion-buttons>
                         </ion-item>
                       </ion-card-content>
                     </ion-card>
@@ -124,10 +126,79 @@ export class PageAdmin {
     }
   }
 
+  async saveNewUser(user: NewUser) {
+    try {
+      await ajaxPost(this.el, '/api/v1/users', user);
+      await this.loadUsers();
+    } catch(ex) {
+      console.log(ex);
+    }
+  }
+
+  async saveExistingUser(user: User) {
+    try {
+      await ajaxPut(this.el, `/api/v1/users/${user.id}`, user);
+      await this.loadUsers();
+    } catch(ex) {
+      console.log(ex);
+    }
+  }
+
+  async deleteUser(user: User) {
+    try {
+      await ajaxDelete(this.el, `/api/v1/users/${user.id}`);
+      await this.loadUsers();
+    } catch(ex) {
+      console.log(ex);
+    }
+  }
+
   async onAddUserClicked() {
     const modal = await modalController.create({
       component: 'user-editor',
     });
-    await modal.present();
+    modal.present();
+
+    const resp = await modal.onDidDismiss<{dismissed: boolean, user: NewUser}>();
+    if (resp.data.dismissed === false) {
+      this.saveNewUser(resp.data.user);
+    }
+  }
+
+  async onEditUserClicked(user: User | null) {
+    const modal = await modalController.create({
+      component: 'user-editor',
+      componentProps: {
+        user: user
+      }
+    });
+    modal.present();
+
+    const resp = await modal.onDidDismiss<{dismissed: boolean, user: User}>();
+    if (resp.data.dismissed === false) {
+      this.saveExistingUser({
+        ...user,
+        ...resp.data.user
+      });
+    }
+  }
+
+  async onDeleteUserClicked(user: User) {
+    const confirmation = await alertController.create({
+      header: 'Delete User?',
+      message: `Are you sure you want to delete ${user.username}?`,
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          handler: async () => {
+            await this.deleteUser(user);
+            return true;
+          }
+        }
+      ]
+    });
+
+    await confirmation.present();
   }
 }

@@ -87,6 +87,12 @@ export interface User {
     accessLevel: string;
 }
 
+export interface NewUser {
+    username: string;
+    accessLevel: string;
+    password: string;
+}
+
 export interface UserSettings {
     userId: string;
     homeTitle: string;
