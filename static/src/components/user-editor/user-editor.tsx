@@ -14,6 +14,8 @@ export class UserEditor {
   @State() repeatPassword = '';
 
   @Element() el: HTMLElement;
+  form: HTMLFormElement;
+  repeatPasswordInput: HTMLIonInputElement;
 
   availableAccessLevels = [
       {name: 'Administrator', value: AccessLevel.Administrator},
@@ -29,35 +31,37 @@ export class UserEditor {
   }
 
   render() {
-    return [
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="primary">
-            <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
-          </ion-buttons>
-          <ion-title>{this.user === null ? 'New User' : 'Edit User'}</ion-title>
-          <ion-buttons slot="secondary">
-            <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>,
+    return (
+      <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="primary">
+              <ion-button type="submit" onClick={() => this.onSaveClicked()}>Save</ion-button>
+            </ion-buttons>
+            <ion-title>{this.user === null ? 'New User' : 'Edit User'}</ion-title>
+            <ion-buttons slot="secondary">
+              <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
 
-      <ion-content>
-        <ion-item>
-          <ion-label position="floating">Email</ion-label>
-          <ion-input value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} />
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Access Level</ion-label>
-          <ion-select value={this.accessLevel} interface="popover" onIonChange={e => this.accessLevel = e.detail.value}>
-            {this.availableAccessLevels.map(level =>
-              <ion-select-option value={level.value}>{level.name}</ion-select-option>
-            )}
-          </ion-select>
-        </ion-item>
-        {this.renderPasswords()}
-      </ion-content>
-    ];
+        <ion-content>
+          <ion-item>
+            <ion-label position="floating">Email</ion-label>
+            <ion-input type="email" value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} required />
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Access Level</ion-label>
+            <ion-select value={this.accessLevel} interface="popover" onIonChange={e => this.accessLevel = e.detail.value}>
+              {this.availableAccessLevels.map(level =>
+                <ion-select-option value={level.value}>{level.name}</ion-select-option>
+              )}
+            </ion-select>
+          </ion-item>
+          {this.renderPasswords()}
+        </ion-content>
+      </form>
+    );
   }
 
   renderPasswords() {
@@ -65,25 +69,26 @@ export class UserEditor {
       return [
         <ion-item>
           <ion-label position="floating">Password</ion-label>
-          <ion-input type="password" onIonChange={e => this.password = e.detail.value} />
+          <ion-input type="password" onIonChange={e => this.password = e.detail.value} required />
         </ion-item>,
         <ion-item>
           <ion-label position="floating">Confirm Password</ion-label>
-          <ion-input type="password" onIonChange={e => this.repeatPassword = e.detail.value} />
-        </ion-item>
+          <ion-input type="password" onIonChange={e => this.repeatPassword = e.detail.value} ref={el => this.repeatPasswordInput = el} required />
+        </ion-item>,
       ];
     }
   }
 
   async onSaveClicked() {
     if (this.user === null) {
-      if (this.username.trim() === '' || this.password.trim() === '')
-      {
-        // TODO: Error messages
-        return;
-      }
+      const native = await this.repeatPasswordInput.getInputElement();
       if (this.password !== this.repeatPassword) {
-        // TODO: Error messages
+        native.setCustomValidity('Passwords must match');
+      } else {
+        native.setCustomValidity('');
+      }
+
+      if (!this.form.reportValidity()) {
         return;
       }
 
