@@ -9,10 +9,11 @@ import state from '../../store';
   styleUrl: 'page-admin.css'
 })
 export class PageAdmin {
-  @State() appTitle = "GOMP: Go Meal Planner";
+  @State() appTitle = 'GOMP: Go Meal Planner';
   @State() users: User[] = [];
 
   @Element() el: HTMLElement;
+  appConfigForm: HTMLFormElement;
 
   async connectedCallback() {
     await this.loadAppConfiguration();
@@ -27,24 +28,26 @@ export class PageAdmin {
             <ion-grid>
               <ion-row class="ion-justify-content-center">
                 <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="8" size-xl="6">
-                  <ion-card class="container-wide">
-                    <ion-card-content>
-                      <ion-item>
-                        <ion-label position="floating">Application Title</ion-label>
-                        <ion-input value={this.appTitle} onIonChange={e => this.appTitle = e.detail.value} />
-                      </ion-item>
-                    </ion-card-content>
-                    <ion-footer>
-                      <ion-toolbar>
-                        <ion-buttons slot="primary">
-                          <ion-button color="primary" onClick={() => this.onSaveConfigurationClicked()}>Save</ion-button>
-                        </ion-buttons>
-                        <ion-buttons slot="secondary">
-                          <ion-button color="danger" onClick={() => this.loadAppConfiguration()}>Reset</ion-button>
-                        </ion-buttons>
-                      </ion-toolbar>
-                    </ion-footer>
-                  </ion-card>
+                  <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el}>
+                    <ion-card class="container-wide">
+                      <ion-card-content>
+                        <ion-item>
+                          <ion-label position="floating">Application Title</ion-label>
+                          <ion-input value={this.appTitle} onIonChange={e => this.appTitle = e.detail.value} required />
+                        </ion-item>
+                      </ion-card-content>
+                      <ion-footer>
+                        <ion-toolbar>
+                          <ion-buttons slot="primary">
+                            <ion-button type="submit" color="primary" onClick={() => this.onSaveConfigurationClicked()}>Save</ion-button>
+                          </ion-buttons>
+                          <ion-buttons slot="secondary">
+                            <ion-button color="danger" onClick={() => this.loadAppConfiguration()}>Reset</ion-button>
+                          </ion-buttons>
+                        </ion-toolbar>
+                      </ion-footer>
+                    </ion-card>
+                  </form>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -107,6 +110,10 @@ export class PageAdmin {
   }
 
   async onSaveConfigurationClicked() {
+    if (!this.appConfigForm.reportValidity()) {
+      return;
+    }
+
     try {
       const appConfig: AppConfiguration = {
         title: this.appTitle
