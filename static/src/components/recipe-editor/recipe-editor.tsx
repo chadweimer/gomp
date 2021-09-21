@@ -24,7 +24,7 @@ export class RecipeEditor {
             <ion-input />
           </ion-item>
           <ion-item>
-            <ion-label position=floating">Ingredients</ion-label>
+            <ion-label position="floating">Ingredients</ion-label>
             <ion-textarea auto-grow />
           </ion-item>
           <ion-item>
