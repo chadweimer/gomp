@@ -9,7 +9,7 @@ export class RecipeEditor {
 
   render() {
     return (
-      <ion-card class="container-wide">
+      <ion-card>
         <ion-card-header>
           <ion-card-title>New Recipe</ion-card-title>
         </ion-card-header>
