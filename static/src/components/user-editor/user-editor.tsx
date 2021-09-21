@@ -8,7 +8,6 @@ import { AccessLevel, NewUser, User } from '../../models';
 export class UserEditor {
   @Prop() user: User | null = null;
 
-  @State() userId: number | null = null;
   @State() username = '';
   @State() accessLevel: string = AccessLevel.Editor;
   @State() password = '';
@@ -24,7 +23,6 @@ export class UserEditor {
 
   connectedCallback() {
     if (this.user !== null) {
-      this.userId = this.user.id;
       this.username = this.user.username;
       this.accessLevel = this.user.accessLevel;
     }
@@ -37,7 +35,7 @@ export class UserEditor {
           <ion-buttons slot="primary">
             <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>New User</ion-title>
+          <ion-title>{this.user === null ? 'New User' : 'Edit User'}</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
