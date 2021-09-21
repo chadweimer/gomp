@@ -114,7 +114,7 @@ export class PageAdmin {
 
   async onAddUserClicked() {
     const modal = await modalController.create({
-      component: 'recipe-editor',
+      component: 'user-editor',
     });
     await modal.present();
   }

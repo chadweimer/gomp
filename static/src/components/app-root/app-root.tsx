@@ -67,7 +67,7 @@ export class AppRoot {
                 <ion-icon name="restaurant" slot="start" />
                 <ion-label>Recipes</ion-label>
               </ion-item>
-              <ion-item href="/settings" lines="none">
+              <ion-item href="/settings" lines="full">
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>

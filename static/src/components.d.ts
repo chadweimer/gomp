@@ -30,6 +30,8 @@ export namespace Components {
     }
     interface RecipeEditor {
     }
+    interface UserEditor {
+    }
 }
 declare global {
     interface HTMLAppRootElement extends Components.AppRoot, HTMLStencilElement {
@@ -98,6 +100,12 @@ declare global {
         prototype: HTMLRecipeEditorElement;
         new (): HTMLRecipeEditorElement;
     };
+    interface HTMLUserEditorElement extends Components.UserEditor, HTMLStencilElement {
+    }
+    var HTMLUserEditorElement: {
+        prototype: HTMLUserEditorElement;
+        new (): HTMLUserEditorElement;
+    };
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
         "page-admin": HTMLPageAdminElement;
@@ -110,6 +118,7 @@ declare global {
         "page-settings": HTMLPageSettingsElement;
         "page-view-recipe": HTMLPageViewRecipeElement;
         "recipe-editor": HTMLRecipeEditorElement;
+        "user-editor": HTMLUserEditorElement;
     }
 }
 declare namespace LocalJSX {
@@ -136,6 +145,8 @@ declare namespace LocalJSX {
     }
     interface RecipeEditor {
     }
+    interface UserEditor {
+    }
     interface IntrinsicElements {
         "app-root": AppRoot;
         "page-admin": PageAdmin;
@@ -148,6 +159,7 @@ declare namespace LocalJSX {
         "page-settings": PageSettings;
         "page-view-recipe": PageViewRecipe;
         "recipe-editor": RecipeEditor;
+        "user-editor": UserEditor;
     }
 }
 export { LocalJSX as JSX };
@@ -165,6 +177,7 @@ declare module "@stencil/core" {
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
             "page-view-recipe": LocalJSX.PageViewRecipe & JSXBase.HTMLAttributes<HTMLPageViewRecipeElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
+            "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }
     }
 }
