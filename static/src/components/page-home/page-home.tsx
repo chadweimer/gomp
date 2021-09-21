@@ -21,10 +21,12 @@ export class PageHome {
 
   render() {
     return [
-      <header class="ion-text-center">
-        <h1>{this.userSettings?.homeTitle}</h1>
-        <ion-img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
-      </header>,
+      <ion-content>
+        <header class="ion-text-center">
+          <h1>{this.userSettings?.homeTitle}</h1>
+          <ion-img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+        </header>
+      </ion-content>,
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
         <ion-fab-button color="success" href="/recipes/new">

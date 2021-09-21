@@ -48,31 +48,26 @@ export class PageAdmin {
 
         <ion-tab tab="tab-admin-users">
           <ion-content class="ion-padding">
-            <ion-card class="container-wide">
-              <ion-card-content>
-                <table class="fill">
-                  <thead class="ion-text-left">
-                    <tr>
-                      <th>Email</th>
-                      <th>Access Level</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {this.users.map(user =>
-                      <tr>
-                        <td>{user.username}</td>
-                        <td>{user.accessLevel}</td>
-                        <td class="ion-text-right">
-                          <ion-icon name="create" size="large" color="warning" />
-                          <ion-icon name="trash" size="large" color="danger" />
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </ion-card-content>
-            </ion-card>
+            <ion-grid>
+              <ion-row>
+                {this.users.map(user =>
+                  <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="4" size-xl="4">
+                    <ion-card>
+                      <ion-card-content>
+                        <ion-item lines="none">
+                          <ion-label>
+                            <h2>{user.username}</h2>
+                            <p>{user.accessLevel}</p>
+                          </ion-label>
+                          <ion-buttons><ion-button slot="end" fill="clear" color="warning"><ion-icon name="create" /></ion-button>
+                            <ion-button slot="end" fill="clear" color="danger"><ion-icon name="trash" /></ion-button></ion-buttons>
+                        </ion-item>
+                      </ion-card-content>
+                    </ion-card>
+                  </ion-col>
+                )}
+              </ion-row>
+            </ion-grid>
             <ion-fab horizontal="end" vertical="bottom" slot="fixed">
               <ion-fab-button color="success" onClick={() => this.onAddUserClicked()}>
                 <ion-icon icon="person-add" />
