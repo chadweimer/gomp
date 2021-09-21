@@ -25,11 +25,11 @@ export class PageAdmin {
       <ion-tabs>
         <ion-tab tab="tab-admin-configuration">
           <ion-content>
-            <ion-grid>
+            <ion-grid class="no-pad">
               <ion-row class="ion-justify-content-center">
                 <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="8" size-xl="6">
                   <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el}>
-                    <ion-card class="container-wide">
+                    <ion-card>
                       <ion-card-content>
                         <ion-item>
                           <ion-label position="floating">Application Title</ion-label>
@@ -56,7 +56,7 @@ export class PageAdmin {
 
         <ion-tab tab="tab-admin-users">
           <ion-content>
-            <ion-grid>
+            <ion-grid class="no-pad">
               <ion-row>
                 {this.users.map(user =>
                   <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="4" size-xl="4">

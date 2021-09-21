@@ -101,23 +101,7 @@
   width: 100%;
 }
 
-@media screen and (min-width: 992px) {
-  .container {
-      width: 50%;
-      margin: auto;
-  }
-  .container-wide {
-      width: 67%;
-      margin: auto;
-  }
-}
-@media screen and (min-width: 576px) and (max-width: 991.98px) {
-  .container {
-      width: 75%;
-      margin: auto;
-  }
-  .container-wide {
-      width: 80%;
-      margin: auto;
-  }
+ion-grid.no-pad {
+  --ion-grid-padding: 0px;
+  --ion-grid-column-padding: 0px;
 }
