@@ -24,25 +24,31 @@ export class PageAdmin {
     return (
       <ion-tabs>
         <ion-tab tab="tab-admin-configuration">
-          <ion-content class="ion-padding">
-            <ion-card class="container-wide">
-              <ion-card-content>
-                <ion-item>
-                  <ion-label color="primary">Application Title</ion-label>
-                  <ion-input value={this.appConfig.title} onIonChange={e => this.appConfig.title = e.detail.value} />
-                </ion-item>
-              </ion-card-content>
-              <ion-footer>
-                <ion-toolbar>
-                  <ion-buttons slot="primary">
-                    <ion-button color="primary">Save</ion-button>
-                  </ion-buttons>
-                  <ion-buttons slot="secondary">
-                    <ion-button color="danger">Reset</ion-button>
-                  </ion-buttons>
-                </ion-toolbar>
-              </ion-footer>
-            </ion-card>
+          <ion-content>
+            <ion-grid>
+              <ion-row class="ion-justify-content-center">
+                <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="8" size-xl="6">
+                  <ion-card class="container-wide">
+                    <ion-card-content>
+                      <ion-item>
+                        <ion-label color="primary">Application Title</ion-label>
+                        <ion-input value={this.appConfig.title} onIonChange={e => this.appConfig.title = e.detail.value} />
+                      </ion-item>
+                    </ion-card-content>
+                    <ion-footer>
+                      <ion-toolbar>
+                        <ion-buttons slot="primary">
+                          <ion-button color="primary">Save</ion-button>
+                        </ion-buttons>
+                        <ion-buttons slot="secondary">
+                          <ion-button color="danger">Reset</ion-button>
+                        </ion-buttons>
+                      </ion-toolbar>
+                    </ion-footer>
+                  </ion-card>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
           </ion-content>
         </ion-tab>
 
