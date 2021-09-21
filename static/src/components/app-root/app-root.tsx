@@ -72,7 +72,7 @@ export class AppRoot {
                 <ion-label>Settings</ion-label>
               </ion-item>
               <ion-item href="/admin" lines="full">
-                <ion-icon name="lock-closed" slot="start" />
+                <ion-icon name="shield-checkmark" slot="start" />
                 <ion-label>Admin</ion-label>
               </ion-item>
               <ion-item lines="none" button onClick={() => this.logout()}>

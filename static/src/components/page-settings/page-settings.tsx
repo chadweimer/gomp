@@ -39,7 +39,7 @@ export class PageSettings {
 
         <ion-tab-bar slot="top">
           <ion-tab-button tab="tab-settings-preferences" href="/settings/preferences">
-            <ion-icon name="construct" />
+            <ion-icon name="options" />
             <ion-label>Preferences</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-settings-searches" href="/settings/searches">
