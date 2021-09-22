@@ -1,3 +1,4 @@
+import { actionSheetController } from '@ionic/core';
 import { Component, Element, h, Prop, State } from '@stencil/core';
 import { ajaxGetWithResult } from '../../helpers/ajax';
 import { Recipe } from '../../models';
@@ -18,7 +19,22 @@ export class PageViewRecipe {
   }
 
   render() {
-    return (
+    return [
+      <ion-header class="ion-hide-lg-down">
+        <ion-toolbar>
+          <ion-buttons slot="primary">
+            <ion-button>Edit</ion-button>
+            <ion-button>Add Link</ion-button>
+            <ion-button>Add Note</ion-button>
+            <ion-button>Upload Picture</ion-button>
+          </ion-buttons>
+          <ion-buttons slot="secondary">
+            <ion-button color="danger">Delete</ion-button>
+            <ion-button color="warning">Archive</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>,
+
       <ion-content>
         <ion-grid class="no-pad">
           <ion-row class="ion-justify-content-center">
@@ -55,8 +71,54 @@ export class PageViewRecipe {
             </ion-col>
           </ion-row>
         </ion-grid>
-      </ion-content>
-    );
+      </ion-content>,
+
+      <ion-footer class="ion-hide-lg-up">
+        <ion-toolbar>
+          <ion-buttons slot="primary">
+            <ion-button class="ion-hide-sm-down">Edit</ion-button>
+            <ion-button class="ion-hide-sm-down">Add Note</ion-button>
+            <ion-button class="ion-hide-sm-down">Upload Picture</ion-button>
+            <ion-button onClick={() => this.showRecipeMenu()}>
+              <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-buttons slot="secondary">
+            <ion-button class="ion-hide-md-down" color="danger">Delete</ion-button>
+            <ion-button class="ion-hide-md-down" color="warning">Archive</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-footer>,
+
+      // <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+      //   <ion-fab-button color="secondary">
+      //     <ion-icon name="ellipsis-vertical" />
+      //   </ion-fab-button>
+      //   <ion-fab-list side="top">
+      //     <ion-fab-button color="light">
+      //       <ion-icon icon="chatbox" aria-label="Add Note"></ion-icon>
+      //     </ion-fab-button>
+      //     <ion-fab-button color="light">
+      //       <ion-icon name="camera" aria-label="Upload Picture"></ion-icon>
+      //     </ion-fab-button>
+      //     <ion-fab-button color="light">
+      //       <ion-icon name="link"></ion-icon>
+      //     </ion-fab-button>
+      //     <ion-fab-button color="light">
+      //       <ion-icon name="create"></ion-icon>
+      //     </ion-fab-button>
+      //     <ion-fab-button color="light">
+      //       <ion-icon name="archive"></ion-icon>
+      //     </ion-fab-button>
+      //     <ion-fab-button color="light">
+      //       <ion-icon name="trash"></ion-icon>
+      //     </ion-fab-button>
+      //     <ion-fab-button color="light">
+      //       <ion-icon name="add"></ion-icon>
+      //     </ion-fab-button>
+      //   </ion-fab-list>
+      // </ion-fab>
+    ];
   }
 
   async loadRecipe() {
@@ -65,6 +127,22 @@ export class PageViewRecipe {
     } catch (ex) {
       console.error(ex);
     }
+  }
+
+  async showRecipeMenu() {
+    const menu = await actionSheetController.create({
+      header: 'Menu',
+      buttons: [
+        { text: 'Delete', role: 'destructive' },
+        { text: 'Archive', role: 'destructive' },
+        { text: 'Add Link' },
+        { text: 'Edit' },
+        { text: 'Add Note' },
+        { text: 'Upload Picture' },
+        { text: 'Cancel', role: 'cancel' }
+      ]
+    });
+    await menu.present();
   }
 
 }
