@@ -60,30 +60,42 @@ export class PageViewRecipe {
               <ion-card>
                 <ion-card-content>
                   <h2>{this.recipe?.name}</h2>
-                  <ion-item lines="full">
-                    <ion-label position="stacked">Serving Size</ion-label>
-                    <p class="plain ion-padding">{this.recipe?.servingSize}</p>
-                  </ion-item>
-                  <ion-item lines="full">
-                    <ion-label position="stacked">Ingredients</ion-label>
-                    <p class="plain ion-padding">{this.recipe?.ingredients}</p>
-                  </ion-item>
-                  <ion-item lines="full">
-                    <ion-label position="stacked">Directions</ion-label>
-                    <p class="plain ion-padding">{this.recipe?.directions}</p>
-                  </ion-item>
-                  <ion-item lines="full">
-                    <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-                    <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
-                  </ion-item>
-                  <ion-item lines="full">
-                    <ion-label position="stacked">Nutrition</ion-label>
-                    <p class="plain ion-padding">{this.recipe?.nutritionInfo}</p>
-                  </ion-item>
-                  <ion-item lines="full">
-                    <ion-label position="stacked">Source</ion-label>
-                    <p class="plain ion-padding">{this.recipe?.sourceUrl}</p>
-                  </ion-item>
+                  {this.recipe?.servingSize ?
+                    <ion-item lines="full">
+                      <ion-label position="stacked">Serving Size</ion-label>
+                      <p class="plain ion-padding">{this.recipe?.servingSize}</p>
+                    </ion-item>
+                    : ''}
+                  {this.recipe?.ingredients ?
+                    <ion-item lines="full">
+                      <ion-label position="stacked">Ingredients</ion-label>
+                      <p class="plain ion-padding">{this.recipe?.ingredients}</p>
+                    </ion-item>
+                    : ''}
+                  {this.recipe?.directions ?
+                    <ion-item lines="full">
+                      <ion-label position="stacked">Directions</ion-label>
+                      <p class="plain ion-padding">{this.recipe?.directions}</p>
+                    </ion-item>
+                    : ''}
+                  {this.recipe?.storageInstructions ?
+                    <ion-item lines="full">
+                      <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
+                      <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
+                    </ion-item>
+                    : ''}
+                  {this.recipe?.nutritionInfo ?
+                    <ion-item lines="full">
+                      <ion-label position="stacked">Nutrition</ion-label>
+                      <p class="plain ion-padding">{this.recipe?.nutritionInfo}</p>
+                    </ion-item>
+                    : ''}
+                  {this.recipe?.sourceUrl ?
+                    <ion-item lines="full">
+                      <ion-label position="stacked">Source</ion-label>
+                      <p class="plain ion-padding">{this.recipe?.sourceUrl}</p>
+                    </ion-item>
+                    : ''}
                 </ion-card-content>
               </ion-card>
             </ion-col>
@@ -111,7 +123,7 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
-            <ion-button class ="ion-hide-md-down">
+            <ion-button class="ion-hide-md-down">
               <ion-icon slot="start" icon="trash" />
               Delete
             </ion-button>
@@ -166,7 +178,7 @@ export class PageViewRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        { text: 'Delete', icon: 'trash',  role: 'destructive' },
+        { text: 'Delete', icon: 'trash', role: 'destructive' },
         { text: 'Archive', icon: 'archive', role: 'destructive' },
         { text: 'Add Link', icon: 'link' },
         { text: 'Edit', icon: 'create' },
