@@ -10,7 +10,7 @@ import { modalController } from '@ionic/core';
 export class PageHome {
   @Prop() userSettings: UserSettings | null;
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLPageHomeElement;
 
   async connectedCallback() {
     try {

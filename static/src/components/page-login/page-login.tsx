@@ -9,7 +9,7 @@ export class PageLogin {
   @State() email: string | null;
   @State() password: string | null;
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLPageLoginElement;
 
   render() {
     return (

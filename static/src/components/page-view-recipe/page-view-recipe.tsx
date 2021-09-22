@@ -12,7 +12,7 @@ export class PageViewRecipe {
 
   @State() recipe: Recipe | null;
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLPageViewRecipeElement;
 
   async connectedCallback() {
     await this.loadRecipe();

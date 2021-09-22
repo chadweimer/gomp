@@ -13,7 +13,7 @@ export class UserEditor {
   @State() password = '';
   @State() repeatPassword = '';
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLUserEditorElement;
   form: HTMLFormElement;
   repeatPasswordInput: HTMLIonInputElement;
 

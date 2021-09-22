@@ -9,7 +9,7 @@ import state from '../../store';
 export class AppRoot {
   @State() loadingCount = 0;
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLAppRootElement;
   router!: HTMLIonRouterElement;
   menu!: HTMLIonMenuElement;
 

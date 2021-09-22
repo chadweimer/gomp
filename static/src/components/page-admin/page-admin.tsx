@@ -12,7 +12,7 @@ export class PageAdmin {
   @State() appTitle = 'GOMP: Go Meal Planner';
   @State() users: User[] = [];
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLPageAdminElement;
   appConfigForm: HTMLFormElement;
 
   async connectedCallback() {

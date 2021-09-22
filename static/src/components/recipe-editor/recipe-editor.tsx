@@ -17,7 +17,7 @@ export class RecipeEditor {
   @State() sourceUrl = '';
   @State() tags: string[] = [];
 
-  @Element() el: HTMLElement;
+  @Element() el: HTMLRecipeEditorElement;
   form: HTMLFormElement;
 
   connectedCallback() {
