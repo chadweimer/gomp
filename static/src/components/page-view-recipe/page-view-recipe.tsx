@@ -111,11 +111,11 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
-            <ion-button>
+            <ion-button class ="ion-hide-md-down">
               <ion-icon slot="start" icon="trash" />
               Delete
             </ion-button>
-            <ion-button>
+            <ion-button class="ion-hide-sm-down">
               <ion-icon slot="start" icon="archive" />
               Archive
             </ion-button>
