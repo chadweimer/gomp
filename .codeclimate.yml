@@ -33,6 +33,7 @@ ratings:
   - "**.css"
   - "**.inc"
   - "**.ts"
+  - "**.tsx"
   - "**.js"
   - "**.jsx"
   - "**.go"
@@ -41,5 +42,6 @@ exclude_paths:
 - build/
 - db/migrations/
 - static/node_modules/
-- static/build/
+- static/www/
+- static-old/
 - vendor/
