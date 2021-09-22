@@ -23,10 +23,22 @@ export class PageViewRecipe {
       <ion-header class="ion-hide-lg-down">
         <ion-toolbar>
           <ion-buttons slot="primary">
-            <ion-button>Edit</ion-button>
-            <ion-button>Add Link</ion-button>
-            <ion-button>Add Note</ion-button>
-            <ion-button>Upload Picture</ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="create" />
+              Edit
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="chatbox" />
+              Add Note
+            </ion-button>
+            <ion-button class="ion-hide-sm-down">
+              <ion-icon slot="start" icon="camera" />
+              Upload Picture
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="link" />
+              Add Link
+            </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
             <ion-button color="danger">Delete</ion-button>
@@ -76,9 +88,18 @@ export class PageViewRecipe {
       <ion-footer class="ion-hide-lg-up">
         <ion-toolbar>
           <ion-buttons slot="primary">
-            <ion-button>Edit</ion-button>
-            <ion-button>Add Note</ion-button>
-            <ion-button class="ion-hide-sm-down">Upload Picture</ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="create" />
+              Edit
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="chatbox" />
+              Add Note
+            </ion-button>
+            <ion-button class="ion-hide-sm-down">
+              <ion-icon slot="start" icon="camera" />
+              Upload Picture
+            </ion-button>
             <ion-button onClick={() => this.showRecipeMenu()}>
               <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
             </ion-button>
