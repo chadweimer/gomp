@@ -133,13 +133,13 @@ export class PageViewRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        { text: 'Delete', role: 'destructive' },
-        { text: 'Archive', role: 'destructive' },
-        { text: 'Add Link' },
-        { text: 'Edit' },
-        { text: 'Add Note' },
-        { text: 'Upload Picture' },
-        { text: 'Cancel', role: 'cancel' }
+        { text: 'Delete', icon: 'trash',  role: 'destructive' },
+        { text: 'Archive', icon: 'archive', role: 'destructive' },
+        { text: 'Add Link', icon: 'link' },
+        { text: 'Edit', icon: 'create' },
+        { text: 'Add Note', icon: 'chatbox' },
+        { text: 'Upload Picture', icon: 'camera' },
+        { text: 'Cancel', icon: 'close', role: 'cancel' }
       ]
     });
     await menu.present();
