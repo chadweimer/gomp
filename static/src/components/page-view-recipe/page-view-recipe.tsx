@@ -41,8 +41,14 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
-            <ion-button color="danger">Delete</ion-button>
-            <ion-button color="warning">Archive</ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="trash" />
+              Delete
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="archive" />
+              Archive
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>,
@@ -105,8 +111,14 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
-            <ion-button class="ion-hide-md-down" color="danger">Delete</ion-button>
-            <ion-button class="ion-hide-md-down" color="warning">Archive</ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="trash" />
+              Delete
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="start" icon="archive" />
+              Archive
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-footer>,
