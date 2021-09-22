@@ -45,3 +45,4 @@ exclude_paths:
 - static/www/
 - static-old/
 - vendor/
+- static/src/components.d.ts
