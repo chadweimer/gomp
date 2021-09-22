@@ -13,7 +13,7 @@ export class PageAdmin {
   @State() users: User[] = [];
 
   @Element() el: HTMLPageAdminElement;
-  appConfigForm: HTMLFormElement;
+  private appConfigForm: HTMLFormElement;
 
   async connectedCallback() {
     await this.loadAppConfiguration();
@@ -100,7 +100,7 @@ export class PageAdmin {
     );
   }
 
-  async loadAppConfiguration() {
+  private async loadAppConfiguration() {
     try {
       const appConfig = await ajaxGetWithResult<AppConfiguration>(this.el, '/api/v1/app/configuration');
       this.appTitle = appConfig.title;
@@ -109,7 +109,7 @@ export class PageAdmin {
     }
   }
 
-  async onSaveConfigurationClicked() {
+  private async onSaveConfigurationClicked() {
     if (!this.appConfigForm.reportValidity()) {
       return;
     }
@@ -125,7 +125,7 @@ export class PageAdmin {
     }
   }
 
-  async loadUsers() {
+  private async loadUsers() {
     try {
       this.users = await ajaxGetWithResult(this.el, '/api/v1/users');
     } catch (ex) {
@@ -133,7 +133,7 @@ export class PageAdmin {
     }
   }
 
-  async saveNewUser(user: NewUser) {
+  private async saveNewUser(user: NewUser) {
     try {
       await ajaxPost(this.el, '/api/v1/users', user);
       await this.loadUsers();
@@ -142,7 +142,7 @@ export class PageAdmin {
     }
   }
 
-  async saveExistingUser(user: User) {
+  private async saveExistingUser(user: User) {
     try {
       await ajaxPut(this.el, `/api/v1/users/${user.id}`, user);
       await this.loadUsers();
@@ -151,7 +151,7 @@ export class PageAdmin {
     }
   }
 
-  async deleteUser(user: User) {
+  private async deleteUser(user: User) {
     try {
       await ajaxDelete(this.el, `/api/v1/users/${user.id}`);
       await this.loadUsers();
@@ -160,7 +160,7 @@ export class PageAdmin {
     }
   }
 
-  async onAddUserClicked() {
+  private async onAddUserClicked() {
     const modal = await modalController.create({
       component: 'user-editor',
     });
@@ -172,7 +172,7 @@ export class PageAdmin {
     }
   }
 
-  async onEditUserClicked(user: User | null) {
+  private async onEditUserClicked(user: User | null) {
     const modal = await modalController.create({
       component: 'user-editor',
       componentProps: {
@@ -190,7 +190,7 @@ export class PageAdmin {
     }
   }
 
-  async onDeleteUserClicked(user: User) {
+  private async onDeleteUserClicked(user: User) {
     const confirmation = await alertController.create({
       header: 'Delete User?',
       message: `Are you sure you want to delete ${user.username}?`,

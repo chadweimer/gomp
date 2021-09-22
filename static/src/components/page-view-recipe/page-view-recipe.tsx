@@ -154,7 +154,7 @@ export class PageViewRecipe {
     ];
   }
 
-  async loadRecipe() {
+  private async loadRecipe() {
     try {
       this.recipe = await ajaxGetWithResult(this.el, `/api/v1/recipes/${this.recipeId}`);
     } catch (ex) {
@@ -162,7 +162,7 @@ export class PageViewRecipe {
     }
   }
 
-  async showRecipeMenu() {
+  private async showRecipeMenu() {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [

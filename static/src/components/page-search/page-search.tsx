@@ -17,7 +17,7 @@ export class PageSearch {
     );
   }
 
-  async onNewRecipeClicked() {
+  private async onNewRecipeClicked() {
     const modal = await modalController.create({
       component: 'recipe-editor',
     });

@@ -7,6 +7,7 @@ module.exports = {
     'extends': [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
+        'plugin:@stencil/recommended',
     ],
     'rules': {
         'quotes': ['error', 'single'],
@@ -21,5 +22,13 @@ module.exports = {
                 'varsIgnorePattern': '^h$'
             }
         ],
+        'react/jsx-no-bind': [
+            'warn',
+            {
+                'ignoreRefs': true,
+                'allowArrowFunctions': true,
+            }
+        ],
+        '@stencil/required-jsdoc': 'off',
     },
 };

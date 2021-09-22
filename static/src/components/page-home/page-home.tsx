@@ -37,7 +37,7 @@ export class PageHome {
     ];
   }
 
-  async saveNewRecipe(recipe: Recipe) {
+  private async saveNewRecipe(recipe: Recipe) {
     const router = document.querySelector('ion-router');
 
     try {
@@ -61,7 +61,7 @@ export class PageHome {
     }
   }
 
-  async onNewRecipeClicked() {
+  private async onNewRecipeClicked() {
     const modal = await modalController.create({
       component: 'recipe-editor',
     });

@@ -14,10 +14,10 @@ export class UserEditor {
   @State() repeatPassword = '';
 
   @Element() el: HTMLUserEditorElement;
-  form: HTMLFormElement;
-  repeatPasswordInput: HTMLIonInputElement;
+  private form: HTMLFormElement;
+  private repeatPasswordInput: HTMLIonInputElement;
 
-  availableAccessLevels = [
+  private static availableAccessLevels = [
       {name: 'Administrator', value: AccessLevel.Administrator},
       {name: 'Editor', value: AccessLevel.Editor},
       {name: 'Viewer', value: AccessLevel.Viewer}
@@ -53,7 +53,7 @@ export class UserEditor {
           <ion-item>
             <ion-label position="stacked">Access Level</ion-label>
             <ion-select value={this.accessLevel} interface="popover" onIonChange={e => this.accessLevel = e.detail.value}>
-              {this.availableAccessLevels.map(level =>
+              {UserEditor.availableAccessLevels.map(level =>
                 <ion-select-option value={level.value}>{level.name}</ion-select-option>
               )}
             </ion-select>
@@ -64,7 +64,7 @@ export class UserEditor {
     );
   }
 
-  renderPasswords() {
+  private renderPasswords() {
     if (this.user === null) {
       return [
         <ion-item>
@@ -79,7 +79,7 @@ export class UserEditor {
     }
   }
 
-  async onSaveClicked() {
+  private async onSaveClicked() {
     if (this.user === null) {
       const native = await this.repeatPasswordInput.getInputElement();
       if (this.password !== this.repeatPassword) {
@@ -111,7 +111,7 @@ export class UserEditor {
     }
   }
 
-  onCancelClicked() {
+  private onCancelClicked() {
     this.el.closest('ion-modal').dismiss({
       dismissed: true
     });

@@ -10,8 +10,8 @@ export class AppRoot {
   @State() loadingCount = 0;
 
   @Element() el: HTMLAppRootElement;
-  router!: HTMLIonRouterElement;
-  menu!: HTMLIonMenuElement;
+  private router: HTMLIonRouterElement;
+  private menu: HTMLIonMenuElement;
 
   async componentWillLoad() {
     await this.loadAppConfiguration();
@@ -157,7 +157,7 @@ export class AppRoot {
     }
   }
 
-  async loadAppConfiguration() {
+  private async loadAppConfiguration() {
     try {
       state.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
       state.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
@@ -176,11 +176,11 @@ export class AppRoot {
     }
   }
 
-  onPageChanging() {
+  private onPageChanging() {
     this.menu.close();
   }
 
-  logout() {
+  private logout() {
     localStorage.clear();
     sessionStorage.clear();
     this.router.push('/login');

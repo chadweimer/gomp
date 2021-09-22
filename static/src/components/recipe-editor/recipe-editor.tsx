@@ -18,7 +18,7 @@ export class RecipeEditor {
   @State() tags: string[] = [];
 
   @Element() el: HTMLRecipeEditorElement;
-  form: HTMLFormElement;
+  private form: HTMLFormElement;
 
   connectedCallback() {
     if (this.recipe !== null) {
@@ -88,7 +88,7 @@ export class RecipeEditor {
     );
   }
 
-  async onSaveClicked() {
+  private async onSaveClicked() {
     if (!this.form.reportValidity()) {
       return;
     }
@@ -108,7 +108,7 @@ export class RecipeEditor {
     });
   }
 
-  onCancelClicked() {
+  private onCancelClicked() {
     this.el.closest('ion-modal').dismiss({
       dismissed: true
     });

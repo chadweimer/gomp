@@ -55,7 +55,7 @@ export class PageSettings {
     );
   }
 
-  async loadUserSettings() {
+  private async loadUserSettings() {
     try {
       this.settings = await ajaxGetWithResult(this.el, '/api/v1/users/current/settings');
       this.filters = await ajaxGetWithResult(this.el, '/api/v1/users/current/filters');
