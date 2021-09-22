@@ -91,7 +91,7 @@ export class AppRoot {
                 <ion-menu-button class="ion-hide-lg-up" />
               </ion-buttons>
 
-              <ion-title class="ion-hide-sm-down">{state.appConfig.title}</ion-title>
+              <ion-title slot="start" class="ion-hide-sm-down">{state.appConfig.title}</ion-title>
 
               <ion-buttons slot="end">
                 <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
