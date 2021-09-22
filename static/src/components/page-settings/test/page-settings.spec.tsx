@@ -5,7 +5,7 @@ describe('page-settings', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [PageSettings],
-      html: `<page-settings></page-settings>`,
+      html: '<page-settings></page-settings>',
     });
     expect(page.root).toEqualHtml(`
       <page-settings>

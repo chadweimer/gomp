@@ -5,7 +5,7 @@ describe('recipe-editor', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [RecipeEditor],
-      html: `<recipe-editor></recipe-editor>`,
+      html: '<recipe-editor></recipe-editor>',
     });
     expect(page.root).toEqualHtml(`
       <recipe-editor>

@@ -5,7 +5,7 @@ describe('page-recipes', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [PageRecipes],
-      html: `<page-recipes></page-recipes>`,
+      html: '<page-recipes></page-recipes>',
     });
     expect(page.root).toEqualHtml(`
       <page-recipes>

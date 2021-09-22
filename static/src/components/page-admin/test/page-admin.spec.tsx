@@ -5,7 +5,7 @@ describe('page-admin', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [PageAdmin],
-      html: `<page-admin></page-admin>`,
+      html: '<page-admin></page-admin>',
     });
     expect(page.root).toEqualHtml(`
       <page-admin>

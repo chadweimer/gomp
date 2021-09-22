@@ -5,7 +5,7 @@ describe('page-search', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [PageSearch],
-      html: `<page-search></page-search>`,
+      html: '<page-search></page-search>',
     });
     expect(page.root).toEqualHtml(`
       <page-search>

@@ -8,7 +8,7 @@
     "dist/"
   ],
   "scripts": {
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint . --ext .ts,.tsx",
     "build": "stencil build",
     "clear": "rm -fr ./node_modules",
     "clean": "rm -fr ./www",

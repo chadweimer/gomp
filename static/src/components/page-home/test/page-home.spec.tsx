@@ -5,7 +5,7 @@ describe('page-home', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [PageHome],
-      html: `<page-home></page-home>`,
+      html: '<page-home></page-home>',
     });
     expect(page.root).toEqualHtml(`
       <page-home>
