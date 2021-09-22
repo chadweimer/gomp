@@ -31,8 +31,8 @@ export class AppRoot {
 
           <ion-route url="/recipes" component="tab-recipes">
             <ion-route component="page-search" />
-            <ion-route url="/:id/view" component="page-view-recipe" />
-            <ion-route url="/:id/edit" component="page-edit-recipe" />
+            <ion-route url="/:recipeId/view" component="page-view-recipe" />
+            <ion-route url="/:recipeId/edit" component="page-edit-recipe" />
           </ion-route>
 
           <ion-route url="/settings" component="tab-settings">

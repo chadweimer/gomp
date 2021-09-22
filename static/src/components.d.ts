@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { User, UserSettings } from "./models";
+import { Recipe, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
@@ -25,8 +25,12 @@ export namespace Components {
     interface PageSettings {
     }
     interface PageViewRecipe {
+        "recipeId": number;
+    }
+    interface RecipeCard {
     }
     interface RecipeEditor {
+        "recipe": Recipe | null;
     }
     interface UserEditor {
         "user": User | null;
@@ -87,6 +91,12 @@ declare global {
         prototype: HTMLPageViewRecipeElement;
         new (): HTMLPageViewRecipeElement;
     };
+    interface HTMLRecipeCardElement extends Components.RecipeCard, HTMLStencilElement {
+    }
+    var HTMLRecipeCardElement: {
+        prototype: HTMLRecipeCardElement;
+        new (): HTMLRecipeCardElement;
+    };
     interface HTMLRecipeEditorElement extends Components.RecipeEditor, HTMLStencilElement {
     }
     var HTMLRecipeEditorElement: {
@@ -109,6 +119,7 @@ declare global {
         "page-search": HTMLPageSearchElement;
         "page-settings": HTMLPageSettingsElement;
         "page-view-recipe": HTMLPageViewRecipeElement;
+        "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
         "user-editor": HTMLUserEditorElement;
     }
@@ -132,8 +143,12 @@ declare namespace LocalJSX {
     interface PageSettings {
     }
     interface PageViewRecipe {
+        "recipeId"?: number;
+    }
+    interface RecipeCard {
     }
     interface RecipeEditor {
+        "recipe"?: Recipe | null;
     }
     interface UserEditor {
         "user"?: User | null;
@@ -148,6 +163,7 @@ declare namespace LocalJSX {
         "page-search": PageSearch;
         "page-settings": PageSettings;
         "page-view-recipe": PageViewRecipe;
+        "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
         "user-editor": UserEditor;
     }
@@ -165,6 +181,7 @@ declare module "@stencil/core" {
             "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
             "page-view-recipe": LocalJSX.PageViewRecipe & JSXBase.HTMLAttributes<HTMLPageViewRecipeElement>;
+            "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }
