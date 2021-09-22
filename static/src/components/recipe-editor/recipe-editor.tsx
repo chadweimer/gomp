@@ -29,8 +29,8 @@ export class RecipeEditor {
           <ion-input />
         </ion-item>
         <ion-item lines="full">
-          <ion-label position="stacked">Picture</ion-label>
           <form id="mainImageForm" enctype="multipart/form-data">
+            <ion-label position="stacked">Picture</ion-label>
             <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" />
           </form>
         </ion-item>
@@ -64,7 +64,7 @@ export class RecipeEditor {
 
   onCancelClicked() {
     this.el.closest('ion-modal').dismiss({
-      'dismissed': true
+      dismissed: true
     });
   }
 
