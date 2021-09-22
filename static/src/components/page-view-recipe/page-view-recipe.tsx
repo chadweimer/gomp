@@ -76,8 +76,8 @@ export class PageViewRecipe {
       <ion-footer class="ion-hide-lg-up">
         <ion-toolbar>
           <ion-buttons slot="primary">
-            <ion-button class="ion-hide-sm-down">Edit</ion-button>
-            <ion-button class="ion-hide-sm-down">Add Note</ion-button>
+            <ion-button>Edit</ion-button>
+            <ion-button>Add Note</ion-button>
             <ion-button class="ion-hide-sm-down">Upload Picture</ion-button>
             <ion-button onClick={() => this.showRecipeMenu()}>
               <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
