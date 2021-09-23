@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, h, State } from '@stencil/core';
+import { AppApi, UsersApi } from '../../helpers/api';
 import { AppConfiguration, NewUser, User } from '../../models';
-import { ajaxDelete, ajaxGetWithResult, ajaxPost, ajaxPut } from '../../helpers/ajax';
 import state from '../../store';
 
 @Component({
@@ -102,7 +102,7 @@ export class PageAdmin {
 
   private async loadAppConfiguration() {
     try {
-      const appConfig = await ajaxGetWithResult<AppConfiguration>(this.el, '/api/v1/app/configuration');
+      const appConfig = await AppApi.getConfiguration(this.el);
       this.appTitle = appConfig.title;
     } catch (ex) {
       console.error(ex);
@@ -118,7 +118,7 @@ export class PageAdmin {
       const appConfig: AppConfiguration = {
         title: this.appTitle
       };
-      await ajaxPut(this.el, '/api/v1/app/configuration', appConfig);
+      await AppApi.putConfiguration(this.el, appConfig);
       state.appConfig = appConfig;
     } catch (ex) {
       console.error(ex);
@@ -127,7 +127,7 @@ export class PageAdmin {
 
   private async loadUsers() {
     try {
-      this.users = await ajaxGetWithResult(this.el, '/api/v1/users');
+      this.users = await UsersApi.getAll(this.el);
     } catch (ex) {
       console.error(ex);
     }
@@ -135,27 +135,27 @@ export class PageAdmin {
 
   private async saveNewUser(user: NewUser) {
     try {
-      await ajaxPost(this.el, '/api/v1/users', user);
+      await UsersApi.post(this.el, user);
       await this.loadUsers();
-    } catch(ex) {
+    } catch (ex) {
       console.log(ex);
     }
   }
 
   private async saveExistingUser(user: User) {
     try {
-      await ajaxPut(this.el, `/api/v1/users/${user.id}`, user);
+      await UsersApi.put(this.el, user);
       await this.loadUsers();
-    } catch(ex) {
+    } catch (ex) {
       console.log(ex);
     }
   }
 
   private async deleteUser(user: User) {
     try {
-      await ajaxDelete(this.el, `/api/v1/users/${user.id}`);
+      await UsersApi.delete(this.el, user.id);
       await this.loadUsers();
-    } catch(ex) {
+    } catch (ex) {
       console.log(ex);
     }
   }
@@ -166,7 +166,7 @@ export class PageAdmin {
     });
     modal.present();
 
-    const resp = await modal.onDidDismiss<{dismissed: boolean, user: NewUser}>();
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, user: NewUser }>();
     if (resp.data.dismissed === false) {
       this.saveNewUser(resp.data.user);
     }
@@ -181,7 +181,7 @@ export class PageAdmin {
     });
     modal.present();
 
-    const resp = await modal.onDidDismiss<{dismissed: boolean, user: User}>();
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
     if (resp.data.dismissed === false) {
       this.saveExistingUser({
         ...user,

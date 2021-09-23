@@ -1,5 +1,5 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { ajaxPostWithResult } from '../../helpers/ajax';
+import { AuthApi } from '../../helpers/api';
 
 @Component({
   tag: 'page-login',
@@ -52,17 +52,12 @@ export class PageLogin {
   }
 
   private async onLoginClicked() {
-    const router = document.querySelector('ion-router');
-
-    const authDetails = {
-      username: this.email,
-      password: this.password
-    };
     try {
       //this.errorMessage = '';
-      const response: { token: string } = await ajaxPostWithResult(this.el, '/api/v1/auth', authDetails);
-      localStorage.setItem('jwtToken', response.token);
+      const token = await AuthApi.authenticate(this.el, this.email, this.password);
+      localStorage.setItem('jwtToken', token);
       //this.dispatchEvent(new CustomEvent('authentication-changed', { bubbles: true, composed: true }));
+      const router = document.querySelector('ion-router');
       await router.push('/');
     } catch (ex) {
       this.password = '';

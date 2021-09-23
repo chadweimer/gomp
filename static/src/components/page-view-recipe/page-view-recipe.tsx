@@ -1,6 +1,6 @@
 import { actionSheetController, alertController } from '@ionic/core';
 import { Component, Element, h, Prop, State } from '@stencil/core';
-import { ajaxDelete, ajaxGetWithResult } from '../../helpers/ajax';
+import { RecipesApi } from '../../helpers/api';
 import { Recipe, RecipeImage } from '../../models';
 
 @Component({
@@ -145,8 +145,9 @@ export class PageViewRecipe {
 
   private async loadRecipe() {
     try {
-      this.recipe = await ajaxGetWithResult(this.el, `/api/v1/recipes/${this.recipeId}`);
-      this.mainImage = await ajaxGetWithResult(this.el, `/api/v1/recipes/${this.recipeId}/image`);
+      const { recipe, mainImage } = await RecipesApi.get(this.el, this.recipeId);
+      this.recipe = recipe;
+      this.mainImage = mainImage;
     } catch (ex) {
       console.error(ex);
     }
@@ -154,7 +155,7 @@ export class PageViewRecipe {
 
   private async deleteRecipe() {
     try {
-      await ajaxDelete(this.el, `/api/v1/recipes/${this.recipeId}`);
+      await RecipesApi.delete(this.el, this.recipeId);
     } catch (ex) {
       console.error(ex);
     }

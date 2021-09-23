@@ -1,5 +1,5 @@
 import { Component, Element, h, Listen, State } from '@stencil/core';
-import { ajaxGetWithResult } from '../../helpers/ajax';
+import { AppApi } from '../../helpers/api';
 import state from '../../store';
 
 @Component({
@@ -159,8 +159,8 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      state.appInfo = await ajaxGetWithResult(this.el, '/api/v1/app/info');
-      state.appConfig = await ajaxGetWithResult(this.el, '/api/v1/app/configuration');
+      state.appInfo = await AppApi.getInfo(this.el);
+      state.appConfig = await AppApi.getConfiguration(this.el);
 
       document.title = state.appConfig.title;
       const appName = document.querySelector('meta[name="application-name"]');

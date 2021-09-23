@@ -1,7 +1,7 @@
-import { modalController } from '@ionic/core';
+import { loadingController, modalController } from '@ionic/core';
 import { Component, Element, h, Prop, State } from '@stencil/core';
-import { ajaxGetWithResult } from '../../helpers/ajax';
-import { DefaultSearchFilter, RecipeCompact, SearchFilter } from '../../models';
+import { RecipesApi } from '../../helpers/api';
+import { DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter } from '../../models';
 
 @Component({
   tag: 'page-search',
@@ -43,7 +43,6 @@ export class PageSearch {
   }
 
   private async loadRecipes() {
-
     // Make sure to fill in any missing fields
     const defaultFilter = new DefaultSearchFilter();
     const filter = { ...defaultFilter, ...this.filter };
@@ -51,22 +50,32 @@ export class PageSearch {
     this.recipes = [];
     this.totalRecipeCount = 0;
     try {
-      const filterQuery = {
-        'q': filter.query,
-        'pictures': filter.withPictures,
-        'fields[]': filter.fields,
-        'tags[]': filter.tags,
-        'states[]': filter.states,
-        'sort': filter.sortBy,
-        'dir': filter.sortDir,
-        'page': this.pageNum,
-        'count': 24//this.getRecipeCount(),
-      };
-      const response: { total: number, recipes: RecipeCompact[] } = await ajaxGetWithResult(this.el, '/api/v1/recipes', filterQuery);
-      this.recipes = response.recipes;
-      this.totalRecipeCount = response.total;
+      const { total, recipes } = await RecipesApi.find(this.el, filter, this.pageNum, 24/*this.getRecipeCount()*/);
+      this.recipes = recipes;
+      this.totalRecipeCount = total;
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  private async saveNewRecipe(recipe: Recipe, formData: FormData) {
+    try {
+      const newRecipeId = await RecipesApi.post(this.el, recipe);
+
+      if (formData) {
+        const loading = await loadingController.create({
+          message: 'Uploading picture...'
+        });
+        loading.present();
+
+        await RecipesApi.postImage(this.el, newRecipeId, formData);
+        await loading.dismiss();
+      }
+
+      const router = document.querySelector('ion-router');
+      router.push(`/recipes/${newRecipeId}/view`);
+    } catch (ex) {
+      console.log(ex);
     }
   }
 
@@ -74,7 +83,12 @@ export class PageSearch {
     const modal = await modalController.create({
       component: 'recipe-editor',
     });
-    await modal.present();
+    modal.present();
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
+    if (resp.data.dismissed === false) {
+      this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+    }
   }
 
 }

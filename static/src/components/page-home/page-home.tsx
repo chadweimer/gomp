@@ -1,7 +1,7 @@
 import { Component, Element, h, Prop } from '@stencil/core';
 import { Recipe, UserSettings } from '../../models';
-import { ajaxGetWithResult, ajaxPost, ajaxPostWithLocation } from '../../helpers/ajax';
 import { loadingController, modalController } from '@ionic/core';
+import { RecipesApi, UsersApi } from '../../helpers/api';
 
 @Component({
   tag: 'page-home',
@@ -14,7 +14,7 @@ export class PageHome {
 
   async connectedCallback() {
     try {
-      this.userSettings = await ajaxGetWithResult(this.el, '/api/v1/users/current/settings');
+      this.userSettings = await UsersApi.getSettings(this.el);
     } catch (e) {
       console.error(e);
     }
@@ -39,19 +39,7 @@ export class PageHome {
 
   private async saveNewRecipe(recipe: Recipe, formData: FormData) {
     try {
-      const location = await ajaxPostWithLocation(this.el, '/api/v1/recipes', recipe);
-
-      const temp = document.createElement('a');
-      temp.href = location;
-      const path = temp.pathname;
-
-      let newRecipeId = NaN;
-      const newRecipeIdMatch = path.match(/\/api\/v1\/recipes\/(\d+)/);
-      if (newRecipeIdMatch) {
-        newRecipeId = parseInt(newRecipeIdMatch[1], 10);
-      } else {
-        throw new Error(`Unexpected path: ${path}`);
-      }
+      const newRecipeId = await RecipesApi.post(this.el, recipe);
 
       if (formData) {
         const loading = await loadingController.create({
@@ -59,7 +47,7 @@ export class PageHome {
         });
         loading.present();
 
-        await ajaxPost(this.el, `/api/v1/recipes/${newRecipeId}/images`, formData);
+        await RecipesApi.postImage(this.el, newRecipeId, formData);
         await loading.dismiss();
       }
 
