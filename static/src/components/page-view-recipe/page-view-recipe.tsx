@@ -1,7 +1,7 @@
-import { actionSheetController } from '@ionic/core';
+import { actionSheetController, alertController } from '@ionic/core';
 import { Component, Element, h, Prop, State } from '@stencil/core';
-import { ajaxGetWithResult } from '../../helpers/ajax';
-import { Recipe } from '../../models';
+import { ajaxDelete, ajaxGetWithResult } from '../../helpers/ajax';
+import { Recipe, RecipeImage } from '../../models';
 
 @Component({
   tag: 'page-view-recipe',
@@ -11,6 +11,7 @@ export class PageViewRecipe {
   @Prop() recipeId: number;
 
   @State() recipe: Recipe | null;
+  @State() mainImage: RecipeImage | null;
 
   @Element() el: HTMLPageViewRecipeElement;
 
@@ -41,7 +42,7 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
-            <ion-button>
+            <ion-button onClick={() => this.onDeleteClicked()}>
               <ion-icon slot="start" icon="trash" />
               Delete
             </ion-button>
@@ -59,7 +60,12 @@ export class PageViewRecipe {
             <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="8" size-xl="6">
               <ion-card>
                 <ion-card-content>
-                  <h2>{this.recipe?.name}</h2>
+                  <ion-item lines="none">
+                    <ion-avatar slot="start">
+                      <img src={this.mainImage?.thumbnailUrl} />
+                    </ion-avatar>
+                    <h2>{this.recipe?.name}</h2>
+                  </ion-item>
                   {this.recipe?.servingSize ?
                     <ion-item lines="full">
                       <ion-label position="stacked">Serving Size</ion-label>
@@ -123,7 +129,7 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="secondary">
-            <ion-button class="ion-hide-md-down">
+            <ion-button class="ion-hide-md-down" onClick={() => this.onDeleteClicked()}>
               <ion-icon slot="start" icon="trash" />
               Delete
             </ion-button>
@@ -133,42 +139,22 @@ export class PageViewRecipe {
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
-      </ion-footer>,
-
-      // <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-      //   <ion-fab-button color="secondary">
-      //     <ion-icon name="ellipsis-vertical" />
-      //   </ion-fab-button>
-      //   <ion-fab-list side="top">
-      //     <ion-fab-button color="light">
-      //       <ion-icon icon="chatbox" aria-label="Add Note"></ion-icon>
-      //     </ion-fab-button>
-      //     <ion-fab-button color="light">
-      //       <ion-icon name="camera" aria-label="Upload Picture"></ion-icon>
-      //     </ion-fab-button>
-      //     <ion-fab-button color="light">
-      //       <ion-icon name="link"></ion-icon>
-      //     </ion-fab-button>
-      //     <ion-fab-button color="light">
-      //       <ion-icon name="create"></ion-icon>
-      //     </ion-fab-button>
-      //     <ion-fab-button color="light">
-      //       <ion-icon name="archive"></ion-icon>
-      //     </ion-fab-button>
-      //     <ion-fab-button color="light">
-      //       <ion-icon name="trash"></ion-icon>
-      //     </ion-fab-button>
-      //     <ion-fab-button color="light">
-      //       <ion-icon name="add"></ion-icon>
-      //     </ion-fab-button>
-      //   </ion-fab-list>
-      // </ion-fab>
+      </ion-footer>
     ];
   }
 
   private async loadRecipe() {
     try {
       this.recipe = await ajaxGetWithResult(this.el, `/api/v1/recipes/${this.recipeId}`);
+      this.mainImage = await ajaxGetWithResult(this.el, `/api/v1/recipes/${this.recipeId}/image`);
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  private async deleteRecipe() {
+    try {
+      await ajaxDelete(this.el, `/api/v1/recipes/${this.recipeId}`);
     } catch (ex) {
       console.error(ex);
     }
@@ -178,7 +164,15 @@ export class PageViewRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        { text: 'Delete', icon: 'trash', role: 'destructive' },
+        {
+          text: 'Delete',
+          icon: 'trash',
+          role: 'destructive',
+          handler: async () => {
+            await this.onDeleteClicked();
+            return true;
+          }
+        },
         { text: 'Archive', icon: 'archive', role: 'destructive' },
         { text: 'Add Link', icon: 'link' },
         { text: 'Edit', icon: 'create' },
@@ -190,4 +184,24 @@ export class PageViewRecipe {
     await menu.present();
   }
 
+  private async onDeleteClicked() {
+    const confirmation = await alertController.create({
+      header: 'Delete Recipe?',
+      message: 'Are you sure you want to delete this recipe?',
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          handler: async () => {
+            await this.deleteRecipe();
+            return true;
+          }
+        }
+      ]
+    });
+
+    await confirmation.present();
+
+    // TODO: Redirect
+  }
 }

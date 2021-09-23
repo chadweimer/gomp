@@ -11,10 +11,10 @@ export class RecipeCard {
 
   render() {
     return (
-      <ion-card>
-        {this.recipe?.thumbnailUrl ? <ion-img src={this.recipe?.thumbnailUrl}/> : ''}
+      <ion-card href={this.recipe ? `/recipes/${this.recipe?.id}/view` : ''}>
+        {this.recipe?.thumbnailUrl ? <ion-img src={this.recipe?.thumbnailUrl} /> : <div class="image-placeholder" />}
         <ion-card-header>
-          <ion-card-title>{this.recipe?.name}</ion-card-title>
+          <ion-card-subtitle>{this.recipe?.name}</ion-card-subtitle>
         </ion-card-header>
       </ion-card>
     );

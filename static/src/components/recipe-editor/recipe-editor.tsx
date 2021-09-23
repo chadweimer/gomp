@@ -19,6 +19,8 @@ export class RecipeEditor {
 
   @Element() el: HTMLRecipeEditorElement;
   private form: HTMLFormElement;
+  private imageForm: HTMLFormElement;
+  private imageInput: HTMLInputElement;
 
   connectedCallback() {
     if (this.recipe !== null) {
@@ -51,12 +53,12 @@ export class RecipeEditor {
         <ion-content>
           <ion-item>
             <ion-label position="stacked">Name</ion-label>
-            <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required/>
+            <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required />
           </ion-item>
           <ion-item lines="full">
-            <form id="mainImageForm" enctype="multipart/form-data">
+            <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
               <ion-label position="stacked">Picture</ion-label>
-              <input id="mainImage" name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" />
+              <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" ref={el => this.imageInput = el} />
             </form>
           </ion-item>
           <ion-item>
@@ -104,7 +106,8 @@ export class RecipeEditor {
         nutritionInfo: this.nutritionInfo,
         sourceUrl: this.sourceUrl,
         tags: this.tags,
-      } as Recipe
+      } as Recipe,
+      formData: this.imageInput.value ? new FormData(this.imageForm) : null
     });
   }
 
