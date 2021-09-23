@@ -1,3 +1,11 @@
 :host {
   display: block;
 }
+
+.tab {
+  border-bottom: 2px solid var(--ion-color-primary);
+}
+
+ion-thumbnail.large {
+  --size: 150px;
+}

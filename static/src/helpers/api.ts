@@ -59,6 +59,9 @@ export class RecipesApi {
 
     return { recipe, mainImage };
   }
+  static async getImages(target: EventTarget, recipeId: number): Promise<RecipeImage[]> {
+    return await ajaxGetWithResult(target, `/api/v1/recipes/${recipeId}/images`);
+  }
 
   static async find(target: EventTarget, filter: SearchFilter, page: number, count: number): Promise<{ total: number, recipes: RecipeCompact[] }> {
     const filterQuery = {

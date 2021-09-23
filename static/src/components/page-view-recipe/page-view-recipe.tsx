@@ -12,11 +12,13 @@ export class PageViewRecipe {
 
   @State() recipe: Recipe | null;
   @State() mainImage: RecipeImage | null;
+  @State() images: RecipeImage[] = [];
 
   @Element() el: HTMLPageViewRecipeElement;
 
   async connectedCallback() {
     await this.loadRecipe();
+    await this.loadImages();
   }
 
   render() {
@@ -57,7 +59,7 @@ export class PageViewRecipe {
       <ion-content>
         <ion-grid class="no-pad">
           <ion-row class="ion-justify-content-center">
-            <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="8" size-xl="6">
+            <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="10" size-xl="8">
               <ion-card>
                 <ion-card-content>
                   <ion-item lines="none">
@@ -104,6 +106,29 @@ export class PageViewRecipe {
                     : ''}
                 </ion-card-content>
               </ion-card>
+              <ion-grid>
+                <ion-row>
+                  <ion-col class="ion-padding-horizontal" size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+                    <h4 class="tab ion-text-center"><ion-text color="primary">Pictures</ion-text></h4>
+                    <ion-grid>
+                      <ion-row>
+                        {this.images.map(image =>
+                          <ion-col>
+                            <a href={image.url} target="_blank">
+                              <ion-thumbnail class="large">
+                                <ion-img src={image.thumbnailUrl} alt={image.name} />
+                              </ion-thumbnail>
+                            </a>
+                          </ion-col>
+                        )}
+                      </ion-row>
+                    </ion-grid>
+                  </ion-col>
+                  <ion-col class="ion-padding-horizontal" size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+                    <h4 class="tab ion-text-center"><ion-text color="primary">Notes</ion-text></h4>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
             </ion-col>
           </ion-row>
         </ion-grid>
@@ -148,6 +173,14 @@ export class PageViewRecipe {
       const { recipe, mainImage } = await RecipesApi.get(this.el, this.recipeId);
       this.recipe = recipe;
       this.mainImage = mainImage;
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  private async loadImages() {
+    try {
+      this.images = await RecipesApi.getImages(this.el, this.recipeId);
     } catch (ex) {
       console.error(ex);
     }
