@@ -1,6 +1,6 @@
 import { Component, Element, h, State } from '@stencil/core';
 import { SavedSearchFilterCompact, UserSettings } from '../../models';
-import { ajaxGetWithResult } from '../../helpers/ajax';
+import { ajaxGet } from '../../helpers/ajax';
 
 @Component({
   tag: 'page-settings',
@@ -57,8 +57,8 @@ export class PageSettings {
 
   private async loadUserSettings() {
     try {
-      this.settings = await ajaxGetWithResult(this.el, '/api/v1/users/current/settings');
-      this.filters = await ajaxGetWithResult(this.el, '/api/v1/users/current/filters');
+      this.settings = await ajaxGet(this.el, '/api/v1/users/current/settings');
+      this.filters = await ajaxGet(this.el, '/api/v1/users/current/filters');
     } catch (ex) {
       console.error(ex);
     }

@@ -1,13 +1,12 @@
-export async function ajaxGet(target: EventTarget, url: string, queryObj?: any) {
+export async function ajaxGet<TResult>(target: EventTarget, url: string, queryObj?: any): Promise<TResult | undefined> {
   const queryString = convertToQueryString(queryObj);
   const fullUrl = `${url}?${queryString}`;
 
   const init: RequestInit = {};
-  return await ajaxFetch(target, fullUrl, init);
-}
-
-export async function ajaxGetWithResult<TResult>(target: EventTarget, url: string, queryObj?: any) {
-  const resp = await ajaxGet(target, url, queryObj);
+  const resp = await ajaxFetch(target, fullUrl, init);
+  if (resp.status === 404) {
+    return undefined;
+  }
   const result = await resp.json() as TResult;
   return result;
 }
@@ -62,16 +61,16 @@ async function ajaxFetch(target: EventTarget, url: string, init: RequestInit) {
   try {
     resp = await fetch(url, init);
 
-    if (resp.ok) {
+    if (resp.ok || resp.status === 404) {
       target.dispatchEvent(new CustomEvent('ajax-response', { bubbles: true, composed: true, detail: resp }));
       return resp;
     } else {
       const errorMsg = await resp.text();
       throw new Error(`${resp.statusText}: ${errorMsg}`);
     }
-  } catch (e) {
-    target.dispatchEvent(new CustomEvent('ajax-error', { bubbles: true, composed: true, detail: { error: e, response: resp } }));
-    throw e;
+  } catch (ex) {
+    target.dispatchEvent(new CustomEvent('ajax-error', { bubbles: true, composed: true, detail: { error: ex, response: resp } }));
+    throw ex;
   }
 }
 

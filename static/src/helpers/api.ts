@@ -1,5 +1,5 @@
 import { AppConfiguration, AppInfo, NewUser, Recipe, RecipeCompact, RecipeImage, SearchFilter, User, UserSettings } from '../models';
-import { ajaxDelete, ajaxGetWithResult, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
+import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
   static async authenticate(target: EventTarget, username: string, password: string) {
@@ -14,11 +14,11 @@ export class AuthApi {
 
 export class AppApi {
   static async getInfo(target: EventTarget): Promise<AppInfo> {
-    return await ajaxGetWithResult(target, '/api/v1/app/info');
+    return await ajaxGet(target, '/api/v1/app/info');
   }
 
   static async getConfiguration(target: EventTarget): Promise<AppConfiguration> {
-    return await ajaxGetWithResult(target, '/api/v1/app/configuration');
+    return await ajaxGet(target, '/api/v1/app/configuration');
   }
 
   static async putConfiguration(target: EventTarget, appConfig: AppConfiguration) {
@@ -28,15 +28,15 @@ export class AppApi {
 
 export class UsersApi {
   static async getAll(target: EventTarget): Promise<User[]> {
-    return await ajaxGetWithResult(target, '/api/v1/users');
+    return await ajaxGet(target, '/api/v1/users') ?? [];
   }
 
   static async get(target: EventTarget, id: number | null = null): Promise<User> {
-    return await ajaxGetWithResult(target, `/api/v1/users/${id !== null ? id : 'current'}`);
+    return await ajaxGet(target, `/api/v1/users/${id !== null ? id : 'current'}`);
   }
 
   static async getSettings(target: EventTarget, id: number | null = null): Promise<UserSettings> {
-    return await ajaxGetWithResult(target, `/api/v1/users/${id !== null ? id : 'current'}/settings`);
+    return await ajaxGet(target, `/api/v1/users/${id !== null ? id : 'current'}/settings`);
   }
 
   static async post(target: EventTarget, user: NewUser) {
@@ -54,13 +54,13 @@ export class UsersApi {
 
 export class RecipesApi {
   static async get(target: EventTarget, id: number): Promise<{ recipe: Recipe, mainImage: RecipeImage }> {
-    const recipe = await ajaxGetWithResult<Recipe>(target, `/api/v1/recipes/${id}`);
-    const mainImage = await ajaxGetWithResult<RecipeImage>(target, `/api/v1/recipes/${id}/image`);
+    const recipe = await ajaxGet<Recipe>(target, `/api/v1/recipes/${id}`);
+    const mainImage = await ajaxGet<RecipeImage>(target, `/api/v1/recipes/${id}/image`);
 
     return { recipe, mainImage };
   }
   static async getImages(target: EventTarget, recipeId: number): Promise<RecipeImage[]> {
-    return await ajaxGetWithResult(target, `/api/v1/recipes/${recipeId}/images`);
+    return await ajaxGet(target, `/api/v1/recipes/${recipeId}/images`) ?? [];
   }
 
   static async find(target: EventTarget, filter: SearchFilter, page: number, count: number): Promise<{ total: number, recipes: RecipeCompact[] }> {
@@ -75,7 +75,7 @@ export class RecipesApi {
       'page': page,
       'count': count
     };
-    return await ajaxGetWithResult(target, '/api/v1/recipes', filterQuery);
+    return await ajaxGet(target, '/api/v1/recipes', filterQuery);
   }
 
   static async post(target: EventTarget, recipe: Recipe): Promise<number> {
