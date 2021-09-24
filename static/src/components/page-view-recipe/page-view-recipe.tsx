@@ -1,7 +1,8 @@
-import { actionSheetController, alertController } from '@ionic/core';
+import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Prop, State } from '@stencil/core';
-import { RecipesApi } from '../../helpers/api';
-import { Recipe, RecipeImage } from '../../models';
+import { NotesApi, RecipesApi } from '../../helpers/api';
+import { formatDate } from '../../helpers/utils';
+import { Note, Recipe, RecipeImage } from '../../models';
 
 @Component({
   tag: 'page-view-recipe',
@@ -13,12 +14,14 @@ export class PageViewRecipe {
   @State() recipe: Recipe | null;
   @State() mainImage: RecipeImage | null;
   @State() images: RecipeImage[] = [];
+  @State() notes: Note[] = [];
 
   @Element() el: HTMLPageViewRecipeElement;
 
   async connectedCallback() {
     await this.loadRecipe();
     await this.loadImages();
+    await this.loadNotes();
   }
 
   render() {
@@ -26,11 +29,11 @@ export class PageViewRecipe {
       <ion-header class="ion-hide-lg-down">
         <ion-toolbar>
           <ion-buttons slot="primary">
-            <ion-button>
+            <ion-button onClick={() => this.onEditClicked()}>
               <ion-icon slot="start" icon="create" />
               Edit
             </ion-button>
-            <ion-button>
+            <ion-button onClick={() => this.onAddNoteClicked()}>
               <ion-icon slot="start" icon="chatbox" />
               Add Note
             </ion-button>
@@ -108,8 +111,8 @@ export class PageViewRecipe {
               </ion-card>
               <ion-grid>
                 <ion-row>
-                  <ion-col class="ion-padding-horizontal" size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-                    <h4 class="tab ion-text-center"><ion-text color="primary">Pictures</ion-text></h4>
+                  <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+                    <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
                     <ion-grid>
                       <ion-row>
                         {this.images.map(image =>
@@ -124,8 +127,35 @@ export class PageViewRecipe {
                       </ion-row>
                     </ion-grid>
                   </ion-col>
-                  <ion-col class="ion-padding-horizontal" size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-                    <h4 class="tab ion-text-center"><ion-text color="primary">Notes</ion-text></h4>
+                  <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+                    <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
+                    <ion-grid>
+                      {this.notes.map(note =>
+                        <ion-row>
+                          <ion-col>
+                            <ion-card>
+                              <ion-card-header>
+                                <ion-item lines="full">
+                                  <ion-icon slot="start" icon="chatbox" />
+                                  <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? '(edited ' + formatDate(note.modifiedAt) + ')' : ''}</ion-label>
+                                  <ion-buttons slot="end">
+                                    <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
+                                      <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
+                                    </ion-button>
+                                    <ion-button size="small" fill="default" onClick={() => this.onDeleteNoteClicked(note)}>
+                                      <ion-icon slot="icon-only" icon="trash" color="danger" size="small" />
+                                    </ion-button>
+                                  </ion-buttons>
+                                </ion-item>
+                              </ion-card-header>
+                              <ion-card-content>
+                                <p class="plain">{note.text}</p>
+                              </ion-card-content>
+                            </ion-card>
+                          </ion-col>
+                        </ion-row>
+                      )}
+                    </ion-grid>
                   </ion-col>
                 </ion-row>
               </ion-grid>
@@ -137,11 +167,11 @@ export class PageViewRecipe {
       <ion-footer class="ion-hide-lg-up">
         <ion-toolbar>
           <ion-buttons slot="primary">
-            <ion-button>
+            <ion-button onClick={() => this.onEditClicked()}>
               <ion-icon slot="start" icon="create" />
               Edit
             </ion-button>
-            <ion-button>
+            <ion-button onClick={() => this.onAddNoteClicked()}>
               <ion-icon slot="start" icon="chatbox" />
               Add Note
             </ion-button>
@@ -178,9 +208,25 @@ export class PageViewRecipe {
     }
   }
 
+  private async saveRecipe(recipe: Recipe) {
+    try {
+      await RecipesApi.put(this.el, recipe);
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
   private async loadImages() {
     try {
       this.images = await RecipesApi.getImages(this.el, this.recipeId);
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  private async loadNotes() {
+    try {
+      this.notes = await RecipesApi.getNotes(this.el, this.recipeId);
     } catch (ex) {
       console.error(ex);
     }
@@ -191,6 +237,37 @@ export class PageViewRecipe {
       await RecipesApi.delete(this.el, this.recipeId);
     } catch (ex) {
       console.error(ex);
+    }
+  }
+
+  private async saveNewNote(note: Note) {
+    note = {
+      ...note,
+      recipeId: this.recipeId
+    };
+    try {
+      await NotesApi.post(this.el, note);
+      await this.loadNotes();
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
+  private async saveExistingNote(note: Note) {
+    try {
+      await NotesApi.put(this.el, note);
+      await this.loadNotes();
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
+  private async deleteNote(note: Note) {
+    try {
+      await NotesApi.delete(this.el, note.id);
+      await this.loadNotes();
+    } catch (ex) {
+      console.log(ex);
     }
   }
 
@@ -209,13 +286,46 @@ export class PageViewRecipe {
         },
         { text: 'Archive', icon: 'archive', role: 'destructive' },
         { text: 'Add Link', icon: 'link' },
-        { text: 'Edit', icon: 'create' },
-        { text: 'Add Note', icon: 'chatbox' },
+        {
+          text: 'Edit',
+          icon: 'create',
+          handler: async () => {
+            await this.onEditClicked();
+            return true;
+          }
+        },
+        {
+          text: 'Add Note',
+          icon: 'chatbox',
+          handler: async () => {
+            await this.onAddNoteClicked();
+            return true;
+          }
+        },
         { text: 'Upload Picture', icon: 'camera' },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ]
     });
     await menu.present();
+  }
+
+  private async onEditClicked() {
+    const modal = await modalController.create({
+      component: 'recipe-editor',
+      componentProps: {
+        recipe: this.recipe
+      }
+    });
+    modal.present();
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe }>();
+    if (resp.data?.dismissed === false) {
+      await this.saveRecipe({
+        ...this.recipe,
+        ...resp.data.recipe
+      });
+      await this.loadRecipe();
+    }
   }
 
   private async onDeleteClicked() {
@@ -237,5 +347,54 @@ export class PageViewRecipe {
     await confirmation.present();
 
     // TODO: Redirect
+  }
+
+  private async onAddNoteClicked() {
+    const modal = await modalController.create({
+      component: 'note-editor',
+    });
+    modal.present();
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
+    if (resp.data?.dismissed === false) {
+      await this.saveNewNote(resp.data.note);
+    }
+  }
+
+  private async onEditNoteClicked(note: Note | null) {
+    const modal = await modalController.create({
+      component: 'note-editor',
+      componentProps: {
+        note: note
+      }
+    });
+    modal.present();
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
+    if (resp.data?.dismissed === false) {
+      await this.saveExistingNote({
+        ...note,
+        ...resp.data.note
+      });
+    }
+  }
+
+  private async onDeleteNoteClicked(note: Note) {
+    const confirmation = await alertController.create({
+      header: 'Delete Note?',
+      message: 'Are you sure you want to delete this note?',
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          handler: async () => {
+            await this.deleteNote(note);
+            return true;
+          }
+        }
+      ]
+    });
+
+    await confirmation.present();
   }
 }

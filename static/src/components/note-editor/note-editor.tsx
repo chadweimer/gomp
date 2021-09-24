@@ -1,4 +1,5 @@
 import { Component, Element, h, Prop, State } from '@stencil/core';
+import { configureModalAutofocus } from '../../helpers/utils';
 import { Note } from '../../models';
 
 @Component({
@@ -14,6 +15,8 @@ export class NoteEditor {
   private form: HTMLFormElement;
 
   connectedCallback() {
+    configureModalAutofocus(this.el);
+
     if (this.note !== null) {
       this.noteText = this.note.text;
     }
@@ -37,7 +40,7 @@ export class NoteEditor {
         <ion-content>
           <ion-item>
             <ion-label position="stacked">Text</ion-label>
-            <ion-input value={this.noteText} onIonChange={e => this.noteText = e.detail.value} required />
+            <ion-input value={this.noteText} onIonChange={e => this.noteText = e.detail.value} required autofocus />
           </ion-item>
         </ion-content>
       </form>

@@ -5,9 +5,12 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Recipe, RecipeCompact, SearchFilter, User, UserSettings } from "./models";
+import { Note, Recipe, RecipeCompact, SearchFilter, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
+    }
+    interface NoteEditor {
+        "note": Note | null;
     }
     interface PageAdmin {
     }
@@ -44,6 +47,12 @@ declare global {
     var HTMLAppRootElement: {
         prototype: HTMLAppRootElement;
         new (): HTMLAppRootElement;
+    };
+    interface HTMLNoteEditorElement extends Components.NoteEditor, HTMLStencilElement {
+    }
+    var HTMLNoteEditorElement: {
+        prototype: HTMLNoteEditorElement;
+        new (): HTMLNoteEditorElement;
     };
     interface HTMLPageAdminElement extends Components.PageAdmin, HTMLStencilElement {
     }
@@ -113,6 +122,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
+        "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
         "page-edit-recipe": HTMLPageEditRecipeElement;
         "page-home": HTMLPageHomeElement;
@@ -128,6 +138,9 @@ declare global {
 }
 declare namespace LocalJSX {
     interface AppRoot {
+    }
+    interface NoteEditor {
+        "note"?: Note | null;
     }
     interface PageAdmin {
     }
@@ -159,6 +172,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "app-root": AppRoot;
+        "note-editor": NoteEditor;
         "page-admin": PageAdmin;
         "page-edit-recipe": PageEditRecipe;
         "page-home": PageHome;
@@ -177,6 +191,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
+            "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
             "page-edit-recipe": LocalJSX.PageEditRecipe & JSXBase.HTMLAttributes<HTMLPageEditRecipeElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;

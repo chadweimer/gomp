@@ -1,4 +1,5 @@
 import { Component, Element, h, Prop, State } from '@stencil/core';
+import { configureModalAutofocus } from '../../helpers/utils';
 import { Recipe } from '../../models';
 
 @Component({
@@ -23,6 +24,8 @@ export class RecipeEditor {
   private imageInput: HTMLInputElement;
 
   connectedCallback() {
+    configureModalAutofocus(this.el);
+
     if (this.recipe !== null) {
       this.recipeName = this.recipe.name;
       this.servingSize = this.recipe.servingSize;
@@ -53,14 +56,16 @@ export class RecipeEditor {
         <ion-content>
           <ion-item>
             <ion-label position="stacked">Name</ion-label>
-            <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required />
+            <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required autofocus />
           </ion-item>
-          <ion-item lines="full">
-            <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
-              <ion-label position="stacked">Picture</ion-label>
-              <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" ref={el => this.imageInput = el} />
-            </form>
-          </ion-item>
+          {this.recipe !== null ?
+            <ion-item lines="full">
+              <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
+                <ion-label position="stacked">Picture</ion-label>
+                <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" ref={el => this.imageInput = el} />
+              </form>
+            </ion-item>
+            : ''}
           <ion-item>
             <ion-label position="stacked">Serving Size</ion-label>
             <ion-input value={this.servingSize} onIonChange={e => this.servingSize = e.detail.value} />

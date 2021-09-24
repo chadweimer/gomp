@@ -1,4 +1,4 @@
-import { AppConfiguration, AppInfo, NewUser, Recipe, RecipeCompact, RecipeImage, SearchFilter, User, UserSettings } from '../models';
+import { AppConfiguration, AppInfo, NewUser, Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User, UserSettings } from '../models';
 import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
@@ -59,8 +59,13 @@ export class RecipesApi {
 
     return { recipe, mainImage };
   }
+
   static async getImages(target: EventTarget, recipeId: number): Promise<RecipeImage[]> {
     return await ajaxGet(target, `/api/v1/recipes/${recipeId}/images`) ?? [];
+  }
+
+  static async getNotes(target: EventTarget, recipeId: number): Promise<Note[]> {
+    return await ajaxGet(target, `/api/v1/recipes/${recipeId}/notes`) ?? [];
   }
 
   static async find(target: EventTarget, filter: SearchFilter, page: number, count: number): Promise<{ total: number, recipes: RecipeCompact[] }> {
@@ -103,5 +108,19 @@ export class RecipesApi {
 
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/recipes/${id}`);
+  }
+}
+
+export class NotesApi {
+  static async post(target: EventTarget, note: Note) {
+    await ajaxPost(target, '/api/v1/notes', note);
+  }
+
+  static async put(target: EventTarget, note: Note) {
+    await ajaxPut(target, `/api/v1/notes/${note.id}`, note);
+  }
+
+  static async delete(target: EventTarget, id: number) {
+    await ajaxDelete(target, `/api/v1/notes/${id}`);
   }
 }

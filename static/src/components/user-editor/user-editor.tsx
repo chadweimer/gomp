@@ -1,4 +1,5 @@
 import { Component, Element, h, Prop, State } from '@stencil/core';
+import { configureModalAutofocus } from '../../helpers/utils';
 import { AccessLevel, NewUser, User } from '../../models';
 
 @Component({
@@ -18,12 +19,14 @@ export class UserEditor {
   private repeatPasswordInput: HTMLIonInputElement;
 
   private static availableAccessLevels = [
-      {name: 'Administrator', value: AccessLevel.Administrator},
-      {name: 'Editor', value: AccessLevel.Editor},
-      {name: 'Viewer', value: AccessLevel.Viewer}
+    { name: 'Administrator', value: AccessLevel.Administrator },
+    { name: 'Editor', value: AccessLevel.Editor },
+    { name: 'Viewer', value: AccessLevel.Viewer }
   ];
 
   connectedCallback() {
+    configureModalAutofocus(this.el);
+
     if (this.user !== null) {
       this.username = this.user.username;
       this.accessLevel = this.user.accessLevel;
@@ -48,7 +51,7 @@ export class UserEditor {
         <ion-content>
           <ion-item>
             <ion-label position="stacked">Email</ion-label>
-            <ion-input type="email" value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} required />
+            <ion-input type="email" value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} required autofocus />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Access Level</ion-label>

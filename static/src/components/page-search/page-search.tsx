@@ -87,7 +87,7 @@ export class PageSearch {
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
     if (resp.data.dismissed === false) {
-      this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+      await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
   }
 

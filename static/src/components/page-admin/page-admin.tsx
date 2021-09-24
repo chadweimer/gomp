@@ -168,7 +168,7 @@ export class PageAdmin {
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: NewUser }>();
     if (resp.data.dismissed === false) {
-      this.saveNewUser(resp.data.user);
+      await this.saveNewUser(resp.data.user);
     }
   }
 
@@ -183,7 +183,7 @@ export class PageAdmin {
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
     if (resp.data.dismissed === false) {
-      this.saveExistingUser({
+      await this.saveExistingUser({
         ...user,
         ...resp.data.user
       });
