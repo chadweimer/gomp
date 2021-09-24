@@ -14,14 +14,10 @@ export namespace Components {
     }
     interface PageAdmin {
     }
-    interface PageEditRecipe {
-    }
     interface PageHome {
         "userSettings": UserSettings | null;
     }
     interface PageLogin {
-    }
-    interface PageRecipes {
     }
     interface PageSearch {
         "filter": SearchFilter | null;
@@ -60,12 +56,6 @@ declare global {
         prototype: HTMLPageAdminElement;
         new (): HTMLPageAdminElement;
     };
-    interface HTMLPageEditRecipeElement extends Components.PageEditRecipe, HTMLStencilElement {
-    }
-    var HTMLPageEditRecipeElement: {
-        prototype: HTMLPageEditRecipeElement;
-        new (): HTMLPageEditRecipeElement;
-    };
     interface HTMLPageHomeElement extends Components.PageHome, HTMLStencilElement {
     }
     var HTMLPageHomeElement: {
@@ -77,12 +67,6 @@ declare global {
     var HTMLPageLoginElement: {
         prototype: HTMLPageLoginElement;
         new (): HTMLPageLoginElement;
-    };
-    interface HTMLPageRecipesElement extends Components.PageRecipes, HTMLStencilElement {
-    }
-    var HTMLPageRecipesElement: {
-        prototype: HTMLPageRecipesElement;
-        new (): HTMLPageRecipesElement;
     };
     interface HTMLPageSearchElement extends Components.PageSearch, HTMLStencilElement {
     }
@@ -124,10 +108,8 @@ declare global {
         "app-root": HTMLAppRootElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
-        "page-edit-recipe": HTMLPageEditRecipeElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
-        "page-recipes": HTMLPageRecipesElement;
         "page-search": HTMLPageSearchElement;
         "page-settings": HTMLPageSettingsElement;
         "page-view-recipe": HTMLPageViewRecipeElement;
@@ -144,14 +126,10 @@ declare namespace LocalJSX {
     }
     interface PageAdmin {
     }
-    interface PageEditRecipe {
-    }
     interface PageHome {
         "userSettings"?: UserSettings | null;
     }
     interface PageLogin {
-    }
-    interface PageRecipes {
     }
     interface PageSearch {
         "filter"?: SearchFilter | null;
@@ -174,10 +152,8 @@ declare namespace LocalJSX {
         "app-root": AppRoot;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
-        "page-edit-recipe": PageEditRecipe;
         "page-home": PageHome;
         "page-login": PageLogin;
-        "page-recipes": PageRecipes;
         "page-search": PageSearch;
         "page-settings": PageSettings;
         "page-view-recipe": PageViewRecipe;
@@ -193,10 +169,8 @@ declare module "@stencil/core" {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
-            "page-edit-recipe": LocalJSX.PageEditRecipe & JSXBase.HTMLAttributes<HTMLPageEditRecipeElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
-            "page-recipes": LocalJSX.PageRecipes & JSXBase.HTMLAttributes<HTMLPageRecipesElement>;
             "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
             "page-view-recipe": LocalJSX.PageViewRecipe & JSXBase.HTMLAttributes<HTMLPageViewRecipeElement>;

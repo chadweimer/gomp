@@ -21,35 +21,25 @@ export class AppRoot {
     return (
       <ion-app>
         <ion-router useHash={false} ref={el => this.router = el} onIonRouteWillChange={() => this.onPageChanging()}>
-          <ion-route url="/login" component="tab-login">
-            <ion-route component="page-login" />
+          <ion-route url="/login" component="page-login" />
+
+          <ion-route url="/" component="page-home" />
+
+          <ion-route url="/recipes" component="page-search" />
+
+          <ion-route url="/recipes/:recipeId/view" component="page-view-recipe" />
+
+          <ion-route url="/settings" component="page-settings">
+            <ion-route component="tab-settings-preferences" />
+            <ion-route url="/preferences" component="tab-settings-preferences" />
+            <ion-route url="/searches" component="tab-settings-searches" />
+            <ion-route url="/security" component="tab-settings-security" />
           </ion-route>
 
-          <ion-route url="/" component="tab-home">
-            <ion-route component="page-home" />
-          </ion-route>
-
-          <ion-route url="/recipes" component="tab-recipes">
-            <ion-route component="page-search" />
-            <ion-route url="/:recipeId/view" component="page-view-recipe" />
-            <ion-route url="/:recipeId/edit" component="page-edit-recipe" />
-          </ion-route>
-
-          <ion-route url="/settings" component="tab-settings">
-            <ion-route component="page-settings">
-              <ion-route component="tab-settings-preferences" />
-              <ion-route url="/preferences" component="tab-settings-preferences" />
-              <ion-route url="/searches" component="tab-settings-searches" />
-              <ion-route url="/security" component="tab-settings-security" />
-            </ion-route>
-          </ion-route>
-
-          <ion-route url="/admin" component="tab-admin">
-            <ion-route component="page-admin">
-              <ion-route component="tab-admin-configuration" />
-              <ion-route url="/configuration" component="tab-admin-configuration" />
-              <ion-route url="/users" component="tab-admin-users" />
-            </ion-route>
+          <ion-route url="/admin" component="page-admin">
+            <ion-route component="tab-admin-configuration" />
+            <ion-route url="/configuration" component="tab-admin-configuration" />
+            <ion-route url="/users" component="tab-admin-users" />
           </ion-route>
         </ion-router>
 
@@ -106,29 +96,7 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-tabs>
-
-              <ion-tab tab="tab-login">
-                <ion-nav />
-              </ion-tab>
-
-              <ion-tab tab="tab-home">
-                <ion-nav />
-              </ion-tab>
-
-              <ion-tab tab="tab-recipes">
-                <ion-nav />
-              </ion-tab>
-
-              <ion-tab tab="tab-settings">
-                <ion-nav />
-              </ion-tab>
-
-              <ion-tab tab="tab-admin">
-                <ion-nav />
-              </ion-tab>
-
-            </ion-tabs>
+            <ion-nav animated={false} />
           </ion-content>
         </div>
       </ion-app>
