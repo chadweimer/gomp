@@ -11,6 +11,7 @@ export class AppRoot {
 
   @Element() el: HTMLAppRootElement;
   private router: HTMLIonRouterElement;
+  private nav: HTMLIonNavElement;
   private menu: HTMLIonMenuElement;
 
   async componentWillLoad() {
@@ -20,7 +21,7 @@ export class AppRoot {
   render() {
     return (
       <ion-app>
-        <ion-router useHash={false} ref={el => this.router = el} onIonRouteWillChange={() => this.onPageChanging()}>
+        <ion-router useHash={false} ref={el => this.router = el} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
           <ion-route url="/login" component="page-login" />
 
           <ion-route url="/" component="page-home" />
@@ -96,7 +97,7 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-nav animated={false} />
+            <ion-nav animated={false} ref={el => this.nav = el} />
           </ion-content>
         </div>
       </ion-app>
@@ -146,6 +147,14 @@ export class AppRoot {
 
   private onPageChanging() {
     this.menu.close();
+  }
+
+  private async onPageChanged() {
+    const activePage = await this.nav.getActive();
+    const el = activePage.element as any;
+    if (typeof el.activatedCallback === 'function') {
+      el.activatedCallback();
+    }
   }
 
   private logout() {

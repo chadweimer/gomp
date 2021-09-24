@@ -25,6 +25,7 @@ export namespace Components {
     interface PageSettings {
     }
     interface PageViewRecipe {
+        "activatedCallback": () => Promise<void>;
         "recipeId": number;
     }
     interface RecipeCard {

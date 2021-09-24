@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
-import { Component, Element, h, Prop, State } from '@stencil/core';
+import { Component, Element, h, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../helpers/api';
 import { formatDate } from '../../helpers/utils';
 import { Note, Recipe, RecipeImage } from '../../models';
@@ -19,9 +19,12 @@ export class PageViewRecipe {
   @Element() el: HTMLPageViewRecipeElement;
 
   async connectedCallback() {
-    await this.loadRecipe();
-    await this.loadImages();
-    await this.loadNotes();
+    await this.load();
+  }
+
+  @Method()
+  async activatedCallback() {
+    await this.load();
   }
 
   render() {
@@ -196,6 +199,12 @@ export class PageViewRecipe {
         </ion-toolbar>
       </ion-footer>
     ];
+  }
+
+  private async load() {
+    await this.loadRecipe();
+    await this.loadImages();
+    await this.loadNotes();
   }
 
   private async loadRecipe() {
