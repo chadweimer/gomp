@@ -39,7 +39,7 @@ export class PageSearch {
               <ion-buttons class="ion-justify-content-center">
                 <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
                 <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(this.pageNum - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled>Page {this.pageNum} of {this.numPages}</ion-button>
+                <ion-button fill="solid" color="secondary" disabled>{this.pageNum} of {this.numPages}</ion-button>
                 <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.pageNum + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
                 <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
               </ion-buttons>
@@ -54,6 +54,19 @@ export class PageSearch {
                 <recipe-card recipe={recipe} />
               </ion-col>
             )}
+          </ion-row>
+        </ion-grid>
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-buttons class="ion-justify-content-center">
+                <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(this.pageNum - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled>{this.pageNum} of {this.numPages}</ion-button>
+                <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.pageNum + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+              </ion-buttons>
+            </ion-col>
           </ion-row>
         </ion-grid>
       </ion-content>,
