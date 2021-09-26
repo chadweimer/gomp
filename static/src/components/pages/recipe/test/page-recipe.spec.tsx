@@ -4,7 +4,7 @@ import { PageRecipe } from '../page-recipe';
 describe('page-recipe', () => {
   it('renders', async () => {
     const page = await newSpecPage({
-      components: [PageViewRecipe],
+      components: [PageRecipe],
       html: '<page-recipe></page-recipe>',
     });
     expect(page.root).toEqualHtml(`
