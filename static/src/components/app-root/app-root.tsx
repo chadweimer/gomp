@@ -15,6 +15,7 @@ export class AppRoot {
   @Element() el: HTMLAppRootElement;
   private nav: HTMLIonNavElement;
   private menu: HTMLIonMenuElement;
+  private searchBar: HTMLIonSearchbarElement;
 
   async componentWillLoad() {
     await this.loadAppConfiguration();
@@ -92,7 +93,7 @@ export class AppRoot {
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
                 <ion-button href="/admin" class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>Admin</ion-button>
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-                <ion-searchbar show-clear-button="always" />
+                <ion-searchbar show-clear-button="always" value={state.search.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
               </ion-buttons>
             </ion-toolbar>
             <ion-progress-bar type="indeterminate" color="secondary" hidden={this.loadingCount === 0} />
@@ -212,5 +213,24 @@ export class AppRoot {
         await top.dismiss();
       }
     });
+  }
+
+  private async onSearchKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      state.search = {
+        ...state.search,
+        query: this.searchBar.value
+      };
+
+      const activePage = await this.nav.getActive();
+      if (activePage.component === 'page-search') {
+        // If the active page is the search page, refresh it
+        const el = activePage.element as HTMLPageSearchElement;
+        el.activatedCallback();
+      } else {
+        // Otherwise, redirect to it
+        redirect('/recipes');
+      }
+    }
   }
 }

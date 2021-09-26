@@ -80,7 +80,7 @@ export class RecipesApi {
       'page': page,
       'count': count
     };
-    return await ajaxGet(target, '/api/v1/recipes', filterQuery);
+    return await ajaxGet(target, '/api/v1/recipes', filterQuery) ?? { total: 0, recipes: [] };
   }
 
   static async post(target: EventTarget, recipe: Recipe): Promise<number> {

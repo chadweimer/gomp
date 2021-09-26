@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, SearchFilter, User, UserSettings } from "./models";
+import { Note, Recipe, RecipeCompact, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
@@ -24,7 +24,7 @@ export namespace Components {
         "recipeId": number;
     }
     interface PageSearch {
-        "filter": SearchFilter | null;
+        "activatedCallback": () => Promise<void>;
     }
     interface PageSettings {
     }
@@ -136,7 +136,6 @@ declare namespace LocalJSX {
         "recipeId"?: number;
     }
     interface PageSearch {
-        "filter"?: SearchFilter | null;
     }
     interface PageSettings {
     }

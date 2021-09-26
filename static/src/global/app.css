@@ -100,6 +100,7 @@
 .fill {
   width: 100%;
 }
+
 p.plain {
     white-space: pre-wrap;
 }
@@ -107,4 +108,10 @@ p.plain {
 ion-grid.no-pad {
   --ion-grid-padding: 0px;
   --ion-grid-column-padding: 0px;
+}
+
+@media (max-width: 991.98px) {
+  .justify-content-center-lg-down {
+    justify-content: center !important;
+  }
 }
