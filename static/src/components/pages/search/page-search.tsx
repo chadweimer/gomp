@@ -29,8 +29,8 @@ export class PageSearch {
           <ion-row>
             <ion-col>
               <ion-buttons class="justify-content-center-lg-down">
-                <ion-button fill="solid" color="secondary"><ion-icon slot="icon-only" icon="filter" /> Active</ion-button>
-                <ion-button fill="solid" color="secondary"><ion-icon slot="icon-only" icon="swap-vertical" /> Name</ion-button>
+                <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="filter" /> Active</ion-button>
+                <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="swap-vertical" /> Name</ion-button>
                 <ion-button fill="solid" color="secondary"><ion-icon slot="icon-only" icon="arrow-up" /></ion-button>
                 <ion-button fill="solid" color="secondary"><ion-icon slot="icon-only" icon="grid" /></ion-button>
               </ion-buttons>

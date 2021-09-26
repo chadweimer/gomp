@@ -20,8 +20,8 @@ export class RecipeEditor {
 
   @Element() el: HTMLRecipeEditorElement;
   private form: HTMLFormElement;
-  private imageForm: HTMLFormElement;
-  private imageInput: HTMLInputElement;
+  private imageForm: HTMLFormElement | null;
+  private imageInput: HTMLInputElement | null;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
@@ -58,7 +58,7 @@ export class RecipeEditor {
             <ion-label position="stacked">Name</ion-label>
             <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required autofocus />
           </ion-item>
-          {this.recipe !== null ?
+          {this.recipe === null ?
             <ion-item lines="full">
               <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
                 <ion-label position="stacked">Picture</ion-label>
@@ -112,7 +112,7 @@ export class RecipeEditor {
         sourceUrl: this.sourceUrl,
         tags: this.tags,
       } as Recipe,
-      formData: this.imageInput.value ? new FormData(this.imageForm) : null
+      formData: this.imageInput?.value ? new FormData(this.imageForm) : null
     });
   }
 
