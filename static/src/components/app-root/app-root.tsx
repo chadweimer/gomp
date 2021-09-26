@@ -1,5 +1,8 @@
+import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
-import { AppApi } from '../../helpers/api';
+import { AppApi, UsersApi } from '../../helpers/api';
+import { hasAccessLevel, redirect } from '../../helpers/utils';
+import { AccessLevel } from '../../models';
 import state from '../../store';
 
 @Component({
@@ -10,7 +13,6 @@ export class AppRoot {
   @State() loadingCount = 0;
 
   @Element() el: HTMLAppRootElement;
-  private router: HTMLIonRouterElement;
   private nav: HTMLIonNavElement;
   private menu: HTMLIonMenuElement;
 
@@ -21,26 +23,26 @@ export class AppRoot {
   render() {
     return (
       <ion-app>
-        <ion-router useHash={false} ref={el => this.router = el} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
+        <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
           <ion-route url="/login" component="page-login" />
 
-          <ion-route url="/" component="page-home" />
+          <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes" component="page-search" />
+          <ion-route url="/recipes" component="page-search" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes/:recipeId/view" component="page-recipe" />
+          <ion-route url="/recipes/:recipeId/view" component="page-recipe" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/settings" component="page-settings">
-            <ion-route component="tab-settings-preferences" />
-            <ion-route url="/preferences" component="tab-settings-preferences" />
-            <ion-route url="/searches" component="tab-settings-searches" />
-            <ion-route url="/security" component="tab-settings-security" />
+          <ion-route url="/settings" component="page-settings" beforeEnter={() => this.requireLogin()}>
+            <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
+            <ion-route url="/preferences" component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
+            <ion-route url="/searches" component="tab-settings-searches" beforeEnter={() => this.requireLogin()} />
+            <ion-route url="/security" component="tab-settings-security" beforeEnter={() => this.requireLogin()} />
           </ion-route>
 
-          <ion-route url="/admin" component="page-admin">
-            <ion-route component="tab-admin-configuration" />
-            <ion-route url="/configuration" component="tab-admin-configuration" />
-            <ion-route url="/users" component="tab-admin-users" />
+          <ion-route url="/admin" component="page-admin" beforeEnter={() => this.requireAdmin()}>
+            <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
+            <ion-route url="/configuration" component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
+            <ion-route url="/users" component="tab-admin-users" beforeEnter={() => this.requireAdmin()} />
           </ion-route>
         </ion-router>
 
@@ -59,7 +61,7 @@ export class AppRoot {
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
-              <ion-item href="/admin" lines="full">
+              <ion-item href="/admin" lines="full" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>
                 <ion-icon name="shield-checkmark" slot="start" />
                 <ion-label>Admin</ion-label>
               </ion-item>
@@ -78,17 +80,17 @@ export class AppRoot {
         <div class="ion-page" id="main-content">
           <ion-header>
             <ion-toolbar color="primary">
-              <ion-buttons slot="start">
+              <ion-buttons slot="start" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Viewer)}>
                 <ion-menu-button class="ion-hide-lg-up" />
               </ion-buttons>
 
               <ion-title slot="start" class="ion-hide-sm-down">{state.appConfig.title}</ion-title>
 
-              <ion-buttons slot="end">
+              <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Viewer)}>
                 <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
                 <ion-button href="/recipes" class="ion-hide-lg-down">Recipes <ion-badge>99</ion-badge></ion-button>
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
-                <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
+                <ion-button href="/admin" class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>Admin</ion-button>
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
                 <ion-searchbar show-clear-button="always" />
               </ion-buttons>
@@ -145,21 +147,70 @@ export class AppRoot {
     }
   }
 
-  private onPageChanging() {
+  private async logout() {
+    state.jwtToken = null;
+    state.currentUser = null;
+    await redirect('/login');
+  }
+
+  private isLoggedIn() {
+    return !!state.jwtToken;
+  }
+
+  private requireLogin() {
+    if (this.isLoggedIn()) {
+      return true;
+    }
+
+    return { redirect: '/login' };
+  }
+
+  private requireAdmin() {
+    const loginCheck = this.requireLogin();
+    if (loginCheck !== true) {
+      return loginCheck;
+    }
+
+    if (state.currentUser?.accessLevel === AccessLevel.Administrator) {
+      return true;
+    }
+
+    return { redirect: '/' };
+  }
+
+  private async onPageChanging() {
     this.menu.close();
+
+    // Refresh the user so that access controls are properly enforced
+    if (this.isLoggedIn()) {
+      try {
+        state.currentUser = await UsersApi.get(this.el);
+      } catch (ex) {
+        console.error(ex);
+      }
+    }
   }
 
   private async onPageChanged() {
+    // Let the new page know it's been activated
     const activePage = await this.nav.getActive();
     const el = activePage.element as any;
     if (typeof el.activatedCallback === 'function') {
       el.activatedCallback();
     }
-  }
 
-  private logout() {
-    localStorage.clear();
-    sessionStorage.clear();
-    this.router.push('/login');
+    // Close any and all modals
+    const controllers = [
+      actionSheetController,
+      alertController,
+      modalController,
+      pickerController,
+      popoverController
+    ];
+    controllers.forEach(async controller => {
+      for (let top = await controller.getTop(); top; top = await controller.getTop()) {
+        await top.dismiss();
+      }
+    });
   }
 }

@@ -1,8 +1,9 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
-import { formatDate } from '../../../helpers/utils';
-import { Note, Recipe, RecipeImage } from '../../../models';
+import { formatDate, hasAccessLevel } from '../../../helpers/utils';
+import { AccessLevel, Note, Recipe, RecipeImage } from '../../../models';
+import state from '../../../store';
 
 @Component({
   tag: 'page-recipe',
@@ -29,7 +30,7 @@ export class PageRecipe {
 
   render() {
     return [
-      <ion-header class="ion-hide-lg-down">
+      <ion-header class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
         <ion-toolbar>
           <ion-buttons slot="primary">
             <ion-button onClick={() => this.onEditClicked()}>
@@ -141,7 +142,7 @@ export class PageRecipe {
                                 <ion-item lines="full">
                                   <ion-icon slot="start" icon="chatbox" />
                                   <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? '(edited ' + formatDate(note.modifiedAt) + ')' : ''}</ion-label>
-                                  <ion-buttons slot="end">
+                                  <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
                                     <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
                                       <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
                                     </ion-button>
@@ -167,7 +168,7 @@ export class PageRecipe {
         </ion-grid>
       </ion-content>,
 
-      <ion-footer class="ion-hide-lg-up">
+      <ion-footer class="ion-hide-lg-up" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
         <ion-toolbar>
           <ion-buttons slot="primary">
             <ion-button onClick={() => this.onEditClicked()}>

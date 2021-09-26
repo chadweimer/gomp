@@ -1,5 +1,7 @@
 import { Component, Element, h, State } from '@stencil/core';
 import { AuthApi } from '../../../helpers/api';
+import { redirect } from '../../../helpers/utils';
+import state from '../../../store';
 
 @Component({
   tag: 'page-login',
@@ -8,6 +10,7 @@ import { AuthApi } from '../../../helpers/api';
 export class PageLogin {
   @State() email: string | null;
   @State() password: string | null;
+  @State() errorMessage: string | null;
 
   @Element() el: HTMLPageLoginElement;
 
@@ -35,6 +38,7 @@ export class PageLogin {
                       onIonChange={e => this.password = e.detail.value}
                       onKeyDown={e => this.onInputKeyDown(e)} />
                   </ion-item>
+                  <ion-text color="danger">{this.errorMessage}</ion-text>
                 </ion-card-content>
                 <ion-footer>
                   <ion-toolbar>
@@ -53,15 +57,13 @@ export class PageLogin {
 
   private async onLoginClicked() {
     try {
-      //this.errorMessage = '';
+      this.errorMessage = null;
       const token = await AuthApi.authenticate(this.el, this.email, this.password);
-      localStorage.setItem('jwtToken', token);
-      //this.dispatchEvent(new CustomEvent('authentication-changed', { bubbles: true, composed: true }));
-      const router = document.querySelector('ion-router');
-      await router.push('/');
+      state.jwtToken = token;
+      await redirect('/');
     } catch (ex) {
       this.password = '';
-      //this.errorMessage = 'Login failed. Check your username and password and try again.';
+      this.errorMessage = 'Login failed. Check your username and password and try again.';
       console.error(ex);
     }
   }

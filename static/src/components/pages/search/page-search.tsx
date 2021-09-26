@@ -1,6 +1,7 @@
 import { loadingController, modalController } from '@ionic/core';
 import { Component, Element, h, Prop, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
+import { redirect } from '../../../helpers/utils';
 import { DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter } from '../../../models';
 
 @Component({
@@ -72,8 +73,7 @@ export class PageSearch {
         await loading.dismiss();
       }
 
-      const router = document.querySelector('ion-router');
-      router.push(`/recipes/${newRecipeId}/view`);
+      await redirect(`/recipes/${newRecipeId}/view`);
     } catch (ex) {
       console.log(ex);
     }

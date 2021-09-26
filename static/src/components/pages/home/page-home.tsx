@@ -2,6 +2,7 @@ import { Component, Element, h, Prop } from '@stencil/core';
 import { Recipe, UserSettings } from '../../../models';
 import { loadingController, modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
+import { redirect } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-home',
@@ -51,8 +52,7 @@ export class PageHome {
         await loading.dismiss();
       }
 
-      const router = document.querySelector('ion-router');
-      router.push(`/recipes/${newRecipeId}/view`);
+      await redirect(`/recipes/${newRecipeId}/view`);
     } catch (ex) {
       console.log(ex);
     }

@@ -1,3 +1,5 @@
+import { AccessLevel, User } from '../models';
+
 export function sayHello() {
   return Math.random() < 0.5 ? 'Hello' : 'Hola';
 }
@@ -13,4 +15,26 @@ export function configureModalAutofocus(el: HTMLElement) {
       focusEl.focus();
     }
   });
+}
+
+export function hasAccessLevel(user: User | null | undefined, accessLevel: AccessLevel) {
+  if (!user) {
+    return false;
+  }
+
+  switch (accessLevel) {
+    case AccessLevel.Administrator:
+      return user.accessLevel === AccessLevel.Administrator;
+
+    case AccessLevel.Editor:
+      return user.accessLevel === AccessLevel.Administrator || user.accessLevel === AccessLevel.Editor;
+
+    default:
+      return true;
+  }
+}
+
+export async function redirect(route: string) {
+  const router = document.querySelector('ion-router');
+  await router.push(route);
 }
