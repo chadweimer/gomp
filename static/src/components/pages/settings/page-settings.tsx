@@ -1,6 +1,6 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { SavedSearchFilterCompact, UserSettings } from '../../models';
-import { ajaxGet } from '../../helpers/ajax';
+import { SavedSearchFilterCompact, UserSettings } from '../../../models';
+import { ajaxGet } from '../../../helpers/ajax';
 
 @Component({
   tag: 'page-settings',

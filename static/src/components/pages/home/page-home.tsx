@@ -1,37 +1,32 @@
+import { Component, Element, h, Prop } from '@stencil/core';
+import { Recipe, UserSettings } from '../../../models';
 import { loadingController, modalController } from '@ionic/core';
-import { Component, Element, h, Prop, State } from '@stencil/core';
-import { RecipesApi } from '../../helpers/api';
-import { DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter } from '../../models';
+import { RecipesApi, UsersApi } from '../../../helpers/api';
 
 @Component({
-  tag: 'page-search',
-  styleUrl: 'page-search.css'
+  tag: 'page-home',
+  styleUrl: 'page-home.css'
 })
-export class PageSearch {
-  @Prop() filter: SearchFilter | null;
+export class PageHome {
+  @Prop() userSettings: UserSettings | null;
 
-  @State() recipes: RecipeCompact[] = [];
-  @State() totalRecipeCount = 0;
-  @State() pageNum = 1;
-
-  @Element() el: HTMLPageSearchElement;
+  @Element() el: HTMLPageHomeElement;
 
   async connectedCallback() {
-    await this.loadRecipes();
+    try {
+      this.userSettings = await UsersApi.getSettings(this.el);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   render() {
     return [
       <ion-content>
-        <ion-grid class="no-pad">
-          <ion-row>
-            {this.recipes.map(recipe =>
-              <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="4" size-xl="3">
-                <recipe-card recipe={recipe} />
-              </ion-col>
-            )}
-          </ion-row>
-        </ion-grid>
+        <header class="ion-text-center">
+          <h1>{this.userSettings?.homeTitle}</h1>
+          <ion-img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+        </header>
       </ion-content>,
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
@@ -40,22 +35,6 @@ export class PageSearch {
         </ion-fab-button>
       </ion-fab>
     ];
-  }
-
-  private async loadRecipes() {
-    // Make sure to fill in any missing fields
-    const defaultFilter = new DefaultSearchFilter();
-    const filter = { ...defaultFilter, ...this.filter };
-
-    this.recipes = [];
-    this.totalRecipeCount = 0;
-    try {
-      const { total, recipes } = await RecipesApi.find(this.el, filter, this.pageNum, 24/*this.getRecipeCount()*/);
-      this.recipes = recipes;
-      this.totalRecipeCount = total;
-    } catch (e) {
-      console.error(e);
-    }
   }
 
   private async saveNewRecipe(recipe: Recipe, formData: FormData) {

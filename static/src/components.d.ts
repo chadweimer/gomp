@@ -19,14 +19,14 @@ export namespace Components {
     }
     interface PageLogin {
     }
+    interface PageRecipe {
+        "activatedCallback": () => Promise<void>;
+        "recipeId": number;
+    }
     interface PageSearch {
         "filter": SearchFilter | null;
     }
     interface PageSettings {
-    }
-    interface PageViewRecipe {
-        "activatedCallback": () => Promise<void>;
-        "recipeId": number;
     }
     interface RecipeCard {
         "recipe": RecipeCompact | null;
@@ -69,6 +69,12 @@ declare global {
         prototype: HTMLPageLoginElement;
         new (): HTMLPageLoginElement;
     };
+    interface HTMLPageRecipeElement extends Components.PageRecipe, HTMLStencilElement {
+    }
+    var HTMLPageRecipeElement: {
+        prototype: HTMLPageRecipeElement;
+        new (): HTMLPageRecipeElement;
+    };
     interface HTMLPageSearchElement extends Components.PageSearch, HTMLStencilElement {
     }
     var HTMLPageSearchElement: {
@@ -80,12 +86,6 @@ declare global {
     var HTMLPageSettingsElement: {
         prototype: HTMLPageSettingsElement;
         new (): HTMLPageSettingsElement;
-    };
-    interface HTMLPageViewRecipeElement extends Components.PageViewRecipe, HTMLStencilElement {
-    }
-    var HTMLPageViewRecipeElement: {
-        prototype: HTMLPageViewRecipeElement;
-        new (): HTMLPageViewRecipeElement;
     };
     interface HTMLRecipeCardElement extends Components.RecipeCard, HTMLStencilElement {
     }
@@ -111,9 +111,9 @@ declare global {
         "page-admin": HTMLPageAdminElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
+        "page-recipe": HTMLPageRecipeElement;
         "page-search": HTMLPageSearchElement;
         "page-settings": HTMLPageSettingsElement;
-        "page-view-recipe": HTMLPageViewRecipeElement;
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
         "user-editor": HTMLUserEditorElement;
@@ -132,13 +132,13 @@ declare namespace LocalJSX {
     }
     interface PageLogin {
     }
+    interface PageRecipe {
+        "recipeId"?: number;
+    }
     interface PageSearch {
         "filter"?: SearchFilter | null;
     }
     interface PageSettings {
-    }
-    interface PageViewRecipe {
-        "recipeId"?: number;
     }
     interface RecipeCard {
         "recipe"?: RecipeCompact | null;
@@ -155,9 +155,9 @@ declare namespace LocalJSX {
         "page-admin": PageAdmin;
         "page-home": PageHome;
         "page-login": PageLogin;
+        "page-recipe": PageRecipe;
         "page-search": PageSearch;
         "page-settings": PageSettings;
-        "page-view-recipe": PageViewRecipe;
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
         "user-editor": UserEditor;
@@ -172,9 +172,9 @@ declare module "@stencil/core" {
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
+            "page-recipe": LocalJSX.PageRecipe & JSXBase.HTMLAttributes<HTMLPageRecipeElement>;
             "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
-            "page-view-recipe": LocalJSX.PageViewRecipe & JSXBase.HTMLAttributes<HTMLPageViewRecipeElement>;
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;

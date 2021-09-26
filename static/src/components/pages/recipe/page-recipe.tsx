@@ -1,14 +1,14 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, Prop, State } from '@stencil/core';
-import { NotesApi, RecipesApi } from '../../helpers/api';
-import { formatDate } from '../../helpers/utils';
-import { Note, Recipe, RecipeImage } from '../../models';
+import { NotesApi, RecipesApi } from '../../../helpers/api';
+import { formatDate } from '../../../helpers/utils';
+import { Note, Recipe, RecipeImage } from '../../../models';
 
 @Component({
-  tag: 'page-view-recipe',
-  styleUrl: 'page-view-recipe.css'
+  tag: 'page-recipe',
+  styleUrl: 'page-recipe.css'
 })
-export class PageViewRecipe {
+export class PageRecipe {
   @Prop() recipeId: number;
 
   @State() recipe: Recipe | null;
@@ -16,7 +16,7 @@ export class PageViewRecipe {
   @State() images: RecipeImage[] = [];
   @State() notes: Note[] = [];
 
-  @Element() el: HTMLPageViewRecipeElement;
+  @Element() el: HTMLPageRecipeElement;
 
   async connectedCallback() {
     await this.load();

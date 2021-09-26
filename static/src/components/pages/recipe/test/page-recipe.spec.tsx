@@ -1,18 +1,18 @@
 import { newSpecPage } from '@stencil/core/testing';
-import { PageViewRecipe } from '../page-view-recipe';
+import { PageRecipe } from '../page-recipe';
 
-describe('page-view-recipe', () => {
+describe('page-recipe', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [PageViewRecipe],
-      html: '<page-view-recipe></page-view-recipe>',
+      html: '<page-recipe></page-recipe>',
     });
     expect(page.root).toEqualHtml(`
-      <page-view-recipe>
+      <page-recipe>
         <mock:shadow-root>
           <slot></slot>
         </mock:shadow-root>
-      </page-view-recipe>
+      </page-recipe>
     `);
   });
 });

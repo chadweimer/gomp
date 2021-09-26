@@ -1,5 +1,5 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { AuthApi } from '../../helpers/api';
+import { AuthApi } from '../../../helpers/api';
 
 @Component({
   tag: 'page-login',

@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, h, State } from '@stencil/core';
-import { AppApi, UsersApi } from '../../helpers/api';
-import { AppConfiguration, NewUser, User } from '../../models';
-import state from '../../store';
+import { AppApi, UsersApi } from '../../../helpers/api';
+import { AppConfiguration, NewUser, User } from '../../../models';
+import state from '../../../store';
 
 @Component({
   tag: 'page-admin',
