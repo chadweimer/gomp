@@ -66,7 +66,16 @@ export class PageSearch {
           <ion-row>
             {this.recipes.map(recipe =>
               <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="4" size-xl="3">
-                <recipe-card recipe={recipe} />
+                {state.searchSettings?.viewMode === SearchViewMode.Card ?
+                  <recipe-card recipe={recipe} />
+                  :
+                  <ion-item>
+                    <ion-avatar slot="start">
+                      <ion-img src={recipe.thumbnailUrl} />
+                    </ion-avatar>
+                    <ion-label>{recipe.name}</ion-label>
+                  </ion-item>
+                }
               </ion-col>
             )}
           </ion-row>
