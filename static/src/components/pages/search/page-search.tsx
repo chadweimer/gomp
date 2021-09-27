@@ -2,7 +2,7 @@ import { loadingController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
-import { DefaultSearchFilter, Recipe, RecipeCompact } from '../../../models';
+import { DefaultSearchFilter, Recipe, RecipeCompact, SearchViewMode, SortDir } from '../../../models';
 import state from '../../../store';
 
 @Component({
@@ -12,8 +12,8 @@ import state from '../../../store';
 export class PageSearch {
   @State() recipes: RecipeCompact[] = [];
   @State() totalRecipeCount = 0;
-  @State() pageNum = 1;
   @State() numPages = 1;
+
 
   @Element() el: HTMLPageSearchElement;
 
@@ -31,17 +31,33 @@ export class PageSearch {
               <ion-buttons class="justify-content-center-lg-down">
                 <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="filter" /> Active</ion-button>
                 <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="swap-vertical" /> Name</ion-button>
-                <ion-button fill="solid" color="secondary"><ion-icon slot="icon-only" icon="arrow-up" /></ion-button>
-                <ion-button fill="solid" color="secondary"><ion-icon slot="icon-only" icon="grid" /></ion-button>
+                {state.searchFilter?.sortDir === SortDir.Asc ?
+                  <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Desc)}>
+                    <ion-icon slot="icon-only" icon="arrow-up" />
+                  </ion-button>
+                  :
+                  <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Asc)}>
+                    <ion-icon slot="icon-only" icon="arrow-down" />
+                  </ion-button>
+                }
+                {state.searchSettings?.viewMode === SearchViewMode.Card ?
+                  <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(SearchViewMode.List)}>
+                    <ion-icon slot="icon-only" icon="grid" />
+                  </ion-button>
+                  :
+                  <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(SearchViewMode.Card)}>
+                    <ion-icon slot="icon-only" icon="list" />
+                  </ion-button>
+                }
               </ion-buttons>
             </ion-col>
             <ion-col class="ion-hide-lg-down">
               <ion-buttons class="ion-justify-content-center">
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(this.pageNum - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled>{this.pageNum} of {this.numPages}</ion-button>
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.pageNum + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {this.numPages}</ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
               </ion-buttons>
             </ion-col>
             <ion-col class="ion-hide-lg-down" />
@@ -60,11 +76,11 @@ export class PageSearch {
           <ion-row>
             <ion-col>
               <ion-buttons class="ion-justify-content-center">
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === 1} onClick={() => this.loadRecipes(this.pageNum - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled>{this.pageNum} of {this.numPages}</ion-button>
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.pageNum + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                <ion-button fill="solid" color="secondary" disabled={this.pageNum === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {this.numPages}</ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
               </ion-buttons>
             </ion-col>
           </ion-row>
@@ -79,16 +95,18 @@ export class PageSearch {
     ];
   }
 
-  private async loadRecipes(pageNum = 1) {
+  private async loadRecipes(pageNum = null) {
     // Make sure to fill in any missing fields
     const defaultFilter = new DefaultSearchFilter();
-    const filter = { ...defaultFilter, ...state.search };
+    const filter = { ...defaultFilter, ...state.searchFilter };
 
     this.recipes = [];
     this.totalRecipeCount = 0;
-    this.pageNum = pageNum;
+    if (pageNum) {
+      state.searchPage = pageNum;
+    }
     try {
-      const { total, recipes } = await RecipesApi.find(this.el, filter, this.pageNum, this.getRecipeCount());
+      const { total, recipes } = await RecipesApi.find(this.el, filter, state.searchPage, this.getRecipeCount());
       this.recipes = recipes ?? [];
       this.totalRecipeCount = total;
 
@@ -96,6 +114,24 @@ export class PageSearch {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  private async setSortDir(sortDir: SortDir) {
+    state.searchFilter = {
+      ...state.searchFilter,
+      sortDir: sortDir
+    };
+    state.searchPage = 1;
+    await this.loadRecipes();
+  }
+
+  private async setViewMode(viewMode: SearchViewMode) {
+    state.searchSettings = {
+      ...state.searchSettings,
+      viewMode: viewMode
+    };
+    state.searchPage = 1;
+    await this.loadRecipes();
   }
 
   private async saveNewRecipe(recipe: Recipe, formData: FormData) {
