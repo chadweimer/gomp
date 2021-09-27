@@ -11,7 +11,6 @@ import state from '../../../store';
 })
 export class PageSearch {
   @State() recipes: RecipeCompact[] = [];
-  @State() totalRecipeCount = 0;
   @State() numPages = 1;
 
 
@@ -101,14 +100,14 @@ export class PageSearch {
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     this.recipes = [];
-    this.totalRecipeCount = 0;
+    state.searchResultCount = null;
     if (pageNum) {
       state.searchPage = pageNum;
     }
     try {
       const { total, recipes } = await RecipesApi.find(this.el, filter, state.searchPage, this.getRecipeCount());
       this.recipes = recipes ?? [];
-      this.totalRecipeCount = total;
+      state.searchResultCount = total;
 
       this.numPages = Math.ceil(total / this.getRecipeCount());
     } catch (e) {

@@ -9,6 +9,7 @@ interface AppState {
   searchFilter?: SearchFilter;
   searchSettings: SearchSettings;
   searchPage: number;
+  searchResultCount?: number;
 }
 
 const { state, onChange } = createStore<AppState>({
