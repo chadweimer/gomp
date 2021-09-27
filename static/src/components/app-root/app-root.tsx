@@ -56,7 +56,7 @@ export class AppRoot {
               </ion-item>
               <ion-item href="/recipes" lines="full">
                 <ion-icon name="restaurant" slot="start" />
-                <ion-label>Recipes<ion-badge>{state.searchResultCount}</ion-badge></ion-label>
+                <ion-label>Recipes</ion-label>
                 <ion-badge slot="end">{state.searchResultCount}</ion-badge>
               </ion-item>
               <ion-item href="/settings" lines="full">
