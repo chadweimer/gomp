@@ -34,6 +34,8 @@ export namespace Components {
     interface RecipeEditor {
         "recipe": Recipe | null;
     }
+    interface SearchFilterEditor {
+    }
     interface UserEditor {
         "user": User | null;
     }
@@ -99,6 +101,12 @@ declare global {
         prototype: HTMLRecipeEditorElement;
         new (): HTMLRecipeEditorElement;
     };
+    interface HTMLSearchFilterEditorElement extends Components.SearchFilterEditor, HTMLStencilElement {
+    }
+    var HTMLSearchFilterEditorElement: {
+        prototype: HTMLSearchFilterEditorElement;
+        new (): HTMLSearchFilterEditorElement;
+    };
     interface HTMLUserEditorElement extends Components.UserEditor, HTMLStencilElement {
     }
     var HTMLUserEditorElement: {
@@ -116,6 +124,7 @@ declare global {
         "page-settings": HTMLPageSettingsElement;
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
+        "search-filter-editor": HTMLSearchFilterEditorElement;
         "user-editor": HTMLUserEditorElement;
     }
 }
@@ -145,6 +154,8 @@ declare namespace LocalJSX {
     interface RecipeEditor {
         "recipe"?: Recipe | null;
     }
+    interface SearchFilterEditor {
+    }
     interface UserEditor {
         "user"?: User | null;
     }
@@ -159,6 +170,7 @@ declare namespace LocalJSX {
         "page-settings": PageSettings;
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
+        "search-filter-editor": SearchFilterEditor;
         "user-editor": UserEditor;
     }
 }
@@ -176,6 +188,7 @@ declare module "@stencil/core" {
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
+            "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
             "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }
     }
