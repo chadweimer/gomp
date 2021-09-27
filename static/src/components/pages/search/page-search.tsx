@@ -69,7 +69,7 @@ export class PageSearch {
                 {state.searchSettings?.viewMode === SearchViewMode.Card ?
                   <recipe-card recipe={recipe} />
                   :
-                  <ion-item>
+                  <ion-item lines="none">
                     <ion-avatar slot="start">
                       <ion-img src={recipe.thumbnailUrl} />
                     </ion-avatar>
@@ -175,8 +175,9 @@ export class PageSearch {
   }
 
   private getRecipeCount() {
-    // TODO: View modes
-    return 2;
+    return state.searchSettings.viewMode === SearchViewMode.Card
+      ? 24
+      : 60;
   }
 
 }
