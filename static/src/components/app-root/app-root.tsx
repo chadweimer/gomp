@@ -57,6 +57,7 @@ export class AppRoot {
               <ion-item href="/recipes" lines="full">
                 <ion-icon name="restaurant" slot="start" />
                 <ion-label>Recipes<ion-badge>{state.searchResultCount}</ion-badge></ion-label>
+                <ion-badge slot="end">{state.searchResultCount}</ion-badge>
               </ion-item>
               <ion-item href="/settings" lines="full">
                 <ion-icon name="settings" slot="start" />
@@ -89,7 +90,7 @@ export class AppRoot {
 
               <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Viewer)}>
                 <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
-                <ion-button href="/recipes" class="ion-hide-lg-down">Recipes<ion-badge>{state.searchResultCount}</ion-badge></ion-button>
+                <ion-button href="/recipes" class="ion-hide-lg-down">Recipes<ion-badge slot="end">{state.searchResultCount}</ion-badge></ion-button>
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
                 <ion-button href="/admin" class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>Admin</ion-button>
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
