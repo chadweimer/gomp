@@ -25,6 +25,7 @@ const { state, onChange } = createStore<AppState>({
   searchPage: sessionStorage.getItem('searchPage') ? JSON.parse(sessionStorage.getItem('searchPage')) : 1
 });
 
+onChange('jwtToken', val => val ? localStorage.setItem('jwtToken', JSON.stringify(val)) : localStorage.removeItem('jwtToken'));
 onChange('searchFilter', val => val ? sessionStorage.setItem('searchFilter', JSON.stringify(val)) : sessionStorage.removeItem('searchFilter'));
 onChange('searchSettings', val => val ? sessionStorage.setItem('searchSettings', JSON.stringify(val)) : sessionStorage.removeItem('searchSettings'));
 onChange('searchPage', val => val ? sessionStorage.setItem('searchPage', JSON.stringify(val)) : sessionStorage.removeItem('searchPage'));
