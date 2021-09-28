@@ -25,9 +25,9 @@ export class PageAdmin {
       <ion-tabs>
         <ion-tab tab="tab-admin-configuration">
           <ion-content>
-            <ion-grid class="no-pad">
-              <ion-row class="ion-justify-content-center">
-                <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="8" size-xl="6">
+            <ion-grid class="no-pad" fixed>
+              <ion-row>
+                <ion-col>
                   <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el}>
                     <ion-card>
                       <ion-card-content>

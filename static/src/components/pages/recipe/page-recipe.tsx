@@ -113,55 +113,53 @@ export class PageRecipe {
                     : ''}
                 </ion-card-content>
               </ion-card>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+              <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
               <ion-grid>
                 <ion-row>
-                  <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-                    <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
-                    <ion-grid>
-                      <ion-row>
-                        {this.images.map(image =>
-                          <ion-col>
-                            <a href={image.url} target="_blank">
-                              <ion-thumbnail class="large">
-                                <ion-img src={image.thumbnailUrl} alt={image.name} />
-                              </ion-thumbnail>
-                            </a>
-                          </ion-col>
-                        )}
-                      </ion-row>
-                    </ion-grid>
-                  </ion-col>
-                  <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
-                    <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
-                    <ion-grid>
-                      {this.notes.map(note =>
-                        <ion-row>
-                          <ion-col>
-                            <ion-card>
-                              <ion-card-header>
-                                <ion-item lines="full">
-                                  <ion-icon slot="start" icon="chatbox" />
-                                  <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? '(edited ' + formatDate(note.modifiedAt) + ')' : ''}</ion-label>
-                                  <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
-                                    <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
-                                      <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
-                                    </ion-button>
-                                    <ion-button size="small" fill="default" onClick={() => this.onDeleteNoteClicked(note)}>
-                                      <ion-icon slot="icon-only" icon="trash" color="danger" size="small" />
-                                    </ion-button>
-                                  </ion-buttons>
-                                </ion-item>
-                              </ion-card-header>
-                              <ion-card-content>
-                                <p class="plain">{note.text}</p>
-                              </ion-card-content>
-                            </ion-card>
-                          </ion-col>
-                        </ion-row>
-                      )}
-                    </ion-grid>
-                  </ion-col>
+                  {this.images.map(image =>
+                    <ion-col>
+                      <a href={image.url} target="_blank">
+                        <ion-thumbnail class="large">
+                          <ion-img src={image.thumbnailUrl} alt={image.name} />
+                        </ion-thumbnail>
+                      </a>
+                    </ion-col>
+                  )}
                 </ion-row>
+              </ion-grid>
+            </ion-col>
+            <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
+              <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
+              <ion-grid>
+                {this.notes.map(note =>
+                  <ion-row>
+                    <ion-col>
+                      <ion-card>
+                        <ion-card-header>
+                          <ion-item lines="full">
+                            <ion-icon slot="start" icon="chatbox" />
+                            <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? '(edited ' + formatDate(note.modifiedAt) + ')' : ''}</ion-label>
+                            <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
+                              <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
+                                <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
+                              </ion-button>
+                              <ion-button size="small" fill="default" onClick={() => this.onDeleteNoteClicked(note)}>
+                                <ion-icon slot="icon-only" icon="trash" color="danger" size="small" />
+                              </ion-button>
+                            </ion-buttons>
+                          </ion-item>
+                        </ion-card-header>
+                        <ion-card-content>
+                          <p class="plain">{note.text}</p>
+                        </ion-card-content>
+                      </ion-card>
+                    </ion-col>
+                  </ion-row>
+                )}
               </ion-grid>
             </ion-col>
           </ion-row>
