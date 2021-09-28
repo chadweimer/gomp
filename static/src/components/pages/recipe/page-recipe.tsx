@@ -119,11 +119,11 @@ export class PageRecipe {
             <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="6" size-xl="6">
               <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
               <ion-grid class="ion-padding">
-                <ion-row>
+                <ion-row class="ion-justify-content-center">
                   {this.images.map(image =>
-                    <ion-col class="ion-justify-content-center">
+                    <ion-col size="auto">
                       <a href={image.url} target="_blank">
-                        <ion-thumbnail class="large">
+                        <ion-thumbnail class="large ion-padding">
                           <ion-img src={image.thumbnailUrl} alt={image.name} />
                         </ion-thumbnail>
                       </a>
