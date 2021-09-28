@@ -40,7 +40,7 @@ export class NoteEditor {
         <ion-content>
           <ion-item>
             <ion-label position="stacked">Text</ion-label>
-            <ion-input value={this.noteText} onIonChange={e => this.noteText = e.detail.value} required autofocus />
+            <ion-textarea value={this.noteText} onIonChange={e => this.noteText = e.detail.value} required autofocus auto-grow />
           </ion-item>
         </ion-content>
       </form>
