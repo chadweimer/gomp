@@ -34,21 +34,21 @@ export class UserEditor {
   }
 
   render() {
-    return (
-      <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="primary">
-              <ion-button type="submit" onClick={() => this.onSaveClicked()}>Save</ion-button>
-            </ion-buttons>
-            <ion-title>{this.user === null ? 'New User' : 'Edit User'}</ion-title>
-            <ion-buttons slot="secondary">
-              <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
+    return [
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="primary">
+            <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+          </ion-buttons>
+          <ion-title>{this.user === null ? 'New User' : 'Edit User'}</ion-title>
+          <ion-buttons slot="secondary">
+            <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>,
 
-        <ion-content>
+      <ion-content>
+        <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
           <ion-item>
             <ion-label position="stacked">Email</ion-label>
             <ion-input type="email" value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} required autofocus />
@@ -62,9 +62,9 @@ export class UserEditor {
             </ion-select>
           </ion-item>
           {this.renderPasswords()}
-        </ion-content>
-      </form>
-    );
+        </form>
+      </ion-content>
+    ];
   }
 
   private renderPasswords() {

@@ -9,12 +9,14 @@ export function formatDate(dateStr: string) {
 }
 
 export function configureModalAutofocus(el: HTMLElement) {
-  el.closest('ion-modal')?.addEventListener('focus', () => {
-    const focusEl = el.querySelector('[autofocus]');
-    if (focusEl instanceof HTMLElement) {
-      focusEl.focus();
-    }
-  });
+  el.closest('ion-modal')?.addEventListener('focus', performAutofocus);
+}
+function performAutofocus(this: HTMLIonModalElement) {
+  const focusEl = this.querySelector('[autofocus]');
+  if (focusEl instanceof HTMLElement) {
+    focusEl.focus();
+  }
+  this.removeEventListener('focus', performAutofocus);
 }
 
 export function hasAccessLevel(user: User | null | undefined, accessLevel: AccessLevel) {

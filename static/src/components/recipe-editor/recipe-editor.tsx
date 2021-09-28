@@ -44,21 +44,21 @@ export class RecipeEditor {
   }
 
   render() {
-    return (
-      <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
-            </ion-buttons>
-            <ion-title>{this.recipe === null ? 'New Recipe' : 'Edit Recipe'}</ion-title>
-            <ion-buttons slot="secondary">
-              <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
-            </ion-buttons>
-          </ion-toolbar>
-        </ion-header>
+    return [
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="primary">
+            <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+          </ion-buttons>
+          <ion-title>{this.recipe === null ? 'New Recipe' : 'Edit Recipe'}</ion-title>
+          <ion-buttons slot="secondary">
+            <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>,
 
-        <ion-content>
+      <ion-content>
+        <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
           <ion-item>
             <ion-label position="stacked">Name</ion-label>
             <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required autofocus />
@@ -109,7 +109,7 @@ export class RecipeEditor {
               : ''}
             <ion-input onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
           </ion-item>
-          <div class="ion-padding-top">
+          <div class="ion-padding">
             {this.suggestedTags.map(tag =>
               <ion-chip color="success" onClick={() => this.addTag(tag)}>
                 {tag}
@@ -117,9 +117,9 @@ export class RecipeEditor {
               </ion-chip>
             )}
           </div>
-        </ion-content>
-      </form>
-    );
+        </form>
+      </ion-content>
+    ];
   }
 
   private loadSuggestedTags() {

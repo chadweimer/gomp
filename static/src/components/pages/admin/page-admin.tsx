@@ -39,7 +39,7 @@ export class PageAdmin {
                       <ion-footer>
                         <ion-toolbar>
                           <ion-buttons slot="primary">
-                            <ion-button type="submit" color="primary" onClick={() => this.onSaveConfigurationClicked()}>Save</ion-button>
+                            <ion-button color="primary" onClick={() => this.onSaveConfigurationClicked()}>Save</ion-button>
                           </ion-buttons>
                           <ion-buttons slot="secondary">
                             <ion-button color="danger" onClick={() => this.loadAppConfiguration()}>Reset</ion-button>
