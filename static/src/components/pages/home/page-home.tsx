@@ -24,10 +24,16 @@ export class PageHome {
   render() {
     return [
       <ion-content>
-        <header class="ion-text-center">
-          <h1>{this.userSettings?.homeTitle}</h1>
-          <ion-img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
-        </header>
+        <ion-grid fixed>
+          <ion-row>
+            <ion-col>
+              <header class="ion-text-center">
+                <h1>{this.userSettings?.homeTitle}</h1>
+                <ion-img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+              </header>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-content>,
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
