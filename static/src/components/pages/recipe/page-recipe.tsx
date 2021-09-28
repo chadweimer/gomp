@@ -64,9 +64,9 @@ export class PageRecipe {
       </ion-header>,
 
       <ion-content>
-        <ion-grid class="no-pad">
-          <ion-row class="ion-justify-content-center">
-            <ion-col size-xs="12" size-sm="12" size-md="10" size-lg="10" size-xl="8">
+        <ion-grid class="no-pad" fixed>
+          <ion-row>
+            <ion-col>
               <ion-card>
                 <ion-card-content>
                   <ion-item lines="none">
