@@ -211,6 +211,7 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       try {
         state.currentUser = await UsersApi.get(this.el);
+        state.currentUserSettings = await UsersApi.getSettings(this.el);
       } catch (ex) {
         console.error(ex);
       }

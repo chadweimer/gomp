@@ -73,7 +73,7 @@ export class PageRecipe {
                     <ion-avatar slot="start">
                       <img src={this.mainImage?.thumbnailUrl} />
                     </ion-avatar>
-                    <h2>{this.recipe?.name}</h2>
+                    <h1>{this.recipe?.name}</h1>
                   </ion-item>
                   {this.recipe?.servingSize ?
                     <ion-item lines="full">
@@ -111,9 +111,11 @@ export class PageRecipe {
                       <p class="plain ion-padding">{this.recipe?.sourceUrl}</p>
                     </ion-item>
                     : ''}
-                  {this.recipe?.tags.map(tag =>
-                    <ion-chip>{tag}</ion-chip>
-                  )}
+                  <div class="ion-padding-top">
+                    {this.recipe?.tags?.map(tag =>
+                      <ion-chip>{tag}</ion-chip>
+                    )}
+                  </div>
                 </ion-card-content>
               </ion-card>
             </ion-col>

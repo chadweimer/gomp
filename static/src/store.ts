@@ -1,11 +1,12 @@
 import { createStore } from '@stencil/store';
-import { AppConfiguration, AppInfo, DefaultSearchFilter, DefaultSearchSettings, SearchFilter, SearchSettings, User } from './models';
+import { AppConfiguration, AppInfo, DefaultSearchFilter, DefaultSearchSettings, SearchFilter, SearchSettings, User, UserSettings } from './models';
 
 interface AppState {
   appInfo: AppInfo;
   appConfig: AppConfiguration;
   jwtToken: string;
   currentUser?: User;
+  currentUserSettings?: UserSettings;
   searchFilter?: SearchFilter;
   searchSettings: SearchSettings;
   searchPage: number;

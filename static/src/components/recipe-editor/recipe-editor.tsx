@@ -1,6 +1,7 @@
 import { Component, Element, h, Prop, State } from '@stencil/core';
 import { configureModalAutofocus } from '../../helpers/utils';
 import { Recipe } from '../../models';
+import state from '../../store';
 
 @Component({
   tag: 'recipe-editor',
@@ -17,11 +18,13 @@ export class RecipeEditor {
   @State() nutritionInfo = '';
   @State() sourceUrl = '';
   @State() tags: string[] = [];
+  @State() suggestedTags: string[] = [];
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
   private imageForm!: HTMLFormElement | null;
   private imageInput!: HTMLInputElement | null;
+  private tagsInput!: HTMLIonInputElement | null;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
@@ -34,8 +37,10 @@ export class RecipeEditor {
       this.storageInstructions = this.recipe.storageInstructions;
       this.nutritionInfo = this.recipe.nutritionInfo;
       this.sourceUrl = this.recipe.sourceUrl;
-      this.tags = this.recipe.tags;
+      this.tags = this.recipe.tags ?? [];
     }
+
+    this.loadSuggestedTags();
   }
 
   render() {
@@ -90,9 +95,50 @@ export class RecipeEditor {
             <ion-label position="stacked">Source</ion-label>
             <ion-input type="url" value={this.sourceUrl} onIonChange={e => this.sourceUrl = e.detail.value} />
           </ion-item>
+          <ion-item>
+            <ion-label position="stacked">Tags</ion-label>
+            {this.tags.length > 0 ?
+              <div class="ion-padding-top">
+                {this.tags.map(tag =>
+                  <ion-chip onClick={() => this.removeTag(tag)}>
+                    {tag}
+                    <ion-icon icon="close-circle" />
+                  </ion-chip>
+                )}
+              </div>
+              : ''}
+            <ion-input onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
+          </ion-item>
+          <div class="ion-padding-top">
+            {this.suggestedTags.map(tag =>
+              <ion-chip color="success" onClick={() => this.addTag(tag)}>
+                {tag}
+                <ion-icon icon="add-circle" />
+              </ion-chip>
+            )}
+          </div>
         </ion-content>
       </form>
     );
+  }
+
+  private loadSuggestedTags() {
+    this.suggestedTags =
+      state.currentUserSettings?.favoriteTags?.filter(value => this.tags.indexOf(value) === -1)
+      ?? [];
+  }
+
+  private addTag(tag: string) {
+    this.tags = [
+      ...this.tags,
+      tag.toLowerCase()
+    ].filter((value, index, self) => self.indexOf(value) === index);
+    this.loadSuggestedTags();
+  }
+
+  private removeTag(tag: string) {
+    this.tags = this.tags.filter(value => value !== tag);
+    this.loadSuggestedTags();
   }
 
   private async onSaveClicked() {
@@ -122,4 +168,10 @@ export class RecipeEditor {
     });
   }
 
+  private onTagsKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Enter' && this.tagsInput.value) {
+      this.addTag(this.tagsInput.value.toString());
+      this.tagsInput.value = '';
+    }
+  }
 }
