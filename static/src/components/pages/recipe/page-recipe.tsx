@@ -111,6 +111,9 @@ export class PageRecipe {
                       <p class="plain ion-padding">{this.recipe?.sourceUrl}</p>
                     </ion-item>
                     : ''}
+                  {this.recipe?.tags.map(tag =>
+                    <ion-chip>{tag}</ion-chip>
+                  )}
                 </ion-card-content>
               </ion-card>
             </ion-col>
