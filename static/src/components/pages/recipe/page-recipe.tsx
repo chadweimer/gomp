@@ -73,7 +73,7 @@ export class PageRecipe {
                     <ion-avatar slot="start">
                       <img src={this.mainImage?.thumbnailUrl} />
                     </ion-avatar>
-                    <h1>{this.recipe?.name}</h1>
+                    <h2>{this.recipe?.name}</h2>
                   </ion-item>
                   {this.recipe?.servingSize ?
                     <ion-item lines="full">
