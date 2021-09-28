@@ -12,10 +12,10 @@ import state from '../../store';
 export class AppRoot {
   @State() loadingCount = 0;
 
-  @Element() el: HTMLAppRootElement;
-  private nav: HTMLIonNavElement;
-  private menu: HTMLIonMenuElement;
-  private searchBar: HTMLIonSearchbarElement;
+  @Element() el!: HTMLAppRootElement;
+  private nav!: HTMLIonNavElement;
+  private menu!: HTMLIonMenuElement;
+  private searchBar!: HTMLIonSearchbarElement;
 
   async componentWillLoad() {
     await this.loadAppConfiguration();
@@ -188,10 +188,10 @@ export class AppRoot {
     state.searchPage = 1;
 
     const activePage = await this.nav.getActive();
-    if (activePage.component === 'page-search') {
-      // If the active page is the search page, refresh it
+    if (activePage?.component === 'page-search') {
+      // If the active page is the search page, perform the search right away
       const el = activePage.element as HTMLPageSearchElement;
-      el.activatedCallback();
+      await el.performSearch();
     } else {
       // Otherwise, redirect to it
       redirect('/recipes');
@@ -200,6 +200,12 @@ export class AppRoot {
 
   private async onPageChanging() {
     this.menu.close();
+    // Let the current page know it's being deactivated
+    const activePage = await this.nav.getActive();
+    const el = activePage?.element as any;
+    if (el && typeof el.deactivatingCallback === 'function') {
+      el.deactivatingCallback();
+    }
 
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
@@ -214,8 +220,8 @@ export class AppRoot {
   private async onPageChanged() {
     // Let the new page know it's been activated
     const activePage = await this.nav.getActive();
-    const el = activePage.element as any;
-    if (typeof el.activatedCallback === 'function') {
+    const el = activePage?.element as any;
+    if (el && typeof el.activatedCallback === 'function') {
       el.activatedCallback();
     }
 

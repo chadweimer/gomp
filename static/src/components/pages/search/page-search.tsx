@@ -13,17 +13,32 @@ export class PageSearch {
   @State() recipes: RecipeCompact[] = [];
   @State() numPages = 1;
 
+  @Element() el!: HTMLPageSearchElement;
+  private content!: HTMLIonContentElement;
 
-  @Element() el: HTMLPageSearchElement;
+  private scrollTop: number | null = null;
 
   @Method()
   async activatedCallback() {
+    // Call loadRecipes, not performSearch, so that the scoll position is preserved
     await this.loadRecipes();
+  }
+
+  @Method()
+  async deactivatingCallback() {
+    // Store the current scroll position
+    this.scrollTop = (await this.content.getScrollElement())?.scrollTop;
+  }
+
+  componentDidRender() {
+    if (this.scrollTop !== null) {
+      this.content.scrollToPoint(0, this.scrollTop);
+    }
   }
 
   render() {
     return [
-      <ion-content>
+      <ion-content ref={el => this.content = el}>
         <ion-grid>
           <ion-row>
             <ion-col>
@@ -103,6 +118,14 @@ export class PageSearch {
     ];
   }
 
+  @Method()
+  async performSearch() {
+    // Reset the scroll position when explicitly performing a new search
+    this.scrollTop = null;
+
+    await this.loadRecipes();
+  }
+
   private async loadRecipes(pageNum = null) {
     // Make sure to fill in any missing fields
     const defaultFilter = new DefaultSearchFilter();
@@ -130,7 +153,8 @@ export class PageSearch {
       sortDir: sortDir
     };
     state.searchPage = 1;
-    await this.loadRecipes();
+
+    await this.performSearch();
   }
 
   private async setViewMode(viewMode: SearchViewMode) {

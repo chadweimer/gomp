@@ -17,7 +17,7 @@ export class PageRecipe {
   @State() images: RecipeImage[] = [];
   @State() notes: Note[] = [];
 
-  @Element() el: HTMLPageRecipeElement;
+  @Element() el!: HTMLPageRecipeElement;
 
   async connectedCallback() {
     await this.load();

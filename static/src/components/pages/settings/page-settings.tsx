@@ -10,7 +10,7 @@ export class PageSettings {
   @State() settings: UserSettings | null;
   @State() filters: SavedSearchFilterCompact[] | null;
 
-  @Element() el: HTMLPageSettingsElement;
+  @Element() el!: HTMLPageSettingsElement;
 
   async connectedCallback() {
     await this.loadUserSettings();

@@ -27,6 +27,8 @@ export namespace Components {
     }
     interface PageSearch {
         "activatedCallback": () => Promise<void>;
+        "deactivatingCallback": () => Promise<void>;
+        "performSearch": () => Promise<void>;
     }
     interface PageSettings {
     }

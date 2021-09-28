@@ -11,8 +11,8 @@ export class NoteEditor {
 
   @State() noteText = '';
 
-  @Element() el: HTMLNoteEditorElement;
-  private form: HTMLFormElement;
+  @Element() el!: HTMLNoteEditorElement;
+  private form!: HTMLFormElement;
 
   connectedCallback() {
     configureModalAutofocus(this.el);

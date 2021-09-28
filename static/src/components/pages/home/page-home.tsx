@@ -11,7 +11,7 @@ import { redirect } from '../../../helpers/utils';
 export class PageHome {
   @Prop() userSettings: UserSettings | null;
 
-  @Element() el: HTMLPageHomeElement;
+  @Element() el!: HTMLPageHomeElement;
 
   async connectedCallback() {
     try {

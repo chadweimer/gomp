@@ -12,8 +12,8 @@ export class PageAdmin {
   @State() appTitle = 'GOMP: Go Meal Planner';
   @State() users: User[] = [];
 
-  @Element() el: HTMLPageAdminElement;
-  private appConfigForm: HTMLFormElement;
+  @Element() el!: HTMLPageAdminElement;
+  private appConfigForm!: HTMLFormElement;
 
   async connectedCallback() {
     await this.loadAppConfiguration();

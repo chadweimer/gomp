@@ -14,9 +14,9 @@ export class UserEditor {
   @State() password = '';
   @State() repeatPassword = '';
 
-  @Element() el: HTMLUserEditorElement;
-  private form: HTMLFormElement;
-  private repeatPasswordInput: HTMLIonInputElement;
+  @Element() el!: HTMLUserEditorElement;
+  private form!: HTMLFormElement;
+  private repeatPasswordInput!: HTMLIonInputElement;
 
   private static availableAccessLevels = [
     { name: 'Administrator', value: AccessLevel.Administrator },

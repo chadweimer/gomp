@@ -12,7 +12,7 @@ export class PageLogin {
   @State() password: string | null;
   @State() errorMessage: string | null;
 
-  @Element() el: HTMLPageLoginElement;
+  @Element() el!: HTMLPageLoginElement;
 
   render() {
     return (

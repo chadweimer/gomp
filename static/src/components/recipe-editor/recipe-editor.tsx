@@ -18,10 +18,10 @@ export class RecipeEditor {
   @State() sourceUrl = '';
   @State() tags: string[] = [];
 
-  @Element() el: HTMLRecipeEditorElement;
-  private form: HTMLFormElement;
-  private imageForm: HTMLFormElement | null;
-  private imageInput: HTMLInputElement | null;
+  @Element() el!: HTMLRecipeEditorElement;
+  private form!: HTMLFormElement;
+  private imageForm!: HTMLFormElement | null;
+  private imageInput!: HTMLInputElement | null;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
