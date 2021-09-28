@@ -65,7 +65,7 @@ export class PageSearch {
         <ion-grid class="no-pad">
           <ion-row>
             {this.recipes.map(recipe =>
-              <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="4" size-xl="3">
+              <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
                 {state.searchSettings?.viewMode === SearchViewMode.Card ?
                   <recipe-card recipe={recipe} />
                   :

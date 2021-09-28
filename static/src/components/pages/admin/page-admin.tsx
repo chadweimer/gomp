@@ -59,7 +59,7 @@ export class PageAdmin {
             <ion-grid class="no-pad">
               <ion-row>
                 {this.users.map(user =>
-                  <ion-col size-xs="12" size-sm="12" size-md="6" size-lg="4" size-xl="4">
+                  <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-card>
                       <ion-card-content>
                         <ion-item lines="none">
