@@ -84,7 +84,7 @@ export class PageSearch {
                 {state.searchSettings?.viewMode === SearchViewMode.Card ?
                   <recipe-card recipe={recipe} />
                   :
-                  <ion-item lines="none">
+                  <ion-item href={`/recipes/${recipe.id}/view`} lines="none">
                     <ion-avatar slot="start">
                       <ion-img src={recipe.thumbnailUrl} />
                     </ion-avatar>
