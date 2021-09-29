@@ -163,7 +163,8 @@ export class PageSearch {
       viewMode: viewMode
     };
     state.searchPage = 1;
-    await this.loadRecipes();
+
+    await this.performSearch();
   }
 
   private async saveNewRecipe(recipe: Recipe, formData: FormData) {
