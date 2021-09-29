@@ -159,16 +159,23 @@ export class AppRoot {
     return !!state.jwtToken;
   }
 
-  private requireLogin() {
+  private async requireLogin() {
     if (this.isLoggedIn()) {
+      // Refresh the user so that access controls are properly enforced
+      try {
+        state.currentUser = await UsersApi.get(this.el);
+        state.currentUserSettings = await UsersApi.getSettings(this.el);
+      } catch (ex) {
+        console.error(ex);
+      }
       return true;
     }
 
     return { redirect: '/login' };
   }
 
-  private requireAdmin() {
-    const loginCheck = this.requireLogin();
+  private async requireAdmin() {
+    const loginCheck = await this.requireLogin();
     if (loginCheck !== true) {
       return loginCheck;
     }
