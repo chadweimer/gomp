@@ -29,7 +29,7 @@ export class PageHome {
             <ion-col>
               <header class="ion-text-center">
                 <h1>{this.userSettings?.homeTitle}</h1>
-                <ion-img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+                <img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
               </header>
             </ion-col>
           </ion-row>

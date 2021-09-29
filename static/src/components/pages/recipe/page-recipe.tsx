@@ -129,7 +129,7 @@ export class PageRecipe {
                     <ion-col size="auto">
                       <a href={image.url} target="_blank">
                         <ion-thumbnail class="large ion-padding">
-                          <ion-img src={image.thumbnailUrl} alt={image.name} />
+                          <img src={image.thumbnailUrl} alt={image.name} />
                         </ion-thumbnail>
                       </a>
                     </ion-col>
