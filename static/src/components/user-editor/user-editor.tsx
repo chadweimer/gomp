@@ -1,16 +1,17 @@
 import { Component, Element, h, Prop, State } from '@stencil/core';
 import { configureModalAutofocus } from '../../helpers/utils';
-import { AccessLevel, NewUser, User } from '../../models';
+import { AccessLevel, User } from '../../models';
 
 @Component({
   tag: 'user-editor',
   styleUrl: 'user-editor.css'
 })
 export class UserEditor {
-  @Prop() user: User | null = null;
+  @Prop() user: User = {
+    username: '',
+    accessLevel: AccessLevel.Editor
+  };
 
-  @State() username = '';
-  @State() accessLevel: string = AccessLevel.Editor;
   @State() password = '';
   @State() repeatPassword = '';
 
@@ -26,11 +27,6 @@ export class UserEditor {
 
   connectedCallback() {
     configureModalAutofocus(this.el);
-
-    if (this.user !== null) {
-      this.username = this.user.username;
-      this.accessLevel = this.user.accessLevel;
-    }
   }
 
   render() {
@@ -40,7 +36,7 @@ export class UserEditor {
           <ion-buttons slot="primary">
             <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>{this.user === null ? 'New User' : 'Edit User'}</ion-title>
+          <ion-title>{!this.user.id ? 'New User' : 'Edit User'}</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
@@ -51,11 +47,11 @@ export class UserEditor {
         <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
           <ion-item>
             <ion-label position="stacked">Email</ion-label>
-            <ion-input type="email" value={this.username} disabled={this.user !== null} onIonChange={e => this.username = e.detail.value} required autofocus />
+            <ion-input type="email" value={this.user.username} disabled={!!this.user.id} onIonChange={e => this.user = { ...this.user, username: e.detail.value }} required autofocus />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Access Level</ion-label>
-            <ion-select value={this.accessLevel} interface="popover" onIonChange={e => this.accessLevel = e.detail.value}>
+            <ion-select value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
               {UserEditor.availableAccessLevels.map(level =>
                 <ion-select-option value={level.value}>{level.name}</ion-select-option>
               )}
@@ -68,7 +64,7 @@ export class UserEditor {
   }
 
   private renderPasswords() {
-    if (this.user === null) {
+    if (!this.user.id) {
       return [
         <ion-item>
           <ion-label position="stacked">Password</ion-label>
@@ -83,7 +79,7 @@ export class UserEditor {
   }
 
   private async onSaveClicked() {
-    if (this.user === null) {
+    if (!this.user.id) {
       const native = await this.repeatPasswordInput.getInputElement();
       if (this.password !== this.repeatPassword) {
         native.setCustomValidity('Passwords must match');
@@ -97,19 +93,13 @@ export class UserEditor {
 
       this.el.closest('ion-modal').dismiss({
         dismissed: false,
-        user: {
-          username: this.username,
-          accessLevel: this.accessLevel,
-          password: this.password
-        } as NewUser
+        user: this.user,
+        password: this.password
       });
     } else {
       this.el.closest('ion-modal').dismiss({
         dismissed: false,
-        user: {
-          username: this.username,
-          accessLevel: this.accessLevel,
-        } as User
+        user: this.user
       });
     }
   }

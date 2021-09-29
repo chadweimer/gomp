@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, h, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../../helpers/api';
-import { AppConfiguration, NewUser, User } from '../../../models';
+import { AppConfiguration, User } from '../../../models';
 import state from '../../../store';
 
 @Component({
@@ -133,9 +133,9 @@ export class PageAdmin {
     }
   }
 
-  private async saveNewUser(user: NewUser) {
+  private async saveNewUser(user: User, password: string) {
     try {
-      await UsersApi.post(this.el, user);
+      await UsersApi.post(this.el, user, password);
       await this.loadUsers();
     } catch (ex) {
       console.log(ex);
@@ -166,9 +166,9 @@ export class PageAdmin {
     });
     modal.present();
 
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, user: NewUser }>();
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
     if (resp.data.dismissed === false) {
-      await this.saveNewUser(resp.data.user);
+      await this.saveNewUser(resp.data.user, resp.data.password);
     }
   }
 

@@ -8,16 +8,11 @@ import state from '../../store';
   styleUrl: 'recipe-editor.css'
 })
 export class RecipeEditor {
-  @Prop() recipe: Recipe | null = null;
+  @Prop() recipe: Recipe = {
+    name: '',
+    tags: []
+  };
 
-  @State() recipeName = '';
-  @State() servingSize = '';
-  @State() ingredients = '';
-  @State() directions = '';
-  @State() storageInstructions = '';
-  @State() nutritionInfo = '';
-  @State() sourceUrl = '';
-  @State() tags: string[] = [];
   @State() suggestedTags: string[] = [];
 
   @Element() el!: HTMLRecipeEditorElement;
@@ -29,18 +24,7 @@ export class RecipeEditor {
   connectedCallback() {
     configureModalAutofocus(this.el);
 
-    if (this.recipe !== null) {
-      this.recipeName = this.recipe.name;
-      this.servingSize = this.recipe.servingSize;
-      this.ingredients = this.recipe.ingredients;
-      this.directions = this.recipe.directions;
-      this.storageInstructions = this.recipe.storageInstructions;
-      this.nutritionInfo = this.recipe.nutritionInfo;
-      this.sourceUrl = this.recipe.sourceUrl;
-      this.tags = this.recipe.tags ?? [];
-    }
-
-    this.loadSuggestedTags();
+    this.filterSuggestedTags();
   }
 
   render() {
@@ -50,7 +34,7 @@ export class RecipeEditor {
           <ion-buttons slot="primary">
             <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>{this.recipe === null ? 'New Recipe' : 'Edit Recipe'}</ion-title>
+          <ion-title>{!this.recipe.id ? 'New Recipe' : 'Edit Recipe'}</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
@@ -61,9 +45,9 @@ export class RecipeEditor {
         <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
           <ion-item>
             <ion-label position="stacked">Name</ion-label>
-            <ion-input value={this.recipeName} onIonChange={e => this.recipeName = e.detail.value} required autofocus />
+            <ion-input value={this.recipe.name} onIonChange={e => this.recipe = { ...this.recipe, name: e.detail.value }} required autofocus />
           </ion-item>
-          {this.recipe === null ?
+          {!this.recipe.id ?
             <ion-item lines="full">
               <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
                 <ion-label position="stacked">Picture</ion-label>
@@ -73,33 +57,33 @@ export class RecipeEditor {
             : ''}
           <ion-item>
             <ion-label position="stacked">Serving Size</ion-label>
-            <ion-input value={this.servingSize} onIonChange={e => this.servingSize = e.detail.value} />
+            <ion-input value={this.recipe.servingSize} onIonChange={e => this.recipe = { ...this.recipe, servingSize: e.detail.value }} />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Ingredients</ion-label>
-            <ion-textarea value={this.ingredients} onIonChange={e => this.ingredients = e.detail.value} auto-grow />
+            <ion-textarea value={this.recipe.ingredients} onIonChange={e => this.recipe = { ...this.recipe, ingredients: e.detail.value }} auto-grow />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Directions</ion-label>
-            <ion-textarea value={this.directions} onIonChange={e => this.directions = e.detail.value} auto-grow />
+            <ion-textarea value={this.recipe.directions} onIonChange={e => this.recipe = { ...this.recipe, directions: e.detail.value }} auto-grow />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-            <ion-textarea value={this.storageInstructions} onIonChange={e => this.storageInstructions = e.detail.value} auto-grow />
+            <ion-textarea value={this.recipe.storageInstructions} onIonChange={e => this.recipe = { ...this.recipe, storageInstructions: e.detail.value }} auto-grow />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Nutrition</ion-label>
-            <ion-textarea value={this.nutritionInfo} onIonChange={e => this.nutritionInfo = e.detail.value} auto-grow />
+            <ion-textarea value={this.recipe.nutritionInfo} onIonChange={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail.value }} auto-grow />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Source</ion-label>
-            <ion-input type="url" value={this.sourceUrl} onIonChange={e => this.sourceUrl = e.detail.value} />
+            <ion-input type="url" value={this.recipe.sourceUrl} onIonChange={e => this.recipe = { ...this.recipe, sourceUrl: e.detail.value }} />
           </ion-item>
           <ion-item>
             <ion-label position="stacked">Tags</ion-label>
-            {this.tags.length > 0 ?
+            {this.recipe.tags?.length > 0 ?
               <div class="ion-padding-top">
-                {this.tags.map(tag =>
+                {this.recipe.tags?.map(tag =>
                   <ion-chip onClick={() => this.removeTag(tag)}>
                     {tag}
                     <ion-icon icon="close-circle" />
@@ -122,23 +106,23 @@ export class RecipeEditor {
     ];
   }
 
-  private loadSuggestedTags() {
+  private filterSuggestedTags() {
     this.suggestedTags =
-      state.currentUserSettings?.favoriteTags?.filter(value => this.tags.indexOf(value) === -1)
+      state.currentUserSettings?.favoriteTags?.filter(value => this.recipe.tags.indexOf(value) === -1)
       ?? [];
   }
 
   private addTag(tag: string) {
-    this.tags = [
-      ...this.tags,
+    this.recipe.tags = [
+      ...this.recipe.tags,
       tag.toLowerCase()
     ].filter((value, index, self) => self.indexOf(value) === index);
-    this.loadSuggestedTags();
+    this.filterSuggestedTags();
   }
 
   private removeTag(tag: string) {
-    this.tags = this.tags.filter(value => value !== tag);
-    this.loadSuggestedTags();
+    this.recipe.tags = this.recipe.tags.filter(value => value !== tag);
+    this.filterSuggestedTags();
   }
 
   private async onSaveClicked() {
@@ -148,16 +132,7 @@ export class RecipeEditor {
 
     this.el.closest('ion-modal').dismiss({
       dismissed: false,
-      recipe: {
-        name: this.recipeName,
-        servingSize: this.servingSize,
-        ingredients: this.ingredients,
-        directions: this.directions,
-        storageInstructions: this.storageInstructions,
-        nutritionInfo: this.nutritionInfo,
-        sourceUrl: this.sourceUrl,
-        tags: this.tags,
-      } as Recipe,
+      recipe: this.recipe,
       formData: this.imageInput?.value ? new FormData(this.imageForm) : null
     });
   }

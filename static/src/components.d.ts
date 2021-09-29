@@ -12,7 +12,7 @@ export namespace Components {
     interface ImageUploader {
     }
     interface NoteEditor {
-        "note": Note | null;
+        "note": Note;
     }
     interface PageAdmin {
     }
@@ -33,15 +33,15 @@ export namespace Components {
     interface PageSettings {
     }
     interface RecipeCard {
-        "recipe": RecipeCompact | null;
+        "recipe": RecipeCompact;
     }
     interface RecipeEditor {
-        "recipe": Recipe | null;
+        "recipe": Recipe;
     }
     interface SearchFilterEditor {
     }
     interface UserEditor {
-        "user": User | null;
+        "user": User;
     }
 }
 declare global {
@@ -145,7 +145,7 @@ declare namespace LocalJSX {
     interface ImageUploader {
     }
     interface NoteEditor {
-        "note"?: Note | null;
+        "note"?: Note;
     }
     interface PageAdmin {
     }
@@ -162,15 +162,15 @@ declare namespace LocalJSX {
     interface PageSettings {
     }
     interface RecipeCard {
-        "recipe"?: RecipeCompact | null;
+        "recipe"?: RecipeCompact;
     }
     interface RecipeEditor {
-        "recipe"?: Recipe | null;
+        "recipe"?: Recipe;
     }
     interface SearchFilterEditor {
     }
     interface UserEditor {
-        "user"?: User | null;
+        "user"?: User;
     }
     interface IntrinsicElements {
         "app-root": AppRoot;

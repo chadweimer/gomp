@@ -1,4 +1,4 @@
-import { Component, Element, h, Prop, State } from '@stencil/core';
+import { Component, Element, h, Prop } from '@stencil/core';
 import { configureModalAutofocus } from '../../helpers/utils';
 import { Note } from '../../models';
 
@@ -7,19 +7,15 @@ import { Note } from '../../models';
   styleUrl: 'note-editor.css',
 })
 export class NoteEditor {
-  @Prop() note: Note | null = null;
-
-  @State() noteText = '';
+  @Prop() note: Note = {
+    text: ''
+  };
 
   @Element() el!: HTMLNoteEditorElement;
   private form!: HTMLFormElement;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
-
-    if (this.note !== null) {
-      this.noteText = this.note.text;
-    }
   }
 
   render() {
@@ -29,7 +25,7 @@ export class NoteEditor {
           <ion-buttons slot="primary">
             <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>{this.note === null ? 'New Note' : 'Edit Note'}</ion-title>
+          <ion-title>{!this.note.id ? 'New Note' : 'Edit Note'}</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
@@ -40,7 +36,7 @@ export class NoteEditor {
         <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
           <ion-item>
             <ion-label position="stacked">Text</ion-label>
-            <ion-textarea value={this.noteText} onIonChange={e => this.noteText = e.detail.value} required autofocus auto-grow />
+            <ion-textarea value={this.note.text} onIonChange={e => this.note = { ...this.note, text: e.detail.value }} required autofocus auto-grow />
           </ion-item>
         </form>
       </ion-content>
@@ -54,9 +50,7 @@ export class NoteEditor {
 
     this.el.closest('ion-modal').dismiss({
       dismissed: false,
-      note: {
-        text: this.noteText
-      } as Note
+      note: this.note
     });
   }
 

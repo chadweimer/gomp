@@ -104,12 +104,6 @@ export interface User {
   accessLevel: string;
 }
 
-export interface NewUser {
-  username: string;
-  accessLevel: string;
-  password: string;
-}
-
 export interface UserSettings {
   userId: string;
   homeTitle: string;
@@ -120,19 +114,19 @@ export interface UserSettings {
 interface RecipeBase {
   id?: number;
   name: string;
-  state: string;
+  state?: string;
   createdAt?: string;
   modifiedAt?: string;
-  averageRating: number;
+  averageRating?: number;
 }
 
 export interface Recipe extends RecipeBase {
-  servingSize: string;
-  nutritionInfo: string;
-  ingredients: string;
-  directions: string;
-  storageInstructions: string;
-  sourceUrl: string;
+  servingSize?: string;
+  nutritionInfo?: string;
+  ingredients?: string;
+  directions?: string;
+  storageInstructions?: string;
+  sourceUrl?: string;
   tags: string[];
 }
 
@@ -142,7 +136,7 @@ export interface RecipeCompact extends RecipeBase {
 
 export interface Note {
   id?: number;
-  recipeId: number;
+  recipeId?: number;
   text: string;
   createdAt?: string;
   modifiedAt?: string;

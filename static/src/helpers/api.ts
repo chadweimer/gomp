@@ -1,4 +1,4 @@
-import { AppConfiguration, AppInfo, NewUser, Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User, UserSettings } from '../models';
+import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User, UserSettings } from '../models';
 import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
@@ -39,8 +39,11 @@ export class UsersApi {
     return await ajaxGet(target, `/api/v1/users/${id !== null ? id : 'current'}/settings`);
   }
 
-  static async post(target: EventTarget, user: NewUser) {
-    await ajaxPost(target, '/api/v1/users', user);
+  static async post(target: EventTarget, user: User, password: string) {
+    await ajaxPost(target, '/api/v1/users', {
+      ...user,
+      password: password
+    });
   }
 
   static async put(target: EventTarget, user: User) {

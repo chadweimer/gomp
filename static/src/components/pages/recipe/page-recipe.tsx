@@ -147,7 +147,7 @@ export class PageRecipe {
                         <ion-card-header>
                           <ion-item lines="full">
                             <ion-icon slot="start" icon="chatbox" />
-                            <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? '(edited ' + formatDate(note.modifiedAt) + ')' : ''}</ion-label>
+                            <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? `(edited ${formatDate(note.modifiedAt)})` : ''}</ion-label>
                             <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
                               <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
                                 <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
