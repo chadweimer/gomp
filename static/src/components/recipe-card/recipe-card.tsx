@@ -14,7 +14,7 @@ export class RecipeCard {
   render() {
     return (
       <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}/view` : ''}>
-        {this.recipe.thumbnailUrl ? <img src={this.recipe.thumbnailUrl} /> : <div class="image-placeholder" />}
+        {this.recipe.thumbnailUrl ? <ion-img class="image" src={this.recipe.thumbnailUrl} /> : <div class="image-placeholder" />}
         <ion-card-header>
           <ion-card-subtitle>{this.recipe.name}</ion-card-subtitle>
         </ion-card-header>

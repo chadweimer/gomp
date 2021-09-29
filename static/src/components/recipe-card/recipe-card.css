@@ -2,7 +2,7 @@
   display: block;
 }
 
-img {
+.image {
   height: 200px;
   object-fit: cover;
 }
