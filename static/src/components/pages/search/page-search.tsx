@@ -86,7 +86,7 @@ export class PageSearch {
                   :
                   <ion-item lines="none">
                     <ion-avatar slot="start">
-                      <ion-img src={recipe.thumbnailUrl} />
+                      <img src={recipe.thumbnailUrl} />
                     </ion-avatar>
                     <ion-label>{recipe.name}</ion-label>
                   </ion-item>
