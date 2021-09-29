@@ -152,6 +152,11 @@ export class AppRoot {
   private async logout() {
     state.jwtToken = null;
     state.currentUser = null;
+    state.currentUserSettings = null;
+    state.searchFilter = null;
+    state.searchSettings = null;
+    state.searchPage = null;
+    state.searchResultCount = null;
     await redirect('/login');
   }
 
