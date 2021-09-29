@@ -45,7 +45,7 @@ export class PageSearch {
               <ion-buttons class="justify-content-center-lg-down">
                 <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="filter" /> Active</ion-button>
                 <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="swap-vertical" /> Name</ion-button>
-                {state.searchFilter?.sortDir === SortDir.Asc ?
+                {state.searchFilter.sortDir === SortDir.Asc ?
                   <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Desc)}>
                     <ion-icon slot="icon-only" icon="arrow-up" />
                   </ion-button>
@@ -54,7 +54,7 @@ export class PageSearch {
                     <ion-icon slot="icon-only" icon="arrow-down" />
                   </ion-button>
                 }
-                {state.searchSettings?.viewMode === SearchViewMode.Card ?
+                {state.searchSettings.viewMode === SearchViewMode.Card ?
                   <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(SearchViewMode.List)}>
                     <ion-icon slot="icon-only" icon="grid" />
                   </ion-button>

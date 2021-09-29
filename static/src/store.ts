@@ -7,7 +7,7 @@ interface AppState {
   jwtToken: string;
   currentUser?: User;
   currentUserSettings?: UserSettings;
-  searchFilter?: SearchFilter;
+  searchFilter: SearchFilter;
   searchSettings: SearchSettings;
   searchPage: number;
   searchResultCount?: number;

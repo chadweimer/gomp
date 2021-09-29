@@ -94,7 +94,7 @@ export class AppRoot {
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
                 <ion-button href="/admin" class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>Admin</ion-button>
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-                <ion-searchbar show-clear-button="always" value={state.searchFilter?.query} onKeyDown={e => this.onSearchKeyDown(e)} onIonClear={() => this.onSearchClear()} ref={el => this.searchBar = el} />
+                <ion-searchbar show-clear-button="always" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} onIonClear={() => this.onSearchClear()} ref={el => this.searchBar = el} />
               </ion-buttons>
             </ion-toolbar>
             <ion-progress-bar type="indeterminate" color="secondary" hidden={this.loadingCount === 0} />
