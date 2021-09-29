@@ -163,8 +163,9 @@ export class PageAdmin {
   private async onAddUserClicked() {
     const modal = await modalController.create({
       component: 'user-editor',
+      animated: false,
     });
-    modal.present();
+    await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
     if (resp.data.dismissed === false) {
@@ -175,11 +176,14 @@ export class PageAdmin {
   private async onEditUserClicked(user: User | null) {
     const modal = await modalController.create({
       component: 'user-editor',
-      componentProps: {
-        user: user
-      }
+      animated: false,
     });
-    modal.present();
+    await modal.present();
+
+    // Workaround for auto-grow textboxes in a dialog.
+    // Set this only after the dialog has presented,
+    // instead of using component props
+    modal.querySelector('user-editor').user = user;
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
     if (resp.data.dismissed === false) {
@@ -203,7 +207,8 @@ export class PageAdmin {
             return true;
           }
         }
-      ]
+      ],
+      animated: false,
     });
 
     await confirmation.present();

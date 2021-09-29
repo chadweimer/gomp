@@ -50,9 +50,10 @@ export class PageHome {
 
       if (formData) {
         const loading = await loadingController.create({
-          message: 'Uploading picture...'
+          message: 'Uploading picture...',
+          animated: false,
         });
-        loading.present();
+        await loading.present();
 
         await RecipesApi.postImage(this.el, newRecipeId, formData);
         await loading.dismiss();
@@ -67,8 +68,9 @@ export class PageHome {
   private async onNewRecipeClicked() {
     const modal = await modalController.create({
       component: 'recipe-editor',
+      animated: false,
     });
-    modal.present();
+    await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
     if (resp.data.dismissed === false) {

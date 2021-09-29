@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
-import { formatDate, hasAccessLevel } from '../../../helpers/utils';
+import { formatDate, hasAccessLevel, redirect } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeImage } from '../../../models';
 import state from '../../../store';
 
@@ -317,7 +317,8 @@ export class PageRecipe {
         },
         { text: 'Upload Picture', icon: 'camera' },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
-      ]
+      ],
+      animated: false,
     });
     await menu.present();
   }
@@ -325,11 +326,14 @@ export class PageRecipe {
   private async onEditClicked() {
     const modal = await modalController.create({
       component: 'recipe-editor',
-      componentProps: {
-        recipe: this.recipe
-      }
+      animated: false,
     });
-    modal.present();
+    await modal.present();
+
+    // Workaround for auto-grow textboxes in a dialog.
+    // Set this only after the dialog has presented,
+    // instead of using component props
+    modal.querySelector('recipe-editor').recipe = this.recipe;
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe }>();
     if (resp.data?.dismissed === false) {
@@ -349,6 +353,7 @@ export class PageRecipe {
         'No',
         {
           text: 'Yes',
+          role: 'yes',
           handler: async () => {
             await this.deleteRecipe();
             return true;
@@ -359,14 +364,18 @@ export class PageRecipe {
 
     await confirmation.present();
 
-    // TODO: Redirect
+    const { role } = await confirmation.onDidDismiss();
+    if (role === 'yes') {
+      redirect('/recipes');
+    }
   }
 
   private async onAddNoteClicked() {
     const modal = await modalController.create({
       component: 'note-editor',
+      animated: false,
     });
-    modal.present();
+    await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
     if (resp.data?.dismissed === false) {
@@ -377,11 +386,14 @@ export class PageRecipe {
   private async onEditNoteClicked(note: Note | null) {
     const modal = await modalController.create({
       component: 'note-editor',
-      componentProps: {
-        note: note
-      }
+      animated: false,
     });
-    modal.present();
+    await modal.present();
+
+    // Workaround for auto-grow textboxes in a dialog.
+    // Set this only after the dialog has presented,
+    // instead of using component props
+    modal.querySelector('note-editor').note = note;
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
     if (resp.data?.dismissed === false) {
@@ -405,7 +417,8 @@ export class PageRecipe {
             return true;
           }
         }
-      ]
+      ],
+      animated: false,
     });
 
     await confirmation.present();
