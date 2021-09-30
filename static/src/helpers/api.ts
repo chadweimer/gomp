@@ -1,4 +1,4 @@
-import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User, UserSettings } from '../models';
+import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, User, UserSettings } from '../models';
 import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
@@ -107,6 +107,10 @@ export class RecipesApi {
 
   static async put(target: EventTarget, recipe: Recipe) {
     await ajaxPut(target, `/api/v1/recipes/${recipe.id}`, recipe);
+  }
+
+  static async putState(target: EventTarget, recipeId: number, state: RecipeState) {
+    await ajaxPut(target, `/api/v1/recipes/${recipeId}/state`, state);
   }
 
   static async delete(target: EventTarget, id: number) {

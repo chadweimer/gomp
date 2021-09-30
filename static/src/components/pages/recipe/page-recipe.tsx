@@ -1,8 +1,8 @@
-import { actionSheetController, alertController, modalController } from '@ionic/core';
+import { actionSheetController, alertController, loadingController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
 import { formatDate, hasAccessLevel, redirect } from '../../../helpers/utils';
-import { AccessLevel, Note, Recipe, RecipeImage } from '../../../models';
+import { AccessLevel, Note, Recipe, RecipeImage, RecipeState } from '../../../models';
 import state from '../../../store';
 
 @Component({
@@ -41,7 +41,7 @@ export class PageRecipe {
               <ion-icon slot="start" icon="chatbox" />
               Add Note
             </ion-button>
-            <ion-button class="ion-hide-sm-down">
+            <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
               <ion-icon slot="start" icon="camera" />
               Upload Picture
             </ion-button>
@@ -55,10 +55,17 @@ export class PageRecipe {
               <ion-icon slot="start" icon="trash" />
               Delete
             </ion-button>
-            <ion-button>
-              <ion-icon slot="start" icon="archive" />
-              Archive
-            </ion-button>
+            {this.recipe?.state === RecipeState.Archived ?
+              <ion-button onClick={() => this.onUnarchiveClicked()}>
+                <ion-icon slot="start" icon="archive" />
+                Unarchive
+              </ion-button>
+              :
+              <ion-button onClick={() => this.onArchiveClicked()}>
+                <ion-icon slot="start" icon="archive" />
+                Archive
+              </ion-button>
+            }
           </ion-buttons>
         </ion-toolbar>
       </ion-header>,
@@ -182,22 +189,16 @@ export class PageRecipe {
               <ion-icon slot="start" icon="chatbox" />
               Add Note
             </ion-button>
-            <ion-button class="ion-hide-sm-down">
+            <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
               <ion-icon slot="start" icon="camera" />
               Upload Picture
             </ion-button>
+            <ion-button class="ion-hide-md-down">
+              <ion-icon slot="start" icon="link" />
+              Add Link
+            </ion-button>
             <ion-button onClick={() => this.showRecipeMenu()}>
               <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-          <ion-buttons slot="secondary">
-            <ion-button class="ion-hide-md-down" onClick={() => this.onDeleteClicked()}>
-              <ion-icon slot="start" icon="trash" />
-              Delete
-            </ion-button>
-            <ion-button class="ion-hide-sm-down">
-              <ion-icon slot="start" icon="archive" />
-              Archive
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
@@ -253,6 +254,14 @@ export class PageRecipe {
     }
   }
 
+  private async setRecipeState(state: RecipeState) {
+    try {
+      await RecipesApi.putState(this.el, this.recipeId, state);
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
   private async saveNewNote(note: Note) {
     note = {
       ...note,
@@ -260,7 +269,6 @@ export class PageRecipe {
     };
     try {
       await NotesApi.post(this.el, note);
-      await this.loadNotes();
     } catch (ex) {
       console.error(ex);
     }
@@ -269,7 +277,6 @@ export class PageRecipe {
   private async saveExistingNote(note: Note) {
     try {
       await NotesApi.put(this.el, note);
-      await this.loadNotes();
     } catch (ex) {
       console.log(ex);
     }
@@ -278,7 +285,21 @@ export class PageRecipe {
   private async deleteNote(note: Note) {
     try {
       await NotesApi.delete(this.el, note.id);
-      await this.loadNotes();
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
+  private async uploadImage(formData: FormData) {
+    try {
+      const loading = await loadingController.create({
+        message: 'Uploading picture...',
+        animated: false,
+      });
+      await loading.present();
+
+      await RecipesApi.postImage(this.el, this.recipeId, formData);
+      await loading.dismiss();
     } catch (ex) {
       console.log(ex);
     }
@@ -297,13 +318,24 @@ export class PageRecipe {
             return true;
           }
         },
-        { text: 'Archive', icon: 'archive', role: 'destructive' },
+        {
+          text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
+          icon: 'archive',
+          handler: async () => {
+            if (this.recipe.state === RecipeState.Archived) {
+              await this.onUnarchiveClicked();
+            } else {
+              await this.onArchiveClicked();
+            }
+            return true;
+          }
+        },
         { text: 'Add Link', icon: 'link' },
         {
-          text: 'Edit',
-          icon: 'create',
+          text: 'Upload Picture',
+          icon: 'camera',
           handler: async () => {
-            await this.onEditClicked();
+            this.onUploadImageClicked();
             return true;
           }
         },
@@ -315,7 +347,14 @@ export class PageRecipe {
             return true;
           }
         },
-        { text: 'Upload Picture', icon: 'camera' },
+        {
+          text: 'Edit',
+          icon: 'create',
+          handler: async () => {
+            await this.onEditClicked();
+            return true;
+          }
+        },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
       animated: false,
@@ -370,6 +409,48 @@ export class PageRecipe {
     }
   }
 
+  private async onArchiveClicked() {
+    const confirmation = await alertController.create({
+      header: 'Arhive Recipe?',
+      message: 'Are you sure you want to archive this recipe?',
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          role: 'yes',
+          handler: async () => {
+            await this.setRecipeState(RecipeState.Archived);
+            await this.loadRecipe();
+            return true;
+          }
+        }
+      ]
+    });
+
+    await confirmation.present();
+  }
+
+  private async onUnarchiveClicked() {
+    const confirmation = await alertController.create({
+      header: 'Unarchive Recipe?',
+      message: 'Are you sure you want to unarchive this recipe?',
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          role: 'yes',
+          handler: async () => {
+            await this.setRecipeState(RecipeState.Active);
+            await this.loadRecipe();
+            return true;
+          }
+        }
+      ]
+    });
+
+    await confirmation.present();
+  }
+
   private async onAddNoteClicked() {
     const modal = await modalController.create({
       component: 'note-editor',
@@ -380,6 +461,7 @@ export class PageRecipe {
     const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
     if (resp.data?.dismissed === false) {
       await this.saveNewNote(resp.data.note);
+      await this.loadNotes();
     }
   }
 
@@ -401,6 +483,7 @@ export class PageRecipe {
         ...note,
         ...resp.data.note
       });
+      await this.loadNotes();
     }
   }
 
@@ -414,6 +497,7 @@ export class PageRecipe {
           text: 'Yes',
           handler: async () => {
             await this.deleteNote(note);
+            await this.loadNotes();
             return true;
           }
         }
@@ -422,5 +506,20 @@ export class PageRecipe {
     });
 
     await confirmation.present();
+  }
+
+  private async onUploadImageClicked() {
+    const modal = await modalController.create({
+      component: 'image-upload-browser',
+      animated: false,
+    });
+    await modal.present();
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, formData: FormData }>();
+    if (resp.data?.dismissed === false) {
+      await this.uploadImage(resp.data.formData);
+      await this.loadRecipe();
+      await this.loadImages();
+    }
   }
 }

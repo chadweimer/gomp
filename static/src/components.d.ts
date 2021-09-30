@@ -9,7 +9,7 @@ import { Note, Recipe, RecipeCompact, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
-    interface ImageUploader {
+    interface ImageUploadBrowser {
     }
     interface NoteEditor {
         "note": Note;
@@ -51,11 +51,11 @@ declare global {
         prototype: HTMLAppRootElement;
         new (): HTMLAppRootElement;
     };
-    interface HTMLImageUploaderElement extends Components.ImageUploader, HTMLStencilElement {
+    interface HTMLImageUploadBrowserElement extends Components.ImageUploadBrowser, HTMLStencilElement {
     }
-    var HTMLImageUploaderElement: {
-        prototype: HTMLImageUploaderElement;
-        new (): HTMLImageUploaderElement;
+    var HTMLImageUploadBrowserElement: {
+        prototype: HTMLImageUploadBrowserElement;
+        new (): HTMLImageUploadBrowserElement;
     };
     interface HTMLNoteEditorElement extends Components.NoteEditor, HTMLStencilElement {
     }
@@ -125,7 +125,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
-        "image-uploader": HTMLImageUploaderElement;
+        "image-upload-browser": HTMLImageUploadBrowserElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
         "page-home": HTMLPageHomeElement;
@@ -142,7 +142,7 @@ declare global {
 declare namespace LocalJSX {
     interface AppRoot {
     }
-    interface ImageUploader {
+    interface ImageUploadBrowser {
     }
     interface NoteEditor {
         "note"?: Note;
@@ -174,7 +174,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "app-root": AppRoot;
-        "image-uploader": ImageUploader;
+        "image-upload-browser": ImageUploadBrowser;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
         "page-home": PageHome;
@@ -193,7 +193,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
-            "image-uploader": LocalJSX.ImageUploader & JSXBase.HTMLAttributes<HTMLImageUploaderElement>;
+            "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
