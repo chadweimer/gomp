@@ -9,6 +9,9 @@ export const config: Config = {
   outputTargets: [{
     type: 'www',
     baseUrl: '/static/',
-    serviceWorker: null
+    serviceWorker: null,
+    copy: [
+      { src: 'default-home-image.png' }
+    ]
   }],
 };
