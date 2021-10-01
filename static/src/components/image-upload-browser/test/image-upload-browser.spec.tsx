@@ -5,7 +5,7 @@ describe('image-upload-browser', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [ImageUploadBrowser],
-      html: `<image-upload-browser></image-upload-browser>`,
+      html: '<image-upload-browser></image-upload-browser>',
     });
     expect(page.root).toEqualHtml(`
       <image-upload-browser>

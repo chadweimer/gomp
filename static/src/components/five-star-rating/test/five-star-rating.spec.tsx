@@ -5,7 +5,7 @@ describe('five-star-rating', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [FiveStarRating],
-      html: `<five-star-rating></five-star-rating>`,
+      html: '<five-star-rating></five-star-rating>',
     });
     expect(page.root).toEqualHtml(`
       <five-star-rating>
