@@ -113,6 +113,10 @@ export class RecipesApi {
     await ajaxPut(target, `/api/v1/recipes/${recipeId}/state`, state);
   }
 
+  static async putRating(target: EventTarget, recipeId: number, value: number) {
+    await ajaxPut(target, `/api/v1/recipes/${recipeId}/rating`, value);
+  }
+
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/recipes/${id}`);
   }

@@ -9,6 +9,12 @@ import { Note, Recipe, RecipeCompact, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
+    interface FiveStarRating {
+        "disabled": boolean;
+        "icon": string;
+        "size": string;
+        "value": number;
+    }
     interface ImageUploadBrowser {
     }
     interface NoteEditor {
@@ -50,6 +56,12 @@ declare global {
     var HTMLAppRootElement: {
         prototype: HTMLAppRootElement;
         new (): HTMLAppRootElement;
+    };
+    interface HTMLFiveStarRatingElement extends Components.FiveStarRating, HTMLStencilElement {
+    }
+    var HTMLFiveStarRatingElement: {
+        prototype: HTMLFiveStarRatingElement;
+        new (): HTMLFiveStarRatingElement;
     };
     interface HTMLImageUploadBrowserElement extends Components.ImageUploadBrowser, HTMLStencilElement {
     }
@@ -125,6 +137,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
+        "five-star-rating": HTMLFiveStarRatingElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
@@ -141,6 +154,13 @@ declare global {
 }
 declare namespace LocalJSX {
     interface AppRoot {
+    }
+    interface FiveStarRating {
+        "disabled"?: boolean;
+        "icon"?: string;
+        "onValueSelected"?: (event: CustomEvent<number>) => void;
+        "size"?: string;
+        "value"?: number;
     }
     interface ImageUploadBrowser {
     }
@@ -174,6 +194,7 @@ declare namespace LocalJSX {
     }
     interface IntrinsicElements {
         "app-root": AppRoot;
+        "five-star-rating": FiveStarRating;
         "image-upload-browser": ImageUploadBrowser;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
@@ -193,6 +214,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
+            "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;

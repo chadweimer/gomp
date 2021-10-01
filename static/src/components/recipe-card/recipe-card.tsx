@@ -17,6 +17,7 @@ export class RecipeCard {
         {this.recipe.thumbnailUrl ? <ion-img class="image" src={this.recipe.thumbnailUrl} /> : <div class="image-placeholder" />}
         <ion-card-header>
           <ion-card-subtitle>{this.recipe.name}</ion-card-subtitle>
+          <five-star-rating value={this.recipe?.averageRating} disabled />
         </ion-card-header>
       </ion-card>
     );

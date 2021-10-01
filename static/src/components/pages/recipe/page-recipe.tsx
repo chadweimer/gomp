@@ -80,7 +80,10 @@ export class PageRecipe {
                     <ion-avatar slot="start">
                       <img src={this.mainImage?.thumbnailUrl} />
                     </ion-avatar>
-                    <h1>{this.recipe?.name}</h1>
+                    <div>
+                      <h1>{this.recipe?.name}</h1>
+                      <five-star-rating value={this.recipe?.averageRating} onValueSelected={e => this.onRatingSelected(e)} />
+                    </div>
                   </ion-item>
                   {this.recipe?.servingSize ?
                     <ion-item lines="full">
@@ -362,6 +365,14 @@ export class PageRecipe {
     await menu.present();
   }
 
+  private async setRating(value: number) {
+    try {
+      await RecipesApi.putRating(this.el, this.recipeId, value);
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
   private async onEditClicked() {
     const modal = await modalController.create({
       component: 'recipe-editor',
@@ -521,5 +532,10 @@ export class PageRecipe {
       await this.loadRecipe();
       await this.loadImages();
     }
+  }
+
+  private async onRatingSelected(e: CustomEvent<number>) {
+    await this.setRating(e.detail);
+    await this.loadRecipe();
   }
 }
