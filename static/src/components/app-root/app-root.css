@@ -7,3 +7,7 @@ ion-footer {
   font-size: 0.8em;
   font-weight: lighter;
 }
+
+ion-progress-bar:not(.loading) {
+  opacity: 0;
+}

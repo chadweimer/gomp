@@ -97,7 +97,7 @@ export class AppRoot {
                 <ion-searchbar show-clear-button="always" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} onIonClear={() => this.onSearchClear()} ref={el => this.searchBar = el} />
               </ion-buttons>
             </ion-toolbar>
-            <ion-progress-bar type="indeterminate" color="secondary" hidden={this.loadingCount === 0} />
+            <ion-progress-bar type="indeterminate" color="secondary" class={{['loading']: this.loadingCount > 0}} />
           </ion-header>
 
           <ion-content>
