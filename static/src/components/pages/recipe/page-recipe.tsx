@@ -118,7 +118,9 @@ export class PageRecipe {
                   {this.recipe?.sourceUrl ?
                     <ion-item lines="full">
                       <ion-label position="stacked">Source</ion-label>
-                      <p class="plain ion-padding">{this.recipe?.sourceUrl}</p>
+                      <p class="plain ion-padding">
+                        <a href={this.recipe?.sourceUrl}>{this.recipe?.sourceUrl}</a>
+                      </p>
                     </ion-item>
                     : ''}
                   <div class="ion-padding-top">
