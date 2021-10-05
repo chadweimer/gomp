@@ -1,8 +1,8 @@
-import { loadingController, modalController } from '@ionic/core';
+import { loadingController, modalController, popoverController } from '@ionic/core';
 import { Component, Element, h, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
-import { DefaultSearchFilter, Recipe, RecipeCompact, SearchViewMode, SortDir } from '../../../models';
+import { DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
 import state from '../../../store';
 
 @Component({
@@ -43,8 +43,14 @@ export class PageSearch {
           <ion-row>
             <ion-col>
               <ion-buttons class="justify-content-center-lg-down">
-                <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="filter" /> Active</ion-button>
-                <ion-button fill="solid" color="secondary"><ion-icon slot="start" icon="swap-vertical" /> Name</ion-button>
+                <ion-button fill="solid" color="secondary" onClick={e => this.onSearchStatesClicked(e)}>
+                  <ion-icon slot="start" icon="filter" />
+                  {this.getRecipeStatesText(state.searchFilter.states)}
+                </ion-button>
+                <ion-button fill="solid" color="secondary" onClick={e => this.onSortByClicked(e)}>
+                  <ion-icon slot="start" icon="swap-vertical" />
+                  {state.searchFilter.sortBy}
+                </ion-button>
                 {state.searchFilter.sortDir === SortDir.Asc ?
                   <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Desc)}>
                     <ion-icon slot="icon-only" icon="arrow-up" />
@@ -147,6 +153,41 @@ export class PageSearch {
     }
   }
 
+  private getRecipeStatesText(states: RecipeState[]) {
+    if (states.includes(RecipeState.Active)) {
+      if (states.includes(RecipeState.Archived)) {
+        return 'All'
+      }
+      return 'Active';
+    }
+
+    if (states.includes(RecipeState.Archived)) {
+      return 'Archived'
+    }
+
+    return 'Active';
+  }
+
+  private async setRecipeStates(states: RecipeState[]) {
+    state.searchFilter = {
+      ...state.searchFilter,
+      states: states
+    };
+    state.searchPage = 1;
+
+    await this.performSearch();
+  }
+
+  private async setSortBy(sortBy: SortBy) {
+    state.searchFilter = {
+      ...state.searchFilter,
+      sortBy: sortBy
+    };
+    state.searchPage = 1;
+
+    await this.performSearch();
+  }
+
   private async setSortDir(sortDir: SortDir) {
     state.searchFilter = {
       ...state.searchFilter,
@@ -199,6 +240,42 @@ export class PageSearch {
     if (resp.data.dismissed === false) {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
+  }
+
+  private async onSearchStatesClicked(e: MouseEvent) {
+    const menu = await popoverController.create({
+      component: 'recipe-state-selector',
+      componentProps: {
+        selectedStates: state.searchFilter.states
+      },
+      event: e
+    });
+    await menu.present();
+
+    const selector = menu.querySelector('recipe-state-selector');
+    selector.addEventListener('selectedStatesChanged', (e: CustomEvent<RecipeState[]>) => this.setRecipeStates(e.detail));
+
+    await menu.onDidDismiss();
+
+    selector.removeEventListener('selectedStatesChanged', (e: CustomEvent<RecipeState[]>) => this.setRecipeStates(e.detail));
+  }
+
+  private async onSortByClicked(e: MouseEvent) {
+    const menu = await popoverController.create({
+      component: 'sort-by-selector',
+      componentProps: {
+        sortBy: state.searchFilter.sortBy
+      },
+      event: e
+    });
+    await menu.present();
+
+    const selector = menu.querySelector('sort-by-selector');
+    selector.addEventListener('sortByChanged', (e: CustomEvent<SortBy>) => this.setSortBy(e.detail));
+
+    await menu.onDidDismiss();
+
+    selector.removeEventListener('sortByChanged', (e: CustomEvent<SortBy>) => this.setSortBy(e.detail));
   }
 
   private getRecipeCount() {

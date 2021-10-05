@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, User, UserSettings } from "./models";
+import { Note, Recipe, RecipeCompact, RecipeState, SortBy, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
@@ -46,7 +46,13 @@ export namespace Components {
     interface RecipeEditor {
         "recipe": Recipe;
     }
+    interface RecipeStateSelector {
+        "selectedStates": RecipeState[];
+    }
     interface SearchFilterEditor {
+    }
+    interface SortBySelector {
+        "sortBy": SortBy;
     }
     interface UserEditor {
         "user": User;
@@ -125,11 +131,23 @@ declare global {
         prototype: HTMLRecipeEditorElement;
         new (): HTMLRecipeEditorElement;
     };
+    interface HTMLRecipeStateSelectorElement extends Components.RecipeStateSelector, HTMLStencilElement {
+    }
+    var HTMLRecipeStateSelectorElement: {
+        prototype: HTMLRecipeStateSelectorElement;
+        new (): HTMLRecipeStateSelectorElement;
+    };
     interface HTMLSearchFilterEditorElement extends Components.SearchFilterEditor, HTMLStencilElement {
     }
     var HTMLSearchFilterEditorElement: {
         prototype: HTMLSearchFilterEditorElement;
         new (): HTMLSearchFilterEditorElement;
+    };
+    interface HTMLSortBySelectorElement extends Components.SortBySelector, HTMLStencilElement {
+    }
+    var HTMLSortBySelectorElement: {
+        prototype: HTMLSortBySelectorElement;
+        new (): HTMLSortBySelectorElement;
     };
     interface HTMLUserEditorElement extends Components.UserEditor, HTMLStencilElement {
     }
@@ -150,7 +168,9 @@ declare global {
         "page-settings": HTMLPageSettingsElement;
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
+        "recipe-state-selector": HTMLRecipeStateSelectorElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
+        "sort-by-selector": HTMLSortBySelectorElement;
         "user-editor": HTMLUserEditorElement;
     }
 }
@@ -190,7 +210,15 @@ declare namespace LocalJSX {
     interface RecipeEditor {
         "recipe"?: Recipe;
     }
+    interface RecipeStateSelector {
+        "onSelectedStatesChanged"?: (event: CustomEvent<RecipeState[]>) => void;
+        "selectedStates"?: RecipeState[];
+    }
     interface SearchFilterEditor {
+    }
+    interface SortBySelector {
+        "onSortByChanged"?: (event: CustomEvent<SortBy>) => void;
+        "sortBy"?: SortBy;
     }
     interface UserEditor {
         "user"?: User;
@@ -208,7 +236,9 @@ declare namespace LocalJSX {
         "page-settings": PageSettings;
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
+        "recipe-state-selector": RecipeStateSelector;
         "search-filter-editor": SearchFilterEditor;
+        "sort-by-selector": SortBySelector;
         "user-editor": UserEditor;
     }
 }
@@ -228,7 +258,9 @@ declare module "@stencil/core" {
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
+            "recipe-state-selector": LocalJSX.RecipeStateSelector & JSXBase.HTMLAttributes<HTMLRecipeStateSelectorElement>;
             "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
+            "sort-by-selector": LocalJSX.SortBySelector & JSXBase.HTMLAttributes<HTMLSortBySelectorElement>;
             "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }
     }

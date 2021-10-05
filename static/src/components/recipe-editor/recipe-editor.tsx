@@ -108,7 +108,7 @@ export class RecipeEditor {
 
   private filterSuggestedTags() {
     this.suggestedTags =
-      state.currentUserSettings?.favoriteTags?.filter(value => this.recipe.tags.indexOf(value) === -1)
+      state.currentUserSettings?.favoriteTags?.filter(value => !this.recipe.tags.includes(value))
       ?? [];
   }
 
