@@ -96,8 +96,8 @@ export class PageHome {
 
       // Then load all the user's saved filters
       const savedFilters = await UsersApi.getAllSearchFilters(this.el);
-      savedFilters?.forEach(async f => {
-        const savedSearchFilter = await UsersApi.getSearchFilter(this.el, f.userId, f.id);
+      for (const savedFilter of savedFilters) {
+        const savedSearchFilter = await UsersApi.getSearchFilter(this.el, savedFilter.userId, savedFilter.id);
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
           title: savedSearchFilter.name,
@@ -105,7 +105,7 @@ export class PageHome {
           count: total,
           results: recipes ?? []
         });
-      });
+      }
 
       this.searches = searches;
     } catch (e) {

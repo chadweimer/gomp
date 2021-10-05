@@ -100,7 +100,7 @@ export class AppRoot {
             {this.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
               :
-              <ion-progress-bar value={100} color="primary"/>
+              <ion-progress-bar value={100} color="primary" />
             }
           </ion-header>
 
@@ -250,11 +250,11 @@ export class AppRoot {
       pickerController,
       popoverController
     ];
-    controllers.forEach(async controller => {
+    for (const controller of controllers) {
       for (let top = await controller.getTop(); top; top = await controller.getTop()) {
         await top.dismiss();
       }
-    });
+    }
   }
 
   private async onSearchKeyDown(e: KeyboardEvent) {
