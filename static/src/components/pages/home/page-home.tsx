@@ -1,8 +1,9 @@
-import { Component, Element, h, Prop } from '@stencil/core';
-import { Recipe, UserSettings } from '../../../models';
+import { Component, Element, h, Method, Prop, State } from '@stencil/core';
+import { DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
 import { loadingController, modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
+import state from '../../../store';
 
 @Component({
   tag: 'page-home',
@@ -11,14 +12,19 @@ import { redirect } from '../../../helpers/utils';
 export class PageHome {
   @Prop() userSettings: UserSettings | null;
 
+  @State() searches: {
+    title: string,
+    filter: SearchFilter,
+    count: number,
+    results: RecipeCompact[]
+  }[] = [];
+
   @Element() el!: HTMLPageHomeElement;
 
-  async connectedCallback() {
-    try {
-      this.userSettings = await UsersApi.getSettings(this.el);
-    } catch (e) {
-      console.error(e);
-    }
+  @Method()
+  async activatedCallback() {
+    await this.loadUserSettings();
+    await this.loadSearchFilters();
   }
 
   render() {
@@ -34,6 +40,20 @@ export class PageHome {
             </ion-col>
           </ion-row>
         </ion-grid>
+        {this.searches.map(search =>
+          <div>
+            <ion-button fill="clear" size="large" onClick={() => this.onFilterClicked(search.filter)}>{`${search.title} (${search.count})`}</ion-button>
+            <ion-grid class="no-pad">
+              <ion-row>
+                {search.results.map(recipe =>
+                  <ion-col size="6" size-md="4" size-xl="2">
+                    <recipe-card recipe={recipe} size="small" />
+                  </ion-col>
+                )}
+              </ion-row>
+            </ion-grid>
+          </div>
+        )}
       </ion-content>,
 
       <ion-fab horizontal="end" vertical="bottom" slot="fixed">
@@ -42,6 +62,67 @@ export class PageHome {
         </ion-fab-button>
       </ion-fab>
     ];
+  }
+
+  private async loadUserSettings() {
+    try {
+      this.userSettings = await UsersApi.getSettings(this.el);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  private async loadSearchFilters() {
+    try {
+      const searches: {
+        title: string,
+        filter: SearchFilter,
+        count: number,
+        results: RecipeCompact[]
+      }[] = [];
+
+      // First add the "all" search
+      const allFilter: SearchFilter = {
+        ...(new DefaultSearchFilter()),
+        sortBy: SortBy.Random
+      };
+      const { total, recipes } = await this.performSearch(allFilter);
+      searches.push({
+        title: 'Recipes',
+        filter: allFilter,
+        count: total,
+        results: recipes ?? []
+      });
+
+      // Then load all the user's saved filters
+      const savedFilters = await UsersApi.getAllSearchFilters(this.el);
+      savedFilters?.forEach(async f => {
+        const savedSearchFilter = await UsersApi.getSearchFilter(this.el, f.userId, f.id);
+        const { total, recipes } = await this.performSearch(savedSearchFilter);
+        searches.push({
+          title: savedSearchFilter.name,
+          filter: savedSearchFilter,
+          count: total,
+          results: recipes ?? []
+        });
+      });
+
+      this.searches = searches;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  private async performSearch(filter: SearchFilter) {
+    // Make sure to fill in any missing fields
+    const defaultFilter = new DefaultSearchFilter();
+    filter = { ...defaultFilter, ...filter };
+
+    try {
+      return await RecipesApi.find(this.el, filter, 1, 6);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   private async saveNewRecipe(recipe: Recipe, formData: FormData) {
@@ -76,6 +157,14 @@ export class PageHome {
     if (resp.data.dismissed === false) {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
+  }
+
+  private onFilterClicked(filter: SearchFilter) {
+    state.searchFilter = {
+      ...filter
+    };
+    state.searchPage = 1;
+    redirect('/recipes');
   }
 
 }

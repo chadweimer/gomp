@@ -10,18 +10,18 @@ export class RecipeCard {
     name: '',
     thumbnailUrl: ''
   };
-  @Prop() size: 'large'|'small' = 'large';
+  @Prop() size: 'large' | 'small' = 'large';
 
   render() {
     return (
       <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}/view` : ''}>
         {this.recipe.thumbnailUrl
-          ? <ion-img class={{['image']: true, [this.size]: true}} src={this.recipe.thumbnailUrl} />
-          : <div class={{['image']: true, [this.size]: true}} />}
-        <ion-card-header>
-          <ion-card-subtitle>{this.recipe.name}</ion-card-subtitle>
+          ? <ion-img class={{ ['image']: true, [this.size]: true }} src={this.recipe.thumbnailUrl} />
+          : <div class={{ ['image']: true, [this.size]: true }} />}
+        <ion-card-content>
+          <p class="single-line">{this.recipe.name}</p>
           <five-star-rating value={this.recipe?.averageRating} disabled />
-        </ion-card-header>
+        </ion-card-content>
       </ion-card>
     );
   }

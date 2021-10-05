@@ -23,6 +23,7 @@ export namespace Components {
     interface PageAdmin {
     }
     interface PageHome {
+        "activatedCallback": () => Promise<void>;
         "userSettings": UserSettings | null;
     }
     interface PageLogin {
@@ -40,7 +41,7 @@ export namespace Components {
     }
     interface RecipeCard {
         "recipe": RecipeCompact;
-        "size": 'large'|'small';
+        "size": 'large' | 'small';
     }
     interface RecipeEditor {
         "recipe": Recipe;
@@ -184,7 +185,7 @@ declare namespace LocalJSX {
     }
     interface RecipeCard {
         "recipe"?: RecipeCompact;
-        "size"?: 'large'|'small';
+        "size"?: 'large' | 'small';
     }
     interface RecipeEditor {
         "recipe"?: Recipe;

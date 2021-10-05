@@ -105,6 +105,12 @@ p.plain {
     white-space: pre-wrap;
 }
 
+p.single-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 ion-grid.no-pad {
   --ion-grid-padding: 0px;
   --ion-grid-column-padding: 0px;

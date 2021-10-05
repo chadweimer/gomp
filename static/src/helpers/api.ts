@@ -1,4 +1,4 @@
-import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, User, UserSettings } from '../models';
+import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, User, UserSettings } from '../models';
 import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
@@ -35,8 +35,16 @@ export class UsersApi {
     return await ajaxGet(target, `/api/v1/users/${id !== null ? id : 'current'}`);
   }
 
-  static async getSettings(target: EventTarget, id: number | null = null): Promise<UserSettings> {
-    return await ajaxGet(target, `/api/v1/users/${id !== null ? id : 'current'}/settings`);
+  static async getSettings(target: EventTarget, userId: number | null = null): Promise<UserSettings> {
+    return await ajaxGet(target, `/api/v1/users/${userId !== null ? userId : 'current'}/settings`);
+  }
+
+  static async getAllSearchFilters(target: EventTarget, userId: number | null = null): Promise<SavedSearchFilterCompact[]> {
+    return await ajaxGet(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters`);
+  }
+
+  static async getSearchFilter(target: EventTarget, userId: number | null = null, id: number): Promise<SavedSearchFilter> {
+    return await ajaxGet(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters/${id}`);
   }
 
   static async post(target: EventTarget, user: User, password: string) {
