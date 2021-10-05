@@ -42,8 +42,15 @@ export class PageHome {
         </ion-grid>
         {this.searches.map(search =>
           <div>
-            <ion-button fill="clear" size="large" onClick={() => this.onFilterClicked(search.filter)}>{`${search.title} (${search.count})`}</ion-button>
             <ion-grid class="no-pad">
+              <ion-row>
+                <ion-col>
+                  <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
+                    <ion-label>{search.title}</ion-label>
+                    <ion-badge slot="end" color="secondary">{search.count}</ion-badge>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
               <ion-row>
                 {search.results.map(recipe =>
                   <ion-col size="6" size-md="4" size-xl="2">
@@ -96,15 +103,17 @@ export class PageHome {
 
       // Then load all the user's saved filters
       const savedFilters = await UsersApi.getAllSearchFilters(this.el);
-      for (const savedFilter of savedFilters) {
-        const savedSearchFilter = await UsersApi.getSearchFilter(this.el, savedFilter.userId, savedFilter.id);
-        const { total, recipes } = await this.performSearch(savedSearchFilter);
-        searches.push({
-          title: savedSearchFilter.name,
-          filter: savedSearchFilter,
-          count: total,
-          results: recipes ?? []
-        });
+      if (savedFilters) {
+        for (const savedFilter of savedFilters) {
+          const savedSearchFilter = await UsersApi.getSearchFilter(this.el, savedFilter.userId, savedFilter.id);
+          const { total, recipes } = await this.performSearch(savedSearchFilter);
+          searches.push({
+            title: savedSearchFilter.name,
+            filter: savedSearchFilter,
+            count: total,
+            results: recipes ?? []
+          });
+        }
       }
 
       this.searches = searches;
