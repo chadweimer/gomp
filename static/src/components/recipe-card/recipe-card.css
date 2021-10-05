@@ -3,10 +3,11 @@
 }
 
 .image {
-  height: 200px;
   object-fit: cover;
 }
-
-.image-placeholder {
+.image.large {
   height: 200px;
+}
+.image.small {
+  height: 100px;
 }

@@ -40,6 +40,7 @@ export namespace Components {
     }
     interface RecipeCard {
         "recipe": RecipeCompact;
+        "size": 'large'|'small';
     }
     interface RecipeEditor {
         "recipe": Recipe;
@@ -183,6 +184,7 @@ declare namespace LocalJSX {
     }
     interface RecipeCard {
         "recipe"?: RecipeCompact;
+        "size"?: 'large'|'small';
     }
     interface RecipeEditor {
         "recipe"?: Recipe;

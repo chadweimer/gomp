@@ -10,11 +10,14 @@ export class RecipeCard {
     name: '',
     thumbnailUrl: ''
   };
+  @Prop() size: 'large'|'small' = 'large';
 
   render() {
     return (
       <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}/view` : ''}>
-        {this.recipe.thumbnailUrl ? <ion-img class="image" src={this.recipe.thumbnailUrl} /> : <div class="image-placeholder" />}
+        {this.recipe.thumbnailUrl
+          ? <ion-img class={{['image']: true, [this.size]: true}} src={this.recipe.thumbnailUrl} />
+          : <div class={{['image']: true, [this.size]: true}} />}
         <ion-card-header>
           <ion-card-subtitle>{this.recipe.name}</ion-card-subtitle>
           <five-star-rating value={this.recipe?.averageRating} disabled />
