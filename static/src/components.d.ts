@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeState, SortBy, User, UserSettings } from "./models";
+import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User, UserSettings } from "./models";
 export namespace Components {
     interface AppRoot {
     }
@@ -50,6 +50,7 @@ export namespace Components {
         "selectedStates": RecipeState[];
     }
     interface SearchFilterEditor {
+        "filter": SearchFilter;
     }
     interface SortBySelector {
         "sortBy": SortBy;
@@ -215,6 +216,7 @@ declare namespace LocalJSX {
         "selectedStates"?: RecipeState[];
     }
     interface SearchFilterEditor {
+        "filter"?: SearchFilter;
     }
     interface SortBySelector {
         "onSortByChanged"?: (event: CustomEvent<SortBy>) => void;
