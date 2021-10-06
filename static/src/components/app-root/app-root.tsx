@@ -99,10 +99,11 @@ export class AppRoot {
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
               </ion-buttons>
               <ion-item slot="end" lines="none">
+                <ion-icon icon="search" slot="start" />
                 <ion-input type="search" placeholder="Search" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
                 <ion-buttons slot="end" class="ion-no-margin">
-                  <ion-button color="dark" onClick={() => this.onSearchClear()}><ion-icon icon="close" slot="icon-only" /></ion-button>
-                  <ion-button color="dark"><ion-icon icon="options" slot="icon-only" /></ion-button>
+                  <ion-button color="medium" onClick={() => this.onSearchClear()}><ion-icon icon="close" slot="icon-only" /></ion-button>
+                  <ion-button color="medium"><ion-icon icon="options" slot="icon-only" /></ion-button>
                 </ion-buttons>
               </ion-item>
             </ion-toolbar>
