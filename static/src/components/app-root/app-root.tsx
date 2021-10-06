@@ -63,10 +63,12 @@ export class AppRoot {
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
-              <ion-item href="/admin" lines="full" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>
-                <ion-icon name="shield-checkmark" slot="start" />
-                <ion-label>Admin</ion-label>
-              </ion-item>
+              {hasAccessLevel(state.currentUser, AccessLevel.Administrator) ?
+                <ion-item href="/admin" lines="full">
+                  <ion-icon name="shield-checkmark" slot="start" />
+                  <ion-label>Admin</ion-label>
+                </ion-item>
+                : ''}
               <ion-item lines="none" button onClick={() => this.logout()}>
                 <ion-icon name="log-out" slot="start" />
                 <ion-label>Logout</ion-label>
@@ -82,22 +84,28 @@ export class AppRoot {
         <div class="ion-page" id="main-content">
           <ion-header>
             <ion-toolbar color="primary">
-              <ion-buttons slot="start" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Viewer)}>
-                <ion-menu-button class="ion-hide-lg-up" />
-              </ion-buttons>
+              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ?
+                <ion-buttons slot="start">
+                  <ion-menu-button class="ion-hide-lg-up" />
+                </ion-buttons>
+                : ''}
 
               <ion-title slot="start" class="ion-hide-sm-down">{state.appConfig.title}</ion-title>
 
-              <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Viewer)}>
-                <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
-                <ion-button href="/recipes" class="ion-hide-lg-down">
-                  Recipes
-                  <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
-                </ion-button>
-                <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
-                <ion-button href="/admin" class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>Admin</ion-button>
-                <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-              </ion-buttons>
+              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ?
+                <ion-buttons slot="end">
+                  <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
+                  <ion-button href="/recipes" class="ion-hide-lg-down">
+                    Recipes
+                    <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
+                  </ion-button>
+                  <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
+                  {hasAccessLevel(state.currentUser, AccessLevel.Administrator) ?
+                    <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
+                    : ''}
+                  <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
+                </ion-buttons>
+                : ''}
               <ion-item slot="end" lines="none">
                 <ion-icon icon="search" slot="start" />
                 <ion-input type="search" placeholder="Search" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />

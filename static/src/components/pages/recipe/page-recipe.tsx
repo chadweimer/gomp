@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, loadingController, modalController } from '@ionic/core';
-import { Component, Element, h, Method, Prop, State } from '@stencil/core';
+import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
 import { formatDate, hasAccessLevel, redirect } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeImage, RecipeState } from '../../../models';
@@ -29,186 +29,195 @@ export class PageRecipe {
   }
 
   render() {
-    return [
-      <ion-header class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
-        <ion-toolbar>
-          <ion-buttons slot="primary">
-            <ion-button onClick={() => this.onEditClicked()}>
-              <ion-icon slot="start" icon="create" />
-              Edit
-            </ion-button>
-            <ion-button onClick={() => this.onAddNoteClicked()}>
-              <ion-icon slot="start" icon="chatbox" />
-              Add Note
-            </ion-button>
-            <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-              <ion-icon slot="start" icon="camera" />
-              Upload Picture
-            </ion-button>
-            <ion-button>
-              <ion-icon slot="start" icon="link" />
-              Add Link
-            </ion-button>
-          </ion-buttons>
-          <ion-buttons slot="secondary">
-            <ion-button onClick={() => this.onDeleteClicked()}>
-              <ion-icon slot="start" icon="trash" />
-              Delete
-            </ion-button>
-            {this.recipe?.state === RecipeState.Archived ?
-              <ion-button onClick={() => this.onUnarchiveClicked()}>
-                <ion-icon slot="start" icon="archive" />
-                Unarchive
-              </ion-button>
-              :
-              <ion-button onClick={() => this.onArchiveClicked()}>
-                <ion-icon slot="start" icon="archive" />
-                Archive
-              </ion-button>
-            }
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>,
+    return (
+      <Host>
+        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+          <ion-header class="ion-hide-lg-down">
+            <ion-toolbar>
+              <ion-buttons slot="primary">
+                <ion-button onClick={() => this.onEditClicked()}>
+                  <ion-icon slot="start" icon="create" />
+                  Edit
+                </ion-button>
+                <ion-button onClick={() => this.onAddNoteClicked()}>
+                  <ion-icon slot="start" icon="chatbox" />
+                  Add Note
+                </ion-button>
+                <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                  <ion-icon slot="start" icon="camera" />
+                  Upload Picture
+                </ion-button>
+                <ion-button>
+                  <ion-icon slot="start" icon="link" />
+                  Add Link
+                </ion-button>
+              </ion-buttons>
+              <ion-buttons slot="secondary">
+                <ion-button onClick={() => this.onDeleteClicked()}>
+                  <ion-icon slot="start" icon="trash" />
+                  Delete
+                </ion-button>
+                {this.recipe?.state === RecipeState.Archived ?
+                  <ion-button onClick={() => this.onUnarchiveClicked()}>
+                    <ion-icon slot="start" icon="archive" />
+                    Unarchive
+                  </ion-button>
+                  :
+                  <ion-button onClick={() => this.onArchiveClicked()}>
+                    <ion-icon slot="start" icon="archive" />
+                    Archive
+                  </ion-button>
+                }
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          : ''}
 
-      <ion-content>
-        <ion-grid class="no-pad" fixed>
-          <ion-row>
-            <ion-col>
-              <ion-card>
-                <ion-card-content>
-                  <ion-item lines="none">
-                    <ion-avatar slot="start">
-                      <img src={this.mainImage?.thumbnailUrl} />
-                    </ion-avatar>
-                    <div>
-                      <h1>{this.recipe?.name}</h1>
-                      <five-star-rating value={this.recipe?.averageRating} onValueSelected={e => this.onRatingSelected(e)} />
+        <ion-content>
+          <ion-grid class="no-pad" fixed>
+            <ion-row>
+              <ion-col>
+                <ion-card>
+                  <ion-card-content>
+                    <ion-item lines="none">
+                      <ion-avatar slot="start">
+                        <img src={this.mainImage?.thumbnailUrl} />
+                      </ion-avatar>
+                      <div>
+                        <h1>{this.recipe?.name}</h1>
+                        <five-star-rating value={this.recipe?.averageRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
+                          onValueSelected={e => this.onRatingSelected(e)} />
+                      </div>
+                    </ion-item>
+                    {this.recipe?.servingSize ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Serving Size</ion-label>
+                        <p class="plain ion-padding">{this.recipe?.servingSize}</p>
+                      </ion-item>
+                      : ''}
+                    {this.recipe?.ingredients ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Ingredients</ion-label>
+                        <p class="plain ion-padding">{this.recipe?.ingredients}</p>
+                      </ion-item>
+                      : ''}
+                    {this.recipe?.directions ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Directions</ion-label>
+                        <p class="plain ion-padding">{this.recipe?.directions}</p>
+                      </ion-item>
+                      : ''}
+                    {this.recipe?.storageInstructions ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
+                        <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
+                      </ion-item>
+                      : ''}
+                    {this.recipe?.nutritionInfo ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Nutrition</ion-label>
+                        <p class="plain ion-padding">{this.recipe?.nutritionInfo}</p>
+                      </ion-item>
+                      : ''}
+                    {this.recipe?.sourceUrl ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Source</ion-label>
+                        <p class="plain ion-padding">
+                          <a href={this.recipe?.sourceUrl} target="_blank">{this.recipe?.sourceUrl}</a>
+                        </p>
+                      </ion-item>
+                      : ''}
+                    <div class="ion-padding-top">
+                      {this.recipe?.tags?.map(tag =>
+                        <ion-chip>{tag}</ion-chip>
+                      )}
                     </div>
-                  </ion-item>
-                  {this.recipe?.servingSize ?
-                    <ion-item lines="full">
-                      <ion-label position="stacked">Serving Size</ion-label>
-                      <p class="plain ion-padding">{this.recipe?.servingSize}</p>
-                    </ion-item>
-                    : ''}
-                  {this.recipe?.ingredients ?
-                    <ion-item lines="full">
-                      <ion-label position="stacked">Ingredients</ion-label>
-                      <p class="plain ion-padding">{this.recipe?.ingredients}</p>
-                    </ion-item>
-                    : ''}
-                  {this.recipe?.directions ?
-                    <ion-item lines="full">
-                      <ion-label position="stacked">Directions</ion-label>
-                      <p class="plain ion-padding">{this.recipe?.directions}</p>
-                    </ion-item>
-                    : ''}
-                  {this.recipe?.storageInstructions ?
-                    <ion-item lines="full">
-                      <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-                      <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
-                    </ion-item>
-                    : ''}
-                  {this.recipe?.nutritionInfo ?
-                    <ion-item lines="full">
-                      <ion-label position="stacked">Nutrition</ion-label>
-                      <p class="plain ion-padding">{this.recipe?.nutritionInfo}</p>
-                    </ion-item>
-                    : ''}
-                  {this.recipe?.sourceUrl ?
-                    <ion-item lines="full">
-                      <ion-label position="stacked">Source</ion-label>
-                      <p class="plain ion-padding">
-                        <a href={this.recipe?.sourceUrl} target="_blank">{this.recipe?.sourceUrl}</a>
-                      </p>
-                    </ion-item>
-                    : ''}
-                  <div class="ion-padding-top">
-                    {this.recipe?.tags?.map(tag =>
-                      <ion-chip>{tag}</ion-chip>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12" size-md>
+                <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
+                <ion-grid class="ion-padding">
+                  <ion-row class="ion-justify-content-center">
+                    {this.images.map(image =>
+                      <ion-col size="auto">
+                        <a href={image.url} target="_blank">
+                          <ion-thumbnail class="large ion-padding">
+                            <img src={image.thumbnailUrl} alt={image.name} />
+                          </ion-thumbnail>
+                        </a>
+                      </ion-col>
                     )}
-                  </div>
-                </ion-card-content>
-              </ion-card>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col size="12" size-md>
-              <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
-              <ion-grid class="ion-padding">
-                <ion-row class="ion-justify-content-center">
-                  {this.images.map(image =>
-                    <ion-col size="auto">
-                      <a href={image.url} target="_blank">
-                        <ion-thumbnail class="large ion-padding">
-                          <img src={image.thumbnailUrl} alt={image.name} />
-                        </ion-thumbnail>
-                      </a>
-                    </ion-col>
-                  )}
-                </ion-row>
-              </ion-grid>
-            </ion-col>
-            <ion-col size="12" size-md>
-              <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
-              <ion-grid>
-                {this.notes.map(note =>
-                  <ion-row>
-                    <ion-col>
-                      <ion-card>
-                        <ion-card-header>
-                          <ion-item lines="full">
-                            <ion-icon slot="start" icon="chatbox" />
-                            <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? `(edited ${formatDate(note.modifiedAt)})` : ''}</ion-label>
-                            <ion-buttons slot="end" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
-                              <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
-                                <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
-                              </ion-button>
-                              <ion-button size="small" fill="default" onClick={() => this.onDeleteNoteClicked(note)}>
-                                <ion-icon slot="icon-only" icon="trash" color="danger" size="small" />
-                              </ion-button>
-                            </ion-buttons>
-                          </ion-item>
-                        </ion-card-header>
-                        <ion-card-content>
-                          <p class="plain">{note.text}</p>
-                        </ion-card-content>
-                      </ion-card>
-                    </ion-col>
                   </ion-row>
-                )}
-              </ion-grid>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-content>,
+                </ion-grid>
+              </ion-col>
+              <ion-col size="12" size-md>
+                <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
+                <ion-grid>
+                  {this.notes.map(note =>
+                    <ion-row>
+                      <ion-col>
+                        <ion-card>
+                          <ion-card-header>
+                            <ion-item lines="full">
+                              <ion-icon slot="start" icon="chatbox" />
+                              <ion-label>{formatDate(note.createdAt)} {note.modifiedAt ? `(edited ${formatDate(note.modifiedAt)})` : ''}</ion-label>
+                              {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+                                <ion-buttons slot="end">
+                                  <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
+                                    <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
+                                  </ion-button>
+                                  <ion-button size="small" fill="default" onClick={() => this.onDeleteNoteClicked(note)}>
+                                    <ion-icon slot="icon-only" icon="trash" color="danger" size="small" />
+                                  </ion-button>
+                                </ion-buttons>
+                                : ''}
+                            </ion-item>
+                          </ion-card-header>
+                          <ion-card-content>
+                            <p class="plain">{note.text}</p>
+                          </ion-card-content>
+                        </ion-card>
+                      </ion-col>
+                    </ion-row>
+                  )}
+                </ion-grid>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-content>
 
-      <ion-footer class="ion-hide-lg-up" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}>
-        <ion-toolbar>
-          <ion-buttons slot="primary">
-            <ion-button onClick={() => this.onEditClicked()}>
-              <ion-icon slot="start" icon="create" />
-              Edit
-            </ion-button>
-            <ion-button onClick={() => this.onAddNoteClicked()}>
-              <ion-icon slot="start" icon="chatbox" />
-              Add Note
-            </ion-button>
-            <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-              <ion-icon slot="start" icon="camera" />
-              Upload Picture
-            </ion-button>
-            <ion-button class="ion-hide-md-down">
-              <ion-icon slot="start" icon="link" />
-              Add Link
-            </ion-button>
-            <ion-button onClick={() => this.showRecipeMenu()}>
-              <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-footer>
-    ];
+        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+          <ion-footer class="ion-hide-lg-up">
+            <ion-toolbar>
+              <ion-buttons slot="primary">
+                <ion-button onClick={() => this.onEditClicked()}>
+                  <ion-icon slot="start" icon="create" />
+                  Edit
+                </ion-button>
+                <ion-button onClick={() => this.onAddNoteClicked()}>
+                  <ion-icon slot="start" icon="chatbox" />
+                  Add Note
+                </ion-button>
+                <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                  <ion-icon slot="start" icon="camera" />
+                  Upload Picture
+                </ion-button>
+                <ion-button class="ion-hide-md-down">
+                  <ion-icon slot="start" icon="link" />
+                  Add Link
+                </ion-button>
+                <ion-button onClick={() => this.showRecipeMenu()}>
+                  <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-footer>
+          : ''}
+      </Host>
+    );
   }
 
   private async load() {

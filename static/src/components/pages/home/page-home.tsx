@@ -1,8 +1,8 @@
-import { Component, Element, h, Method, Prop, State } from '@stencil/core';
-import { DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
+import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
+import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
 import { loadingController, modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
-import { redirect } from '../../../helpers/utils';
+import { hasAccessLevel, redirect } from '../../../helpers/utils';
 import state from '../../../store';
 
 @Component({
@@ -28,47 +28,51 @@ export class PageHome {
   }
 
   render() {
-    return [
-      <ion-content>
-        <ion-grid fixed>
-          <ion-row>
-            <ion-col>
-              <header class="ion-text-center">
-                <h1>{this.userSettings?.homeTitle}</h1>
-                <img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
-              </header>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-        {this.searches.map(search =>
-          <div>
-            <ion-grid class="no-pad">
-              <ion-row>
-                <ion-col>
-                  <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
-                    <ion-label>{search.title}</ion-label>
-                    <ion-badge slot="end" color="secondary">{search.count}</ion-badge>
-                  </ion-item>
-                </ion-col>
-              </ion-row>
-              <ion-row>
-                {search.results.map(recipe =>
-                  <ion-col size="6" size-md="4" size-xl="2">
-                    <recipe-card recipe={recipe} size="small" />
+    return (
+      <Host>
+        <ion-content>
+          <ion-grid fixed>
+            <ion-row>
+              <ion-col>
+                <header class="ion-text-center">
+                  <h1>{this.userSettings?.homeTitle}</h1>
+                  <img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+                </header>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          {this.searches.map(search =>
+            <div>
+              <ion-grid class="no-pad">
+                <ion-row>
+                  <ion-col>
+                    <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
+                      <ion-label>{search.title}</ion-label>
+                      <ion-badge slot="end" color="secondary">{search.count}</ion-badge>
+                    </ion-item>
                   </ion-col>
-                )}
-              </ion-row>
-            </ion-grid>
-          </div>
-        )}
-      </ion-content>,
+                </ion-row>
+                <ion-row>
+                  {search.results.map(recipe =>
+                    <ion-col size="6" size-md="4" size-xl="2">
+                      <recipe-card recipe={recipe} size="small" />
+                    </ion-col>
+                  )}
+                </ion-row>
+              </ion-grid>
+            </div>
+          )}
+        </ion-content>
 
-      <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-        <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
-          <ion-icon icon="add" />
-        </ion-fab-button>
-      </ion-fab>
-    ];
+        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+          <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+            <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
+              <ion-icon icon="add" />
+            </ion-fab-button>
+          </ion-fab>
+          : ''}
+      </Host>
+    );
   }
 
   private async loadUserSettings() {
