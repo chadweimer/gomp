@@ -1,5 +1,5 @@
 import { Component, Element, h, Prop, State } from '@stencil/core';
-import { configureModalAutofocus } from '../../helpers/utils';
+import { capitalizeFirstLetter, configureModalAutofocus } from '../../helpers/utils';
 import { AccessLevel, User } from '../../models';
 
 @Component({
@@ -18,12 +18,6 @@ export class UserEditor {
   @Element() el!: HTMLUserEditorElement;
   private form!: HTMLFormElement;
   private repeatPasswordInput!: HTMLIonInputElement;
-
-  private static availableAccessLevels = [
-    { name: 'Administrator', value: AccessLevel.Administrator },
-    { name: 'Editor', value: AccessLevel.Editor },
-    { name: 'Viewer', value: AccessLevel.Viewer }
-  ];
 
   connectedCallback() {
     configureModalAutofocus(this.el);
@@ -52,8 +46,8 @@ export class UserEditor {
           <ion-item>
             <ion-label position="stacked">Access Level</ion-label>
             <ion-select value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
-              {UserEditor.availableAccessLevels.map(level =>
-                <ion-select-option value={level.value}>{level.name}</ion-select-option>
+              {Object.values(AccessLevel).map(item =>
+                <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
               )}
             </ion-select>
           </ion-item>

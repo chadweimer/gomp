@@ -1,5 +1,6 @@
 import { CheckboxChangeEventDetail } from '@ionic/core';
 import { Component, Event, EventEmitter, h, Prop, State } from '@stencil/core';
+import { capitalizeFirstLetter } from '../../helpers/utils';
 import { RecipeState } from '../../models';
 
 @Component({
@@ -13,11 +14,6 @@ export class RecipeStateSelector {
 
   @Event() selectedStatesChanged: EventEmitter<RecipeState[]>;
 
-  private static availableRecipeStates = [
-    { name: 'Active', value: RecipeState.Active },
-    { name: 'Archived', value: RecipeState.Archived }
-  ];
-
   componentWillLoad() {
     this.internalSelectedStates = this.selectedStates;
   }
@@ -25,10 +21,10 @@ export class RecipeStateSelector {
   render() {
     return (
       <ion-list>
-        {RecipeStateSelector.availableRecipeStates.map(state =>
+        {Object.values(RecipeState).map(item =>
           <ion-item>
-            <ion-label>{state.name}</ion-label>
-            <ion-checkbox slot="end" value={state.value} checked={this.selectedStates.includes(state.value)} onIonChange={e => this.onSelectionChanged(e)}></ion-checkbox>
+            <ion-label>{capitalizeFirstLetter(item)}</ion-label>
+            <ion-checkbox slot="end" value={item} checked={this.selectedStates.includes(item)} onIonChange={e => this.onSelectionChanged(e)}></ion-checkbox>
           </ion-item>
         )}
       </ion-list>

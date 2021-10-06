@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect } from '../../helpers/utils';
-import { AccessLevel } from '../../models';
+import { AccessLevel, DefaultSearchFilter } from '../../models';
 import state from '../../store';
 
 @Component({
@@ -15,7 +15,7 @@ export class AppRoot {
   @Element() el!: HTMLAppRootElement;
   private nav!: HTMLIonNavElement;
   private menu!: HTMLIonMenuElement;
-  private searchBar!: HTMLIonSearchbarElement;
+  private searchBar!: HTMLIonInputElement;
 
   async componentWillLoad() {
     await this.loadAppConfiguration();
@@ -97,8 +97,14 @@ export class AppRoot {
                 <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
                 <ion-button href="/admin" class="ion-hide-lg-down" hidden={!hasAccessLevel(state.currentUser, AccessLevel.Administrator)}>Admin</ion-button>
                 <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-                <ion-searchbar show-clear-button="always" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} onIonClear={() => this.onSearchClear()} ref={el => this.searchBar = el} />
               </ion-buttons>
+              <ion-item slot="end" lines="none">
+                <ion-input type="search" placeholder="Search" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
+                <ion-buttons slot="end" class="ion-no-margin">
+                  <ion-button color="dark" onClick={() => this.onSearchClear()}><ion-icon icon="close" slot="icon-only" /></ion-button>
+                  <ion-button color="dark"><ion-icon icon="options" slot="icon-only" /></ion-button>
+                </ion-buttons>
+              </ion-item>
             </ion-toolbar>
             {this.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
@@ -262,11 +268,12 @@ export class AppRoot {
 
   private async onSearchKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
-      await this.performSearch(this.searchBar.value);
+      await this.performSearch(this.searchBar.value?.toString());
     }
   }
 
   private async onSearchClear() {
+    state.searchFilter = new DefaultSearchFilter();
     await this.performSearch('');
   }
 }

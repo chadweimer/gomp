@@ -40,3 +40,7 @@ export async function redirect(route: string) {
   const router = document.querySelector('ion-router');
   await router.push(route);
 }
+
+export function capitalizeFirstLetter(val: string) {
+  return val.charAt(0).toLocaleUpperCase() + val.slice(1);
+}

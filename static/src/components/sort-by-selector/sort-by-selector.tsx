@@ -1,5 +1,6 @@
 import { RadioGroupChangeEventDetail } from '@ionic/core';
 import { Component, Event, EventEmitter, h, Prop } from '@stencil/core';
+import { capitalizeFirstLetter } from '../../helpers/utils';
 import { SortBy } from '../../models';
 
 @Component({
@@ -12,22 +13,14 @@ export class SortBySelector {
 
   @Event() sortByChanged: EventEmitter<SortBy>;
 
-  private static availableSortBy = [
-    { name: 'Name', value: SortBy.Name },
-    { name: 'Rating', value: SortBy.Rating },
-    { name: 'Created', value: SortBy.Created },
-    { name: 'Modified', value: SortBy.Modified },
-    { name: 'Random', value: SortBy.Random }
-  ];
-
   render() {
     return (
       <ion-list>
         <ion-radio-group value={this.sortBy} onIonChange={e => this.onSelectionChanged(e)}>
-          {SortBySelector.availableSortBy.map(item =>
+          {Object.values(SortBy).map(item =>
             <ion-item>
-              <ion-label>{item.name}</ion-label>
-              <ion-radio slot="end" value={item.value}></ion-radio>
+              <ion-label>{capitalizeFirstLetter(item)}</ion-label>
+              <ion-radio slot="end" value={item}></ion-radio>
             </ion-item>
           )}
         </ion-radio-group>

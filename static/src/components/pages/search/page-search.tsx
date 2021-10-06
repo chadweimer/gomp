@@ -1,7 +1,7 @@
 import { loadingController, modalController, popoverController } from '@ionic/core';
 import { Component, Element, h, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
-import { redirect } from '../../../helpers/utils';
+import { capitalizeFirstLetter, redirect } from '../../../helpers/utils';
 import { DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
 import state from '../../../store';
 
@@ -45,11 +45,11 @@ export class PageSearch {
               <ion-buttons class="justify-content-center-lg-down">
                 <ion-button fill="solid" color="secondary" onClick={e => this.onSearchStatesClicked(e)}>
                   <ion-icon slot="start" icon="filter" />
-                  {this.getRecipeStatesText(state.searchFilter.states)}
+                  {capitalizeFirstLetter(this.getRecipeStatesText(state.searchFilter.states))}
                 </ion-button>
                 <ion-button fill="solid" color="secondary" onClick={e => this.onSortByClicked(e)}>
                   <ion-icon slot="start" icon="swap-vertical" />
-                  {state.searchFilter.sortBy}
+                  {capitalizeFirstLetter(state.searchFilter.sortBy)}
                 </ion-button>
                 {state.searchFilter.sortDir === SortDir.Asc ?
                   <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Desc)}>
@@ -156,16 +156,16 @@ export class PageSearch {
   private getRecipeStatesText(states: RecipeState[]) {
     if (states.includes(RecipeState.Active)) {
       if (states.includes(RecipeState.Archived)) {
-        return 'All'
+        return 'all';
       }
-      return 'Active';
+      return RecipeState.Active;
     }
 
     if (states.includes(RecipeState.Archived)) {
-      return 'Archived'
+      return RecipeState.Archived;
     }
 
-    return 'Active';
+    return RecipeState.Active;
   }
 
   private async setRecipeStates(states: RecipeState[]) {
