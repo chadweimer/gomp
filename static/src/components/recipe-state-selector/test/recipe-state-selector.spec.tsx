@@ -5,7 +5,7 @@ describe('recipe-state-selector', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [RecipeStateSelector],
-      html: `<recipe-state-selector></recipe-state-selector>`,
+      html: '<recipe-state-selector></recipe-state-selector>',
     });
     expect(page.root).toEqualHtml(`
       <recipe-state-selector>
