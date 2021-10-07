@@ -1,4 +1,4 @@
-import { AccessLevel, User } from '../models';
+import { AccessLevel, User, YesNoAny } from '../models';
 
 export function sayHello() {
   return Math.random() < 0.5 ? 'Hello' : 'Hola';
@@ -43,4 +43,30 @@ export async function redirect(route: string) {
 
 export function capitalizeFirstLetter(val: string) {
   return val.charAt(0).toLocaleUpperCase() + val.slice(1);
+}
+
+export function toYesNoAny(value: boolean | null) {
+  switch (value) {
+    case true:
+      return YesNoAny.Yes;
+
+    case false:
+      return YesNoAny.No;
+
+    default:
+      return YesNoAny.Any;
+  }
+}
+
+export function fromYesNoAny(value: YesNoAny) {
+  switch (value) {
+    case YesNoAny.Yes:
+      return true;
+
+    case YesNoAny.No:
+      return false;
+
+    default:
+      return null;
+  }
 }

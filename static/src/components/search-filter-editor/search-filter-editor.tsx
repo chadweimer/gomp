@@ -1,5 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { DefaultSearchFilter, SearchFilter } from '../../models';
+import { capitalizeFirstLetter, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
+import { DefaultSearchFilter, RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../models';
 
 @Component({
   tag: 'search-filter-editor',
@@ -40,6 +41,46 @@ export class SearchFilterEditor {
             <ion-item>
               <ion-label position="stacked">Search Terms</ion-label>
               <ion-input value={this.searchFilter.query} onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value }} />
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Sort By</ion-label>
+              <ion-select value={this.searchFilter.sortBy} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}>
+                {Object.values(SortBy).map(item =>
+                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                )}
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Sort Order</ion-label>
+              <ion-select value={this.searchFilter.sortDir} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value }}>
+                {Object.values(SortDir).map(item =>
+                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                )}
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Pictures</ion-label>
+              <ion-select value={toYesNoAny(this.searchFilter.withPictures)} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) }}>
+                {Object.values(YesNoAny).map(item =>
+                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                )}
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">States</ion-label>
+              <ion-select multiple value={this.searchFilter.states} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, states: e.detail.value }}>
+                {Object.values(RecipeState).map(item =>
+                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                )}
+              </ion-select>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Fields to Search</ion-label>
+              <ion-select multiple value={this.searchFilter.fields} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, fields: e.detail.value }}>
+                {Object.values(SearchField).map(item =>
+                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                )}
+              </ion-select>
             </ion-item>
           </form>
         </ion-content>

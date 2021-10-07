@@ -9,7 +9,7 @@ export enum RecipeState {
   Archived = 'archived',
 }
 
-export enum SearchPictures {
+export enum YesNoAny {
   Yes = 'yes',
   No = 'no',
   Any = 'any'
