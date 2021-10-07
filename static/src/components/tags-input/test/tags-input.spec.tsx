@@ -5,7 +5,7 @@ describe('tags-input', () => {
   it('renders', async () => {
     const page = await newSpecPage({
       components: [TagsInput],
-      html: `<tags-input></tags-input>`,
+      html: '<tags-input></tags-input>',
     });
     expect(page.root).toEqualHtml(`
       <tags-input>
