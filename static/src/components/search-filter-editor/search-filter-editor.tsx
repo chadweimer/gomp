@@ -21,12 +21,15 @@ export class SearchFilterEditor {
       <Host>
         <ion-header>
           <ion-toolbar>
-            <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
-            </ion-buttons>
             <ion-title>{this.prompt}</ion-title>
             <ion-buttons slot="secondary">
+              <ion-button color="danger" onClick={() => this.onResetClicked()}>Reset</ion-button>
+            </ion-buttons>
+            <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
+            </ion-buttons>
+            <ion-buttons slot="primary">
+              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -107,6 +110,10 @@ export class SearchFilterEditor {
     this.el.closest('ion-modal').dismiss({
       dismissed: true
     });
+  }
+
+  private onResetClicked() {
+    this.searchFilter = new DefaultSearchFilter();
   }
 
 }
