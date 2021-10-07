@@ -1,6 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { capitalizeFirstLetter, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
 import { DefaultSearchFilter, RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../models';
+import state from '../../store';
 
 @Component({
   tag: 'search-filter-editor',
@@ -35,13 +36,15 @@ export class SearchFilterEditor {
             {this.showName ?
               <ion-item>
                 <ion-label position="stacked">Name</ion-label>
-                <ion-input value={this.name} onIonChange={e => this.name = e.detail.value} />
+                <ion-input value={this.name} onIonChange={e => this.name = e.detail.value} required autofocus />
               </ion-item>
               : ''}
             <ion-item>
               <ion-label position="stacked">Search Terms</ion-label>
               <ion-input value={this.searchFilter.query} onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value }} />
             </ion-item>
+            <tags-input value={this.searchFilter.tags} suggestions={state.currentUserSettings?.favoriteTags ?? []}
+              onValueChanged={e => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />
             <ion-item>
               <ion-label position="stacked">Sort By</ion-label>
               <ion-select value={this.searchFilter.sortBy} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}>
@@ -95,7 +98,8 @@ export class SearchFilterEditor {
 
     this.el.closest('ion-modal').dismiss({
       dismissed: false,
-      searchDilter: this.searchFilter
+      name: this.name,
+      searchFilter: this.searchFilter
     });
   }
 

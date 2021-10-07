@@ -14,7 +14,6 @@ export class PageSettings {
 
   @Element() el!: HTMLPageSettingsElement;
   private settingsForm!: HTMLFormElement;
-  private tagsInput!: HTMLIonInputElement | null;
   private imageForm!: HTMLFormElement;
   private imageInput!: HTMLInputElement | null;
 
@@ -34,20 +33,8 @@ export class PageSettings {
                   <form onSubmit={e => e.preventDefault()} ref={el => this.settingsForm = el}>
                     <ion-card>
                       <ion-card-content>
-                        <ion-item>
-                          <ion-label position="stacked">Tags</ion-label>
-                          {this.settings?.favoriteTags?.length > 0 ?
-                            <div class="ion-padding-top">
-                              {this.settings?.favoriteTags?.map(tag =>
-                                <ion-chip onClick={() => this.removeTag(tag)}>
-                                  {tag}
-                                  <ion-icon icon="close-circle" />
-                                </ion-chip>
-                              )}
-                            </div>
-                            : ''}
-                          <ion-input onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
-                        </ion-item>
+                        <tags-input value={this.settings?.favoriteTags ?? []}
+                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
                         <ion-item>
                           <ion-label position="stacked">Home Title</ion-label>
                           <ion-input value={this.settings?.homeTitle} onIonChange={e => this.settings = { ...this.settings, homeTitle: e.detail.value }} required />
@@ -156,7 +143,7 @@ export class PageSettings {
     }
   }
 
-  private async saveNewSearchFilter(searchFilter: SearchFilter) {
+  private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
       await UsersApi.postSearchFilter(this.el, state.currentUser.id, searchFilter);
     } catch (ex) {
@@ -178,30 +165,6 @@ export class PageSettings {
     } catch (ex) {
       console.log(ex);
     }
-  }
-
-  private addTag(tag: string) {
-    if (!this.settings.favoriteTags) {
-      this.settings = {
-        ...this.settings,
-        favoriteTags: [tag.toLowerCase()]
-      };
-    } else {
-      this.settings = {
-        ...this.settings,
-        favoriteTags: [
-          ...this.settings.favoriteTags,
-          tag.toLowerCase()
-        ].filter((value, index, self) => self.indexOf(value) === index)
-      };
-    }
-  }
-
-  private removeTag(tag: string) {
-    this.settings = {
-      ...this.settings,
-      favoriteTags: this.settings.favoriteTags.filter(value => value !== tag)
-    };
   }
 
   private async onSaveSettingsClicked() {
@@ -231,13 +194,6 @@ export class PageSettings {
     this.saveUserSettings();
   }
 
-  private onTagsKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && this.tagsInput.value) {
-      this.addTag(this.tagsInput.value.toString());
-      this.tagsInput.value = '';
-    }
-  }
-
   private async onAddFilterClicked() {
     const modal = await modalController.create({
       component: 'search-filter-editor',
@@ -248,9 +204,13 @@ export class PageSettings {
     });
     await modal.present();
 
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
     if (resp.data.dismissed === false) {
-      await this.saveNewSearchFilter(resp.data.searchFilter);
+      await this.saveNewSearchFilter({
+        ...resp.data.searchFilter,
+        name: resp.data.name,
+        userId: state.currentUser.id
+      });
       await this.loadSearchFilters();
     }
   }
@@ -270,13 +230,16 @@ export class PageSettings {
     // Workaround for auto-grow textboxes in a dialog.
     // Set this only after the dialog has presented,
     // instead of using component props
-    modal.querySelector('search-filter-editor').searchFilter = searchFilter;
+    const editor = modal.querySelector('search-filter-editor');
+    editor.searchFilter = searchFilter;
+    editor.name = searchFilter.name;
 
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
     if (resp.data.dismissed === false) {
       await this.saveExistingSearchFilter({
         ...searchFilter,
-        ...resp.data.searchFilter
+        ...resp.data.searchFilter,
+        name: resp.data.name
       });
       await this.loadSearchFilters();
     }

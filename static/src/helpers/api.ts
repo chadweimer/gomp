@@ -54,7 +54,7 @@ export class UsersApi {
     });
   }
 
-  static async postSearchFilter(target: EventTarget, userId: number | null = null, searchFilter: SearchFilter) {
+  static async postSearchFilter(target: EventTarget, userId: number | null = null, searchFilter: SavedSearchFilter) {
     return await ajaxPost(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters`, searchFilter);
   }
 

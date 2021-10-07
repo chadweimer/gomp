@@ -58,6 +58,10 @@ export namespace Components {
     interface SortBySelector {
         "sortBy": SortBy;
     }
+    interface TagsInput {
+        "suggestions": string[];
+        "value": string[];
+    }
     interface UserEditor {
         "user": User;
     }
@@ -153,6 +157,12 @@ declare global {
         prototype: HTMLSortBySelectorElement;
         new (): HTMLSortBySelectorElement;
     };
+    interface HTMLTagsInputElement extends Components.TagsInput, HTMLStencilElement {
+    }
+    var HTMLTagsInputElement: {
+        prototype: HTMLTagsInputElement;
+        new (): HTMLTagsInputElement;
+    };
     interface HTMLUserEditorElement extends Components.UserEditor, HTMLStencilElement {
     }
     var HTMLUserEditorElement: {
@@ -175,6 +185,7 @@ declare global {
         "recipe-state-selector": HTMLRecipeStateSelectorElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
         "sort-by-selector": HTMLSortBySelectorElement;
+        "tags-input": HTMLTagsInputElement;
         "user-editor": HTMLUserEditorElement;
     }
 }
@@ -228,6 +239,11 @@ declare namespace LocalJSX {
         "onSortByChanged"?: (event: CustomEvent<SortBy>) => void;
         "sortBy"?: SortBy;
     }
+    interface TagsInput {
+        "onValueChanged"?: (event: CustomEvent<string[]>) => void;
+        "suggestions"?: string[];
+        "value"?: string[];
+    }
     interface UserEditor {
         "user"?: User;
     }
@@ -247,6 +263,7 @@ declare namespace LocalJSX {
         "recipe-state-selector": RecipeStateSelector;
         "search-filter-editor": SearchFilterEditor;
         "sort-by-selector": SortBySelector;
+        "tags-input": TagsInput;
         "user-editor": UserEditor;
     }
 }
@@ -269,6 +286,7 @@ declare module "@stencil/core" {
             "recipe-state-selector": LocalJSX.RecipeStateSelector & JSXBase.HTMLAttributes<HTMLRecipeStateSelectorElement>;
             "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
             "sort-by-selector": LocalJSX.SortBySelector & JSXBase.HTMLAttributes<HTMLSortBySelectorElement>;
+            "tags-input": LocalJSX.TagsInput & JSXBase.HTMLAttributes<HTMLTagsInputElement>;
             "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }
     }

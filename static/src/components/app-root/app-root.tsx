@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect } from '../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter } from '../../models';
+import { AccessLevel, DefaultSearchFilter, SearchFilter } from '../../models';
 import state from '../../store';
 
 @Component({
@@ -110,8 +110,8 @@ export class AppRoot {
                 <ion-icon icon="search" slot="start" />
                 <ion-input type="search" placeholder="Search" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
                 <ion-buttons slot="end" class="ion-no-margin">
-                  <ion-button color="medium" onClick={() => this.onSearchClear()}><ion-icon icon="close" slot="icon-only" /></ion-button>
-                  <ion-button color="medium"><ion-icon icon="options" slot="icon-only" /></ion-button>
+                  <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
+                  <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
                 </ion-buttons>
               </ion-item>
             </ion-toolbar>
@@ -214,11 +214,7 @@ export class AppRoot {
     return { redirect: '/' };
   }
 
-  private async performSearch(query: string) {
-    state.searchFilter = {
-      ...state.searchFilter,
-      query: query
-    };
+  private async performSearch() {
     state.searchPage = 1;
 
     const activePage = await this.nav.getActive();
@@ -277,12 +273,39 @@ export class AppRoot {
 
   private async onSearchKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
-      await this.performSearch(this.searchBar.value?.toString());
+      state.searchFilter = {
+        ...state.searchFilter,
+        query: this.searchBar.value?.toString()
+      };
+      await this.performSearch();
     }
   }
 
-  private async onSearchClear() {
+  private async onSearchClearClicked() {
     state.searchFilter = new DefaultSearchFilter();
-    await this.performSearch('');
+    await this.performSearch();
+  }
+
+  private async onSearchFilterClicked() {
+    const modal = await modalController.create({
+      component: 'search-filter-editor',
+      componentProps: {
+        prompt: 'Advanced Search',
+        showName: false
+      },
+      animated: false,
+    });
+    await modal.present();
+
+    // Workaround for auto-grow textboxes in a dialog.
+    // Set this only after the dialog has presented,
+    // instead of using component props
+    modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
+    if (resp.data.dismissed === false) {
+      state.searchFilter = resp.data.searchFilter;
+      await this.performSearch();
+    }
   }
 }
