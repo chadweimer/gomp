@@ -50,7 +50,10 @@ export namespace Components {
         "selectedStates": RecipeState[];
     }
     interface SearchFilterEditor {
-        "filter": SearchFilter;
+        "name": string;
+        "prompt": string;
+        "searchFilter": SearchFilter;
+        "showName": boolean;
     }
     interface SortBySelector {
         "sortBy": SortBy;
@@ -216,7 +219,10 @@ declare namespace LocalJSX {
         "selectedStates"?: RecipeState[];
     }
     interface SearchFilterEditor {
-        "filter"?: SearchFilter;
+        "name"?: string;
+        "prompt"?: string;
+        "searchFilter"?: SearchFilter;
+        "showName"?: boolean;
     }
     interface SortBySelector {
         "onSortByChanged"?: (event: CustomEvent<SortBy>) => void;

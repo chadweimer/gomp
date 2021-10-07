@@ -1,7 +1,8 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { SavedSearchFilterCompact, UserSettings } from '../../../models';
+import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, UserSettings } from '../../../models';
 import { UploadsApi, UsersApi } from '../../../helpers/api';
-import { loadingController } from '@ionic/core';
+import { alertController, loadingController, modalController } from '@ionic/core';
+import state from '../../../store';
 
 @Component({
   tag: 'page-settings',
@@ -77,8 +78,33 @@ export class PageSettings {
         </ion-tab>
 
         <ion-tab tab="tab-settings-searches">
-          <ion-content class="ion-padding">
-            Searches
+          <ion-content>
+            <ion-grid class="no-pad">
+              <ion-row>
+                {this.filters?.map(filter =>
+                  <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
+                    <ion-card>
+                      <ion-card-content>
+                        <ion-item lines="none">
+                          <ion-label>
+                            <h2>{filter.name}</h2>
+                          </ion-label>
+                          <ion-buttons>
+                            <ion-button slot="end" fill="clear" color="warning" onClick={() => this.onEditFilterClicked(filter)}><ion-icon name="create" /></ion-button>
+                            <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteFilterClicked(filter)}><ion-icon name="trash" /></ion-button>
+                          </ion-buttons>
+                        </ion-item>
+                      </ion-card-content>
+                    </ion-card>
+                  </ion-col>
+                )}
+              </ion-row>
+            </ion-grid>
+            <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+              <ion-fab-button color="success" onClick={() => this.onAddFilterClicked()}>
+                <ion-icon icon="add" />
+              </ion-fab-button>
+            </ion-fab>
           </ion-content>
         </ion-tab>
 
@@ -116,7 +142,7 @@ export class PageSettings {
 
   private async saveUserSettings() {
     try {
-      await UsersApi.putSettings(this.el, null, this.settings);
+      await UsersApi.putSettings(this.el, state.currentUser.id, this.settings);
     } catch (ex) {
       console.error(ex);
     }
@@ -127,6 +153,30 @@ export class PageSettings {
       this.filters = await UsersApi.getAllSearchFilters(this.el);
     } catch (ex) {
       console.error(ex);
+    }
+  }
+
+  private async saveNewSearchFilter(searchFilter: SearchFilter) {
+    try {
+      await UsersApi.postSearchFilter(this.el, state.currentUser.id, searchFilter);
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
+  private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
+    try {
+      await UsersApi.putSearchFilter(this.el, state.currentUser.id, searchFilter);
+    } catch (ex) {
+      console.log(ex);
+    }
+  }
+
+  private async deleteSearchFilter(searchFilter: SavedSearchFilterCompact) {
+    try {
+      await UsersApi.deleteSearchFilter(this.el, state.currentUser.id, searchFilter.id);
+    } catch (ex) {
+      console.log(ex);
     }
   }
 
@@ -186,5 +236,70 @@ export class PageSettings {
       this.addTag(this.tagsInput.value.toString());
       this.tagsInput.value = '';
     }
+  }
+
+  private async onAddFilterClicked() {
+    const modal = await modalController.create({
+      component: 'search-filter-editor',
+      componentProps: {
+        prompt: 'New Search'
+      },
+      animated: false,
+    });
+    await modal.present();
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
+    if (resp.data.dismissed === false) {
+      await this.saveNewSearchFilter(resp.data.searchFilter);
+      await this.loadSearchFilters();
+    }
+  }
+
+  private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact | null) {
+    const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
+
+    const modal = await modalController.create({
+      component: 'search-filter-editor',
+      componentProps: {
+        prompt: 'Edit Search'
+      },
+      animated: false,
+    });
+    await modal.present();
+
+    // Workaround for auto-grow textboxes in a dialog.
+    // Set this only after the dialog has presented,
+    // instead of using component props
+    modal.querySelector('search-filter-editor').searchFilter = searchFilter;
+
+    const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
+    if (resp.data.dismissed === false) {
+      await this.saveExistingSearchFilter({
+        ...searchFilter,
+        ...resp.data.searchFilter
+      });
+      await this.loadSearchFilters();
+    }
+  }
+
+  private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
+    const confirmation = await alertController.create({
+      header: 'Delete User?',
+      message: `Are you sure you want to delete ${searchFilter.name}?`,
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          handler: async () => {
+            await this.deleteSearchFilter(searchFilter);
+            await this.loadSearchFilters();
+            return true;
+          }
+        }
+      ],
+      animated: false,
+    });
+
+    await confirmation.present();
   }
 }

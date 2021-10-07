@@ -54,8 +54,16 @@ export class UsersApi {
     });
   }
 
+  static async postSearchFilter(target: EventTarget, userId: number | null = null, searchFilter: SearchFilter) {
+    return await ajaxPost(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters`, searchFilter);
+  }
+
   static async put(target: EventTarget, user: User) {
     await ajaxPut(target, `/api/v1/users/${user.id}`, user);
+  }
+
+  static async putSearchFilter(target: EventTarget, userId: number | null = null, searchFilter: SavedSearchFilter) {
+    return await ajaxPut(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters/${searchFilter.id}`, searchFilter);
   }
 
   static async putSettings(target: EventTarget, userId: number | null, settings: UserSettings) {
@@ -64,6 +72,10 @@ export class UsersApi {
 
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/users/${id}`);
+  }
+
+  static async deleteSearchFilter(target: EventTarget, userId: number | null = null, id: number) {
+    return await ajaxDelete(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters/${id}`);
   }
 }
 
