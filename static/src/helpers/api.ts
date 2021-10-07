@@ -58,6 +58,10 @@ export class UsersApi {
     await ajaxPut(target, `/api/v1/users/${user.id}`, user);
   }
 
+  static async putSettings(target: EventTarget, userId: number | null, settings: UserSettings) {
+    await ajaxPut(target, `/api/v1/users/${userId !== null ? userId : 'current'}/settings`, settings);
+  }
+
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/users/${id}`);
   }
@@ -141,5 +145,11 @@ export class NotesApi {
 
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/notes/${id}`);
+  }
+}
+
+export class UploadsApi {
+  static async post(target: EventTarget, formData: FormData) {
+    return await ajaxPostWithLocation(target, '/api/v1/uploads', formData);
   }
 }

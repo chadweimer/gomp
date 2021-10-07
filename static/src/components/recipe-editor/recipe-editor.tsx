@@ -113,15 +113,28 @@ export class RecipeEditor {
   }
 
   private addTag(tag: string) {
-    this.recipe.tags = [
-      ...this.recipe.tags,
-      tag.toLowerCase()
-    ].filter((value, index, self) => self.indexOf(value) === index);
+    if (!this.recipe.tags) {
+      this.recipe = {
+        ...this.recipe,
+        tags: [tag.toLowerCase()]
+      };
+    } else {
+      this.recipe = {
+        ...this.recipe,
+        tags: [
+          ...this.recipe.tags,
+          tag.toLowerCase()
+        ].filter((value, index, self) => self.indexOf(value) === index)
+      };
+    }
     this.filterSuggestedTags();
   }
 
   private removeTag(tag: string) {
-    this.recipe.tags = this.recipe.tags.filter(value => value !== tag);
+    this.recipe = {
+      ...this.recipe,
+      tags: this.recipe.tags.filter(value => value !== tag)
+    };
     this.filterSuggestedTags();
   }
 
