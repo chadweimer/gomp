@@ -62,6 +62,13 @@ export class UsersApi {
     await ajaxPut(target, `/api/v1/users/${user.id}`, user);
   }
 
+  static async putPassword(target: EventTarget, id: number | null = null, currentPassword: string, newPassword: string) {
+    return await ajaxPut(target, `/api/v1/users/${id !== null ? id : 'current'}/password`, {
+      currentPassword,
+      newPassword
+    });
+  }
+
   static async putSearchFilter(target: EventTarget, userId: number | null = null, searchFilter: SavedSearchFilter) {
     return await ajaxPut(target, `/api/v1/users/${userId !== null ? userId : 'current'}/filters/${searchFilter.id}`, searchFilter);
   }

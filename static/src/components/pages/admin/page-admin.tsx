@@ -136,7 +136,6 @@ export class PageAdmin {
   private async saveNewUser(user: User, password: string) {
     try {
       await UsersApi.post(this.el, user, password);
-      await this.loadUsers();
     } catch (ex) {
       console.log(ex);
     }
@@ -145,7 +144,6 @@ export class PageAdmin {
   private async saveExistingUser(user: User) {
     try {
       await UsersApi.put(this.el, user);
-      await this.loadUsers();
     } catch (ex) {
       console.log(ex);
     }
@@ -154,7 +152,6 @@ export class PageAdmin {
   private async deleteUser(user: User) {
     try {
       await UsersApi.delete(this.el, user.id);
-      await this.loadUsers();
     } catch (ex) {
       console.log(ex);
     }
@@ -170,6 +167,7 @@ export class PageAdmin {
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
     if (resp.data.dismissed === false) {
       await this.saveNewUser(resp.data.user, resp.data.password);
+      await this.loadUsers();
     }
   }
 
@@ -191,6 +189,7 @@ export class PageAdmin {
         ...user,
         ...resp.data.user
       });
+      await this.loadUsers();
     }
   }
 
@@ -204,6 +203,7 @@ export class PageAdmin {
           text: 'Yes',
           handler: async () => {
             await this.deleteUser(user);
+            await this.loadUsers();
             return true;
           }
         }
