@@ -1,4 +1,4 @@
-import { Component, Element, h, State } from '@stencil/core';
+import { Component, Element, h, Method, State } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, UserSettings } from '../../../models';
 import { UploadsApi, UsersApi } from '../../../helpers/api';
 import { alertController, loadingController, modalController } from '@ionic/core';
@@ -23,7 +23,8 @@ export class PageSettings {
   private securityForm!: HTMLFormElement;
   private repeatPasswordInput!: HTMLIonInputElement;
 
-  async connectedCallback() {
+  @Method()
+  async activatedCallback() {
     await this.loadUserSettings();
     await this.loadSearchFilters();
   }

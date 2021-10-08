@@ -1,5 +1,5 @@
 import { alertController, modalController } from '@ionic/core';
-import { Component, Element, h, State } from '@stencil/core';
+import { Component, Element, h, Method, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../../helpers/api';
 import { AppConfiguration, User } from '../../../models';
 import state from '../../../store';
@@ -15,7 +15,8 @@ export class PageAdmin {
   @Element() el!: HTMLPageAdminElement;
   private appConfigForm!: HTMLFormElement;
 
-  async connectedCallback() {
+  @Method()
+  async activatedCallback() {
     await this.loadAppConfiguration();
     await this.loadUsers();
   }

@@ -21,6 +21,7 @@ export namespace Components {
         "note": Note;
     }
     interface PageAdmin {
+        "activatedCallback": () => Promise<void>;
     }
     interface PageHome {
         "activatedCallback": () => Promise<void>;
@@ -38,6 +39,7 @@ export namespace Components {
         "performSearch": () => Promise<void>;
     }
     interface PageSettings {
+        "activatedCallback": () => Promise<void>;
     }
     interface RecipeCard {
         "recipe": RecipeCompact;
