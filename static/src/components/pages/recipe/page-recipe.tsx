@@ -80,13 +80,14 @@ export class PageRecipe {
                 <ion-card>
                   <ion-card-content>
                     <ion-item lines="none">
-                      <ion-avatar slot="start">
+                      <ion-avatar slot="start" class="large">
                         <img src={this.mainImage?.thumbnailUrl} />
                       </ion-avatar>
                       <div>
                         <h1>{this.recipe?.name}</h1>
                         <five-star-rating value={this.recipe?.averageRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
                           onValueSelected={e => this.onRatingSelected(e)} />
+                        <p><ion-note>Created:&nbsp;{formatDate(this.recipe?.createdAt)}, Last&nbsp;Modified:&nbsp;{formatDate(this.recipe?.modifiedAt)}</ion-note></p>
                       </div>
                     </ion-item>
                     {this.recipe?.servingSize ?

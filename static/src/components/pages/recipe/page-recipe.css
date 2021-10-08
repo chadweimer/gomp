@@ -9,3 +9,8 @@
 ion-thumbnail.large {
   --size: 150px;
 }
+
+ion-avatar.large {
+  height: 64px !important;
+  width: 64px !important;
+}
