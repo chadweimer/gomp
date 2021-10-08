@@ -145,7 +145,7 @@ export class PageRecipe {
                     {this.images.map(image =>
                       <ion-col size="auto">
                         <ion-card>
-                          <a href={image.url} target="_blank"><img class="image" src={image.thumbnailUrl} /></a>
+                          <a href={image.url} target="_blank"><img class="thumb" src={image.thumbnailUrl} /></a>
                           {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
                             <ion-card-content class="ion-no-padding">
                               <ion-buttons>
