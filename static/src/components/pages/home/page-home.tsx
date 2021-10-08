@@ -172,12 +172,12 @@ export class PageHome {
     }
   }
 
-  private onFilterClicked(filter: SearchFilter) {
+  private async onFilterClicked(filter: SearchFilter) {
     state.searchFilter = {
       ...filter
     };
     state.searchPage = 1;
-    redirect('/recipes');
+    await redirect('/recipes');
   }
 
 }

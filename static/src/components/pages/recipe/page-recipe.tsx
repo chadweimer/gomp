@@ -428,7 +428,7 @@ export class PageRecipe {
 
     const { role } = await confirmation.onDidDismiss();
     if (role === 'yes') {
-      redirect('/recipes');
+      await redirect('/recipes');
     }
   }
 

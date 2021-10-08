@@ -226,7 +226,7 @@ export class AppRoot {
       await el.performSearch();
     } else {
       // Otherwise, redirect to it
-      redirect('/recipes');
+      await redirect('/recipes');
     }
   }
 
