@@ -97,6 +97,10 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
+.contrast {
+  --color: var(--ion-color-contrast);
+}
+
 .fill {
   width: 100%;
 }

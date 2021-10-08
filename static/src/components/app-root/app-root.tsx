@@ -90,7 +90,9 @@ export class AppRoot {
                 </ion-buttons>
                 : ''}
 
-              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>{state.appConfig.title}</ion-title>
+              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>
+                <ion-router-link href="/" class="contrast">{state.appConfig.title}</ion-router-link>
+              </ion-title>
 
               {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
                 <ion-buttons slot="end">
