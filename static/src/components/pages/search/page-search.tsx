@@ -234,6 +234,8 @@ export class PageSearch {
   }
 
   private async onNewRecipeClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'recipe-editor',
       animated: false,

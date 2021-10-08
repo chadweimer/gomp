@@ -160,15 +160,12 @@ export class PageHome {
   }
 
   private async onNewRecipeClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'recipe-editor',
       animated: false,
     });
-
-    // Allow the back button to close the modal
-    const backHandler = () => modal.dismiss();
-    window.history.pushState({}, '');
-    window.addEventListener('popstate', backHandler);
 
     await modal.present();
 
@@ -176,8 +173,6 @@ export class PageHome {
     if (resp.data.dismissed === false) {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
-
-    window.removeEventListener('popstate', backHandler);
   }
 
   private async onFilterClicked(filter: SearchFilter) {

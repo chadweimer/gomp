@@ -132,6 +132,11 @@ export class AppRoot {
     );
   }
 
+  @Listen('popstate', { target: 'window' })
+  async onWindowPopState() {
+    await this.closeAllOverlays();
+  }
+
   @Listen('ajax-presend')
   onAjaxPresend() {
     this.loadingCount++;
@@ -230,6 +235,22 @@ export class AppRoot {
     }
   }
 
+  private async closeAllOverlays() {
+    // Close any and all modals
+    const controllers = [
+      actionSheetController,
+      alertController,
+      modalController,
+      pickerController,
+      popoverController
+    ];
+    for (const controller of controllers) {
+      for (let top = await controller.getTop(); top; top = await controller.getTop()) {
+        await top.dismiss();
+      }
+    }
+  }
+
   private async onPageChanging() {
     this.menu.close();
     // Let the current page know it's being deactivated
@@ -258,19 +279,7 @@ export class AppRoot {
       el.activatedCallback();
     }
 
-    // Close any and all modals
-    const controllers = [
-      actionSheetController,
-      alertController,
-      modalController,
-      pickerController,
-      popoverController
-    ];
-    for (const controller of controllers) {
-      for (let top = await controller.getTop(); top; top = await controller.getTop()) {
-        await top.dismiss();
-      }
-    }
+    await this.closeAllOverlays();
   }
 
   private async onSearchKeyDown(e: KeyboardEvent) {
@@ -289,6 +298,8 @@ export class AppRoot {
   }
 
   private async onSearchFilterClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'search-filter-editor',
       componentProps: {

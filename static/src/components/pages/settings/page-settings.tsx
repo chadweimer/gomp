@@ -247,6 +247,8 @@ export class PageSettings {
   }
 
   private async onAddFilterClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'search-filter-editor',
       componentProps: {
@@ -268,6 +270,8 @@ export class PageSettings {
   }
 
   private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact | null) {
+    window.history.pushState({ modal: true }, '');
+
     const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
 
     const modal = await modalController.create({
@@ -298,6 +302,8 @@ export class PageSettings {
   }
 
   private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
+    window.history.pushState({ modal: true }, '');
+
     const confirmation = await alertController.create({
       header: 'Delete User?',
       message: `Are you sure you want to delete ${searchFilter.name}?`,

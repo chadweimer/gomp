@@ -321,6 +321,8 @@ export class PageRecipe {
   }
 
   private async showRecipeMenu() {
+    window.history.pushState({ modal: true }, '');
+
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
@@ -386,6 +388,8 @@ export class PageRecipe {
   }
 
   private async onEditClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'recipe-editor',
       animated: false,
@@ -408,6 +412,8 @@ export class PageRecipe {
   }
 
   private async onDeleteClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const confirmation = await alertController.create({
       header: 'Delete Recipe?',
       message: 'Are you sure you want to delete this recipe?',
@@ -433,6 +439,8 @@ export class PageRecipe {
   }
 
   private async onArchiveClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const confirmation = await alertController.create({
       header: 'Arhive Recipe?',
       message: 'Are you sure you want to archive this recipe?',
@@ -454,6 +462,8 @@ export class PageRecipe {
   }
 
   private async onUnarchiveClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const confirmation = await alertController.create({
       header: 'Unarchive Recipe?',
       message: 'Are you sure you want to unarchive this recipe?',
@@ -475,6 +485,8 @@ export class PageRecipe {
   }
 
   private async onAddNoteClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'note-editor',
       animated: false,
@@ -489,6 +501,8 @@ export class PageRecipe {
   }
 
   private async onEditNoteClicked(note: Note | null) {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'note-editor',
       animated: false,
@@ -511,6 +525,8 @@ export class PageRecipe {
   }
 
   private async onDeleteNoteClicked(note: Note) {
+    window.history.pushState({ modal: true }, '');
+
     const confirmation = await alertController.create({
       header: 'Delete Note?',
       message: 'Are you sure you want to delete this note?',
@@ -532,6 +548,8 @@ export class PageRecipe {
   }
 
   private async onUploadImageClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'image-upload-browser',
       animated: false,

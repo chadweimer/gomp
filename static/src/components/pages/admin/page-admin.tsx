@@ -158,6 +158,8 @@ export class PageAdmin {
   }
 
   private async onAddUserClicked() {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'user-editor',
       animated: false,
@@ -172,6 +174,8 @@ export class PageAdmin {
   }
 
   private async onEditUserClicked(user: User | null) {
+    window.history.pushState({ modal: true }, '');
+
     const modal = await modalController.create({
       component: 'user-editor',
       animated: false,
@@ -194,6 +198,8 @@ export class PageAdmin {
   }
 
   private async onDeleteUserClicked(user: User) {
+    window.history.pushState({ modal: true }, '');
+
     const confirmation = await alertController.create({
       header: 'Delete User?',
       message: `Are you sure you want to delete ${user.username}?`,
