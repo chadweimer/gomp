@@ -1,9 +1,5 @@
 import { AccessLevel, User, YesNoAny } from '../models';
 
-export function sayHello() {
-  return Math.random() < 0.5 ? 'Hello' : 'Hola';
-}
-
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
 }
