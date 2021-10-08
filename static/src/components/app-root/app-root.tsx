@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect } from '../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, SearchFilter } from '../../models';
+import { AccessLevel, DefaultSearchFilter, DefaultSearchSettings, SearchFilter } from '../../models';
 import state from '../../store';
 
 @Component({
@@ -90,9 +90,9 @@ export class AppRoot {
                 </ion-buttons>
                 : ''}
 
-              <ion-title slot="start" class="ion-hide-sm-down">{state.appConfig.title}</ion-title>
+              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>{state.appConfig.title}</ion-title>
 
-              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ?
+              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
                 <ion-buttons slot="end">
                   <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
                   <ion-button href="/recipes" class="ion-hide-lg-down">
@@ -104,16 +104,16 @@ export class AppRoot {
                     <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
                     : ''}
                   <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-                </ion-buttons>
-                : ''}
-              <ion-item slot="end" lines="none">
-                <ion-icon icon="search" slot="start" />
-                <ion-input type="search" placeholder="Search" value={state.searchFilter.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
-                <ion-buttons slot="end" class="ion-no-margin">
-                  <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
-                  <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
-                </ion-buttons>
-              </ion-item>
+                </ion-buttons>,
+                <ion-item slot="end" lines="none">
+                  <ion-icon icon="search" slot="start" />
+                  <ion-input type="search" placeholder="Search" value={state.searchFilter?.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
+                  <ion-buttons slot="end" class="ion-no-margin">
+                    <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
+                    <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
+                  </ion-buttons>
+                </ion-item>
+              ] : ''}
             </ion-toolbar>
             {this.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
@@ -175,9 +175,9 @@ export class AppRoot {
     state.jwtToken = null;
     state.currentUser = null;
     state.currentUserSettings = null;
-    state.searchFilter = null;
-    state.searchSettings = null;
-    state.searchPage = null;
+    state.searchFilter = new DefaultSearchFilter();
+    state.searchSettings = new DefaultSearchSettings();
+    state.searchPage = 1;
     state.searchResultCount = null;
     await redirect('/login');
   }
