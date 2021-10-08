@@ -167,7 +167,7 @@ export class PageAdmin {
     await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
-    if (resp.data.dismissed === false) {
+    if (resp.data?.dismissed === false) {
       await this.saveNewUser(resp.data.user, resp.data.password);
       await this.loadUsers();
     }
@@ -188,7 +188,7 @@ export class PageAdmin {
     modal.querySelector('user-editor').user = user;
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
-    if (resp.data.dismissed === false) {
+    if (resp.data?.dismissed === false) {
       await this.saveExistingUser({
         ...user,
         ...resp.data.user

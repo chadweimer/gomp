@@ -245,8 +245,10 @@ export class AppRoot {
       popoverController
     ];
     for (const controller of controllers) {
-      for (let top = await controller.getTop(); top; top = await controller.getTop()) {
-        await top.dismiss();
+      try {
+        await controller.dismiss();
+      } catch {
+        // Nothing to do here. There might not have been something open
       }
     }
   }
@@ -316,7 +318,7 @@ export class AppRoot {
     modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
-    if (resp.data.dismissed === false) {
+    if (resp.data?.dismissed === false) {
       state.searchFilter = resp.data.searchFilter;
       await this.performSearch();
     }

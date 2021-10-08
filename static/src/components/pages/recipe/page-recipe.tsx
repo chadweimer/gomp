@@ -427,7 +427,8 @@ export class PageRecipe {
             return true;
           }
         }
-      ]
+      ],
+      animated: false,
     });
 
     await confirmation.present();
@@ -455,7 +456,8 @@ export class PageRecipe {
             return true;
           }
         }
-      ]
+      ],
+      animated: false,
     });
 
     await confirmation.present();
@@ -477,8 +479,9 @@ export class PageRecipe {
             await this.loadRecipe();
             return true;
           }
-        }
-      ]
+        },
+      ],
+      animated: false,
     });
 
     await confirmation.present();

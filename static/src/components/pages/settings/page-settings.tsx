@@ -259,7 +259,7 @@ export class PageSettings {
     await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-    if (resp.data.dismissed === false) {
+    if (resp.data?.dismissed === false) {
       await this.saveNewSearchFilter({
         ...resp.data.searchFilter,
         name: resp.data.name,
@@ -291,7 +291,7 @@ export class PageSettings {
     editor.name = searchFilter.name;
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-    if (resp.data.dismissed === false) {
+    if (resp.data?.dismissed === false) {
       await this.saveExistingSearchFilter({
         ...searchFilter,
         ...resp.data.searchFilter,

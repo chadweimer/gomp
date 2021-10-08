@@ -170,7 +170,7 @@ export class PageHome {
     await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-    if (resp.data.dismissed === false) {
+    if (resp.data?.dismissed === false) {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
   }
