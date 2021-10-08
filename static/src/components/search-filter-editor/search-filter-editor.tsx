@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { capitalizeFirstLetter, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
+import { capitalizeFirstLetter, configureModalAutofocus, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
 import { DefaultSearchFilter, RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../models';
 import state from '../../store';
 
@@ -15,6 +15,10 @@ export class SearchFilterEditor {
 
   @Element() el!: HTMLSearchFilterEditorElement;
   private form!: HTMLFormElement;
+
+  connectedCallback() {
+    configureModalAutofocus(this.el);
+  }
 
   render() {
     return (
