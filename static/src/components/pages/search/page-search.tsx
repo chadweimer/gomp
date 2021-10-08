@@ -1,7 +1,7 @@
 import { loadingController, modalController, popoverController } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, hasAccessLevel, redirect } from '../../../helpers/utils';
+import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
 import state from '../../../store';
 
@@ -152,8 +152,8 @@ export class PageSearch {
       state.searchResultCount = total;
 
       this.numPages = Math.ceil(total / this.getRecipeCount());
-    } catch (e) {
-      console.error(e);
+    } catch (ex) {
+      console.error(ex);
     }
   }
 
@@ -229,7 +229,8 @@ export class PageSearch {
 
       await redirect(`/recipes/${newRecipeId}`);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to create new recipe.');
     }
   }
 

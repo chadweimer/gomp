@@ -1,6 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../../helpers/api';
+import { showToast } from '../../../helpers/utils';
 import { AppConfiguration, User } from '../../../models';
 import state from '../../../store';
 
@@ -123,6 +124,7 @@ export class PageAdmin {
       state.appConfig = appConfig;
     } catch (ex) {
       console.error(ex);
+      showToast('Failed to save configuration.');
     }
   }
 
@@ -138,7 +140,8 @@ export class PageAdmin {
     try {
       await UsersApi.post(this.el, user, password);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to create new user.');
     }
   }
 
@@ -146,7 +149,8 @@ export class PageAdmin {
     try {
       await UsersApi.put(this.el, user);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to save user.');
     }
   }
 
@@ -154,7 +158,8 @@ export class PageAdmin {
     try {
       await UsersApi.delete(this.el, user.id);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to delete user.');
     }
   }
 

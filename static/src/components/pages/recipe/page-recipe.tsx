@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, loadingController, modalController } from '@ionic/core';
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
-import { formatDate, hasAccessLevel, redirect } from '../../../helpers/utils';
+import { formatDate, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeImage, RecipeState } from '../../../models';
 import state from '../../../store';
 
@@ -210,8 +210,8 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
-                <ion-button onClick={() => this.showRecipeMenu()}>
-                  <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
+                <ion-button onClick={() => this.onRecipeMenuClicked()}>
+                  <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
@@ -268,6 +268,7 @@ export class PageRecipe {
       await RecipesApi.put(this.el, recipe);
     } catch (ex) {
       console.error(ex);
+      showToast('Failed to save recipe.');
     }
   }
 
@@ -292,6 +293,7 @@ export class PageRecipe {
       await RecipesApi.delete(this.el, this.recipeId);
     } catch (ex) {
       console.error(ex);
+      showToast('Failed to delete recipe.');
     }
   }
 
@@ -300,6 +302,7 @@ export class PageRecipe {
       await RecipesApi.putState(this.el, this.recipeId, state);
     } catch (ex) {
       console.error(ex);
+      showToast('Failed to save recipe state.');
     }
   }
 
@@ -312,6 +315,7 @@ export class PageRecipe {
       await NotesApi.post(this.el, note);
     } catch (ex) {
       console.error(ex);
+      showToast('Failed to create note.');
     }
   }
 
@@ -319,7 +323,8 @@ export class PageRecipe {
     try {
       await NotesApi.put(this.el, note);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to save note.');
     }
   }
 
@@ -327,7 +332,8 @@ export class PageRecipe {
     try {
       await NotesApi.delete(this.el, note.id);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to delete note.');
     }
   }
 
@@ -342,11 +348,21 @@ export class PageRecipe {
       await RecipesApi.postImage(this.el, this.recipeId, formData);
       await loading.dismiss();
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to upload picture.');
     }
   }
 
-  private async showRecipeMenu() {
+  private async setRating(value: number) {
+    try {
+      await RecipesApi.putRating(this.el, this.recipeId, value);
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to save recipe rating.');
+    }
+  }
+
+  private async onRecipeMenuClicked() {
     window.history.pushState({ modal: true }, '');
 
     const menu = await actionSheetController.create({
@@ -403,14 +419,6 @@ export class PageRecipe {
       animated: false,
     });
     await menu.present();
-  }
-
-  private async setRating(value: number) {
-    try {
-      await RecipesApi.putRating(this.el, this.recipeId, value);
-    } catch (ex) {
-      console.error(ex);
-    }
   }
 
   private async onEditClicked() {

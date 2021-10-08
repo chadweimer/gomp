@@ -3,7 +3,7 @@ import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, UserSettings
 import { UploadsApi, UsersApi } from '../../../helpers/api';
 import { alertController, loadingController, modalController } from '@ionic/core';
 import state from '../../../store';
-import { capitalizeFirstLetter } from '../../../helpers/utils';
+import { capitalizeFirstLetter, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings',
@@ -177,6 +177,7 @@ export class PageSettings {
       await UsersApi.putSettings(this.el, state.currentUser.id, this.settings);
     } catch (ex) {
       console.error(ex);
+      showToast('Failed to save preferences.');
     }
   }
 
@@ -192,7 +193,8 @@ export class PageSettings {
     try {
       await UsersApi.postSearchFilter(this.el, state.currentUser.id, searchFilter);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to create search filter.');
     }
   }
 
@@ -200,7 +202,8 @@ export class PageSettings {
     try {
       await UsersApi.putSearchFilter(this.el, state.currentUser.id, searchFilter);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to save search filter.');
     }
   }
 
@@ -208,7 +211,8 @@ export class PageSettings {
     try {
       await UsersApi.deleteSearchFilter(this.el, state.currentUser.id, searchFilter.id);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to delete search filter.');
     }
   }
 
@@ -216,7 +220,8 @@ export class PageSettings {
     try {
       await UsersApi.putPassword(this.el, state.currentUser.id, currentPassword, newPassword);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      showToast('Failed to update password.');
     }
   }
 

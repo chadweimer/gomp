@@ -2,7 +2,7 @@ import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core'
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
 import { loadingController, modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
-import { hasAccessLevel, redirect } from '../../../helpers/utils';
+import { hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../store';
 
 @Component({
@@ -78,8 +78,8 @@ export class PageHome {
   private async loadUserSettings() {
     try {
       this.userSettings = await UsersApi.getSettings(this.el);
-    } catch (e) {
-      console.error(e);
+    } catch (ex) {
+      console.error(ex);
     }
   }
 
@@ -121,8 +121,8 @@ export class PageHome {
       }
 
       this.searches = searches;
-    } catch (e) {
-      console.error(e);
+    } catch (ex) {
+      console.error(ex);
     }
   }
 
@@ -133,8 +133,9 @@ export class PageHome {
 
     try {
       return await RecipesApi.find(this.el, filter, 1, 6);
-    } catch (e) {
-      console.error(e);
+    } catch (ex) {
+      console.error(ex);
+      showToast('An unexpected error occurred attempting to perform the current search.');
     }
   }
 
@@ -155,7 +156,8 @@ export class PageHome {
 
       await redirect(`/recipes/${newRecipeId}`);
     } catch (ex) {
-      console.log(ex);
+      console.error(ex);
+      await showToast('Failed to create new recipe.');
     }
   }
 

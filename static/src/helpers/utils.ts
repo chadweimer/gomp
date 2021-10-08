@@ -1,3 +1,4 @@
+import { toastController } from '@ionic/core';
 import { AccessLevel, User, YesNoAny } from '../models';
 
 export function formatDate(dateStr: string) {
@@ -65,4 +66,9 @@ export function fromYesNoAny(value: YesNoAny) {
     default:
       return null;
   }
+}
+
+export async function showToast(message: string, duration = 2000) {
+  const toast = await toastController.create({ message, duration });
+  toast.present();
 }
