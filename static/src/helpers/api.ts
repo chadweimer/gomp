@@ -147,9 +147,16 @@ export class RecipesApi {
   static async putRating(target: EventTarget, recipeId: number, value: number) {
     await ajaxPut(target, `/api/v1/recipes/${recipeId}/rating`, value);
   }
+  static async putMainImage(target: EventTarget, recipeId: number, imageId: number) {
+    await ajaxPut(target, `/api/v1/recipes/${recipeId}/image`, imageId);
+  }
 
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/recipes/${id}`);
+  }
+
+  static async deleteImage(target: EventTarget, recipeId: number, imageId: number) {
+    await ajaxDelete(target, `/api/v1/recipes/${recipeId}/images/${imageId}`);
   }
 }
 

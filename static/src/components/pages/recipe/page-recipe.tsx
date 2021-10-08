@@ -140,15 +140,25 @@ export class PageRecipe {
             <ion-row>
               <ion-col size="12" size-md>
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
-                <ion-grid class="ion-padding">
+                <ion-grid class="no-pad">
                   <ion-row class="ion-justify-content-center">
                     {this.images.map(image =>
                       <ion-col size="auto">
-                        <a href={image.url} target="_blank">
-                          <ion-thumbnail class="large ion-padding">
-                            <img src={image.thumbnailUrl} alt={image.name} />
-                          </ion-thumbnail>
-                        </a>
+                        <ion-card>
+                          <a href={image.url} target="_blank"><img class="image" src={image.thumbnailUrl} /></a>
+                          {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+                            <ion-card-content class="ion-no-padding">
+                              <ion-buttons>
+                                <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
+                                  <ion-icon slot="icon-only" icon="star" size="small" />
+                                </ion-button>
+                                <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
+                                  <ion-icon slot="icon-only" icon="trash" size="small" />
+                                </ion-button>
+                              </ion-buttons>
+                            </ion-card-content>
+                            : ''}
+                        </ion-card>
                       </ion-col>
                     )}
                   </ion-row>
@@ -167,11 +177,11 @@ export class PageRecipe {
                               <ion-label>{this.getNoteDatesText(note.createdAt, note.modifiedAt)}</ion-label>
                               {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
                                 <ion-buttons slot="end">
-                                  <ion-button size="small" fill="default" onClick={() => this.onEditNoteClicked(note)}>
-                                    <ion-icon slot="icon-only" icon="create" color="warning" size="small" />
+                                  <ion-button size="small" color="warning" onClick={() => this.onEditNoteClicked(note)}>
+                                    <ion-icon slot="icon-only" icon="create" size="small" />
                                   </ion-button>
-                                  <ion-button size="small" fill="default" onClick={() => this.onDeleteNoteClicked(note)}>
-                                    <ion-icon slot="icon-only" icon="trash" color="danger" size="small" />
+                                  <ion-button size="small" color="danger" onClick={() => this.onDeleteNoteClicked(note)}>
+                                    <ion-icon slot="icon-only" icon="trash" size="small" />
                                   </ion-button>
                                 </ion-buttons>
                                 : ''}
@@ -353,12 +363,30 @@ export class PageRecipe {
     }
   }
 
+  private async deleteImage(image: RecipeImage) {
+    try {
+      await RecipesApi.deleteImage(this.el, this.recipeId, image.id);
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to delete image.');
+    }
+  }
+
   private async setRating(value: number) {
     try {
       await RecipesApi.putRating(this.el, this.recipeId, value);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save recipe rating.');
+    }
+  }
+
+  private async setMainImage(image: RecipeImage) {
+    try {
+      await RecipesApi.putMainImage(this.el, this.recipeId, image.id);
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to set main picture.');
     }
   }
 
@@ -604,5 +632,51 @@ export class PageRecipe {
   private async onRatingSelected(e: CustomEvent<number>) {
     await this.setRating(e.detail);
     await this.loadRecipe();
+  }
+
+  private async onSetMainImageClicked(image: RecipeImage) {
+    window.history.pushState({ modal: true }, '');
+
+    const confirmation = await alertController.create({
+      header: 'Set Main Picture?',
+      message: 'Are you sure you want to this as the main picture for the recipe?',
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          handler: async () => {
+            await this.setMainImage(image);
+            await this.loadRecipe();
+            return true;
+          }
+        }
+      ],
+      animated: false,
+    });
+
+    await confirmation.present();
+  }
+
+  private async onDeleteImageClicked(image: RecipeImage) {
+    window.history.pushState({ modal: true }, '');
+
+    const confirmation = await alertController.create({
+      header: 'Delete Image?',
+      message: 'Are you sure you want to delete this picture?',
+      buttons: [
+        'No',
+        {
+          text: 'Yes',
+          handler: async () => {
+            await this.deleteImage(image);
+            await this.loadImages();
+            return true;
+          }
+        }
+      ],
+      animated: false,
+    });
+
+    await confirmation.present();
   }
 }
