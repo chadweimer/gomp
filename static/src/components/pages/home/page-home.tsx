@@ -164,12 +164,19 @@ export class PageHome {
       component: 'recipe-editor',
       animated: false,
     });
+
+    // Allow the back button to close the modal
+    window.history.pushState({}, '');
+    window.onpopstate = () => modal.dismiss();
+
     await modal.present();
 
     const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
     if (resp.data.dismissed === false) {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
+
+    window.onpopstate = () => {};
   }
 
   private async onFilterClicked(filter: SearchFilter) {
