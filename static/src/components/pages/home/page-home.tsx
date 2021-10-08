@@ -166,8 +166,8 @@ export class PageHome {
     });
 
     // Allow the back button to close the modal
-    window.history.pushState({}, '');
-    window.onpopstate = () => modal.dismiss();
+    const backHandler = () => modal.dismiss();
+    window.addEventListener('popstate', backHandler);
 
     await modal.present();
 
@@ -176,7 +176,7 @@ export class PageHome {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
 
-    window.onpopstate = () => {};
+    window.removeEventListener('poostate', backHandler);
   }
 
   private async onFilterClicked(filter: SearchFilter) {
