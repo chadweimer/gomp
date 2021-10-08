@@ -167,6 +167,7 @@ export class PageHome {
 
     // Allow the back button to close the modal
     const backHandler = () => modal.dismiss();
+    window.history.pushState({}, '');
     window.addEventListener('popstate', backHandler);
 
     await modal.present();
