@@ -45,7 +45,7 @@ export class TagsInput {
               )}
             </div>
             : ''}
-          <ion-input onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
+          <ion-input enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
         </ion-item>
         <div class="ion-padding">
           {this.filteredSuggestions?.map(tag =>
