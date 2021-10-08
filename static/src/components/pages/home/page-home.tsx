@@ -176,7 +176,7 @@ export class PageHome {
       await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
     }
 
-    window.removeEventListener('poostate', backHandler);
+    window.removeEventListener('popstate', backHandler);
   }
 
   private async onFilterClicked(filter: SearchFilter) {
