@@ -31,7 +31,7 @@ export class AppRoot {
 
           <ion-route url="/recipes" component="page-search" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes/:recipeId/view" component="page-recipe" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/recipes/:recipeId" component="page-recipe" beforeEnter={() => this.requireLogin()} />
 
           <ion-route url="/settings" component="page-settings" beforeEnter={() => this.requireLogin()}>
             <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />

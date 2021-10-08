@@ -14,7 +14,7 @@ export class RecipeCard {
 
   render() {
     return (
-      <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}/view` : ''}>
+      <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}` : ''}>
         {this.recipe.thumbnailUrl
           ? <ion-img class={{ ['image']: true, [this.size]: true }} src={this.recipe.thumbnailUrl} />
           : <div class={{ ['image']: true, [this.size]: true }} />}

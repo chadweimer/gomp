@@ -91,7 +91,7 @@ export class PageSearch {
                   {state.searchSettings?.viewMode === SearchViewMode.Card ?
                     <recipe-card recipe={recipe} />
                     :
-                    <ion-item href={`/recipes/${recipe.id}/view`} lines="none">
+                    <ion-item href={`/recipes/${recipe.id}`} lines="none">
                       <ion-avatar slot="start">
                         <ion-img src={recipe.thumbnailUrl} />
                       </ion-avatar>
@@ -227,7 +227,7 @@ export class PageSearch {
         await loading.dismiss();
       }
 
-      await redirect(`/recipes/${newRecipeId}/view`);
+      await redirect(`/recipes/${newRecipeId}`);
     } catch (ex) {
       console.log(ex);
     }

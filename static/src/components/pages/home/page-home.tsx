@@ -153,7 +153,7 @@ export class PageHome {
         await loading.dismiss();
       }
 
-      await redirect(`/recipes/${newRecipeId}/view`);
+      await redirect(`/recipes/${newRecipeId}`);
     } catch (ex) {
       console.log(ex);
     }
