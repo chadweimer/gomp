@@ -5,6 +5,7 @@ import { Component, Event, Host, h, Prop, State, EventEmitter, Watch } from '@st
   styleUrl: 'tags-input.css',
 })
 export class TagsInput {
+  @Prop() label = 'Tags';
   @Prop() value: string[] = [];
   @Prop() suggestions: string[] = [];
 
@@ -34,7 +35,7 @@ export class TagsInput {
     return (
       <Host>
         <ion-item>
-          <ion-label position="stacked">Tags</ion-label>
+          <ion-label position="stacked">{this.label}</ion-label>
           {this.internalValue?.length > 0 ?
             <div class="ion-padding-top">
               {this.internalValue?.map(tag =>

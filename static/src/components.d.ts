@@ -59,6 +59,7 @@ export namespace Components {
         "sortBy": SortBy;
     }
     interface TagsInput {
+        "label": string;
         "suggestions": string[];
         "value": string[];
     }
@@ -240,6 +241,7 @@ declare namespace LocalJSX {
         "sortBy"?: SortBy;
     }
     interface TagsInput {
+        "label"?: string;
         "onValueChanged"?: (event: CustomEvent<string[]>) => void;
         "suggestions"?: string[];
         "value"?: string[];

@@ -39,8 +39,6 @@ export class PageSettings {
                   <form onSubmit={e => e.preventDefault()} ref={el => this.settingsForm = el}>
                     <ion-card>
                       <ion-card-content>
-                        <tags-input value={this.settings?.favoriteTags ?? []}
-                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
                         <ion-item>
                           <ion-label position="stacked">Home Title</ion-label>
                           <ion-input value={this.settings?.homeTitle} onIonChange={e => this.settings = { ...this.settings, homeTitle: e.detail.value }} required />
@@ -51,6 +49,8 @@ export class PageSettings {
                             <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" ref={el => this.imageInput = el} />
                           </form>
                         </ion-item>
+                        <tags-input label="Favorite Tags" value={this.settings?.favoriteTags ?? []}
+                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
                       </ion-card-content>
                       <ion-footer>
                         <ion-toolbar>
