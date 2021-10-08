@@ -24,8 +24,6 @@ export class SearchFilterEditor {
             <ion-title>{this.prompt}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onResetClicked()}>Reset</ion-button>
-            </ion-buttons>
-            <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
             <ion-buttons slot="primary">

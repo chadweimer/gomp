@@ -290,7 +290,7 @@ export class AppRoot {
     const modal = await modalController.create({
       component: 'search-filter-editor',
       componentProps: {
-        prompt: 'Advanced Search',
+        prompt: 'Search',
         showName: false
       },
       animated: false,
