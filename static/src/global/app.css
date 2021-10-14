@@ -32,6 +32,7 @@
 */
 :root {
   --ion-padding: 8px;
+  --ion-margin: 8px;
 
   --ion-color-primary: #673AB7;
   --ion-color-primary-rgb: 103,58,183;
@@ -103,6 +104,22 @@
 
 .fill {
   width: 100%;
+}
+
+.top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.top-right-padded {
+  position: absolute;
+  top: var(--ion-padding, 0);
+  right: var(--ion-padding, 0);
+}
+
+.non-interactive {
+  pointer-events: none;
 }
 
 p.plain {

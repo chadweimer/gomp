@@ -89,6 +89,9 @@ export class PageRecipe {
                           onValueSelected={e => this.onRatingSelected(e)} />
                         <p><ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note></p>
                       </div>
+                      {this.recipe?.state === RecipeState.Archived
+                        ? <ion-chip class="top-right non-interactive" color="medium">Archived</ion-chip>
+                        : ''}
                     </ion-item>
                     {this.recipe?.servingSize ?
                       <ion-item lines="full">

@@ -1,5 +1,5 @@
-import { Component, h, Prop } from '@stencil/core';
-import { RecipeCompact } from '../../models';
+import { Component, Host, h, Prop } from '@stencil/core';
+import { RecipeCompact, RecipeState } from '../../models';
 
 @Component({
   tag: 'recipe-card',
@@ -14,16 +14,22 @@ export class RecipeCard {
 
   render() {
     return (
-      <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}` : ''}>
-        {this.recipe.thumbnailUrl
-          ? <ion-img class={{ ['image']: true, [this.size]: true }} src={this.recipe.thumbnailUrl} />
-          : <div class={{ ['image']: true, [this.size]: true }} />}
-        <ion-card-content>
-          <p class="single-line">{this.recipe.name}</p>
-          <five-star-rating value={this.recipe?.averageRating} disabled />
-        </ion-card-content>
-      </ion-card>
+      <Host>
+        <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}` : ''}>
+          {this.recipe.thumbnailUrl
+            ? <ion-img class={{ ['image']: true, [this.size]: true }} src={this.recipe.thumbnailUrl} />
+            : <div class={{ ['image']: true, [this.size]: true }} />}
+          <ion-card-content>
+            <div class="no-overflow">
+              <p class="single-line">{this.recipe.name}</p>
+              <five-star-rating value={this.recipe?.averageRating} disabled />
+            </div>
+          </ion-card-content>
+          {this.recipe?.state === RecipeState.Archived
+            ? <ion-chip class="top-right-padded non-interactive" color="medium">Archived</ion-chip>
+            : ''}
+        </ion-card>
+      </Host>
     );
   }
-
 }

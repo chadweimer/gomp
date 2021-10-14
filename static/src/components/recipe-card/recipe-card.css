@@ -11,3 +11,7 @@
 .image.small {
   height: 100px;
 }
+
+.no-overflow {
+  overflow: hidden;
+}
