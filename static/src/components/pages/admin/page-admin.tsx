@@ -223,6 +223,8 @@ export class PageAdmin {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 }

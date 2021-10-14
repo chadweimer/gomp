@@ -446,6 +446,8 @@ export class PageRecipe {
         animated: false,
       });
       await menu.present();
+
+      await menu.onDidDismiss();
     });
   }
 
@@ -522,6 +524,8 @@ export class PageRecipe {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -546,6 +550,8 @@ export class PageRecipe {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -609,6 +615,8 @@ export class PageRecipe {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -654,6 +662,8 @@ export class PageRecipe {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -677,6 +687,8 @@ export class PageRecipe {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 }

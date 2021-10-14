@@ -327,6 +327,8 @@ export class PageSettings {
       });
 
       await confirmation.present();
+
+      await confirmation.onDidDismiss();
     });
   }
 
