@@ -3,7 +3,7 @@ import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, UserSettings
 import { UploadsApi, UsersApi } from '../../../helpers/api';
 import { alertController, loadingController, modalController } from '@ionic/core';
 import state from '../../../store';
-import { capitalizeFirstLetter, showToast } from '../../../helpers/utils';
+import { capitalizeFirstLetter, showToast, enableBackForOverlay } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings',
@@ -253,81 +253,81 @@ export class PageSettings {
   }
 
   private async onAddFilterClicked() {
-    window.history.pushState({ modal: true }, '');
-
-    const modal = await modalController.create({
-      component: 'search-filter-editor',
-      componentProps: {
-        prompt: 'New Search'
-      },
-      animated: false,
-    });
-    await modal.present();
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveNewSearchFilter({
-        ...resp.data.searchFilter,
-        name: resp.data.name,
-        userId: state.currentUser.id
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'search-filter-editor',
+        componentProps: {
+          prompt: 'New Search'
+        },
+        animated: false,
       });
-      await this.loadSearchFilters();
-    }
+      await modal.present();
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveNewSearchFilter({
+          ...resp.data.searchFilter,
+          name: resp.data.name,
+          userId: state.currentUser.id
+        });
+        await this.loadSearchFilters();
+      }
+    });
   }
 
   private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact | null) {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
 
-    const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
-
-    const modal = await modalController.create({
-      component: 'search-filter-editor',
-      componentProps: {
-        prompt: 'Edit Search'
-      },
-      animated: false,
-    });
-    await modal.present();
-
-    // Workaround for auto-grow textboxes in a dialog.
-    // Set this only after the dialog has presented,
-    // instead of using component props
-    const editor = modal.querySelector('search-filter-editor');
-    editor.searchFilter = searchFilter;
-    editor.name = searchFilter.name;
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveExistingSearchFilter({
-        ...searchFilter,
-        ...resp.data.searchFilter,
-        name: resp.data.name
+      const modal = await modalController.create({
+        component: 'search-filter-editor',
+        componentProps: {
+          prompt: 'Edit Search'
+        },
+        animated: false,
       });
-      await this.loadSearchFilters();
-    }
+      await modal.present();
+
+      // Workaround for auto-grow textboxes in a dialog.
+      // Set this only after the dialog has presented,
+      // instead of using component props
+      const editor = modal.querySelector('search-filter-editor');
+      editor.searchFilter = searchFilter;
+      editor.name = searchFilter.name;
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveExistingSearchFilter({
+          ...searchFilter,
+          ...resp.data.searchFilter,
+          name: resp.data.name
+        });
+        await this.loadSearchFilters();
+      }
+    });
   }
 
   private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Delete User?',
-      message: `Are you sure you want to delete ${searchFilter.name}?`,
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          handler: async () => {
-            await this.deleteSearchFilter(searchFilter);
-            await this.loadSearchFilters();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Delete User?',
+        message: `Are you sure you want to delete ${searchFilter.name}?`,
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.deleteSearchFilter(searchFilter);
+              await this.loadSearchFilters();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
-    });
+        ],
+        animated: false,
+      });
 
-    await confirmation.present();
+      await confirmation.present();
+    });
   }
 
   private async onUpdatePasswordClicked() {

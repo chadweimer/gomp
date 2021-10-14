@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect } from '../../helpers/utils';
+import { hasAccessLevel, redirect, enableBackForOverlay } from '../../helpers/utils';
 import { AccessLevel, DefaultSearchFilter, DefaultSearchSettings, SearchFilter } from '../../models';
 import state from '../../store';
 
@@ -300,27 +300,27 @@ export class AppRoot {
   }
 
   private async onSearchFilterClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'search-filter-editor',
+        componentProps: {
+          prompt: 'Search',
+          showName: false
+        },
+        animated: false,
+      });
+      await modal.present();
 
-    const modal = await modalController.create({
-      component: 'search-filter-editor',
-      componentProps: {
-        prompt: 'Search',
-        showName: false
-      },
-      animated: false,
+      // Workaround for auto-grow textboxes in a dialog.
+      // Set this only after the dialog has presented,
+      // instead of using component props
+      modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
+      if (resp.data?.dismissed === false) {
+        state.searchFilter = resp.data.searchFilter;
+        await this.performSearch();
+      }
     });
-    await modal.present();
-
-    // Workaround for auto-grow textboxes in a dialog.
-    // Set this only after the dialog has presented,
-    // instead of using component props
-    modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
-    if (resp.data?.dismissed === false) {
-      state.searchFilter = resp.data.searchFilter;
-      await this.performSearch();
-    }
   }
 }

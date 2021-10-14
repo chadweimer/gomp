@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Method, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../../helpers/api';
-import { showToast } from '../../../helpers/utils';
+import { showToast, enableBackForOverlay } from '../../../helpers/utils';
 import { AppConfiguration, User } from '../../../models';
 import state from '../../../store';
 
@@ -164,65 +164,65 @@ export class PageAdmin {
   }
 
   private async onAddUserClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'user-editor',
+        animated: false,
+      });
+      await modal.present();
 
-    const modal = await modalController.create({
-      component: 'user-editor',
-      animated: false,
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveNewUser(resp.data.user, resp.data.password);
+        await this.loadUsers();
+      }
     });
-    await modal.present();
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveNewUser(resp.data.user, resp.data.password);
-      await this.loadUsers();
-    }
   }
 
   private async onEditUserClicked(user: User | null) {
-    window.history.pushState({ modal: true }, '');
-
-    const modal = await modalController.create({
-      component: 'user-editor',
-      animated: false,
-    });
-    await modal.present();
-
-    // Workaround for auto-grow textboxes in a dialog.
-    // Set this only after the dialog has presented,
-    // instead of using component props
-    modal.querySelector('user-editor').user = user;
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveExistingUser({
-        ...user,
-        ...resp.data.user
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'user-editor',
+        animated: false,
       });
-      await this.loadUsers();
-    }
+      await modal.present();
+
+      // Workaround for auto-grow textboxes in a dialog.
+      // Set this only after the dialog has presented,
+      // instead of using component props
+      modal.querySelector('user-editor').user = user;
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveExistingUser({
+          ...user,
+          ...resp.data.user
+        });
+        await this.loadUsers();
+      }
+    });
   }
 
   private async onDeleteUserClicked(user: User) {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Delete User?',
-      message: `Are you sure you want to delete ${user.username}?`,
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          handler: async () => {
-            await this.deleteUser(user);
-            await this.loadUsers();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Delete User?',
+        message: `Are you sure you want to delete ${user.username}?`,
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.deleteUser(user);
+              await this.loadUsers();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
-    });
+        ],
+        animated: false,
+      });
 
-    await confirmation.present();
+      await confirmation.present();
+    });
   }
 }

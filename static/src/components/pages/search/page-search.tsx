@@ -1,7 +1,7 @@
 import { loadingController, modalController, popoverController } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
+import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
 import state from '../../../store';
 
@@ -235,18 +235,18 @@ export class PageSearch {
   }
 
   private async onNewRecipeClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'recipe-editor',
+        animated: false,
+      });
+      await modal.present();
 
-    const modal = await modalController.create({
-      component: 'recipe-editor',
-      animated: false,
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+      }
     });
-    await modal.present();
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
-    }
   }
 
   private async onSearchStatesClicked(e: MouseEvent) {

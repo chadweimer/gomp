@@ -2,7 +2,7 @@ import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core'
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
 import { loadingController, modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
-import { hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
+import { hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
 import state from '../../../store';
 
 @Component({
@@ -162,19 +162,19 @@ export class PageHome {
   }
 
   private async onNewRecipeClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'recipe-editor',
+        animated: false,
+      });
 
-    const modal = await modalController.create({
-      component: 'recipe-editor',
-      animated: false,
+      await modal.present();
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+      }
     });
-
-    await modal.present();
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
-    }
   }
 
   private async onFilterClicked(filter: SearchFilter) {

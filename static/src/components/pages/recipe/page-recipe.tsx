@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, loadingController, modalController } from '@ionic/core';
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
-import { formatDate, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeImage, RecipeState } from '../../../models';
 import state from '../../../store';
 
@@ -391,242 +391,242 @@ export class PageRecipe {
   }
 
   private async onRecipeMenuClicked() {
-    window.history.pushState({ modal: true }, '');
-
-    const menu = await actionSheetController.create({
-      header: 'Menu',
-      buttons: [
-        {
-          text: 'Delete',
-          icon: 'trash',
-          role: 'destructive',
-          handler: async () => {
-            await this.onDeleteClicked();
-            return true;
-          }
-        },
-        {
-          text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
-          icon: 'archive',
-          handler: async () => {
-            if (this.recipe.state === RecipeState.Archived) {
-              await this.onUnarchiveClicked();
-            } else {
-              await this.onArchiveClicked();
+    await enableBackForOverlay(async () => {
+      const menu = await actionSheetController.create({
+        header: 'Menu',
+        buttons: [
+          {
+            text: 'Delete',
+            icon: 'trash',
+            role: 'destructive',
+            handler: async () => {
+              await this.onDeleteClicked();
+              return true;
             }
-            return true;
-          }
-        },
-        { text: 'Add Link', icon: 'link' },
-        {
-          text: 'Upload Picture',
-          icon: 'camera',
-          handler: async () => {
-            this.onUploadImageClicked();
-            return true;
-          }
-        },
-        {
-          text: 'Add Note',
-          icon: 'chatbox',
-          handler: async () => {
-            await this.onAddNoteClicked();
-            return true;
-          }
-        },
-        {
-          text: 'Edit',
-          icon: 'create',
-          handler: async () => {
-            await this.onEditClicked();
-            return true;
-          }
-        },
-        { text: 'Cancel', icon: 'close', role: 'cancel' }
-      ],
-      animated: false,
+          },
+          {
+            text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
+            icon: 'archive',
+            handler: async () => {
+              if (this.recipe.state === RecipeState.Archived) {
+                await this.onUnarchiveClicked();
+              } else {
+                await this.onArchiveClicked();
+              }
+              return true;
+            }
+          },
+          { text: 'Add Link', icon: 'link' },
+          {
+            text: 'Upload Picture',
+            icon: 'camera',
+            handler: async () => {
+              this.onUploadImageClicked();
+              return true;
+            }
+          },
+          {
+            text: 'Add Note',
+            icon: 'chatbox',
+            handler: async () => {
+              await this.onAddNoteClicked();
+              return true;
+            }
+          },
+          {
+            text: 'Edit',
+            icon: 'create',
+            handler: async () => {
+              await this.onEditClicked();
+              return true;
+            }
+          },
+          { text: 'Cancel', icon: 'close', role: 'cancel' }
+        ],
+        animated: false,
+      });
+      await menu.present();
     });
-    await menu.present();
   }
 
   private async onEditClicked() {
-    window.history.pushState({ modal: true }, '');
-
-    const modal = await modalController.create({
-      component: 'recipe-editor',
-      animated: false,
-    });
-    await modal.present();
-
-    // Workaround for auto-grow textboxes in a dialog.
-    // Set this only after the dialog has presented,
-    // instead of using component props
-    modal.querySelector('recipe-editor').recipe = this.recipe;
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveRecipe({
-        ...this.recipe,
-        ...resp.data.recipe
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'recipe-editor',
+        animated: false,
       });
-      await this.loadRecipe();
-    }
+      await modal.present();
+
+      // Workaround for auto-grow textboxes in a dialog.
+      // Set this only after the dialog has presented,
+      // instead of using component props
+      modal.querySelector('recipe-editor').recipe = this.recipe;
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveRecipe({
+          ...this.recipe,
+          ...resp.data.recipe
+        });
+        await this.loadRecipe();
+      }
+    });
   }
 
   private async onDeleteClicked() {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Delete Recipe?',
-      message: 'Are you sure you want to delete this recipe?',
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          role: 'yes',
-          handler: async () => {
-            await this.deleteRecipe();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Delete Recipe?',
+        message: 'Are you sure you want to delete this recipe?',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            role: 'yes',
+            handler: async () => {
+              await this.deleteRecipe();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
+        ],
+        animated: false,
+      });
+
+      await confirmation.present();
+
+      const { role } = await confirmation.onDidDismiss();
+      if (role === 'yes') {
+        await redirect('/recipes');
+      }
     });
-
-    await confirmation.present();
-
-    const { role } = await confirmation.onDidDismiss();
-    if (role === 'yes') {
-      await redirect('/recipes');
-    }
   }
 
   private async onArchiveClicked() {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Arhive Recipe?',
-      message: 'Are you sure you want to archive this recipe?',
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          role: 'yes',
-          handler: async () => {
-            await this.setRecipeState(RecipeState.Archived);
-            await this.loadRecipe();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Arhive Recipe?',
+        message: 'Are you sure you want to archive this recipe?',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            role: 'yes',
+            handler: async () => {
+              await this.setRecipeState(RecipeState.Archived);
+              await this.loadRecipe();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
-    });
+        ],
+        animated: false,
+      });
 
-    await confirmation.present();
+      await confirmation.present();
+    });
   }
 
   private async onUnarchiveClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Unarchive Recipe?',
+        message: 'Are you sure you want to unarchive this recipe?',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            role: 'yes',
+            handler: async () => {
+              await this.setRecipeState(RecipeState.Active);
+              await this.loadRecipe();
+              return true;
+            }
+          },
+        ],
+        animated: false,
+      });
 
-    const confirmation = await alertController.create({
-      header: 'Unarchive Recipe?',
-      message: 'Are you sure you want to unarchive this recipe?',
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          role: 'yes',
-          handler: async () => {
-            await this.setRecipeState(RecipeState.Active);
-            await this.loadRecipe();
-            return true;
-          }
-        },
-      ],
-      animated: false,
+      await confirmation.present();
     });
-
-    await confirmation.present();
   }
 
   private async onAddNoteClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'note-editor',
+        animated: false,
+      });
+      await modal.present();
 
-    const modal = await modalController.create({
-      component: 'note-editor',
-      animated: false,
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveNewNote(resp.data.note);
+        await this.loadNotes();
+      }
     });
-    await modal.present();
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveNewNote(resp.data.note);
-      await this.loadNotes();
-    }
   }
 
   private async onEditNoteClicked(note: Note | null) {
-    window.history.pushState({ modal: true }, '');
-
-    const modal = await modalController.create({
-      component: 'note-editor',
-      animated: false,
-    });
-    await modal.present();
-
-    // Workaround for auto-grow textboxes in a dialog.
-    // Set this only after the dialog has presented,
-    // instead of using component props
-    modal.querySelector('note-editor').note = note;
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
-    if (resp.data?.dismissed === false) {
-      await this.saveExistingNote({
-        ...note,
-        ...resp.data.note
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'note-editor',
+        animated: false,
       });
-      await this.loadNotes();
-    }
+      await modal.present();
+
+      // Workaround for auto-grow textboxes in a dialog.
+      // Set this only after the dialog has presented,
+      // instead of using component props
+      modal.querySelector('note-editor').note = note;
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
+      if (resp.data?.dismissed === false) {
+        await this.saveExistingNote({
+          ...note,
+          ...resp.data.note
+        });
+        await this.loadNotes();
+      }
+    });
   }
 
   private async onDeleteNoteClicked(note: Note) {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Delete Note?',
-      message: 'Are you sure you want to delete this note?',
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          handler: async () => {
-            await this.deleteNote(note);
-            await this.loadNotes();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Delete Note?',
+        message: 'Are you sure you want to delete this note?',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.deleteNote(note);
+              await this.loadNotes();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
-    });
+        ],
+        animated: false,
+      });
 
-    await confirmation.present();
+      await confirmation.present();
+    });
   }
 
   private async onUploadImageClicked() {
-    window.history.pushState({ modal: true }, '');
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'image-upload-browser',
+        animated: false,
+      });
+      await modal.present();
 
-    const modal = await modalController.create({
-      component: 'image-upload-browser',
-      animated: false,
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, formData: FormData }>();
+      if (resp.data?.dismissed === false) {
+        await this.uploadImage(resp.data.formData);
+        await this.loadRecipe();
+        await this.loadImages();
+      }
     });
-    await modal.present();
-
-    const resp = await modal.onDidDismiss<{ dismissed: boolean, formData: FormData }>();
-    if (resp.data?.dismissed === false) {
-      await this.uploadImage(resp.data.formData);
-      await this.loadRecipe();
-      await this.loadImages();
-    }
   }
 
   private async onRatingSelected(e: CustomEvent<number>) {
@@ -635,48 +635,48 @@ export class PageRecipe {
   }
 
   private async onSetMainImageClicked(image: RecipeImage) {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Set Main Picture?',
-      message: 'Are you sure you want to this as the main picture for the recipe?',
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          handler: async () => {
-            await this.setMainImage(image);
-            await this.loadRecipe();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Set Main Picture?',
+        message: 'Are you sure you want to this as the main picture for the recipe?',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.setMainImage(image);
+              await this.loadRecipe();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
-    });
+        ],
+        animated: false,
+      });
 
-    await confirmation.present();
+      await confirmation.present();
+    });
   }
 
   private async onDeleteImageClicked(image: RecipeImage) {
-    window.history.pushState({ modal: true }, '');
-
-    const confirmation = await alertController.create({
-      header: 'Delete Image?',
-      message: 'Are you sure you want to delete this picture?',
-      buttons: [
-        'No',
-        {
-          text: 'Yes',
-          handler: async () => {
-            await this.deleteImage(image);
-            await this.loadImages();
-            return true;
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Delete Image?',
+        message: 'Are you sure you want to delete this picture?',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.deleteImage(image);
+              await this.loadImages();
+              return true;
+            }
           }
-        }
-      ],
-      animated: false,
-    });
+        ],
+        animated: false,
+      });
 
-    await confirmation.present();
+      await confirmation.present();
+    });
   }
 }

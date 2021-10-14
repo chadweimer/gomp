@@ -68,6 +68,17 @@ export function fromYesNoAny(value: YesNoAny) {
   }
 }
 
+export async function enableBackForOverlay(presenter: () => Promise<void>) {
+  window.history.pushState({ modal: true }, '');
+  try {
+    await presenter();
+  } finally {
+    if (window.history.state.modal) {
+      window.history.back();
+    }
+  }
+}
+
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
   toast.present();
