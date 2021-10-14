@@ -26,7 +26,7 @@ export class RecipeCard {
             </div>
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived
-            ? <ion-chip class="top-right-padded non-interactive" color="medium">Archived</ion-chip>
+            ? <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>
             : ''}
         </ion-card>
       </Host>

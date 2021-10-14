@@ -118,8 +118,12 @@
   right: var(--ion-padding, 0);
 }
 
-.non-interactive {
-  pointer-events: none;
+.opacity-75 {
+  opacity: 0.75;
+}
+
+.send-to-back {
+  z-index: -1;
 }
 
 p.plain {

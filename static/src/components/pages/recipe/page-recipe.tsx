@@ -90,7 +90,7 @@ export class PageRecipe {
                         <p><ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note></p>
                       </div>
                       {this.recipe?.state === RecipeState.Archived
-                        ? <ion-chip class="top-right non-interactive" color="medium">Archived</ion-chip>
+                        ? <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>
                         : ''}
                     </ion-item>
                     {this.recipe?.servingSize ?
