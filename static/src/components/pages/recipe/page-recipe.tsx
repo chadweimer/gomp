@@ -424,7 +424,7 @@ export class PageRecipe {
             text: 'Upload Picture',
             icon: 'camera',
             handler: async () => {
-              this.onUploadImageClicked();
+              await this.onUploadImageClicked();
               return true;
             }
           },
