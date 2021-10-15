@@ -1,4 +1,4 @@
-import { loadingController, modalController, popoverController } from '@ionic/core';
+import { loadingController, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
@@ -24,12 +24,6 @@ export class PageSearch {
     await this.loadRecipes();
   }
 
-  @Method()
-  async deactivatingCallback() {
-    // Store the current scroll position
-    this.scrollTop = (await this.content.getScrollElement())?.scrollTop;
-  }
-
   componentDidRender() {
     if (this.scrollTop !== null) {
       this.content.scrollToPoint(0, this.scrollTop);
@@ -39,7 +33,7 @@ export class PageSearch {
   render() {
     return (
       <Host>
-        <ion-content ref={el => this.content = el}>
+        <ion-content ref={el => this.content = el} scroll-events onIonScrollEnd={e => this.onContentScrolled(e)}>
           <ion-grid>
             <ion-row>
               <ion-col>
@@ -231,6 +225,13 @@ export class PageSearch {
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create new recipe.');
+    }
+  }
+
+  private async onContentScrolled(e: CustomEvent<ScrollBaseDetail>) {
+    if (!e.detail.isScrolling) {
+      // Store the current scroll position
+      this.scrollTop = (await this.content.getScrollElement())?.scrollTop;
     }
   }
 

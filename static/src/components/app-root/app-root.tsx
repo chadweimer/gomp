@@ -261,7 +261,9 @@ export class AppRoot {
     if (el && typeof el.deactivatingCallback === 'function') {
       el.deactivatingCallback();
     }
+  }
 
+  private async onPageChanged() {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
@@ -271,9 +273,7 @@ export class AppRoot {
         console.error(ex);
       }
     }
-  }
 
-  private async onPageChanged() {
     // Let the new page know it's been activated
     const activePage = await this.nav.getActive();
     const el = activePage?.element as any;
