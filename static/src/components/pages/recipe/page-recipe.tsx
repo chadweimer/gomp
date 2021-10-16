@@ -442,71 +442,75 @@ export class PageRecipe {
   }
 
   private async onRecipeMenuClicked() {
-    await enableBackForOverlay(async () => {
-      const menu = await actionSheetController.create({
-        header: 'Menu',
-        buttons: [
-          {
-            text: 'Delete',
-            icon: 'trash',
-            role: 'destructive',
-            handler: async () => {
-              await this.onDeleteClicked();
-              return true;
-            }
-          },
-          {
-            text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
-            icon: 'archive',
-            handler: async () => {
-              if (this.recipe.state === RecipeState.Archived) {
-                await this.onUnarchiveClicked();
-              } else {
-                await this.onArchiveClicked();
-              }
-              return true;
-            }
-          },
-          {
-            text: 'Add Link',
-            icon: 'link',
-            handler: async () => {
-              await this.onAddLinkClicked();
-              return true;
-            }
-          },
-          {
-            text: 'Upload Picture',
-            icon: 'camera',
-            handler: async () => {
-              await this.onUploadImageClicked();
-              return true;
-            }
-          },
-          {
-            text: 'Add Note',
-            icon: 'chatbox',
-            handler: async () => {
-              await this.onAddNoteClicked();
-              return true;
-            }
-          },
-          {
-            text: 'Edit',
-            icon: 'create',
-            handler: async () => {
-              await this.onEditClicked();
-              return true;
-            }
-          },
-          { text: 'Cancel', icon: 'close', role: 'cancel' }
-        ],
-        animated: false,
-      });
-      await menu.present();
-
-      await menu.onDidDismiss();
+    const menu = await actionSheetController.create({
+      header: 'Menu',
+      buttons: [
+        {
+          text: 'Delete',
+          icon: 'trash',
+          role: 'destructive'
+        },
+        {
+          text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
+          icon: 'archive',
+          role: 'archive'
+        },
+        {
+          text: 'Add Link',
+          icon: 'link',
+          role: 'link'
+        },
+        {
+          text: 'Upload Picture',
+          icon: 'camera',
+          role: 'image'
+        },
+        {
+          text: 'Add Note',
+          icon: 'chatbox',
+          role: 'note'
+        },
+        {
+          text: 'Edit',
+          icon: 'create',
+          role: 'edit'
+        },
+        {
+          text: 'Cancel',
+          icon: 'close',
+          role: 'cancel'
+        }
+      ],
+      animated: false,
     });
+    await menu.present();
+
+    const { role } = await menu.onDidDismiss();
+
+    switch (role) {
+      case 'destructive':
+        await this.onDeleteClicked();
+        break;
+      case 'archive':
+        if (this.recipe.state === RecipeState.Archived) {
+          await this.onUnarchiveClicked();
+        } else {
+          await this.onArchiveClicked();
+        }
+        break;
+      case 'link':
+        await this.onAddLinkClicked();
+        break;
+      case 'image':
+        await this.onUploadImageClicked();
+        break;
+      case 'note':
+        await this.onAddNoteClicked();
+        break;
+      case 'edit':
+        await this.onEditClicked();
+        break;
+    }
   }
 
   private async onEditClicked() {
