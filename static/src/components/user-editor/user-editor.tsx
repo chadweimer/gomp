@@ -1,4 +1,4 @@
-import { Component, Element, h, Prop, State } from '@stencil/core';
+import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { capitalizeFirstLetter, configureModalAutofocus } from '../../helpers/utils';
 import { AccessLevel, User } from '../../models';
 
@@ -24,37 +24,39 @@ export class UserEditor {
   }
 
   render() {
-    return [
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="primary">
-            <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
-          </ion-buttons>
-          <ion-title>{!this.user.id ? 'New User' : 'Edit User'}</ion-title>
-          <ion-buttons slot="secondary">
-            <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>,
+    return (
+      <Host>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="primary">
+              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+            </ion-buttons>
+            <ion-title>{!this.user.id ? 'New User' : 'Edit User'}</ion-title>
+            <ion-buttons slot="secondary">
+              <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
 
-      <ion-content>
-        <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-          <ion-item>
-            <ion-label position="stacked">Email</ion-label>
-            <ion-input type="email" value={this.user.username} disabled={!!this.user.id} onIonChange={e => this.user = { ...this.user, username: e.detail.value }} required autofocus />
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Access Level</ion-label>
-            <ion-select value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
-              {Object.values(AccessLevel).map(item =>
-                <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
-              )}
-            </ion-select>
-          </ion-item>
-          {this.renderPasswords()}
-        </form>
-      </ion-content>
-    ];
+        <ion-content>
+          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+            <ion-item>
+              <ion-label position="stacked">Email</ion-label>
+              <ion-input type="email" value={this.user.username} disabled={!!this.user.id} onIonChange={e => this.user = { ...this.user, username: e.detail.value }} required autofocus />
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Access Level</ion-label>
+              <ion-select value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
+                {Object.values(AccessLevel).map(item =>
+                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                )}
+              </ion-select>
+            </ion-item>
+            {this.renderPasswords()}
+          </form>
+        </ion-content>
+      </Host>
+    );
   }
 
   private renderPasswords() {

@@ -1,4 +1,4 @@
-import { Component, Element, h, Prop } from '@stencil/core';
+import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { configureModalAutofocus } from '../../helpers/utils';
 import { Note } from '../../models';
 
@@ -19,28 +19,30 @@ export class NoteEditor {
   }
 
   render() {
-    return [
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="primary">
-            <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
-          </ion-buttons>
-          <ion-title>{!this.note.id ? 'New Note' : 'Edit Note'}</ion-title>
-          <ion-buttons slot="secondary">
-            <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>,
+    return (
+      <Host>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="primary">
+              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+            </ion-buttons>
+            <ion-title>{!this.note.id ? 'New Note' : 'Edit Note'}</ion-title>
+            <ion-buttons slot="secondary">
+              <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
 
-      <ion-content>
-        <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-          <ion-item>
-            <ion-label position="stacked">Text</ion-label>
-            <ion-textarea value={this.note.text} onIonChange={e => this.note = { ...this.note, text: e.detail.value }} required autofocus auto-grow />
-          </ion-item>
-        </form>
-      </ion-content>
-    ];
+        <ion-content>
+          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+            <ion-item>
+              <ion-label position="stacked">Text</ion-label>
+              <ion-textarea value={this.note.text} onIonChange={e => this.note = { ...this.note, text: e.detail.value }} required autofocus auto-grow />
+            </ion-item>
+          </form>
+        </ion-content>
+      </Host>
+    );
   }
 
   private async onSaveClicked() {
