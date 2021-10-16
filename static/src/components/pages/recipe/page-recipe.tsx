@@ -48,7 +48,7 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="camera" />
                   Upload Picture
                 </ion-button>
-                <ion-button>
+                <ion-button onClick={() => this.onAddLinkClicked()}>
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
@@ -135,25 +135,21 @@ export class PageRecipe {
                     {this.links?.length > 0 ?
                       <ion-item lines="full">
                         <ion-label position="stacked">Related Recipes</ion-label>
-                        <ion-grid class="ion-padding-top no-pad">
-                          <ion-row>
-                            {this.links.map(link =>
-                              <ion-col size="12">
-                                <ion-item lines="none">
-                                  <ion-avatar slot="start">
-                                    <ion-img src={link.thumbnailUrl} />
-                                  </ion-avatar>
-                                  <ion-router-link href={`/recipes/${link.id}`} color="dark">
-                                    <ion-label>{link.name}</ion-label>
-                                  </ion-router-link>
-                                  <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
-                                    <ion-icon slot="icon-only" icon="close-circle" />
-                                  </ion-button>
-                                </ion-item>
-                              </ion-col>
-                            )}
-                          </ion-row>
-                        </ion-grid>
+                        <div class="ion-padding-top fill">
+                          {this.links.map(link =>
+                            <ion-item lines="none">
+                              <ion-avatar slot="start">
+                                <ion-img src={link.thumbnailUrl} />
+                              </ion-avatar>
+                              <ion-router-link href={`/recipes/${link.id}`} color="dark">
+                                <ion-label>{link.name}</ion-label>
+                              </ion-router-link>
+                              <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
+                                <ion-icon slot="icon-only" icon="close-circle" />
+                              </ion-button>
+                            </ion-item>
+                          )}
+                        </div>
                       </ion-item>
                       : ''}
                     <div class="ion-margin-top">
@@ -244,7 +240,7 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="camera" />
                   Upload Picture
                 </ion-button>
-                <ion-button class="ion-hide-md-down">
+                <ion-button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
@@ -350,6 +346,15 @@ export class PageRecipe {
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save recipe state.');
+    }
+  }
+
+  private async addLink(recipeId: number) {
+    try {
+      await RecipesApi.postLink(this.el, this.recipeId, recipeId);
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to add linked recipe.');
     }
   }
 
@@ -462,7 +467,14 @@ export class PageRecipe {
               return true;
             }
           },
-          { text: 'Add Link', icon: 'link' },
+          {
+            text: 'Add Link',
+            icon: 'link',
+            handler: async () => {
+              await this.onAddLinkClicked();
+              return true;
+            }
+          },
           {
             text: 'Upload Picture',
             icon: 'camera',
@@ -598,6 +610,25 @@ export class PageRecipe {
       await confirmation.present();
 
       await confirmation.onDidDismiss();
+    });
+  }
+
+  private async onAddLinkClicked() {
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'recipe-link-editor',
+        animated: false,
+        componentProps: {
+          parentRecipeId: this.recipeId
+        }
+      });
+      await modal.present();
+
+      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipeId: number }>();
+      if (resp.data?.dismissed === false) {
+        await this.addLink(resp.data.recipeId);
+        await this.loadLinks();
+      }
     });
   }
 

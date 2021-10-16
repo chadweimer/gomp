@@ -1,4 +1,4 @@
-import { AppConfiguration, AppInfo, DefaultSearchFilter, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, User, UserSettings } from '../models';
+import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, User, UserSettings } from '../models';
 import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
@@ -135,6 +135,10 @@ export class RecipesApi {
     } else {
       throw new Error(`Unexpected path: ${path}`);
     }
+  }
+
+  static async postLink(target: EventTarget, recipeId: number, linkId: number) {
+    await ajaxPost(target, `/api/v1/recipes/${recipeId}/links`, linkId);
   }
 
   static async postImage(target: EventTarget, recipeId: number, formData: FormData) {

@@ -47,6 +47,9 @@ export namespace Components {
     interface RecipeEditor {
         "recipe": Recipe;
     }
+    interface RecipeLinkEditor {
+        "parentRecipeId": number;
+    }
     interface RecipeStateSelector {
         "selectedStates": RecipeState[];
     }
@@ -141,6 +144,12 @@ declare global {
         prototype: HTMLRecipeEditorElement;
         new (): HTMLRecipeEditorElement;
     };
+    interface HTMLRecipeLinkEditorElement extends Components.RecipeLinkEditor, HTMLStencilElement {
+    }
+    var HTMLRecipeLinkEditorElement: {
+        prototype: HTMLRecipeLinkEditorElement;
+        new (): HTMLRecipeLinkEditorElement;
+    };
     interface HTMLRecipeStateSelectorElement extends Components.RecipeStateSelector, HTMLStencilElement {
     }
     var HTMLRecipeStateSelectorElement: {
@@ -184,6 +193,7 @@ declare global {
         "page-settings": HTMLPageSettingsElement;
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
+        "recipe-link-editor": HTMLRecipeLinkEditorElement;
         "recipe-state-selector": HTMLRecipeStateSelectorElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
         "sort-by-selector": HTMLSortBySelectorElement;
@@ -227,6 +237,9 @@ declare namespace LocalJSX {
     interface RecipeEditor {
         "recipe"?: Recipe;
     }
+    interface RecipeLinkEditor {
+        "parentRecipeId"?: number;
+    }
     interface RecipeStateSelector {
         "onSelectedStatesChanged"?: (event: CustomEvent<RecipeState[]>) => void;
         "selectedStates"?: RecipeState[];
@@ -263,6 +276,7 @@ declare namespace LocalJSX {
         "page-settings": PageSettings;
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
+        "recipe-link-editor": RecipeLinkEditor;
         "recipe-state-selector": RecipeStateSelector;
         "search-filter-editor": SearchFilterEditor;
         "sort-by-selector": SortBySelector;
@@ -286,6 +300,7 @@ declare module "@stencil/core" {
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
+            "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
             "recipe-state-selector": LocalJSX.RecipeStateSelector & JSXBase.HTMLAttributes<HTMLRecipeStateSelectorElement>;
             "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
             "sort-by-selector": LocalJSX.SortBySelector & JSXBase.HTMLAttributes<HTMLSortBySelectorElement>;
