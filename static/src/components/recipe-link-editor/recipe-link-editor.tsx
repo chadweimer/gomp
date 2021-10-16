@@ -1,8 +1,7 @@
-import { InputChangeEventDetail } from '@ionic/core';
-import { Component, Element, Host, h, State, Prop } from '@stencil/core';
+import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipesApi } from '../../helpers/api';
 import { configureModalAutofocus } from '../../helpers/utils';
-import { DefaultSearchFilter, RecipeCompact, SearchField, SearchFilter, SortBy } from '../../models';
+import { DefaultSearchFilter, RecipeCompact, RecipeState, SearchField, SearchFilter, SortBy } from '../../models';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -12,6 +11,8 @@ export class RecipeLinkEditor {
   @Prop() parentRecipeId = 0;
   @State() selectedRecipeId: number | null = null;
   @State() matchingRecipes: RecipeCompact[] = [];
+  @State() query = '';
+  @State() includeArchived = false;
 
   @Element() el!: HTMLRecipeLinkEditorElement;
   private form!: HTMLFormElement;
@@ -40,13 +41,20 @@ export class RecipeLinkEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item>
               <ion-label position="stacked">Find Recipe</ion-label>
-              <ion-input onIonChange={e => this.onSearchInputChanged(e)} ref={el => this.searchInput = el} />
+              <ion-input value={this.query} onIonChange={e => this.query = e.detail.value} ref={el => this.searchInput = el} autofocus />
             </ion-item>
             <ion-content>
-              <ion-list>
+              <ion-list lines="none">
+                <ion-list-header>
+                  <ion-label>Matching Recipes</ion-label>
+                  {this.includeArchived
+                    ? <ion-button onClick={() => this.includeArchived = false}>Exclude Archived</ion-button>
+                    : <ion-button onClick={() => this.includeArchived = true}>Include Archived</ion-button>
+                  }
+                </ion-list-header>
                 <ion-radio-group value={this.selectedRecipeId} onIonChange={e => this.selectedRecipeId = e.detail.value} allow-empty-selection>
                   {this.matchingRecipes.map(recipe =>
-                    <ion-item lines="full">
+                    <ion-item>
                       <ion-avatar slot="start">
                         <ion-img src={recipe.thumbnailUrl} />
                       </ion-avatar>
@@ -63,13 +71,17 @@ export class RecipeLinkEditor {
     );
   }
 
-  private async onSearchInputChanged(e: CustomEvent<InputChangeEventDetail>) {
+  @Watch('query')
+  @Watch('includeArchived')
+  async onSearchInputChanged() {
     const filter: SearchFilter = {
       ...new DefaultSearchFilter(),
-      query: e.detail.value,
-      sortBy: SortBy.Name,
-      fields: [SearchField.Name]
+      query: this.query,
+      fields: [SearchField.Name],
     };
+    if (this.includeArchived) {
+      filter.states = [...filter.states, RecipeState.Archived];
+    }
     const { recipes } = await RecipesApi.find(this.el, filter, 1, 20);
 
     // Clear current selection
