@@ -2,7 +2,7 @@ import { actionSheetController, alertController, loadingController, modalControl
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
-import { AccessLevel, Note, Recipe, RecipeImage, RecipeState } from '../../../models';
+import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../models';
 import state from '../../../store';
 
 @Component({
@@ -14,6 +14,7 @@ export class PageRecipe {
 
   @State() recipe: Recipe | null;
   @State() mainImage: RecipeImage | null;
+  @State() links: RecipeCompact[] = [];
   @State() images: RecipeImage[] = [];
   @State() notes: Note[] = [];
 
@@ -131,7 +132,31 @@ export class PageRecipe {
                         </p>
                       </ion-item>
                       : ''}
-                    <div class="ion-padding-top">
+                    {this.links?.length > 0 ?
+                      <ion-item lines="full">
+                        <ion-label position="stacked">Related Recipes</ion-label>
+                        <ion-grid class="ion-padding-top no-pad">
+                          <ion-row>
+                            {this.links.map(link =>
+                              <ion-col size="12">
+                                <ion-item lines="none">
+                                  <ion-avatar slot="start">
+                                    <ion-img src={link.thumbnailUrl} />
+                                  </ion-avatar>
+                                  <ion-router-link href={`/recipes/${link.id}`} color="dark">
+                                    <ion-label>{link.name}</ion-label>
+                                  </ion-router-link>
+                                  <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
+                                    <ion-icon slot="icon-only" icon="close-circle" />
+                                  </ion-button>
+                                </ion-item>
+                              </ion-col>
+                            )}
+                          </ion-row>
+                        </ion-grid>
+                      </ion-item>
+                      : ''}
+                    <div class="ion-margin-top">
                       {this.recipe?.tags?.map(tag =>
                         <ion-chip>{tag}</ion-chip>
                       )}
@@ -262,6 +287,7 @@ export class PageRecipe {
 
   private async load() {
     await this.loadRecipe();
+    await this.loadLinks();
     await this.loadImages();
     await this.loadNotes();
   }
@@ -276,12 +302,11 @@ export class PageRecipe {
     }
   }
 
-  private async saveRecipe(recipe: Recipe) {
+  private async loadLinks() {
     try {
-      await RecipesApi.put(this.el, recipe);
+      this.links = await RecipesApi.getLinks(this.el, this.recipeId);
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe.');
     }
   }
 
@@ -301,6 +326,15 @@ export class PageRecipe {
     }
   }
 
+  private async saveRecipe(recipe: Recipe) {
+    try {
+      await RecipesApi.put(this.el, recipe);
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to save recipe.');
+    }
+  }
+
   private async deleteRecipe() {
     try {
       await RecipesApi.delete(this.el, this.recipeId);
@@ -316,6 +350,15 @@ export class PageRecipe {
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save recipe state.');
+    }
+  }
+
+  private async deleteLink(link: RecipeCompact) {
+    try {
+      await RecipesApi.deleteLink(this.el, this.recipeId, link.id);
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to remove linked recipe.');
     }
   }
 
@@ -545,6 +588,32 @@ export class PageRecipe {
             handler: async () => {
               await this.setRecipeState(RecipeState.Active);
               await this.loadRecipe();
+              return true;
+            }
+          },
+        ],
+        animated: false,
+      });
+
+      await confirmation.present();
+
+      await confirmation.onDidDismiss();
+    });
+  }
+
+  private async onDeleteLinkClicked(link: RecipeCompact) {
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Remove Link?',
+        message: `Are you sure you want to remove the linked recipe '${link.name}'?`,
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            role: 'yes',
+            handler: async () => {
+              await this.deleteLink(link);
+              await this.loadLinks();
               return true;
             }
           },

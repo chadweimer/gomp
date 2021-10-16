@@ -1,4 +1,4 @@
-import { AppConfiguration, AppInfo, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, User, UserSettings } from '../models';
+import { AppConfiguration, AppInfo, DefaultSearchFilter, Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilter, User, UserSettings } from '../models';
 import { ajaxDelete, ajaxGet, ajaxPost, ajaxPostWithLocation, ajaxPostWithResult, ajaxPut } from './ajax';
 
 export class AuthApi {
@@ -94,6 +94,11 @@ export class RecipesApi {
     return { recipe, mainImage };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static async getLinks(target: EventTarget, recipeId: number): Promise<RecipeCompact[]> {
+    return await ajaxGet(target, `/api/v1/recipes/${recipeId}/links`) ?? [];
+  }
+
   static async getImages(target: EventTarget, recipeId: number): Promise<RecipeImage[]> {
     return await ajaxGet(target, `/api/v1/recipes/${recipeId}/images`) ?? [];
   }
@@ -153,6 +158,10 @@ export class RecipesApi {
 
   static async delete(target: EventTarget, id: number) {
     await ajaxDelete(target, `/api/v1/recipes/${id}`);
+  }
+
+  static async deleteLink(target: EventTarget, recipeId: number, linkId: number) {
+    await ajaxDelete(target, `/api/v1/recipes/${recipeId}/links/${linkId}`);
   }
 
   static async deleteImage(target: EventTarget, recipeId: number, imageId: number) {
