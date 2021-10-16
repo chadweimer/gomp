@@ -81,7 +81,7 @@ export class RecipeLinkEditor {
 
   private async onSaveClicked() {
     const native = await this.searchInput.getInputElement();
-    if (this.selectedRecipeId === null) {
+    if (this.selectedRecipeId === null || this.selectedRecipeId === undefined) {
       native.setCustomValidity('A recipe must be selected');
     } else {
       native.setCustomValidity('');
