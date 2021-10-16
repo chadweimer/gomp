@@ -47,7 +47,7 @@ export class PageSettings {
                         <ion-item lines="full">
                           <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
                             <ion-label position="stacked">Home Image</ion-label>
-                            <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" ref={el => this.imageInput = el} />
+                            <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
                           </form>
                         </ion-item>
                         <tags-input label="Favorite Tags" value={this.settings?.favoriteTags ?? []}

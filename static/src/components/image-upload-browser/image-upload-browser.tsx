@@ -33,7 +33,7 @@ export class ImageUploadBrowser {
           <ion-item lines="full">
             <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
               <ion-label position="stacked">Picture</ion-label>
-              <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="padded-input" ref={el => this.imageInput = el} required />
+              <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} required />
             </form>
           </ion-item>
         </ion-content>
