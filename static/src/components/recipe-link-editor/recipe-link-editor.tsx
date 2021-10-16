@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipesApi } from '../../helpers/api';
 import { configureModalAutofocus } from '../../helpers/utils';
-import { DefaultSearchFilter, RecipeCompact, RecipeState, SearchField, SearchFilter, SortBy } from '../../models';
+import { DefaultSearchFilter, RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../models';
 
 @Component({
   tag: 'recipe-link-editor',
