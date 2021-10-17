@@ -131,12 +131,16 @@ export class PageSearch {
   }
 
   private async loadRecipes(pageNum = null) {
+    if (pageNum === null) {
+      pageNum = state.searchPage;
+    }
+
     // Make sure to fill in any missing fields
     const defaultFilter = new DefaultSearchFilter();
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {
-      const { total, recipes } = await RecipesApi.find(this.el, filter, state.searchPage, this.getRecipeCount());
+      const { total, recipes } = await RecipesApi.find(this.el, filter, pageNum, this.getRecipeCount());
       this.recipes = recipes ?? [];
       state.searchResultCount = total;
 
@@ -146,9 +150,7 @@ export class PageSearch {
       this.recipes = [];
       state.searchResultCount = null;
     } finally {
-      if (pageNum) {
-        state.searchPage = pageNum;
-      }
+      state.searchPage = pageNum;
     }
   }
 
