@@ -13,7 +13,7 @@ export class AppRoot {
   @State() loadingCount = 0;
 
   @Element() el!: HTMLAppRootElement;
-  private nav!: HTMLIonNavElement;
+  private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
   private searchBar!: HTMLIonInputElement;
 
@@ -25,25 +25,32 @@ export class AppRoot {
     return (
       <ion-app>
         <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
-          <ion-route url="/login" component="page-login" />
+          <ion-route url="/login" component="tab-login" />
 
-          <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/" component="tab-home" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes" component="page-search" beforeEnter={() => this.requireLogin()} />
+          <ion-route-redirect from="/recipes" to="/search" />
+          <ion-route url="/search" component="tab-search" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes/:recipeId" component="page-recipe" beforeEnter={() => this.requireLogin()} />
-
-          <ion-route url="/settings" component="page-settings" beforeEnter={() => this.requireLogin()}>
-            <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
-            <ion-route url="/preferences" component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
-            <ion-route url="/searches" component="tab-settings-searches" beforeEnter={() => this.requireLogin()} />
-            <ion-route url="/security" component="tab-settings-security" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/recipes" component="tab-recipe" beforeEnter={() => this.requireLogin()}>
+            <ion-route url="/:recipeId" component="page-recipe" />
           </ion-route>
 
-          <ion-route url="/admin" component="page-admin" beforeEnter={() => this.requireAdmin()}>
-            <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
-            <ion-route url="/configuration" component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
-            <ion-route url="/users" component="tab-admin-users" beforeEnter={() => this.requireAdmin()} />
+          <ion-route-redirect from="/settings" to="/settings/preferences" />
+          <ion-route url="/settings" component="tab-settings" beforeEnter={() => this.requireLogin()}>
+            <ion-route component="page-settings">
+              <ion-route url="/preferences" component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
+              <ion-route url="/searches" component="tab-settings-searches" beforeEnter={() => this.requireLogin()} />
+              <ion-route url="/security" component="tab-settings-security" beforeEnter={() => this.requireLogin()} />
+            </ion-route>
+          </ion-route>
+
+          <ion-route-redirect from="/admin" to="/admin/configuration" />
+          <ion-route url="/admin" component="tab-admin" beforeEnter={() => this.requireAdmin()}>
+            <ion-route component="page-admin">
+              <ion-route url="/configuration" component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
+              <ion-route url="/users" component="tab-admin-users" beforeEnter={() => this.requireAdmin()} />
+            </ion-route>
           </ion-route>
         </ion-router>
 
@@ -125,7 +132,20 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-nav animated={false} ref={el => this.nav = el} />
+            <ion-tabs ref={el => this.tabs = el}>
+              <ion-tab tab="tab-login" component="page-login" />
+              <ion-tab tab="tab-home" component="page-home" />
+              <ion-tab tab="tab-search" component="page-search" />
+              <ion-tab tab="tab-recipe">
+                <ion-nav animated={false} />
+              </ion-tab>
+              <ion-tab tab="tab-settings">
+                <ion-nav animated={false} />
+              </ion-tab>
+              <ion-tab tab="tab-admin">
+                <ion-nav animated={false} />
+              </ion-tab>
+            </ion-tabs>
           </ion-content>
         </div>
       </ion-app>
@@ -224,10 +244,9 @@ export class AppRoot {
   private async performSearch() {
     state.searchPage = 1;
 
-    const activePage = await this.nav.getActive();
-    if (activePage?.component === 'page-search') {
+    const el = await this.getActiveComponent() as any;
+    if (el && typeof el.performSearch === 'function') {
       // If the active page is the search page, perform the search right away
-      const el = activePage.element as HTMLPageSearchElement;
       await el.performSearch();
     } else {
       // Otherwise, redirect to it
@@ -253,11 +272,26 @@ export class AppRoot {
     }
   }
 
+  private async getActiveComponent() {
+    const tabId = await this.tabs.getSelected();
+    if (tabId !== undefined) {
+      const tab = await this.tabs.getTab(tabId);
+      if (tab.component !== undefined) {
+        return tab.querySelector(tab.component.toString());
+      } else {
+        const nav = tab.querySelector('ion-nav');
+        const activePage = await nav.getActive();
+        return activePage?.element;
+      }
+    }
+
+    return undefined;
+  }
+
   private async onPageChanging() {
     this.menu.close();
     // Let the current page know it's being deactivated
-    const activePage = await this.nav.getActive();
-    const el = activePage?.element as any;
+    const el = await this.getActiveComponent() as any;
     if (el && typeof el.deactivatingCallback === 'function') {
       el.deactivatingCallback();
     }
@@ -275,8 +309,7 @@ export class AppRoot {
     }
 
     // Let the new page know it's been activated
-    const activePage = await this.nav.getActive();
-    const el = activePage?.element as any;
+    const el = await this.getActiveComponent() as any;
     if (el && typeof el.activatedCallback === 'function') {
       el.activatedCallback();
     }
