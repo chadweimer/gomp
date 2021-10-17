@@ -141,9 +141,11 @@ export class PageRecipe {
                               <ion-avatar slot="start">
                                 <img src={link.thumbnailUrl} />
                               </ion-avatar>
-                              <ion-router-link href={`/recipes/${link.id}`} color="dark">
-                                <ion-label>{link.name}</ion-label>
-                              </ion-router-link>
+                              <ion-label>
+                                <ion-router-link href={`/recipes/${link.id}`} color="dark">
+                                  {link.name}
+                                </ion-router-link>
+                              </ion-label>
                               <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
                                 <ion-icon slot="icon-only" icon="close-circle" />
                               </ion-button>
