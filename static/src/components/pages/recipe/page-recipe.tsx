@@ -139,7 +139,7 @@ export class PageRecipe {
                           {this.links.map(link =>
                             <ion-item lines="none">
                               <ion-avatar slot="start">
-                                <ion-img src={link.thumbnailUrl} />
+                                <img src={link.thumbnailUrl} />
                               </ion-avatar>
                               <ion-router-link href={`/recipes/${link.id}`} color="dark">
                                 <ion-label>{link.name}</ion-label>
