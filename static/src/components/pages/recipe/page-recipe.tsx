@@ -82,7 +82,7 @@ export class PageRecipe {
                   <ion-card-content>
                     <ion-item lines="none">
                       <ion-avatar slot="start" class="large">
-                        <img src={this.mainImage?.thumbnailUrl} />
+                        {this.mainImage?.thumbnailUrl ? <img src={this.mainImage?.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <div>
                         <h1>{this.recipe?.name}</h1>
@@ -139,7 +139,7 @@ export class PageRecipe {
                           {this.links.map(link =>
                             <ion-item lines="none">
                               <ion-avatar slot="start">
-                                <img src={link.thumbnailUrl} />
+                                {link.thumbnailUrl ? <img src={link.thumbnailUrl} /> : ''}
                               </ion-avatar>
                               <ion-label>
                                 <ion-router-link href={`/recipes/${link.id}`} color="dark">

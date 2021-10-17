@@ -56,7 +56,7 @@ export class RecipeLinkEditor {
                   {this.matchingRecipes.map(recipe =>
                     <ion-item>
                       <ion-avatar slot="start">
-                        <img src={recipe.thumbnailUrl} />
+                        {recipe.thumbnailUrl ? <img src={recipe.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <ion-label>{recipe.name}</ion-label>
                       <ion-radio slot="end" value={recipe.id} />
