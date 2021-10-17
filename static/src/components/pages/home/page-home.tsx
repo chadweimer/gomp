@@ -182,7 +182,7 @@ export class PageHome {
       ...filter
     };
     state.searchPage = 1;
-    await redirect('/recipes');
+    await redirect('/search');
   }
 
 }

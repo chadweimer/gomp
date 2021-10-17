@@ -562,7 +562,7 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
-        await redirect('/recipes');
+        await redirect('/search');
       }
     });
   }

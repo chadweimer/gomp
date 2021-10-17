@@ -29,25 +29,24 @@ export class AppRoot {
 
           <ion-route url="/" component="tab-home" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route-redirect from="/recipes" to="/search" />
           <ion-route url="/search" component="tab-search" beforeEnter={() => this.requireLogin()} />
 
           <ion-route url="/recipes" component="tab-recipe" beforeEnter={() => this.requireLogin()}>
             <ion-route url="/:recipeId" component="page-recipe" />
           </ion-route>
 
-          <ion-route-redirect from="/settings" to="/settings/preferences" />
           <ion-route url="/settings" component="tab-settings" beforeEnter={() => this.requireLogin()}>
             <ion-route component="page-settings">
+              <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
               <ion-route url="/preferences" component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
               <ion-route url="/searches" component="tab-settings-searches" beforeEnter={() => this.requireLogin()} />
               <ion-route url="/security" component="tab-settings-security" beforeEnter={() => this.requireLogin()} />
             </ion-route>
           </ion-route>
 
-          <ion-route-redirect from="/admin" to="/admin/configuration" />
           <ion-route url="/admin" component="tab-admin" beforeEnter={() => this.requireAdmin()}>
             <ion-route component="page-admin">
+              <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
               <ion-route url="/configuration" component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
               <ion-route url="/users" component="tab-admin-users" beforeEnter={() => this.requireAdmin()} />
             </ion-route>
@@ -61,7 +60,7 @@ export class AppRoot {
                 <ion-icon name="home" slot="start" />
                 <ion-label>Home</ion-label>
               </ion-item>
-              <ion-item href="/recipes" lines="full">
+              <ion-item href="/search" lines="full">
                 <ion-icon name="restaurant" slot="start" />
                 <ion-label>Recipes</ion-label>
                 <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
@@ -104,7 +103,7 @@ export class AppRoot {
               {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
                 <ion-buttons slot="end">
                   <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
-                  <ion-button href="/recipes" class="ion-hide-lg-down">
+                  <ion-button href="/search" class="ion-hide-lg-down">
                     Recipes
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
@@ -250,7 +249,7 @@ export class AppRoot {
       await el.performSearch();
     } else {
       // Otherwise, redirect to it
-      await redirect('/recipes');
+      await redirect('/search');
     }
   }
 
