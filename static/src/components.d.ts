@@ -35,7 +35,7 @@ export namespace Components {
     }
     interface PageSearch {
         "activatedCallback": () => Promise<void>;
-        "performSearch": () => Promise<void>;
+        "performSearch": (pageNum?: any) => Promise<void>;
     }
     interface PageSettings {
         "activatedCallback": () => Promise<void>;

@@ -68,11 +68,11 @@ export class PageSearch {
               </ion-col>
               <ion-col class="ion-hide-lg-down">
                 <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
                   <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {this.numPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
                 </ion-buttons>
               </ion-col>
               <ion-col class="ion-hide-lg-down" />
@@ -100,11 +100,11 @@ export class PageSearch {
             <ion-row>
               <ion-col>
                 <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.loadRecipes(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
                   <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {this.numPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.loadRecipes(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
                 </ion-buttons>
               </ion-col>
             </ion-row>
@@ -123,11 +123,11 @@ export class PageSearch {
   }
 
   @Method()
-  async performSearch() {
+  async performSearch(pageNum = null) {
     // Reset the scroll position when explicitly performing a new search
-    this.scrollTop = null;
+    this.scrollTop = 0;
 
-    await this.loadRecipes();
+    await this.loadRecipes(pageNum);
   }
 
   private async loadRecipes(pageNum = null) {
@@ -171,9 +171,8 @@ export class PageSearch {
       ...state.searchFilter,
       states: states
     };
-    state.searchPage = 1;
 
-    await this.performSearch();
+    await this.performSearch(1);
   }
 
   private async setSortBy(sortBy: SortBy) {
@@ -181,9 +180,8 @@ export class PageSearch {
       ...state.searchFilter,
       sortBy: sortBy
     };
-    state.searchPage = 1;
 
-    await this.performSearch();
+    await this.performSearch(1);
   }
 
   private async setSortDir(sortDir: SortDir) {
@@ -191,9 +189,8 @@ export class PageSearch {
       ...state.searchFilter,
       sortDir: sortDir
     };
-    state.searchPage = 1;
 
-    await this.performSearch();
+    await this.performSearch(1);
   }
 
   private async setViewMode(viewMode: SearchViewMode) {
@@ -201,9 +198,8 @@ export class PageSearch {
       ...state.searchSettings,
       viewMode: viewMode
     };
-    state.searchPage = 1;
 
-    await this.performSearch();
+    await this.performSearch(1);
   }
 
   private async saveNewRecipe(recipe: Recipe, formData: FormData) {
