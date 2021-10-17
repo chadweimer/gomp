@@ -30,16 +30,18 @@ plugins:
     enabled: true
 ratings:
   paths:
-  - "**.css"
-  - "**.inc"
-  - "**.ts"
-  - "**.js"
-  - "**.jsx"
-  - "**.go"
-  - "**.html"
+    - "**.css"
+    - "**.inc"
+    - "**.ts"
+    - "**.tsx"
+    - "**.js"
+    - "**.jsx"
+    - "**.go"
+    - "**.html"
 exclude_paths:
-- build/
-- db/migrations/
-- static/node_modules/
-- static/build/
-- vendor/
+  - build/
+  - db/migrations/
+  - static/node_modules/
+  - static/www/
+  - vendor/
+  - static/src/components.d.ts

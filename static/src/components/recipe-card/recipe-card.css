@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.image {
+  object-fit: cover;
+}
+.image.large {
+  height: 200px;
+  width: 100%;
+}
+.image.small {
+  height: 100px;
+  width: 100%;
+}
+
+.no-overflow {
+  overflow: hidden;
+}
