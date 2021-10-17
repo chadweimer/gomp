@@ -37,18 +37,18 @@ export class AppRoot {
 
           <ion-route url="/settings" component="tab-settings" beforeEnter={() => this.requireLogin()}>
             <ion-route component="page-settings">
-              <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
-              <ion-route url="/preferences" component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
-              <ion-route url="/searches" component="tab-settings-searches" beforeEnter={() => this.requireLogin()} />
-              <ion-route url="/security" component="tab-settings-security" beforeEnter={() => this.requireLogin()} />
+              <ion-route component="tab-settings-preferences" />
+              <ion-route url="/preferences" component="tab-settings-preferences" />
+              <ion-route url="/searches" component="tab-settings-searches" />
+              <ion-route url="/security" component="tab-settings-security" />
             </ion-route>
           </ion-route>
 
           <ion-route url="/admin" component="tab-admin" beforeEnter={() => this.requireAdmin()}>
             <ion-route component="page-admin">
-              <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
-              <ion-route url="/configuration" component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
-              <ion-route url="/users" component="tab-admin-users" beforeEnter={() => this.requireAdmin()} />
+              <ion-route component="tab-admin-configuration" />
+              <ion-route url="/configuration" component="tab-admin-configuration" />
+              <ion-route url="/users" component="tab-admin-users" />
             </ion-route>
           </ion-route>
         </ion-router>
