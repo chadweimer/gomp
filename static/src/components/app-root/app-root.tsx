@@ -82,7 +82,7 @@ export class AppRoot {
         </ion-menu>
 
         <div class="ion-page" id="main-content">
-          <ion-header>
+          <ion-header mode="md">
             <ion-toolbar color="primary">
               {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ?
                 <ion-buttons slot="start">
