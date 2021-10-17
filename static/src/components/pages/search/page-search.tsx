@@ -135,11 +135,6 @@ export class PageSearch {
     const defaultFilter = new DefaultSearchFilter();
     const filter = { ...defaultFilter, ...state.searchFilter };
 
-    this.recipes = [];
-    state.searchResultCount = null;
-    if (pageNum) {
-      state.searchPage = pageNum;
-    }
     try {
       const { total, recipes } = await RecipesApi.find(this.el, filter, state.searchPage, this.getRecipeCount());
       this.recipes = recipes ?? [];
@@ -148,6 +143,12 @@ export class PageSearch {
       this.numPages = Math.ceil(total / this.getRecipeCount());
     } catch (ex) {
       console.error(ex);
+      this.recipes = [];
+      state.searchResultCount = null;
+    } finally {
+      if (pageNum) {
+        state.searchPage = pageNum;
+      }
     }
   }
 
