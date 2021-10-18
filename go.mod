@@ -1,7 +1,7 @@
 module github.com/chadweimer/gomp
 
 require (
-	github.com/aws/aws-sdk-go v1.38.68
+	github.com/aws/aws-sdk-go v1.41.4
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.4
