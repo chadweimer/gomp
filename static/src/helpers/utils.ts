@@ -86,7 +86,7 @@ export async function showToast(message: string, duration = 2000) {
   toast.present();
 }
 
-export async function insertIfTabKey(e: KeyboardEvent) {
+export function insertIfTabKey(e: KeyboardEvent) {
   if (e.key === 'Tab') {
     e.preventDefault();
     
