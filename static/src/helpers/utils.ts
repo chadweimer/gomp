@@ -85,3 +85,23 @@ export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
   toast.present();
 }
+
+export function insertIfTabKey(textArea: HTMLTextAreaElement, e: KeyboardEvent) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    
+    const start = textArea.selectionStart;
+    const end = textArea.selectionEnd;
+    const curVal = textArea.value;
+
+    // set textarea value to: text before caret + tab + text after caret
+    textArea.value = `${curVal.substring(0, start)}\t${curVal.substring(end)}`;
+
+    // put caret at right position again
+    textArea.selectionStart = textArea.selectionEnd = start + 1;
+    
+    return true;
+  }
+  
+  return false;
+}
