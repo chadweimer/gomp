@@ -113,9 +113,12 @@ export class AppRoot {
                     : ''}
                   <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
                 </ion-buttons>,
-                <ion-item slot="end" lines="none">
+                <ion-item slot="end" lines="none" class="search">
                   <ion-icon icon="search" slot="start" />
-                  <ion-input type="search" placeholder="Search" value={state.searchFilter?.query} onKeyDown={e => this.onSearchKeyDown(e)} ref={el => this.searchBar = el} />
+                  <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
+                    onKeyDown={e => this.onSearchKeyDown(e)}
+                    onIonBlur={() => this.restoreSearchQuery()}
+                    ref={el => this.searchBar = el} />
                   <ion-buttons slot="end" class="ion-no-margin">
                     <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
                     <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
@@ -326,8 +329,16 @@ export class AppRoot {
     }
   }
 
+  private restoreSearchQuery() {
+    this.searchBar.value = state.searchFilter?.query ?? '';
+  }
+
   private async onSearchClearClicked() {
     state.searchFilter = new DefaultSearchFilter();
+
+    // Workaround for binding to empty string bug
+    this.restoreSearchQuery();
+
     await this.performSearch();
   }
 
@@ -351,6 +362,10 @@ export class AppRoot {
       const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
       if (resp.data?.dismissed === false) {
         state.searchFilter = resp.data.searchFilter;
+
+        // Workaround for binding to empty string bug
+        this.restoreSearchQuery();
+        
         await this.performSearch();
       }
     });
