@@ -787,6 +787,7 @@ export class PageRecipe {
             text: 'Yes',
             handler: async () => {
               await this.deleteImage(image);
+              await this.loadRecipe();
               await this.loadImages();
               return true;
             }
