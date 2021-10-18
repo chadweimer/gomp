@@ -90,7 +90,7 @@ export async function insertIfTabKey(e: KeyboardEvent) {
   if (e.key === 'Tab') {
     e.preventDefault();
     
-    const input = e.target as { selectionStart: number, selectionEnd: number, value: string };
+    const input = e.target as HTMLTextAreaElement | HTMLInputElement;
     const start = input.selectionStart;
     const end = input.selectionEnd;
     const curVal = input.value;
