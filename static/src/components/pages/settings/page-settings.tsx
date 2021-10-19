@@ -13,10 +13,10 @@ export class PageSettings {
   connectedCallback() {
     this.gesture = createGesture({
       el: this.el,
-      threshold: 100,
+      threshold: 50,
       gestureName: 'swipe',
       onEnd: e => {
-        if (Math.abs(e.velocityX) < 0.25) return
+        if (Math.abs(e.velocityX) < 0.2) return
 
         this.tabs.getSelected().then(selectedTab => {
           const swipeLeft = e.velocityX < 0;
