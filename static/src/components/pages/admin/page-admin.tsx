@@ -1,3 +1,4 @@
+import { createGesture, Gesture } from '@ionic/core';
 import { Component, Element, h } from '@stencil/core';
 
 @Component({
@@ -7,6 +8,40 @@ import { Component, Element, h } from '@stencil/core';
 export class PageAdmin {
   @Element() el!: HTMLPageAdminElement;
   private tabs!: HTMLIonTabsElement;
+  private gesture: Gesture;
+
+  connectedCallback() {
+    this.gesture = createGesture({
+      el: this.el,
+      threshold: 100,
+      gestureName: 'swipe',
+      onEnd: e => {
+        if (Math.abs(e.velocityX) < 0.25) return
+
+        this.tabs.getSelected().then(selectedTab => {
+          const swipeLeft = e.velocityX < 0;
+          switch (selectedTab) {
+            case 'tab-admin-configuration':
+              if (swipeLeft) {
+                this.tabs.select('tab-admin-users');
+              }
+              break;
+            case 'tab-admin-users':
+              if (!swipeLeft) {
+                this.tabs.select('tab-admin-configuration');
+              }
+              break;
+          }
+        });
+      }
+    });
+    this.gesture.enable();
+  }
+
+  disconnectedCallback() {
+    this.gesture.destroy();
+    this.gesture = null;
+  }
 
   render() {
     return (
