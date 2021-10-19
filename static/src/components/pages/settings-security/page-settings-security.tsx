@@ -28,11 +28,11 @@ export class PageSettingsSecurity {
                     <ion-card-content>
                       <ion-item>
                         <ion-label position="stacked">Email</ion-label>
-                        <ion-input type="email" value={state.currentUser.username} disabled />
+                        <ion-input type="email" value={state.currentUser?.username} disabled />
                       </ion-item>
                       <ion-item>
                         <ion-label position="stacked">Access Level</ion-label>
-                        <ion-input value={capitalizeFirstLetter(state.currentUser.accessLevel)} disabled />
+                        <ion-input value={capitalizeFirstLetter(state.currentUser?.accessLevel)} disabled />
                       </ion-item>
                       <ion-item>
                         <ion-label position="stacked">Current Password</ion-label>
