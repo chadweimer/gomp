@@ -1,5 +1,5 @@
-import { toastController } from '@ionic/core';
-import { AccessLevel, User, YesNoAny } from '../models';
+import { GestureDetail, toastController } from '@ionic/core';
+import { AccessLevel, SwipeDirection, User, YesNoAny } from '../models';
 
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
@@ -84,4 +84,16 @@ export async function enableBackForOverlay(presenter: () => Promise<void>) {
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
   toast.present();
+}
+
+export function getSwipe(e: GestureDetail) {
+  if (Math.abs(e.velocityX) < 0.4) {
+    return undefined
+  }
+
+  if (e.deltaX < 0) {
+    return SwipeDirection.Left;
+  }
+
+  return SwipeDirection.Right;
 }

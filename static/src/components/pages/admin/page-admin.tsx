@@ -1,5 +1,7 @@
 import { createGesture, Gesture } from '@ionic/core';
 import { Component, Element, h } from '@stencil/core';
+import { getSwipe } from '../../../helpers/utils';
+import { SwipeDirection } from '../../../models';
 
 @Component({
   tag: 'page-admin',
@@ -13,21 +15,21 @@ export class PageAdmin {
   connectedCallback() {
     this.gesture = createGesture({
       el: this.el,
-      threshold: 50,
+      threshold: 30,
       gestureName: 'swipe',
       onEnd: e => {
-        if (Math.abs(e.velocityX) < 0.2) return
+        const swipe = getSwipe(e);
+        if (!swipe) return
 
         this.tabs.getSelected().then(selectedTab => {
-          const swipeLeft = e.velocityX < 0;
           switch (selectedTab) {
             case 'tab-admin-configuration':
-              if (swipeLeft) {
+              if (swipe === SwipeDirection.Left) {
                 this.tabs.select('tab-admin-users');
               }
               break;
             case 'tab-admin-users':
-              if (!swipeLeft) {
+              if (swipe === SwipeDirection.Right) {
                 this.tabs.select('tab-admin-configuration');
               }
               break;

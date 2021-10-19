@@ -1,5 +1,7 @@
 import { createGesture, Gesture } from '@ionic/core';
 import { Component, Element, h } from '@stencil/core';
+import { getSwipe } from '../../../helpers/utils';
+import { SwipeDirection } from '../../../models';
 
 @Component({
   tag: 'page-settings',
@@ -13,28 +15,31 @@ export class PageSettings {
   connectedCallback() {
     this.gesture = createGesture({
       el: this.el,
-      threshold: 50,
+      threshold: 30,
       gestureName: 'swipe',
       onEnd: e => {
-        if (Math.abs(e.velocityX) < 0.2) return
+        const swipe = getSwipe(e);
+        if (!swipe) return
 
         this.tabs.getSelected().then(selectedTab => {
-          const swipeLeft = e.velocityX < 0;
           switch (selectedTab) {
             case 'tab-settings-preferences':
-              if (swipeLeft) {
+              if (swipe === SwipeDirection.Left) {
                 this.tabs.select('tab-settings-searches');
               }
               break;
             case 'tab-settings-searches':
-              if (swipeLeft) {
-                this.tabs.select('tab-settings-security');
-              } else {
-                this.tabs.select('tab-settings-preferences');
+              switch (swipe) {
+                case SwipeDirection.Left:
+                  this.tabs.select('tab-settings-security');
+                  break
+                case SwipeDirection.Right:
+                  this.tabs.select('tab-settings-preferences');
+                  break;
               }
               break;
             case 'tab-settings-security':
-              if (!swipeLeft) {
+              if (swipe === SwipeDirection.Right) {
                 this.tabs.select('tab-settings-searches');
               }
               break;
