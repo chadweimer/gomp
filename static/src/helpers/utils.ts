@@ -87,7 +87,7 @@ export async function showToast(message: string, duration = 2000) {
 }
 
 export function getSwipe(e: GestureDetail) {
-  if (Math.abs(e.velocityX) < 0.4) {
+  if (Math.abs(e.velocityX) < 0.1) {
     return undefined
   }
 
