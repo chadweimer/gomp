@@ -31,12 +31,12 @@ export class PageSearch {
         switch (swipe) {
           case SwipeDirection.Right:
             if (state.searchPage > 1) {
-              state.searchPage--;
+              this.performSearch(state.searchPage - 1);
             }
             break;
           case SwipeDirection.Left:
             if (state.searchPage < this.numPages) {
-              state.searchPage++;
+              this.performSearch(state.searchPage + 1);
             }
             break;
         }
