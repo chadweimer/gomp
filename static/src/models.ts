@@ -39,6 +39,11 @@ export enum SearchViewMode {
   List = 'list'
 }
 
+export enum SwipeDirection {
+  Left = 'left',
+  Right = 'right'
+}
+
 export class DefaultSearchFilter implements SearchFilter {
   constructor() {
     this.query = '';

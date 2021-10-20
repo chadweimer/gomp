@@ -1,8 +1,8 @@
-import { loadingController, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
+import { createGesture, Gesture, loadingController, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
+import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
+import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir, SwipeDirection } from '../../../models';
 import state from '../../../store';
 
 @Component({
@@ -15,8 +15,40 @@ export class PageSearch {
 
   @Element() el!: HTMLPageSearchElement;
   private content!: HTMLIonContentElement;
+  private gesture: Gesture;
 
   private scrollTop: number | null = null;
+
+  connectedCallback() {
+    this.gesture = createGesture({
+      el: this.el,
+      threshold: 30,
+      gestureName: 'swipe',
+      onEnd: e => {
+        const swipe = getSwipe(e);
+        if (!swipe) return
+
+        switch (swipe) {
+          case SwipeDirection.Right:
+            if (state.searchPage > 1) {
+              this.performSearch(state.searchPage - 1);
+            }
+            break;
+          case SwipeDirection.Left:
+            if (state.searchPage < this.numPages) {
+              this.performSearch(state.searchPage + 1);
+            }
+            break;
+        }
+      }
+    });
+    this.gesture.enable();
+  }
+
+  disconnectedCallback() {
+    this.gesture.destroy();
+    this.gesture = null;
+  }
 
   @Method()
   async activatedCallback() {
