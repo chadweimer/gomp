@@ -1,8 +1,8 @@
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
-import { loadingController, modalController } from '@ionic/core';
+import { modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
-import { hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
+import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import state from '../../../store';
 
 @Component({
@@ -144,16 +144,9 @@ export class PageHome {
       const newRecipeId = await RecipesApi.post(this.el, recipe);
 
       if (formData) {
-        const loading = await loadingController.create({
-          message: 'Uploading picture...',
-          animated: false,
-        });
-        await loading.present();
-        try {
-          await RecipesApi.postImage(this.el, newRecipeId, formData);
-        } finally {
-          await loading.dismiss();
-        }
+        await showLoading(
+          async () => await RecipesApi.postImage(this.el, newRecipeId, formData),
+          'Uploading picture...');
       }
 
       await redirect(`/recipes/${newRecipeId}`);

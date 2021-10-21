@@ -1,7 +1,7 @@
-import { createGesture, Gesture, loadingController, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
+import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
+import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir, SwipeDirection } from '../../../models';
 import state from '../../../store';
 
@@ -242,16 +242,9 @@ export class PageSearch {
       const newRecipeId = await RecipesApi.post(this.el, recipe);
 
       if (formData) {
-        const loading = await loadingController.create({
-          message: 'Uploading picture...',
-          animated: false,
-        });
-        await loading.present();
-        try {
-          await RecipesApi.postImage(this.el, newRecipeId, formData);
-        } finally {
-          await loading.dismiss();
-        }
+        await showLoading(
+          async () => await RecipesApi.postImage(this.el, newRecipeId, formData),
+          'Uploading picture...');
       }
 
       await redirect(`/recipes/${newRecipeId}`);
