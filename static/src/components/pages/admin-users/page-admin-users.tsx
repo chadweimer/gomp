@@ -110,14 +110,12 @@ export class PageAdminUsers {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'user-editor',
+        componentProps: {
+          user: user
+        },
         animated: false,
       });
       await modal.present();
-
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('user-editor').user = user;
 
       const resp = await modal.onDidDismiss<{ user: User }>();
       if (resp.data) {

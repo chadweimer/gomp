@@ -348,16 +348,12 @@ export class AppRoot {
         component: 'search-filter-editor',
         componentProps: {
           prompt: 'Search',
-          showName: false
+          showName: false,
+          searchFilter: state.searchFilter
         },
         animated: false,
       });
       await modal.present();
-
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
 
       const resp = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (resp.data) {

@@ -120,18 +120,13 @@ export class PageSettingsSearches {
       const modal = await modalController.create({
         component: 'search-filter-editor',
         componentProps: {
-          prompt: 'Edit Search'
+          prompt: 'Edit Search',
+          name: searchFilter.name,
+          searchFilter: searchFilter
         },
         animated: false,
       });
       await modal.present();
-
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      const editor = modal.querySelector('search-filter-editor');
-      editor.searchFilter = searchFilter;
-      editor.name = searchFilter.name;
 
       const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
       if (resp.data) {
