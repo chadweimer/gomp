@@ -3,7 +3,7 @@ import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UsersApi } from '../../../helpers/api';
 import { enableBackForOverlay, showToast } from '../../../helpers/utils';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-searches',

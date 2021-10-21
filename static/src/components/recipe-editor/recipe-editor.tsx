@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 import { Recipe } from '../../models';
-import state from '../../store';
+import state from '../../stores/state';
 
 @Component({
   tag: 'recipe-editor',

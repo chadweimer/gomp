@@ -1,7 +1,7 @@
 import { Component, Element, h, State } from '@stencil/core';
 import { AuthApi } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-login',

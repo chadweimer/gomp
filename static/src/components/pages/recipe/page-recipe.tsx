@@ -3,7 +3,7 @@ import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core'
 import { NotesApi, RecipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-recipe',

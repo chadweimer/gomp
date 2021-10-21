@@ -2,8 +2,9 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect, enableBackForOverlay } from '../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, DefaultSearchSettings, SearchFilter } from '../../models';
-import state from '../../store';
+import { AccessLevel, DefaultSearchFilter, SearchFilter } from '../../models';
+import appConfig from '../../stores/config';
+import state, { clearState } from '../../stores/state';
 
 @Component({
   tag: 'app-root',
@@ -83,7 +84,7 @@ export class AppRoot {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {state.appInfo.version}. Copyright © 2016-2021 Chad Weimer</div>
+            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. Copyright © 2016-2021 Chad Weimer</div>
           </ion-footer>
         </ion-menu>
 
@@ -97,7 +98,7 @@ export class AppRoot {
                 : ''}
 
               <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>
-                <ion-router-link href="/" class="contrast">{state.appConfig.title}</ion-router-link>
+                <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
               {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
@@ -183,10 +184,10 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      state.appInfo = await AppApi.getInfo(this.el);
-      state.appConfig = await AppApi.getConfiguration(this.el);
+      appConfig.info = await AppApi.getInfo(this.el);
+      appConfig.config = await AppApi.getConfiguration(this.el);
 
-      document.title = state.appConfig.title;
+      document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
       if (appName) {
         appName.setAttribute('content', document.title);
@@ -201,13 +202,7 @@ export class AppRoot {
   }
 
   private async logout() {
-    state.jwtToken = null;
-    state.currentUser = null;
-    state.currentUserSettings = null;
-    state.searchFilter = new DefaultSearchFilter();
-    state.searchSettings = new DefaultSearchSettings();
-    state.searchPage = 1;
-    state.searchResultCount = null;
+    clearState();
     await redirect('/login');
   }
 

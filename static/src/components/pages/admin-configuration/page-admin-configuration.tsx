@@ -2,7 +2,7 @@ import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { AppApi } from '../../../helpers/api';
 import { showToast } from '../../../helpers/utils';
 import { AppConfiguration } from '../../../models';
-import state from '../../../store';
+import appConfig from '../../../stores/config';
 
 @Component({
   tag: 'page-admin-configuration',
@@ -71,7 +71,7 @@ export class PageAdminConfiguration {
 
     try {
       await AppApi.putConfiguration(this.el, this.appConfig);
-      state.appConfig = this.appConfig;
+      appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save configuration.');

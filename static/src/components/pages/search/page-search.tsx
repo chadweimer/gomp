@@ -3,7 +3,7 @@ import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir, SwipeDirection } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-search',

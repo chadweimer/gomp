@@ -2,7 +2,7 @@ import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UploadsApi, UsersApi } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/utils';
 import { UserSettings } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-preferences',
