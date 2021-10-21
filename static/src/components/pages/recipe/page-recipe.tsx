@@ -407,9 +407,11 @@ export class PageRecipe {
         animated: false,
       });
       await loading.present();
-
-      await RecipesApi.postImage(this.el, this.recipeId, formData);
-      await loading.dismiss();
+      try {
+        await RecipesApi.postImage(this.el, this.recipeId, formData);
+      } finally {
+        await loading.dismiss();
+      }
     } catch (ex) {
       console.error(ex);
       showToast('Failed to upload picture.');

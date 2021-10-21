@@ -93,17 +93,18 @@ export class PageSettingsPreferences {
         animated: false,
       });
       await loading.present();
-
-      const location = await UploadsApi.post(this.el, new FormData(this.imageForm));
-      this.settings = {
-        ...this.settings,
-        homeImageUrl: location
+      try {
+        const location = await UploadsApi.post(this.el, new FormData(this.imageForm));
+        this.settings = {
+          ...this.settings,
+          homeImageUrl: location
+        }
+      } finally {
+        await loading.dismiss();
       }
 
       // Clear the form
       this.imageInput.value = '';
-
-      await loading.dismiss();
     }
 
     this.saveUserSettings();

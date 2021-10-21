@@ -149,9 +149,11 @@ export class PageHome {
           animated: false,
         });
         await loading.present();
-
-        await RecipesApi.postImage(this.el, newRecipeId, formData);
-        await loading.dismiss();
+        try {
+          await RecipesApi.postImage(this.el, newRecipeId, formData);
+        } finally {
+          await loading.dismiss();
+        }
       }
 
       await redirect(`/recipes/${newRecipeId}`);
