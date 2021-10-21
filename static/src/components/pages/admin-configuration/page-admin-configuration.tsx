@@ -9,7 +9,9 @@ import state from '../../../store';
   styleUrl: 'page-admin-configuration.css',
 })
 export class PageAdminConfiguration {
-  @State() appTitle = 'GOMP: Go Meal Planner';
+  @State() appConfig: AppConfiguration = {
+    title: 'GOMP: Go Meal Planner'
+  };
 
   @Element() el!: HTMLPageAdminConfigurationElement;
   private appConfigForm!: HTMLFormElement;
@@ -31,7 +33,7 @@ export class PageAdminConfiguration {
                     <ion-card-content>
                       <ion-item>
                         <ion-label position="stacked">Application Title</ion-label>
-                        <ion-input value={this.appTitle} onIonChange={e => this.appTitle = e.detail.value} required />
+                        <ion-input value={this.appConfig.title} onIonChange={e => this.appConfig = { ...this.appConfig, title: e.detail.value }} required />
                       </ion-item>
                     </ion-card-content>
                     <ion-footer>
@@ -56,8 +58,7 @@ export class PageAdminConfiguration {
 
   private async loadAppConfiguration() {
     try {
-      const appConfig = await AppApi.getConfiguration(this.el);
-      this.appTitle = appConfig.title;
+      this.appConfig = await AppApi.getConfiguration(this.el);
     } catch (ex) {
       console.error(ex);
     }
@@ -69,11 +70,8 @@ export class PageAdminConfiguration {
     }
 
     try {
-      const appConfig: AppConfiguration = {
-        title: this.appTitle
-      };
-      await AppApi.putConfiguration(this.el, appConfig);
-      state.appConfig = appConfig;
+      await AppApi.putConfiguration(this.el, this.appConfig);
+      state.appConfig = this.appConfig;
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save configuration.');
