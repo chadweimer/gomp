@@ -1,7 +1,6 @@
-import { loadingController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UploadsApi, UsersApi } from '../../../helpers/api';
-import { showToast } from '../../../helpers/utils';
+import { showLoading, showToast } from '../../../helpers/utils';
 import { UserSettings } from '../../../models';
 import state from '../../../store';
 
@@ -41,6 +40,9 @@ export class PageSettingsPreferences {
                           <ion-label position="stacked">Home Image</ion-label>
                           <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
                         </form>
+                        <ion-thumbnail>
+                          <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={!this.settings?.homeImageUrl} />
+                        </ion-thumbnail>
                       </ion-item>
                       <tags-input label="Favorite Tags" value={this.settings?.favoriteTags ?? []}
                         onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
@@ -88,22 +90,17 @@ export class PageSettingsPreferences {
     }
 
     if (this.imageInput.value) {
-      const loading = await loadingController.create({
-        message: 'Uploading image...',
-        animated: false,
-      });
-      await loading.present();
-
-      const location = await UploadsApi.post(this.el, new FormData(this.imageForm));
-      this.settings = {
-        ...this.settings,
-        homeImageUrl: location
-      }
+      await showLoading(
+        async () => {
+          this.settings = {
+            ...this.settings,
+            homeImageUrl: await UploadsApi.post(this.el, new FormData(this.imageForm))
+          }
+        },
+        'Uploading picture...');
 
       // Clear the form
       this.imageInput.value = '';
-
-      await loading.dismiss();
     }
 
     this.saveUserSettings();

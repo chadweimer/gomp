@@ -1,7 +1,7 @@
-import { actionSheetController, alertController, loadingController, modalController } from '@ionic/core';
+import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { NotesApi, RecipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../models';
 import state from '../../../store';
 
@@ -402,14 +402,9 @@ export class PageRecipe {
 
   private async uploadImage(formData: FormData) {
     try {
-      const loading = await loadingController.create({
-        message: 'Uploading picture...',
-        animated: false,
-      });
-      await loading.present();
-
-      await RecipesApi.postImage(this.el, this.recipeId, formData);
-      await loading.dismiss();
+      await showLoading(
+        async () => await RecipesApi.postImage(this.el, this.recipeId, formData),
+        'Uploading picture...');
     } catch (ex) {
       console.error(ex);
       showToast('Failed to upload picture.');

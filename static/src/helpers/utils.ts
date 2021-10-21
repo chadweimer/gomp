@@ -1,4 +1,4 @@
-import { GestureDetail, toastController } from '@ionic/core';
+import { GestureDetail, loadingController, toastController } from '@ionic/core';
 import { AccessLevel, SwipeDirection, User, YesNoAny } from '../models';
 
 export function formatDate(dateStr: string) {
@@ -81,11 +81,6 @@ export async function enableBackForOverlay(presenter: () => Promise<void>) {
   }
 }
 
-export async function showToast(message: string, duration = 2000) {
-  const toast = await toastController.create({ message, duration });
-  toast.present();
-}
-
 export function getSwipe(e: GestureDetail) {
   if (Math.abs(e.velocityX) < 0.1) {
     return undefined
@@ -96,4 +91,22 @@ export function getSwipe(e: GestureDetail) {
   }
 
   return SwipeDirection.Right;
+}
+
+export async function showToast(message: string, duration = 2000) {
+  const toast = await toastController.create({ message, duration });
+  toast.present();
+}
+
+export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
+  const loading = await loadingController.create({
+    message: message,
+    animated: false,
+  });
+  await loading.present();
+  try {
+    await action();
+  } finally {
+    await loading.dismiss();
+  }
 }
