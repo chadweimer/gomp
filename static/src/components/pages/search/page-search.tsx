@@ -269,8 +269,8 @@ export class PageSearch {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ recipe: Recipe, formData: FormData }>();
+      if (resp.data) {
         await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
       }
     });

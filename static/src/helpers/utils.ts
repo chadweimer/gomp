@@ -5,17 +5,6 @@ export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
 }
 
-export function configureModalAutofocus(el: HTMLElement) {
-  el.closest('ion-modal')?.addEventListener('focus', performAutofocus);
-}
-function performAutofocus(this: HTMLIonModalElement) {
-  const focusEl = this.querySelector('[autofocus]');
-  if (focusEl instanceof HTMLElement) {
-    focusEl.focus();
-  }
-  this.removeEventListener('focus', performAutofocus);
-}
-
 export function hasAccessLevel(user: User | null | undefined, accessLevel: AccessLevel) {
   if (!user) {
     return false;
@@ -91,6 +80,25 @@ export function getSwipe(e: GestureDetail) {
   }
 
   return SwipeDirection.Right;
+}
+
+export function getContainingModal(el: HTMLElement) {
+  return el.closest('ion-modal');
+}
+
+export function configureModalAutofocus(el: HTMLElement) {
+  const performAutofocus = () => {
+    const focusEl = el.querySelector('[autofocus]');
+    if (focusEl instanceof HTMLElement) {
+      focusEl.focus();
+    }
+    el.removeEventListener('focus', performAutofocus);
+  };
+  getContainingModal(el)?.addEventListener('focus', performAutofocus);
+}
+
+export async function dismissContainingModal(el: HTMLElement, data?: any) {
+  return getContainingModal(el).dismiss(data);
 }
 
 export async function showToast(message: string, duration = 2000) {

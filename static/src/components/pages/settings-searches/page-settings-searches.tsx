@@ -101,8 +101,8 @@ export class PageSettingsSearches {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
+      if (resp.data) {
         await this.saveNewSearchFilter({
           ...resp.data.searchFilter,
           name: resp.data.name,
@@ -133,8 +133,8 @@ export class PageSettingsSearches {
       editor.searchFilter = searchFilter;
       editor.name = searchFilter.name;
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
+      if (resp.data) {
         await this.saveExistingSearchFilter({
           ...searchFilter,
           ...resp.data.searchFilter,

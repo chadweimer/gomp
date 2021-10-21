@@ -98,8 +98,8 @@ export class PageAdminUsers {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ user: User, password: string }>();
+      if (resp.data) {
         await this.saveNewUser(resp.data.user, resp.data.password);
         await this.loadUsers();
       }
@@ -119,8 +119,8 @@ export class PageAdminUsers {
       // instead of using component props
       modal.querySelector('user-editor').user = user;
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ user: User }>();
+      if (resp.data) {
         await this.saveExistingUser({
           ...user,
           ...resp.data.user

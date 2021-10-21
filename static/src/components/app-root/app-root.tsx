@@ -359,13 +359,13 @@ export class AppRoot {
       // instead of using component props
       modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
+      if (resp.data) {
         state.searchFilter = resp.data.searchFilter;
 
         // Workaround for binding to empty string bug
         this.restoreSearchQuery();
-        
+
         await this.performSearch();
       }
     });
