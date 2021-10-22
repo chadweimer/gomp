@@ -118,3 +118,35 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
     await loading.dismiss();
   }
 }
+
+export async function getActiveComponent(tabs: HTMLIonTabsElement) {
+  const tabId = await tabs.getSelected();
+  if (tabId !== undefined) {
+    const tab = await tabs.getTab(tabId);
+    if (tab.component !== undefined) {
+      return tab.querySelector(tab.component.toString());
+    } else {
+      const nav = tab.querySelector('ion-nav');
+      const activePage = await nav.getActive();
+      return activePage?.element;
+    }
+  }
+
+  return undefined;
+}
+
+export async function sendActivatedCallback(tabs: HTMLIonTabsElement) {
+  // Let the current page know it's being deactivated
+  const el = await getActiveComponent(tabs) as any;
+  if (el && typeof el.activatedCallback === 'function') {
+    el.activatedCallback();
+  }
+}
+
+export async function sendDeactivatingCallback(tabs: HTMLIonTabsElement) {
+  // Let the current page know it's being deactivated
+  const el = await getActiveComponent(tabs) as any;
+  if (el && typeof el.deactivatingCallback === 'function') {
+    el.deactivatingCallback();
+  }
+}

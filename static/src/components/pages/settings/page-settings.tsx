@@ -1,6 +1,6 @@
 import { createGesture, Gesture } from '@ionic/core';
 import { Component, Element, h } from '@stencil/core';
-import { getSwipe } from '../../../helpers/utils';
+import { getSwipe, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
 import { SwipeDirection } from '../../../models';
 
 @Component({
@@ -57,7 +57,7 @@ export class PageSettings {
 
   render() {
     return (
-      <ion-tabs onIonTabsWillChange={() => this.onTabsChanging()} onIonTabsDidChange={() => this.onTabsChanged()} ref={el => this.tabs = el}>
+      <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)} onIonTabsDidChange={() => sendActivatedCallback(this.tabs)} ref={el => this.tabs = el}>
         <ion-tab tab="tab-settings-preferences" component="page-settings-preferences" />
         <ion-tab tab="tab-settings-searches" component="page-settings-searches" />
         <ion-tab tab="tab-settings-security" component="page-settings-security" />
@@ -78,31 +78,5 @@ export class PageSettings {
         </ion-tab-bar>
       </ion-tabs>
     );
-  }
-
-  private async getActiveComponent() {
-    const tabId = await this.tabs.getSelected();
-    if (tabId !== undefined) {
-      const tab = await this.tabs.getTab(tabId);
-      return tab.querySelector(tab.component.toString());
-    }
-
-    return undefined;
-  }
-
-  private async onTabsChanging() {
-    // Let the current page know it's being deactivated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.deactivatingCallback === 'function') {
-      el.deactivatingCallback();
-    }
-  }
-
-  private async onTabsChanged() {
-    // Let the new page know it's been activated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.activatedCallback === 'function') {
-      el.activatedCallback();
-    }
   }
 }

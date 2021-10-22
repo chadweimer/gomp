@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay } from '../../helpers/utils';
+import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
 import { AccessLevel, DefaultSearchFilter, SearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
@@ -241,7 +241,7 @@ export class AppRoot {
   private async performSearch() {
     state.searchPage = 1;
 
-    const el = await this.getActiveComponent() as any;
+    const el = await getActiveComponent(this.tabs) as any;
     if (el && typeof el.performSearch === 'function') {
       // If the active page is the search page, perform the search right away
       await el.performSearch();
@@ -269,29 +269,10 @@ export class AppRoot {
     }
   }
 
-  private async getActiveComponent() {
-    const tabId = await this.tabs.getSelected();
-    if (tabId !== undefined) {
-      const tab = await this.tabs.getTab(tabId);
-      if (tab.component !== undefined) {
-        return tab.querySelector(tab.component.toString());
-      } else {
-        const nav = tab.querySelector('ion-nav');
-        const activePage = await nav.getActive();
-        return activePage?.element;
-      }
-    }
-
-    return undefined;
-  }
-
   private async onPageChanging() {
     this.menu.close();
     // Let the current page know it's being deactivated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.deactivatingCallback === 'function') {
-      el.deactivatingCallback();
-    }
+    await sendDeactivatingCallback(this.tabs);
   }
 
   private async onPageChanged() {
@@ -306,10 +287,7 @@ export class AppRoot {
     }
 
     // Let the new page know it's been activated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.activatedCallback === 'function') {
-      el.activatedCallback();
-    }
+    await sendActivatedCallback(this.tabs);
 
     await this.closeAllOverlays();
   }
