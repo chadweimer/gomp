@@ -8,9 +8,9 @@ import state from '../../../stores/state';
   styleUrl: 'page-login.css'
 })
 export class PageLogin {
-  @State() username: string | null;
-  @State() password: string | null;
-  @State() errorMessage: string | null;
+  @State() username = '';
+  @State() password = '';
+  @State() errorMessage = '';
 
   @Element() el!: HTMLPageLoginElement;
 
@@ -57,7 +57,7 @@ export class PageLogin {
 
   private async onLoginClicked() {
     try {
-      this.errorMessage = null;
+      this.errorMessage = '';
       const token = await AuthApi.authenticate(this.el, this.username, this.password);
 
       // Store the token so we stay logged in

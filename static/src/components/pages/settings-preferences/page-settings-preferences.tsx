@@ -14,7 +14,7 @@ export class PageSettingsPreferences {
   @Element() el!: HTMLPageSettingsPreferencesElement;
   private settingsForm!: HTMLFormElement;
   private imageForm!: HTMLFormElement;
-  private imageInput!: HTMLInputElement | null;
+  private imageInput!: HTMLInputElement;
 
   @Method()
   async activatedCallback() {

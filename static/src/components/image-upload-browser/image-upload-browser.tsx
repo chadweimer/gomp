@@ -7,8 +7,8 @@ import { configureModalAutofocus, dismissContainingModal } from '../../helpers/u
 })
 export class ImageUploadBrowser {
   @Element() el!: HTMLImageUploadBrowserElement;
-  private imageForm!: HTMLFormElement | null;
-  private imageInput!: HTMLInputElement | null;
+  private imageForm!: HTMLFormElement;
+  private imageInput!: HTMLInputElement;
 
   connectedCallback() {
     configureModalAutofocus(this.el);

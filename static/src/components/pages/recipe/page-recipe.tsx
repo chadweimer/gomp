@@ -442,41 +442,17 @@ export class PageRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        {
-          text: 'Delete',
-          icon: 'trash',
-          role: 'destructive'
-        },
+        { text: 'Delete', icon: 'trash', role: 'destructive' },
         {
           text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
           icon: 'archive',
           role: 'archive'
         },
-        {
-          text: 'Add Link',
-          icon: 'link',
-          role: 'link'
-        },
-        {
-          text: 'Upload Picture',
-          icon: 'camera',
-          role: 'image'
-        },
-        {
-          text: 'Add Note',
-          icon: 'chatbox',
-          role: 'note'
-        },
-        {
-          text: 'Edit',
-          icon: 'create',
-          role: 'edit'
-        },
-        {
-          text: 'Cancel',
-          icon: 'close',
-          role: 'cancel'
-        }
+        { text: 'Add Link', icon: 'link', role: 'link' },
+        { text: 'Upload Picture', icon: 'camera', role: 'image' },
+        { text: 'Add Note', icon: 'chatbox', role: 'note' },
+        { text: 'Edit', icon: 'create', role: 'edit' },
+        { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
       animated: false,
     });
@@ -675,7 +651,7 @@ export class PageRecipe {
     });
   }
 
-  private async onEditNoteClicked(note: Note | null) {
+  private async onEditNoteClicked(note: Note) {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'note-editor',

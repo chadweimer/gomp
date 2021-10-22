@@ -106,7 +106,7 @@ export class PageAdminUsers {
     });
   }
 
-  private async onEditUserClicked(user: User | null) {
+  private async onEditUserClicked(user: User) {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'user-editor',

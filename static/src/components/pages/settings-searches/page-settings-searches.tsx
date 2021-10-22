@@ -10,7 +10,7 @@ import state from '../../../stores/state';
   styleUrl: 'page-settings-searches.css',
 })
 export class PageSettingsSearches {
-  @State() filters: SavedSearchFilterCompact[] | null;
+  @State() filters: SavedSearchFilterCompact[] = [];
 
   @Element() el!: HTMLPageSettingsSearchesElement;
 
@@ -57,7 +57,7 @@ export class PageSettingsSearches {
 
   private async loadSearchFilters() {
     try {
-      this.filters = await UsersApi.getAllSearchFilters(this.el);
+      this.filters = await UsersApi.getAllSearchFilters(this.el) ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -113,7 +113,7 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact | null) {
+  private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
       const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
 

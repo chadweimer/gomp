@@ -15,8 +15,8 @@ export class RecipeEditor {
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
-  private imageForm!: HTMLFormElement | null;
-  private imageInput!: HTMLInputElement | null;
+  private imageForm!: HTMLFormElement;
+  private imageInput!: HTMLInputElement;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
