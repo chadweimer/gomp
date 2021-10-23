@@ -141,6 +141,10 @@ ion-grid.no-pad {
   --ion-grid-column-padding: 0px;
 }
 
+ion-content::part(scroll) {
+  touch-action: pan-y pinch-zoom;
+}
+
 @media (max-width: 991.98px) {
   .justify-content-center-lg-down {
     justify-content: center !important;
