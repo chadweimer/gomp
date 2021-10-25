@@ -98,6 +98,10 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
+* {
+    user-select: auto !important;
+}
+
 .contrast {
   --color: var(--ion-color-contrast);
 }
