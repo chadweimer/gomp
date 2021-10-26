@@ -3,7 +3,7 @@ import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core'
 import { NotesApi, RecipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-recipe',
@@ -442,41 +442,17 @@ export class PageRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        {
-          text: 'Delete',
-          icon: 'trash',
-          role: 'destructive'
-        },
+        { text: 'Delete', icon: 'trash', role: 'destructive' },
         {
           text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
           icon: 'archive',
           role: 'archive'
         },
-        {
-          text: 'Add Link',
-          icon: 'link',
-          role: 'link'
-        },
-        {
-          text: 'Upload Picture',
-          icon: 'camera',
-          role: 'image'
-        },
-        {
-          text: 'Add Note',
-          icon: 'chatbox',
-          role: 'note'
-        },
-        {
-          text: 'Edit',
-          icon: 'create',
-          role: 'edit'
-        },
-        {
-          text: 'Cancel',
-          icon: 'close',
-          role: 'cancel'
-        }
+        { text: 'Add Link', icon: 'link', role: 'link' },
+        { text: 'Upload Picture', icon: 'camera', role: 'image' },
+        { text: 'Add Note', icon: 'chatbox', role: 'note' },
+        { text: 'Edit', icon: 'create', role: 'edit' },
+        { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
       animated: false,
     });
@@ -523,8 +499,8 @@ export class PageRecipe {
       // instead of using component props
       modal.querySelector('recipe-editor').recipe = this.recipe;
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ recipe: Recipe }>();
+      if (resp.data) {
         await this.saveRecipe({
           ...this.recipe,
           ...resp.data.recipe
@@ -625,8 +601,8 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipeId: number }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ recipeId: number }>();
+      if (resp.data) {
         await this.addLink(resp.data.recipeId);
         await this.loadLinks();
       }
@@ -667,15 +643,15 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ note: Note }>();
+      if (resp.data) {
         await this.saveNewNote(resp.data.note);
         await this.loadNotes();
       }
     });
   }
 
-  private async onEditNoteClicked(note: Note | null) {
+  private async onEditNoteClicked(note: Note) {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'note-editor',
@@ -688,8 +664,8 @@ export class PageRecipe {
       // instead of using component props
       modal.querySelector('note-editor').note = note;
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, note: Note }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ note: Note }>();
+      if (resp.data) {
         await this.saveExistingNote({
           ...note,
           ...resp.data.note
@@ -732,8 +708,8 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, formData: FormData }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ formData: FormData }>();
+      if (resp.data) {
         await this.uploadImage(resp.data.formData);
         await this.loadRecipe();
         await this.loadImages();

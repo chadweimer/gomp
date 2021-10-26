@@ -3,7 +3,7 @@ import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, 
 import { modalController } from '@ionic/core';
 import { RecipesApi, UsersApi } from '../../../helpers/api';
 import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-home',
@@ -165,8 +165,8 @@ export class PageHome {
 
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ recipe: Recipe, formData: FormData }>();
+      if (resp.data) {
         await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
       }
     });

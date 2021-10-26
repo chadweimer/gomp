@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { capitalizeFirstLetter, configureModalAutofocus, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
+import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
 import { DefaultSearchFilter, RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../models';
-import state from '../../store';
+import state from '../../stores/state';
 
 @Component({
   tag: 'search-filter-editor',
@@ -101,17 +101,14 @@ export class SearchFilterEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
+    dismissContainingModal(this.el, {
       name: this.name,
       searchFilter: this.searchFilter
     });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 
   private onResetClicked() {

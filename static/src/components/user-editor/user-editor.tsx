@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { capitalizeFirstLetter, configureModalAutofocus } from '../../helpers/utils';
+import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 import { AccessLevel, User } from '../../models';
 
 @Component({
@@ -87,22 +87,16 @@ export class UserEditor {
         return;
       }
 
-      this.el.closest('ion-modal').dismiss({
-        dismissed: false,
+      dismissContainingModal(this.el, {
         user: this.user,
         password: this.password
       });
     } else {
-      this.el.closest('ion-modal').dismiss({
-        dismissed: false,
-        user: this.user
-      });
+      dismissContainingModal(this.el, { user: this.user });
     }
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 }

@@ -18,12 +18,13 @@
     "eamodio.gitlens",
     "editorconfig.editorconfig",
     "eg2.vscode-npm-script",
+    "formulahendry.auto-rename-tag",
     "golang.go",
     "justinribeiro.polymer2snippets",
     "ms-azuretools.vscode-docker",
-    "polymer.polymer-ide",
     "redhat.vscode-yaml",
-    "spmeesseman.vscode-taskexplorer"
+    "spmeesseman.vscode-taskexplorer",
+    "visualstudioexptteam.vscodeintellicode"
   ],
   "forwardPorts": [
     5000

@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipesApi } from '../../helpers/api';
-import { configureModalAutofocus } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 import { DefaultSearchFilter, RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../models';
 
 @Component({
@@ -103,15 +103,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
-      recipeId: this.selectedRecipeId
-    });
+    dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 }

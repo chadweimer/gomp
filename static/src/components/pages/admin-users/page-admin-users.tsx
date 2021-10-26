@@ -98,29 +98,27 @@ export class PageAdminUsers {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User, password: string }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ user: User, password: string }>();
+      if (resp.data) {
         await this.saveNewUser(resp.data.user, resp.data.password);
         await this.loadUsers();
       }
     });
   }
 
-  private async onEditUserClicked(user: User | null) {
+  private async onEditUserClicked(user: User) {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'user-editor',
+        componentProps: {
+          user: user
+        },
         animated: false,
       });
       await modal.present();
 
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('user-editor').user = user;
-
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, user: User }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ user: User }>();
+      if (resp.data) {
         await this.saveExistingUser({
           ...user,
           ...resp.data.user

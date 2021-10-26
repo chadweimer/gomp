@@ -3,14 +3,14 @@ import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UsersApi } from '../../../helpers/api';
 import { enableBackForOverlay, showToast } from '../../../helpers/utils';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-searches',
   styleUrl: 'page-settings-searches.css',
 })
 export class PageSettingsSearches {
-  @State() filters: SavedSearchFilterCompact[] | null;
+  @State() filters: SavedSearchFilterCompact[] = [];
 
   @Element() el!: HTMLPageSettingsSearchesElement;
 
@@ -57,7 +57,7 @@ export class PageSettingsSearches {
 
   private async loadSearchFilters() {
     try {
-      this.filters = await UsersApi.getAllSearchFilters(this.el);
+      this.filters = await UsersApi.getAllSearchFilters(this.el) ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -101,8 +101,8 @@ export class PageSettingsSearches {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
+      if (resp.data) {
         await this.saveNewSearchFilter({
           ...resp.data.searchFilter,
           name: resp.data.name,
@@ -113,28 +113,23 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact | null) {
+  private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
       const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
         componentProps: {
-          prompt: 'Edit Search'
+          prompt: 'Edit Search',
+          name: searchFilter.name,
+          searchFilter: searchFilter
         },
         animated: false,
       });
       await modal.present();
 
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      const editor = modal.querySelector('search-filter-editor');
-      editor.searchFilter = searchFilter;
-      editor.name = searchFilter.name;
-
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, name: string, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
+      if (resp.data) {
         await this.saveExistingSearchFilter({
           ...searchFilter,
           ...resp.data.searchFilter,

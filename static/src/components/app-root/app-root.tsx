@@ -1,9 +1,10 @@
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AppApi, UsersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay } from '../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, DefaultSearchSettings, SearchFilter } from '../../models';
-import state from '../../store';
+import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
+import { AccessLevel, DefaultSearchFilter, SearchFilter } from '../../models';
+import appConfig from '../../stores/config';
+import state, { clearState } from '../../stores/state';
 
 @Component({
   tag: 'app-root',
@@ -83,7 +84,7 @@ export class AppRoot {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {state.appInfo.version}. Copyright © 2016-2021 Chad Weimer</div>
+            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. Copyright © 2016-2021 Chad Weimer</div>
           </ion-footer>
         </ion-menu>
 
@@ -97,7 +98,7 @@ export class AppRoot {
                 : ''}
 
               <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>
-                <ion-router-link href="/" class="contrast">{state.appConfig.title}</ion-router-link>
+                <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
               {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
@@ -183,10 +184,10 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      state.appInfo = await AppApi.getInfo(this.el);
-      state.appConfig = await AppApi.getConfiguration(this.el);
+      appConfig.info = await AppApi.getInfo(this.el);
+      appConfig.config = await AppApi.getConfiguration(this.el);
 
-      document.title = state.appConfig.title;
+      document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
       if (appName) {
         appName.setAttribute('content', document.title);
@@ -201,13 +202,7 @@ export class AppRoot {
   }
 
   private async logout() {
-    state.jwtToken = null;
-    state.currentUser = null;
-    state.currentUserSettings = null;
-    state.searchFilter = new DefaultSearchFilter();
-    state.searchSettings = new DefaultSearchSettings();
-    state.searchPage = 1;
-    state.searchResultCount = null;
+    clearState();
     await redirect('/login');
   }
 
@@ -246,7 +241,7 @@ export class AppRoot {
   private async performSearch() {
     state.searchPage = 1;
 
-    const el = await this.getActiveComponent() as any;
+    const el = await getActiveComponent(this.tabs) as any;
     if (el && typeof el.performSearch === 'function') {
       // If the active page is the search page, perform the search right away
       await el.performSearch();
@@ -274,29 +269,10 @@ export class AppRoot {
     }
   }
 
-  private async getActiveComponent() {
-    const tabId = await this.tabs.getSelected();
-    if (tabId !== undefined) {
-      const tab = await this.tabs.getTab(tabId);
-      if (tab.component !== undefined) {
-        return tab.querySelector(tab.component.toString());
-      } else {
-        const nav = tab.querySelector('ion-nav');
-        const activePage = await nav.getActive();
-        return activePage?.element;
-      }
-    }
-
-    return undefined;
-  }
-
   private async onPageChanging() {
     this.menu.close();
     // Let the current page know it's being deactivated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.deactivatingCallback === 'function') {
-      el.deactivatingCallback();
-    }
+    await sendDeactivatingCallback(this.tabs);
   }
 
   private async onPageChanged() {
@@ -311,10 +287,7 @@ export class AppRoot {
     }
 
     // Let the new page know it's been activated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.activatedCallback === 'function') {
-      el.activatedCallback();
-    }
+    await sendActivatedCallback(this.tabs);
 
     await this.closeAllOverlays();
   }
@@ -348,24 +321,20 @@ export class AppRoot {
         component: 'search-filter-editor',
         componentProps: {
           prompt: 'Search',
-          showName: false
+          showName: false,
+          searchFilter: state.searchFilter
         },
         animated: false,
       });
       await modal.present();
 
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
-
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
+      if (resp.data) {
         state.searchFilter = resp.data.searchFilter;
 
         // Workaround for binding to empty string bug
         this.restoreSearchQuery();
-        
+
         await this.performSearch();
       }
     });

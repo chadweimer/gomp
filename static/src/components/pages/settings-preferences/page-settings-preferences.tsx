@@ -2,7 +2,7 @@ import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UploadsApi, UsersApi } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/utils';
 import { UserSettings } from '../../../models';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-preferences',
@@ -14,7 +14,7 @@ export class PageSettingsPreferences {
   @Element() el!: HTMLPageSettingsPreferencesElement;
   private settingsForm!: HTMLFormElement;
   private imageForm!: HTMLFormElement;
-  private imageInput!: HTMLInputElement | null;
+  private imageInput!: HTMLInputElement;
 
   @Method()
   async activatedCallback() {

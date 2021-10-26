@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State } from '@stencil/core';
 import { UsersApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, showToast } from '../../../helpers/utils';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-security',

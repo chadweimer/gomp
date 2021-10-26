@@ -28,9 +28,7 @@ export class SortBySelector {
     );
   }
 
-
   private onSelectionChanged(e: CustomEvent<RadioGroupChangeEventDetail<SortBy>>): void {
     this.sortByChanged.emit(e.detail.value);
   }
-
 }
