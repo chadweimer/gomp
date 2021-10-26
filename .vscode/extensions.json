@@ -1,21 +1,21 @@
 {
-    // See http://go.microsoft.com/fwlink/?LinkId=827846
-    // for the documentation about the extensions.json format
-    "recommendations": [
-        "42crunch.vscode-openapi",
-        "bbenoist.vagrant",
-        "christian-kohler.npm-intellisense",
-        "davidanson.vscode-markdownlint",
-        "dbaeumer.vscode-eslint",
-        "eamodio.gitlens",
-        "editorconfig.editorconfig",
-        "eg2.vscode-npm-script",
-        "golang.go",
-        "justinribeiro.polymer2snippets",
-        "ms-azuretools.vscode-docker",
-        "ms-vscode-remote.remote-containers",
-        "polymer.polymer-ide",
-        "redhat.vscode-yaml",
-        "spmeesseman.vscode-taskexplorer"
-    ]
+  // See http://go.microsoft.com/fwlink/?LinkId=827846
+  // for the documentation about the extensions.json format
+  "recommendations": [
+    "42crunch.vscode-openapi",
+    "bbenoist.vagrant",
+    "christian-kohler.npm-intellisense",
+    "davidanson.vscode-markdownlint",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens",
+    "editorconfig.editorconfig",
+    "eg2.vscode-npm-script",
+    "formulahendry.auto-rename-tag",
+    "golang.go",
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+    "redhat.vscode-yaml",
+    "spmeesseman.vscode-taskexplorer",
+    "visualstudioexptteam.vscodeintellicode"
+  ]
 }

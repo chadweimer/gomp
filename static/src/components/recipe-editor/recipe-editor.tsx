@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { configureModalAutofocus } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 import { Recipe } from '../../models';
-import state from '../../store';
+import state from '../../stores/state';
 
 @Component({
   tag: 'recipe-editor',
@@ -15,8 +15,8 @@ export class RecipeEditor {
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
-  private imageForm!: HTMLFormElement | null;
-  private imageInput!: HTMLInputElement | null;
+  private imageForm!: HTMLFormElement;
+  private imageInput!: HTMLInputElement;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
@@ -88,16 +88,13 @@ export class RecipeEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
+    dismissContainingModal(this.el, {
       recipe: this.recipe,
       formData: this.imageInput?.value ? new FormData(this.imageForm) : null
     });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 }

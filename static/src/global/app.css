@@ -98,6 +98,10 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
+* {
+    user-select: auto !important;
+}
+
 .contrast {
   --color: var(--ion-color-contrast);
 }
@@ -139,6 +143,10 @@ p.single-line {
 ion-grid.no-pad {
   --ion-grid-padding: 0px;
   --ion-grid-column-padding: 0px;
+}
+
+ion-content::part(scroll) {
+  touch-action: pan-y pinch-zoom;
 }
 
 @media (max-width: 991.98px) {

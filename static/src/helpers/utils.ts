@@ -1,19 +1,8 @@
-import { toastController } from '@ionic/core';
-import { AccessLevel, User, YesNoAny } from '../models';
+import { GestureDetail, loadingController, toastController } from '@ionic/core';
+import { AccessLevel, SwipeDirection, User, YesNoAny } from '../models';
 
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
-}
-
-export function configureModalAutofocus(el: HTMLElement) {
-  el.closest('ion-modal')?.addEventListener('focus', performAutofocus);
-}
-function performAutofocus(this: HTMLIonModalElement) {
-  const focusEl = this.querySelector('[autofocus]');
-  if (focusEl instanceof HTMLElement) {
-    focusEl.focus();
-  }
-  this.removeEventListener('focus', performAutofocus);
 }
 
 export function hasAccessLevel(user: User | null | undefined, accessLevel: AccessLevel) {
@@ -81,7 +70,83 @@ export async function enableBackForOverlay(presenter: () => Promise<void>) {
   }
 }
 
+export function getSwipe(e: GestureDetail) {
+  if (Math.abs(e.velocityX) < 0.1) {
+    return undefined
+  }
+
+  if (e.deltaX < 0) {
+    return SwipeDirection.Left;
+  }
+
+  return SwipeDirection.Right;
+}
+
+export function getContainingModal(el: HTMLElement) {
+  return el.closest('ion-modal');
+}
+
+export function configureModalAutofocus(el: HTMLElement) {
+  const performAutofocus = () => {
+    const focusEl = el.querySelector('[autofocus]');
+    if (focusEl instanceof HTMLElement) {
+      focusEl.focus();
+    }
+    el.removeEventListener('focus', performAutofocus);
+  };
+  getContainingModal(el)?.addEventListener('focus', performAutofocus);
+}
+
+export async function dismissContainingModal(el: HTMLElement, data?: any) {
+  return getContainingModal(el).dismiss(data);
+}
+
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
   toast.present();
+}
+
+export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
+  const loading = await loadingController.create({
+    message: message,
+    animated: false,
+  });
+  await loading.present();
+  try {
+    await action();
+  } finally {
+    await loading.dismiss();
+  }
+}
+
+export async function getActiveComponent(tabs: HTMLIonTabsElement) {
+  const tabId = await tabs.getSelected();
+  if (tabId !== undefined) {
+    const tab = await tabs.getTab(tabId);
+    if (tab.component !== undefined) {
+      return tab.querySelector(tab.component.toString());
+    } else {
+      const nav = tab.querySelector('ion-nav');
+      const activePage = await nav.getActive();
+      return activePage?.element;
+    }
+  }
+
+  return undefined;
+}
+
+export async function sendActivatedCallback(tabs: HTMLIonTabsElement) {
+  // Let the current page know it's being deactivated
+  const el = await getActiveComponent(tabs) as any;
+  if (el && typeof el.activatedCallback === 'function') {
+    el.activatedCallback();
+  }
+}
+
+export async function sendDeactivatingCallback(tabs: HTMLIonTabsElement) {
+  // Let the current page know it's being deactivated
+  const el = await getActiveComponent(tabs) as any;
+  if (el && typeof el.deactivatingCallback === 'function') {
+    el.deactivatingCallback();
+  }
 }

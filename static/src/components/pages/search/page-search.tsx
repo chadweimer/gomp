@@ -1,9 +1,9 @@
-import { loadingController, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
+import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { RecipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
-import state from '../../../store';
+import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
+import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir, SwipeDirection } from '../../../models';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-search',
@@ -15,8 +15,40 @@ export class PageSearch {
 
   @Element() el!: HTMLPageSearchElement;
   private content!: HTMLIonContentElement;
+  private gesture: Gesture;
 
   private scrollTop: number | null = null;
+
+  connectedCallback() {
+    this.gesture = createGesture({
+      el: this.el,
+      threshold: 30,
+      gestureName: 'swipe',
+      onEnd: e => {
+        const swipe = getSwipe(e);
+        if (!swipe) return
+
+        switch (swipe) {
+          case SwipeDirection.Right:
+            if (state.searchPage > 1) {
+              this.performSearch(state.searchPage - 1);
+            }
+            break;
+          case SwipeDirection.Left:
+            if (state.searchPage < this.numPages) {
+              this.performSearch(state.searchPage + 1);
+            }
+            break;
+        }
+      }
+    });
+    this.gesture.enable();
+  }
+
+  disconnectedCallback() {
+    this.gesture.destroy();
+    this.gesture = null;
+  }
 
   @Method()
   async activatedCallback() {
@@ -210,14 +242,9 @@ export class PageSearch {
       const newRecipeId = await RecipesApi.post(this.el, recipe);
 
       if (formData) {
-        const loading = await loadingController.create({
-          message: 'Uploading picture...',
-          animated: false,
-        });
-        await loading.present();
-
-        await RecipesApi.postImage(this.el, newRecipeId, formData);
-        await loading.dismiss();
+        await showLoading(
+          async () => await RecipesApi.postImage(this.el, newRecipeId, formData),
+          'Uploading picture...');
       }
 
       await redirect(`/recipes/${newRecipeId}`);
@@ -242,8 +269,8 @@ export class PageSearch {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-      if (resp.data?.dismissed === false) {
+      const resp = await modal.onDidDismiss<{ recipe: Recipe, formData: FormData }>();
+      if (resp.data) {
         await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
       }
     });

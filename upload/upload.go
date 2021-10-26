@@ -2,7 +2,6 @@ package upload
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"image"
 	"net/http"
@@ -18,7 +17,7 @@ import (
 func Save(driver Driver, recipeID int64, imageName string, data []byte) (string, string, error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
-		return "", "", errors.New("attachment must be an image")
+		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)
 	}
 
 	// First decode the image
@@ -94,7 +93,7 @@ func isImageFile(data []byte) (bool, string) {
 	if strings.Index(contentType, "image/") != -1 {
 		return true, contentType
 	}
-	return false, ""
+	return false, contentType
 }
 
 func getImageFormat(contentType string) imaging.Format {

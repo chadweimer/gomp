@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { configureModalAutofocus } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 import { Note } from '../../models';
 
 @Component({
@@ -50,16 +50,11 @@ export class NoteEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
-      note: this.note
-    });
+    dismissContainingModal(this.el, { note: this.note });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 
 }
