@@ -2,7 +2,6 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/docker-existing-dockerfile
 {
     "name": "Standard",
-
     "build": {
         "context": "..",
         "dockerfile": "Dockerfile",
@@ -12,37 +11,36 @@
             "DEVCONTAINER_VERSION": "0.184.0"
         }
     },
-
     "extensions": [
-		"christian-kohler.npm-intellisense",
-		"davidanson.vscode-markdownlint",
-		"dbaeumer.vscode-eslint",
-		"eamodio.gitlens",
-		"editorconfig.editorconfig",
-		"eg2.vscode-npm-script",
-		"golang.go",
-		"justinribeiro.polymer2snippets",
-		"ms-azuretools.vscode-docker",
-		"polymer.polymer-ide",
-		"redhat.vscode-yaml",
-		"spmeesseman.vscode-taskexplorer"
-	],
-
+        "42crunch.vscode-openapi",
+        "christian-kohler.npm-intellisense",
+        "davidanson.vscode-markdownlint",
+        "dbaeumer.vscode-eslint",
+        "eamodio.gitlens",
+        "editorconfig.editorconfig",
+        "eg2.vscode-npm-script",
+        "golang.go",
+        "justinribeiro.polymer2snippets",
+        "ms-azuretools.vscode-docker",
+        "polymer.polymer-ide",
+        "redhat.vscode-yaml",
+        "spmeesseman.vscode-taskexplorer"
+    ],
     "forwardPorts": [
         5000
     ],
-
     "postCreateCommand": "docker buildx create --use --name crossbuild",
-
     "runArgs": [
         "--init",
         // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
-        "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined"
     ],
-    "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind" ],
-
+    "mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+    ],
     "remoteUser": "vscode",
-
     // Needed for docker
     "overrideCommand": false
 }

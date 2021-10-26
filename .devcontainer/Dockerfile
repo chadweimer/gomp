@@ -9,15 +9,18 @@ ARG DEVCONTAINER_VERSION="0.184.0"
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
-        zip \
-        binfmt-support \
-        qemu-user-static \
-        gcc-arm-linux-gnueabihf \
-        libc6-dev-armhf-cross \
-        gcc-aarch64-linux-gnu \
-        libc6-dev-arm64-cross \
-        gcc-mingw-w64-x86-64 \
+    zip \
+    binfmt-support \
+    qemu-user-static \
+    gcc-arm-linux-gnueabihf \
+    libc6-dev-armhf-cross \
+    gcc-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    gcc-mingw-w64-x86-64 \
     && bash -c "$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-containers/v${DEVCONTAINER_VERSION}/script-library/docker-debian.sh")" \
+    && download_url=$(curl -s https://api.github.com/repos/go-swagger/go-swagger/releases/latest | jq -r '.assets[] | select(.name | contains("'"$(uname | tr '[:upper:]' '[:lower:]')"'_amd64")) | .browser_download_url') \
+    && curl -o /usr/local/bin/swagger -L'#' "$download_url" \
+    && chmod +x /usr/local/bin/swagger \
     && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/usr/local/share/docker-init.sh"]

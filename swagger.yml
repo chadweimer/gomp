@@ -3,37 +3,372 @@ info:
   title: GOMP
   version: "1.0"
 consumes:
-- application/json
+  - application/json
 produces:
-- application/json
+  - application/json
 schemes:
-- http
+  - http
 paths:
+  /app/info:
+    get:
+      tags:
+        - app
+      description: get application info
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/appInfo"
+  /app/configuration:
+    get:
+      tags:
+        - app
+      description: get application configuration
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/appConfiguration"
+    put:
+      tags:
+        - app
+      description: modify application configuration
+      parameters:
+        - name: config
+          in: body
+          schema:
+            $ref: "#/definitions/appConfiguration"
+      responses:
+        "204":
+          description: No Content
   /recipes:
     get:
       tags:
         - recipes
+      description: list the recipes
+      security:
+        - Bearer: []
       responses:
-        200:
-          description: list the recipes
+        "200":
+          description: OK
           schema:
             type: array
             items:
-              $ref: "#/definitions/recipe"
+              $ref: "#/definitions/recipeCompact"
     post:
       tags:
         - recipes
+      description: add a recipe
+      security:
+        - Bearer: []
       parameters:
-        - name: body
+        - name: recipe
           in: body
           schema:
             $ref: "#/definitions/recipe"
       responses:
-        201:
+        "201":
           description: Created
+  /recipes/{recipeId}:
+    get:
+      tags:
+        - recipes
+      description: get a single recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/recipe"
+    put:
+      tags:
+        - recipes
+      description: modify an existing recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: recipe
+          in: body
+          schema:
+            $ref: "#/definitions/recipe"
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags:
+        - recipes
+      description: delete an existing recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/state:
+    get:
+      tags:
+        - recipes
+      description: get the state of a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/recipeState"
+    put:
+      tags:
+        - recipes
+      description: modify the state of a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: state
+          in: body
+          schema:
+            $ref: "#/definitions/recipeState"
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/rating:
+    get:
+      tags:
+        - recipes
+      description: get the current rating of a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+    put:
+      tags:
+        - recipes
+      description: modify the rating of a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: rating
+          in: body
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/notes:
+    get:
+      tags:
+        - notes
+      description: get the notes on a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/note"
+    post:
+      tags:
+        - notes
+      description: add a note to a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: note
+          in: body
+          schema:
+            $ref: "#/definitions/note"
+      responses:
+        "201":
+          description: Created
+  /recipes/{recipeId}/notes/{noteId}:
+    put:
+      tags:
+        - notes
+      description: modify a note
+      security:
+        - Bearer: []
+      parameters:
+        - name: noteId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: note
+          in: body
+          schema:
+            $ref: "#/definitions/note"
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags:
+        - notes
+      description: delete an existing note
+      security:
+        - Bearer: []
+      parameters:
+        - name: noteId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/links:
+    get:
+      tags:
+        - links
+      description: get the links on a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/recipeCompact"
+    post:
+      tags:
+        - links
+      description: add a link to a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: destRecipeId
+          in: body
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Created
+  /recipes/{recipeId}/links/{destRecipeId}:
+    delete:
+      tags:
+        - links
+      description: delete an existing link
+      security:
+        - Bearer: []
+      parameters:
+        - name: recipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+        - name: destRecipeId
+          in: path
+          type: integer
+          format: int64
+          required: true
+      responses:
+        "204":
+          description: No Content
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+
 definitions:
-  recipe:
+  appInfo:
     type: object
+    required:
+      - version
+    properties:
+      version:
+        type: string
+        readOnly: true
+  appConfiguration:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+        x-go-custom-tag: 'db:"title"'
+  recipeState:
+    type: string
+    enum:
+      - active
+      - archived
+      - deleted
+  recipeBase:
     required:
       - name
     properties:
@@ -41,12 +376,115 @@ definitions:
         type: integer
         format: int64
         readOnly: true
+        x-go-custom-tag: 'db:"id"'
       name:
         type: string
         minLength: 1
-      ingredients:
+        x-go-custom-tag: 'db:"name"'
+      state:
+        $ref: "#/definitions/recipeState"
+        x-go-custom-tag: 'db:"current_state"'
+      createdAt:
         type: string
-      directions:
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"created_at"'
+      modifiedAt:
         type: string
-      servingSize:
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"modified_at"'
+      avgerageRating:
+        type: number
+        readOnly: true
+        x-go-custom-tag: 'db:"avg_rating"'
+  recipeCompact:
+    allOf:
+      - $ref: "#/definitions/recipeBase"
+      - type: object
+        properties:
+          thumbnail_url:
+            type: string
+            x-go-custom-tag: 'db:"thumbnail_url"'
+  recipe:
+    allOf:
+      - $ref: "#/definitions/recipeBase"
+      - type: object
+        properties:
+          servingSize:
+            type: string
+            x-go-custom-tag: 'db:"serving_size"'
+          nutritionInfo:
+            type: string
+            x-go-custom-tag: 'db:"nutrition_info"'
+          ingredients:
+            type: string
+            x-go-custom-tag: 'db:"ingredients"'
+          directions:
+            type: string
+            x-go-custom-tag: 'db:"directions"'
+          storageInstructions:
+            type: string
+            x-go-custom-tag: 'db:"storage_instructions"'
+          sourceUrl:
+            type: string
+            x-go-custom-tag: 'db:"source_url"'
+          tags:
+            type: array
+            items:
+              type: string
+            x-go-custom-tag: 'db:"tags"'
+  note:
+    type: object
+    required:
+      - recipeId
+      - note
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"id"'
+      recipeId:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"recipe_id"'
+      note:
         type: string
+        minLength: 1
+        x-go-custom-tag: 'db:"note"'
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"created_at"'
+      modifiedAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"modified_at"'
