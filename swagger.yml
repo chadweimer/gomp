@@ -696,8 +696,7 @@ definitions:
         minLength: 1
         x-go-custom-tag: 'db:"name"'
       state:
-        allOf:
-          - $ref: "#/definitions/recipeState"
+        $ref: "#/definitions/recipeState"
         readOnly: true
         x-go-custom-tag: 'db:"current_state"'
       createdAt:
