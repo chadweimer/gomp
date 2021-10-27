@@ -34,10 +34,7 @@ paths:
         - app
       description: modify application configuration
       parameters:
-        - name: config
-          in: body
-          schema:
-            $ref: "#/definitions/appConfiguration"
+        - $ref: "#/parameters/appConfigurationInBody"
       responses:
         "204":
           description: No Content
@@ -62,26 +59,19 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: recipe
-          in: body
-          schema:
-            $ref: "#/definitions/recipe"
+        - $ref: "#/parameters/recipeInBody"
       responses:
         "201":
           description: Created
   /recipes/{recipeId}:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
     get:
       tags:
         - recipes
       description: get a single recipe
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "200":
           description: OK
@@ -94,15 +84,7 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: recipe
-          in: body
-          schema:
-            $ref: "#/definitions/recipe"
+        - $ref: "#/parameters/recipeInBody"
       responses:
         "204":
           description: No Content
@@ -112,28 +94,18 @@ paths:
       description: delete an existing recipe
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "204":
           description: No Content
   /recipes/{recipeId}/state:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
     get:
       tags:
         - recipes
       description: get the state of a recipe
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "200":
           description: OK
@@ -146,31 +118,19 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: state
-          in: body
-          schema:
-            $ref: "#/definitions/recipeState"
+        - $ref: "#/parameters/recipeStateInBody"
       responses:
         "204":
           description: No Content
   /recipes/{recipeId}/rating:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
     get:
       tags:
         - recipes
       description: get the current rating of a recipe
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "200":
           description: OK
@@ -183,31 +143,84 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: rating
-          in: body
+        - $ref: "#/parameters/ratingInBody"
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/image:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+    get:
+      tags:
+        - images
+      description: get the main image of a recipe
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
           schema:
-            type: integer
+            $ref: "#/definitions/recipeImage"
+    put:
+      tags:
+        - images
+      description: set the main image of a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/imageIdInBody"
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/images:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+    get:
+      tags:
+        - images
+      description: get the images on a recipe
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/recipeImage"
+    post:
+      tags:
+        - images
+      description: add an image to a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/fileInForm"
+      responses:
+        "201":
+          description: Created
+  /recipes/{recipeId}/images/{imageId}:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+      - $ref: "#/parameters/imageIdInPath"
+    delete:
+      tags:
+        - images
+      description: delete an existing image from a recipe
+      security:
+        - Bearer: []
       responses:
         "204":
           description: No Content
   /recipes/{recipeId}/notes:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
     get:
       tags:
         - notes
       description: get the notes on a recipe
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "200":
           description: OK
@@ -222,19 +235,14 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: note
-          in: body
-          schema:
-            $ref: "#/definitions/note"
+        - $ref: "#/parameters/noteInBody"
       responses:
         "201":
           description: Created
   /recipes/{recipeId}/notes/{noteId}:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+      - $ref: "#/parameters/noteIdInPath"
     put:
       tags:
         - notes
@@ -242,20 +250,7 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: noteId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: note
-          in: body
-          schema:
-            $ref: "#/definitions/note"
+        - $ref: "#/parameters/noteInBody"
       responses:
         "204":
           description: No Content
@@ -265,32 +260,18 @@ paths:
       description: delete an existing note
       security:
         - Bearer: []
-      parameters:
-        - name: noteId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "204":
           description: No Content
   /recipes/{recipeId}/links:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
     get:
       tags:
         - links
       description: get the links on a recipe
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          required: true
       responses:
         "200":
           description: OK
@@ -305,45 +286,108 @@ paths:
       security:
         - Bearer: []
       parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: destRecipeId
-          in: body
-          schema:
-            type: integer
+        - $ref: "#/parameters/destRecipeIdInBody"
       responses:
         "201":
           description: Created
   /recipes/{recipeId}/links/{destRecipeId}:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+      - $ref: "#/parameters/destRecipeIdInPath"
     delete:
       tags:
         - links
       description: delete an existing link
       security:
         - Bearer: []
-      parameters:
-        - name: recipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
-        - name: destRecipeId
-          in: path
-          type: integer
-          format: int64
-          required: true
       responses:
         "204":
           description: No Content
+  /uploads:
+    post:
+      tags:
+        - app
+      summary: Uploads a file
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: file_content
+          type: file
+      responses:
+        "201":
+          description: Created
 
-securityDefinitions:
-  Bearer:
-    type: apiKey
-    name: Authorization
-    in: header
+parameters:
+  recipeIdInPath:
+    name: recipeId
+    in: path
+    type: integer
+    format: int64
+    required: true
+  destRecipeIdInPath:
+    name: destRecipeId
+    in: path
+    type: integer
+    format: int64
+    required: true
+  imageIdInPath:
+    name: imageId
+    in: path
+    type: integer
+    required: true
+  noteIdInPath:
+    name: noteId
+    in: path
+    type: integer
+    required: true
+  appConfigurationInBody:
+    name: appConfiguration
+    in: body
+    schema:
+      $ref: "#/definitions/appConfiguration"
+    required: true
+  recipeInBody:
+    name: recipe
+    in: body
+    schema:
+      $ref: "#/definitions/recipe"
+    required: true
+  recipeStateInBody:
+    name: state
+    in: body
+    schema:
+      $ref: "#/definitions/recipeState"
+    required: true
+  destRecipeIdInBody:
+    name: destRecipeId
+    in: body
+    schema:
+      type: integer
+      format: int64
+    required: true
+  ratingInBody:
+    name: rating
+    in: body
+    schema:
+      type: integer
+    required: true
+  imageIdInBody:
+    name: imageId
+    in: body
+    schema:
+      type: integer
+      format: int64
+  noteInBody:
+    name: recipe
+    in: body
+    schema:
+      $ref: "#/definitions/note"
+    required: true
+  fileInForm:
+    in: formData
+    name: file_content
+    type: file
 
 definitions:
   appInfo:
@@ -446,6 +490,50 @@ definitions:
             items:
               type: string
             x-go-custom-tag: 'db:"tags"'
+  recipeImage:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"id"'
+      recipeId:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"recipe_id"'
+      name:
+        type: string
+        x-go-custom-tag: 'db:"name"'
+      url:
+        type: string
+        x-go-custom-tag: 'db:"url"'
+      thumbnailUrl:
+        type: string
+        x-go-custom-tag: 'db:"thumbnail_url"'
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"created_at"'
+      modifiedAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"modified_at"'
   note:
     type: object
     required:
@@ -488,3 +576,9 @@ definitions:
           hints:
             noValidation: true
         x-go-custom-tag: 'db:"modified_at"'
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
