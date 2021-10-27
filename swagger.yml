@@ -8,11 +8,12 @@ produces:
   - application/json
 schemes:
   - http
+  - https
+basePath: /api/v1
 paths:
   /app/info:
     get:
-      tags:
-        - app
+      tags: [app]
       description: get application info
       responses:
         "200":
@@ -21,8 +22,7 @@ paths:
             $ref: "#/definitions/appInfo"
   /app/configuration:
     get:
-      tags:
-        - app
+      tags: [app]
       description: get application configuration
       responses:
         "200":
@@ -30,18 +30,27 @@ paths:
           schema:
             $ref: "#/definitions/appConfiguration"
     put:
-      tags:
-        - app
+      tags: [app]
       description: modify application configuration
       parameters:
         - $ref: "#/parameters/appConfigurationInBody"
       responses:
         "204":
           description: No Content
+  /auth:
+    post:
+      tags: [app]
+      description: perform user authentication
+      parameters:
+        - $ref: "#/parameters/credentialsInBody"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/authenticationResponse"
   /recipes:
     get:
-      tags:
-        - recipes
+      tags: [recipes]
       description: list the recipes
       security:
         - Bearer: []
@@ -53,8 +62,7 @@ paths:
             items:
               $ref: "#/definitions/recipeCompact"
     post:
-      tags:
-        - recipes
+      tags: [recipes]
       description: add a recipe
       security:
         - Bearer: []
@@ -67,8 +75,7 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags:
-        - recipes
+      tags: [recipes]
       description: get a single recipe
       security:
         - Bearer: []
@@ -78,8 +85,7 @@ paths:
           schema:
             $ref: "#/definitions/recipe"
     put:
-      tags:
-        - recipes
+      tags: [recipes]
       description: modify an existing recipe
       security:
         - Bearer: []
@@ -89,61 +95,10 @@ paths:
         "204":
           description: No Content
     delete:
-      tags:
-        - recipes
+      tags: [recipes]
       description: delete an existing recipe
       security:
         - Bearer: []
-      responses:
-        "204":
-          description: No Content
-  /recipes/{recipeId}/state:
-    parameters:
-      - $ref: "#/parameters/recipeIdInPath"
-    get:
-      tags:
-        - recipes
-      description: get the state of a recipe
-      security:
-        - Bearer: []
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: "#/definitions/recipeState"
-    put:
-      tags:
-        - recipes
-      description: modify the state of a recipe
-      security:
-        - Bearer: []
-      parameters:
-        - $ref: "#/parameters/recipeStateInBody"
-      responses:
-        "204":
-          description: No Content
-  /recipes/{recipeId}/rating:
-    parameters:
-      - $ref: "#/parameters/recipeIdInPath"
-    get:
-      tags:
-        - recipes
-      description: get the current rating of a recipe
-      security:
-        - Bearer: []
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: integer
-    put:
-      tags:
-        - recipes
-      description: modify the rating of a recipe
-      security:
-        - Bearer: []
-      parameters:
-        - $ref: "#/parameters/ratingInBody"
       responses:
         "204":
           description: No Content
@@ -151,8 +106,7 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags:
-        - images
+      tags: [images]
       description: get the main image of a recipe
       security:
         - Bearer: []
@@ -162,8 +116,7 @@ paths:
           schema:
             $ref: "#/definitions/recipeImage"
     put:
-      tags:
-        - images
+      tags: [images]
       description: set the main image of a recipe
       security:
         - Bearer: []
@@ -176,8 +129,7 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags:
-        - images
+      tags: [images]
       description: get the images on a recipe
       security:
         - Bearer: []
@@ -189,8 +141,7 @@ paths:
             items:
               $ref: "#/definitions/recipeImage"
     post:
-      tags:
-        - images
+      tags: [images]
       description: add an image to a recipe
       security:
         - Bearer: []
@@ -204,9 +155,45 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
       - $ref: "#/parameters/imageIdInPath"
     delete:
-      tags:
-        - images
+      tags: [images]
       description: delete an existing image from a recipe
+      security:
+        - Bearer: []
+      responses:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/links:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+    get:
+      tags: [links]
+      description: get the links on a recipe
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/recipeCompact"
+    post:
+      tags: [links]
+      description: add a link to a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/destRecipeIdInBody"
+      responses:
+        "201":
+          description: Created
+  /recipes/{recipeId}/links/{destRecipeId}:
+    parameters:
+      - $ref: "#/parameters/recipeIdInPath"
+      - $ref: "#/parameters/destRecipeIdInPath"
+    delete:
+      tags: [links]
+      description: delete an existing link
       security:
         - Bearer: []
       responses:
@@ -216,8 +203,7 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags:
-        - notes
+      tags: [notes]
       description: get the notes on a recipe
       security:
         - Bearer: []
@@ -229,8 +215,7 @@ paths:
             items:
               $ref: "#/definitions/note"
     post:
-      tags:
-        - notes
+      tags: [notes]
       description: add a note to a recipe
       security:
         - Bearer: []
@@ -244,8 +229,7 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
       - $ref: "#/parameters/noteIdInPath"
     put:
-      tags:
-        - notes
+      tags: [notes]
       description: modify a note
       security:
         - Bearer: []
@@ -263,51 +247,58 @@ paths:
       responses:
         "204":
           description: No Content
-  /recipes/{recipeId}/links:
+  /recipes/{recipeId}/rating:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags:
-        - links
-      description: get the links on a recipe
+      tags: [recipes]
+      description: get the current rating of a recipe
       security:
         - Bearer: []
       responses:
         "200":
           description: OK
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/recipeCompact"
-    post:
-      tags:
-        - links
-      description: add a link to a recipe
+            type: integer
+    put:
+      tags: [recipes]
+      description: modify the rating of a recipe
       security:
         - Bearer: []
       parameters:
-        - $ref: "#/parameters/destRecipeIdInBody"
+        - $ref: "#/parameters/ratingInBody"
       responses:
-        "201":
-          description: Created
-  /recipes/{recipeId}/links/{destRecipeId}:
+        "204":
+          description: No Content
+  /recipes/{recipeId}/state:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
-      - $ref: "#/parameters/destRecipeIdInPath"
-    delete:
-      tags:
-        - links
-      description: delete an existing link
+    get:
+      tags: [recipes]
+      description: get the state of a recipe
       security:
         - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/recipeState"
+    put:
+      tags: [recipes]
+      description: modify the state of a recipe
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/recipeStateInBody"
       responses:
         "204":
           description: No Content
   /uploads:
     post:
-      tags:
-        - app
-      summary: Uploads a file
+      tags: [app]
+      description: Upload a file
+      security:
+        - Bearer: []
       consumes:
         - multipart/form-data
       parameters:
@@ -317,19 +308,158 @@ paths:
       responses:
         "201":
           description: Created
+  /users:
+    get:
+      tags: [users]
+      description: get list of users
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/user"
+    post:
+      tags: [users]
+      description: add a of user
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/userWithPasswordInBody"
+      responses:
+        "201":
+          description: Created
+  /users/{userId}:
+    parameters:
+      - $ref: "#/parameters/userIdInPath"
+    get:
+      tags: [users]
+      description: get a user
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/user"
+    put:
+      tags: [users]
+      description: modify a user
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/userInBody"
+      responses:
+        "204":
+          description: No Content
+  /users/{userId}/filters:
+    parameters:
+      - $ref: "#/parameters/userIdInPath"
+    get:
+      tags: [users]
+      description: get a list of search filters
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/savedSearchFilterCompact"
+    post:
+      tags: [users]
+      description: add a search filter
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/savedSearchFilterInBody"
+      responses:
+        "201":
+          description: Created
+  /users/{userId}/filters/{filterId}:
+    parameters:
+      - $ref: "#/parameters/userIdInPath"
+      - $ref: "#/parameters/filterIdInPath"
+    get:
+      tags: [users]
+      description: get a search filter
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/savedSearchFilter"
+    put:
+      tags: [users]
+      description: modify the search filter
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/savedSearchFilterInBody"
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags: [users]
+      description: delete a search filter
+      security:
+        - Bearer: []
+      responses:
+        "204":
+          description: No Content
+  /users/{userId}/password:
+    parameters:
+      - $ref: "#/parameters/userIdInPath"
+    put:
+      tags: [users]
+      description: update a user's password
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/userPasswordRequestInBody"
+      responses:
+        "204":
+          description: No Content
+  /users/{userId}/settings:
+    parameters:
+      - $ref: "#/parameters/userIdInPath"
+    get:
+      tags: [users]
+      description: get the settings of a user
+      security:
+        - Bearer: []
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/userSettings"
+    put:
+      tags: [users]
+      description: modify the settings of a user
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: "#/parameters/userSettingsInBody"
+      responses:
+        "204":
+          description: No Content
 
 parameters:
-  recipeIdInPath:
-    name: recipeId
-    in: path
-    type: integer
-    format: int64
-    required: true
+  # Path
   destRecipeIdInPath:
     name: destRecipeId
     in: path
     type: integer
     format: int64
+    required: true
+  filterIdInPath:
+    name: filterId
+    in: path
+    type: integer
     required: true
   imageIdInPath:
     name: imageId
@@ -341,11 +471,55 @@ parameters:
     in: path
     type: integer
     required: true
+  recipeIdInPath:
+    name: recipeId
+    in: path
+    type: integer
+    format: int64
+    required: true
+  userIdInPath:
+    name: userId
+    in: path
+    type: integer
+    format: int64
+    required: true
+  # Body
   appConfigurationInBody:
     name: appConfiguration
     in: body
     schema:
       $ref: "#/definitions/appConfiguration"
+    required: true
+  credentialsInBody:
+    name: credentials
+    in: body
+    schema:
+      $ref: "#/definitions/credentials"
+    required: true
+  destRecipeIdInBody:
+    name: destRecipeId
+    in: body
+    schema:
+      type: integer
+      format: int64
+    required: true
+  imageIdInBody:
+    name: imageId
+    in: body
+    schema:
+      type: integer
+      format: int64
+  noteInBody:
+    name: note
+    in: body
+    schema:
+      $ref: "#/definitions/note"
+    required: true
+  ratingInBody:
+    name: rating
+    in: body
+    schema:
+      type: integer
     required: true
   recipeInBody:
     name: recipe
@@ -359,37 +533,83 @@ parameters:
     schema:
       $ref: "#/definitions/recipeState"
     required: true
-  destRecipeIdInBody:
-    name: destRecipeId
+  savedSearchFilterInBody:
+    name: searchFilter
     in: body
     schema:
-      type: integer
-      format: int64
+      $ref: "#/definitions/savedSearchFilter"
     required: true
-  ratingInBody:
-    name: rating
+  searchFilterInBody:
+    name: searchFilter
     in: body
     schema:
-      type: integer
+      $ref: "#/definitions/searchFilter"
     required: true
-  imageIdInBody:
-    name: imageId
+  userInBody:
+    name: user
     in: body
     schema:
-      type: integer
-      format: int64
-  noteInBody:
-    name: recipe
-    in: body
-    schema:
-      $ref: "#/definitions/note"
+      $ref: "#/definitions/user"
     required: true
+  userPasswordRequestInBody:
+    name: userPasswordRequest
+    in: body
+    schema:
+      $ref: "#/definitions/userPasswordRequest"
+    required: true
+  userSettingsInBody:
+    name: settings
+    in: body
+    schema:
+      $ref: "#/definitions/userSettings"
+    required: true
+  userWithPasswordInBody:
+    name: user
+    in: body
+    schema:
+      $ref: "#/definitions/userWithPassword"
+    required: true
+  # FormData
   fileInForm:
-    in: formData
     name: file_content
+    in: formData
     type: file
 
 definitions:
+  # Enumerations
+  accessLevel:
+    type: string
+    enum:
+      - admin
+      - editor
+      - viewer
+  recipeState:
+    type: string
+    enum:
+      - active
+      - archived
+      - deleted
+  searchField:
+    type: string
+    enum:
+      - name
+      - ingredients
+      - directions
+  sortBy:
+    type: string
+    enum:
+      - name
+      - id
+      - rating
+      - created
+      - modified
+      - random
+  sortDir:
+    type: string
+    enum:
+      - asc
+      - desc
+  # Types
   appInfo:
     type: object
     required:
@@ -406,134 +626,23 @@ definitions:
       title:
         type: string
         x-go-custom-tag: 'db:"title"'
-  recipeState:
-    type: string
-    enum:
-      - active
-      - archived
-      - deleted
-  recipeBase:
-    required:
-      - name
-    properties:
-      id:
-        type: integer
-        format: int64
-        readOnly: true
-        x-go-custom-tag: 'db:"id"'
-      name:
-        type: string
-        minLength: 1
-        x-go-custom-tag: 'db:"name"'
-      state:
-        $ref: "#/definitions/recipeState"
-        x-go-custom-tag: 'db:"current_state"'
-      createdAt:
-        type: string
-        format: date-time
-        readOnly: true
-        x-go-type:
-          type: Time
-          import:
-            package: time
-          hints:
-            noValidation: true
-        x-go-custom-tag: 'db:"created_at"'
-      modifiedAt:
-        type: string
-        format: date-time
-        readOnly: true
-        x-go-type:
-          type: Time
-          import:
-            package: time
-          hints:
-            noValidation: true
-        x-go-custom-tag: 'db:"modified_at"'
-      avgerageRating:
-        type: number
-        readOnly: true
-        x-go-custom-tag: 'db:"avg_rating"'
-  recipeCompact:
-    allOf:
-      - $ref: "#/definitions/recipeBase"
-      - type: object
-        properties:
-          thumbnail_url:
-            type: string
-            x-go-custom-tag: 'db:"thumbnail_url"'
-  recipe:
-    allOf:
-      - $ref: "#/definitions/recipeBase"
-      - type: object
-        properties:
-          servingSize:
-            type: string
-            x-go-custom-tag: 'db:"serving_size"'
-          nutritionInfo:
-            type: string
-            x-go-custom-tag: 'db:"nutrition_info"'
-          ingredients:
-            type: string
-            x-go-custom-tag: 'db:"ingredients"'
-          directions:
-            type: string
-            x-go-custom-tag: 'db:"directions"'
-          storageInstructions:
-            type: string
-            x-go-custom-tag: 'db:"storage_instructions"'
-          sourceUrl:
-            type: string
-            x-go-custom-tag: 'db:"source_url"'
-          tags:
-            type: array
-            items:
-              type: string
-            x-go-custom-tag: 'db:"tags"'
-  recipeImage:
+  authenticationResponse:
     type: object
     properties:
-      id:
-        type: integer
-        format: int64
-        readOnly: true
-        x-go-custom-tag: 'db:"id"'
-      recipeId:
-        type: integer
-        format: int64
-        readOnly: true
-        x-go-custom-tag: 'db:"recipe_id"'
-      name:
+      token:
         type: string
-        x-go-custom-tag: 'db:"name"'
-      url:
+      user:
+        $ref: "#/definitions/user"
+  credentials:
+    type: object
+    required:
+      - username
+      - password
+    properties:
+      username:
         type: string
-        x-go-custom-tag: 'db:"url"'
-      thumbnailUrl:
+      password:
         type: string
-        x-go-custom-tag: 'db:"thumbnail_url"'
-      createdAt:
-        type: string
-        format: date-time
-        readOnly: true
-        x-go-type:
-          type: Time
-          import:
-            package: time
-          hints:
-            noValidation: true
-        x-go-custom-tag: 'db:"created_at"'
-      modifiedAt:
-        type: string
-        format: date-time
-        readOnly: true
-        x-go-type:
-          type: Time
-          import:
-            package: time
-          hints:
-            noValidation: true
-        x-go-custom-tag: 'db:"modified_at"'
   note:
     type: object
     required:
@@ -576,6 +685,232 @@ definitions:
           hints:
             noValidation: true
         x-go-custom-tag: 'db:"modified_at"'
+  recipeBase:
+    required:
+      - name
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"id"'
+      name:
+        type: string
+        minLength: 1
+        x-go-custom-tag: 'db:"name"'
+      state:
+        allOf:
+          - $ref: "#/definitions/recipeState"
+        readOnly: true
+        x-go-custom-tag: 'db:"current_state"'
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"created_at"'
+      modifiedAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"modified_at"'
+      avgerageRating:
+        type: number
+        readOnly: true
+        x-go-custom-tag: 'db:"avg_rating"'
+  recipe:
+    allOf:
+      - $ref: "#/definitions/recipeBase"
+      - type: object
+        properties:
+          servingSize:
+            type: string
+            x-go-custom-tag: 'db:"serving_size"'
+          nutritionInfo:
+            type: string
+            x-go-custom-tag: 'db:"nutrition_info"'
+          ingredients:
+            type: string
+            x-go-custom-tag: 'db:"ingredients"'
+          directions:
+            type: string
+            x-go-custom-tag: 'db:"directions"'
+          storageInstructions:
+            type: string
+            x-go-custom-tag: 'db:"storage_instructions"'
+          sourceUrl:
+            type: string
+            x-go-custom-tag: 'db:"source_url"'
+          tags:
+            type: array
+            items:
+              type: string
+            x-go-custom-tag: 'db:"tags"'
+  recipeCompact:
+    allOf:
+      - $ref: "#/definitions/recipeBase"
+        readOnly: true
+      - type: object
+        properties:
+          thumbnail_url:
+            type: string
+            readOnly: true
+            x-go-custom-tag: 'db:"thumbnail_url"'
+  recipeImage:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"id"'
+      recipeId:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"recipe_id"'
+      name:
+        type: string
+        readOnly: true
+        x-go-custom-tag: 'db:"name"'
+      url:
+        type: string
+        readOnly: true
+        x-go-custom-tag: 'db:"url"'
+      thumbnailUrl:
+        type: string
+        readOnly: true
+        x-go-custom-tag: 'db:"thumbnail_url"'
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"created_at"'
+      modifiedAt:
+        type: string
+        format: date-time
+        readOnly: true
+        x-go-type:
+          type: Time
+          import:
+            package: time
+          hints:
+            noValidation: true
+        x-go-custom-tag: 'db:"modified_at"'
+  searchFilter:
+    properties:
+      query:
+        type: string
+        x-go-custom-tag: 'db:"query"'
+      withPictures:
+        type: boolean
+        x-nullable: true
+        x-go-custom-tag: 'db:"with_pictures"'
+      fields:
+        type: array
+        items:
+          $ref: "#/definitions/searchField"
+      states:
+        type: array
+        items:
+          $ref: "#/definitions/recipeState"
+      tags:
+        type: array
+        items:
+          type: string
+      sortBy:
+        $ref: "#/definitions/sortBy"
+      sortDir:
+        $ref: "#/definitions/sortDir"
+  savedSearchFilterCompact:
+    required:
+      - name
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"id"'
+      userId:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"user_id"'
+      name:
+        type: string
+        minLength: 1
+        x-go-custom-tag: 'db:"name"'
+  savedSearchFilter:
+    allOf:
+      - $ref: "#/definitions/savedSearchFilterCompact"
+      - $ref: "#/definitions/searchFilter"
+  user:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"id"'
+      username:
+        type: string
+        format: email
+        x-go-custom-tag: 'db:"username"'
+      accessLevel:
+        $ref: "#/definitions/accessLevel"
+        x-go-custom-tag: 'db:"access_level"'
+  userPasswordRequest:
+    type: object
+    properties:
+      currentPassword:
+        type: string
+      newPassword:
+        type: string
+  userSettings:
+    type: object
+    properties:
+      userId:
+        type: integer
+        format: int64
+        readOnly: true
+        x-go-custom-tag: 'db:"user_id"'
+      homeTitle:
+        type: string
+        x-nullable: true
+        x-go-custom-tag: 'db:"home_title"'
+      homeImageUrl:
+        type: string
+        x-nullable: true
+        x-go-custom-tag: 'db:"home_image_url"'
+      favoriteTags:
+        type: array
+        items:
+          type: string
+        x-go-custom-tag: 'db:"favorite_tags"'
+  userWithPassword:
+    allOf:
+      - $ref: "#/definitions/user"
+      - type: object
+        properties:
+          password:
+            type: string
 
 securityDefinitions:
   Bearer:
