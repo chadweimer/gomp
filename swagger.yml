@@ -612,8 +612,6 @@ definitions:
   # Types
   appInfo:
     type: object
-    required:
-      - version
     properties:
       version:
         type: string
@@ -646,7 +644,6 @@ definitions:
   note:
     type: object
     required:
-      - recipeId
       - note
     properties:
       id:
