@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { AppApi } from '../../../helpers/api';
+import { AppConfiguration } from '../../../generated';
+import { appApi } from '../../../helpers/api';
 import { showToast } from '../../../helpers/utils';
-import { AppConfiguration } from '../../../models';
 import appConfig from '../../../stores/config';
 
 @Component({
@@ -58,7 +58,7 @@ export class PageAdminConfiguration {
 
   private async loadAppConfiguration() {
     try {
-      this.appConfig = await AppApi.getConfiguration(this.el);
+      this.appConfig = (await appApi.appConfigurationGet()).data;
     } catch (ex) {
       console.error(ex);
     }
@@ -70,7 +70,7 @@ export class PageAdminConfiguration {
     }
 
     try {
-      await AppApi.putConfiguration(this.el, this.appConfig);
+      await appApi.appConfigurationPut(this.appConfig);
       appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);

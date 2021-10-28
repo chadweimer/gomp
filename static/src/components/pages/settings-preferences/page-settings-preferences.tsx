@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { UploadsApi, UsersApi } from '../../../helpers/api';
+import { UserSettings } from '../../../generated';
+import { appApi, getLocationFromResponse, usersApi } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/utils';
-import { UserSettings } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -13,7 +13,6 @@ export class PageSettingsPreferences {
 
   @Element() el!: HTMLPageSettingsPreferencesElement;
   private settingsForm!: HTMLFormElement;
-  private imageForm!: HTMLFormElement;
   private imageInput!: HTMLInputElement;
 
   @Method()
@@ -36,7 +35,7 @@ export class PageSettingsPreferences {
                         <ion-input value={this.settings?.homeTitle} onIonChange={e => this.settings = { ...this.settings, homeTitle: e.detail.value }} required />
                       </ion-item>
                       <ion-item lines="full">
-                        <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
+                        <form enctype="multipart/form-data">
                           <ion-label position="stacked">Home Image</ion-label>
                           <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
                         </form>
@@ -69,7 +68,7 @@ export class PageSettingsPreferences {
 
   private async loadUserSettings() {
     try {
-      this.settings = await UsersApi.getSettings(this.el);
+      this.settings = (await usersApi.usersUserIdSettingsGet(state.currentUser.id.toString())).data;
     } catch (ex) {
       console.error(ex);
     }
@@ -77,7 +76,7 @@ export class PageSettingsPreferences {
 
   private async saveUserSettings() {
     try {
-      await UsersApi.putSettings(this.el, state.currentUser.id, this.settings);
+      await usersApi.usersUserIdSettingsPut(state.currentUser.id.toString(), this.settings);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save preferences.');
@@ -92,9 +91,10 @@ export class PageSettingsPreferences {
     if (this.imageInput.value) {
       await showLoading(
         async () => {
+          const resp = await appApi.uploadsPost(this.imageInput.files[0]);
           this.settings = {
             ...this.settings,
-            homeImageUrl: await UploadsApi.post(this.el, new FormData(this.imageForm))
+            homeImageUrl: getLocationFromResponse(resp.headers)
           }
         },
         'Uploading picture...');

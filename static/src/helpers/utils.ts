@@ -1,5 +1,6 @@
 import { GestureDetail, loadingController, toastController } from '@ionic/core';
-import { AccessLevel, SwipeDirection, User, YesNoAny } from '../models';
+import { AccessLevel, User } from '../generated';
+import { SwipeDirection, YesNoAny } from '../models';
 
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
@@ -11,11 +12,11 @@ export function hasAccessLevel(user: User | null | undefined, accessLevel: Acces
   }
 
   switch (accessLevel) {
-    case AccessLevel.Administrator:
-      return user.accessLevel === AccessLevel.Administrator;
+    case AccessLevel.Admin:
+      return user.accessLevel === AccessLevel.Admin;
 
     case AccessLevel.Editor:
-      return user.accessLevel === AccessLevel.Administrator || user.accessLevel === AccessLevel.Editor;
+      return user.accessLevel === AccessLevel.Admin || user.accessLevel === AccessLevel.Editor;
 
     default:
       return true;

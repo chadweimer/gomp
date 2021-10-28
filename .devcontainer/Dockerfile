@@ -17,6 +17,8 @@ RUN apt-get update \
     gcc-aarch64-linux-gnu \
     libc6-dev-arm64-cross \
     gcc-mingw-w64-x86-64 \
+    # openapi-codegen dependencies
+    openjdk-11-jdk-headless \
     # Puppeteer dependencies
     ca-certificates \
     fonts-liberation \

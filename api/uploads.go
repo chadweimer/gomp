@@ -29,5 +29,5 @@ func (h *apiHandler) postUpload(resp http.ResponseWriter, req *http.Request) {
 	fileURL := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	h.upl.Save(imageName, uploadedFileData)
 
-	h.Created(resp, fileURL)
+	h.CreatedWithLocation(resp, fileURL)
 }

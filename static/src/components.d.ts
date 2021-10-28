@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User, UserSettings } from "./models";
+import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User, UserSettings } from "./generated";
 export namespace Components {
     interface AppRoot {
     }

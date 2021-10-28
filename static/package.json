@@ -9,10 +9,10 @@
   ],
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx",
-    "build": "stencil build",
+    "build": "npm run codegen && stencil build",
     "clear": "rm -fr ./node_modules",
     "clean": "rm -fr ./www",
-    "codegen": "openapi-generator-cli generate -i ../swagger.yml -g typescript-fetch --skip-validate-spec -o src/generated",
+    "codegen": "rm -rf src/generated && openapi-generator-cli generate -i ../swagger.yml -g typescript-axios -o src/generated",
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watch",

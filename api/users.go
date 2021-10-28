@@ -74,7 +74,7 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/users/%d", user.ID))
+	h.Created(resp, user)
 }
 
 func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
@@ -245,7 +245,7 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/users/%d/filters/%d", filter.UserID, filter.ID))
+	h.Created(resp, filter)
 }
 
 func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) {

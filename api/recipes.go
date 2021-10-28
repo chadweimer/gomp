@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -98,7 +97,7 @@ func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d", recipe.ID))
+	h.Created(resp, recipe)
 }
 
 func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {

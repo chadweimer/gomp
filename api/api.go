@@ -159,7 +159,11 @@ func (h *apiHandler) NoContent(resp http.ResponseWriter) {
 	resp.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) Created(resp http.ResponseWriter, location string) {
+func (h *apiHandler) Created(resp http.ResponseWriter, v interface{}) {
+	h.JSON(resp, http.StatusCreated, v)
+}
+
+func (h *apiHandler) CreatedWithLocation(resp http.ResponseWriter, location string) {
 	resp.Header().Set("Location", location)
 	resp.WriteHeader(http.StatusCreated)
 }

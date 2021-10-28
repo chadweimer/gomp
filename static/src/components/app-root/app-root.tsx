@@ -1,8 +1,9 @@
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
-import { AppApi, UsersApi } from '../../helpers/api';
+import { AccessLevel, SearchFilter } from '../../generated';
+import { appApi, usersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, SearchFilter } from '../../models';
+import { DefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
 
@@ -70,7 +71,7 @@ export class AppRoot {
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
-              {hasAccessLevel(state.currentUser, AccessLevel.Administrator) ?
+              {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
                 <ion-item href="/admin" lines="full">
                   <ion-icon name="shield-checkmark" slot="start" />
                   <ion-label>Admin</ion-label>
@@ -109,7 +110,7 @@ export class AppRoot {
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
                   <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
-                  {hasAccessLevel(state.currentUser, AccessLevel.Administrator) ?
+                  {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
                     <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
                     : ''}
                   <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
@@ -184,8 +185,8 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      appConfig.info = await AppApi.getInfo(this.el);
-      appConfig.config = await AppApi.getConfiguration(this.el);
+      appConfig.info = (await appApi.appInfoGet()).data;
+      appConfig.config = (await appApi.appConfigurationGet()).data;
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
@@ -214,8 +215,8 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Refresh the user so that access controls are properly enforced
       try {
-        state.currentUser = await UsersApi.get(this.el);
-        state.currentUserSettings = await UsersApi.getSettings(this.el);
+        state.currentUser = (await usersApi.usersUserIdGet('current')).data
+        state.currentUserSettings = (await usersApi.usersUserIdSettingsGet('current')).data;
       } catch (ex) {
         console.error(ex);
       }
@@ -231,7 +232,7 @@ export class AppRoot {
       return loginCheck;
     }
 
-    if (state.currentUser?.accessLevel === AccessLevel.Administrator) {
+    if (state.currentUser?.accessLevel === AccessLevel.Admin) {
       return true;
     }
 
@@ -279,8 +280,8 @@ export class AppRoot {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
-        state.currentUser = await UsersApi.get(this.el);
-        state.currentUserSettings = await UsersApi.getSettings(this.el);
+        state.currentUser = (await usersApi.usersUserIdGet('current')).data
+        state.currentUserSettings = (await usersApi.usersUserIdSettingsGet('current')).data;
       } catch (ex) {
         console.error(ex);
       }

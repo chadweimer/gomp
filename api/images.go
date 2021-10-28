@@ -117,7 +117,7 @@ func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/images/%d", imageInfo.RecipeID, imageInfo.ID))
+	h.Created(resp, imageInfo)
 }
 
 func (h *apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request) {

@@ -1,8 +1,8 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
-import { NotesApi, RecipesApi } from '../../../helpers/api';
+import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
+import { imagesApi, linksApi, notesApi, recipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
-import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -292,9 +292,8 @@ export class PageRecipe {
 
   private async loadRecipe() {
     try {
-      const { recipe, mainImage } = await RecipesApi.get(this.el, this.recipeId);
-      this.recipe = recipe;
-      this.mainImage = mainImage;
+      this.recipe = (await recipesApi.recipesRecipeIdGet(this.recipeId)).data;
+      this.mainImage = (await imagesApi.recipesRecipeIdImageGet(this.recipeId)).data;
     } catch (ex) {
       console.error(ex);
     }
@@ -302,7 +301,7 @@ export class PageRecipe {
 
   private async loadLinks() {
     try {
-      this.links = await RecipesApi.getLinks(this.el, this.recipeId);
+      this.links = (await linksApi.recipesRecipeIdLinksGet(this.recipeId)).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -310,7 +309,7 @@ export class PageRecipe {
 
   private async loadImages() {
     try {
-      this.images = await RecipesApi.getImages(this.el, this.recipeId);
+      this.images = (await imagesApi.recipesRecipeIdImagesGet(this.recipeId)).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -318,7 +317,7 @@ export class PageRecipe {
 
   private async loadNotes() {
     try {
-      this.notes = await RecipesApi.getNotes(this.el, this.recipeId);
+      this.notes = (await notesApi.recipesRecipeIdNotesGet(this.recipeId)).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -326,7 +325,7 @@ export class PageRecipe {
 
   private async saveRecipe(recipe: Recipe) {
     try {
-      await RecipesApi.put(this.el, recipe);
+      await recipesApi.recipesRecipeIdPut(this.recipeId, recipe);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save recipe.');
@@ -335,7 +334,7 @@ export class PageRecipe {
 
   private async deleteRecipe() {
     try {
-      await RecipesApi.delete(this.el, this.recipeId);
+      await recipesApi.recipesRecipeIdDelete(this.recipeId);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete recipe.');
@@ -344,7 +343,7 @@ export class PageRecipe {
 
   private async setRecipeState(state: RecipeState) {
     try {
-      await RecipesApi.putState(this.el, this.recipeId, state);
+      await recipesApi.recipesRecipeIdStatePut(this.recipeId, state);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save recipe state.');
@@ -353,7 +352,7 @@ export class PageRecipe {
 
   private async addLink(recipeId: number) {
     try {
-      await RecipesApi.postLink(this.el, this.recipeId, recipeId);
+      await linksApi.recipesRecipeIdLinksPost(this.recipeId, recipeId);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to add linked recipe.');
@@ -362,7 +361,7 @@ export class PageRecipe {
 
   private async deleteLink(link: RecipeCompact) {
     try {
-      await RecipesApi.deleteLink(this.el, this.recipeId, link.id);
+      await linksApi.recipesRecipeIdLinksDestRecipeIdDelete(this.recipeId, link.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to remove linked recipe.');
@@ -370,12 +369,8 @@ export class PageRecipe {
   }
 
   private async saveNewNote(note: Note) {
-    note = {
-      ...note,
-      recipeId: this.recipeId
-    };
     try {
-      await NotesApi.post(this.el, note);
+      await notesApi.recipesRecipeIdNotesPost(this.recipeId, note);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create note.');
@@ -384,7 +379,7 @@ export class PageRecipe {
 
   private async saveExistingNote(note: Note) {
     try {
-      await NotesApi.put(this.el, note);
+      await notesApi.recipesRecipeIdNotesNoteIdPut(this.recipeId, note.id, note);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save note.');
@@ -393,17 +388,19 @@ export class PageRecipe {
 
   private async deleteNote(note: Note) {
     try {
-      await NotesApi.delete(this.el, note.id);
+      await notesApi.recipesRecipeIdNotesNoteIdDelete(this.recipeId, note.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete note.');
     }
   }
 
-  private async uploadImage(formData: FormData) {
+  private async uploadImage(file: File) {
     try {
       await showLoading(
-        async () => await RecipesApi.postImage(this.el, this.recipeId, formData),
+        async () => {
+          await imagesApi.recipesRecipeIdImagesPost(this.recipeId, file);
+        },
         'Uploading picture...');
     } catch (ex) {
       console.error(ex);
@@ -413,7 +410,7 @@ export class PageRecipe {
 
   private async deleteImage(image: RecipeImage) {
     try {
-      await RecipesApi.deleteImage(this.el, this.recipeId, image.id);
+      await imagesApi.recipesRecipeIdImagesImageIdDelete(this.recipeId, image.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete image.');
@@ -422,7 +419,7 @@ export class PageRecipe {
 
   private async setRating(value: number) {
     try {
-      await RecipesApi.putRating(this.el, this.recipeId, value);
+      await recipesApi.recipesRecipeIdRatingPut(this.recipeId, value);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save recipe rating.');
@@ -431,7 +428,7 @@ export class PageRecipe {
 
   private async setMainImage(image: RecipeImage) {
     try {
-      await RecipesApi.putMainImage(this.el, this.recipeId, image.id);
+      await imagesApi.recipesRecipeIdImagePut(this.recipeId, image.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to set main picture.');
@@ -708,9 +705,9 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ formData: FormData }>();
+      const resp = await modal.onDidDismiss<{ file: File }>();
       if (resp.data) {
-        await this.uploadImage(resp.data.formData);
+        await this.uploadImage(resp.data.file);
         await this.loadRecipe();
         await this.loadImages();
       }

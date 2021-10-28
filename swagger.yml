@@ -54,13 +54,21 @@ paths:
       description: list the recipes
       security:
         - Bearer: []
+      parameters:
+        - $ref: "#/parameters/queryInQuery"
+        - $ref: "#/parameters/withPicturesInQuery"
+        - $ref: "#/parameters/fieldsInQuery"
+        - $ref: "#/parameters/statesInQuery"
+        - $ref: "#/parameters/tagsInQuery"
+        - $ref: "#/parameters/sortByInQuery"
+        - $ref: "#/parameters/sortDirInQuery"
+        - $ref: "#/parameters/pageInQuery"
+        - $ref: "#/parameters/countInQuery"
       responses:
         "200":
           description: OK
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/recipeCompact"
+            $ref: "#/definitions/searchResult"
     post:
       tags: [recipes]
       description: add a recipe
@@ -71,6 +79,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: "#/definitions/recipe"
   /recipes/{recipeId}:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
@@ -145,6 +155,8 @@ paths:
       description: add an image to a recipe
       security:
         - Bearer: []
+      consumes:
+        - multipart/form-data
       parameters:
         - $ref: "#/parameters/fileInForm"
       responses:
@@ -224,6 +236,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: "#/definitions/note"
   /recipes/{recipeId}/notes/{noteId}:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
@@ -302,9 +316,7 @@ paths:
       consumes:
         - multipart/form-data
       parameters:
-        - in: formData
-          name: file_content
-          type: file
+        - $ref: "#/parameters/fileInForm"
       responses:
         "201":
           description: Created
@@ -331,6 +343,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: "#/definitions/user"
   /users/{userId}:
     parameters:
       - $ref: "#/parameters/userIdInPath"
@@ -351,6 +365,14 @@ paths:
         - Bearer: []
       parameters:
         - $ref: "#/parameters/userInBody"
+      responses:
+        "204":
+          description: No Content
+    delete:
+      tags: [users]
+      description: delete an existing user
+      security:
+        - Bearer: []
       responses:
         "204":
           description: No Content
@@ -379,6 +401,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: "#/definitions/savedSearchFilter"
   /users/{userId}/filters/{filterId}:
     parameters:
       - $ref: "#/parameters/userIdInPath"
@@ -480,8 +504,7 @@ parameters:
   userIdInPath:
     name: userId
     in: path
-    type: integer
-    format: int64
+    type: string
     required: true
   # Body
   appConfigurationInBody:
@@ -574,6 +597,68 @@ parameters:
     name: file_content
     in: formData
     type: file
+  # Query
+  queryInQuery:
+    name: query
+    in: query
+    type: string
+  withPicturesInQuery:
+    name: withPictures
+    in: query
+    type: boolean
+    x-nullable: true
+  fieldsInQuery:
+    name: fields
+    in: query
+    type: array
+    items:
+      type: string
+      enum:
+        - name
+        - ingredients
+        - directions
+  statesInQuery:
+    name: states
+    in: query
+    type: array
+    items:
+      type: string
+      enum:
+        - active
+        - archived
+        - deleted
+  tagsInQuery:
+    name: tags
+    in: query
+    type: array
+    items:
+      type: string
+  sortByInQuery:
+    name: sortBy
+    in: query
+    type: string
+    enum:
+      - name
+      - id
+      - rating
+      - created
+      - modified
+      - random
+  sortDirInQuery:
+    name: sortDir
+    in: query
+    type: string
+    enum:
+      - asc
+      - desc
+  pageInQuery:
+    name: page
+    in: query
+    type: integer
+  countInQuery:
+    name: count
+    in: query
+    type: integer
 
 definitions:
   # Enumerations
@@ -644,7 +729,7 @@ definitions:
   note:
     type: object
     required:
-      - note
+      - text
     properties:
       id:
         type: integer
@@ -656,7 +741,7 @@ definitions:
         format: int64
         readOnly: true
         x-go-custom-tag: 'db:"recipe_id"'
-      note:
+      text:
         type: string
         minLength: 1
         x-go-custom-tag: 'db:"note"'
@@ -721,7 +806,7 @@ definitions:
           hints:
             noValidation: true
         x-go-custom-tag: 'db:"modified_at"'
-      avgerageRating:
+      averageRating:
         type: number
         readOnly: true
         x-go-custom-tag: 'db:"avg_rating"'
@@ -756,10 +841,9 @@ definitions:
   recipeCompact:
     allOf:
       - $ref: "#/definitions/recipeBase"
-        readOnly: true
       - type: object
         properties:
-          thumbnail_url:
+          thumbnailUrl:
             type: string
             readOnly: true
             x-go-custom-tag: 'db:"thumbnail_url"'
@@ -810,6 +894,14 @@ definitions:
           hints:
             noValidation: true
         x-go-custom-tag: 'db:"modified_at"'
+  searchResult:
+    properties:
+      total:
+        type: integer
+      recipes:
+        type: array
+        items:
+          $ref: "#/definitions/recipeCompact"
   searchFilter:
     properties:
       query:

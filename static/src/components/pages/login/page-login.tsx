@@ -1,5 +1,5 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { AuthApi } from '../../../helpers/api';
+import { appApi } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -58,10 +58,10 @@ export class PageLogin {
   private async onLoginClicked() {
     try {
       this.errorMessage = '';
-      const token = await AuthApi.authenticate(this.el, this.username, this.password);
+      const resp = (await appApi.authPost({ username: this.username, password: this.password })).data;
 
       // Store the token so we stay logged in
-      state.jwtToken = token;
+      state.jwtToken = resp.token;
 
       // Clear the username so it's not left around when the next login is needed
       this.username = '';

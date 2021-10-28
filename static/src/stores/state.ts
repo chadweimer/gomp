@@ -1,5 +1,6 @@
 import { createStore } from '@stencil/store';
-import { DefaultSearchFilter, DefaultSearchSettings, SearchFilter, SearchSettings, User, UserSettings } from '../models';
+import { SearchFilter, User, UserSettings } from '../generated';
+import { DefaultSearchFilter, DefaultSearchSettings, SearchSettings } from '../models';
 
 interface AppState {
   jwtToken?: string;

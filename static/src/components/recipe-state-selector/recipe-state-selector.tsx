@@ -1,7 +1,7 @@
 import { CheckboxChangeEventDetail } from '@ionic/core';
 import { Component, Event, EventEmitter, h, Prop, State } from '@stencil/core';
+import { RecipeState } from '../../generated';
 import { capitalizeFirstLetter } from '../../helpers/utils';
-import { RecipeState } from '../../models';
 
 @Component({
   tag: 'recipe-state-selector',

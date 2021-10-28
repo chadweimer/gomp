@@ -39,7 +39,7 @@ func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/links/%d", recipeID, destRecipeID))
+	h.CreatedWithLocation(resp, fmt.Sprintf("/api/v1/recipes/%d/links/%d", recipeID, destRecipeID))
 }
 
 func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request) {

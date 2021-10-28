@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/chadweimer/gomp/models"
@@ -35,7 +34,7 @@ func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/notes/%d", note.RecipeID, note.ID))
+	h.Created(resp, note)
 }
 
 func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {

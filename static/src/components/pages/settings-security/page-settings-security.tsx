@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, State } from '@stencil/core';
-import { UsersApi } from '../../../helpers/api';
+import { usersApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -66,7 +66,7 @@ export class PageSettingsSecurity {
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
     try {
-      await UsersApi.putPassword(this.el, state.currentUser.id, currentPassword, newPassword);
+      await usersApi.usersUserIdPasswordPut(state.currentUser.id.toString(), { currentPassword, newPassword });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to update password.');

@@ -1,9 +1,10 @@
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
-import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
+import { DefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { RecipesApi, UsersApi } from '../../../helpers/api';
+import { imagesApi, recipesApi, usersApi } from '../../../helpers/api';
 import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import state from '../../../stores/state';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
 
 @Component({
   tag: 'page-home',
@@ -77,7 +78,7 @@ export class PageHome {
 
   private async loadUserSettings() {
     try {
-      this.userSettings = await UsersApi.getSettings(this.el);
+      this.userSettings = (await usersApi.usersUserIdSettingsGet(state.currentUser.id.toString())).data;
     } catch (ex) {
       console.error(ex);
     }
@@ -106,10 +107,10 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = await UsersApi.getAllSearchFilters(this.el);
+      const savedFilters = (await usersApi.usersUserIdFiltersGet(state.currentUser.id.toString())).data
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
-          const savedSearchFilter = await UsersApi.getSearchFilter(this.el, savedFilter.userId, savedFilter.id);
+          const savedSearchFilter = (await usersApi.usersUserIdFiltersFilterIdGet(savedFilter.userId.toString(), savedFilter.id)).data;
           const { total, recipes } = await this.performSearch(savedSearchFilter);
           searches.push({
             title: savedSearchFilter.name,
@@ -132,24 +133,26 @@ export class PageHome {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      return await RecipesApi.find(this.el, filter, 1, 6);
+      return (await recipesApi.recipesGet(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 6)).data;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');
     }
   }
 
-  private async saveNewRecipe(recipe: Recipe, formData: FormData) {
+  private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipeId = await RecipesApi.post(this.el, recipe);
+      const newRecipe = (await recipesApi.recipesPost(recipe)).data;
 
-      if (formData) {
+      if (file) {
         await showLoading(
-          async () => await RecipesApi.postImage(this.el, newRecipeId, formData),
+          async () => {
+            await imagesApi.recipesRecipeIdImagesPost(newRecipe.id, file);
+          },
           'Uploading picture...');
       }
 
-      await redirect(`/recipes/${newRecipeId}`);
+      await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create new recipe.');
@@ -165,9 +168,9 @@ export class PageHome {
 
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ recipe: Recipe, formData: FormData }>();
+      const resp = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
       if (resp.data) {
-        await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+        await this.saveNewRecipe(resp.data.recipe, resp.data.file);
       }
     });
   }
