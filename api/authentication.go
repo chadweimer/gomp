@@ -11,28 +11,18 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-type authenticateRequest struct {
-	UserName string `json:"username"`
-	Password string `json:"password"`
-}
-
-type authenticateResponse struct {
-	Token string       `json:"token"`
-	User  *models.User `json:"user"`
-}
-
 func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request) {
-	var authRequest authenticateRequest
-	if err := readJSONFromRequest(req, &authRequest); err != nil {
+	var credentials models.Credentials
+	if err := readJSONFromRequest(req, &credentials); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	user, err := h.db.Users().Authenticate(authRequest.UserName, authRequest.Password)
+	user, err := h.db.Users().Authenticate(*credentials.Username, *credentials.Password)
 	if err != nil {
 		h.Error(resp, http.StatusUnauthorized, err)
 		return
@@ -49,7 +39,7 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 		h.Error(resp, http.StatusInternalServerError, err)
 	}
 
-	h.OK(resp, authenticateResponse{Token: tokenStr, User: user})
+	h.OK(resp, models.AuthenticationResponse{Token: tokenStr, User: user})
 }
 
 func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
@@ -213,12 +203,12 @@ func (h *apiHandler) verifyUserExists(userID int64) (*models.User, error) {
 		return nil, errors.New("error retrieving user info")
 	}
 
-	return user, nil
+	return &user.User, nil
 }
 
 func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
-	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.UserLevel)
-	if accessLevel != models.AdminUserLevel {
+	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
+	if accessLevel != models.AccessLevelAdmin {
 		return fmt.Errorf("endpoint '%s' requires admin rights", req.URL.Path)
 	}
 
@@ -226,8 +216,8 @@ func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
 }
 
 func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
-	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.UserLevel)
-	if accessLevel != models.AdminUserLevel && accessLevel != models.EditorUserLevel {
+	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
+	if accessLevel != models.AccessLevelAdmin && accessLevel != models.AccessLevelEditor {
 		return fmt.Errorf("endpoint '%s' requires edit rights", req.URL.Path)
 	}
 

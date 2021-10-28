@@ -4,8 +4,16 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
+
+// UserWithPasswordHash reprents a user including the password hash in the database
+type UserWithPasswordHash struct {
+	models.User
+
+	PasswordHash string `json:"-" db:"password_hash"`
+}
 
 type sqlDriver struct {
 	Db *sqlx.DB

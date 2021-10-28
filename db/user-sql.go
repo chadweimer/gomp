@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -15,7 +15,7 @@ type sqlUserDriver struct {
 }
 
 func (d *sqlUserDriver) Authenticate(username, password string) (*models.User, error) {
-	user := new(models.User)
+	user := new(UserWithPasswordHash)
 
 	if err := d.Db.Get(user, "SELECT * FROM app_user WHERE username = $1", username); err != nil {
 		return nil, err
@@ -25,16 +25,16 @@ func (d *sqlUserDriver) Authenticate(username, password string) (*models.User, e
 		return nil, err
 	}
 
-	return user, nil
+	return &user.User, nil
 }
 
-func (d *sqlUserDriver) Create(user *models.User) error {
+func (d *sqlUserDriver) Create(user *UserWithPasswordHash) error {
 	return d.tx(func(tx *sqlx.Tx) error {
 		return d.createtx(user, tx)
 	})
 }
 
-func (d *sqlUserDriver) createtx(user *models.User, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) createtx(user *UserWithPasswordHash, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3)"
 
@@ -47,8 +47,8 @@ func (d *sqlUserDriver) createtx(user *models.User, tx *sqlx.Tx) error {
 	return nil
 }
 
-func (d *sqlUserDriver) Read(id int64) (*models.User, error) {
-	user := new(models.User)
+func (d *sqlUserDriver) Read(id int64) (*UserWithPasswordHash, error) {
+	user := new(UserWithPasswordHash)
 
 	err := d.Db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
 	if err == sql.ErrNoRows {
@@ -91,7 +91,7 @@ func (d *sqlUserDriver) updatePasswordtx(id int64, password, newPassword string,
 
 	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return errors.New("Invalid password specified")
+		return errors.New("invalid password specified")
 	}
 
 	_, err = tx.Exec("UPDATE app_user SET password_hash = $1 WHERE ID = $2",
@@ -163,7 +163,7 @@ func (d *sqlUserDriver) deletetx(id int64, tx *sqlx.Tx) error {
 func (d *sqlUserDriver) List() (*[]models.User, error) {
 	var users []models.User
 
-	if err := d.Db.Select(&users, "SELECT * FROM app_user ORDER BY username ASC"); err != nil {
+	if err := d.Db.Select(&users, "SELECT id, username, access_level FROM app_user ORDER BY username ASC"); err != nil {
 		return nil, err
 	}
 
@@ -205,7 +205,7 @@ func (d *sqlUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, t
 	return nil
 }
 
-func (d *sqlUserDriver) SetSearchFilterFieldsTx(filterID int64, fields []string, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) SetSearchFilterFieldsTx(filterID int64, fields []models.SearchField, tx *sqlx.Tx) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	_, err := tx.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterID)
 	if err != nil {
@@ -224,7 +224,7 @@ func (d *sqlUserDriver) SetSearchFilterFieldsTx(filterID int64, fields []string,
 	return nil
 }
 
-func (d *sqlUserDriver) SetSearchFilterStatesTx(filterID int64, states []string, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) SetSearchFilterStatesTx(filterID int64, states []models.RecipeState, tx *sqlx.Tx) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	_, err := tx.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterID)
 	if err != nil {
@@ -283,7 +283,7 @@ func (d *sqlUserDriver) readSearchFilterTx(userID int64, filterID int64, tx *sql
 		return nil, err
 	}
 
-	var fields []string
+	var fields []models.SearchField
 	err = tx.Select(
 		&fields,
 		"SELECT field_name FROM search_filter_field WHERE search_filter_id = $1",
@@ -293,7 +293,7 @@ func (d *sqlUserDriver) readSearchFilterTx(userID int64, filterID int64, tx *sql
 	}
 	filter.Fields = fields
 
-	var states []string
+	var states []models.RecipeState
 	err = tx.Select(
 		&states,
 		"SELECT state FROM search_filter_state WHERE search_filter_id = $1",
@@ -384,7 +384,7 @@ func (d *sqlUserDriver) ListSearchFilters(userID int64) (*[]models.SavedSearchFi
 	return &filters, nil
 }
 
-func (d *sqlUserDriver) verifyPassword(user *models.User, password string) error {
+func (d *sqlUserDriver) verifyPassword(user *UserWithPasswordHash, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return errors.New("username or password invalid")
 	}

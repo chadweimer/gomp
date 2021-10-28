@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
 )
 
@@ -16,11 +16,11 @@ type getRecipesResponse struct {
 
 func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 	query := getParam(req.URL.Query(), "q")
-	fields := getParams(req.URL.Query(), "fields[]")
+	fields := asFields(getParams(req.URL.Query(), "fields[]"))
 	tags := getParams(req.URL.Query(), "tags[]")
-	states := getParams(req.URL.Query(), "states[]")
-	sortBy := getParam(req.URL.Query(), "sort")
-	sortDir := getParam(req.URL.Query(), "dir")
+	states := asStates(getParams(req.URL.Query(), "states[]"))
+	sortBy := models.SortBy(getParam(req.URL.Query(), "sort"))
+	sortDir := models.SortDir(getParam(req.URL.Query(), "dir"))
 
 	var withPictures *bool
 	pictures := getParam(req.URL.Query(), "pictures")
@@ -187,4 +187,20 @@ func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request
 	}
 
 	h.NoContent(resp)
+}
+
+func asStates(arr []string) []models.RecipeState {
+	states := make([]models.RecipeState, len(arr))
+	for i, val := range arr {
+		states[i] = models.RecipeState(val)
+	}
+	return states
+}
+
+func asFields(arr []string) []models.SearchField {
+	fields := make([]models.SearchField, len(arr))
+	for i, val := range arr {
+		fields[i] = models.SearchField(val)
+	}
+	return fields
 }

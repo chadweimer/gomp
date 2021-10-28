@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 )
 
 // ---- Begin Standard Errors ----
@@ -143,9 +143,6 @@ type TagDriver interface {
 
 	// List retrieves all tags associated with the recipe with the specified id.
 	List(recipeID int64) (*[]string, error)
-
-	// Find retrieves all tags matching the specified search filter and within the range specified.
-	Find(filter *models.TagsFilter) (*[]string, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.
@@ -155,11 +152,11 @@ type UserDriver interface {
 
 	// Create stores the user in the database as a new record using
 	// a dedicated transation that is committed if there are not errors.
-	Create(user *models.User) error
+	Create(user *UserWithPasswordHash) error
 
 	// Read retrieves the information about the user from the database, if found.
 	// If no user exists with the specified ID, a NoRecordFound error is returned.
-	Read(id int64) (*models.User, error)
+	Read(id int64) (*UserWithPasswordHash, error)
 
 	// Update stores the user in the database by updating the existing record with the specified
 	// id using a dedicated transation that is committed if there are not errors.
@@ -233,13 +230,4 @@ type RecipeImageDriver interface {
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transation that is committed if there are not errors.
 	DeleteAll(recipeID int64) error
-}
-
-func containsString(arr []string, str string) bool {
-	for _, a := range arr {
-		if a == str {
-			return true
-		}
-	}
-	return false
 }

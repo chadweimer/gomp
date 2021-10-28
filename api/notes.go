@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 )
 
 func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {

@@ -42,3 +42,6 @@ _testmain.go
 
 # Ignore default runtime folder
 /data
+
+# Ignore generated files
+generated/

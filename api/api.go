@@ -87,7 +87,6 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 			r.Get(fmt.Sprintf("/recipes/{%s}/images", recipeIDKey), h.getRecipeImages)
 			r.Get(fmt.Sprintf("/recipes/{%s}/notes", recipeIDKey), h.getRecipeNotes)
 			r.Get(fmt.Sprintf("/recipes/{%s}/links", recipeIDKey), h.getRecipeLinks)
-			r.Get("/tags", h.getTags)
 
 			// Editor
 			r.Group(func(r chi.Router) {

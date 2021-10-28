@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -109,18 +109,18 @@ func (d *postgresRecipeDriver) Find(filter *models.SearchFilter, page int64, cou
 		// If the filter didn't specify the fields to search on, use all of them
 		filterFields := filter.Fields
 		if filterFields == nil || len(filterFields) == 0 {
-			filterFields = models.SupportedSearchFields[:]
+			filterFields = supportedSearchFields[:]
 		}
 
 		// Build up the string of fields to query against
 		fieldStr := ""
 		fieldArgs := make([]interface{}, 0)
-		for _, field := range models.SupportedSearchFields {
-			if containsString(filterFields, field) {
+		for _, field := range supportedSearchFields {
+			if containsField(filterFields, field) {
 				if fieldStr != "" {
 					fieldStr += " OR "
 				}
-				fieldStr += "to_tsvector('english', r." + field + ") @@ plainto_tsquery(?)"
+				fieldStr += "to_tsvector('english', r." + string(field) + ") @@ plainto_tsquery(?)"
 				fieldArgs = append(fieldArgs, filter.Query)
 			}
 		}
@@ -159,17 +159,17 @@ func (d *postgresRecipeDriver) Find(filter *models.SearchFilter, page int64, cou
 
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
-	case models.SortRecipeByID:
+	case models.SortByID:
 		orderStmt += "r.id"
-	case models.SortRecipeByCreatedDate:
+	case models.SortByCreated:
 		orderStmt += "r.created_at"
-	case models.SortRecipeByModifiedDate:
+	case models.SortByModified:
 		orderStmt += "r.modified_at"
-	case models.SortRecipeByRating:
+	case models.SortByRating:
 		orderStmt += "avg_rating"
 	case models.SortByRandom:
 		orderStmt += "RANDOM()"
-	case models.SortRecipeByName:
+	case models.SortByName:
 		fallthrough
 	default:
 		orderStmt += "r.name"
@@ -181,7 +181,7 @@ func (d *postgresRecipeDriver) Find(filter *models.SearchFilter, page int64, cou
 	// cause uncertain results due to many recipes having the same rating (ties).
 	// By adding an additional sort to show recently modified recipes first,
 	// this ensures a consistent result.
-	if filter.SortBy == models.SortRecipeByRating {
+	if filter.SortBy == models.SortByRating {
 		orderStmt += ", r.modified_at DESC"
 	}
 

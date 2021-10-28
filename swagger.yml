@@ -714,12 +714,14 @@ definitions:
       - admin
       - editor
       - viewer
+    x-go-custom-tag: 'db:"access_level"'
   recipeState:
     type: string
     enum:
       - active
       - archived
       - deleted
+    x-go-custom-tag: 'db:"current_state"'
   searchField:
     type: string
     enum:
@@ -735,11 +737,13 @@ definitions:
       - created
       - modified
       - random
+    x-go-custom-tag: 'db:"sort_by"'
   sortDir:
     type: string
     enum:
       - asc
       - desc
+    x-go-custom-tag: 'db:"sort_dir"'
   # Types
   appInfo:
     type: object
@@ -1005,7 +1009,6 @@ definitions:
         x-go-custom-tag: 'db:"id"'
       username:
         type: string
-        format: email
         x-go-custom-tag: 'db:"username"'
       accessLevel:
         $ref: "#/definitions/accessLevel"

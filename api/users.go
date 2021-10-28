@@ -6,14 +6,14 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type userPostParameters struct {
-	Username    string           `json:"username"`
-	Password    string           `json:"password"`
-	AccessLevel models.UserLevel `json:"accessLevel"`
+	Username    string             `json:"username"`
+	Password    string             `json:"password"`
+	AccessLevel models.AccessLevel `json:"accessLevel"`
 }
 
 type userPutPasswordParameters struct {
@@ -63,13 +63,12 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user := models.User{
-		Username:     newUser.Username,
-		PasswordHash: string(passwordHash),
-		AccessLevel:  newUser.AccessLevel,
-	}
+	user := new(db.UserWithPasswordHash)
+	user.Username = newUser.Username
+	user.PasswordHash = string(passwordHash)
+	user.AccessLevel = newUser.AccessLevel
 
-	if err := h.db.Users().Create(&user); err != nil {
+	if err := h.db.Users().Create(user); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -163,7 +162,7 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 	// Default to the application title if the user hasn't set their own
 	if userSettings.HomeTitle == nil {
 		if cfg, err := h.db.AppConfiguration().Read(); err == nil {
-			userSettings.HomeTitle = &cfg.Title
+			userSettings.HomeTitle = cfg.Title
 		}
 	}
 
