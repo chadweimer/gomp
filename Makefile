@@ -57,11 +57,11 @@ $(CODEGEN_DIR): swagger.yml
 lint: lint-client lint-server
 
 .PHONY: lint-client
-lint-client: $(CLIENT_INSTALL_DIR)
+lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 	cd static && npm run lint
 
 .PHONY: lint-server
-lint-server:
+lint-server: $(CODEGEN_DIR)
 	go vet ./...
 
 
