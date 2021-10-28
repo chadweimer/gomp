@@ -40,14 +40,14 @@ func (d *sqlNoteDriver) updatetx(note *models.Note, tx *sqlx.Tx) error {
 	return err
 }
 
-func (d *sqlNoteDriver) Delete(id int64) error {
+func (d *sqlNoteDriver) Delete(recipeID, noteID int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
-		return d.deletetx(id, tx)
+		return d.deletetx(recipeID, noteID, tx)
 	})
 }
 
-func (d *sqlNoteDriver) deletetx(id int64, tx *sqlx.Tx) error {
-	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = $1", id)
+func (d *sqlNoteDriver) deletetx(recipeID, noteID int64, tx *sqlx.Tx) error {
+	_, err := tx.Exec("DELETE FROM recipe_note WHERE id = $1 AND recipe_id = $2", noteID, recipeID)
 	return err
 }
 

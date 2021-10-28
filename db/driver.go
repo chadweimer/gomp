@@ -91,7 +91,7 @@ type NoteDriver interface {
 
 	// Delete removes the specified note from the database using a dedicated transation
 	// that is committed if there are not errors.
-	Delete(id int64) error
+	Delete(recipeID, noteID int64) error
 
 	// DeleteAll removes all notes for the specified recipe from the database using a dedicated
 	// transation that is committed if there are not errors.
