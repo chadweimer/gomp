@@ -162,6 +162,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: "#/definitions/recipeImage"
   /recipes/{recipeId}/images/{imageId}:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
@@ -199,6 +201,9 @@ paths:
       responses:
         "201":
           description: Created
+          headers:
+            Location:
+              type: string
   /recipes/{recipeId}/links/{destRecipeId}:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
@@ -320,6 +325,9 @@ paths:
       responses:
         "201":
           description: Created
+          headers:
+            Location:
+              type: string
   /users:
     get:
       tags: [users]
