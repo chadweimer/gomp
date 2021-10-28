@@ -1,7 +1,7 @@
 import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../generated';
-import { imagesApi, recipesApi } from '../../../helpers/api';
+import { recipesApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import { DefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
@@ -173,7 +173,7 @@ export class PageSearch {
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {
-      const { total, recipes } = (await recipesApi.recipesGet(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount())).data;
+      const { total, recipes } = (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount())).data;
       this.recipes = recipes ?? [];
       state.searchResultCount = total;
 
@@ -240,12 +240,12 @@ export class PageSearch {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipe = (await recipesApi.recipesPost(recipe)).data;
+      const newRecipe = (await recipesApi.addRecipe(recipe)).data;
 
       if (file) {
         await showLoading(
           async () => {
-            await imagesApi.recipesRecipeIdImagesPost(newRecipe.id, file);
+            await recipesApi.uploadImage(newRecipe.id, file);
           },
           'Uploading picture...');
       }

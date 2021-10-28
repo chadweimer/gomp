@@ -58,7 +58,7 @@ export class PageLogin {
   private async onLoginClicked() {
     try {
       this.errorMessage = '';
-      const resp = (await appApi.authPost({ username: this.username, password: this.password })).data;
+      const resp = (await appApi.authenticate({ username: this.username, password: this.password })).data;
 
       // Store the token so we stay logged in
       state.jwtToken = resp.token;

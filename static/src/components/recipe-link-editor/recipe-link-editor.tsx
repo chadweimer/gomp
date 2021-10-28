@@ -83,7 +83,7 @@ export class RecipeLinkEditor {
     if (this.includeArchived) {
       filter.states = [...filter.states, RecipeState.Archived];
     }
-    const { recipes } = (await recipesApi.recipesGet(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 20)).data;
+    const { recipes } = (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 20)).data;
 
     // Clear current selection
     this.selectedRecipeId = null;

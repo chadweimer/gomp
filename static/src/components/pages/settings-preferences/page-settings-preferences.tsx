@@ -68,7 +68,7 @@ export class PageSettingsPreferences {
 
   private async loadUserSettings() {
     try {
-      this.settings = (await usersApi.usersUserIdSettingsGet(state.currentUser.id.toString())).data;
+      this.settings = (await usersApi.getSettings(state.currentUser.id.toString())).data;
     } catch (ex) {
       console.error(ex);
     }
@@ -76,7 +76,7 @@ export class PageSettingsPreferences {
 
   private async saveUserSettings() {
     try {
-      await usersApi.usersUserIdSettingsPut(state.currentUser.id.toString(), this.settings);
+      await usersApi.saveSettings(state.currentUser.id.toString(), this.settings);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save preferences.');
@@ -91,7 +91,7 @@ export class PageSettingsPreferences {
     if (this.imageInput.value) {
       await showLoading(
         async () => {
-          const resp = await appApi.uploadsPost(this.imageInput.files[0]);
+          const resp = await appApi.upload(this.imageInput.files[0]);
           this.settings = {
             ...this.settings,
             homeImageUrl: getLocationFromResponse(resp.headers)

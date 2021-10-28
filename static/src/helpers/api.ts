@@ -1,4 +1,4 @@
-import { AppApi, Configuration, ImagesApi, LinksApi, NotesApi, RecipesApi, UsersApi } from '../generated';
+import { AppApi, Configuration, RecipesApi, UsersApi } from '../generated';
 import state from '../stores/state';
 
 const configuration = new Configuration({
@@ -7,9 +7,6 @@ const configuration = new Configuration({
 });
 
 export const appApi = new AppApi(configuration);
-export const imagesApi = new ImagesApi(configuration);
-export const linksApi = new LinksApi(configuration);
-export const notesApi = new NotesApi(configuration);
 export const recipesApi = new RecipesApi(configuration);
 export const usersApi = new UsersApi(configuration);
 

@@ -1,18 +1,16 @@
-import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
+import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { DefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { imagesApi, recipesApi, usersApi } from '../../../helpers/api';
+import { recipesApi, usersApi } from '../../../helpers/api';
 import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy } from '../../../generated';
 
 @Component({
   tag: 'page-home',
   styleUrl: 'page-home.css'
 })
 export class PageHome {
-  @Prop() userSettings: UserSettings | null;
-
   @State() searches: {
     title: string,
     filter: SearchFilter,
@@ -24,7 +22,6 @@ export class PageHome {
 
   @Method()
   async activatedCallback() {
-    await this.loadUserSettings();
     await this.loadSearchFilters();
   }
 
@@ -36,8 +33,8 @@ export class PageHome {
             <ion-row>
               <ion-col>
                 <header class="ion-text-center">
-                  <h1>{this.userSettings?.homeTitle}</h1>
-                  <img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+                  <h1>{state.currentUserSettings?.homeTitle}</h1>
+                  <img alt="Home Image" src={state.currentUserSettings?.homeImageUrl} hidden={!state.currentUserSettings?.homeImageUrl} />
                 </header>
               </ion-col>
             </ion-row>
@@ -76,14 +73,6 @@ export class PageHome {
     );
   }
 
-  private async loadUserSettings() {
-    try {
-      this.userSettings = (await usersApi.usersUserIdSettingsGet(state.currentUser.id.toString())).data;
-    } catch (ex) {
-      console.error(ex);
-    }
-  }
-
   private async loadSearchFilters() {
     try {
       const searches: {
@@ -107,10 +96,10 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = (await usersApi.usersUserIdFiltersGet(state.currentUser.id.toString())).data
+      const savedFilters = (await usersApi.getSearchFilters(state.currentUser.id.toString())).data
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
-          const savedSearchFilter = (await usersApi.usersUserIdFiltersFilterIdGet(savedFilter.userId.toString(), savedFilter.id)).data;
+          const savedSearchFilter = (await usersApi.getSearchFilter(savedFilter.userId.toString(), savedFilter.id)).data;
           const { total, recipes } = await this.performSearch(savedSearchFilter);
           searches.push({
             title: savedSearchFilter.name,
@@ -133,7 +122,7 @@ export class PageHome {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      return (await recipesApi.recipesGet(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 6)).data;
+      return (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 6)).data;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');
@@ -142,12 +131,12 @@ export class PageHome {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipe = (await recipesApi.recipesPost(recipe)).data;
+      const newRecipe = (await recipesApi.addRecipe(recipe)).data;
 
       if (file) {
         await showLoading(
           async () => {
-            await imagesApi.recipesRecipeIdImagesPost(newRecipe.id, file);
+            await recipesApi.uploadImage(newRecipe.id, file);
           },
           'Uploading picture...');
       }

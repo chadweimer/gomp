@@ -185,8 +185,8 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      appConfig.info = (await appApi.appInfoGet()).data;
-      appConfig.config = (await appApi.appConfigurationGet()).data;
+      appConfig.info = (await appApi.getInfo()).data;
+      appConfig.config = (await appApi.getConfiguration()).data;
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
@@ -215,8 +215,8 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Refresh the user so that access controls are properly enforced
       try {
-        state.currentUser = (await usersApi.usersUserIdGet('current')).data
-        state.currentUserSettings = (await usersApi.usersUserIdSettingsGet('current')).data;
+        state.currentUser = (await usersApi.getUser('current')).data
+        state.currentUserSettings = (await usersApi.getSettings('current')).data;
       } catch (ex) {
         console.error(ex);
       }
@@ -280,8 +280,8 @@ export class AppRoot {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
-        state.currentUser = (await usersApi.usersUserIdGet('current')).data
-        state.currentUserSettings = (await usersApi.usersUserIdSettingsGet('current')).data;
+        state.currentUser = (await usersApi.getUser('current')).data
+        state.currentUserSettings = (await usersApi.getSettings('current')).data;
       } catch (ex) {
         console.error(ex);
       }

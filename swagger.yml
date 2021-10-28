@@ -14,6 +14,7 @@ paths:
   /app/info:
     get:
       tags: [app]
+      operationId: getInfo
       description: get application info
       responses:
         "200":
@@ -23,6 +24,7 @@ paths:
   /app/configuration:
     get:
       tags: [app]
+      operationId: getConfiguration
       description: get application configuration
       responses:
         "200":
@@ -31,6 +33,7 @@ paths:
             $ref: "#/definitions/appConfiguration"
     put:
       tags: [app]
+      operationId: saveConfiguration
       description: modify application configuration
       parameters:
         - $ref: "#/parameters/appConfigurationInBody"
@@ -40,6 +43,7 @@ paths:
   /auth:
     post:
       tags: [app]
+      operationId: authenticate
       description: perform user authentication
       parameters:
         - $ref: "#/parameters/credentialsInBody"
@@ -51,6 +55,7 @@ paths:
   /recipes:
     get:
       tags: [recipes]
+      operationId: find
       description: list the recipes
       security:
         - Bearer: []
@@ -71,6 +76,7 @@ paths:
             $ref: "#/definitions/searchResult"
     post:
       tags: [recipes]
+      operationId: addRecipe
       description: add a recipe
       security:
         - Bearer: []
@@ -86,6 +92,7 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
     get:
       tags: [recipes]
+      operationId: getRecipe
       description: get a single recipe
       security:
         - Bearer: []
@@ -96,6 +103,7 @@ paths:
             $ref: "#/definitions/recipe"
     put:
       tags: [recipes]
+      operationId: saveRecipe
       description: modify an existing recipe
       security:
         - Bearer: []
@@ -106,6 +114,7 @@ paths:
           description: No Content
     delete:
       tags: [recipes]
+      operationId: deleteRecipe
       description: delete an existing recipe
       security:
         - Bearer: []
@@ -116,7 +125,8 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags: [images]
+      tags: [recipes]
+      operationId: getMainImage
       description: get the main image of a recipe
       security:
         - Bearer: []
@@ -126,7 +136,8 @@ paths:
           schema:
             $ref: "#/definitions/recipeImage"
     put:
-      tags: [images]
+      tags: [recipes]
+      operationId: setMainImage
       description: set the main image of a recipe
       security:
         - Bearer: []
@@ -139,7 +150,8 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags: [images]
+      tags: [recipes]
+      operationId: getImages
       description: get the images on a recipe
       security:
         - Bearer: []
@@ -151,7 +163,8 @@ paths:
             items:
               $ref: "#/definitions/recipeImage"
     post:
-      tags: [images]
+      tags: [recipes]
+      operationId: uploadImage
       description: add an image to a recipe
       security:
         - Bearer: []
@@ -169,7 +182,8 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
       - $ref: "#/parameters/imageIdInPath"
     delete:
-      tags: [images]
+      tags: [recipes]
+      operationId: deleteImage
       description: delete an existing image from a recipe
       security:
         - Bearer: []
@@ -180,7 +194,8 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags: [links]
+      tags: [recipes]
+      operationId: getLinks
       description: get the links on a recipe
       security:
         - Bearer: []
@@ -192,7 +207,8 @@ paths:
             items:
               $ref: "#/definitions/recipeCompact"
     post:
-      tags: [links]
+      tags: [recipes]
+      operationId: addLink
       description: add a link to a recipe
       security:
         - Bearer: []
@@ -209,7 +225,8 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
       - $ref: "#/parameters/destRecipeIdInPath"
     delete:
-      tags: [links]
+      tags: [recipes]
+      operationId: deleteLink
       description: delete an existing link
       security:
         - Bearer: []
@@ -220,7 +237,8 @@ paths:
     parameters:
       - $ref: "#/parameters/recipeIdInPath"
     get:
-      tags: [notes]
+      tags: [recipes]
+      operationId: getNotes
       description: get the notes on a recipe
       security:
         - Bearer: []
@@ -232,7 +250,8 @@ paths:
             items:
               $ref: "#/definitions/note"
     post:
-      tags: [notes]
+      tags: [recipes]
+      operationId: addNote
       description: add a note to a recipe
       security:
         - Bearer: []
@@ -248,7 +267,8 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
       - $ref: "#/parameters/noteIdInPath"
     put:
-      tags: [notes]
+      tags: [recipes]
+      operationId: saveNote
       description: modify a note
       security:
         - Bearer: []
@@ -258,8 +278,8 @@ paths:
         "204":
           description: No Content
     delete:
-      tags:
-        - notes
+      tags: [recipes]
+      operationId: deleteNote
       description: delete an existing note
       security:
         - Bearer: []
@@ -271,6 +291,7 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
     get:
       tags: [recipes]
+      operationId: getRating
       description: get the current rating of a recipe
       security:
         - Bearer: []
@@ -281,6 +302,7 @@ paths:
             type: integer
     put:
       tags: [recipes]
+      operationId: setRating
       description: modify the rating of a recipe
       security:
         - Bearer: []
@@ -294,6 +316,7 @@ paths:
       - $ref: "#/parameters/recipeIdInPath"
     get:
       tags: [recipes]
+      operationId: getState
       description: get the state of a recipe
       security:
         - Bearer: []
@@ -304,6 +327,7 @@ paths:
             $ref: "#/definitions/recipeState"
     put:
       tags: [recipes]
+      operationId: setState
       description: modify the state of a recipe
       security:
         - Bearer: []
@@ -315,6 +339,7 @@ paths:
   /uploads:
     post:
       tags: [app]
+      operationId: upload
       description: Upload a file
       security:
         - Bearer: []
@@ -331,6 +356,7 @@ paths:
   /users:
     get:
       tags: [users]
+      operationId: getAllUsers
       description: get list of users
       security:
         - Bearer: []
@@ -343,6 +369,7 @@ paths:
               $ref: "#/definitions/user"
     post:
       tags: [users]
+      operationId: addUser
       description: add a of user
       security:
         - Bearer: []
@@ -358,6 +385,7 @@ paths:
       - $ref: "#/parameters/userIdInPath"
     get:
       tags: [users]
+      operationId: getUser
       description: get a user
       security:
         - Bearer: []
@@ -368,6 +396,7 @@ paths:
             $ref: "#/definitions/user"
     put:
       tags: [users]
+      operationId: saveUser
       description: modify a user
       security:
         - Bearer: []
@@ -378,6 +407,7 @@ paths:
           description: No Content
     delete:
       tags: [users]
+      operationId: deleteUser
       description: delete an existing user
       security:
         - Bearer: []
@@ -389,6 +419,7 @@ paths:
       - $ref: "#/parameters/userIdInPath"
     get:
       tags: [users]
+      operationId: getSearchFilters
       description: get a list of search filters
       security:
         - Bearer: []
@@ -401,6 +432,7 @@ paths:
               $ref: "#/definitions/savedSearchFilterCompact"
     post:
       tags: [users]
+      operationId: addSearchFilter
       description: add a search filter
       security:
         - Bearer: []
@@ -417,6 +449,7 @@ paths:
       - $ref: "#/parameters/filterIdInPath"
     get:
       tags: [users]
+      operationId: getSearchFilter
       description: get a search filter
       security:
         - Bearer: []
@@ -427,6 +460,7 @@ paths:
             $ref: "#/definitions/savedSearchFilter"
     put:
       tags: [users]
+      operationId: saveSearchFilter
       description: modify the search filter
       security:
         - Bearer: []
@@ -437,6 +471,7 @@ paths:
           description: No Content
     delete:
       tags: [users]
+      operationId: deleteSearchFilter
       description: delete a search filter
       security:
         - Bearer: []
@@ -448,6 +483,7 @@ paths:
       - $ref: "#/parameters/userIdInPath"
     put:
       tags: [users]
+      operationId: changePassword
       description: update a user's password
       security:
         - Bearer: []
@@ -461,6 +497,7 @@ paths:
       - $ref: "#/parameters/userIdInPath"
     get:
       tags: [users]
+      operationId: getSettings
       description: get the settings of a user
       security:
         - Bearer: []
@@ -471,6 +508,7 @@ paths:
             $ref: "#/definitions/userSettings"
     put:
       tags: [users]
+      operationId: saveSettings
       description: modify the settings of a user
       security:
         - Bearer: []
