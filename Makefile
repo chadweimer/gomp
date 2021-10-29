@@ -46,9 +46,9 @@ $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) swagger.yml
 	cd static && npm run codegen
 
 $(CODEGEN_DIR): swagger.yml
-	rm -rf generated/
-	mkdir -p generated/
-	swagger generate model -t generated/
+	rm -rf $@
+	mkdir -p $@
+	swagger generate model -t $@
 
 
 # ---- LINT ----
@@ -73,6 +73,7 @@ build: $(BUILD_LIN_AMD64_DIR) $(BUILD_LIN_ARM_DIR) $(BUILD_LIN_ARM64_DIR) $(BUIL
 .PHONY: clean
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	rm -rf $(BUILD_DIR)
+	rm -rf $(CODEGEN_DIR)
 
 # - GENERIC ARCH -
 

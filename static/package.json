@@ -11,7 +11,7 @@
     "lint": "eslint . --ext .ts,.tsx",
     "build": "stencil build",
     "clear": "rm -fr ./node_modules",
-    "clean": "rm -fr ./www",
+    "clean": "rm -fr ./www && rm -fr src/generated",
     "codegen": "rm -rf src/generated && openapi-generator-cli generate -i ../swagger.yml -g typescript-axios -o src/generated",
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
