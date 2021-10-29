@@ -42,7 +42,7 @@ uninstall:
 
 
 # ---- CODEGEN ----
-$(CLIENT_CODEGEN_DIR): swagger.yml
+$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) swagger.yml
 	cd static && npm run codegen
 
 $(CODEGEN_DIR): swagger.yml
