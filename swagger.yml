@@ -681,7 +681,7 @@ parameters:
       type: string
     collectionFormat: multi
   sortByInQuery:
-    name: sortBy
+    name: sort
     in: query
     type: string
     enum:
@@ -692,7 +692,7 @@ parameters:
       - modified
       - random
   sortDirInQuery:
-    name: sortDir
+    name: dir
     in: query
     type: string
     enum:
