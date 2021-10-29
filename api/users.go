@@ -10,17 +10,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userPostParameters struct {
-	Username    string             `json:"username"`
-	Password    string             `json:"password"`
-	AccessLevel models.AccessLevel `json:"accessLevel"`
-}
-
-type userPutPasswordParameters struct {
-	CurrentPassword string `json:"currentPassword"`
-	NewPassword     string `json:"newPassword"`
-}
-
 func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
 	userID, err := getResourceIDFromURL(req, userIDKey)
 	if err != nil {
@@ -51,7 +40,7 @@ func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
-	newUser := new(userPostParameters)
+	newUser := new(models.UserWithPassword)
 	if err := readJSONFromRequest(req, newUser); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -127,7 +116,7 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	params := new(userPutPasswordParameters)
+	params := new(models.UserPasswordRequest)
 	if err := readJSONFromRequest(req, params); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
