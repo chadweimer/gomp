@@ -57,7 +57,7 @@ export class PageAdminUsers {
 
   private async loadUsers() {
     try {
-      this.users = (await usersApi.getAllUsers()).data;
+      this.users = (await usersApi.getAllUsers()).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
