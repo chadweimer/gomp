@@ -96,7 +96,7 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = (await usersApi.getSearchFilters(state.currentUser.id.toString())).data
+      const savedFilters = (await usersApi.getSearchFilters(state.currentUser.id.toString())).data;
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
           const savedSearchFilter = (await usersApi.getSearchFilter(savedFilter.userId.toString(), savedFilter.id)).data;

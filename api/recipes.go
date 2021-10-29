@@ -24,7 +24,7 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 
 	var withPictures *bool
 	pictures := getParam(req.URL.Query(), "pictures")
-	if pictures != "" {
+	if pictures != "" && pictures != "null" {
 		withPics, err := strconv.ParseBool(pictures)
 		if err == nil {
 			withPictures = &withPics

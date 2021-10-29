@@ -19,7 +19,6 @@ export enum SwipeDirection {
 export class DefaultSearchFilter implements SearchFilter {
   constructor() {
     this.query = '';
-    this.withPictures = null;
     this.fields = [SearchField.Name, SearchField.Ingredients, SearchField.Directions];
     this.states = [RecipeState.Active];
     this.tags = [];
@@ -28,7 +27,7 @@ export class DefaultSearchFilter implements SearchFilter {
   }
 
   query: string;
-  withPictures: boolean | null;
+  withPictures?: boolean | null;
   fields: SearchField[];
   states: RecipeState[];
   tags: string[];

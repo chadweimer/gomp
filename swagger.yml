@@ -645,16 +645,15 @@ parameters:
     type: file
   # Query
   queryInQuery:
-    name: query
+    name: q
     in: query
     type: string
   withPicturesInQuery:
-    name: withPictures
+    name: pictures
     in: query
     type: boolean
-    x-nullable: true
   fieldsInQuery:
-    name: fields
+    name: fields[]
     in: query
     type: array
     items:
@@ -663,8 +662,9 @@ parameters:
         - name
         - ingredients
         - directions
+    collectionFormat: multi
   statesInQuery:
-    name: states
+    name: states[]
     in: query
     type: array
     items:
@@ -672,13 +672,14 @@ parameters:
       enum:
         - active
         - archived
-        - deleted
+    collectionFormat: multi
   tagsInQuery:
-    name: tags
+    name: tags[]
     in: query
     type: array
     items:
       type: string
+    collectionFormat: multi
   sortByInQuery:
     name: sortBy
     in: query
@@ -720,7 +721,6 @@ definitions:
     enum:
       - active
       - archived
-      - deleted
     x-go-custom-tag: 'db:"current_state"'
   searchField:
     type: string

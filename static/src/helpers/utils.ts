@@ -54,7 +54,7 @@ export function fromYesNoAny(value: YesNoAny) {
       return false;
 
     default:
-      return null;
+      return undefined;
   }
 }
 
