@@ -12,7 +12,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/models"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request) {
