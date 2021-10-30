@@ -2,9 +2,9 @@ module github.com/chadweimer/gomp
 
 require (
 	github.com/aws/aws-sdk-go v1.41.4
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.4
+	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
