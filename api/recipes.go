@@ -9,11 +9,6 @@ import (
 	"github.com/chadweimer/gomp/upload"
 )
 
-type getRecipesResponse struct {
-	Recipes *[]models.RecipeCompact `json:"recipes"`
-	Total   int64                   `json:"total"`
-}
-
 func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 	query := getParam(req.URL.Query(), "q")
 	fields := asFields(getParams(req.URL.Query(), "fields[]"))
@@ -62,7 +57,7 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.OK(resp, getRecipesResponse{Recipes: recipes, Total: total})
+	h.OK(resp, models.SearchResult{Recipes: *recipes, Total: total})
 }
 
 func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request) {

@@ -132,10 +132,12 @@ paths:
           in: query
           schema:
             type: integer
+            format: int64
         - name: count
           in: query
           schema:
             type: integer
+            format: int64
       responses:
         200:
           description: OK
@@ -446,7 +448,8 @@ paths:
           content:
             application/json:
               schema:
-                type: integer
+                type: number
+                format: float
       security:
         - Bearer: []
     put:
@@ -459,8 +462,8 @@ paths:
         content:
           application/json:
             schema:
-              type: integer
-              format: int64
+              type: number
+              format: float
         required: true
       responses:
         204:
@@ -1061,6 +1064,7 @@ components:
       properties:
         total:
           type: integer
+          format: int64
         recipes:
           type: array
           items:
@@ -1216,18 +1220,21 @@ components:
       required: true
       schema:
         type: integer
+        format: int64
     imageIdInPath:
       name: imageId
       in: path
       required: true
       schema:
         type: integer
+        format: int64
     noteIdInPath:
       name: noteId
       in: path
       required: true
       schema:
         type: integer
+        format: int64
     recipeIdInPath:
       name: recipeId
       in: path
@@ -1241,6 +1248,7 @@ components:
       required: true
       schema:
         type: integer
+        format: int64
   securitySchemes:
     Bearer:
       type: http
