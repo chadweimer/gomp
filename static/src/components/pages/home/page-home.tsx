@@ -96,10 +96,10 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = (await usersApi.getSearchFilters(state.currentUser.id.toString())).data ?? [];
+      const savedFilters = (await usersApi.getSearchFilters(state.currentUser.id)).data ?? [];
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
-          const savedSearchFilter = (await usersApi.getSearchFilter(savedFilter.userId.toString(), savedFilter.id)).data;
+          const savedSearchFilter = (await usersApi.getSearchFilter(savedFilter.userId, savedFilter.id)).data;
           const { total, recipes } = await this.performSearch(savedSearchFilter);
           searches.push({
             title: savedSearchFilter.name,

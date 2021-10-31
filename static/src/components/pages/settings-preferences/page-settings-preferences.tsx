@@ -68,7 +68,7 @@ export class PageSettingsPreferences {
 
   private async loadUserSettings() {
     try {
-      this.settings = (await usersApi.getSettings(state.currentUser.id.toString())).data;
+      this.settings = (await usersApi.getSettings(state.currentUser.id)).data;
     } catch (ex) {
       console.error(ex);
     }
@@ -76,7 +76,7 @@ export class PageSettingsPreferences {
 
   private async saveUserSettings() {
     try {
-      await usersApi.saveSettings(state.currentUser.id.toString(), this.settings);
+      await usersApi.saveSettings(state.currentUser.id, this.settings);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save preferences.');

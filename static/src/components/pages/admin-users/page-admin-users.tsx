@@ -74,7 +74,7 @@ export class PageAdminUsers {
 
   private async saveExistingUser(user: User) {
     try {
-      await usersApi.saveUser(user.id.toString(), user);
+      await usersApi.saveUser(user.id, user);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save user.');
@@ -83,7 +83,7 @@ export class PageAdminUsers {
 
   private async deleteUser(user: User) {
     try {
-      await usersApi.deleteUser(user.id.toString());
+      await usersApi.deleteUser(user.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete user.');

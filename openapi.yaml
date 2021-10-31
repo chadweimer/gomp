@@ -563,6 +563,20 @@ paths:
       security:
         - Bearer: []
       x-codegen-request-body-name: user
+  /users/current:
+    get:
+      tags: [users]
+      description: get the current user
+      operationId: getCurrentUser
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+      security:
+        - Bearer: []
   /users/{userId}:
     get:
       tags: [users]
@@ -1226,7 +1240,7 @@ components:
       in: path
       required: true
       schema:
-        type: string
+        type: integer
   securitySchemes:
     Bearer:
       type: http

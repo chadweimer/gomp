@@ -57,7 +57,7 @@ export class PageSettingsSearches {
 
   private async loadSearchFilters() {
     try {
-      this.filters = (await usersApi.getSearchFilters(state.currentUser.id.toString())).data ?? [];
+      this.filters = (await usersApi.getSearchFilters(state.currentUser.id)).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -65,7 +65,7 @@ export class PageSettingsSearches {
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.addSearchFilter(state.currentUser.id.toString(), searchFilter);
+      await usersApi.addSearchFilter(state.currentUser.id, searchFilter);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create search filter.');
@@ -74,7 +74,7 @@ export class PageSettingsSearches {
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.saveSearchFilter(state.currentUser.id.toString(), searchFilter.id, searchFilter);
+      await usersApi.saveSearchFilter(state.currentUser.id, searchFilter.id, searchFilter);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save search filter.');
@@ -83,7 +83,7 @@ export class PageSettingsSearches {
 
   private async deleteSearchFilter(searchFilter: SavedSearchFilterCompact) {
     try {
-      await usersApi.deleteSearchFilter(state.currentUser.id.toString(), searchFilter.id);
+      await usersApi.deleteSearchFilter(state.currentUser.id, searchFilter.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete search filter.');
@@ -115,7 +115,7 @@ export class PageSettingsSearches {
 
   private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
-      const searchFilter = (await usersApi.getSearchFilter(state.currentUser.id.toString(), searchFilterCompact.id)).data;
+      const searchFilter = (await usersApi.getSearchFilter(state.currentUser.id, searchFilterCompact.id)).data;
 
       const modal = await modalController.create({
         component: 'search-filter-editor',

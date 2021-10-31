@@ -215,8 +215,8 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Refresh the user so that access controls are properly enforced
       try {
-        state.currentUser = (await usersApi.getUser('current')).data
-        state.currentUserSettings = (await usersApi.getSettings('current')).data;
+        state.currentUser = (await usersApi.getCurrentUser()).data
+        state.currentUserSettings = (await usersApi.getSettings(state.currentUser.id)).data;
       } catch (ex) {
         console.error(ex);
       }
@@ -280,8 +280,8 @@ export class AppRoot {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
-        state.currentUser = (await usersApi.getUser('current')).data
-        state.currentUserSettings = (await usersApi.getSettings('current')).data;
+        state.currentUser = (await usersApi.getCurrentUser()).data
+        state.currentUserSettings = (await usersApi.getSettings(state.currentUser.id)).data;
       } catch (ex) {
         console.error(ex);
       }

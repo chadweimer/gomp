@@ -66,7 +66,7 @@ export class PageSettingsSecurity {
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
     try {
-      await usersApi.changePassword(state.currentUser.id.toString(), { currentPassword, newPassword });
+      await usersApi.changePassword(state.currentUser.id, { currentPassword, newPassword });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to update password.');
