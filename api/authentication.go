@@ -28,9 +28,9 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(time.Hour * 14 * 24).Unix(),
-		IssuedAt:  time.Now().Unix(),
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 14 * 24)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		Subject:   strconv.FormatInt(*user.Id, 10),
 	})
 	// Always sign using the 0'th key
@@ -160,7 +160,7 @@ func (h *apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, err
 
 	// Try each key when validating the token
 	for i, key := range h.cfg.SecureKeys {
-		token, err := jwt.ParseWithClaims(tokenStr, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if token.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New("incorrect signing method")
 			}
@@ -181,7 +181,7 @@ func (h *apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, err
 }
 
 func (h *apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
-	claims := token.Claims.(*jwt.StandardClaims)
+	claims := token.Claims.(*jwt.RegisteredClaims)
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
 		log.Printf("Invalid claims: '%+v'", err)
