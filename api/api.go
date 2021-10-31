@@ -18,7 +18,7 @@ import (
 
 // ---- Begin Standard Errors ----
 
-var errMismatchedID = errors.New("id in the path does not match the one specified in the request body")
+var errMismatchedId = errors.New("id in the path does not match the one specified in the request body")
 
 // ---- End Standard Errors ----
 
@@ -27,12 +27,12 @@ var errMismatchedID = errors.New("id in the path does not match the one specifie
 type routeKey string
 
 const (
-	destRecipeIDKey routeKey = "destRecipeID"
-	filterIDKey     routeKey = "filterID"
-	imageIDKey      routeKey = "imageID"
-	noteIDKey       routeKey = "noteID"
-	recipeIDKey     routeKey = "recipeID"
-	userIDKey       routeKey = "userID"
+	destRecipeIdKey routeKey = "destRecipeId"
+	filterIdKey     routeKey = "filterId"
+	imageIdKey      routeKey = "imageId"
+	noteIdKey       routeKey = "noteId"
+	recipeIdKey     routeKey = "recipeId"
+	userIdKey       routeKey = "userId"
 )
 
 // ---- End Route Keys ----
@@ -48,7 +48,7 @@ func (k *contextKey) String() string {
 }
 
 var (
-	currentUserIDCtxKey          = &contextKey{"CurrentUserID"}
+	currentUserIdCtxKey          = &contextKey{"CurrentUserId"}
 	currentUserAccessLevelCtxKey = &contextKey{"CurrentUserAccessLevel"}
 )
 
@@ -82,29 +82,29 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 			r.Use(h.requireAuthentication)
 
 			r.Get("/recipes", h.getRecipes)
-			r.Get(fmt.Sprintf("/recipes/{%s}", recipeIDKey), h.getRecipe)
-			r.Get(fmt.Sprintf("/recipes/{%s}/image", recipeIDKey), h.getRecipeMainImage)
-			r.Get(fmt.Sprintf("/recipes/{%s}/images", recipeIDKey), h.getRecipeImages)
-			r.Get(fmt.Sprintf("/recipes/{%s}/notes", recipeIDKey), h.getRecipeNotes)
-			r.Get(fmt.Sprintf("/recipes/{%s}/links", recipeIDKey), h.getRecipeLinks)
+			r.Get(fmt.Sprintf("/recipes/{%s}", recipeIdKey), h.getRecipe)
+			r.Get(fmt.Sprintf("/recipes/{%s}/image", recipeIdKey), h.getRecipeMainImage)
+			r.Get(fmt.Sprintf("/recipes/{%s}/images", recipeIdKey), h.getRecipeImages)
+			r.Get(fmt.Sprintf("/recipes/{%s}/notes", recipeIdKey), h.getRecipeNotes)
+			r.Get(fmt.Sprintf("/recipes/{%s}/links", recipeIdKey), h.getRecipeLinks)
 
 			// Editor
 			r.Group(func(r chi.Router) {
 				r.Use(h.requireEditor)
 
 				r.Post("/recipes", h.postRecipe)
-				r.Put(fmt.Sprintf("/recipes/{%s}", recipeIDKey), h.putRecipe)
-				r.Delete(fmt.Sprintf("/recipes/{%s}", recipeIDKey), h.deleteRecipe)
-				r.Put(fmt.Sprintf("/recipes/{%s}/state", recipeIDKey), h.putRecipeState)
-				r.Put(fmt.Sprintf("/recipes/{%s}/rating", recipeIDKey), h.putRecipeRating)
-				r.Put(fmt.Sprintf("/recipes/{%s}/image", recipeIDKey), h.putRecipeMainImage)
-				r.Post(fmt.Sprintf("/recipes/{%s}/images", recipeIDKey), h.postRecipeImage)
-				r.Post(fmt.Sprintf("/recipes/{%s}/links", recipeIDKey), h.postRecipeLink)
-				r.Delete(fmt.Sprintf("/recipes/{%s}/links/{%s}", recipeIDKey, destRecipeIDKey), h.deleteRecipeLink)
-				r.Delete(fmt.Sprintf("/recipes/{%s}/images/{%s}", recipeIDKey, imageIDKey), h.deleteImage)
-				r.Post(fmt.Sprintf("/recipes/{%s}/notes", recipeIDKey), h.postNote)
-				r.Put(fmt.Sprintf("/recipes/{%s}/notes/{%s}", recipeIDKey, noteIDKey), h.putNote)
-				r.Delete(fmt.Sprintf("/recipes/{%s}/notes/{%s}", recipeIDKey, noteIDKey), h.deleteNote)
+				r.Put(fmt.Sprintf("/recipes/{%s}", recipeIdKey), h.putRecipe)
+				r.Delete(fmt.Sprintf("/recipes/{%s}", recipeIdKey), h.deleteRecipe)
+				r.Put(fmt.Sprintf("/recipes/{%s}/state", recipeIdKey), h.putRecipeState)
+				r.Put(fmt.Sprintf("/recipes/{%s}/rating", recipeIdKey), h.putRecipeRating)
+				r.Put(fmt.Sprintf("/recipes/{%s}/image", recipeIdKey), h.putRecipeMainImage)
+				r.Post(fmt.Sprintf("/recipes/{%s}/images", recipeIdKey), h.postRecipeImage)
+				r.Post(fmt.Sprintf("/recipes/{%s}/links", recipeIdKey), h.postRecipeLink)
+				r.Delete(fmt.Sprintf("/recipes/{%s}/links/{%s}", recipeIdKey, destRecipeIdKey), h.deleteRecipeLink)
+				r.Delete(fmt.Sprintf("/recipes/{%s}/images/{%s}", recipeIdKey, imageIdKey), h.deleteImage)
+				r.Post(fmt.Sprintf("/recipes/{%s}/notes", recipeIdKey), h.postNote)
+				r.Put(fmt.Sprintf("/recipes/{%s}/notes/{%s}", recipeIdKey, noteIdKey), h.putNote)
+				r.Delete(fmt.Sprintf("/recipes/{%s}/notes/{%s}", recipeIdKey, noteIdKey), h.deleteNote)
 				r.Post("/uploads", h.postUpload)
 			})
 
@@ -117,23 +117,23 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 				r.Post("/users", h.postUser)
 
 				// Don't allow deleting self
-				r.With(h.disallowSelf).Delete(fmt.Sprintf("/users/{%s}", userIDKey), h.deleteUser)
+				r.With(h.disallowSelf).Delete(fmt.Sprintf("/users/{%s}", userIdKey), h.deleteUser)
 			})
 
 			// Admin or Self
 			r.Group(func(r chi.Router) {
 				r.Use(h.requireAdminUnlessSelf)
 
-				r.Get(fmt.Sprintf("/users/{%s}", userIDKey), h.getUser)
-				r.Put(fmt.Sprintf("/users/{%s}", userIDKey), h.putUser)
-				r.Put(fmt.Sprintf("/users/{%s}/password", userIDKey), h.putUserPassword)
-				r.Get(fmt.Sprintf("/users/{%s}/settings", userIDKey), h.getUserSettings)
-				r.Put(fmt.Sprintf("/users/{%s}/settings", userIDKey), h.putUserSettings)
-				r.Get(fmt.Sprintf("/users/{%s}/filters", userIDKey), h.getUserFilters)
-				r.Post(fmt.Sprintf("/users/{%s}/filters", userIDKey), h.postUserFilter)
-				r.Get(fmt.Sprintf("/users/{%s}/filters/{%s}", userIDKey, filterIDKey), h.getUserFilter)
-				r.Put(fmt.Sprintf("/users/{%s}/filters/{%s}", userIDKey, filterIDKey), h.putUserFilter)
-				r.Delete(fmt.Sprintf("/users/{%s}/filters/{%s}", userIDKey, filterIDKey), h.deleteUserFilter)
+				r.Get(fmt.Sprintf("/users/{%s}", userIdKey), h.getUser)
+				r.Put(fmt.Sprintf("/users/{%s}", userIdKey), h.putUser)
+				r.Put(fmt.Sprintf("/users/{%s}/password", userIdKey), h.putUserPassword)
+				r.Get(fmt.Sprintf("/users/{%s}/settings", userIdKey), h.getUserSettings)
+				r.Put(fmt.Sprintf("/users/{%s}/settings", userIdKey), h.putUserSettings)
+				r.Get(fmt.Sprintf("/users/{%s}/filters", userIdKey), h.getUserFilters)
+				r.Post(fmt.Sprintf("/users/{%s}/filters", userIdKey), h.postUserFilter)
+				r.Get(fmt.Sprintf("/users/{%s}/filters/{%s}", userIdKey, filterIdKey), h.getUserFilter)
+				r.Put(fmt.Sprintf("/users/{%s}/filters/{%s}", userIdKey, filterIdKey), h.putUserFilter)
+				r.Delete(fmt.Sprintf("/users/{%s}/filters/{%s}", userIdKey, filterIdKey), h.deleteUserFilter)
 			})
 		})
 	})
@@ -199,12 +199,12 @@ func readJSONFromRequest(req *http.Request, data interface{}) error {
 	return json.NewDecoder(req.Body).Decode(data)
 }
 
-func getResourceIDFromURL(req *http.Request, idKey routeKey) (int64, error) {
+func getResourceIdFromUrl(req *http.Request, idKey routeKey) (int64, error) {
 	idStr := chi.URLParam(req, string(idKey))
 
-	// Special case for userID
-	if idKey == userIDKey && idStr == "current" {
-		return getResourceIDFromCtx(req, currentUserIDCtxKey)
+	// Special case for userId
+	if idKey == userIdKey && idStr == "current" {
+		return getResourceIdFromCtx(req, currentUserIdCtxKey)
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -215,10 +215,18 @@ func getResourceIDFromURL(req *http.Request, idKey routeKey) (int64, error) {
 	return id, nil
 }
 
-func getResourceIDFromCtx(req *http.Request, idKey *contextKey) (int64, error) {
-	id, ok := req.Context().Value(idKey).(int64)
-	if !ok {
-		return 0, fmt.Errorf("value of %s is not an integer", idKey)
+func getResourceIdFromCtx(req *http.Request, idKey *contextKey) (int64, error) {
+	idVal := req.Context().Value(idKey)
+
+	id, ok := idVal.(int64)
+	if ok {
+		return id, nil
 	}
-	return id, nil
+
+	idPtr, ok := idVal.(*int64)
+	if ok {
+		return *idPtr, nil
+	}
+
+	return 0, fmt.Errorf("value of %s is not an integer", idKey)
 }

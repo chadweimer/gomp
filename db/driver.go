@@ -69,14 +69,14 @@ type AppConfigurationDriver interface {
 type LinkDriver interface {
 	// Create stores a link between 2 recipes in the database as a new record
 	// using a dedicated transation that is committed if there are not errors.
-	Create(recipeID, destRecipeID int64) error
+	Create(recipeId, destRecipeId int64) error
 
 	// Delete removes the linked recipe from the database using a dedicated transation
 	// that is committed if there are not errors.
-	Delete(recipeID, destRecipeID int64) error
+	Delete(recipeId, destRecipeId int64) error
 
 	// List retrieves all recipes linked to recipe with the specified id.
-	List(recipeID int64) (*[]models.RecipeCompact, error)
+	List(recipeId int64) (*[]models.RecipeCompact, error)
 }
 
 // NoteDriver provides functionality to edit and retrieve notes attached to recipes.
@@ -91,14 +91,14 @@ type NoteDriver interface {
 
 	// Delete removes the specified note from the database using a dedicated transation
 	// that is committed if there are not errors.
-	Delete(recipeID, noteID int64) error
+	Delete(recipeId, noteId int64) error
 
 	// DeleteAll removes all notes for the specified recipe from the database using a dedicated
 	// transation that is committed if there are not errors.
-	DeleteAll(recipeID int64) error
+	DeleteAll(recipeId int64) error
 
 	// List retrieves all notes associated with the recipe with the specified id.
-	List(recipeID int64) (*[]models.Note, error)
+	List(recipeId int64) (*[]models.Note, error)
 }
 
 // RecipeDriver provides functionality to edit and retrieve recipes.
@@ -135,14 +135,14 @@ type RecipeDriver interface {
 type TagDriver interface {
 	// Create stores the tag in the database as a new record using
 	// a dedicated transation that is committed if there are not errors.
-	Create(recipeID int64, tag string) error
+	Create(recipeId int64, tag string) error
 
 	// DeleteAll removes all tags for the specified recipe from the database using a dedicated
 	// transation that is committed if there are not errors.
-	DeleteAll(recipeID int64) error
+	DeleteAll(recipeId int64) error
 
 	// List retrieves all tags associated with the recipe with the specified id.
-	List(recipeID int64) (*[]string, error)
+	List(recipeId int64) (*[]string, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.
@@ -187,7 +187,7 @@ type UserDriver interface {
 
 	// ReadSearchFilter retrieves the information about the search filter from the database, if found.
 	// If no filter exists with the specified ID, a NoRecordFound error is returned.
-	ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error)
+	ReadSearchFilter(userId int64, filterId int64) (*models.SavedSearchFilter, error)
 
 	// UpdateSearchFilter stores the filter in the database by updating the existing record with the specified
 	// id using a dedicated transation that is committed if there are not errors.
@@ -195,10 +195,10 @@ type UserDriver interface {
 
 	// DeleteSearchFilter removes the specified filter from the database using a dedicated transation
 	// that is committed if there are not errors.
-	DeleteSearchFilter(userID int64, filterID int64) error
+	DeleteSearchFilter(userId int64, filterId int64) error
 
 	// List retrieves all user's saved search filters.
-	ListSearchFilters(userID int64) (*[]models.SavedSearchFilterCompact, error)
+	ListSearchFilters(userId int64) (*[]models.SavedSearchFilterCompact, error)
 }
 
 // RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.
@@ -213,7 +213,7 @@ type RecipeImageDriver interface {
 
 	// ReadMainImage retrieves the information about the main image for the specified recipe
 	// image from the database. If no main image exists, a ErrNotFound error is returned.
-	ReadMainImage(recipeID int64) (*models.RecipeImage, error)
+	ReadMainImage(recipeId int64) (*models.RecipeImage, error)
 
 	// UpdateMainImage sets the id of the main image for the specified recipe
 	// using a dedicated transation that is committed if there are not errors.
@@ -221,7 +221,7 @@ type RecipeImageDriver interface {
 
 	// List returns a RecipeImage slice that contains data for all images
 	// attached to the specified recipe.
-	List(recipeID int64) (*[]models.RecipeImage, error)
+	List(recipeId int64) (*[]models.RecipeImage, error)
 
 	// Delete removes the specified image from the backing store and database
 	// using a dedicated transation that is committed if there are not errors.
@@ -229,5 +229,5 @@ type RecipeImageDriver interface {
 
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transation that is committed if there are not errors.
-	DeleteAll(recipeID int64) error
+	DeleteAll(recipeId int64) error
 }

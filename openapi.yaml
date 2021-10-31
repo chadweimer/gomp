@@ -1,0 +1,1234 @@
+openapi: 3.0.1
+info:
+  title: GOMP
+  version: "1.0"
+servers:
+  - url: /api/v1
+paths:
+  /app/info:
+    get:
+      tags: [app]
+      description: get application info
+      operationId: getInfo
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/appInfo"
+  /app/configuration:
+    get:
+      tags: [app]
+      description: get application configuration
+      operationId: getConfiguration
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/appConfiguration"
+    put:
+      tags: [app]
+      description: modify application configuration
+      operationId: saveConfiguration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/appConfiguration"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: appConfiguration
+  /auth:
+    post:
+      tags: [app]
+      description: perform user authentication
+      operationId: authenticate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/credentials"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/authenticationResponse"
+      x-codegen-request-body-name: credentials
+  /recipes:
+    get:
+      tags: [recipes]
+      description: list the recipes
+      operationId: find
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: pictures
+          in: query
+          schema:
+            type: boolean
+        - name: fields[]
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - name
+                - ingredients
+                - directions
+        - name: states[]
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - active
+                - archived
+        - name: tags[]
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - id
+              - rating
+              - created
+              - modified
+              - random
+        - name: dir
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: count
+          in: query
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/searchResult"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes]
+      description: add a recipe
+      operationId: addRecipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/recipe"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/recipe"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: recipe
+  /recipes/{recipeId}:
+    get:
+      tags: [recipes]
+      description: get a single recipe
+      operationId: getRecipe
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/recipe"
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes]
+      description: modify an existing recipe
+      operationId: saveRecipe
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/recipe"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: recipe
+    delete:
+      tags: [recipes]
+      description: delete an existing recipe
+      operationId: deleteRecipe
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/image:
+    get:
+      tags: [recipes]
+      description: get the main image of a recipe
+      operationId: getMainImage
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/recipeImage"
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes]
+      description: set the main image of a recipe
+      operationId: setMainImage
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: imageId
+  /recipes/{recipeId}/images:
+    get:
+      tags: [recipes]
+      description: get the images on a recipe
+      operationId: getImages
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/recipeImage"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes]
+      description: add an image to a recipe
+      operationId: uploadImage
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file_content:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/recipeImage"
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/images/{imageId}:
+    delete:
+      tags: [recipes]
+      description: delete an existing image from a recipe
+      operationId: deleteImage
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+        - $ref: "#/components/parameters/imageIdInPath"
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/links:
+    get:
+      tags: [recipes]
+      description: get the links on a recipe
+      operationId: getLinks
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/recipeCompact"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes]
+      description: add a link to a recipe
+      operationId: addLink
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+        required: true
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: destRecipeId
+  /recipes/{recipeId}/links/{destRecipeId}:
+    delete:
+      tags: [recipes]
+      description: delete an existing link
+      operationId: deleteLink
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+        - $ref: "#/components/parameters/destRecipeIdInPath"
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/notes:
+    get:
+      tags: [recipes]
+      description: get the notes on a recipe
+      operationId: getNotes
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/note"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes]
+      description: add a note to a recipe
+      operationId: addNote
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/note"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/note"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: note
+  /recipes/{recipeId}/notes/{noteId}:
+    put:
+      tags: [recipes]
+      description: modify a note
+      operationId: saveNote
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+        - $ref: "#/components/parameters/noteIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/note"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: note
+    delete:
+      tags: [recipes]
+      description: delete an existing note
+      operationId: deleteNote
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+        - $ref: "#/components/parameters/noteIdInPath"
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/rating:
+    get:
+      tags: [recipes]
+      description: get the current rating of a recipe
+      operationId: getRating
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes]
+      description: modify the rating of a recipe
+      operationId: setRating
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: rating
+  /recipes/{recipeId}/state:
+    get:
+      tags: [recipes]
+      description: get the state of a recipe
+      operationId: getState
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/recipeState"
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes]
+      description: modify the state of a recipe
+      operationId: setState
+      parameters:
+        - $ref: "#/components/parameters/recipeIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/recipeState"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: state
+  /uploads:
+    post:
+      tags: [app]
+      description: Upload a file
+      operationId: upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file_content:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+          content: {}
+      security:
+        - Bearer: []
+  /users:
+    get:
+      tags: [users]
+      description: get list of users
+      operationId: getAllUsers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/user"
+      security:
+        - Bearer: []
+    post:
+      tags: [users]
+      description: add a of user
+      operationId: addUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userWithPassword"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: user
+  /users/{userId}:
+    get:
+      tags: [users]
+      description: get a user
+      operationId: getUser
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+      security:
+        - Bearer: []
+    put:
+      tags: [users]
+      description: modify a user
+      operationId: saveUser
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: user
+    delete:
+      tags: [users]
+      description: delete an existing user
+      operationId: deleteUser
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /users/{userId}/filters:
+    get:
+      tags: [users]
+      description: get a list of search filters
+      operationId: getSearchFilters
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/savedSearchFilterCompact"
+      security:
+        - Bearer: []
+    post:
+      tags: [users]
+      description: add a search filter
+      operationId: addSearchFilter
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/savedSearchFilter"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/savedSearchFilter"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: searchFilter
+  /users/{userId}/filters/{filterId}:
+    get:
+      tags: [users]
+      description: get a search filter
+      operationId: getSearchFilter
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+        - $ref: "#/components/parameters/filterIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/savedSearchFilter"
+      security:
+        - Bearer: []
+    put:
+      tags: [users]
+      description: modify the search filter
+      operationId: saveSearchFilter
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+        - $ref: "#/components/parameters/filterIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/savedSearchFilter"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: searchFilter
+    delete:
+      tags: [users]
+      description: delete a search filter
+      operationId: deleteSearchFilter
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+        - $ref: "#/components/parameters/filterIdInPath"
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /users/{userId}/password:
+    put:
+      tags: [users]
+      description: update a user's password
+      operationId: changePassword
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userPasswordRequest"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: userPasswordRequest
+  /users/{userId}/settings:
+    get:
+      tags: [users]
+      description: get the settings of a user
+      operationId: getSettings
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userSettings"
+      security:
+        - Bearer: []
+    put:
+      tags: [users]
+      description: modify the settings of a user
+      operationId: saveSettings
+      parameters:
+        - $ref: "#/components/parameters/userIdInPath"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userSettings"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: settings
+components:
+  schemas:
+    formData_fileInForm:
+      type: string
+      format: binary
+    accessLevel:
+      type: string
+      enum:
+        - admin
+        - editor
+        - viewer
+      x-go-custom-tag: db:"access_level"
+      x-oapi-codegen-extra-tags:
+        db: access_level
+    recipeState:
+      type: string
+      enum:
+        - active
+        - archived
+      x-go-custom-tag: db:"current_state"
+      x-oapi-codegen-extra-tags:
+        db: current_state
+    searchField:
+      type: string
+      enum:
+        - name
+        - ingredients
+        - directions
+    sortBy:
+      type: string
+      enum:
+        - name
+        - id
+        - rating
+        - created
+        - modified
+        - random
+      x-go-custom-tag: db:"sort_by"
+      x-oapi-codegen-extra-tags:
+        db: sort_by
+    sortDir:
+      type: string
+      enum:
+        - asc
+        - desc
+      x-go-custom-tag: db:"sort_dir"
+      x-oapi-codegen-extra-tags:
+        db: sort_dir
+    appInfo:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          readOnly: true
+    appConfiguration:
+      required:
+        - title
+      type: object
+      properties:
+        title:
+          type: string
+          x-go-custom-tag: db:"title"
+          x-oapi-codegen-extra-tags:
+            db: title
+    authenticationResponse:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/user"
+    credentials:
+      required:
+        - password
+        - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    note:
+      required:
+        - text
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"id"
+          x-oapi-codegen-extra-tags:
+            db: id
+        recipeId:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"recipe_id"
+          x-oapi-codegen-extra-tags:
+            db: recipe_id
+        text:
+          minLength: 1
+          type: string
+          x-go-custom-tag: db:"note"
+          x-oapi-codegen-extra-tags:
+            db: note
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"created_at"
+          x-oapi-codegen-extra-tags:
+            db: created_at
+          x-go-type: time.Time
+        modifiedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"modified_at"
+          x-oapi-codegen-extra-tags:
+            db: modified_at
+          x-go-type: time.Time
+    recipeBase:
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"id"
+          x-oapi-codegen-extra-tags:
+            db: id
+        name:
+          minLength: 1
+          type: string
+          x-go-custom-tag: db:"name"
+        state:
+          $ref: "#/components/schemas/recipeState"
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"created_at"
+          x-oapi-codegen-extra-tags:
+            db: created_at
+          x-go-type: time.Time
+        modifiedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"modified_at"
+          x-oapi-codegen-extra-tags:
+            db: modified_at
+          x-go-type: time.Time
+        averageRating:
+          type: number
+          readOnly: true
+          x-go-custom-tag: db:"avg_rating"
+          x-oapi-codegen-extra-tags:
+            db: avg_rating
+    recipe:
+      allOf:
+        - $ref: "#/components/schemas/recipeBase"
+        - type: object
+          required:
+            - servingSize
+            - nutritionInfo
+            - ingredients
+            - directions
+            - storageInstructions
+            - sourceUrl
+            - tags
+          properties:
+            servingSize:
+              type: string
+              x-go-custom-tag: db:"serving_size"
+              x-oapi-codegen-extra-tags:
+                db: serving_size
+            nutritionInfo:
+              type: string
+              x-go-custom-tag: db:"nutrition_info"
+              x-oapi-codegen-extra-tags:
+                db: nutrition_info
+            ingredients:
+              type: string
+              x-go-custom-tag: db:"ingredients"
+              x-oapi-codegen-extra-tags:
+                db: ingredients
+            directions:
+              type: string
+              x-go-custom-tag: db:"directions"
+              x-oapi-codegen-extra-tags:
+                db: directions
+            storageInstructions:
+              type: string
+              x-go-custom-tag: db:"storage_instructions"
+              x-oapi-codegen-extra-tags:
+                db: storage_instructions
+            sourceUrl:
+              type: string
+              x-go-custom-tag: db:"source_url"
+              x-oapi-codegen-extra-tags:
+                db: source_url
+            tags:
+              type: array
+              items:
+                type: string
+              x-go-custom-tag: db:"tags"
+              x-oapi-codegen-extra-tags:
+                db: tags
+    recipeCompact:
+      allOf:
+        - $ref: "#/components/schemas/recipeBase"
+        - type: object
+          properties:
+            thumbnailUrl:
+              type: string
+              readOnly: true
+              x-go-custom-tag: db:"thumbnail_url"
+              x-oapi-codegen-extra-tags:
+                db: thumbnail_url
+    recipeImage:
+      type: object
+      required:
+        - recipeId
+        - name
+        - url
+        - thumbnailUrl
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"id"
+          x-oapi-codegen-extra-tags:
+            db: id
+        recipeId:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"recipe_id"
+          x-oapi-codegen-extra-tags:
+            db: recipe_id
+        name:
+          type: string
+          readOnly: true
+          x-go-custom-tag: db:"name"
+          x-oapi-codegen-extra-tags:
+            db: name
+        url:
+          type: string
+          readOnly: true
+          x-go-custom-tag: db:"url"
+          x-oapi-codegen-extra-tags:
+            db: url
+        thumbnailUrl:
+          type: string
+          readOnly: true
+          x-go-custom-tag: db:"thumbnail_url"
+          x-oapi-codegen-extra-tags:
+            db: thumbnail_url
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"created_at"
+          x-oapi-codegen-extra-tags:
+            db: created_at
+          x-go-type: time.Time
+        modifiedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"modified_at"
+          x-oapi-codegen-extra-tags:
+            db: modified_at
+          x-go-type: time.Time
+    searchResult:
+      type: object
+      required:
+        - total
+        - recipes
+      properties:
+        total:
+          type: integer
+        recipes:
+          type: array
+          items:
+            $ref: "#/components/schemas/recipeCompact"
+    searchFilter:
+      type: object
+      required:
+        - query
+        - withPictures
+        - fields
+        - states
+        - tags
+        - sortBy
+        - sortDir
+      properties:
+        query:
+          type: string
+          x-go-custom-tag: db:"query"
+          x-oapi-codegen-extra-tags:
+            db: query
+        withPictures:
+          type: boolean
+          nullable: true
+          x-go-custom-tag: db:"with_pictures"
+          x-oapi-codegen-extra-tags:
+            db: with_pictures
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/searchField"
+        states:
+          type: array
+          items:
+            $ref: "#/components/schemas/recipeState"
+        tags:
+          type: array
+          items:
+            type: string
+        sortBy:
+          $ref: "#/components/schemas/sortBy"
+        sortDir:
+          $ref: "#/components/schemas/sortDir"
+    savedSearchFilterCompact:
+      required:
+        - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"id"
+          x-oapi-codegen-extra-tags:
+            db: id
+        userId:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"user_id"
+          x-oapi-codegen-extra-tags:
+            db: user_id
+        name:
+          minLength: 1
+          type: string
+          x-go-custom-tag: db:"name"
+          x-oapi-codegen-extra-tags:
+            db: name
+    savedSearchFilter:
+      allOf:
+        - $ref: "#/components/schemas/savedSearchFilterCompact"
+        - $ref: "#/components/schemas/searchFilter"
+    user:
+      type: object
+      required:
+        - username
+        - accessLevel
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"id"
+          x-oapi-codegen-extra-tags:
+            db: id
+        username:
+          type: string
+          x-go-custom-tag: db:"username"
+          x-oapi-codegen-extra-tags:
+            db: username
+        accessLevel:
+          $ref: "#/components/schemas/accessLevel"
+    userPasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+    userSettings:
+      type: object
+      required:
+        - favoriteTags
+      properties:
+        userId:
+          type: integer
+          format: int64
+          readOnly: true
+          x-go-custom-tag: db:"user_id"
+          x-oapi-codegen-extra-tags:
+            db: user_id
+        homeTitle:
+          type: string
+          nullable: true
+          x-go-custom-tag: db:"home_title"
+          x-oapi-codegen-extra-tags:
+            db: home_title
+        homeImageUrl:
+          type: string
+          nullable: true
+          x-go-custom-tag: db:"home_image_url"
+          x-oapi-codegen-extra-tags:
+            db: home_image_url
+        favoriteTags:
+          type: array
+          items:
+            type: string
+          x-go-custom-tag: db:"favorite_tags"
+          x-oapi-codegen-extra-tags:
+            db: favorite_tags
+    userWithPassword:
+      allOf:
+        - $ref: "#/components/schemas/user"
+        - type: object
+          required:
+            - password
+          properties:
+            password:
+              type: string
+  parameters:
+    destRecipeIdInPath:
+      name: destRecipeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    filterIdInPath:
+      name: filterId
+      in: path
+      required: true
+      schema:
+        type: integer
+    imageIdInPath:
+      name: imageId
+      in: path
+      required: true
+      schema:
+        type: integer
+    noteIdInPath:
+      name: noteId
+      in: path
+      required: true
+      schema:
+        type: integer
+    recipeIdInPath:
+      name: recipeId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    userIdInPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

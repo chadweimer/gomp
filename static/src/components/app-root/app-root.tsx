@@ -3,7 +3,7 @@ import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, usersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
-import { DefaultSearchFilter } from '../../models';
+import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
 
@@ -308,7 +308,7 @@ export class AppRoot {
   }
 
   private async onSearchClearClicked() {
-    state.searchFilter = new DefaultSearchFilter();
+    state.searchFilter = getDefaultSearchFilter();
 
     // Workaround for binding to empty string bug
     this.restoreSearchQuery();

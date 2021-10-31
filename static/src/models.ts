@@ -16,30 +16,22 @@ export enum SwipeDirection {
   Right = 'right'
 }
 
-export class DefaultSearchFilter implements SearchFilter {
-  constructor() {
-    this.query = '';
-    this.fields = [SearchField.Name, SearchField.Ingredients, SearchField.Directions];
-    this.states = [RecipeState.Active];
-    this.tags = [];
-    this.sortBy = SortBy.Name;
-    this.sortDir = SortDir.Asc;
-  }
-
-  query: string;
-  withPictures?: boolean | null;
-  fields: SearchField[];
-  states: RecipeState[];
-  tags: string[];
-  sortBy: SortBy;
-  sortDir: SortDir;
+export function getDefaultSearchFilter(): SearchFilter {
+  return {
+    query: '',
+    withPictures: undefined,
+    fields: [SearchField.Name, SearchField.Ingredients, SearchField.Directions],
+    states: [RecipeState.Active],
+    tags: [],
+    sortBy: SortBy.Name,
+    sortDir: SortDir.Asc
+  };
 }
 
-export class DefaultSearchSettings implements SearchSettings {
-  constructor() {
-    this.viewMode = SearchViewMode.Card;
-  }
-  viewMode: SearchViewMode;
+export function getDefaultSearchSettings(): SearchSettings {
+  return {
+    viewMode: SearchViewMode.Card
+  };
 }
 
 export interface SearchSettings {

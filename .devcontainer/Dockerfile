@@ -58,9 +58,6 @@ RUN apt-get update \
     wget \
     xdg-utils \
     && bash -c "$(curl -fsSL "https://raw.githubusercontent.com/microsoft/vscode-dev-containers/v${DEVCONTAINER_VERSION}/script-library/docker-debian.sh")" \
-    && download_url=$(curl -s https://api.github.com/repos/go-swagger/go-swagger/releases/latest | jq -r '.assets[] | select(.name | contains("'"$(uname | tr '[:upper:]' '[:lower:]')"'_amd64")) | .browser_download_url') \
-    && curl -o /usr/local/bin/swagger -L'#' "$download_url" \
-    && chmod +x /usr/local/bin/swagger \
     && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/usr/local/share/docker-init.sh"]

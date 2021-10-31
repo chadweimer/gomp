@@ -14,7 +14,7 @@ import (
 
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func Save(driver Driver, recipeID int64, imageName string, data []byte) (string, string, error) {
+func Save(driver Driver, recipeId int64, imageName string, data []byte) (string, string, error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
 		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)
@@ -34,24 +34,24 @@ func Save(driver Driver, recipeID int64, imageName string, data []byte) (string,
 	}
 
 	// Save the original image
-	origDir := getDirPathForImage(recipeID)
+	origDir := getDirPathForImage(recipeId)
 	origPath := filepath.Join(origDir, imageName)
-	origURL := filepath.ToSlash(filepath.Join("/uploads/", origPath))
+	origUrl := filepath.ToSlash(filepath.Join("/uploads/", origPath))
 	err = driver.Save(origPath, data)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to save image using configured upload driver: %v", err)
 	}
 
 	// Save the thumbnail image
-	thumbDir := getDirPathForThumbnail(recipeID)
+	thumbDir := getDirPathForThumbnail(recipeId)
 	thumbPath := filepath.Join(thumbDir, imageName)
-	thumbURL := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
+	thumbUrl := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
 	err = driver.Save(thumbPath, thumbData)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to save thumbnail image using configured upload driver: %v", err)
 	}
 
-	return origURL, thumbURL, nil
+	return origUrl, thumbUrl, nil
 }
 
 func generateThumbnail(image image.Image, contentType string) ([]byte, error) {
@@ -67,12 +67,12 @@ func generateThumbnail(image image.Image, contentType string) ([]byte, error) {
 }
 
 // Delete removes the specified image files from the upload store.
-func Delete(driver Driver, recipeID int64, imageName string) error {
-	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
+func Delete(driver Driver, recipeId int64, imageName string) error {
+	origPath := filepath.Join(getDirPathForImage(recipeId), imageName)
 	if err := driver.Delete(origPath); err != nil {
 		return err
 	}
-	thumbPath := filepath.Join(getDirPathForThumbnail(recipeID), imageName)
+	thumbPath := filepath.Join(getDirPathForThumbnail(recipeId), imageName)
 	if err := driver.Delete(thumbPath); err != nil {
 		return err
 	}
@@ -81,8 +81,8 @@ func Delete(driver Driver, recipeID int64, imageName string) error {
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.
-func DeleteAll(driver Driver, recipeID int64) error {
-	dirPath := getDirPathForRecipe(recipeID)
+func DeleteAll(driver Driver, recipeId int64) error {
+	dirPath := getDirPathForRecipe(recipeId)
 	err := driver.DeleteAll(dirPath)
 
 	return err
@@ -112,14 +112,14 @@ func getImageFormat(contentType string) imaging.Format {
 	return imaging.JPEG
 }
 
-func getDirPathForRecipe(recipeID int64) string {
-	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
+func getDirPathForRecipe(recipeId int64) string {
+	return filepath.Join("recipes", strconv.FormatInt(recipeId, 10))
 }
 
-func getDirPathForImage(recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeID), "images")
+func getDirPathForImage(recipeId int64) string {
+	return filepath.Join(getDirPathForRecipe(recipeId), "images")
 }
 
-func getDirPathForThumbnail(recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
+func getDirPathForThumbnail(recipeId int64) string {
+	return filepath.Join(getDirPathForRecipe(recipeId), "thumbs")
 }

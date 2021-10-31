@@ -3,7 +3,7 @@ import state from '../stores/state';
 
 const configuration = new Configuration({
   basePath: `${window.location.origin}/api/v1`,
-  apiKey: name => name === 'Authorization' && state.jwtToken ? `Bearer ${state.jwtToken}` : ''
+  accessToken: () => state.jwtToken
 });
 
 export const appApi = new AppApi(configuration);

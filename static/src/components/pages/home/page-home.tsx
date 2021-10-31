@@ -1,5 +1,5 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
-import { DefaultSearchFilter } from '../../../models';
+import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
 import { recipesApi, usersApi } from '../../../helpers/api';
 import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
@@ -84,7 +84,7 @@ export class PageHome {
 
       // First add the "all" search
       const allFilter: SearchFilter = {
-        ...(new DefaultSearchFilter()),
+        ...(getDefaultSearchFilter()),
         sortBy: SortBy.Random
       };
       const { total, recipes } = await this.performSearch(allFilter);
@@ -118,7 +118,7 @@ export class PageHome {
 
   private async performSearch(filter: SearchFilter) {
     // Make sure to fill in any missing fields
-    const defaultFilter = new DefaultSearchFilter();
+    const defaultFilter = getDefaultSearchFilter();
     filter = { ...defaultFilter, ...filter };
 
     try {

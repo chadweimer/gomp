@@ -3,7 +3,7 @@ import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
-import { DefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
+import { getDefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -169,7 +169,7 @@ export class PageSearch {
     }
 
     // Make sure to fill in any missing fields
-    const defaultFilter = new DefaultSearchFilter();
+    const defaultFilter = getDefaultSearchFilter();
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {

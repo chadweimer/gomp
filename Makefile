@@ -32,6 +32,7 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -42,13 +43,13 @@ uninstall:
 
 
 # ---- CODEGEN ----
-$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) swagger.yml
+$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml
 	cd static && npm run codegen
 
-$(CODEGEN_DIR): swagger.yml
+$(CODEGEN_DIR): openapi.yaml
 	rm -rf $@
-	mkdir -p $@
-	swagger generate model -t $@
+	mkdir -p $@/models
+	$(GOPATH)/bin/oapi-codegen -generate types -package models openapi.yaml > $@/models/models.go
 
 
 # ---- LINT ----

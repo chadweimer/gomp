@@ -66,13 +66,13 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	recipe, err := h.db.Recipes().Read(recipeID)
+	recipe, err := h.db.Recipes().Read(recipeId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -101,7 +101,7 @@ func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -113,8 +113,10 @@ func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if recipe.ID != recipeID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if recipe.Id == nil {
+		recipe.Id = &recipeId
+	} else if *recipe.Id != recipeId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
@@ -127,19 +129,19 @@ func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if err = h.db.Recipes().Delete(recipeID); err != nil {
+	if err = h.db.Recipes().Delete(recipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
-	if err = upload.DeleteAll(h.upl, recipeID); err != nil {
+	if err = upload.DeleteAll(h.upl, recipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -148,7 +150,7 @@ func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -160,7 +162,7 @@ func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if err := h.db.Recipes().SetState(recipeID, state); err != nil {
+	if err := h.db.Recipes().SetState(recipeId, state); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -169,7 +171,7 @@ func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -181,7 +183,7 @@ func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if err := h.db.Recipes().SetRating(recipeID, rating); err != nil {
+	if err := h.db.Recipes().SetRating(recipeId, rating); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}

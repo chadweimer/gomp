@@ -10,6 +10,12 @@ import state from '../../stores/state';
 export class RecipeEditor {
   @Prop() recipe: Recipe = {
     name: '',
+    servingSize: '',
+    nutritionInfo: '',
+    ingredients: '',
+    directions: '',
+    storageInstructions: '',
+    sourceUrl: '',
     tags: []
   };
 

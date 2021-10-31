@@ -2,7 +2,7 @@ import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../generated';
 import { recipesApi } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
-import { DefaultSearchFilter } from '../../models';
+import { getDefaultSearchFilter } from '../../models';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -76,7 +76,7 @@ export class RecipeLinkEditor {
   @Watch('includeArchived')
   async onSearchInputChanged() {
     const filter: SearchFilter = {
-      ...new DefaultSearchFilter(),
+      ...getDefaultSearchFilter(),
       query: this.query,
       fields: [SearchField.Name],
     };

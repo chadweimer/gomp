@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/chadweimer/gomp/generated/models"
@@ -24,13 +25,13 @@ func (d *postgresRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) erro
 		"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id"
 
 	err := tx.Get(recipe, stmt,
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %v", err)
 	}
 
 	for _, tag := range recipe.Tags {
-		err := d.tags.createtx(recipe.ID, tag, tx)
+		err := d.tags.createtx(*recipe.Id, tag, tx)
 		if err != nil {
 			return fmt.Errorf("adding tags to new recipe: %v", err)
 		}
@@ -69,22 +70,26 @@ func (d *postgresRecipeDriver) Update(recipe *models.Recipe) error {
 }
 
 func (d *postgresRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
+	if recipe.Id == nil {
+		return errors.New("recipe id is required")
+	}
+
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7 "+
 			"WHERE id = $8",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.ID)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl, recipe.Id)
 	if err != nil {
 		return fmt.Errorf("updating recipe: %v", err)
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	err = d.tags.deleteAlltx(recipe.ID, tx)
+	err = d.tags.deleteAlltx(*recipe.Id, tx)
 	if err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
 	}
 	for _, tag := range recipe.Tags {
-		err = d.tags.createtx(recipe.ID, tag, tx)
+		err = d.tags.createtx(*recipe.Id, tag, tx)
 		if err != nil {
 			return fmt.Errorf("updating tags on recipe: %v", err)
 		}
@@ -108,7 +113,7 @@ func (d *postgresRecipeDriver) Find(filter *models.SearchFilter, page int64, cou
 	if filter.Query != "" {
 		// If the filter didn't specify the fields to search on, use all of them
 		filterFields := filter.Fields
-		if filterFields == nil || len(filterFields) == 0 {
+		if len(filterFields) == 0 {
 			filterFields = supportedSearchFields[:]
 		}
 
@@ -159,7 +164,7 @@ func (d *postgresRecipeDriver) Find(filter *models.SearchFilter, page int64, cou
 
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
-	case models.SortByID:
+	case models.SortById:
 		orderStmt += "r.id"
 	case models.SortByCreated:
 		orderStmt += "r.created_at"

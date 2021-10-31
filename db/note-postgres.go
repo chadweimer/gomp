@@ -19,5 +19,5 @@ func (d *postgresNoteDriver) createtx(note *models.Note, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
 		"VALUES ($1, $2) RETURNING id"
 
-	return tx.Get(note, stmt, note.RecipeID, note.Text)
+	return tx.Get(note, stmt, note.RecipeId, note.Text)
 }

@@ -11,14 +11,14 @@ import (
 )
 
 func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	user, err := h.db.Users().Read(userID)
+	user, err := h.db.Users().Read(userId)
 	if err != nil {
 		fullErr := fmt.Errorf("reading user: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
@@ -66,7 +66,7 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -79,8 +79,10 @@ func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if user.ID != userID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if user.Id == nil {
+		user.Id = &userId
+	} else if *user.Id != userId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
@@ -93,14 +95,14 @@ func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	if err := h.db.Users().Delete(userID); err != nil {
+	if err := h.db.Users().Delete(userId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -109,7 +111,7 @@ func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -123,7 +125,7 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	err = h.db.Users().UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
+	err = h.db.Users().UpdatePassword(userId, params.CurrentPassword, params.NewPassword)
 	if err != nil {
 		fullErr := fmt.Errorf("update failed: %v", err)
 		h.Error(resp, http.StatusForbidden, fullErr)
@@ -134,14 +136,14 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	userSettings, err := h.db.Users().ReadSettings(userID)
+	userSettings, err := h.db.Users().ReadSettings(userId)
 	if err != nil {
 		fullErr := fmt.Errorf("reading user settings: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
@@ -151,7 +153,7 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 	// Default to the application title if the user hasn't set their own
 	if userSettings.HomeTitle == nil {
 		if cfg, err := h.db.AppConfiguration().Read(); err == nil {
-			userSettings.HomeTitle = cfg.Title
+			userSettings.HomeTitle = &cfg.Title
 		}
 	}
 
@@ -159,7 +161,7 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -174,9 +176,9 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 	}
 
 	// Make sure the ID is set in the object
-	if userSettings.UserID == 0 {
-		userSettings.UserID = userID
-	} else if userSettings.UserID != userID {
+	if userSettings.UserId == nil {
+		userSettings.UserId = &userId
+	} else if *userSettings.UserId != userId {
 		err := errors.New("mismatched user id between request and url")
 		h.Error(resp, http.StatusBadRequest, err)
 	}
@@ -191,14 +193,14 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 }
 
 func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	searches, err := h.db.Users().ListSearchFilters(userID)
+	searches, err := h.db.Users().ListSearchFilters(userId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
@@ -208,7 +210,7 @@ func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
@@ -222,10 +224,10 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 	}
 
 	// Make sure the ID is set in the object
-	if filter.UserID == 0 {
-		filter.UserID = userID
-	} else if filter.UserID != userID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if filter.UserId == nil {
+		filter.UserId = &userId
+	} else if *filter.UserId != userId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 	}
 
 	if err := h.db.Users().CreateSearchFilter(&filter); err != nil {
@@ -237,20 +239,20 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := getResourceIDFromURL(req, filterIDKey)
+	filterId, err := getResourceIdFromUrl(req, filterIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	filter, err := h.db.Users().ReadSearchFilter(userID, filterID)
+	filter, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -265,14 +267,14 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) 
 }
 
 func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := getResourceIDFromURL(req, filterIDKey)
+	filterId, err := getResourceIdFromUrl(req, filterIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -285,23 +287,23 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 	}
 
 	// Make sure the ID is set in the object
-	if filter.ID == 0 {
-		filter.ID = filterID
-	} else if filter.ID != filterID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if filter.Id == nil {
+		filter.Id = &filterId
+	} else if *filter.Id != filterId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
-	// Make sure the UserID is set in the object
-	if filter.UserID == 0 {
-		filter.UserID = userID
-	} else if filter.UserID != userID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	// Make sure the UserId is set in the object
+	if filter.UserId == nil {
+		filter.UserId = &userId
+	} else if *filter.UserId != userId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
 	// Check that the filter exists for the specified user
-	_, err = h.db.Users().ReadSearchFilter(userID, filterID)
+	_, err = h.db.Users().ReadSearchFilter(userId, filterId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -320,20 +322,20 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 }
 
 func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+	userId, err := getResourceIdFromUrl(req, userIdKey)
 	if err != nil {
 		fullErr := fmt.Errorf("getting user from request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	filterID, err := getResourceIDFromURL(req, filterIDKey)
+	filterId, err := getResourceIdFromUrl(req, filterIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.db.Users().DeleteSearchFilter(userID, filterID); err != nil {
+	if err := h.db.Users().DeleteSearchFilter(userId, filterId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}

@@ -1,6 +1,6 @@
 import { createStore } from '@stencil/store';
 import { SearchFilter, User, UserSettings } from '../generated';
-import { DefaultSearchFilter, DefaultSearchSettings, SearchSettings } from '../models';
+import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 
 interface AppState {
   jwtToken?: string;
@@ -14,8 +14,8 @@ interface AppState {
 
 // Start with an empty state
 const { state, set, onChange, reset } = createStore<AppState>({
-  searchFilter: new DefaultSearchFilter(),
-  searchSettings: new DefaultSearchSettings(),
+  searchFilter: getDefaultSearchFilter(),
+  searchSettings: getDefaultSearchSettings(),
   searchPage: 1
 });
 

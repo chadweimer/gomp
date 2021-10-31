@@ -28,6 +28,7 @@ export class TagsInput {
   }
 
   connectedCallback() {
+    this.internalValue = this.value ?? [];
     this.filterSuggestedTags(this.suggestions);
   }
 

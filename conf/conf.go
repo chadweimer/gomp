@@ -42,7 +42,7 @@ type Config struct {
 
 	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
-	DatabaseURL string
+	DatabaseUrl string
 
 	// MigrationsTableName gets the name of the database migrations table to use.
 	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
@@ -67,7 +67,7 @@ func Load() *Config {
 		IsDevelopment:          false,
 		SecureKeys:             []string{defaultSecureKey},
 		DatabaseDriver:         "",
-		DatabaseURL:            "file:" + filepath.Join("data", "data.db"),
+		DatabaseUrl:            "file:" + filepath.Join("data", "data.db"),
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
 		BaseAssetsPath:         "static",
@@ -81,7 +81,7 @@ func Load() *Config {
 	loadEnv("UPLOAD_DRIVER", &c.UploadDriver)
 	loadEnv("UPLOAD_PATH", &c.UploadPath)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
-	loadEnv("DATABASE_URL", &c.DatabaseURL)
+	loadEnv("DATABASE_URL", &c.DatabaseUrl)
 	loadEnv("PORT", &c.Port)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 
@@ -90,12 +90,12 @@ func Load() *Config {
 		if c.IsDevelopment {
 			log.Print("[config] DATABASE_DRIVER is empty. Will attempt to infer...")
 		}
-		if strings.HasPrefix(c.DatabaseURL, "file:") {
+		if strings.HasPrefix(c.DatabaseUrl, "file:") {
 			if c.IsDevelopment {
 				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
 			}
 			c.DatabaseDriver = db.SQLiteDriverName
-		} else if strings.HasPrefix(c.DatabaseURL, "postgres:") {
+		} else if strings.HasPrefix(c.DatabaseUrl, "postgres:") {
 			if c.IsDevelopment {
 				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
 			}
@@ -113,7 +113,7 @@ func Load() *Config {
 		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
 		log.Printf("[config] BaseAssetsPath=%s", c.BaseAssetsPath)
 		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
-		log.Printf("[config] DatabaseURL=%s", c.DatabaseURL)
+		log.Printf("[config] DatabaseURL=%s", c.DatabaseUrl)
 		log.Printf("[config] MigrationsTableName=%s", c.MigrationsTableName)
 		log.Printf("[config] MigrationsForceVersion=%d", c.MigrationsForceVersion)
 	}
@@ -149,11 +149,11 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName)
 	}
 
-	if c.DatabaseURL == "" {
+	if c.DatabaseUrl == "" {
 		return errors.New("DATABASE_URL must be specified")
 	}
 
-	if _, err := url.Parse(c.DatabaseURL); err != nil {
+	if _, err := url.Parse(c.DatabaseUrl); err != nil {
 		return errors.New("DATABASE_URL is invalid")
 	}
 

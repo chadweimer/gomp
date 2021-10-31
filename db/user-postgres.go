@@ -1,6 +1,8 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -29,26 +31,30 @@ func (d *postgresUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter
 }
 
 func (d *postgresUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+	if filter.UserId == nil {
+		return errors.New("user id is required")
+	}
+
 	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
 	err := tx.Get(filter,
-		stmt, filter.UserID, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
+		stmt, filter.UserId, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
 	if err != nil {
 		return err
 	}
 
-	err = d.SetSearchFilterFieldsTx(filter.ID, filter.Fields, tx)
+	err = d.SetSearchFilterFieldsTx(*filter.Id, filter.Fields, tx)
 	if err != nil {
 		return err
 	}
 
-	err = d.SetSearchFilterStatesTx(filter.ID, filter.States, tx)
+	err = d.SetSearchFilterStatesTx(*filter.Id, filter.States, tx)
 	if err != nil {
 		return err
 	}
 
-	err = d.SetSearchFilterTagsTx(filter.ID, filter.Tags, tx)
+	err = d.SetSearchFilterTagsTx(*filter.Id, filter.Tags, tx)
 	if err != nil {
 		return err
 	}
