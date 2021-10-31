@@ -103,7 +103,7 @@ func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	imageInfo := &models.RecipeImage{
+	imageInfo := models.RecipeImage{
 		RecipeId:     recipeId,
 		Name:         imageName,
 		Url:          url,
@@ -111,7 +111,7 @@ func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request
 	}
 
 	// Now insert the record in the database
-	if err = h.db.Images().Create(imageInfo); err != nil {
+	if err = h.db.Images().Create(&imageInfo); err != nil {
 		fullErr := fmt.Errorf("failed to insert image database record: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return

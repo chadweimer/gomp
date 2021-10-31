@@ -40,8 +40,8 @@ func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
-	newUser := new(models.UserWithPassword)
-	if err := readJSONFromRequest(req, newUser); err != nil {
+	var newUser models.UserWithPassword
+	if err := readJSONFromRequest(req, &newUser); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
@@ -52,12 +52,12 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user := new(db.UserWithPasswordHash)
-	user.Username = newUser.Username
-	user.PasswordHash = string(passwordHash)
-	user.AccessLevel = newUser.AccessLevel
+	user := db.UserWithPasswordHash{
+		User:         newUser.User,
+		PasswordHash: string(passwordHash),
+	}
 
-	if err := h.db.Users().Create(user); err != nil {
+	if err := h.db.Users().Create(&user); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -168,8 +168,8 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	userSettings := new(models.UserSettings)
-	if err := readJSONFromRequest(req, userSettings); err != nil {
+	var userSettings models.UserSettings
+	if err := readJSONFromRequest(req, &userSettings); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
@@ -183,7 +183,7 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 		h.Error(resp, http.StatusBadRequest, err)
 	}
 
-	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
+	if err := h.db.Users().UpdateSettings(&userSettings); err != nil {
 		fullErr := fmt.Errorf("updating user settings: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return
