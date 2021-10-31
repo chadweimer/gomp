@@ -11,12 +11,13 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
+	gen "github.com/chadweimer/gomp/generated/api"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request) {
-	var credentials models.Credentials
+	var credentials gen.Credentials
 	if err := readJSONFromRequest(req, &credentials); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -39,7 +40,7 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 		h.Error(resp, http.StatusInternalServerError, err)
 	}
 
-	h.OK(resp, models.AuthenticationResponse{Token: tokenStr, User: *user})
+	h.OK(resp, gen.AuthenticationResponse{Token: tokenStr, User: *user})
 }
 
 func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {

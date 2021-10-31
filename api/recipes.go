@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/db"
+	gen "github.com/chadweimer/gomp/generated/api"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
 )
@@ -57,7 +58,7 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.OK(resp, models.SearchResult{Recipes: *recipes, Total: total})
+	h.OK(resp, gen.SearchResult{Recipes: *recipes, Total: total})
 }
 
 func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request) {

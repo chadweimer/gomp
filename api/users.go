@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
+	gen "github.com/chadweimer/gomp/generated/api"
 	"github.com/chadweimer/gomp/generated/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -40,7 +41,7 @@ func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
-	var newUser models.UserWithPassword
+	var newUser gen.UserWithPassword
 	if err := readJSONFromRequest(req, &newUser); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -118,7 +119,7 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	params := new(models.UserPasswordRequest)
+	params := new(gen.UserPasswordRequest)
 	if err := readJSONFromRequest(req, params); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
