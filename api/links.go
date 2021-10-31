@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -21,15 +20,15 @@ func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request)
 	h.OK(resp, recipes)
 }
 
-func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request) {
+func (h *apiHandler) putRecipeLink(resp http.ResponseWriter, req *http.Request) {
 	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	var destRecipeId int64
-	if err := readJSONFromRequest(req, &destRecipeId); err != nil {
+	destRecipeId, err := getResourceIdFromUrl(req, destRecipeIdKey)
+	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
@@ -39,7 +38,7 @@ func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	h.CreatedWithLocation(resp, fmt.Sprintf("/api/v1/recipes/%d/links/%d", recipeId, destRecipeId))
+	h.NoContent(resp)
 }
 
 func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request) {

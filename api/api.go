@@ -99,7 +99,7 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 				r.Put(fmt.Sprintf("/recipes/{%s}/rating", recipeIdKey), h.putRecipeRating)
 				r.Put(fmt.Sprintf("/recipes/{%s}/image", recipeIdKey), h.putRecipeMainImage)
 				r.Post(fmt.Sprintf("/recipes/{%s}/images", recipeIdKey), h.postRecipeImage)
-				r.Post(fmt.Sprintf("/recipes/{%s}/links", recipeIdKey), h.postRecipeLink)
+				r.Put(fmt.Sprintf("/recipes/{%s}/links/{%s}", recipeIdKey, destRecipeIdKey), h.putRecipeLink)
 				r.Delete(fmt.Sprintf("/recipes/{%s}/links/{%s}", recipeIdKey, destRecipeIdKey), h.deleteRecipeLink)
 				r.Delete(fmt.Sprintf("/recipes/{%s}/images/{%s}", recipeIdKey, imageIdKey), h.deleteImage)
 				r.Post(fmt.Sprintf("/recipes/{%s}/notes", recipeIdKey), h.postNote)

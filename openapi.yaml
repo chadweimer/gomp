@@ -323,31 +323,20 @@ paths:
                   $ref: "#/components/schemas/recipeCompact"
       security:
         - Bearer: []
-    post:
+  /recipes/{recipeId}/links/{destRecipeId}:
+    put:
       tags: [recipes]
       description: add a link to a recipe
       operationId: addLink
       parameters:
         - $ref: "#/components/parameters/recipeIdInPath"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: integer
-              format: int64
-        required: true
+        - $ref: "#/components/parameters/destRecipeIdInPath"
       responses:
-        201:
-          description: Created
-          headers:
-            Location:
-              schema:
-                type: string
+        204:
+          description: No Content
           content: {}
       security:
         - Bearer: []
-      x-codegen-request-body-name: destRecipeId
-  /recipes/{recipeId}/links/{destRecipeId}:
     delete:
       tags: [recipes]
       description: delete an existing link
