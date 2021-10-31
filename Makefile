@@ -49,7 +49,7 @@ $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml
 $(CODEGEN_DIR): openapi.yaml
 	rm -rf $@
 	mkdir -p $@/models
-	$(GOPATH)/bin/oapi-codegen -generate types -package models openapi.yaml > $@/models/models.go
+	oapi-codegen -generate types -package models openapi.yaml > $@/models/models.go
 
 
 # ---- LINT ----
