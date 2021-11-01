@@ -50,8 +50,18 @@ $(CODEGEN_DIR): openapi.yaml
 	rm -rf $@
 	mkdir -p $@/models
 	oapi-codegen -generate types,skip-prune -package models models.yaml > $@/models/models.go
-	mkdir -p $@/api
-	oapi-codegen -generate types -package api -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/api.go
+	mkdir -p $@/api/public
+	oapi-codegen -generate types,chi-server -package public -include-tags=public -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/public/public.go
+	mkdir -p $@/api/viewer
+	oapi-codegen -generate types,chi-server -package viewer -include-tags=viewer -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/viewer/viewer.go
+	mkdir -p $@/api/editor
+	oapi-codegen -generate types,chi-server -package editor -include-tags=editor -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/editor/editor.go
+	mkdir -p $@/api/admin
+	oapi-codegen -generate types,chi-server -package admin -include-tags=admin -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/admin/admin.go
+	mkdir -p $@/api/adminOrSelf
+	oapi-codegen -generate types,chi-server -package adminOrSelf -include-tags=adminOrSelf -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
+	mkdir -p $@/api/adminNotSelf
+	oapi-codegen -generate types,chi-server -package adminNotSelf -include-tags=adminNotSelf -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/adminNotSelf/adminNotSelf.go
 
 
 # ---- LINT ----

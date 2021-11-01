@@ -28,6 +28,19 @@ func (d *sqlRecipeDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	return nil
 }
 
+func (d *sqlRecipeDriver) GetRating(id int64) (*int64, error) {
+	var rating int64
+	err := d.Db.Get(&rating,
+		"SELECT COALESCE(g.rating, 0) AS avg_rating FROM recipe AS r "+
+			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id "+
+			"WHERE r.id = $1", id)
+	if err != nil {
+		return nil, fmt.Errorf("updating recipe state: %v", err)
+	}
+
+	return &rating, nil
+}
+
 func (d *sqlRecipeDriver) SetRating(id int64, rating float64) error {
 	var count int64
 	err := d.Db.Get(&count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
@@ -48,6 +61,17 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float64) error {
 	}
 
 	return nil
+}
+
+func (d *sqlRecipeDriver) GetState(id int64) (*models.RecipeState, error) {
+	var state models.RecipeState
+	err := d.Db.Get(&state,
+		"SELECT current_state FROM recipe WHERE id = $1", id)
+	if err != nil {
+		return nil, fmt.Errorf("updating recipe state: %v", err)
+	}
+
+	return &state, nil
 }
 
 func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {

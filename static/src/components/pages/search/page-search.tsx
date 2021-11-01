@@ -173,7 +173,7 @@ export class PageSearch {
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {
-      const { total, recipes } = (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount())).data;
+      const { total, recipes } = (await recipesApi.find(filter.query, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount(), filter.withPictures)).data;
       this.recipes = recipes ?? [];
       state.searchResultCount = total;
 

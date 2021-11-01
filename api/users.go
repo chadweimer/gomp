@@ -6,18 +6,19 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	gen "github.com/chadweimer/gomp/generated/api"
+	"github.com/chadweimer/gomp/generated/api/admin"
+	"github.com/chadweimer/gomp/generated/api/adminNotSelf"
+	"github.com/chadweimer/gomp/generated/api/adminOrSelf"
 	"github.com/chadweimer/gomp/generated/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) GetCurrentUser(resp http.ResponseWriter, req *http.Request) {
+	// TODO
+}
+
+func (h apiHandler) GetUser(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
@@ -29,7 +30,7 @@ func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
 	h.OK(resp, user)
 }
 
-func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) GetAllUsers(resp http.ResponseWriter, req *http.Request) {
 	// Add pagination?
 	users, err := h.db.Users().List()
 	if err != nil {
@@ -40,8 +41,8 @@ func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
 	h.OK(resp, users)
 }
 
-func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
-	var newUser gen.UserWithPassword
+func (h apiHandler) AddUser(resp http.ResponseWriter, req *http.Request) {
+	var newUser admin.UserWithPassword
 	if err := readJSONFromRequest(req, &newUser); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -66,13 +67,8 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 	h.Created(resp, user)
 }
 
-func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) SaveUser(resp http.ResponseWriter, req *http.Request, userIdInPath admin.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	var user models.User
 	if err := readJSONFromRequest(req, &user); err != nil {
@@ -95,13 +91,8 @@ func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) DeleteUser(resp http.ResponseWriter, req *http.Request, userIdInPath adminNotSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	if err := h.db.Users().Delete(userId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
@@ -111,23 +102,17 @@ func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) ChangePassword(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
-	params := new(gen.UserPasswordRequest)
+	params := new(adminOrSelf.UserPasswordRequest)
 	if err := readJSONFromRequest(req, params); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	err = h.db.Users().UpdatePassword(userId, params.CurrentPassword, params.NewPassword)
-	if err != nil {
+	if err := h.db.Users().UpdatePassword(userId, params.CurrentPassword, params.NewPassword); err != nil {
 		fullErr := fmt.Errorf("update failed: %v", err)
 		h.Error(resp, http.StatusForbidden, fullErr)
 		return
@@ -136,13 +121,8 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) GetSettings(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	userSettings, err := h.db.Users().ReadSettings(userId)
 	if err != nil {
@@ -161,13 +141,8 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 	h.OK(resp, userSettings)
 }
 
-func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) SaveSettings(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	var userSettings models.UserSettings
 	if err := readJSONFromRequest(req, &userSettings); err != nil {
@@ -193,13 +168,8 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) GetSearchFilters(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	searches, err := h.db.Users().ListSearchFilters(userId)
 	if err != nil {
@@ -210,13 +180,8 @@ func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request)
 	h.OK(resp, searches)
 }
 
-func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
+func (h apiHandler) AddSearchFilter(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {
+	userId := int64(userIdInPath)
 
 	var filter models.SavedSearchFilter
 	if err := readJSONFromRequest(req, &filter); err != nil {
@@ -239,19 +204,9 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 	h.Created(resp, filter)
 }
 
-func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	filterId, err := getResourceIdFromUrl(req, filterIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) GetSearchFilter(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath, filterIdInPath adminOrSelf.FilterIdInPath) {
+	userId := int64(userIdInPath)
+	filterId := int64(filterIdInPath)
 
 	filter, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err == db.ErrNotFound {
@@ -267,19 +222,9 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) 
 	h.OK(resp, filter)
 }
 
-func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	filterId, err := getResourceIdFromUrl(req, filterIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) SaveSearchFilter(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath, filterIdInPath adminOrSelf.FilterIdInPath) {
+	userId := int64(userIdInPath)
+	filterId := int64(filterIdInPath)
 
 	var filter models.SavedSearchFilter
 	if err := readJSONFromRequest(req, &filter); err != nil {
@@ -304,7 +249,7 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 	}
 
 	// Check that the filter exists for the specified user
-	_, err = h.db.Users().ReadSearchFilter(userId, filterId)
+	_, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -322,19 +267,9 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userId, err := getResourceIdFromUrl(req, userIdKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	filterId, err := getResourceIdFromUrl(req, filterIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) DeleteSearchFilter(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath, filterIdInPath adminOrSelf.FilterIdInPath) {
+	userId := int64(userIdInPath)
+	filterId := int64(filterIdInPath)
 
 	if err := h.db.Users().DeleteSearchFilter(userId, filterId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)

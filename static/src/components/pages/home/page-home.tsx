@@ -122,7 +122,7 @@ export class PageHome {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      return (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 6)).data;
+      return (await recipesApi.find(filter.query, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 6, filter.withPictures)).data;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');

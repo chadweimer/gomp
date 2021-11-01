@@ -7,17 +7,15 @@ import (
 	"path/filepath"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/generated/api/editor"
+	"github.com/chadweimer/gomp/generated/api/viewer"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/google/uuid"
 )
 
-func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) GetImages(resp http.ResponseWriter, req *http.Request, recipeIdInPath viewer.RecipeIdInPath) {
+	recipeId := int64(recipeIdInPath)
 
 	images, err := h.db.Images().List(recipeId)
 	if err != nil {
@@ -28,12 +26,8 @@ func (h *apiHandler) getRecipeImages(resp http.ResponseWriter, req *http.Request
 	h.OK(resp, images)
 }
 
-func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) GetMainImage(resp http.ResponseWriter, req *http.Request, recipeIdInPath viewer.RecipeIdInPath) {
+	recipeId := int64(recipeIdInPath)
 
 	image, err := h.db.Images().ReadMainImage(recipeId)
 	if err == db.ErrNotFound {
@@ -48,12 +42,8 @@ func (h *apiHandler) getRecipeMainImage(resp http.ResponseWriter, req *http.Requ
 	h.OK(resp, image)
 }
 
-func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) SetMainImage(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
+	recipeId := int64(recipeIdInPath)
 
 	var imageId int64
 	if err := readJSONFromRequest(req, &imageId); err != nil {
@@ -69,12 +59,8 @@ func (h *apiHandler) putRecipeMainImage(resp http.ResponseWriter, req *http.Requ
 
 	h.NoContent(resp)
 }
-func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) UploadImage(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
+	recipeId := int64(recipeIdInPath)
 
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
@@ -120,12 +106,9 @@ func (h *apiHandler) postRecipeImage(resp http.ResponseWriter, req *http.Request
 	h.Created(resp, imageInfo)
 }
 
-func (h *apiHandler) deleteImage(resp http.ResponseWriter, req *http.Request) {
-	imageId, err := getResourceIdFromUrl(req, imageIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
+func (h apiHandler) DeleteImage(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath, imageIdInPath editor.ImageIdInPath) {
+	// TODO: recipeId := int64(recipeIdInPath)
+	imageId := int64(imageIdInPath)
 
 	// We need to read the info about the image for later
 	image, err := h.db.Images().Read(imageId)

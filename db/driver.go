@@ -121,8 +121,14 @@ type RecipeDriver interface {
 	// any attachments that we associated with the deleted recipe.
 	Delete(id int64) error
 
+	// GetRating gets the current rating of the specific recipe.
+	GetRating(id int64) (*int64, error)
+
 	// SetRating adds or updates the rating of the specified recipe.
 	SetRating(id int64, rating float64) error
+
+	// GetRating gets the current state of the specific recipe.
+	GetState(id int64) (*models.RecipeState, error)
 
 	// SetState updates the state of the specified recipe.
 	SetState(id int64, state models.RecipeState) error

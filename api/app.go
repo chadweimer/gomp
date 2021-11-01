@@ -8,7 +8,7 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 )
 
-func (h *apiHandler) getAppInfo(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) GetInfo(resp http.ResponseWriter, req *http.Request) {
 	info := models.AppInfo{
 		Version: metadata.BuildVersion,
 	}
@@ -16,7 +16,7 @@ func (h *apiHandler) getAppInfo(resp http.ResponseWriter, req *http.Request) {
 	h.OK(resp, info)
 }
 
-func (h *apiHandler) getAppConfiguration(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) GetConfiguration(resp http.ResponseWriter, req *http.Request) {
 	cfg, err := h.db.AppConfiguration().Read()
 	if err != nil {
 		fullErr := fmt.Errorf("reading application configuration: %v", err)
@@ -27,7 +27,7 @@ func (h *apiHandler) getAppConfiguration(resp http.ResponseWriter, req *http.Req
 	h.OK(resp, cfg)
 }
 
-func (h *apiHandler) putAppConfiguration(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) SaveConfiguration(resp http.ResponseWriter, req *http.Request) {
 	var cfg models.AppConfiguration
 	if err := readJSONFromRequest(req, &cfg); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
