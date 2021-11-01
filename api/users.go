@@ -14,7 +14,13 @@ import (
 )
 
 func (h apiHandler) GetCurrentUser(resp http.ResponseWriter, req *http.Request) {
-	// TODO
+	userId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
+	if err != nil {
+		h.Error(resp, http.StatusUnauthorized, err)
+		return
+	}
+
+	h.GetUser(resp, req, adminOrSelf.UserIdInPath(userId))
 }
 
 func (h apiHandler) GetUser(resp http.ResponseWriter, req *http.Request, userIdInPath adminOrSelf.UserIdInPath) {

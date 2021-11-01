@@ -2,7 +2,7 @@ import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
 import { recipesApi, usersApi } from '../../../helpers/api';
-import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
+import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy } from '../../../generated';
 
@@ -122,7 +122,7 @@ export class PageHome {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      return (await recipesApi.find(filter.query, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 6, filter.withPictures)).data;
+      return (await recipesApi.find(filter.sortBy, filter.sortDir, 1, 6, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags)).data;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');

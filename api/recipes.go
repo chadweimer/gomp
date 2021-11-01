@@ -11,12 +11,40 @@ import (
 )
 
 func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params viewer.FindParams) {
+	query := ""
+	if params.Q != nil {
+		query = *params.Q
+	}
+	var fields []models.SearchField
+	if params.Fields != nil && len(*params.Fields) > 0 {
+		fields = *params.Fields
+	}
+	var states []models.RecipeState
+	if params.States != nil && len(*params.States) > 0 {
+		states = *params.States
+	}
+	var tags []string
+	if params.Tags != nil && len(*params.Tags) > 0 {
+		tags = *params.Tags
+	}
+	var withPictures *bool
+	if params.Pictures != nil {
+		switch *params.Pictures {
+		case viewer.YesNoAnyYes:
+			val := true
+			withPictures = &val
+		case viewer.YesNoAnyNo:
+			val := false
+			withPictures = &val
+		}
+	}
+
 	filter := models.SearchFilter{
-		Query:        params.Q,
-		Fields:       params.Fields,
-		Tags:         params.Tags,
-		WithPictures: params.Pictures,
-		States:       params.States,
+		Query:        query,
+		Fields:       fields,
+		Tags:         tags,
+		WithPictures: withPictures,
+		States:       states,
 		SortBy:       params.Sort,
 		SortDir:      params.Dir,
 	}

@@ -43,10 +43,10 @@ uninstall:
 
 
 # ---- CODEGEN ----
-$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml
+$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
-$(CODEGEN_DIR): openapi.yaml
+$(CODEGEN_DIR): openapi.yaml models.yaml
 	rm -rf $@
 	mkdir -p $@/models
 	oapi-codegen -generate types,skip-prune -package models models.yaml > $@/models/models.go

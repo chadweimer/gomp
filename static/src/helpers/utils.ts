@@ -1,6 +1,6 @@
 import { GestureDetail, loadingController, toastController } from '@ionic/core';
-import { AccessLevel, User } from '../generated';
-import { SwipeDirection, YesNoAny } from '../models';
+import { AccessLevel, User, YesNoAny } from '../generated';
+import { SwipeDirection } from '../models';
 
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();

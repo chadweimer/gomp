@@ -75,11 +75,10 @@ paths:
           in: query
           schema:
             type: string
-          required: true
         - name: pictures
           in: query
           schema:
-            type: boolean
+            $ref: "#/components/schemas/yesNoAny"
         - name: fields[]
           in: query
           style: form
@@ -88,7 +87,6 @@ paths:
             type: array
             items:
               $ref: "./models.yaml#/components/schemas/searchField"
-          required: true
         - name: states[]
           in: query
           style: form
@@ -97,7 +95,6 @@ paths:
             type: array
             items:
               $ref: "./models.yaml#/components/schemas/recipeState"
-          required: true
         - name: tags[]
           in: query
           style: form
@@ -106,7 +103,6 @@ paths:
             type: array
             items:
               type: string
-          required: true
         - name: sort
           in: query
           schema:
@@ -809,6 +805,12 @@ components:
           properties:
             password:
               type: string
+    yesNoAny:
+      type: string
+      enum:
+        - "yes"
+        - "no"
+        - any
   parameters:
     destRecipeIdInPath:
       name: destRecipeId

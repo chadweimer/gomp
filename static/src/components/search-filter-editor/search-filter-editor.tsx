@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from '../../generated';
+import { RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../generated';
 import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
-import { getDefaultSearchFilter, YesNoAny } from '../../models';
+import { getDefaultSearchFilter } from '../../models';
 import state from '../../stores/state';
 
 @Component({

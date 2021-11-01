@@ -167,7 +167,7 @@ func getResourceIdFromUrl(req *http.Request, idKey routeKey) (int64, error) {
 	idStr := chi.URLParam(req, string(idKey))
 
 	// Special case for userId
-	if idKey == userIdKey && idStr == "current" {
+	if idKey == userIdKey && idStr == "" {
 		return getResourceIdFromCtx(req, currentUserIdCtxKey)
 	}
 
