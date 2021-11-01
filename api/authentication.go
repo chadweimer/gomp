@@ -111,30 +111,6 @@ func (h apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	})
 }
 
-func (h apiHandler) disallowSelf(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		urlId, err := getResourceIdFromUrl(req, userIdKey)
-		if err != nil {
-			h.Error(resp, http.StatusBadRequest, err)
-			return
-		}
-		ctxId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
-		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
-			return
-		}
-
-		// Don't allow operating on the current user (e.g., for deleting)
-		if urlId == ctxId {
-			err := fmt.Errorf("endpoint '%s' disallowed on current user", req.URL.Path)
-			h.Error(resp, http.StatusForbidden, err)
-			return
-		}
-
-		next.ServeHTTP(resp, req)
-	})
-}
-
 func (h apiHandler) requireEditor(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsEditor(req); err != nil {

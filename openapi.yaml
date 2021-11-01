@@ -592,7 +592,7 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: user
     delete:
-      tags: [users, adminNotSelf]
+      tags: [users, admin]
       description: delete an existing user
       operationId: deleteUser
       parameters:

@@ -7,7 +7,6 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/api/admin"
-	"github.com/chadweimer/gomp/generated/api/adminNotSelf"
 	"github.com/chadweimer/gomp/generated/api/adminOrSelf"
 	"github.com/chadweimer/gomp/generated/models"
 	"golang.org/x/crypto/bcrypt"
@@ -97,8 +96,21 @@ func (h apiHandler) SaveUser(resp http.ResponseWriter, req *http.Request, userId
 	h.NoContent(resp)
 }
 
-func (h apiHandler) DeleteUser(resp http.ResponseWriter, req *http.Request, userIdInPath adminNotSelf.UserIdInPath) {
+func (h apiHandler) DeleteUser(resp http.ResponseWriter, req *http.Request, userIdInPath admin.UserIdInPath) {
 	userId := int64(userIdInPath)
+
+	currentUserId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
+	if err != nil {
+		h.Error(resp, http.StatusUnauthorized, err)
+		return
+	}
+
+	// Don't allow deleting self
+	if userId == currentUserId {
+		err := fmt.Errorf("endpoint '%s' disallowed on current user", req.URL.Path)
+		h.Error(resp, http.StatusForbidden, err)
+		return
+	}
 
 	if err := h.db.Users().Delete(userId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)

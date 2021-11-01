@@ -60,8 +60,6 @@ $(CODEGEN_DIR): openapi.yaml models.yaml
 	oapi-codegen -generate types,chi-server -package admin -include-tags=admin -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/admin/admin.go
 	mkdir -p $@/api/adminOrSelf
 	oapi-codegen -generate types,chi-server -package adminOrSelf -include-tags=adminOrSelf -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
-	mkdir -p $@/api/adminNotSelf
-	oapi-codegen -generate types,chi-server -package adminNotSelf -include-tags=adminNotSelf -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/adminNotSelf/adminNotSelf.go
 
 
 # ---- LINT ----

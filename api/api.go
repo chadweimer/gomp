@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/api/admin"
-	"github.com/chadweimer/gomp/generated/api/adminNotSelf"
 	"github.com/chadweimer/gomp/generated/api/adminOrSelf"
 	"github.com/chadweimer/gomp/generated/api/editor"
 	"github.com/chadweimer/gomp/generated/api/public"
@@ -33,12 +31,7 @@ var errMismatchedId = errors.New("id in the path does not match the one specifie
 type routeKey string
 
 const (
-	destRecipeIdKey routeKey = "destRecipeId"
-	filterIdKey     routeKey = "filterId"
-	imageIdKey      routeKey = "imageId"
-	noteIdKey       routeKey = "noteId"
-	recipeIdKey     routeKey = "recipeId"
-	userIdKey       routeKey = "userId"
+	userIdKey routeKey = "userId"
 )
 
 // ---- End Route Keys ----
@@ -88,15 +81,8 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 			viewer.HandlerFromMux(h, r)
 			// Editor
 			editor.HandlerFromMux(h, r.With(h.requireEditor))
-
 			// Admin
-			r.Group(func(r chi.Router) {
-				r.Use(h.requireAdmin)
-
-				admin.HandlerFromMux(h, r)
-				adminNotSelf.HandlerFromMux(h, r.With(h.disallowSelf))
-			})
-
+			admin.HandlerFromMux(h, r.With(h.requireAdmin))
 			// Admin or Self
 			adminOrSelf.HandlerFromMux(h, r.With(h.requireAdminUnlessSelf))
 		})
@@ -138,25 +124,6 @@ func (h *apiHandler) Error(resp http.ResponseWriter, status int, err error) {
 
 func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 	h.Error(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
-}
-
-func getParam(values url.Values, key string) string {
-	val, _ := url.QueryUnescape(values.Get(key))
-	return val
-}
-
-func getParams(values url.Values, key string) []string {
-	var vals []string
-	if rawVals, ok := values[key]; ok {
-		for _, rawVal := range rawVals {
-			safeVal, err := url.QueryUnescape(rawVal)
-			if err == nil && safeVal != "" {
-				vals = append(vals, safeVal)
-			}
-		}
-	}
-
-	return vals
 }
 
 func readJSONFromRequest(req *http.Request, data interface{}) error {
