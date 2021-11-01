@@ -26,8 +26,8 @@ func (h *apiHandler) postUpload(resp http.ResponseWriter, req *http.Request) {
 	imageExt := filepath.Ext(fileHeader.Filename)
 	imageName := uuid.New().String() + imageExt
 
-	fileURL := filepath.ToSlash(filepath.Join("/uploads/", imageName))
+	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	h.upl.Save(imageName, uploadedFileData)
 
-	h.Created(resp, fileURL)
+	h.CreatedWithLocation(resp, fileUrl)
 }

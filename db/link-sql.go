@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -9,34 +9,34 @@ type sqlLinkDriver struct {
 	*sqlDriver
 }
 
-func (d *sqlLinkDriver) Create(recipeID, destRecipeID int64) error {
+func (d *sqlLinkDriver) Create(recipeId, destRecipeId int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createtx(recipeID, destRecipeID, tx)
+		return d.createtx(recipeId, destRecipeId, tx)
 	})
 }
 
-func (d *sqlLinkDriver) createtx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
+func (d *sqlLinkDriver) createtx(recipeId, destRecipeId int64, tx *sqlx.Tx) error {
 	stmt := "INSERT INTO recipe_link (recipe_id, dest_recipe_id) VALUES ($1, $2)"
 
-	_, err := tx.Exec(stmt, recipeID, destRecipeID)
+	_, err := tx.Exec(stmt, recipeId, destRecipeId)
 	return err
 }
 
-func (d *sqlLinkDriver) Delete(recipeID, destRecipeID int64) error {
+func (d *sqlLinkDriver) Delete(recipeId, destRecipeId int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
-		return d.deletetx(recipeID, destRecipeID, tx)
+		return d.deletetx(recipeId, destRecipeId, tx)
 	})
 }
 
-func (d *sqlLinkDriver) deletetx(recipeID, destRecipeID int64, tx *sqlx.Tx) error {
+func (d *sqlLinkDriver) deletetx(recipeId, destRecipeId int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec(
 		"DELETE FROM recipe_link WHERE (recipe_id = $1 AND dest_recipe_id = $2) OR (recipe_id = $2 AND dest_recipe_id = $1)",
-		recipeID,
-		destRecipeID)
+		recipeId,
+		destRecipeId)
 	return err
 }
 
-func (d *sqlLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
+func (d *sqlLinkDriver) List(recipeId int64) (*[]models.RecipeCompact, error) {
 	var recipes []models.RecipeCompact
 
 	selectStmt := "SELECT " +
@@ -48,7 +48,7 @@ func (d *sqlLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
 		"r.id IN (SELECT dest_recipe_id FROM recipe_link WHERE recipe_id = $1) OR " +
 		"r.id IN (SELECT recipe_id FROM recipe_link WHERE dest_recipe_id = $1) " +
 		"ORDER BY r.name ASC"
-	if err := d.Db.Select(&recipes, selectStmt, recipeID); err != nil {
+	if err := d.Db.Select(&recipes, selectStmt, recipeId); err != nil {
 		return nil, err
 	}
 

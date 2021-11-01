@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -21,10 +21,10 @@ func (d *postgresRecipeImageDriver) createtx(image *models.RecipeImage, tx *sqlx
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
 		"VALUES ($1, $2, $3, $4) RETURNING id"
 
-	if err := tx.Get(image, stmt, image.RecipeID, image.Name, image.URL, image.ThumbnailURL); err != nil {
+	if err := tx.Get(image, stmt, image.RecipeId, image.Name, image.Url, image.ThumbnailUrl); err != nil {
 		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
 	}
 
 	// Switch to a new main image if necessary, since this might be the first image attached
-	return d.setMainImageIfNecessary(image.RecipeID, tx)
+	return d.setMainImageIfNecessary(image.RecipeId, tx)
 }

@@ -47,7 +47,7 @@ export class ImageUploadBrowser {
     }
 
     dismissContainingModal(this.el, {
-      formData: this.imageInput?.value ? new FormData(this.imageForm) : null
+      file: this.imageInput?.value ? this.imageInput.files[0] : null
     });
   }
 

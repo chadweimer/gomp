@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
 
 type sqlRecipeDriver struct {
 	*sqlDriver
 }
+
+var supportedSearchFields = [...]models.SearchField{models.SearchFieldName, models.SearchFieldIngredients, models.SearchFieldDirections}
 
 func (d *sqlRecipeDriver) Delete(id int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
@@ -56,4 +58,13 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 	}
 
 	return nil
+}
+
+func containsField(fields []models.SearchField, field models.SearchField) bool {
+	for _, a := range fields {
+		if a == field {
+			return true
+		}
+	}
+	return false
 }

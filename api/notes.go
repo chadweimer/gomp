@@ -1,20 +1,19 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 )
 
 func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	notes, err := h.db.Notes().List(recipeID)
+	notes, err := h.db.Notes().List(recipeId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
@@ -24,22 +23,7 @@ func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
-	var note models.Note
-	if err := readJSONFromRequest(req, &note); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
-	if err := h.db.Notes().Create(&note); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/notes/%d", note.RecipeID, note.ID))
-}
-
-func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
-	noteID, err := getResourceIDFromURL(req, noteIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -51,8 +35,51 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if note.ID != noteID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if note.RecipeId == nil {
+		note.RecipeId = &recipeId
+	} else if *note.RecipeId != recipeId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
+		return
+	}
+
+	if err := h.db.Notes().Create(&note); err != nil {
+		h.Error(resp, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.Created(resp, note)
+}
+
+func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
+	noteId, err := getResourceIdFromUrl(req, noteIdKey)
+	if err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
+	if err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	var note models.Note
+	if err := readJSONFromRequest(req, &note); err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	if note.Id == nil {
+		note.Id = &noteId
+	} else if *note.Id != noteId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
+		return
+	}
+
+	if note.RecipeId == nil {
+		note.RecipeId = &recipeId
+	} else if *note.RecipeId != recipeId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
@@ -65,13 +92,19 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request) {
-	noteID, err := getResourceIDFromURL(req, noteIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.db.Notes().Delete(noteID); err != nil {
+	noteId, err := getResourceIdFromUrl(req, noteIdKey)
+	if err != nil {
+		h.Error(resp, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.db.Notes().Delete(recipeId, noteId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}

@@ -1,7 +1,7 @@
 import { RadioGroupChangeEventDetail } from '@ionic/core';
 import { Component, Event, EventEmitter, h, Prop } from '@stencil/core';
 import { capitalizeFirstLetter } from '../../helpers/utils';
-import { SortBy } from '../../models';
+import { SortBy } from '../../generated';
 
 @Component({
   tag: 'sort-by-selector',

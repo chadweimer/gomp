@@ -1,31 +1,26 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
+	gen "github.com/chadweimer/gomp/generated/api"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
 )
 
-type getRecipesResponse struct {
-	Recipes *[]models.RecipeCompact `json:"recipes"`
-	Total   int64                   `json:"total"`
-}
-
 func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 	query := getParam(req.URL.Query(), "q")
-	fields := getParams(req.URL.Query(), "fields[]")
+	fields := asFields(getParams(req.URL.Query(), "fields[]"))
 	tags := getParams(req.URL.Query(), "tags[]")
-	states := getParams(req.URL.Query(), "states[]")
-	sortBy := getParam(req.URL.Query(), "sort")
-	sortDir := getParam(req.URL.Query(), "dir")
+	states := asStates(getParams(req.URL.Query(), "states[]"))
+	sortBy := models.SortBy(getParam(req.URL.Query(), "sort"))
+	sortDir := models.SortDir(getParam(req.URL.Query(), "dir"))
 
 	var withPictures *bool
 	pictures := getParam(req.URL.Query(), "pictures")
-	if pictures != "" {
+	if pictures != "" && pictures != "null" {
 		withPics, err := strconv.ParseBool(pictures)
 		if err == nil {
 			withPictures = &withPics
@@ -63,17 +58,17 @@ func (h *apiHandler) getRecipes(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.OK(resp, getRecipesResponse{Recipes: recipes, Total: total})
+	h.OK(resp, gen.SearchResult{Recipes: *recipes, Total: total})
 }
 
 func (h *apiHandler) getRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	recipe, err := h.db.Recipes().Read(recipeID)
+	recipe, err := h.db.Recipes().Read(recipeId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -98,11 +93,11 @@ func (h *apiHandler) postRecipe(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d", recipe.ID))
+	h.Created(resp, recipe)
 }
 
 func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -114,8 +109,10 @@ func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if recipe.ID != recipeID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if recipe.Id == nil {
+		recipe.Id = &recipeId
+	} else if *recipe.Id != recipeId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
@@ -128,19 +125,19 @@ func (h *apiHandler) putRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if err = h.db.Recipes().Delete(recipeID); err != nil {
+	if err = h.db.Recipes().Delete(recipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
-	if err = upload.DeleteAll(h.upl, recipeID); err != nil {
+	if err = upload.DeleteAll(h.upl, recipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -149,7 +146,7 @@ func (h *apiHandler) deleteRecipe(resp http.ResponseWriter, req *http.Request) {
 }
 
 func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -161,7 +158,7 @@ func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if err := h.db.Recipes().SetState(recipeID, state); err != nil {
+	if err := h.db.Recipes().SetState(recipeId, state); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -170,7 +167,7 @@ func (h *apiHandler) putRecipeState(resp http.ResponseWriter, req *http.Request)
 }
 
 func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -182,10 +179,26 @@ func (h *apiHandler) putRecipeRating(resp http.ResponseWriter, req *http.Request
 		return
 	}
 
-	if err := h.db.Recipes().SetRating(recipeID, rating); err != nil {
+	if err := h.db.Recipes().SetRating(recipeId, rating); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
 	h.NoContent(resp)
+}
+
+func asStates(arr []string) []models.RecipeState {
+	states := make([]models.RecipeState, len(arr))
+	for i, val := range arr {
+		states[i] = models.RecipeState(val)
+	}
+	return states
+}
+
+func asFields(arr []string) []models.SearchField {
+	fields := make([]models.SearchField, len(arr))
+	for i, val := range arr {
+		fields[i] = models.SearchField(val)
+	}
+	return fields
 }

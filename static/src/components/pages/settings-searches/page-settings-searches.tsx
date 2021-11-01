@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { UsersApi } from '../../../helpers/api';
+import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
+import { usersApi } from '../../../helpers/api';
 import { enableBackForOverlay, showToast } from '../../../helpers/utils';
-import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -57,7 +57,7 @@ export class PageSettingsSearches {
 
   private async loadSearchFilters() {
     try {
-      this.filters = await UsersApi.getAllSearchFilters(this.el) ?? [];
+      this.filters = (await usersApi.getSearchFilters(state.currentUser.id)).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -65,7 +65,7 @@ export class PageSettingsSearches {
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await UsersApi.postSearchFilter(this.el, state.currentUser.id, searchFilter);
+      await usersApi.addSearchFilter(state.currentUser.id, searchFilter);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create search filter.');
@@ -74,7 +74,7 @@ export class PageSettingsSearches {
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await UsersApi.putSearchFilter(this.el, state.currentUser.id, searchFilter);
+      await usersApi.saveSearchFilter(state.currentUser.id, searchFilter.id, searchFilter);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save search filter.');
@@ -83,7 +83,7 @@ export class PageSettingsSearches {
 
   private async deleteSearchFilter(searchFilter: SavedSearchFilterCompact) {
     try {
-      await UsersApi.deleteSearchFilter(this.el, state.currentUser.id, searchFilter.id);
+      await usersApi.deleteSearchFilter(state.currentUser.id, searchFilter.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete search filter.');
@@ -115,7 +115,7 @@ export class PageSettingsSearches {
 
   private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
-      const searchFilter = await UsersApi.getSearchFilter(this.el, state.currentUser.id, searchFilterCompact.id);
+      const searchFilter = (await usersApi.getSearchFilter(state.currentUser.id, searchFilterCompact.id)).data;
 
       const modal = await modalController.create({
         component: 'search-filter-editor',

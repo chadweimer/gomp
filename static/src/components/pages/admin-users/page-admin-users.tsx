@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { UsersApi } from '../../../helpers/api';
+import { User } from '../../../generated';
+import { usersApi } from '../../../helpers/api';
 import { enableBackForOverlay, showToast } from '../../../helpers/utils';
-import { User } from '../../../models';
 
 @Component({
   tag: 'page-admin-users',
@@ -57,7 +57,7 @@ export class PageAdminUsers {
 
   private async loadUsers() {
     try {
-      this.users = await UsersApi.getAll(this.el);
+      this.users = (await usersApi.getAllUsers()).data ?? [];
     } catch (ex) {
       console.error(ex);
     }
@@ -65,7 +65,7 @@ export class PageAdminUsers {
 
   private async saveNewUser(user: User, password: string) {
     try {
-      await UsersApi.post(this.el, user, password);
+      await usersApi.addUser({ ...user, password });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create new user.');
@@ -74,7 +74,7 @@ export class PageAdminUsers {
 
   private async saveExistingUser(user: User) {
     try {
-      await UsersApi.put(this.el, user);
+      await usersApi.saveUser(user.id, user);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save user.');
@@ -83,7 +83,7 @@ export class PageAdminUsers {
 
   private async deleteUser(user: User) {
     try {
-      await UsersApi.delete(this.el, user.id);
+      await usersApi.deleteUser(user.id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete user.');

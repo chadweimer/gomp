@@ -1,5 +1,5 @@
 import { Component, Host, h, Prop } from '@stencil/core';
-import { RecipeCompact, RecipeState } from '../../models';
+import { RecipeCompact, RecipeState } from '../../generated';
 
 @Component({
   tag: 'recipe-card',
@@ -22,7 +22,7 @@ export class RecipeCard {
           <ion-card-content>
             <div class="no-overflow">
               <p class="single-line">{this.recipe.name}</p>
-              <five-star-rating value={this.recipe?.averageRating} disabled />
+              <five-star-rating value={this.recipe.averageRating} disabled />
             </div>
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived

@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
+import { Note } from '../../generated';
 import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
-import { Note } from '../../models';
 
 @Component({
   tag: 'note-editor',

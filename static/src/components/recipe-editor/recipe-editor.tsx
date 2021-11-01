@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
+import { Recipe } from '../../generated';
 import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
-import { Recipe } from '../../models';
 import state from '../../stores/state';
 
 @Component({
@@ -10,12 +10,17 @@ import state from '../../stores/state';
 export class RecipeEditor {
   @Prop() recipe: Recipe = {
     name: '',
+    servingSize: '',
+    nutritionInfo: '',
+    ingredients: '',
+    directions: '',
+    storageInstructions: '',
+    sourceUrl: '',
     tags: []
   };
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
-  private imageForm!: HTMLFormElement;
   private imageInput!: HTMLInputElement;
 
   connectedCallback() {
@@ -45,7 +50,7 @@ export class RecipeEditor {
             </ion-item>
             {!this.recipe.id ?
               <ion-item lines="full">
-                <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
+                <form enctype="multipart/form-data">
                   <ion-label position="stacked">Picture</ion-label>
                   <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
                 </form>
@@ -90,7 +95,7 @@ export class RecipeEditor {
 
     dismissContainingModal(this.el, {
       recipe: this.recipe,
-      formData: this.imageInput?.value ? new FormData(this.imageForm) : null
+      file: this.imageInput?.value ? this.imageInput.files[0] : null
     });
   }
 

@@ -1,8 +1,9 @@
 import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
-import { RecipesApi } from '../../../helpers/api';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../generated';
+import { recipesApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir, SwipeDirection } from '../../../models';
+import { getDefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -168,11 +169,11 @@ export class PageSearch {
     }
 
     // Make sure to fill in any missing fields
-    const defaultFilter = new DefaultSearchFilter();
+    const defaultFilter = getDefaultSearchFilter();
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {
-      const { total, recipes } = await RecipesApi.find(this.el, filter, pageNum, this.getRecipeCount());
+      const { total, recipes } = (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount())).data;
       this.recipes = recipes ?? [];
       state.searchResultCount = total;
 
@@ -237,17 +238,19 @@ export class PageSearch {
     await this.performSearch(1);
   }
 
-  private async saveNewRecipe(recipe: Recipe, formData: FormData) {
+  private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipeId = await RecipesApi.post(this.el, recipe);
+      const newRecipe = (await recipesApi.addRecipe(recipe)).data;
 
-      if (formData) {
+      if (file) {
         await showLoading(
-          async () => await RecipesApi.postImage(this.el, newRecipeId, formData),
+          async () => {
+            await recipesApi.uploadImage(newRecipe.id, file);
+          },
           'Uploading picture...');
       }
 
-      await redirect(`/recipes/${newRecipeId}`);
+      await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create new recipe.');
@@ -269,9 +272,9 @@ export class PageSearch {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ recipe: Recipe, formData: FormData }>();
+      const resp = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
       if (resp.data) {
-        await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+        await this.saveNewRecipe(resp.data.recipe, resp.data.file);
       }
     });
   }

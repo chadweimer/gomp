@@ -1,6 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
+import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from '../../generated';
 import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
-import { DefaultSearchFilter, RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../models';
+import { getDefaultSearchFilter, YesNoAny } from '../../models';
 import state from '../../stores/state';
 
 @Component({
@@ -10,7 +11,7 @@ import state from '../../stores/state';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() showName = true;
-  @Prop() searchFilter: SearchFilter = new DefaultSearchFilter();
+  @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
 
   @Element() el!: HTMLSearchFilterEditorElement;
@@ -112,7 +113,7 @@ export class SearchFilterEditor {
   }
 
   private onResetClicked() {
-    this.searchFilter = new DefaultSearchFilter();
+    this.searchFilter = getDefaultSearchFilter();
   }
 
 }

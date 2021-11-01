@@ -1,18 +1,17 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 )
 
 func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	recipes, err := h.db.Links().List(recipeID)
+	recipes, err := h.db.Links().List(recipeId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
@@ -21,41 +20,41 @@ func (h *apiHandler) getRecipeLinks(resp http.ResponseWriter, req *http.Request)
 	h.OK(resp, recipes)
 }
 
-func (h *apiHandler) postRecipeLink(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+func (h *apiHandler) putRecipeLink(resp http.ResponseWriter, req *http.Request) {
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	var destRecipeID int64
-	if err := readJSONFromRequest(req, &destRecipeID); err != nil {
+	destRecipeId, err := getResourceIdFromUrl(req, destRecipeIdKey)
+	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.db.Links().Create(recipeID, destRecipeID); err != nil {
+	if err := h.db.Links().Create(recipeId, destRecipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/recipes/%d/links/%d", recipeID, destRecipeID))
+	h.NoContent(resp)
 }
 
 func (h *apiHandler) deleteRecipeLink(resp http.ResponseWriter, req *http.Request) {
-	recipeID, err := getResourceIDFromURL(req, recipeIDKey)
+	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	destRecipeID, err := getResourceIDFromURL(req, destRecipeIDKey)
+	destRecipeId, err := getResourceIdFromUrl(req, destRecipeIdKey)
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.db.Links().Delete(recipeID, destRecipeID); err != nil {
+	if err := h.db.Links().Delete(recipeId, destRecipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}

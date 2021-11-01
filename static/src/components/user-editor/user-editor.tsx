@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
+import { AccessLevel, User } from '../../generated';
 import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
-import { AccessLevel, User } from '../../models';
 
 @Component({
   tag: 'user-editor',

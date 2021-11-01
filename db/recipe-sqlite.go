@@ -2,9 +2,10 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -24,14 +25,15 @@ func (d *sqliteRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error 
 		"VALUES ($1, $2, $3, $4, $5, $6, $7)"
 
 	res, err := tx.Exec(stmt,
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %v", err)
 	}
-	recipe.ID, _ = res.LastInsertId()
+	recipeId, _ := res.LastInsertId()
+	recipe.Id = &recipeId
 
 	for _, tag := range recipe.Tags {
-		err := d.tags.createtx(recipe.ID, tag, tx)
+		err := d.tags.createtx(recipeId, tag, tx)
 		if err != nil {
 			return fmt.Errorf("adding tags to new recipe: %v", err)
 		}
@@ -70,22 +72,26 @@ func (d *sqliteRecipeDriver) Update(recipe *models.Recipe) error {
 }
 
 func (d *sqliteRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
+	if recipe.Id == nil {
+		return errors.New("recipe id is required")
+	}
+
 	_, err := tx.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7 "+
 			"WHERE id = $8",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.ID)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl, recipe.Id)
 	if err != nil {
 		return fmt.Errorf("updating recipe: %v", err)
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	err = d.tags.deleteAlltx(recipe.ID, tx)
+	err = d.tags.deleteAlltx(*recipe.Id, tx)
 	if err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
 	}
 	for _, tag := range recipe.Tags {
-		err = d.tags.createtx(recipe.ID, tag, tx)
+		err = d.tags.createtx(*recipe.Id, tag, tx)
 		if err != nil {
 			return fmt.Errorf("updating tags on recipe: %v", err)
 		}
@@ -109,19 +115,19 @@ func (d *sqliteRecipeDriver) Find(filter *models.SearchFilter, page int64, count
 	if filter.Query != "" {
 		// If the filter didn't specify the fields to search on, use all of them
 		filterFields := filter.Fields
-		if filterFields == nil || len(filterFields) == 0 {
-			filterFields = models.SupportedSearchFields[:]
+		if len(filterFields) == 0 {
+			filterFields = supportedSearchFields[:]
 		}
 
 		// Build up the string of fields to query against
 		fieldStr := ""
 		fieldArgs := make([]interface{}, 0)
-		for _, field := range models.SupportedSearchFields {
-			if containsString(filterFields, field) {
+		for _, field := range supportedSearchFields {
+			if containsField(filterFields, field) {
 				if fieldStr != "" {
 					fieldStr += " OR "
 				}
-				fieldStr += "r." + field + " LIKE ?"
+				fieldStr += "r." + string(field) + " LIKE ?"
 				fieldArgs = append(fieldArgs, "%"+filter.Query+"%")
 			}
 		}
@@ -160,17 +166,17 @@ func (d *sqliteRecipeDriver) Find(filter *models.SearchFilter, page int64, count
 
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
-	case models.SortRecipeByID:
+	case models.SortById:
 		orderStmt += "r.id"
-	case models.SortRecipeByCreatedDate:
+	case models.SortByCreated:
 		orderStmt += "r.created_at"
-	case models.SortRecipeByModifiedDate:
+	case models.SortByModified:
 		orderStmt += "r.modified_at"
-	case models.SortRecipeByRating:
+	case models.SortByRating:
 		orderStmt += "avg_rating"
 	case models.SortByRandom:
 		orderStmt += "RANDOM()"
-	case models.SortRecipeByName:
+	case models.SortByName:
 		fallthrough
 	default:
 		orderStmt += "r.name"
@@ -182,7 +188,7 @@ func (d *sqliteRecipeDriver) Find(filter *models.SearchFilter, page int64, count
 	// cause uncertain results due to many recipes having the same rating (ties).
 	// By adding an additional sort to show recently modified recipes first,
 	// this ensures a consistent result.
-	if filter.SortBy == models.SortRecipeByRating {
+	if filter.SortBy == models.SortByRating {
 		orderStmt += ", r.modified_at DESC"
 	}
 

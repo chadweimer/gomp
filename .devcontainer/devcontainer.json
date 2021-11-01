@@ -12,6 +12,7 @@
     }
   },
   "extensions": [
+    "42crunch.vscode-openapi",
     "christian-kohler.npm-intellisense",
     "davidanson.vscode-markdownlint",
     "dbaeumer.vscode-eslint",

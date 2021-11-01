@@ -35,7 +35,7 @@ func main() {
 	fs := upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath))
 	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	dbDriver := db.CreateDriver(
-		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
+		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	defer dbDriver.Close()
 
 	r := chi.NewRouter()
