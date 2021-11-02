@@ -96,10 +96,10 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = (await usersApi.getSearchFilters(state.currentUser.id)).data ?? [];
+      const { data: savedFilters } = await usersApi.getSearchFilters(state.currentUser.id);
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
-          const savedSearchFilter = (await usersApi.getSearchFilter(savedFilter.userId, savedFilter.id)).data;
+          const { data: savedSearchFilter } = (await usersApi.getSearchFilter(savedFilter.userId, savedFilter.id));
           const { total, recipes } = await this.performSearch(savedSearchFilter);
           searches.push({
             title: savedSearchFilter.name,
@@ -122,7 +122,8 @@ export class PageHome {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      return (await recipesApi.find(filter.sortBy, filter.sortDir, 1, 6, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags)).data;
+      const { data } = await recipesApi.find(filter.sortBy, filter.sortDir, 1, 6, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
+      return data;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');
@@ -131,7 +132,7 @@ export class PageHome {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipe = (await recipesApi.addRecipe(recipe)).data;
+      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
       if (file) {
         await showLoading(
@@ -157,9 +158,9 @@ export class PageHome {
 
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
-      if (resp.data) {
-        await this.saveNewRecipe(resp.data.recipe, resp.data.file);
+      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
+      if (data) {
+        await this.saveNewRecipe(data.recipe, data.file);
       }
     });
   }

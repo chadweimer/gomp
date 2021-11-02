@@ -185,8 +185,8 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      appConfig.info = (await appApi.getInfo()).data;
-      appConfig.config = (await appApi.getConfiguration()).data;
+      ({ data: appConfig.info } = await appApi.getInfo());
+      ({ data: appConfig.config } = await appApi.getConfiguration());
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
@@ -215,8 +215,8 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Refresh the user so that access controls are properly enforced
       try {
-        state.currentUser = (await usersApi.getCurrentUser()).data
-        state.currentUserSettings = (await usersApi.getSettings(state.currentUser.id)).data;
+        ({ data: state.currentUser } = await usersApi.getCurrentUser());
+        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
       } catch (ex) {
         console.error(ex);
       }
@@ -280,8 +280,8 @@ export class AppRoot {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
-        state.currentUser = (await usersApi.getCurrentUser()).data
-        state.currentUserSettings = (await usersApi.getSettings(state.currentUser.id)).data;
+        ({ data: state.currentUser } = await usersApi.getCurrentUser());
+        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
       } catch (ex) {
         console.error(ex);
       }
@@ -329,9 +329,9 @@ export class AppRoot {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (resp.data) {
-        state.searchFilter = resp.data.searchFilter;
+      const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
+      if (data) {
+        state.searchFilter = data.searchFilter;
 
         // Workaround for binding to empty string bug
         this.restoreSearchQuery();

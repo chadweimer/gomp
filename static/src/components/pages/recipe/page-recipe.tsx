@@ -168,7 +168,7 @@ export class PageRecipe {
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
                 <ion-grid class="no-pad">
                   <ion-row class="ion-justify-content-center">
-                    {this.images.map(image =>
+                    {this.images?.map(image =>
                       <ion-col size="auto">
                         <ion-card>
                           <a href={image.url} target="_blank"><img class="thumb" src={image.thumbnailUrl} /></a>
@@ -193,7 +193,7 @@ export class PageRecipe {
               <ion-col size="12" size-md>
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
                 <ion-grid>
-                  {this.notes.map(note =>
+                  {this.notes?.map(note =>
                     <ion-row>
                       <ion-col>
                         <ion-card>
@@ -292,8 +292,8 @@ export class PageRecipe {
 
   private async loadRecipe() {
     try {
-      this.recipe = (await recipesApi.getRecipe(this.recipeId)).data;
-      this.mainImage = (await recipesApi.getMainImage(this.recipeId)).data;
+      ({ data: this.recipe } = await recipesApi.getRecipe(this.recipeId));
+      ({ data: this.mainImage } = await recipesApi.getMainImage(this.recipeId));
     } catch (ex) {
       console.error(ex);
     }
@@ -301,7 +301,7 @@ export class PageRecipe {
 
   private async loadLinks() {
     try {
-      this.links = (await recipesApi.getLinks(this.recipeId)).data ?? [];
+      ({ data: this.links } = await recipesApi.getLinks(this.recipeId));
     } catch (ex) {
       console.error(ex);
     }
@@ -309,7 +309,7 @@ export class PageRecipe {
 
   private async loadImages() {
     try {
-      this.images = (await recipesApi.getImages(this.recipeId)).data ?? [];
+      ({ data: this.images } = await recipesApi.getImages(this.recipeId));
     } catch (ex) {
       console.error(ex);
     }
@@ -317,7 +317,7 @@ export class PageRecipe {
 
   private async loadNotes() {
     try {
-      this.notes = (await recipesApi.getNotes(this.recipeId)).data ?? [];
+      ({ data: this.notes } = await recipesApi.getNotes(this.recipeId));
     } catch (ex) {
       console.error(ex);
     }
@@ -496,11 +496,11 @@ export class PageRecipe {
       // instead of using component props
       modal.querySelector('recipe-editor').recipe = this.recipe;
 
-      const resp = await modal.onDidDismiss<{ recipe: Recipe }>();
-      if (resp.data) {
+      const { data } = await modal.onDidDismiss<{ recipe: Recipe }>();
+      if (data) {
         await this.saveRecipe({
           ...this.recipe,
-          ...resp.data.recipe
+          ...data.recipe
         });
         await this.loadRecipe();
       }
@@ -598,9 +598,9 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ recipeId: number }>();
-      if (resp.data) {
-        await this.addLink(resp.data.recipeId);
+      const { data } = await modal.onDidDismiss<{ recipeId: number }>();
+      if (data) {
+        await this.addLink(data.recipeId);
         await this.loadLinks();
       }
     });
@@ -640,9 +640,9 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ note: Note }>();
-      if (resp.data) {
-        await this.saveNewNote(resp.data.note);
+      const { data } = await modal.onDidDismiss<{ note: Note }>();
+      if (data) {
+        await this.saveNewNote(data.note);
         await this.loadNotes();
       }
     });
@@ -661,11 +661,11 @@ export class PageRecipe {
       // instead of using component props
       modal.querySelector('note-editor').note = note;
 
-      const resp = await modal.onDidDismiss<{ note: Note }>();
-      if (resp.data) {
+      const { data } = await modal.onDidDismiss<{ note: Note }>();
+      if (data) {
         await this.saveExistingNote({
           ...note,
-          ...resp.data.note
+          ...data.note
         });
         await this.loadNotes();
       }
@@ -705,9 +705,9 @@ export class PageRecipe {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ file: File }>();
-      if (resp.data) {
-        await this.uploadImage(resp.data.file);
+      const { data } = await modal.onDidDismiss<{ file: File }>();
+      if (data) {
+        await this.uploadImage(data.file);
         await this.loadRecipe();
         await this.loadImages();
       }
