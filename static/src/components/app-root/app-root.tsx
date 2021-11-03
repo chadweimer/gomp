@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
@@ -21,6 +22,24 @@ export class AppRoot {
 
   async componentWillLoad() {
     await this.loadAppConfiguration();
+  }
+
+  async componentDidLoad() {
+    axios.interceptors.request.use(config => {
+      this.loadingCount++;
+
+      return config;
+    });
+    axios.interceptors.response.use(config => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+      if (config.status === 401) {
+        this.logout();
+      }
+
+      return config;
+    });
   }
 
   render() {
@@ -159,28 +178,6 @@ export class AppRoot {
   @Listen('popstate', { target: 'window' })
   async onWindowPopState() {
     await this.closeAllOverlays();
-  }
-
-  @Listen('ajax-presend')
-  onAjaxPresend() {
-    this.loadingCount++;
-  }
-
-  @Listen('ajax-response')
-  onAjaxResponse() {
-    if (this.loadingCount > 0) {
-      this.loadingCount--;
-    }
-  }
-
-  @Listen('ajax-error')
-  onAjaxError(e: CustomEvent) {
-    if (this.loadingCount > 0) {
-      this.loadingCount--;
-    }
-    if (e.detail.response?.status === 401) {
-      this.logout();
-    }
   }
 
   private async loadAppConfiguration() {
