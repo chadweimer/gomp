@@ -21,25 +21,35 @@ export class AppRoot {
   private searchBar!: HTMLIonInputElement;
 
   async componentWillLoad() {
-    await this.loadAppConfiguration();
-  }
-
-  async componentDidLoad() {
     axios.interceptors.request.use(config => {
       this.loadingCount++;
 
       return config;
-    });
-    axios.interceptors.response.use(config => {
+    }, error => {
       if (this.loadingCount > 0) {
         this.loadingCount--;
       }
-      if (config.status === 401) {
-        this.logout();
+
+      return error;
+    });
+    axios.interceptors.response.use(resp => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
       }
 
-      return config;
+      return resp;
+    }, async error => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+      if (error.response?.status === 401) {
+        await this.logout();
+      }
+
+      return Promise.reject(error);
     });
+
+    await this.loadAppConfiguration();
   }
 
   render() {
