@@ -750,9 +750,6 @@ paths:
       x-codegen-request-body-name: settings
 components:
   schemas:
-    formData_fileInForm:
-      type: string
-      format: binary
     authenticationResponse:
       type: object
       required:
