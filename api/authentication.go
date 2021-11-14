@@ -13,6 +13,7 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/api/public"
 	"github.com/chadweimer/gomp/generated/models"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -88,7 +89,7 @@ func (h apiHandler) requireAdmin(next http.Handler) http.Handler {
 
 func (h apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		urlId, err := getResourceIdFromUrl(req, userIdKey)
+		urlId, err := getUserIdFromUrl(req)
 		if err != nil {
 			h.Error(resp, http.StatusBadRequest, err)
 			return
@@ -199,4 +200,20 @@ func (h apiHandler) verifyUserIsEditor(req *http.Request) error {
 	}
 
 	return nil
+}
+
+func getUserIdFromUrl(req *http.Request) (int64, error) {
+	idStr := chi.URLParam(req, "userId")
+
+	// Assume current user if not in the route
+	if idStr == "" {
+		return getResourceIdFromCtx(req, currentUserIdCtxKey)
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse user id from URL, value = %s: %v", idStr, err)
+	}
+
+	return id, nil
 }

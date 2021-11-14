@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
@@ -25,16 +24,6 @@ import (
 var errMismatchedId = errors.New("id in the path does not match the one specified in the request body")
 
 // ---- End Standard Errors ----
-
-// ---- Begin Route Keys ----
-
-type routeKey string
-
-const (
-	userIdKey routeKey = "userId"
-)
-
-// ---- End Route Keys ----
 
 // ---- Begin Context Keys ----
 
@@ -128,22 +117,6 @@ func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
 
 func readJSONFromRequest(req *http.Request, data interface{}) error {
 	return json.NewDecoder(req.Body).Decode(data)
-}
-
-func getResourceIdFromUrl(req *http.Request, idKey routeKey) (int64, error) {
-	idStr := chi.URLParam(req, string(idKey))
-
-	// Special case for userId
-	if idKey == userIdKey && idStr == "" {
-		return getResourceIdFromCtx(req, currentUserIdCtxKey)
-	}
-
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse %s from URL, value = %s: %v", idKey, idStr, err)
-	}
-
-	return id, nil
 }
 
 func getResourceIdFromCtx(req *http.Request, idKey *contextKey) (int64, error) {
