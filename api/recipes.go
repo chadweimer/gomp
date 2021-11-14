@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/api/editor"
 	"github.com/chadweimer/gomp/generated/api/viewer"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
@@ -58,9 +57,7 @@ func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params vie
 	h.OK(resp, viewer.SearchResult{Recipes: *recipes, Total: total})
 }
 
-func (h apiHandler) GetRecipe(resp http.ResponseWriter, req *http.Request, recipeIdInPath viewer.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) GetRecipe(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	recipe, err := h.db.Recipes().Read(recipeId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
@@ -89,9 +86,7 @@ func (h apiHandler) AddRecipe(resp http.ResponseWriter, req *http.Request) {
 	h.Created(resp, recipe)
 }
 
-func (h apiHandler) SaveRecipe(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) SaveRecipe(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var recipe models.Recipe
 	if err := readJSONFromRequest(req, &recipe); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -113,9 +108,7 @@ func (h apiHandler) SaveRecipe(resp http.ResponseWriter, req *http.Request, reci
 	h.NoContent(resp)
 }
 
-func (h apiHandler) DeleteRecipe(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) DeleteRecipe(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	if err := h.db.Recipes().Delete(recipeId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
@@ -130,9 +123,7 @@ func (h apiHandler) DeleteRecipe(resp http.ResponseWriter, req *http.Request, re
 	h.NoContent(resp)
 }
 
-func (h apiHandler) GetState(resp http.ResponseWriter, req *http.Request, recipeIdInPath viewer.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) GetState(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	state, err := h.db.Recipes().GetState(recipeId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
@@ -142,9 +133,7 @@ func (h apiHandler) GetState(resp http.ResponseWriter, req *http.Request, recipe
 	h.OK(resp, state)
 }
 
-func (h apiHandler) SetState(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) SetState(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var state models.RecipeState
 	if err := readJSONFromRequest(req, &state); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -159,9 +148,7 @@ func (h apiHandler) SetState(resp http.ResponseWriter, req *http.Request, recipe
 	h.NoContent(resp)
 }
 
-func (h apiHandler) GetRating(resp http.ResponseWriter, req *http.Request, recipeIdInPath viewer.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) GetRating(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	rating, err := h.db.Recipes().GetRating(recipeId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
@@ -171,9 +158,7 @@ func (h apiHandler) GetRating(resp http.ResponseWriter, req *http.Request, recip
 	h.OK(resp, rating)
 }
 
-func (h apiHandler) SetRating(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) SetRating(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var rating float64
 	if err := readJSONFromRequest(req, &rating); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

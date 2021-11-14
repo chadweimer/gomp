@@ -3,14 +3,10 @@ package api
 import (
 	"net/http"
 
-	"github.com/chadweimer/gomp/generated/api/editor"
-	"github.com/chadweimer/gomp/generated/api/viewer"
 	"github.com/chadweimer/gomp/generated/models"
 )
 
-func (h apiHandler) GetNotes(resp http.ResponseWriter, req *http.Request, recipeIdInPath viewer.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) GetNotes(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	notes, err := h.db.Notes().List(recipeId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
@@ -20,9 +16,7 @@ func (h apiHandler) GetNotes(resp http.ResponseWriter, req *http.Request, recipe
 	h.OK(resp, notes)
 }
 
-func (h apiHandler) AddNote(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath) {
-	recipeId := int64(recipeIdInPath)
-
+func (h apiHandler) AddNote(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -44,10 +38,7 @@ func (h apiHandler) AddNote(resp http.ResponseWriter, req *http.Request, recipeI
 	h.Created(resp, note)
 }
 
-func (h apiHandler) SaveNote(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath, noteIdInPath editor.NoteIdInPath) {
-	recipeId := int64(recipeIdInPath)
-	noteId := int64(noteIdInPath)
-
+func (h apiHandler) SaveNote(resp http.ResponseWriter, req *http.Request, recipeId int64, noteId int64) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -76,10 +67,7 @@ func (h apiHandler) SaveNote(resp http.ResponseWriter, req *http.Request, recipe
 	h.NoContent(resp)
 }
 
-func (h apiHandler) DeleteNote(resp http.ResponseWriter, req *http.Request, recipeIdInPath editor.RecipeIdInPath, noteIdInPath editor.NoteIdInPath) {
-	recipeId := int64(recipeIdInPath)
-	noteId := int64(noteIdInPath)
-
+func (h apiHandler) DeleteNote(resp http.ResponseWriter, req *http.Request, recipeId int64, noteId int64) {
 	if err := h.db.Notes().Delete(recipeId, noteId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
