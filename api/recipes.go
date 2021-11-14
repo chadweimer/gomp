@@ -16,15 +16,15 @@ func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params vie
 		query = *params.Q
 	}
 	var fields []models.SearchField
-	if params.Fields != nil && len(*params.Fields) > 0 {
+	if params.Fields != nil {
 		fields = *params.Fields
 	}
 	var states []models.RecipeState
-	if params.States != nil && len(*params.States) > 0 {
+	if params.States != nil {
 		states = *params.States
 	}
 	var tags []string
-	if params.Tags != nil && len(*params.Tags) > 0 {
+	if params.Tags != nil {
 		tags = *params.Tags
 	}
 	var withPictures *bool
