@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../generated';
 import { recipesApi } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, toYesNoAny } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
 @Component({
@@ -83,7 +83,7 @@ export class RecipeLinkEditor {
     if (this.includeArchived) {
       filter.states = [...filter.states, RecipeState.Archived];
     }
-    const { recipes } = (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, 1, 20)).data;
+    const { data: { recipes } } = await recipesApi.find(filter.sortBy, filter.sortDir, 1, 20, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
 
     // Clear current selection
     this.selectedRecipeId = null;

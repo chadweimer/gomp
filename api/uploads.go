@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h *apiHandler) postUpload(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) Upload(resp http.ResponseWriter, req *http.Request) {
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
 		h.Error(resp, http.StatusBadRequest, err)

@@ -2,7 +2,7 @@ import { createGesture, Gesture, modalController, popoverController, ScrollBaseD
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
+import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -173,7 +173,7 @@ export class PageSearch {
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {
-      const { total, recipes } = (await recipesApi.find(filter.query, filter.withPictures, filter.fields, filter.states, filter.tags, filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount())).data;
+      const { data: { total, recipes } } = await recipesApi.find(filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount(), filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
       this.recipes = recipes ?? [];
       state.searchResultCount = total;
 
@@ -240,7 +240,7 @@ export class PageSearch {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipe = (await recipesApi.addRecipe(recipe)).data;
+      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
       if (file) {
         await showLoading(
@@ -272,9 +272,9 @@ export class PageSearch {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
-      if (resp.data) {
-        await this.saveNewRecipe(resp.data.recipe, resp.data.file);
+      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
+      if (data) {
+        await this.saveNewRecipe(data.recipe, data.file);
       }
     });
   }

@@ -1,11 +1,5 @@
 import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from './generated';
 
-export enum YesNoAny {
-  Yes = 'yes',
-  No = 'no',
-  Any = 'any'
-}
-
 export enum SearchViewMode {
   Card = 'card',
   List = 'list'

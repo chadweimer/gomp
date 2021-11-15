@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
@@ -20,6 +21,34 @@ export class AppRoot {
   private searchBar!: HTMLIonInputElement;
 
   async componentWillLoad() {
+    axios.interceptors.request.use(config => {
+      this.loadingCount++;
+
+      return config;
+    }, error => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+
+      return error;
+    });
+    axios.interceptors.response.use(resp => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+
+      return resp;
+    }, async error => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+      if (error.response?.status === 401) {
+        await this.logout();
+      }
+
+      return Promise.reject(error);
+    });
+
     await this.loadAppConfiguration();
   }
 
@@ -161,32 +190,10 @@ export class AppRoot {
     await this.closeAllOverlays();
   }
 
-  @Listen('ajax-presend')
-  onAjaxPresend() {
-    this.loadingCount++;
-  }
-
-  @Listen('ajax-response')
-  onAjaxResponse() {
-    if (this.loadingCount > 0) {
-      this.loadingCount--;
-    }
-  }
-
-  @Listen('ajax-error')
-  onAjaxError(e: CustomEvent) {
-    if (this.loadingCount > 0) {
-      this.loadingCount--;
-    }
-    if (e.detail.response?.status === 401) {
-      this.logout();
-    }
-  }
-
   private async loadAppConfiguration() {
     try {
-      appConfig.info = (await appApi.getInfo()).data;
-      appConfig.config = (await appApi.getConfiguration()).data;
+      ({ data: appConfig.info } = await appApi.getInfo());
+      ({ data: appConfig.config } = await appApi.getConfiguration());
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
@@ -215,8 +222,8 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Refresh the user so that access controls are properly enforced
       try {
-        state.currentUser = (await usersApi.getCurrentUser()).data
-        state.currentUserSettings = (await usersApi.getSettings(state.currentUser.id)).data;
+        ({ data: state.currentUser } = await usersApi.getCurrentUser());
+        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
       } catch (ex) {
         console.error(ex);
       }
@@ -280,8 +287,8 @@ export class AppRoot {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
-        state.currentUser = (await usersApi.getCurrentUser()).data
-        state.currentUserSettings = (await usersApi.getSettings(state.currentUser.id)).data;
+        ({ data: state.currentUser } = await usersApi.getCurrentUser());
+        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
       } catch (ex) {
         console.error(ex);
       }
@@ -329,9 +336,9 @@ export class AppRoot {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (resp.data) {
-        state.searchFilter = resp.data.searchFilter;
+      const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
+      if (data) {
+        state.searchFilter = data.searchFilter;
 
         // Workaround for binding to empty string bug
         this.restoreSearchQuery();

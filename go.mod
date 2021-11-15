@@ -2,6 +2,7 @@ module github.com/chadweimer/gomp
 
 require (
 	github.com/aws/aws-sdk-go v1.41.4
+	github.com/deepmap/oapi-codegen v1.8.3
 	github.com/disintegration/imaging v1.6.2
 	github.com/go-chi/chi/v5 v5.0.4
 	github.com/golang-jwt/jwt/v4 v4.1.0

@@ -6,13 +6,7 @@ import (
 	"github.com/chadweimer/gomp/generated/models"
 )
 
-func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) GetNotes(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	notes, err := h.db.Notes().List(recipeId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
@@ -22,13 +16,7 @@ func (h *apiHandler) getRecipeNotes(resp http.ResponseWriter, req *http.Request)
 	h.OK(resp, notes)
 }
 
-func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) AddNote(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -50,19 +38,7 @@ func (h *apiHandler) postNote(resp http.ResponseWriter, req *http.Request) {
 	h.Created(resp, note)
 }
 
-func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
-	noteId, err := getResourceIdFromUrl(req, noteIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) SaveNote(resp http.ResponseWriter, req *http.Request, recipeId int64, noteId int64) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -91,19 +67,7 @@ func (h *apiHandler) putNote(resp http.ResponseWriter, req *http.Request) {
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteNote(resp http.ResponseWriter, req *http.Request) {
-	recipeId, err := getResourceIdFromUrl(req, recipeIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
-	noteId, err := getResourceIdFromUrl(req, noteIdKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) DeleteNote(resp http.ResponseWriter, req *http.Request, recipeId int64, noteId int64) {
 	if err := h.db.Notes().Delete(recipeId, noteId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return

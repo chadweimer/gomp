@@ -7,7 +7,7 @@ servers:
 paths:
   /app/info:
     get:
-      tags: [app]
+      tags: [app, public]
       description: get application info
       operationId: getInfo
       responses:
@@ -19,7 +19,7 @@ paths:
                 $ref: "./models.yaml#/components/schemas/appInfo"
   /app/configuration:
     get:
-      tags: [app]
+      tags: [app, public]
       description: get application configuration
       operationId: getConfiguration
       responses:
@@ -30,7 +30,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/appConfiguration"
     put:
-      tags: [app]
+      tags: [app, admin]
       description: modify application configuration
       operationId: saveConfiguration
       requestBody:
@@ -48,7 +48,7 @@ paths:
       x-codegen-request-body-name: appConfiguration
   /auth:
     post:
-      tags: [app]
+      tags: [app, public]
       description: perform user authentication
       operationId: authenticate
       requestBody:
@@ -67,7 +67,7 @@ paths:
       x-codegen-request-body-name: credentials
   /recipes:
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: list the recipes
       operationId: find
       parameters:
@@ -78,7 +78,7 @@ paths:
         - name: pictures
           in: query
           schema:
-            type: boolean
+            $ref: "#/components/schemas/yesNoAny"
         - name: fields[]
           in: query
           style: form
@@ -107,20 +107,24 @@ paths:
           in: query
           schema:
             $ref: "./models.yaml#/components/schemas/sortBy"
+          required: true
         - name: dir
           in: query
           schema:
             $ref: "./models.yaml#/components/schemas/sortDir"
+          required: true
         - name: page
           in: query
           schema:
             type: integer
             format: int64
+          required: true
         - name: count
           in: query
           schema:
             type: integer
             format: int64
+          required: true
       responses:
         200:
           description: OK
@@ -131,7 +135,7 @@ paths:
       security:
         - Bearer: []
     post:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: add a recipe
       operationId: addRecipe
       requestBody:
@@ -151,12 +155,17 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: recipe
   /recipes/{recipeId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: get a single recipe
       operationId: getRecipe
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         200:
           description: OK
@@ -167,11 +176,9 @@ paths:
       security:
         - Bearer: []
     put:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: modify an existing recipe
       operationId: saveRecipe
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       requestBody:
         content:
           application/json:
@@ -186,11 +193,9 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: recipe
     delete:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: delete an existing recipe
       operationId: deleteRecipe
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         204:
           description: No Content
@@ -198,12 +203,17 @@ paths:
       security:
         - Bearer: []
   /recipes/{recipeId}/image:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: get the main image of a recipe
       operationId: getMainImage
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         200:
           description: OK
@@ -214,11 +224,9 @@ paths:
       security:
         - Bearer: []
     put:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: set the main image of a recipe
       operationId: setMainImage
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       requestBody:
         content:
           application/json:
@@ -234,12 +242,17 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: imageId
   /recipes/{recipeId}/images:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: get the images on a recipe
       operationId: getImages
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         200:
           description: OK
@@ -252,11 +265,9 @@ paths:
       security:
         - Bearer: []
     post:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: add an image to a recipe
       operationId: uploadImage
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       requestBody:
         content:
           multipart/form-data:
@@ -275,13 +286,23 @@ paths:
       security:
         - Bearer: []
   /recipes/{recipeId}/images/{imageId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: imageId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     delete:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: delete an existing image from a recipe
       operationId: deleteImage
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
-        - $ref: "#/components/parameters/imageIdInPath"
       responses:
         204:
           description: No Content
@@ -289,12 +310,17 @@ paths:
       security:
         - Bearer: []
   /recipes/{recipeId}/links:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: get the links on a recipe
       operationId: getLinks
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         200:
           description: OK
@@ -307,13 +333,23 @@ paths:
       security:
         - Bearer: []
   /recipes/{recipeId}/links/{destRecipeId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: destRecipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     put:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: add a link to a recipe
       operationId: addLink
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
-        - $ref: "#/components/parameters/destRecipeIdInPath"
       responses:
         204:
           description: No Content
@@ -321,12 +357,9 @@ paths:
       security:
         - Bearer: []
     delete:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: delete an existing link
       operationId: deleteLink
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
-        - $ref: "#/components/parameters/destRecipeIdInPath"
       responses:
         204:
           description: No Content
@@ -334,12 +367,17 @@ paths:
       security:
         - Bearer: []
   /recipes/{recipeId}/notes:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: get the notes on a recipe
       operationId: getNotes
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         200:
           description: OK
@@ -352,11 +390,9 @@ paths:
       security:
         - Bearer: []
     post:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: add a note to a recipe
       operationId: addNote
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       requestBody:
         content:
           application/json:
@@ -374,13 +410,23 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: note
   /recipes/{recipeId}/notes/{noteId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     put:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: modify a note
       operationId: saveNote
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
-        - $ref: "#/components/parameters/noteIdInPath"
       requestBody:
         content:
           application/json:
@@ -395,12 +441,9 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: note
     delete:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: delete an existing note
       operationId: deleteNote
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
-        - $ref: "#/components/parameters/noteIdInPath"
       responses:
         204:
           description: No Content
@@ -408,12 +451,17 @@ paths:
       security:
         - Bearer: []
   /recipes/{recipeId}/rating:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [recipes]
+      tags: [recipes, viewer]
       description: get the current rating of a recipe
       operationId: getRating
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       responses:
         200:
           description: OK
@@ -425,11 +473,9 @@ paths:
       security:
         - Bearer: []
     put:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: modify the rating of a recipe
       operationId: setRating
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       requestBody:
         content:
           application/json:
@@ -445,27 +491,17 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: rating
   /recipes/{recipeId}/state:
-    get:
-      tags: [recipes]
-      description: get the state of a recipe
-      operationId: getState
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "./models.yaml#/components/schemas/recipeState"
-      security:
-        - Bearer: []
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     put:
-      tags: [recipes]
+      tags: [recipes, editor]
       description: modify the state of a recipe
       operationId: setState
-      parameters:
-        - $ref: "#/components/parameters/recipeIdInPath"
       requestBody:
         content:
           application/json:
@@ -481,7 +517,7 @@ paths:
       x-codegen-request-body-name: state
   /uploads:
     post:
-      tags: [app]
+      tags: [app, viewer]
       description: Upload a file
       operationId: upload
       requestBody:
@@ -504,7 +540,7 @@ paths:
         - Bearer: []
   /users:
     get:
-      tags: [users]
+      tags: [users, admin]
       description: get list of users
       operationId: getAllUsers
       responses:
@@ -519,7 +555,7 @@ paths:
       security:
         - Bearer: []
     post:
-      tags: [users]
+      tags: [users, admin]
       description: add a of user
       operationId: addUser
       requestBody:
@@ -540,7 +576,7 @@ paths:
       x-codegen-request-body-name: user
   /users/current:
     get:
-      tags: [users]
+      tags: [users, viewer]
       description: get the current user
       operationId: getCurrentUser
       responses:
@@ -553,12 +589,17 @@ paths:
       security:
         - Bearer: []
   /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: get a user
       operationId: getUser
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       responses:
         200:
           description: OK
@@ -569,11 +610,9 @@ paths:
       security:
         - Bearer: []
     put:
-      tags: [users]
+      tags: [users, admin]
       description: modify a user
       operationId: saveUser
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       requestBody:
         content:
           application/json:
@@ -588,11 +627,9 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: user
     delete:
-      tags: [users]
+      tags: [users, admin]
       description: delete an existing user
       operationId: deleteUser
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       responses:
         204:
           description: No Content
@@ -600,12 +637,17 @@ paths:
       security:
         - Bearer: []
   /users/{userId}/filters:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: get a list of search filters
       operationId: getSearchFilters
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       responses:
         200:
           description: OK
@@ -618,11 +660,9 @@ paths:
       security:
         - Bearer: []
     post:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: add a search filter
       operationId: addSearchFilter
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       requestBody:
         content:
           application/json:
@@ -640,13 +680,23 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: searchFilter
   /users/{userId}/filters/{filterId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: filterId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: get a search filter
       operationId: getSearchFilter
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
-        - $ref: "#/components/parameters/filterIdInPath"
       responses:
         200:
           description: OK
@@ -657,12 +707,9 @@ paths:
       security:
         - Bearer: []
     put:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: modify the search filter
       operationId: saveSearchFilter
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
-        - $ref: "#/components/parameters/filterIdInPath"
       requestBody:
         content:
           application/json:
@@ -677,12 +724,9 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: searchFilter
     delete:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: delete a search filter
       operationId: deleteSearchFilter
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
-        - $ref: "#/components/parameters/filterIdInPath"
       responses:
         204:
           description: No Content
@@ -690,12 +734,17 @@ paths:
       security:
         - Bearer: []
   /users/{userId}/password:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     put:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: update a user's password
       operationId: changePassword
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       requestBody:
         content:
           application/json:
@@ -710,12 +759,17 @@ paths:
         - Bearer: []
       x-codegen-request-body-name: userPasswordRequest
   /users/{userId}/settings:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
     get:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: get the settings of a user
       operationId: getSettings
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       responses:
         200:
           description: OK
@@ -726,11 +780,9 @@ paths:
       security:
         - Bearer: []
     put:
-      tags: [users]
+      tags: [users, adminOrSelf]
       description: modify the settings of a user
       operationId: saveSettings
-      parameters:
-        - $ref: "#/components/parameters/userIdInPath"
       requestBody:
         content:
           application/json:
@@ -746,9 +798,6 @@ paths:
       x-codegen-request-body-name: settings
 components:
   schemas:
-    formData_fileInForm:
-      type: string
-      format: binary
     authenticationResponse:
       type: object
       required:
@@ -801,49 +850,12 @@ components:
           properties:
             password:
               type: string
-  parameters:
-    destRecipeIdInPath:
-      name: destRecipeId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-    filterIdInPath:
-      name: filterId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-    imageIdInPath:
-      name: imageId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-    noteIdInPath:
-      name: noteId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-    recipeIdInPath:
-      name: recipeId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-    userIdInPath:
-      name: userId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
+    yesNoAny:
+      type: string
+      enum:
+        - "yes"
+        - "no"
+        - any
   securitySchemes:
     Bearer:
       type: http

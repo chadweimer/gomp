@@ -24,7 +24,7 @@ export class PageAdminUsers {
         <ion-content>
           <ion-grid class="no-pad">
             <ion-row>
-              {this.users.map(user =>
+              {this.users?.map(user =>
                 <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
                   <ion-card>
                     <ion-card-content>
@@ -57,7 +57,7 @@ export class PageAdminUsers {
 
   private async loadUsers() {
     try {
-      this.users = (await usersApi.getAllUsers()).data ?? [];
+      ({ data: this.users } = await usersApi.getAllUsers());
     } catch (ex) {
       console.error(ex);
     }
@@ -98,9 +98,9 @@ export class PageAdminUsers {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ user: User, password: string }>();
-      if (resp.data) {
-        await this.saveNewUser(resp.data.user, resp.data.password);
+      const { data } = await modal.onDidDismiss<{ user: User, password: string }>();
+      if (data) {
+        await this.saveNewUser(data.user, data.password);
         await this.loadUsers();
       }
     });
@@ -117,11 +117,11 @@ export class PageAdminUsers {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ user: User }>();
-      if (resp.data) {
+      const { data } = await modal.onDidDismiss<{ user: User }>();
+      if (data) {
         await this.saveExistingUser({
           ...user,
-          ...resp.data.user
+          ...data.user
         });
         await this.loadUsers();
       }

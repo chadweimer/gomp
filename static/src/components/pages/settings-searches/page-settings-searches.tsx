@@ -57,7 +57,7 @@ export class PageSettingsSearches {
 
   private async loadSearchFilters() {
     try {
-      this.filters = (await usersApi.getSearchFilters(state.currentUser.id)).data ?? [];
+      ({ data: this.filters } = await usersApi.getSearchFilters(state.currentUser.id));
     } catch (ex) {
       console.error(ex);
     }
@@ -101,11 +101,11 @@ export class PageSettingsSearches {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (resp.data) {
+      const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
+      if (data) {
         await this.saveNewSearchFilter({
-          ...resp.data.searchFilter,
-          name: resp.data.name,
+          ...data.searchFilter,
+          name: data.name,
           userId: state.currentUser.id
         });
         await this.loadSearchFilters();
@@ -115,7 +115,7 @@ export class PageSettingsSearches {
 
   private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
-      const searchFilter = (await usersApi.getSearchFilter(state.currentUser.id, searchFilterCompact.id)).data;
+      const { data: searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, searchFilterCompact.id);
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
@@ -128,12 +128,12 @@ export class PageSettingsSearches {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (resp.data) {
+      const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
+      if (data) {
         await this.saveExistingSearchFilter({
           ...searchFilter,
-          ...resp.data.searchFilter,
-          name: resp.data.name
+          ...data.searchFilter,
+          name: data.name
         });
         await this.loadSearchFilters();
       }

@@ -68,7 +68,7 @@ export class PageSettingsPreferences {
 
   private async loadUserSettings() {
     try {
-      this.settings = (await usersApi.getSettings(state.currentUser.id)).data;
+      ({ data: this.settings } = await usersApi.getSettings(state.currentUser.id));
     } catch (ex) {
       console.error(ex);
     }

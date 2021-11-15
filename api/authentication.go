@@ -11,13 +11,14 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
-	gen "github.com/chadweimer/gomp/generated/api"
+	"github.com/chadweimer/gomp/generated/api/public"
 	"github.com/chadweimer/gomp/generated/models"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Request) {
-	var credentials gen.Credentials
+func (h apiHandler) Authenticate(resp http.ResponseWriter, req *http.Request) {
+	var credentials public.Credentials
 	if err := readJSONFromRequest(req, &credentials); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
@@ -40,10 +41,10 @@ func (h *apiHandler) postAuthenticate(resp http.ResponseWriter, req *http.Reques
 		h.Error(resp, http.StatusInternalServerError, err)
 	}
 
-	h.OK(resp, gen.AuthenticationResponse{Token: tokenStr, User: *user})
+	h.OK(resp, public.AuthenticationResponse{Token: tokenStr, User: *user})
 }
 
-func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
+func (h apiHandler) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		token, err := h.getAuthTokenFromRequest(req)
 		if err != nil {
@@ -75,7 +76,7 @@ func (h *apiHandler) requireAuthentication(next http.Handler) http.Handler {
 	})
 }
 
-func (h *apiHandler) requireAdmin(next http.Handler) http.Handler {
+func (h apiHandler) requireAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsAdmin(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
@@ -86,9 +87,9 @@ func (h *apiHandler) requireAdmin(next http.Handler) http.Handler {
 	})
 }
 
-func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
+func (h apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		urlId, err := getResourceIdFromUrl(req, userIdKey)
+		urlId, err := getUserIdFromUrl(req)
 		if err != nil {
 			h.Error(resp, http.StatusBadRequest, err)
 			return
@@ -111,31 +112,7 @@ func (h *apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	})
 }
 
-func (h *apiHandler) disallowSelf(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		urlId, err := getResourceIdFromUrl(req, userIdKey)
-		if err != nil {
-			h.Error(resp, http.StatusBadRequest, err)
-			return
-		}
-		ctxId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
-		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
-			return
-		}
-
-		// Don't allow operating on the current user (e.g., for deleting)
-		if urlId == ctxId {
-			err := fmt.Errorf("endpoint '%s' disallowed on current user", req.URL.Path)
-			h.Error(resp, http.StatusForbidden, err)
-			return
-		}
-
-		next.ServeHTTP(resp, req)
-	})
-}
-
-func (h *apiHandler) requireEditor(next http.Handler) http.Handler {
+func (h apiHandler) requireEditor(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsEditor(req); err != nil {
 			h.Error(resp, http.StatusForbidden, err)
@@ -146,7 +123,7 @@ func (h *apiHandler) requireEditor(next http.Handler) http.Handler {
 	})
 }
 
-func (h *apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, error) {
+func (h apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, error) {
 	authHeader := req.Header.Get("Authorization")
 	if authHeader == "" {
 		return nil, errors.New("authorization header missing")
@@ -181,7 +158,7 @@ func (h *apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, err
 	return nil, errors.New("invalid token")
 }
 
-func (h *apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
+func (h apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
 	claims := token.Claims.(*jwt.RegisteredClaims)
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
@@ -192,7 +169,7 @@ func (h *apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
 	return userId, nil
 }
 
-func (h *apiHandler) verifyUserExists(userId int64) (*models.User, error) {
+func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	// Verify this is a valid user in the DB
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
@@ -207,7 +184,7 @@ func (h *apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	return &user.User, nil
 }
 
-func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
+func (h apiHandler) verifyUserIsAdmin(req *http.Request) error {
 	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
 	if accessLevel != models.AccessLevelAdmin {
 		return fmt.Errorf("endpoint '%s' requires admin rights", req.URL.Path)
@@ -216,11 +193,27 @@ func (h *apiHandler) verifyUserIsAdmin(req *http.Request) error {
 	return nil
 }
 
-func (h *apiHandler) verifyUserIsEditor(req *http.Request) error {
+func (h apiHandler) verifyUserIsEditor(req *http.Request) error {
 	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
 	if accessLevel != models.AccessLevelAdmin && accessLevel != models.AccessLevelEditor {
 		return fmt.Errorf("endpoint '%s' requires edit rights", req.URL.Path)
 	}
 
 	return nil
+}
+
+func getUserIdFromUrl(req *http.Request) (int64, error) {
+	idStr := chi.URLParam(req, "userId")
+
+	// Assume current user if not in the route
+	if idStr == "" {
+		return getResourceIdFromCtx(req, currentUserIdCtxKey)
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse user id from URL, value = %s: %v", idStr, err)
+	}
+
+	return id, nil
 }
