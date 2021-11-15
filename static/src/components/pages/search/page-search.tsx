@@ -1,9 +1,10 @@
-import { loadingController, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
+import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
-import { RecipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, RecipeState, SearchViewMode, SortBy, SortDir } from '../../../models';
-import state from '../../../store';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../generated';
+import { recipesApi } from '../../../helpers/api';
+import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
+import { getDefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-search',
@@ -15,8 +16,40 @@ export class PageSearch {
 
   @Element() el!: HTMLPageSearchElement;
   private content!: HTMLIonContentElement;
+  private gesture: Gesture;
 
   private scrollTop: number | null = null;
+
+  connectedCallback() {
+    this.gesture = createGesture({
+      el: this.el,
+      threshold: 30,
+      gestureName: 'swipe',
+      onEnd: e => {
+        const swipe = getSwipe(e);
+        if (!swipe) return
+
+        switch (swipe) {
+          case SwipeDirection.Right:
+            if (state.searchPage > 1) {
+              this.performSearch(state.searchPage - 1);
+            }
+            break;
+          case SwipeDirection.Left:
+            if (state.searchPage < this.numPages) {
+              this.performSearch(state.searchPage + 1);
+            }
+            break;
+        }
+      }
+    });
+    this.gesture.enable();
+  }
+
+  disconnectedCallback() {
+    this.gesture.destroy();
+    this.gesture = null;
+  }
 
   @Method()
   async activatedCallback() {
@@ -136,11 +169,11 @@ export class PageSearch {
     }
 
     // Make sure to fill in any missing fields
-    const defaultFilter = new DefaultSearchFilter();
+    const defaultFilter = getDefaultSearchFilter();
     const filter = { ...defaultFilter, ...state.searchFilter };
 
     try {
-      const { total, recipes } = await RecipesApi.find(this.el, filter, pageNum, this.getRecipeCount());
+      const { data: { total, recipes } } = await recipesApi.find(filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount(), filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
       this.recipes = recipes ?? [];
       state.searchResultCount = total;
 
@@ -205,22 +238,19 @@ export class PageSearch {
     await this.performSearch(1);
   }
 
-  private async saveNewRecipe(recipe: Recipe, formData: FormData) {
+  private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipeId = await RecipesApi.post(this.el, recipe);
+      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
-      if (formData) {
-        const loading = await loadingController.create({
-          message: 'Uploading picture...',
-          animated: false,
-        });
-        await loading.present();
-
-        await RecipesApi.postImage(this.el, newRecipeId, formData);
-        await loading.dismiss();
+      if (file) {
+        await showLoading(
+          async () => {
+            await recipesApi.uploadImage(newRecipe.id, file);
+          },
+          'Uploading picture...');
       }
 
-      await redirect(`/recipes/${newRecipeId}`);
+      await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create new recipe.');
@@ -242,9 +272,9 @@ export class PageSearch {
       });
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-      if (resp.data?.dismissed === false) {
-        await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
+      if (data) {
+        await this.saveNewRecipe(data.recipe, data.file);
       }
     });
   }

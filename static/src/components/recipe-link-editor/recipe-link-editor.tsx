@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
-import { RecipesApi } from '../../helpers/api';
-import { configureModalAutofocus } from '../../helpers/utils';
-import { DefaultSearchFilter, RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../models';
+import { RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../generated';
+import { recipesApi } from '../../helpers/api';
+import { configureModalAutofocus, dismissContainingModal, toYesNoAny } from '../../helpers/utils';
+import { getDefaultSearchFilter } from '../../models';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -75,14 +76,14 @@ export class RecipeLinkEditor {
   @Watch('includeArchived')
   async onSearchInputChanged() {
     const filter: SearchFilter = {
-      ...new DefaultSearchFilter(),
+      ...getDefaultSearchFilter(),
       query: this.query,
       fields: [SearchField.Name],
     };
     if (this.includeArchived) {
       filter.states = [...filter.states, RecipeState.Archived];
     }
-    const { recipes } = await RecipesApi.find(this.el, filter, 1, 20);
+    const { data: { recipes } } = await recipesApi.find(filter.sortBy, filter.sortDir, 1, 20, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
 
     // Clear current selection
     this.selectedRecipeId = null;
@@ -103,15 +104,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
-      recipeId: this.selectedRecipeId
-    });
+    dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 }

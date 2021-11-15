@@ -1,0 +1,863 @@
+openapi: 3.0.1
+info:
+  title: GOMP
+  version: "1.0"
+servers:
+  - url: /api/v1
+paths:
+  /app/info:
+    get:
+      tags: [app, public]
+      description: get application info
+      operationId: getInfo
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/appInfo"
+  /app/configuration:
+    get:
+      tags: [app, public]
+      description: get application configuration
+      operationId: getConfiguration
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/appConfiguration"
+    put:
+      tags: [app, admin]
+      description: modify application configuration
+      operationId: saveConfiguration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/appConfiguration"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: appConfiguration
+  /auth:
+    post:
+      tags: [app, public]
+      description: perform user authentication
+      operationId: authenticate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/credentials"
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/authenticationResponse"
+      x-codegen-request-body-name: credentials
+  /recipes:
+    get:
+      tags: [recipes, viewer]
+      description: list the recipes
+      operationId: find
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: pictures
+          in: query
+          schema:
+            $ref: "#/components/schemas/yesNoAny"
+        - name: fields[]
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "./models.yaml#/components/schemas/searchField"
+        - name: states[]
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "./models.yaml#/components/schemas/recipeState"
+        - name: tags[]
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sort
+          in: query
+          schema:
+            $ref: "./models.yaml#/components/schemas/sortBy"
+          required: true
+        - name: dir
+          in: query
+          schema:
+            $ref: "./models.yaml#/components/schemas/sortDir"
+          required: true
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+        - name: count
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/searchResult"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes, editor]
+      description: add a recipe
+      operationId: addRecipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/recipe"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/recipe"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: recipe
+  /recipes/{recipeId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [recipes, viewer]
+      description: get a single recipe
+      operationId: getRecipe
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/recipe"
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes, editor]
+      description: modify an existing recipe
+      operationId: saveRecipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/recipe"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: recipe
+    delete:
+      tags: [recipes, editor]
+      description: delete an existing recipe
+      operationId: deleteRecipe
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/image:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [recipes, viewer]
+      description: get the main image of a recipe
+      operationId: getMainImage
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/recipeImage"
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes, editor]
+      description: set the main image of a recipe
+      operationId: setMainImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int64
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: imageId
+  /recipes/{recipeId}/images:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [recipes, viewer]
+      description: get the images on a recipe
+      operationId: getImages
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/recipeImage"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes, editor]
+      description: add an image to a recipe
+      operationId: uploadImage
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file_content:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/recipeImage"
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/images/{imageId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: imageId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    delete:
+      tags: [recipes, editor]
+      description: delete an existing image from a recipe
+      operationId: deleteImage
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/links:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [recipes, viewer]
+      description: get the links on a recipe
+      operationId: getLinks
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/recipeCompact"
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/links/{destRecipeId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: destRecipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    put:
+      tags: [recipes, editor]
+      description: add a link to a recipe
+      operationId: addLink
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+    delete:
+      tags: [recipes, editor]
+      description: delete an existing link
+      operationId: deleteLink
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/notes:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [recipes, viewer]
+      description: get the notes on a recipe
+      operationId: getNotes
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/note"
+      security:
+        - Bearer: []
+    post:
+      tags: [recipes, editor]
+      description: add a note to a recipe
+      operationId: addNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/note"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/note"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: note
+  /recipes/{recipeId}/notes/{noteId}:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    put:
+      tags: [recipes, editor]
+      description: modify a note
+      operationId: saveNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/note"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: note
+    delete:
+      tags: [recipes, editor]
+      description: delete an existing note
+      operationId: deleteNote
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /recipes/{recipeId}/rating:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [recipes, viewer]
+      description: get the current rating of a recipe
+      operationId: getRating
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+                format: float
+      security:
+        - Bearer: []
+    put:
+      tags: [recipes, editor]
+      description: modify the rating of a recipe
+      operationId: setRating
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: number
+              format: float
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: rating
+  /recipes/{recipeId}/state:
+    parameters:
+      - name: recipeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    put:
+      tags: [recipes, editor]
+      description: modify the state of a recipe
+      operationId: setState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/recipeState"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: state
+  /uploads:
+    post:
+      tags: [app, viewer]
+      description: Upload a file
+      operationId: upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file_content:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+          content: {}
+      security:
+        - Bearer: []
+  /users:
+    get:
+      tags: [users, admin]
+      description: get list of users
+      operationId: getAllUsers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/user"
+      security:
+        - Bearer: []
+    post:
+      tags: [users, admin]
+      description: add a of user
+      operationId: addUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userWithPassword"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/user"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: user
+  /users/current:
+    get:
+      tags: [users, viewer]
+      description: get the current user
+      operationId: getCurrentUser
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/user"
+      security:
+        - Bearer: []
+  /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [users, adminOrSelf]
+      description: get a user
+      operationId: getUser
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/user"
+      security:
+        - Bearer: []
+    put:
+      tags: [users, admin]
+      description: modify a user
+      operationId: saveUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/user"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: user
+    delete:
+      tags: [users, admin]
+      description: delete an existing user
+      operationId: deleteUser
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /users/{userId}/filters:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [users, adminOrSelf]
+      description: get a list of search filters
+      operationId: getSearchFilters
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+      security:
+        - Bearer: []
+    post:
+      tags: [users, adminOrSelf]
+      description: add a search filter
+      operationId: addSearchFilter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: searchFilter
+  /users/{userId}/filters/{filterId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: filterId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [users, adminOrSelf]
+      description: get a search filter
+      operationId: getSearchFilter
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+      security:
+        - Bearer: []
+    put:
+      tags: [users, adminOrSelf]
+      description: modify the search filter
+      operationId: saveSearchFilter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: searchFilter
+    delete:
+      tags: [users, adminOrSelf]
+      description: delete a search filter
+      operationId: deleteSearchFilter
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+  /users/{userId}/password:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    put:
+      tags: [users, adminOrSelf]
+      description: update a user's password
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userPasswordRequest"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: userPasswordRequest
+  /users/{userId}/settings:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [users, adminOrSelf]
+      description: get the settings of a user
+      operationId: getSettings
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/userSettings"
+      security:
+        - Bearer: []
+    put:
+      tags: [users, adminOrSelf]
+      description: modify the settings of a user
+      operationId: saveSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/userSettings"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: []
+      x-codegen-request-body-name: settings
+components:
+  schemas:
+    authenticationResponse:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "./models.yaml#/components/schemas/user"
+    credentials:
+      required:
+        - password
+        - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    searchResult:
+      type: object
+      required:
+        - total
+        - recipes
+      properties:
+        total:
+          type: integer
+          format: int64
+        recipes:
+          type: array
+          items:
+            $ref: "./models.yaml#/components/schemas/recipeCompact"
+    userPasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+    userWithPassword:
+      allOf:
+        - $ref: "./models.yaml#/components/schemas/user"
+        - type: object
+          required:
+            - password
+          properties:
+            password:
+              type: string
+    yesNoAny:
+      type: string
+      enum:
+        - "yes"
+        - "no"
+        - any
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

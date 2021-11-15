@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { capitalizeFirstLetter, configureModalAutofocus, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
-import { DefaultSearchFilter, RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../models';
-import state from '../../store';
+import { RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../generated';
+import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
+import { getDefaultSearchFilter } from '../../models';
+import state from '../../stores/state';
 
 @Component({
   tag: 'search-filter-editor',
@@ -10,7 +11,7 @@ import state from '../../store';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() showName = true;
-  @Prop() searchFilter: SearchFilter = new DefaultSearchFilter();
+  @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
 
   @Element() el!: HTMLSearchFilterEditorElement;
@@ -101,21 +102,18 @@ export class SearchFilterEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
+    dismissContainingModal(this.el, {
       name: this.name,
       searchFilter: this.searchFilter
     });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 
   private onResetClicked() {
-    this.searchFilter = new DefaultSearchFilter();
+    this.searchFilter = getDefaultSearchFilter();
   }
 
 }

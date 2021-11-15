@@ -14,7 +14,7 @@ export class TagsInput {
   @State() internalValue: string[] = [];
   @State() filteredSuggestions: string[] = [];
 
-  private tagsInput!: HTMLIonInputElement | null;
+  private tagsInput!: HTMLIonInputElement;
 
   @Watch('value')
   onValueChanged(newValue: string[]) {
@@ -28,6 +28,7 @@ export class TagsInput {
   }
 
   connectedCallback() {
+    this.internalValue = this.value ?? [];
     this.filterSuggestedTags(this.suggestions);
   }
 

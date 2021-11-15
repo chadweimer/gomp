@@ -1,16 +1,16 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { AuthApi } from '../../../helpers/api';
+import { appApi } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
-import state from '../../../store';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-login',
   styleUrl: 'page-login.css'
 })
 export class PageLogin {
-  @State() email: string | null;
-  @State() password: string | null;
-  @State() errorMessage: string | null;
+  @State() username = '';
+  @State() password = '';
+  @State() errorMessage = '';
 
   @Element() el!: HTMLPageLoginElement;
 
@@ -27,8 +27,8 @@ export class PageLogin {
                 <ion-card-content>
                   <ion-item>
                     <ion-label>Email</ion-label>
-                    <ion-input value={this.email}
-                      onIonChange={e => this.email = e.detail.value}
+                    <ion-input type="email" value={this.username}
+                      onIonChange={e => this.username = e.detail.value}
                       onKeyDown={e => this.onInputKeyDown(e)} />
                   </ion-item>
                   <ion-item>
@@ -57,14 +57,22 @@ export class PageLogin {
 
   private async onLoginClicked() {
     try {
-      this.errorMessage = null;
-      const token = await AuthApi.authenticate(this.el, this.email, this.password);
-      state.jwtToken = token;
+      this.errorMessage = '';
+      const { data } = await appApi.authenticate({ username: this.username, password: this.password });
+
+      // Store the token so we stay logged in
+      state.jwtToken = data.token;
+
+      // Clear the username so it's not left around when the next login is needed
+      this.username = '';
+
       await redirect('/');
     } catch (ex) {
-      this.password = '';
       this.errorMessage = 'Login failed. Check your username and password and try again.';
       console.error(ex);
+    } finally {
+      // Clear password no matter what, success or failure
+      this.password = '';
     }
   }
 

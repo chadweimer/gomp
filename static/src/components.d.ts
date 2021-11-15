@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User, UserSettings } from "./models";
+import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
 export namespace Components {
     interface AppRoot {
     }
@@ -21,11 +21,15 @@ export namespace Components {
         "note": Note;
     }
     interface PageAdmin {
+    }
+    interface PageAdminConfiguration {
+        "activatedCallback": () => Promise<void>;
+    }
+    interface PageAdminUsers {
         "activatedCallback": () => Promise<void>;
     }
     interface PageHome {
         "activatedCallback": () => Promise<void>;
-        "userSettings": UserSettings | null;
     }
     interface PageLogin {
     }
@@ -38,7 +42,14 @@ export namespace Components {
         "performSearch": (pageNum?: any) => Promise<void>;
     }
     interface PageSettings {
+    }
+    interface PageSettingsPreferences {
         "activatedCallback": () => Promise<void>;
+    }
+    interface PageSettingsSearches {
+        "activatedCallback": () => Promise<void>;
+    }
+    interface PageSettingsSecurity {
     }
     interface RecipeCard {
         "recipe": RecipeCompact;
@@ -102,6 +113,18 @@ declare global {
         prototype: HTMLPageAdminElement;
         new (): HTMLPageAdminElement;
     };
+    interface HTMLPageAdminConfigurationElement extends Components.PageAdminConfiguration, HTMLStencilElement {
+    }
+    var HTMLPageAdminConfigurationElement: {
+        prototype: HTMLPageAdminConfigurationElement;
+        new (): HTMLPageAdminConfigurationElement;
+    };
+    interface HTMLPageAdminUsersElement extends Components.PageAdminUsers, HTMLStencilElement {
+    }
+    var HTMLPageAdminUsersElement: {
+        prototype: HTMLPageAdminUsersElement;
+        new (): HTMLPageAdminUsersElement;
+    };
     interface HTMLPageHomeElement extends Components.PageHome, HTMLStencilElement {
     }
     var HTMLPageHomeElement: {
@@ -131,6 +154,24 @@ declare global {
     var HTMLPageSettingsElement: {
         prototype: HTMLPageSettingsElement;
         new (): HTMLPageSettingsElement;
+    };
+    interface HTMLPageSettingsPreferencesElement extends Components.PageSettingsPreferences, HTMLStencilElement {
+    }
+    var HTMLPageSettingsPreferencesElement: {
+        prototype: HTMLPageSettingsPreferencesElement;
+        new (): HTMLPageSettingsPreferencesElement;
+    };
+    interface HTMLPageSettingsSearchesElement extends Components.PageSettingsSearches, HTMLStencilElement {
+    }
+    var HTMLPageSettingsSearchesElement: {
+        prototype: HTMLPageSettingsSearchesElement;
+        new (): HTMLPageSettingsSearchesElement;
+    };
+    interface HTMLPageSettingsSecurityElement extends Components.PageSettingsSecurity, HTMLStencilElement {
+    }
+    var HTMLPageSettingsSecurityElement: {
+        prototype: HTMLPageSettingsSecurityElement;
+        new (): HTMLPageSettingsSecurityElement;
     };
     interface HTMLRecipeCardElement extends Components.RecipeCard, HTMLStencilElement {
     }
@@ -186,11 +227,16 @@ declare global {
         "image-upload-browser": HTMLImageUploadBrowserElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
+        "page-admin-configuration": HTMLPageAdminConfigurationElement;
+        "page-admin-users": HTMLPageAdminUsersElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
         "page-recipe": HTMLPageRecipeElement;
         "page-search": HTMLPageSearchElement;
         "page-settings": HTMLPageSettingsElement;
+        "page-settings-preferences": HTMLPageSettingsPreferencesElement;
+        "page-settings-searches": HTMLPageSettingsSearchesElement;
+        "page-settings-security": HTMLPageSettingsSecurityElement;
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
         "recipe-link-editor": HTMLRecipeLinkEditorElement;
@@ -218,8 +264,11 @@ declare namespace LocalJSX {
     }
     interface PageAdmin {
     }
+    interface PageAdminConfiguration {
+    }
+    interface PageAdminUsers {
+    }
     interface PageHome {
-        "userSettings"?: UserSettings | null;
     }
     interface PageLogin {
     }
@@ -229,6 +278,12 @@ declare namespace LocalJSX {
     interface PageSearch {
     }
     interface PageSettings {
+    }
+    interface PageSettingsPreferences {
+    }
+    interface PageSettingsSearches {
+    }
+    interface PageSettingsSecurity {
     }
     interface RecipeCard {
         "recipe"?: RecipeCompact;
@@ -269,11 +324,16 @@ declare namespace LocalJSX {
         "image-upload-browser": ImageUploadBrowser;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
+        "page-admin-configuration": PageAdminConfiguration;
+        "page-admin-users": PageAdminUsers;
         "page-home": PageHome;
         "page-login": PageLogin;
         "page-recipe": PageRecipe;
         "page-search": PageSearch;
         "page-settings": PageSettings;
+        "page-settings-preferences": PageSettingsPreferences;
+        "page-settings-searches": PageSettingsSearches;
+        "page-settings-security": PageSettingsSecurity;
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": RecipeLinkEditor;
@@ -293,11 +353,16 @@ declare module "@stencil/core" {
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
+            "page-admin-configuration": LocalJSX.PageAdminConfiguration & JSXBase.HTMLAttributes<HTMLPageAdminConfigurationElement>;
+            "page-admin-users": LocalJSX.PageAdminUsers & JSXBase.HTMLAttributes<HTMLPageAdminUsersElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
             "page-recipe": LocalJSX.PageRecipe & JSXBase.HTMLAttributes<HTMLPageRecipeElement>;
             "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
+            "page-settings-preferences": LocalJSX.PageSettingsPreferences & JSXBase.HTMLAttributes<HTMLPageSettingsPreferencesElement>;
+            "page-settings-searches": LocalJSX.PageSettingsSearches & JSXBase.HTMLAttributes<HTMLPageSettingsSearchesElement>;
+            "page-settings-security": LocalJSX.PageSettingsSecurity & JSXBase.HTMLAttributes<HTMLPageSettingsSecurityElement>;
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;

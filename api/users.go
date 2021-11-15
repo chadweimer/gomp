@@ -6,30 +6,24 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/generated/api/admin"
+	"github.com/chadweimer/gomp/generated/api/adminOrSelf"
+	"github.com/chadweimer/gomp/generated/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userPostParameters struct {
-	Username    string           `json:"username"`
-	Password    string           `json:"password"`
-	AccessLevel models.UserLevel `json:"accessLevel"`
-}
-
-type userPutPasswordParameters struct {
-	CurrentPassword string `json:"currentPassword"`
-	NewPassword     string `json:"newPassword"`
-}
-
-func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+func (h apiHandler) GetCurrentUser(resp http.ResponseWriter, req *http.Request) {
+	userId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
 	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
+		h.Error(resp, http.StatusUnauthorized, err)
 		return
 	}
 
-	user, err := h.db.Users().Read(userID)
+	h.GetUser(resp, req, userId)
+}
+
+func (h apiHandler) GetUser(resp http.ResponseWriter, req *http.Request, userId int64) {
+	user, err := h.db.Users().Read(userId)
 	if err != nil {
 		fullErr := fmt.Errorf("reading user: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
@@ -39,7 +33,7 @@ func (h *apiHandler) getUser(resp http.ResponseWriter, req *http.Request) {
 	h.OK(resp, user)
 }
 
-func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) GetAllUsers(resp http.ResponseWriter, req *http.Request) {
 	// Add pagination?
 	users, err := h.db.Users().List()
 	if err != nil {
@@ -50,9 +44,9 @@ func (h *apiHandler) getUsers(resp http.ResponseWriter, req *http.Request) {
 	h.OK(resp, users)
 }
 
-func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
-	newUser := new(userPostParameters)
-	if err := readJSONFromRequest(req, newUser); err != nil {
+func (h apiHandler) AddUser(resp http.ResponseWriter, req *http.Request) {
+	var newUser admin.UserWithPassword
+	if err := readJSONFromRequest(req, &newUser); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
@@ -63,10 +57,9 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user := models.User{
-		Username:     newUser.Username,
+	user := db.UserWithPasswordHash{
+		User:         newUser.User,
 		PasswordHash: string(passwordHash),
-		AccessLevel:  newUser.AccessLevel,
 	}
 
 	if err := h.db.Users().Create(&user); err != nil {
@@ -74,25 +67,20 @@ func (h *apiHandler) postUser(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/users/%d", user.ID))
+	h.Created(resp, user)
 }
 
-func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
+func (h apiHandler) SaveUser(resp http.ResponseWriter, req *http.Request, userId int64) {
 	var user models.User
 	if err := readJSONFromRequest(req, &user); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return
 	}
 
-	if user.ID != userID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if user.Id == nil {
+		user.Id = &userId
+	} else if *user.Id != userId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
@@ -104,15 +92,21 @@ func (h *apiHandler) putUser(resp http.ResponseWriter, req *http.Request) {
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
+func (h apiHandler) DeleteUser(resp http.ResponseWriter, req *http.Request, userId int64) {
+	currentUserId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
 	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
+		h.Error(resp, http.StatusUnauthorized, err)
 		return
 	}
 
-	if err := h.db.Users().Delete(userID); err != nil {
+	// Don't allow deleting self
+	if userId == currentUserId {
+		err := fmt.Errorf("endpoint '%s' disallowed on current user", req.URL.Path)
+		h.Error(resp, http.StatusForbidden, err)
+		return
+	}
+
+	if err := h.db.Users().Delete(userId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}
@@ -120,23 +114,15 @@ func (h *apiHandler) deleteUser(resp http.ResponseWriter, req *http.Request) {
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	params := new(userPutPasswordParameters)
+func (h apiHandler) ChangePassword(resp http.ResponseWriter, req *http.Request, userId int64) {
+	params := new(adminOrSelf.UserPasswordRequest)
 	if err := readJSONFromRequest(req, params); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
-	err = h.db.Users().UpdatePassword(userID, params.CurrentPassword, params.NewPassword)
-	if err != nil {
+	if err := h.db.Users().UpdatePassword(userId, params.CurrentPassword, params.NewPassword); err != nil {
 		fullErr := fmt.Errorf("update failed: %v", err)
 		h.Error(resp, http.StatusForbidden, fullErr)
 		return
@@ -145,15 +131,8 @@ func (h *apiHandler) putUserPassword(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	userSettings, err := h.db.Users().ReadSettings(userID)
+func (h apiHandler) GetSettings(resp http.ResponseWriter, req *http.Request, userId int64) {
+	userSettings, err := h.db.Users().ReadSettings(userId)
 	if err != nil {
 		fullErr := fmt.Errorf("reading user settings: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
@@ -170,30 +149,23 @@ func (h *apiHandler) getUserSettings(resp http.ResponseWriter, req *http.Request
 	h.OK(resp, userSettings)
 }
 
-func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	userSettings := new(models.UserSettings)
-	if err := readJSONFromRequest(req, userSettings); err != nil {
+func (h apiHandler) SaveSettings(resp http.ResponseWriter, req *http.Request, userId int64) {
+	var userSettings models.UserSettings
+	if err := readJSONFromRequest(req, &userSettings); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(resp, http.StatusBadRequest, fullErr)
 		return
 	}
 
 	// Make sure the ID is set in the object
-	if userSettings.UserID == 0 {
-		userSettings.UserID = userID
-	} else if userSettings.UserID != userID {
+	if userSettings.UserId == nil {
+		userSettings.UserId = &userId
+	} else if *userSettings.UserId != userId {
 		err := errors.New("mismatched user id between request and url")
 		h.Error(resp, http.StatusBadRequest, err)
 	}
 
-	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
+	if err := h.db.Users().UpdateSettings(&userSettings); err != nil {
 		fullErr := fmt.Errorf("updating user settings: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return
@@ -202,15 +174,8 @@ func (h *apiHandler) putUserSettings(resp http.ResponseWriter, req *http.Request
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	searches, err := h.db.Users().ListSearchFilters(userID)
+func (h apiHandler) GetSearchFilters(resp http.ResponseWriter, req *http.Request, userId int64) {
+	searches, err := h.db.Users().ListSearchFilters(userId)
 	if err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
@@ -219,14 +184,7 @@ func (h *apiHandler) getUserFilters(resp http.ResponseWriter, req *http.Request)
 	h.OK(resp, searches)
 }
 
-func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
+func (h apiHandler) AddSearchFilter(resp http.ResponseWriter, req *http.Request, userId int64) {
 	var filter models.SavedSearchFilter
 	if err := readJSONFromRequest(req, &filter); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -234,10 +192,10 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 	}
 
 	// Make sure the ID is set in the object
-	if filter.UserID == 0 {
-		filter.UserID = userID
-	} else if filter.UserID != userID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if filter.UserId == nil {
+		filter.UserId = &userId
+	} else if *filter.UserId != userId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 	}
 
 	if err := h.db.Users().CreateSearchFilter(&filter); err != nil {
@@ -245,24 +203,11 @@ func (h *apiHandler) postUserFilter(resp http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	h.Created(resp, fmt.Sprintf("/api/v1/users/%d/filters/%d", filter.UserID, filter.ID))
+	h.Created(resp, filter)
 }
 
-func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	filterID, err := getResourceIDFromURL(req, filterIDKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
-	filter, err := h.db.Users().ReadSearchFilter(userID, filterID)
+func (h apiHandler) GetSearchFilter(resp http.ResponseWriter, req *http.Request, userId int64, filterId int64) {
+	filter, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -276,20 +221,7 @@ func (h *apiHandler) getUserFilter(resp http.ResponseWriter, req *http.Request) 
 	h.OK(resp, filter)
 }
 
-func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	filterID, err := getResourceIDFromURL(req, filterIDKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) SaveSearchFilter(resp http.ResponseWriter, req *http.Request, userId int64, filterId int64) {
 	var filter models.SavedSearchFilter
 	if err := readJSONFromRequest(req, &filter); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
@@ -297,23 +229,23 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 	}
 
 	// Make sure the ID is set in the object
-	if filter.ID == 0 {
-		filter.ID = filterID
-	} else if filter.ID != filterID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	if filter.Id == nil {
+		filter.Id = &filterId
+	} else if *filter.Id != filterId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
-	// Make sure the UserID is set in the object
-	if filter.UserID == 0 {
-		filter.UserID = userID
-	} else if filter.UserID != userID {
-		h.Error(resp, http.StatusBadRequest, errMismatchedID)
+	// Make sure the UserId is set in the object
+	if filter.UserId == nil {
+		filter.UserId = &userId
+	} else if *filter.UserId != userId {
+		h.Error(resp, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
 	// Check that the filter exists for the specified user
-	_, err = h.db.Users().ReadSearchFilter(userID, filterID)
+	_, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err == db.ErrNotFound {
 		h.Error(resp, http.StatusNotFound, err)
 		return
@@ -331,21 +263,8 @@ func (h *apiHandler) putUserFilter(resp http.ResponseWriter, req *http.Request) 
 	h.NoContent(resp)
 }
 
-func (h *apiHandler) deleteUserFilter(resp http.ResponseWriter, req *http.Request) {
-	userID, err := getResourceIDFromURL(req, userIDKey)
-	if err != nil {
-		fullErr := fmt.Errorf("getting user from request: %v", err)
-		h.Error(resp, http.StatusBadRequest, fullErr)
-		return
-	}
-
-	filterID, err := getResourceIDFromURL(req, filterIDKey)
-	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
-		return
-	}
-
-	if err := h.db.Users().DeleteSearchFilter(userID, filterID); err != nil {
+func (h apiHandler) DeleteSearchFilter(resp http.ResponseWriter, req *http.Request, userId int64, filterId int64) {
+	if err := h.db.Users().DeleteSearchFilter(userId, filterId); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
 	}

@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.14
 ARG TARGETPLATFORM
 LABEL maintainer="ch@dweimer.com"
 

@@ -1,9 +1,12 @@
+import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
-import { AppApi, UsersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay } from '../../helpers/utils';
-import { AccessLevel, DefaultSearchFilter, DefaultSearchSettings, SearchFilter } from '../../models';
-import state from '../../store';
+import { AccessLevel, SearchFilter } from '../../generated';
+import { appApi, usersApi } from '../../helpers/api';
+import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
+import { getDefaultSearchFilter } from '../../models';
+import appConfig from '../../stores/config';
+import state, { clearState } from '../../stores/state';
 
 @Component({
   tag: 'app-root',
@@ -18,6 +21,34 @@ export class AppRoot {
   private searchBar!: HTMLIonInputElement;
 
   async componentWillLoad() {
+    axios.interceptors.request.use(config => {
+      this.loadingCount++;
+
+      return config;
+    }, error => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+
+      return error;
+    });
+    axios.interceptors.response.use(resp => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+
+      return resp;
+    }, async error => {
+      if (this.loadingCount > 0) {
+        this.loadingCount--;
+      }
+      if (error.response?.status === 401) {
+        await this.logout();
+      }
+
+      return Promise.reject(error);
+    });
+
     await this.loadAppConfiguration();
   }
 
@@ -69,7 +100,7 @@ export class AppRoot {
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
-              {hasAccessLevel(state.currentUser, AccessLevel.Administrator) ?
+              {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
                 <ion-item href="/admin" lines="full">
                   <ion-icon name="shield-checkmark" slot="start" />
                   <ion-label>Admin</ion-label>
@@ -83,7 +114,7 @@ export class AppRoot {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {state.appInfo.version}. Copyright © 2016-2021 Chad Weimer</div>
+            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. Copyright © 2016-2021 Chad Weimer</div>
           </ion-footer>
         </ion-menu>
 
@@ -97,7 +128,7 @@ export class AppRoot {
                 : ''}
 
               <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>
-                <ion-router-link href="/" class="contrast">{state.appConfig.title}</ion-router-link>
+                <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
               {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
@@ -108,7 +139,7 @@ export class AppRoot {
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
                   <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
-                  {hasAccessLevel(state.currentUser, AccessLevel.Administrator) ?
+                  {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
                     <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
                     : ''}
                   <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
@@ -159,34 +190,12 @@ export class AppRoot {
     await this.closeAllOverlays();
   }
 
-  @Listen('ajax-presend')
-  onAjaxPresend() {
-    this.loadingCount++;
-  }
-
-  @Listen('ajax-response')
-  onAjaxResponse() {
-    if (this.loadingCount > 0) {
-      this.loadingCount--;
-    }
-  }
-
-  @Listen('ajax-error')
-  onAjaxError(e: CustomEvent) {
-    if (this.loadingCount > 0) {
-      this.loadingCount--;
-    }
-    if (e.detail.response?.status === 401) {
-      this.logout();
-    }
-  }
-
   private async loadAppConfiguration() {
     try {
-      state.appInfo = await AppApi.getInfo(this.el);
-      state.appConfig = await AppApi.getConfiguration(this.el);
+      ({ data: appConfig.info } = await appApi.getInfo());
+      ({ data: appConfig.config } = await appApi.getConfiguration());
 
-      document.title = state.appConfig.title;
+      document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
       if (appName) {
         appName.setAttribute('content', document.title);
@@ -201,13 +210,7 @@ export class AppRoot {
   }
 
   private async logout() {
-    state.jwtToken = null;
-    state.currentUser = null;
-    state.currentUserSettings = null;
-    state.searchFilter = new DefaultSearchFilter();
-    state.searchSettings = new DefaultSearchSettings();
-    state.searchPage = 1;
-    state.searchResultCount = null;
+    clearState();
     await redirect('/login');
   }
 
@@ -219,8 +222,8 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Refresh the user so that access controls are properly enforced
       try {
-        state.currentUser = await UsersApi.get(this.el);
-        state.currentUserSettings = await UsersApi.getSettings(this.el);
+        ({ data: state.currentUser } = await usersApi.getCurrentUser());
+        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
       } catch (ex) {
         console.error(ex);
       }
@@ -236,7 +239,7 @@ export class AppRoot {
       return loginCheck;
     }
 
-    if (state.currentUser?.accessLevel === AccessLevel.Administrator) {
+    if (state.currentUser?.accessLevel === AccessLevel.Admin) {
       return true;
     }
 
@@ -246,7 +249,7 @@ export class AppRoot {
   private async performSearch() {
     state.searchPage = 1;
 
-    const el = await this.getActiveComponent() as any;
+    const el = await getActiveComponent(this.tabs) as any;
     if (el && typeof el.performSearch === 'function') {
       // If the active page is the search page, perform the search right away
       await el.performSearch();
@@ -274,47 +277,25 @@ export class AppRoot {
     }
   }
 
-  private async getActiveComponent() {
-    const tabId = await this.tabs.getSelected();
-    if (tabId !== undefined) {
-      const tab = await this.tabs.getTab(tabId);
-      if (tab.component !== undefined) {
-        return tab.querySelector(tab.component.toString());
-      } else {
-        const nav = tab.querySelector('ion-nav');
-        const activePage = await nav.getActive();
-        return activePage?.element;
-      }
-    }
-
-    return undefined;
-  }
-
   private async onPageChanging() {
     this.menu.close();
     // Let the current page know it's being deactivated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.deactivatingCallback === 'function') {
-      el.deactivatingCallback();
-    }
+    await sendDeactivatingCallback(this.tabs);
   }
 
   private async onPageChanged() {
     // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
       try {
-        state.currentUser = await UsersApi.get(this.el);
-        state.currentUserSettings = await UsersApi.getSettings(this.el);
+        ({ data: state.currentUser } = await usersApi.getCurrentUser());
+        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
       } catch (ex) {
         console.error(ex);
       }
     }
 
     // Let the new page know it's been activated
-    const el = await this.getActiveComponent() as any;
-    if (el && typeof el.activatedCallback === 'function') {
-      el.activatedCallback();
-    }
+    await sendActivatedCallback(this.tabs);
 
     await this.closeAllOverlays();
   }
@@ -334,7 +315,7 @@ export class AppRoot {
   }
 
   private async onSearchClearClicked() {
-    state.searchFilter = new DefaultSearchFilter();
+    state.searchFilter = getDefaultSearchFilter();
 
     // Workaround for binding to empty string bug
     this.restoreSearchQuery();
@@ -348,24 +329,20 @@ export class AppRoot {
         component: 'search-filter-editor',
         componentProps: {
           prompt: 'Search',
-          showName: false
+          showName: false,
+          searchFilter: state.searchFilter
         },
         animated: false,
       });
       await modal.present();
 
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('search-filter-editor').searchFilter = state.searchFilter;
-
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, searchFilter: SearchFilter }>();
-      if (resp.data?.dismissed === false) {
-        state.searchFilter = resp.data.searchFilter;
+      const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
+      if (data) {
+        state.searchFilter = data.searchFilter;
 
         // Workaround for binding to empty string bug
         this.restoreSearchQuery();
-        
+
         await this.performSearch();
       }
     });

@@ -1,5 +1,5 @@
 import { Component, Element, Host, h } from '@stencil/core';
-import { configureModalAutofocus } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 
 @Component({
   tag: 'image-upload-browser',
@@ -7,8 +7,8 @@ import { configureModalAutofocus } from '../../helpers/utils';
 })
 export class ImageUploadBrowser {
   @Element() el!: HTMLImageUploadBrowserElement;
-  private imageForm!: HTMLFormElement | null;
-  private imageInput!: HTMLInputElement | null;
+  private imageForm!: HTMLFormElement;
+  private imageInput!: HTMLInputElement;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
@@ -46,16 +46,13 @@ export class ImageUploadBrowser {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
-      formData: this.imageInput?.value ? new FormData(this.imageForm) : null
+    dismissContainingModal(this.el, {
+      file: this.imageInput?.value ? this.imageInput.files[0] : null
     });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 
 }

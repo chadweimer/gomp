@@ -1,6 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { configureModalAutofocus, insertIfTabKey } from '../../helpers/utils';
-import { Note } from '../../models';
+
+import { Note } from '../../generated';
+import { configureModalAutofocus, dismissContainingModal, insertIfTabKey } from '../../helpers/utils';
 
 @Component({
   tag: 'note-editor',
@@ -52,16 +53,11 @@ export class NoteEditor {
       return;
     }
 
-    this.el.closest('ion-modal').dismiss({
-      dismissed: false,
-      note: this.note
-    });
+    dismissContainingModal(this.el, { note: this.note });
   }
 
   private onCancelClicked() {
-    this.el.closest('ion-modal').dismiss({
-      dismissed: true
-    });
+    dismissContainingModal(this.el);
   }
 
   private onTextAreaKeyDown(e: KeyboardEvent) {

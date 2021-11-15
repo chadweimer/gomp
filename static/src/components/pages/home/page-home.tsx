@@ -1,17 +1,16 @@
-import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
-import { AccessLevel, DefaultSearchFilter, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../models';
-import { loadingController, modalController } from '@ionic/core';
-import { RecipesApi, UsersApi } from '../../../helpers/api';
-import { hasAccessLevel, redirect, showToast, enableBackForOverlay } from '../../../helpers/utils';
-import state from '../../../store';
+import { Component, Element, h, Host, Method, State } from '@stencil/core';
+import { getDefaultSearchFilter } from '../../../models';
+import { modalController } from '@ionic/core';
+import { recipesApi, usersApi } from '../../../helpers/api';
+import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
+import state from '../../../stores/state';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy } from '../../../generated';
 
 @Component({
   tag: 'page-home',
   styleUrl: 'page-home.css'
 })
 export class PageHome {
-  @Prop() userSettings: UserSettings | null;
-
   @State() searches: {
     title: string,
     filter: SearchFilter,
@@ -23,7 +22,6 @@ export class PageHome {
 
   @Method()
   async activatedCallback() {
-    await this.loadUserSettings();
     await this.loadSearchFilters();
   }
 
@@ -35,8 +33,8 @@ export class PageHome {
             <ion-row>
               <ion-col>
                 <header class="ion-text-center">
-                  <h1>{this.userSettings?.homeTitle}</h1>
-                  <img alt="Home Image" src={this.userSettings?.homeImageUrl} hidden={!this.userSettings?.homeImageUrl} />
+                  <h1>{state.currentUserSettings?.homeTitle}</h1>
+                  <img alt="Home Image" src={state.currentUserSettings?.homeImageUrl} hidden={!state.currentUserSettings?.homeImageUrl} />
                 </header>
               </ion-col>
             </ion-row>
@@ -75,14 +73,6 @@ export class PageHome {
     );
   }
 
-  private async loadUserSettings() {
-    try {
-      this.userSettings = await UsersApi.getSettings(this.el);
-    } catch (ex) {
-      console.error(ex);
-    }
-  }
-
   private async loadSearchFilters() {
     try {
       const searches: {
@@ -94,7 +84,7 @@ export class PageHome {
 
       // First add the "all" search
       const allFilter: SearchFilter = {
-        ...(new DefaultSearchFilter()),
+        ...(getDefaultSearchFilter()),
         sortBy: SortBy.Random
       };
       const { total, recipes } = await this.performSearch(allFilter);
@@ -106,10 +96,10 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = await UsersApi.getAllSearchFilters(this.el);
+      const { data: savedFilters } = await usersApi.getSearchFilters(state.currentUser.id);
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
-          const savedSearchFilter = await UsersApi.getSearchFilter(this.el, savedFilter.userId, savedFilter.id);
+          const { data: savedSearchFilter } = (await usersApi.getSearchFilter(savedFilter.userId, savedFilter.id));
           const { total, recipes } = await this.performSearch(savedSearchFilter);
           searches.push({
             title: savedSearchFilter.name,
@@ -128,33 +118,31 @@ export class PageHome {
 
   private async performSearch(filter: SearchFilter) {
     // Make sure to fill in any missing fields
-    const defaultFilter = new DefaultSearchFilter();
+    const defaultFilter = getDefaultSearchFilter();
     filter = { ...defaultFilter, ...filter };
 
     try {
-      return await RecipesApi.find(this.el, filter, 1, 6);
+      const { data } = await recipesApi.find(filter.sortBy, filter.sortDir, 1, 6, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
+      return data;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');
     }
   }
 
-  private async saveNewRecipe(recipe: Recipe, formData: FormData) {
+  private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipeId = await RecipesApi.post(this.el, recipe);
+      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
-      if (formData) {
-        const loading = await loadingController.create({
-          message: 'Uploading picture...',
-          animated: false,
-        });
-        await loading.present();
-
-        await RecipesApi.postImage(this.el, newRecipeId, formData);
-        await loading.dismiss();
+      if (file) {
+        await showLoading(
+          async () => {
+            await recipesApi.uploadImage(newRecipe.id, file);
+          },
+          'Uploading picture...');
       }
 
-      await redirect(`/recipes/${newRecipeId}`);
+      await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create new recipe.');
@@ -170,9 +158,9 @@ export class PageHome {
 
       await modal.present();
 
-      const resp = await modal.onDidDismiss<{ dismissed: boolean, recipe: Recipe, formData: FormData }>();
-      if (resp.data?.dismissed === false) {
-        await this.saveNewRecipe(resp.data.recipe, resp.data.formData);
+      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
+      if (data) {
+        await this.saveNewRecipe(data.recipe, data.file);
       }
     });
   }
