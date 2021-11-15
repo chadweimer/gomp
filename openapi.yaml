@@ -498,19 +498,6 @@ paths:
         schema:
           type: integer
           format: int64
-    get:
-      tags: [recipes, viewer]
-      description: get the state of a recipe
-      operationId: getState
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "./models.yaml#/components/schemas/recipeState"
-      security:
-        - Bearer: []
     put:
       tags: [recipes, editor]
       description: modify the state of a recipe

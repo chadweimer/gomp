@@ -123,16 +123,6 @@ func (h apiHandler) DeleteRecipe(resp http.ResponseWriter, req *http.Request, re
 	h.NoContent(resp)
 }
 
-func (h apiHandler) GetState(resp http.ResponseWriter, req *http.Request, recipeId int64) {
-	state, err := h.db.Recipes().GetState(recipeId)
-	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.OK(resp, state)
-}
-
 func (h apiHandler) SetState(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var state models.RecipeState
 	if err := readJSONFromRequest(req, &state); err != nil {
