@@ -1,5 +1,4 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-
 import { Recipe } from '../../generated';
 import { configureModalAutofocus, dismissContainingModal, insertIfTabKey } from '../../helpers/utils';
 import state from '../../stores/state';
