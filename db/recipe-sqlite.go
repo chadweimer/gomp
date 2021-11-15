@@ -43,11 +43,8 @@ func (d *sqliteRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error 
 }
 
 func (d *sqliteRecipeDriver) Read(id int64) (*models.Recipe, error) {
-	stmt := "SELECT " +
-		"r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.storage_instructions, r.source_url, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating " +
-		"FROM recipe AS r " +
-		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
-		"WHERE r.id = $1"
+	stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
+		"FROM recipe WHERE id = $1"
 	recipe := new(models.Recipe)
 	err := d.sqliteDriver.Db.Get(recipe, stmt, id)
 	if err == sql.ErrNoRows {

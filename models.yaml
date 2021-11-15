@@ -141,12 +141,6 @@ components:
           x-oapi-codegen-extra-tags:
             db: modified_at
           x-go-type: time.Time
-        averageRating:
-          type: number
-          readOnly: true
-          x-go-custom-tag: db:"avg_rating"
-          x-oapi-codegen-extra-tags:
-            db: avg_rating
     recipe:
       allOf:
         - $ref: "#/components/schemas/recipeBase"
@@ -208,6 +202,12 @@ components:
               x-go-custom-tag: db:"thumbnail_url"
               x-oapi-codegen-extra-tags:
                 db: thumbnail_url
+            averageRating:
+              type: number
+              readOnly: true
+              x-go-custom-tag: db:"avg_rating"
+              x-oapi-codegen-extra-tags:
+                db: avg_rating
     recipeImage:
       type: object
       required:

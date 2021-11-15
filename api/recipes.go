@@ -149,7 +149,7 @@ func (h apiHandler) GetRating(resp http.ResponseWriter, req *http.Request, recip
 }
 
 func (h apiHandler) SetRating(resp http.ResponseWriter, req *http.Request, recipeId int64) {
-	var rating float64
+	var rating float32
 	if err := readJSONFromRequest(req, &rating); err != nil {
 		h.Error(resp, http.StatusBadRequest, err)
 		return

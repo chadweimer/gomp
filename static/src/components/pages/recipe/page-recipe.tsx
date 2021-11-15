@@ -14,6 +14,7 @@ export class PageRecipe {
 
   @State() recipe: Recipe | null;
   @State() mainImage: RecipeImage | null;
+  @State() recipeRating: number | null;
   @State() links: RecipeCompact[] = [];
   @State() images: RecipeImage[] = [];
   @State() notes: Note[] = [];
@@ -86,7 +87,7 @@ export class PageRecipe {
                       </ion-avatar>
                       <div>
                         <h1>{this.recipe?.name}</h1>
-                        <five-star-rating value={this.recipe?.averageRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
+                        <five-star-rating value={this.recipeRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
                           onValueSelected={e => this.onRatingSelected(e)} />
                         <p><ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note></p>
                       </div>
@@ -294,6 +295,7 @@ export class PageRecipe {
     try {
       ({ data: this.recipe } = await recipesApi.getRecipe(this.recipeId));
       ({ data: this.mainImage } = await recipesApi.getMainImage(this.recipeId));
+      ({ data: this.recipeRating } = await recipesApi.getRating(this.recipeId));
     } catch (ex) {
       console.error(ex);
     }

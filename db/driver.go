@@ -122,10 +122,10 @@ type RecipeDriver interface {
 	Delete(id int64) error
 
 	// GetRating gets the current rating of the specific recipe.
-	GetRating(id int64) (*int64, error)
+	GetRating(id int64) (*float32, error)
 
 	// SetRating adds or updates the rating of the specified recipe.
-	SetRating(id int64, rating float64) error
+	SetRating(id int64, rating float32) error
 
 	// GetRating gets the current state of the specific recipe.
 	GetState(id int64) (*models.RecipeState, error)

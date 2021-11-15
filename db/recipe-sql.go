@@ -28,8 +28,8 @@ func (d *sqlRecipeDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	return nil
 }
 
-func (d *sqlRecipeDriver) GetRating(id int64) (*int64, error) {
-	var rating int64
+func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
+	var rating float32
 	err := d.Db.Get(&rating,
 		"SELECT COALESCE(g.rating, 0) AS avg_rating FROM recipe AS r "+
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id "+
@@ -41,7 +41,7 @@ func (d *sqlRecipeDriver) GetRating(id int64) (*int64, error) {
 	return &rating, nil
 }
 
-func (d *sqlRecipeDriver) SetRating(id int64, rating float64) error {
+func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 	var count int64
 	err := d.Db.Get(&count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
