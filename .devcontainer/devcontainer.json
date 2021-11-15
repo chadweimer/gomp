@@ -8,7 +8,7 @@
     "args": {
       "GO_VERSION": "1.16",
       "NODE_VERSION": "14",
-      "DEVCONTAINER_VERSION": "0.184.0"
+      "DEVCONTAINER_VERSION": "0.205.2"
     }
   },
   "extensions": [
