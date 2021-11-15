@@ -127,9 +127,6 @@ type RecipeDriver interface {
 	// SetRating adds or updates the rating of the specified recipe.
 	SetRating(id int64, rating float32) error
 
-	// GetRating gets the current state of the specific recipe.
-	GetState(id int64) (*models.RecipeState, error)
-
 	// SetState updates the state of the specified recipe.
 	SetState(id int64, state models.RecipeState) error
 

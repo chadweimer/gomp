@@ -63,17 +63,6 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 	return nil
 }
 
-func (d *sqlRecipeDriver) GetState(id int64) (*models.RecipeState, error) {
-	var state models.RecipeState
-	err := d.Db.Get(&state,
-		"SELECT current_state FROM recipe WHERE id = $1", id)
-	if err != nil {
-		return nil, fmt.Errorf("updating recipe state: %v", err)
-	}
-
-	return &state, nil
-}
-
 func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 	_, err := d.Db.Exec(
 		"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
