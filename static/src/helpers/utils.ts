@@ -88,14 +88,14 @@ export function getContainingModal(el: HTMLElement) {
 }
 
 export function configureModalAutofocus(el: HTMLElement) {
-  const performAutofocus = () => {
-    const focusEl = el.querySelector('[autofocus]');
-    if (focusEl instanceof HTMLElement) {
-      focusEl.focus();
-    }
-    el.removeEventListener('focus', performAutofocus);
-  };
   getContainingModal(el)?.addEventListener('focus', performAutofocus);
+}
+function performAutofocus(this: HTMLIonModalElement) {
+  const focusEl = this.querySelector('[autofocus]');
+  if (focusEl instanceof HTMLElement) {
+    focusEl.focus();
+  }
+  this.removeEventListener('focus', performAutofocus);
 }
 
 export async function dismissContainingModal(el: HTMLElement, data?: any) {
