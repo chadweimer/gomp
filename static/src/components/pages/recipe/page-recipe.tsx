@@ -82,9 +82,13 @@ export class PageRecipe {
                 <ion-card>
                   <ion-card-content>
                     <ion-item lines="none">
-                      <ion-avatar slot="start" class="large">
-                        {this.mainImage?.thumbnailUrl ? <img src={this.mainImage?.thumbnailUrl} /> : ''}
-                      </ion-avatar>
+                      {this.mainImage ?
+                        <a class="ion-margin-end" href={this.mainImage.url} target="_blank">
+                          <ion-avatar slot="start" class="large">
+                            <img src={this.mainImage.thumbnailUrl} />
+                          </ion-avatar>
+                        </a>
+                        : ''}
                       <div>
                         <h1>{this.recipe?.name}</h1>
                         <five-star-rating value={this.recipeRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
