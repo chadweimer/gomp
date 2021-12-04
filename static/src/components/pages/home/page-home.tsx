@@ -154,6 +154,7 @@ export class PageHome {
       const modal = await modalController.create({
         component: 'recipe-editor',
         animated: false,
+        backdropDismiss: false,
       });
 
       await modal.present();

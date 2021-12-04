@@ -494,6 +494,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'recipe-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -597,10 +598,11 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'recipe-link-editor',
-        animated: false,
         componentProps: {
           parentRecipeId: this.recipeId
-        }
+        },
+        animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -643,6 +645,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'note-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -659,6 +662,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'note-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -708,6 +712,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'image-upload-browser',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 

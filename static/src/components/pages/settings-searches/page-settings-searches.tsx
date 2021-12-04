@@ -98,6 +98,7 @@ export class PageSettingsSearches {
           prompt: 'New Search'
         },
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -125,6 +126,7 @@ export class PageSettingsSearches {
           searchFilter: searchFilter
         },
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
