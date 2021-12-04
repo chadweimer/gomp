@@ -333,6 +333,7 @@ export class AppRoot {
           searchFilter: state.searchFilter
         },
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
