@@ -19,19 +19,19 @@
     "generate": "stencil generate"
   },
   "devDependencies": {
-    "@ionic/core": "^5.8.2",
-    "@openapitools/openapi-generator-cli": "^2.4.13",
-    "@stencil/core": "^2.8.1",
+    "@ionic/core": "^5.9.4",
+    "@openapitools/openapi-generator-cli": "^2.5.1",
+    "@stencil/core": "^2.16.1",
     "@stencil/eslint-plugin": "^0.3.1",
     "@stencil/store": "^1.5.0",
-    "@types/jest": "^27.0.2",
+    "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "eslint": "^7.32.0",
-    "eslint-plugin-react": "^7.26.1",
+    "eslint-plugin-react": "^7.30.0",
     "jest": "^26.6.3",
     "jest-cli": "^26.6.3",
     "puppeteer": "^10.4.0",
-    "typescript": "^4.4.3"
+    "typescript": "^4.7.3"
   }
 }
