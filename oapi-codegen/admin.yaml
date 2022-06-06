@@ -1,0 +1,11 @@
+package: admin
+generate:
+  chi-server: true
+  models: true
+output-options:
+  include-tags:
+  - admin
+import-mapping:
+  ./models.yaml: github.com/chadweimer/gomp/generated/models
+compatibility:
+  old-merge-schemas: true

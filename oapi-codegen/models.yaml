@@ -1,0 +1,5 @@
+package: models
+generate:
+  models: true
+output-options:
+  skip-prune: true

@@ -30,7 +30,7 @@ func (d *sqlRecipeImageDriver) Createtx(image *models.RecipeImage, tx *sqlx.Tx) 
 	image.Id = &imageId
 
 	// Switch to a new main image if necessary, since this might be the first image attached
-	return d.setMainImageIfNecessary(image.RecipeId, tx)
+	return d.setMainImageIfNecessary(*image.RecipeId, tx)
 }
 
 func (d *sqlRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
@@ -110,7 +110,7 @@ func (d *sqlRecipeImageDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	}
 
 	// Switch to a new main image if necessary, since the image we just deleted may have been the main image
-	return d.setMainImageIfNecessary(image.RecipeId, tx)
+	return d.setMainImageIfNecessary(*image.RecipeId, tx)
 }
 
 func (d *sqlRecipeImageDriver) setMainImageIfNecessary(recipeId int64, tx *sqlx.Tx) error {

@@ -1,0 +1,9 @@
+package: public
+generate:
+  chi-server: true
+  models: true
+output-options:
+  include-tags:
+  - public
+import-mapping:
+  ./models.yaml: github.com/chadweimer/gomp/generated/models

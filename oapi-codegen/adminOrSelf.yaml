@@ -1,0 +1,9 @@
+package: adminOrSelf
+generate:
+  chi-server: true
+  models: true
+output-options:
+  include-tags:
+  - adminOrSelf
+import-mapping:
+  ./models.yaml: github.com/chadweimer/gomp/generated/models

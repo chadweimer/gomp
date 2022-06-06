@@ -29,10 +29,10 @@ func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params vie
 	var withPictures *bool
 	if params.Pictures != nil {
 		switch *params.Pictures {
-		case viewer.YesNoAnyYes:
+		case viewer.Yes:
 			val := true
 			withPictures = &val
-		case viewer.YesNoAnyNo:
+		case viewer.No:
 			val := false
 			withPictures = &val
 		}

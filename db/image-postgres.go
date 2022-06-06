@@ -26,5 +26,5 @@ func (d *postgresRecipeImageDriver) createtx(image *models.RecipeImage, tx *sqlx
 	}
 
 	// Switch to a new main image if necessary, since this might be the first image attached
-	return d.setMainImageIfNecessary(image.RecipeId, tx)
+	return d.setMainImageIfNecessary(*image.RecipeId, tx)
 }

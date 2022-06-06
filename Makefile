@@ -32,7 +32,7 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
-	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -49,17 +49,17 @@ $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 $(CODEGEN_DIR): openapi.yaml models.yaml
 	rm -rf $@
 	mkdir -p $@/models
-	oapi-codegen -generate types,skip-prune -package models models.yaml > $@/models/models.go
+	oapi-codegen --config oapi-codegen/models.yaml models.yaml > $@/models/models.go
 	mkdir -p $@/api/public
-	oapi-codegen -generate types,chi-server -package public -include-tags=public -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/public/public.go
+	oapi-codegen --config oapi-codegen/public.yaml openapi.yaml > $@/api/public/public.go
 	mkdir -p $@/api/viewer
-	oapi-codegen -generate types,chi-server -package viewer -include-tags=viewer -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/viewer/viewer.go
+	oapi-codegen --config oapi-codegen/viewer.yaml openapi.yaml > $@/api/viewer/viewer.go
 	mkdir -p $@/api/editor
-	oapi-codegen -generate types,chi-server -package editor -include-tags=editor -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/editor/editor.go
+	oapi-codegen --config oapi-codegen/editor.yaml openapi.yaml > $@/api/editor/editor.go
 	mkdir -p $@/api/admin
-	oapi-codegen -generate types,chi-server -package admin -include-tags=admin -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/admin/admin.go
+	oapi-codegen --config oapi-codegen/admin.yaml openapi.yaml > $@/api/admin/admin.go
 	mkdir -p $@/api/adminOrSelf
-	oapi-codegen -generate types,chi-server -package adminOrSelf -include-tags=adminOrSelf -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
+	oapi-codegen --config oapi-codegen/adminOrSelf.yaml openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
 
 
 # ---- LINT ----
