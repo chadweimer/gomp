@@ -3,7 +3,6 @@ generate:
   chi-server: true
   models: true
 output-options:
-  include-tags:
-  - editor
+  include-tags: [editor]
 import-mapping:
   ./models.yaml: github.com/chadweimer/gomp/generated/models

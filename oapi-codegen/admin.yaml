@@ -3,8 +3,7 @@ generate:
   chi-server: true
   models: true
 output-options:
-  include-tags:
-  - admin
+  include-tags: [admin]
 import-mapping:
   ./models.yaml: github.com/chadweimer/gomp/generated/models
 compatibility:
