@@ -6,9 +6,9 @@
     "context": "..",
     "dockerfile": "Dockerfile",
     "args": {
-      "GO_VERSION": "1.16",
-      "NODE_VERSION": "14",
-      "DEVCONTAINER_VERSION": "0.205.2"
+      "GO_VERSION": "1.18",
+      "NODE_VERSION": "16",
+      "DEVCONTAINER_VERSION": "0.238.0"
     }
   },
   "extensions": [
