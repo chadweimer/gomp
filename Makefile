@@ -25,6 +25,7 @@ GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-g
 GO_FILES := $(filter-out $(shell test -d $(CODEGEN_DIR) && find ./$(CODEGEN_DIR) -name "*"), $(shell find . -type f -name "*.go"))
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
 CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find static -maxdepth 1 -type f -name "*") $(shell find static/src -type f -name "*"))
+OAPI_CFGS := $(shell find oapi-codegen -type f -name "*.yaml")
 
 .DEFAULT_GOAL := build
 
@@ -46,7 +47,7 @@ uninstall:
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
-$(CODEGEN_DIR): openapi.yaml models.yaml
+$(CODEGEN_DIR): openapi.yaml models.yaml $(OAPI_CFGS)
 	rm -rf $@
 	mkdir -p $@/models
 	oapi-codegen --config oapi-codegen/models.yaml models.yaml > $@/models/models.go
