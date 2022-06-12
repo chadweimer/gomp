@@ -186,7 +186,7 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 
 func (h apiHandler) verifyUserIsAdmin(req *http.Request) error {
 	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
-	if accessLevel != models.AccessLevelAdmin {
+	if accessLevel != models.Admin {
 		return fmt.Errorf("endpoint '%s' requires admin rights", req.URL.Path)
 	}
 
@@ -195,7 +195,7 @@ func (h apiHandler) verifyUserIsAdmin(req *http.Request) error {
 
 func (h apiHandler) verifyUserIsEditor(req *http.Request) error {
 	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
-	if accessLevel != models.AccessLevelAdmin && accessLevel != models.AccessLevelEditor {
+	if accessLevel != models.Admin && accessLevel != models.Editor {
 		return fmt.Errorf("endpoint '%s' requires edit rights", req.URL.Path)
 	}
 

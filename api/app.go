@@ -10,7 +10,7 @@ import (
 
 func (h apiHandler) GetInfo(resp http.ResponseWriter, req *http.Request) {
 	info := models.AppInfo{
-		Version: metadata.BuildVersion,
+		Version: &metadata.BuildVersion,
 	}
 
 	h.OK(resp, info)

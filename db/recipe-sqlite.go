@@ -178,7 +178,7 @@ func (d *sqliteRecipeDriver) Find(filter *models.SearchFilter, page int64, count
 	default:
 		orderStmt += "r.name"
 	}
-	if filter.SortDir == models.SortDirDesc {
+	if filter.SortDir == models.Desc {
 		orderStmt += " DESC"
 	}
 	// Need a special case for rating, since the way the execution plan works can

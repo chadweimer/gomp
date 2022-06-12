@@ -43,7 +43,7 @@ func (h apiHandler) SetMainImage(resp http.ResponseWriter, req *http.Request, re
 		return
 	}
 
-	image := models.RecipeImage{Id: &imageId, RecipeId: recipeId}
+	image := models.RecipeImage{Id: &imageId, RecipeId: &recipeId}
 	if err := h.db.Images().UpdateMainImage(&image); err != nil {
 		h.Error(resp, http.StatusInternalServerError, err)
 		return
@@ -80,10 +80,10 @@ func (h apiHandler) UploadImage(resp http.ResponseWriter, req *http.Request, rec
 	}
 
 	imageInfo := models.RecipeImage{
-		RecipeId:     recipeId,
-		Name:         imageName,
-		Url:          url,
-		ThumbnailUrl: thumbUrl,
+		RecipeId:     &recipeId,
+		Name:         &imageName,
+		Url:          &url,
+		ThumbnailUrl: &thumbUrl,
 	}
 
 	// Now insert the record in the database
@@ -113,7 +113,7 @@ func (h apiHandler) DeleteImage(resp http.ResponseWriter, req *http.Request, rec
 	}
 
 	// And lastly delete the image file itself
-	if err := upload.Delete(h.upl, image.RecipeId, image.Name); err != nil {
+	if err := upload.Delete(h.upl, *image.RecipeId, *image.Name); err != nil {
 		fullErr := fmt.Errorf("failed to delete image file: %v", err)
 		h.Error(resp, http.StatusInternalServerError, fullErr)
 		return

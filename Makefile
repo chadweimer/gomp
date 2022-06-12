@@ -15,7 +15,7 @@ CODEGEN_DIR=generated
 CLIENT_CODEGEN_DIR=static/src/generated
 
 GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
-GO_LIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
+GO_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
 GO_WIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS)"
 GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
 GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
@@ -25,6 +25,7 @@ GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-g
 GO_FILES := $(filter-out $(shell test -d $(CODEGEN_DIR) && find ./$(CODEGEN_DIR) -name "*"), $(shell find . -type f -name "*.go"))
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
 CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find static -maxdepth 1 -type f -name "*") $(shell find static/src -type f -name "*"))
+OAPI_CFGS := $(shell find oapi-codegen -type f -name "*.yaml")
 
 .DEFAULT_GOAL := build
 
@@ -32,7 +33,7 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
-	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -46,20 +47,20 @@ uninstall:
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
-$(CODEGEN_DIR): openapi.yaml models.yaml
+$(CODEGEN_DIR): openapi.yaml models.yaml $(OAPI_CFGS)
 	rm -rf $@
 	mkdir -p $@/models
-	oapi-codegen -generate types,skip-prune -package models models.yaml > $@/models/models.go
+	oapi-codegen --config oapi-codegen/models.yaml models.yaml > $@/models/models.go
 	mkdir -p $@/api/public
-	oapi-codegen -generate types,chi-server -package public -include-tags=public -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/public/public.go
+	oapi-codegen --config oapi-codegen/public.yaml openapi.yaml > $@/api/public/public.go
 	mkdir -p $@/api/viewer
-	oapi-codegen -generate types,chi-server -package viewer -include-tags=viewer -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/viewer/viewer.go
+	oapi-codegen --config oapi-codegen/viewer.yaml openapi.yaml > $@/api/viewer/viewer.go
 	mkdir -p $@/api/editor
-	oapi-codegen -generate types,chi-server -package editor -include-tags=editor -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/editor/editor.go
+	oapi-codegen --config oapi-codegen/editor.yaml openapi.yaml > $@/api/editor/editor.go
 	mkdir -p $@/api/admin
-	oapi-codegen -generate types,chi-server -package admin -include-tags=admin -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/admin/admin.go
+	oapi-codegen --config oapi-codegen/admin.yaml openapi.yaml > $@/api/admin/admin.go
 	mkdir -p $@/api/adminOrSelf
-	oapi-codegen -generate types,chi-server -package adminOrSelf -include-tags=adminOrSelf -import-mapping=./models.yaml:github.com/chadweimer/gomp/generated/models openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
+	oapi-codegen --config oapi-codegen/adminOrSelf.yaml openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
 
 
 # ---- LINT ----
@@ -85,6 +86,7 @@ build: $(BUILD_LIN_AMD64_DIR) $(BUILD_LIN_ARM_DIR) $(BUILD_LIN_ARM64_DIR) $(BUIL
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	rm -rf $(BUILD_DIR)
 	rm -rf $(CODEGEN_DIR)
+	cd static && npm run clean
 
 # - GENERIC ARCH -
 
@@ -97,61 +99,60 @@ $(BUILD_DIR)/%/db/migrations: $(DB_MIGRATION_FILES)
 $(BUILD_DIR)/%/static: $(CLIENT_BUILD_DIR)
 	rm -rf $@ && mkdir -p $@ && cp -R $</* $@
 
-.PHONY: clean-client
-clean-client:
-	cd static && npm run clean
+$(BUILD_DIR)/linux/%/gomp: go.mod $(CODEGEN_DIR) $(GO_FILES)
+	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
+$(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_DIR) $(GO_FILES)
+	$(GO_ENV) go build -o $@ $(GO_WIN_LD_FLAGS)
+
+.PHONY: clean-$(BUILD_DIR)/%
+clean-$(BUILD_DIR)/%:
+	rm -rf $(BUILD_DIR)/$*
+
+.PHONY: clean-$(BUILD_DIR)/linux/%/gomp clean-$(BUILD_DIR)/windows/%/gomp.exe
+clean-$(BUILD_DIR)/linux/%/gomp:
+	$(GO_ENV) go clean -i ./...
+clean-$(BUILD_DIR)/windows/%/gomp.exe:
+	$(GO_ENV) go clean -i ./...
 
 # - AMD64 -
 
 $(BUILD_LIN_AMD64_DIR): $(BUILD_LIN_AMD64_DIR)/gomp $(BUILD_LIN_AMD64_DIR)/db/migrations $(BUILD_LIN_AMD64_DIR)/static
 
-$(BUILD_LIN_AMD64_DIR)/gomp: go.mod $(CODEGEN_DIR) $(GO_FILES)
-	$(GO_ENV_LIN_AMD64) go build -o $@ $(GO_LIN_LD_FLAGS)
+$(BUILD_LIN_AMD64_DIR)/gomp: GO_ENV := $(GO_ENV_LIN_AMD64)
 
 .PHONY: clean-linux-amd64
-clean-linux-amd64: clean-client
-	$(GO_ENV_LIN_AMD64) go clean -i ./...
-	rm -rf $(BUILD_LIN_AMD64_DIR)
-	rm -f $(BUILD_DIR)/gomp-linux-amd64.tar.gz
+clean-linux-amd64: GO_ENV := $(GO_ENV_LIN_AMD64)
+clean-linux-amd64: clean-$(BUILD_LIN_AMD64_DIR)/gomp clean-$(BUILD_LIN_AMD64_DIR) clean-$(BUILD_DIR)/gomp-linux-amd64.tar.gz
 
 # - ARM32 -
 
 $(BUILD_LIN_ARM_DIR): $(BUILD_LIN_ARM_DIR)/gomp $(BUILD_LIN_ARM_DIR)/db/migrations $(BUILD_LIN_ARM_DIR)/static
 
-$(BUILD_LIN_ARM_DIR)/gomp: go.mod $(CODEGEN_DIR) $(GO_FILES)
-	$(GO_ENV_LIN_ARM) go build -o $@ $(GO_LIN_LD_FLAGS)
+$(BUILD_LIN_ARM_DIR)/gomp: GO_ENV := $(GO_ENV_LIN_ARM)
 
 .PHONY: clean-linux-arm
-clean-linux-arm: clean-client
-	$(GO_ENV_LIN_ARM) go clean -i ./...
-	rm -rf $(BUILD_LIN_ARM_DIR)
-	rm -f $(BUILD_DIR)/gomp-linux-arm.tar.gz
+clean-linux-arm: GO_ENV := $(GO_ENV_LIN_ARM)
+clean-linux-arm: clean-$(BUILD_LIN_ARM_DIR)/gomp clean-$(BUILD_LIN_ARM_DIR) clean-$(BUILD_DIR)/gomp-linux-arm.tar.gz
 
 # - ARM64 -
 
 $(BUILD_LIN_ARM64_DIR): $(BUILD_LIN_ARM64_DIR)/gomp $(BUILD_LIN_ARM64_DIR)/db/migrations $(BUILD_LIN_ARM64_DIR)/static
 
-$(BUILD_LIN_ARM64_DIR)/gomp: go.mod $(CODEGEN_DIR) $(GO_FILES)
-	$(GO_ENV_LIN_ARM64) go build -o $@ $(GO_LIN_LD_FLAGS)
+$(BUILD_LIN_ARM64_DIR)/gomp: GO_ENV := $(GO_ENV_LIN_ARM64)
 
 .PHONY: clean-linux-arm64
-clean-linux-arm64: clean-client
-	$(GO_ENV_LIN_ARM64) go clean -i ./...
-	rm -rf $(BUILD_LIN_ARM64_DIR)
-	rm -f $(BUILD_DIR)/gomp-linux-arm64.tar.gz
+clean-linux-arm64: GO_ENV := $(GO_ENV_LIN_ARM64)
+clean-linux-arm64: clean-$(BUILD_LIN_ARM64_DIR)/gomp clean-$(BUILD_LIN_ARM64_DIR) clean-$(BUILD_DIR)/gomp-linux-arm64.tar.gz
 
 # - WINDOWS -
 
 $(BUILD_WIN_AMD64_DIR): $(BUILD_WIN_AMD64_DIR)/gomp.exe $(BUILD_WIN_AMD64_DIR)/db/migrations $(BUILD_WIN_AMD64_DIR)/static
 
-$(BUILD_WIN_AMD64_DIR)/gomp.exe: go.mod $(CODEGEN_DIR) $(GO_FILES)
-	$(GO_ENV_WIN_AMD64) go build -o $@ $(GO_WIN_LD_FLAGS)
+$(BUILD_WIN_AMD64_DIR)/gomp.exe: GO_ENV := $(GO_ENV_WIN_AMD64)
 
 .PHONY: clean-windows-amd64
-clean-windows-amd64: clean-client
-	$(GO_ENV_WIN_AMD64) go clean -i ./...
-	rm -rf $(BUILD_WIN_AMD64_DIR)
-	rm -f $(BUILD_DIR)/gomp-windows-amd64.zip
+clean-windows-amd64: GO_ENV := $(GO_ENV_WIN_AMD64)
+clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD64_DIR) clean-$(BUILD_DIR)/gomp-windows-amd64.zip
 
 
 # ---- DOCKER ----

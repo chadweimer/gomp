@@ -1,3 +1,4 @@
+import { AxiosResponseHeaders } from 'axios';
 import { AppApi, Configuration, RecipesApi, UsersApi } from '../generated';
 import state from '../stores/state';
 
@@ -10,6 +11,6 @@ export const appApi = new AppApi(configuration);
 export const recipesApi = new RecipesApi(configuration);
 export const usersApi = new UsersApi(configuration);
 
-export function getLocationFromResponse(headers: Headers) {
-  return headers.get('Location') ?? '';
+export function getLocationFromResponse(headers: AxiosResponseHeaders) {
+  return headers['location'] ?? '';
 }
