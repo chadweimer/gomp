@@ -99,8 +99,10 @@ $(BUILD_DIR)/%/db/migrations: $(DB_MIGRATION_FILES)
 $(BUILD_DIR)/%/static: $(CLIENT_BUILD_DIR)
 	rm -rf $@ && mkdir -p $@ && cp -R $</* $@
 
-$(BUILD_DIR)/linux/%/gomp $(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_DIR) $(GO_FILES)
+$(BUILD_DIR)/linux/%/gomp: go.mod $(CODEGEN_DIR) $(GO_FILES)
 	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
+$(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_DIR) $(GO_FILES)
+	$(GO_ENV) go build -o $@ $(GO_WIN_LD_FLAGS)
 
 .PHONY: clean-$(BUILD_DIR)/%
 clean-$(BUILD_DIR)/%:
@@ -147,7 +149,6 @@ clean-linux-arm64: clean-$(BUILD_LIN_ARM64_DIR)/gomp clean-$(BUILD_LIN_ARM64_DIR
 $(BUILD_WIN_AMD64_DIR): $(BUILD_WIN_AMD64_DIR)/gomp.exe $(BUILD_WIN_AMD64_DIR)/db/migrations $(BUILD_WIN_AMD64_DIR)/static
 
 $(BUILD_WIN_AMD64_DIR)/gomp.exe: GO_ENV := $(GO_ENV_WIN_AMD64)
-$(BUILD_WIN_AMD64_DIR)/gomp.exe: GO_LD_FLAGS := $(GO_WIN_LD_FLAGS)
 
 .PHONY: clean-windows-amd64
 clean-windows-amd64: GO_ENV := $(GO_ENV_WIN_AMD64)
