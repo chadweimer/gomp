@@ -290,7 +290,9 @@ export class PageRecipe {
 
   private async load() {
     await this.loadRecipe();
+    await this.loadRating();
     await this.loadLinks();
+    await this.loadMainImage();
     await this.loadImages();
     await this.loadNotes();
   }
@@ -298,9 +300,17 @@ export class PageRecipe {
   private async loadRecipe() {
     try {
       ({ data: this.recipe } = await recipesApi.getRecipe(this.recipeId));
-      ({ data: this.mainImage } = await recipesApi.getMainImage(this.recipeId));
+    } catch (ex) {
+      this.recipe = null;
+      console.error(ex);
+    }
+  }
+
+  private async loadRating() {
+    try {
       ({ data: this.recipeRating } = await recipesApi.getRating(this.recipeId));
     } catch (ex) {
+      this.recipeRating = null;
       console.error(ex);
     }
   }
@@ -309,6 +319,7 @@ export class PageRecipe {
     try {
       ({ data: this.links } = await recipesApi.getLinks(this.recipeId));
     } catch (ex) {
+      this.links = [];
       console.error(ex);
     }
   }
@@ -317,6 +328,16 @@ export class PageRecipe {
     try {
       ({ data: this.images } = await recipesApi.getImages(this.recipeId));
     } catch (ex) {
+      this.images = [];
+      console.error(ex);
+    }
+  }
+
+  private async loadMainImage() {
+    try {
+      ({ data: this.mainImage } = await recipesApi.getMainImage(this.recipeId));
+    } catch (ex) {
+      this.mainImage = null;
       console.error(ex);
     }
   }
@@ -325,6 +346,7 @@ export class PageRecipe {
     try {
       ({ data: this.notes } = await recipesApi.getNotes(this.recipeId));
     } catch (ex) {
+      this.notes = [];
       console.error(ex);
     }
   }
@@ -719,7 +741,7 @@ export class PageRecipe {
       const { data } = await modal.onDidDismiss<{ file: File }>();
       if (data) {
         await this.uploadImage(data.file);
-        await this.loadRecipe();
+        await this.loadMainImage();
         await this.loadImages();
       }
     });
@@ -727,7 +749,7 @@ export class PageRecipe {
 
   private async onRatingSelected(e: CustomEvent<number>) {
     await this.setRating(e.detail);
-    await this.loadRecipe();
+    await this.loadRating();
   }
 
   private async onSetMainImageClicked(image: RecipeImage) {
@@ -741,7 +763,7 @@ export class PageRecipe {
             text: 'Yes',
             handler: async () => {
               await this.setMainImage(image);
-              await this.loadRecipe();
+              await this.loadMainImage();
               return true;
             }
           }
@@ -766,7 +788,7 @@ export class PageRecipe {
             text: 'Yes',
             handler: async () => {
               await this.deleteImage(image);
-              await this.loadRecipe();
+              await this.loadMainImage();
               await this.loadImages();
               return true;
             }
