@@ -330,6 +330,7 @@ export class AppRoot {
         componentProps: {
           prompt: 'Search',
           showName: false,
+          showSavedLoader: true,
           searchFilter: state.searchFilter
         },
         animated: false,

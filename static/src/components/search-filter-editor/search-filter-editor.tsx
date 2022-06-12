@@ -1,5 +1,6 @@
-import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../generated';
+import { Component, Element, Host, h, Prop, State } from '@stencil/core';
+import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../generated';
+import { usersApi } from '../../helpers/api';
 import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import state from '../../stores/state';
@@ -11,14 +12,20 @@ import state from '../../stores/state';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() showName = true;
+  @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
+  @State() selectedFilterId: number | null = null;
+  @State() filters: SavedSearchFilterCompact[] = [];
 
   @Element() el!: HTMLSearchFilterEditorElement;
   private form!: HTMLFormElement;
 
-  connectedCallback() {
+  async connectedCallback() {
     configureModalAutofocus(this.el);
+    if (this.showSavedLoader) {
+      await this.loadSearchFilters();
+    }
   }
 
   render() {
@@ -39,6 +46,19 @@ export class SearchFilterEditor {
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+            {this.showSavedLoader ?
+              <ion-item>
+                <ion-label>Load From Saved</ion-label>
+                <ion-select value={this.selectedFilterId} interface="popover" onIonChange={e => this.selectedFilterId = e.detail.value }>
+                  {this.filters?.map(item =>
+                    <ion-select-option value={item.id}>{item.name}</ion-select-option>
+                  )}
+                </ion-select>
+                <ion-button slot="end" fill="clear" onClick={() => this.onLoadSearchClicked(this.selectedFilterId)}>
+                  <ion-icon slot="icon-only" name="open-outline" />
+                </ion-button>
+              </ion-item>
+              : ''}
             {this.showName ?
               <ion-item>
                 <ion-label position="stacked">Name</ion-label>
@@ -114,6 +134,23 @@ export class SearchFilterEditor {
 
   private onResetClicked() {
     this.searchFilter = getDefaultSearchFilter();
+  }
+
+  private async loadSearchFilters() {
+    try {
+      ({ data: this.filters } = await usersApi.getSearchFilters(state.currentUser.id));
+    } catch (ex) {
+      this.filters = [];
+      console.error(ex);
+    }
+  }
+
+  private async onLoadSearchClicked(id: number | null) {
+    try {
+      ({ data: this.searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, id));
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 
 }
