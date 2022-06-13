@@ -328,6 +328,7 @@ export class AppRoot {
       const modal = await modalController.create({
         component: 'search-filter-editor',
         componentProps: {
+          saveLabel: 'Search',
           prompt: 'Search',
           showName: false,
           showSavedLoader: true,

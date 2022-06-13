@@ -67,6 +67,7 @@ export namespace Components {
     interface SearchFilterEditor {
         "name": string;
         "prompt": string;
+        "saveLabel": string;
         "searchFilter": SearchFilter;
         "showName": boolean;
         "showSavedLoader": boolean;
@@ -319,6 +320,7 @@ declare namespace LocalJSX {
     interface SearchFilterEditor {
         "name"?: string;
         "prompt"?: string;
+        "saveLabel"?: string;
         "searchFilter"?: SearchFilter;
         "showName"?: boolean;
         "showSavedLoader"?: boolean;

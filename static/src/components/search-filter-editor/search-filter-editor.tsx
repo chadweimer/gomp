@@ -11,6 +11,7 @@ import state from '../../stores/state';
 })
 export class SearchFilterEditor {
   @Prop() name = '';
+  @Prop() saveLabel = 'Save';
   @Prop() showName = true;
   @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
@@ -39,7 +40,7 @@ export class SearchFilterEditor {
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
             <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+              <ion-button onClick={() => this.onSaveClicked()}>{this.saveLabel}</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -54,7 +55,7 @@ export class SearchFilterEditor {
                     <ion-select-option value={item.id}>{item.name}</ion-select-option>
                   )}
                 </ion-select>
-                <ion-button slot="end" fill="clear" onClick={() => this.onLoadSearchClicked(this.selectedFilterId)}>
+                <ion-button slot="end" fill="clear" disabled={this.selectedFilterId === null} onClick={() => this.onLoadSearchClicked()}>
                   <ion-icon slot="icon-only" name="open-outline" />
                 </ion-button>
               </ion-item>
@@ -145,9 +146,14 @@ export class SearchFilterEditor {
     }
   }
 
-  private async onLoadSearchClicked(id: number | null) {
+  private async onLoadSearchClicked() {
+    if (this.selectedFilterId === null) {
+      return;
+    }
+
     try {
-      ({ data: this.searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, id));
+      ({ data: this.searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, this.selectedFilterId));
+      this.selectedFilterId = null;
     } catch (ex) {
       console.error(ex);
     }
