@@ -67,8 +67,10 @@ export namespace Components {
     interface SearchFilterEditor {
         "name": string;
         "prompt": string;
+        "saveLabel": string;
         "searchFilter": SearchFilter;
         "showName": boolean;
+        "showSavedLoader": boolean;
     }
     interface SortBySelector {
         "sortBy": SortBy;
@@ -318,8 +320,10 @@ declare namespace LocalJSX {
     interface SearchFilterEditor {
         "name"?: string;
         "prompt"?: string;
+        "saveLabel"?: string;
         "searchFilter"?: SearchFilter;
         "showName"?: boolean;
+        "showSavedLoader"?: boolean;
     }
     interface SortBySelector {
         "onSortByChanged"?: (event: SortBySelectorCustomEvent<SortBy>) => void;

@@ -2,7 +2,7 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
 import { usersApi } from '../../../helpers/api';
-import { enableBackForOverlay, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -34,7 +34,8 @@ export class PageSettingsSearches {
                           <h2>{filter.name}</h2>
                         </ion-label>
                         <ion-buttons>
-                          <ion-button slot="end" fill="clear" color="warning" onClick={() => this.onEditFilterClicked(filter)}><ion-icon name="create" /></ion-button>
+                          <ion-button slot="end" fill="clear" color="primary" onClick={() => this.onLoadSearchClicked(filter.id)}><ion-icon name="open-outline" /></ion-button>
+                          <ion-button slot="end" fill="clear" color="warning" onClick={() => this.onEditFilterClicked(filter.id)}><ion-icon name="create" /></ion-button>
                           <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteFilterClicked(filter)}><ion-icon name="trash" /></ion-button>
                         </ion-buttons>
                       </ion-item>
@@ -81,9 +82,13 @@ export class PageSettingsSearches {
     }
   }
 
-  private async deleteSearchFilter(searchFilter: SavedSearchFilterCompact) {
+  private async deleteSearchFilter(id: number | null) {
+    if (id === null) {
+      return;
+    }
+
     try {
-      await usersApi.deleteSearchFilter(state.currentUser.id, searchFilter.id);
+      await usersApi.deleteSearchFilter(state.currentUser.id, id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete search filter.');
@@ -114,9 +119,13 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onEditFilterClicked(searchFilterCompact: SavedSearchFilterCompact) {
+  private async onEditFilterClicked(id: number | null) {
+    if (id === null) {
+      return;
+    }
+
     await enableBackForOverlay(async () => {
-      const { data: searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, searchFilterCompact.id);
+      const { data: searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, id);
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
@@ -152,7 +161,7 @@ export class PageSettingsSearches {
           {
             text: 'Yes',
             handler: async () => {
-              await this.deleteSearchFilter(searchFilter);
+              await this.deleteSearchFilter(searchFilter.id);
               await this.loadSearchFilters();
               return true;
             }
@@ -165,6 +174,19 @@ export class PageSettingsSearches {
 
       await confirmation.onDidDismiss();
     });
+  }
+
+  private async onLoadSearchClicked(id: number | null) {
+    if (id === null) {
+      return;
+    }
+
+    try {
+      ({ data: state.searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, id));
+      await redirect('/search');
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 
 }
