@@ -142,9 +142,8 @@ export class PageHome {
           'Uploading picture...');
       }
 
-      // Update the search results since the new recipe may be in them,
-      // but don't change the scroll position or page number
-      await refreshSearchResults(false);
+      // Update the search results since the new recipe may be in them
+      await refreshSearchResults();
 
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {

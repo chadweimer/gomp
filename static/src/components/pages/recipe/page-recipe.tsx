@@ -533,9 +533,8 @@ export class PageRecipe {
         });
         await this.loadRecipe();
 
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -563,9 +562,8 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
 
         await redirect('/search');
       }
@@ -596,9 +594,8 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -627,9 +624,8 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -762,9 +758,8 @@ export class PageRecipe {
         await this.loadMainImage();
         await this.loadImages();
 
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -773,9 +768,8 @@ export class PageRecipe {
     await this.setRating(e.detail);
     await this.loadRating();
 
-    // Update the search results since the modified recipe may be in them,
-    // but don't change the scroll position or page number
-    await refreshSearchResults(false);
+    // Update the search results since the modified recipe may be in them
+    await refreshSearchResults();
   }
 
   private async onSetMainImageClicked(image: RecipeImage) {
@@ -802,9 +796,8 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -834,9 +827,8 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them,
-        // but don't change the scroll position or page number
-        await refreshSearchResults(false);
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
