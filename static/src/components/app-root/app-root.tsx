@@ -148,7 +148,7 @@ export class AppRoot {
                   <ion-icon icon="search" slot="start" />
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     onKeyDown={e => this.onSearchKeyDown(e)}
-                    onIonBlur={() => this.restoreSearchQuery()}
+                    onIonBlur={() => this.searchBar.value = state.searchFilter?.query ?? ''}
                     ref={el => this.searchBar = el} />
                   <ion-buttons slot="end" class="ion-no-margin">
                     <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
@@ -302,16 +302,8 @@ export class AppRoot {
     }
   }
 
-  private restoreSearchQuery() {
-    this.searchBar.value = state.searchFilter?.query ?? '';
-  }
-
   private async onSearchClearClicked() {
     state.searchFilter = getDefaultSearchFilter();
-
-    // Workaround for binding to empty string bug
-    this.restoreSearchQuery();
-
     await redirect('/search');
   }
 
@@ -334,10 +326,6 @@ export class AppRoot {
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (data) {
         state.searchFilter = data.searchFilter;
-
-        // Workaround for binding to empty string bug
-        this.restoreSearchQuery();
-
         await redirect('/search');
       }
     });
