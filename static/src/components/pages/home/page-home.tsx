@@ -173,7 +173,6 @@ export class PageHome {
     state.searchFilter = {
       ...filter
     };
-    state.searchPage = 1;
     await redirect('/search');
   }
 

@@ -50,9 +50,6 @@ export class AppRoot {
     });
 
     await this.loadAppConfiguration();
-
-    // Make sure there are search results on initial load
-    await refreshSearchResults();
   }
 
   render() {
@@ -282,6 +279,11 @@ export class AppRoot {
       } catch (ex) {
         console.error(ex);
       }
+
+      // Make sure there are search results on initial load
+      if (state.searchResults === undefined) {
+        await refreshSearchResults();
+      }
     }
 
     // Let the new page know it's been activated
@@ -292,7 +294,6 @@ export class AppRoot {
 
   private async onSearchKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
-      state.searchPage = 1;
       state.searchFilter = {
         ...state.searchFilter,
         query: this.searchBar.value?.toString()
@@ -306,7 +307,6 @@ export class AppRoot {
   }
 
   private async onSearchClearClicked() {
-    state.searchPage = 1;
     state.searchFilter = getDefaultSearchFilter();
 
     // Workaround for binding to empty string bug
@@ -333,7 +333,6 @@ export class AppRoot {
 
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (data) {
-        state.searchPage = 1;
         state.searchFilter = data.searchFilter;
 
         // Workaround for binding to empty string bug

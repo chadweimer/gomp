@@ -40,16 +40,22 @@ for (const prop of propsToSync) {
   onChange(prop.key, val => val ? prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val) : prop.storage.removeItem(prop.key));
 }
 
-// Sync certain properties from browser storage
+// Retrieve search results when search filters change
 const propsToSearch: (keyof AppState)[] = ['searchSettings', 'searchFilter', 'searchPage'];
 for (const prop of propsToSearch) {
-  onChange(prop, async () => await performSearch());
+  onChange(prop, async () => {
+    if (prop !== 'searchPage') {
+      state.searchPage = 1;
+    }
+    state.searchScrollPosition = 0;
+
+    await refreshSearchResults();
+});
 }
 
 async function refreshSearchResults() {
-  await performSearch(false);
-}
-async function performSearch(resetPageState = true) {
+  if (!state.jwtToken) return;
+
   // Make sure to fill in any missing fields
   const defaultFilter = getDefaultSearchFilter();
   const filter = { ...defaultFilter, ...state.searchFilter };
@@ -78,9 +84,6 @@ async function performSearch(resetPageState = true) {
   } finally {
     if (state.searchPage > state.searchNumPages) {
       state.searchPage = state.searchNumPages;
-    }
-    if (resetPageState) {
-      state.searchScrollPosition = 0;
     }
   }
 }

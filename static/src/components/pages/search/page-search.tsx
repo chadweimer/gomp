@@ -160,7 +160,6 @@ export class PageSearch {
   }
 
   private async setRecipeStates(states: RecipeState[]) {
-    state.searchPage = 1;
     state.searchFilter = {
       ...state.searchFilter,
       states: states
@@ -168,7 +167,6 @@ export class PageSearch {
   }
 
   private async setSortBy(sortBy: SortBy) {
-    state.searchPage = 1;
     state.searchFilter = {
       ...state.searchFilter,
       sortBy: sortBy
@@ -176,7 +174,6 @@ export class PageSearch {
   }
 
   private async setSortDir(sortDir: SortDir) {
-    state.searchPage = 1;
     state.searchFilter = {
       ...state.searchFilter,
       sortDir: sortDir
@@ -184,7 +181,6 @@ export class PageSearch {
   }
 
   private async setViewMode(viewMode: SearchViewMode) {
-    state.searchPage = 1;
     state.searchSettings = {
       ...state.searchSettings,
       viewMode: viewMode
