@@ -76,8 +76,10 @@ async function performSearch(resetPageState = true) {
     state.searchResultCount = null;
     state.searchNumPages = 1;
   } finally {
-    if (resetPageState || state.searchPage > state.searchNumPages) {
-      state.searchPage = 1;
+    if (state.searchPage > state.searchNumPages) {
+      state.searchPage = state.searchNumPages;
+    }
+    if (resetPageState) {
       state.searchScrollPosition = 0;
     }
   }
