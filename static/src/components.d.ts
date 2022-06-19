@@ -38,8 +38,6 @@ export namespace Components {
         "recipeId": number;
     }
     interface PageSearch {
-        "activatedCallback": () => Promise<void>;
-        "performSearch": (pageNum?: any) => Promise<void>;
     }
     interface PageSettings {
     }

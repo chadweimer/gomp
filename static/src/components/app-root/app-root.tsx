@@ -3,10 +3,10 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, usersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
+import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState } from '../../stores/state';
+import state, { clearState, performSearch } from '../../stores/state';
 
 @Component({
   tag: 'app-root',
@@ -50,6 +50,9 @@ export class AppRoot {
     });
 
     await this.loadAppConfiguration();
+
+    // Make sure there are search results on initial load
+    await performSearch();
   }
 
   render() {
@@ -246,19 +249,6 @@ export class AppRoot {
     return { redirect: '/' };
   }
 
-  private async performSearch() {
-    state.searchPage = 1;
-
-    const el = await getActiveComponent(this.tabs) as any;
-    if (el && typeof el.performSearch === 'function') {
-      // If the active page is the search page, perform the search right away
-      await el.performSearch();
-    } else {
-      // Otherwise, redirect to it
-      await redirect('/search');
-    }
-  }
-
   private async closeAllOverlays() {
     // Close any and all modals
     const controllers = [
@@ -302,11 +292,12 @@ export class AppRoot {
 
   private async onSearchKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
+      state.searchPage = 1;
       state.searchFilter = {
         ...state.searchFilter,
         query: this.searchBar.value?.toString()
       };
-      await this.performSearch();
+      await redirect('/search');
     }
   }
 
@@ -315,12 +306,13 @@ export class AppRoot {
   }
 
   private async onSearchClearClicked() {
+    state.searchPage = 1;
     state.searchFilter = getDefaultSearchFilter();
 
     // Workaround for binding to empty string bug
     this.restoreSearchQuery();
 
-    await this.performSearch();
+    await redirect('/search');
   }
 
   private async onSearchFilterClicked() {
@@ -341,12 +333,13 @@ export class AppRoot {
 
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (data) {
+        state.searchPage = 1;
         state.searchFilter = data.searchFilter;
 
         // Workaround for binding to empty string bug
         this.restoreSearchQuery();
 
-        await this.performSearch();
+        await redirect('/search');
       }
     });
   }

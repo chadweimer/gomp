@@ -1,9 +1,9 @@
 import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
-import { Component, Element, h, Host, Method, State } from '@stencil/core';
-import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../generated';
+import { Component, Element, h, Host } from '@stencil/core';
+import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
-import { getDefaultSearchFilter, SearchViewMode, SwipeDirection } from '../../../models';
+import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
+import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -11,14 +11,9 @@ import state from '../../../stores/state';
   styleUrl: 'page-search.css'
 })
 export class PageSearch {
-  @State() recipes: RecipeCompact[] = [];
-  @State() numPages = 1;
-
   @Element() el!: HTMLPageSearchElement;
   private content!: HTMLIonContentElement;
   private gesture: Gesture;
-
-  private scrollTop: number | null = null;
 
   connectedCallback() {
     this.gesture = createGesture({
@@ -32,12 +27,12 @@ export class PageSearch {
         switch (swipe) {
           case SwipeDirection.Right:
             if (state.searchPage > 1) {
-              this.performSearch(state.searchPage - 1);
+              state.searchPage--;
             }
             break;
           case SwipeDirection.Left:
-            if (state.searchPage < this.numPages) {
-              this.performSearch(state.searchPage + 1);
+            if (state.searchPage < state.searchNumPages) {
+              state.searchPage++;
             }
             break;
         }
@@ -51,15 +46,9 @@ export class PageSearch {
     this.gesture = null;
   }
 
-  @Method()
-  async activatedCallback() {
-    // Call loadRecipes, not performSearch, so that the scoll position is preserved
-    await this.loadRecipes();
-  }
-
   componentDidRender() {
-    if (this.scrollTop !== null) {
-      this.content.scrollToPoint(0, this.scrollTop);
+    if (state.searchScrollPosition !== null) {
+      this.content.scrollToPoint(0, state.searchScrollPosition);
     }
   }
 
@@ -101,11 +90,11 @@ export class PageSearch {
               </ion-col>
               <ion-col class="ion-hide-lg-down">
                 <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {this.numPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage = 1}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage--}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {state.searchNumPages}</ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage++}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage = state.searchNumPages}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
                 </ion-buttons>
               </ion-col>
               <ion-col class="ion-hide-lg-down" />
@@ -113,7 +102,7 @@ export class PageSearch {
           </ion-grid>
           <ion-grid class="no-pad">
             <ion-row>
-              {this.recipes.map(recipe =>
+              {state.searchResults?.map(recipe =>
                 <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
                   {state.searchSettings?.viewMode === SearchViewMode.Card ?
                     <recipe-card recipe={recipe} />
@@ -133,11 +122,11 @@ export class PageSearch {
             <ion-row>
               <ion-col>
                 <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(1)}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => this.performSearch(state.searchPage - 1)}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {this.numPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(state.searchPage + 1)}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === this.numPages} onClick={() => this.performSearch(this.numPages)}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage = 1}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage--}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {state.searchNumPages}</ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage++}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
+                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage = state.searchNumPages}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
                 </ion-buttons>
               </ion-col>
             </ion-row>
@@ -153,38 +142,6 @@ export class PageSearch {
           : ''}
       </Host>
     );
-  }
-
-  @Method()
-  async performSearch(pageNum = null) {
-    // Reset the scroll position when explicitly performing a new search
-    this.scrollTop = 0;
-
-    await this.loadRecipes(pageNum);
-  }
-
-  private async loadRecipes(pageNum = null) {
-    if (pageNum === null) {
-      pageNum = state.searchPage;
-    }
-
-    // Make sure to fill in any missing fields
-    const defaultFilter = getDefaultSearchFilter();
-    const filter = { ...defaultFilter, ...state.searchFilter };
-
-    try {
-      const { data: { total, recipes } } = await recipesApi.find(filter.sortBy, filter.sortDir, pageNum, this.getRecipeCount(), filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
-      this.recipes = recipes ?? [];
-      state.searchResultCount = total;
-
-      this.numPages = Math.ceil(total / this.getRecipeCount());
-    } catch (ex) {
-      console.error(ex);
-      this.recipes = [];
-      state.searchResultCount = null;
-    } finally {
-      state.searchPage = pageNum;
-    }
   }
 
   private getRecipeStatesText(states: RecipeState[]) {
@@ -203,39 +160,35 @@ export class PageSearch {
   }
 
   private async setRecipeStates(states: RecipeState[]) {
+    state.searchPage = 1;
     state.searchFilter = {
       ...state.searchFilter,
       states: states
     };
-
-    await this.performSearch(1);
   }
 
   private async setSortBy(sortBy: SortBy) {
+    state.searchPage = 1;
     state.searchFilter = {
       ...state.searchFilter,
       sortBy: sortBy
     };
-
-    await this.performSearch(1);
   }
 
   private async setSortDir(sortDir: SortDir) {
+    state.searchPage = 1;
     state.searchFilter = {
       ...state.searchFilter,
       sortDir: sortDir
     };
-
-    await this.performSearch(1);
   }
 
   private async setViewMode(viewMode: SearchViewMode) {
+    state.searchPage = 1;
     state.searchSettings = {
       ...state.searchSettings,
       viewMode: viewMode
     };
-
-    await this.performSearch(1);
   }
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
@@ -260,7 +213,7 @@ export class PageSearch {
   private async onContentScrolled(e: CustomEvent<ScrollBaseDetail>) {
     if (!e.detail.isScrolling) {
       // Store the current scroll position
-      this.scrollTop = (await this.content.getScrollElement())?.scrollTop;
+      state.searchScrollPosition = (await this.content.getScrollElement())?.scrollTop;
     }
   }
 
@@ -314,12 +267,6 @@ export class PageSearch {
     await menu.onDidDismiss();
 
     selector.removeEventListener('sortByChanged', (e: CustomEvent<SortBy>) => this.setSortBy(e.detail));
-  }
-
-  private getRecipeCount() {
-    return state.searchSettings.viewMode === SearchViewMode.Card
-      ? 24
-      : 60;
   }
 
 }
