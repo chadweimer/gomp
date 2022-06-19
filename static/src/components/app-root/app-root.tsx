@@ -6,7 +6,7 @@ import { appApi, usersApi } from '../../helpers/api';
 import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState, performSearch } from '../../stores/state';
+import state, { clearState, refreshSearchResults } from '../../stores/state';
 
 @Component({
   tag: 'app-root',
@@ -52,7 +52,7 @@ export class AppRoot {
     await this.loadAppConfiguration();
 
     // Make sure there are search results on initial load
-    await performSearch();
+    await refreshSearchResults();
   }
 
   render() {

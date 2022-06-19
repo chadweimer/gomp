@@ -43,10 +43,10 @@ for (const prop of propsToSync) {
 // Sync certain properties from browser storage
 const propsToSearch: (keyof AppState)[] = ['searchSettings', 'searchFilter', 'searchPage'];
 for (const prop of propsToSearch) {
-  onChange(prop, async () => await performSearch());
+  onChange(prop, async () => await refreshSearchResults());
 }
 
-async function performSearch(resetPageState = true) {
+async function refreshSearchResults(resetPageState = true) {
   // Make sure to fill in any missing fields
   const defaultFilter = getDefaultSearchFilter();
   const filter = { ...defaultFilter, ...state.searchFilter };
@@ -80,4 +80,4 @@ async function performSearch(resetPageState = true) {
   }
 }
 
-export { state as default, reset as clearState, performSearch };
+export { state as default, reset as clearState, refreshSearchResults };

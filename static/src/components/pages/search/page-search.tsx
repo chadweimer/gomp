@@ -4,7 +4,7 @@ import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../gene
 import { recipesApi } from '../../../helpers/api';
 import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
-import state from '../../../stores/state';
+import state, { refreshSearchResults } from '../../../stores/state';
 
 @Component({
   tag: 'page-search',
@@ -202,6 +202,10 @@ export class PageSearch {
           },
           'Uploading picture...');
       }
+
+      // Update the search results since the new recipe may be in them,
+      // but don't change the scroll position or page number
+      await refreshSearchResults(false);
 
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
