@@ -19,12 +19,12 @@ type s3Driver struct {
 }
 
 func newS3Driver(bucket string) (Driver, error) {
-	s, err := session.NewSession()
+	sess, err := session.NewSession()
 	if err != nil {
 		return nil, err
 	}
 
-	svc := s3.New(s)
+	svc := s3.New(sess)
 	s3fs := s3fs.New(svc, bucket)
 	return &s3Driver{s3: svc, FS: OnlyFiles(s3fs), bucket: bucket}, nil
 }

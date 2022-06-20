@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// fileSystemDriver is an implementation of Driver that uses the file system.
+// fileSystemDriver is an implementation of Driver that uses the local file system.
 type fileSystemDriver struct {
 	fs.FS
 	rootPath string
@@ -55,7 +55,7 @@ type justFilesFileSystem struct {
 	fs fs.FS
 }
 
-// OnlyFiles constucts a fs.FS that returns os.ErrPermission for directories.
+// OnlyFiles constucts a fs.FS that returns fs.ErrPermission for directories.
 func OnlyFiles(fs fs.FS) fs.FS {
 	return &justFilesFileSystem{fs: fs}
 }
