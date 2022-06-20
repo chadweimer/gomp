@@ -14,7 +14,7 @@ type fileSystemDriver struct {
 }
 
 func newFileSystemDriver(rootPath string) (Driver, error) {
-	return &fileSystemDriver{rootPath: rootPath, FS: OnlyFiles(os.DirFS(rootPath))}, nil
+	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
 }
 
 func (u *fileSystemDriver) Save(filePath string, data []byte) error {
