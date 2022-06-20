@@ -3,7 +3,7 @@ import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
 import { recipesApi, usersApi } from '../../../helpers/api';
 import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
-import state from '../../../stores/state';
+import state, { refreshSearchResults } from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy } from '../../../generated';
 
 @Component({
@@ -142,6 +142,9 @@ export class PageHome {
           'Uploading picture...');
       }
 
+      // Update the search results since the new recipe may be in them
+      await refreshSearchResults();
+
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
@@ -170,7 +173,6 @@ export class PageHome {
     state.searchFilter = {
       ...filter
     };
-    state.searchPage = 1;
     await redirect('/search');
   }
 

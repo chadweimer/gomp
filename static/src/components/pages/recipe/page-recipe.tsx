@@ -3,7 +3,7 @@ import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core'
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
-import state from '../../../stores/state';
+import state, { refreshSearchResults } from '../../../stores/state';
 
 @Component({
   tag: 'page-recipe',
@@ -532,6 +532,9 @@ export class PageRecipe {
           ...data.recipe
         });
         await this.loadRecipe();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -559,6 +562,9 @@ export class PageRecipe {
 
       const { role } = await confirmation.onDidDismiss();
       if (role === 'yes') {
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+
         await redirect('/search');
       }
     });
@@ -586,7 +592,11 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+      if (role === 'yes') {
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 
@@ -612,7 +622,11 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+      if (role === 'yes') {
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 
@@ -743,6 +757,9 @@ export class PageRecipe {
         await this.uploadImage(data.file);
         await this.loadMainImage();
         await this.loadImages();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -750,6 +767,9 @@ export class PageRecipe {
   private async onRatingSelected(e: CustomEvent<number>) {
     await this.setRating(e.detail);
     await this.loadRating();
+
+    // Update the search results since the modified recipe may be in them
+    await refreshSearchResults();
   }
 
   private async onSetMainImageClicked(image: RecipeImage) {
@@ -761,6 +781,7 @@ export class PageRecipe {
           'No',
           {
             text: 'Yes',
+            role: 'yes',
             handler: async () => {
               await this.setMainImage(image);
               await this.loadMainImage();
@@ -773,7 +794,11 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+      if (role === 'yes') {
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 
@@ -786,6 +811,7 @@ export class PageRecipe {
           'No',
           {
             text: 'Yes',
+            role: 'yes',
             handler: async () => {
               await this.deleteImage(image);
               await this.loadMainImage();
@@ -799,7 +825,11 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+      if (role === 'yes') {
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 }

@@ -3,10 +3,10 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, usersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
+import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState } from '../../stores/state';
+import state, { clearState, refreshSearchResults } from '../../stores/state';
 
 @Component({
   tag: 'app-root',
@@ -148,7 +148,7 @@ export class AppRoot {
                   <ion-icon icon="search" slot="start" />
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     onKeyDown={e => this.onSearchKeyDown(e)}
-                    onIonBlur={() => this.restoreSearchQuery()}
+                    onIonBlur={() => this.searchBar.value = state.searchFilter?.query ?? ''}
                     ref={el => this.searchBar = el} />
                   <ion-buttons slot="end" class="ion-no-margin">
                     <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
@@ -246,19 +246,6 @@ export class AppRoot {
     return { redirect: '/' };
   }
 
-  private async performSearch() {
-    state.searchPage = 1;
-
-    const el = await getActiveComponent(this.tabs) as any;
-    if (el && typeof el.performSearch === 'function') {
-      // If the active page is the search page, perform the search right away
-      await el.performSearch();
-    } else {
-      // Otherwise, redirect to it
-      await redirect('/search');
-    }
-  }
-
   private async closeAllOverlays() {
     // Close any and all modals
     const controllers = [
@@ -292,6 +279,11 @@ export class AppRoot {
       } catch (ex) {
         console.error(ex);
       }
+
+      // Make sure there are search results on initial load
+      if (state.searchResults === undefined) {
+        await refreshSearchResults();
+      }
     }
 
     // Let the new page know it's been activated
@@ -306,21 +298,13 @@ export class AppRoot {
         ...state.searchFilter,
         query: this.searchBar.value?.toString()
       };
-      await this.performSearch();
+      await redirect('/search');
     }
-  }
-
-  private restoreSearchQuery() {
-    this.searchBar.value = state.searchFilter?.query ?? '';
   }
 
   private async onSearchClearClicked() {
     state.searchFilter = getDefaultSearchFilter();
-
-    // Workaround for binding to empty string bug
-    this.restoreSearchQuery();
-
-    await this.performSearch();
+    await redirect('/search');
   }
 
   private async onSearchFilterClicked() {
@@ -342,11 +326,7 @@ export class AppRoot {
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (data) {
         state.searchFilter = data.searchFilter;
-
-        // Workaround for binding to empty string bug
-        this.restoreSearchQuery();
-
-        await this.performSearch();
+        await redirect('/search');
       }
     });
   }
