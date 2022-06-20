@@ -36,5 +36,5 @@ func CreateDriver(driver string, path string) (Driver, error) {
 		return newS3Driver(path)
 	}
 
-	return nil, fmt.Errorf("Invalid Driver '%s' specified", driver)
+	return nil, fmt.Errorf("invalid Driver '%s' specified", driver)
 }
