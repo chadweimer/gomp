@@ -75,7 +75,7 @@ async function refreshSearchResults() {
       filter.tags);
     state.searchResults = recipes ?? [];
     state.searchResultCount = total;
-    state.searchNumPages = Math.ceil(total / count);
+    state.searchNumPages = Math.max(Math.ceil(total / count), 1);
   } catch (ex) {
     console.error(ex);
     state.searchResults = [];
