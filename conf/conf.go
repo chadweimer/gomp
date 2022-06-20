@@ -178,10 +178,12 @@ func loadEnv(name string, dest interface{}) {
 		case *[]string:
 			*dest = strings.Split(envStr, ",")
 		case *int:
-			var err error
-			if *dest, err = strconv.Atoi(envStr); err != nil {
-				log.Fatalf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
+			val, err := strconv.Atoi(envStr)
+			if err != nil {
+				log.Printf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
 					name, envStr, err)
+			} else {
+				*dest = val
 			}
 		case *bool:
 			*dest = envStr != "0"

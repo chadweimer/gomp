@@ -27,27 +27,35 @@ func main() {
 	// Write the app metadata to logs
 	log.Printf("Starting application: BuildVersion=%s", metadata.BuildVersion)
 
-	var err error
 	cfg := conf.Load()
-	if err = cfg.Validate(); err != nil {
+	if err := cfg.Validate(); err != nil {
 		log.Fatalf("[config] %s", err.Error())
 	}
-	fs := upload.NewJustFilesFileSystem(http.Dir(cfg.BaseAssetsPath))
-	upl := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
-	dbDriver := db.CreateDriver(
+	fs := upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))
+	upl, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
+	if err != nil {
+		log.Fatalf("[upload] %s", err.Error())
+	}
+	db, err := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
-	defer dbDriver.Close()
+	if err != nil {
+		log.Fatalf("[db] %s", err.Error())
+	}
+	defer db.Close()
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	if cfg.IsDevelopment {
+		if err = cfg.Validate(); err != nil {
+			log.Fatalf("[config] %s", err.Error())
+		}
 		r.Use(middleware.Logger)
 	}
 	r.Use(middleware.StripSlashes)
 
-	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(fs)))
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(upl)))
+	r.Mount("/api", api.NewHandler(cfg, upl, db))
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(upl))))
 	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))

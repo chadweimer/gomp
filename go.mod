@@ -9,6 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/jszwec/s3fs v0.3.2
 	github.com/lib/pq v1.10.6
 	github.com/mattn/go-sqlite3 v1.14.13
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
