@@ -36,12 +36,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("[upload] %s", err.Error())
 	}
-	db, err := db.CreateDriver(
+	dbDriver, err := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
 		log.Fatalf("[db] %s", err.Error())
 	}
-	defer db.Close()
+	defer dbDriver.Close()
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
@@ -53,7 +53,7 @@ func main() {
 	}
 	r.Use(middleware.StripSlashes)
 
-	r.Mount("/api", api.NewHandler(cfg, upl, db))
+	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(upl))))
 	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
