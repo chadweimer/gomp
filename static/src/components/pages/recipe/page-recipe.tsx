@@ -551,6 +551,11 @@ export class PageRecipe {
             role: 'yes',
             handler: async () => {
               await this.deleteRecipe();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+              await redirect('/search');
+
               return true;
             }
           }
@@ -560,13 +565,7 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      const { role } = await confirmation.onDidDismiss();
-      if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-
-        await redirect('/search');
-      }
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -583,6 +582,10 @@ export class PageRecipe {
             handler: async () => {
               await this.setRecipeState(RecipeState.Archived);
               await this.loadRecipe();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           }
@@ -592,11 +595,7 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      const { role } = await confirmation.onDidDismiss();
-      if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -613,6 +612,10 @@ export class PageRecipe {
             handler: async () => {
               await this.setRecipeState(RecipeState.Active);
               await this.loadRecipe();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           },
@@ -622,11 +625,7 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      const { role } = await confirmation.onDidDismiss();
-      if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -785,6 +784,10 @@ export class PageRecipe {
             handler: async () => {
               await this.setMainImage(image);
               await this.loadMainImage();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           }
@@ -794,11 +797,7 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      const { role } = await confirmation.onDidDismiss();
-      if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -816,6 +815,10 @@ export class PageRecipe {
               await this.deleteImage(image);
               await this.loadMainImage();
               await this.loadImages();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           }
@@ -825,11 +828,7 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      const { role } = await confirmation.onDidDismiss();
-      if (role === 'yes') {
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+      await confirmation.onDidDismiss();
     });
   }
 }
