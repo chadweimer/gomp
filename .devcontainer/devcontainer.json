@@ -1,46 +1,59 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.183.0/containers/docker-existing-dockerfile
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.238.0/containers/go
 {
-  "name": "Standard",
-  "build": {
-    "context": "..",
-    "dockerfile": "Dockerfile",
-    "args": {
-      "GO_VERSION": "1.18",
-      "NODE_VERSION": "16",
-      "DEVCONTAINER_VERSION": "0.238.0"
-    }
-  },
-  "extensions": [
-    "42crunch.vscode-openapi",
-    "christian-kohler.npm-intellisense",
-    "davidanson.vscode-markdownlint",
-    "dbaeumer.vscode-eslint",
-    "eamodio.gitlens",
-    "editorconfig.editorconfig",
-    "eg2.vscode-npm-script",
-    "formulahendry.auto-rename-tag",
-    "golang.go",
-    "ms-azuretools.vscode-docker",
-    "redhat.vscode-yaml",
-    "spmeesseman.vscode-taskexplorer",
-    "visualstudioexptteam.vscodeintellicode"
-  ],
-  "forwardPorts": [
-    5000
-  ],
-  "postCreateCommand": "docker buildx create --use --name crossbuild",
-  "runArgs": [
-    "--init",
-    // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
-    "--cap-add=SYS_PTRACE",
-    "--security-opt",
-    "seccomp=unconfined"
-  ],
-  "mounts": [
-    "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
-  ],
-  "remoteUser": "vscode",
-  // Needed for docker
-  "overrideCommand": false
+	"name": "Go",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Update the VARIANT arg to pick a version of Go: 1, 1.18, 1.17
+			// Append -bullseye or -buster to pin to an OS version.
+			// Use -bullseye variants on local arm64/Apple Silicon.
+			"VARIANT": "1.18-bullseye",
+			// Options
+			"NODE_VERSION": "16"
+		}
+	},
+	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"go.toolsManagement.checkForUpdates": "local",
+				"go.useLanguageServer": true,
+				"go.gopath": "/go"
+			},
+
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"42crunch.vscode-openapi",
+				"christian-kohler.npm-intellisense",
+				"davidanson.vscode-markdownlint",
+				"dbaeumer.vscode-eslint",
+				"eamodio.gitlens",
+				"editorconfig.editorconfig",
+				"eg2.vscode-npm-script",
+				"formulahendry.auto-rename-tag",
+				"golang.go",
+				"ms-azuretools.vscode-docker",
+				"redhat.vscode-yaml",
+				"spmeesseman.vscode-taskexplorer",
+				"visualstudioexptteam.vscodeintellicode"
+			]
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "docker buildx create --use --name crossbuild",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode",
+	"features": {
+		"docker-from-docker": "latest"
+	}
 }
