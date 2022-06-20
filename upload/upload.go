@@ -90,7 +90,7 @@ func DeleteAll(driver Driver, recipeId int64) error {
 
 func isImageFile(data []byte) (bool, string) {
 	contentType := http.DetectContentType(data)
-	if strings.Index(contentType, "image/") != -1 {
+	if strings.Contains(contentType, "image/") {
 		return true, contentType
 	}
 	return false, contentType

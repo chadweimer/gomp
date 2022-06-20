@@ -1,8 +1,8 @@
 package upload
 
 import (
-	"log"
-	"net/http"
+	"fmt"
+	"io/fs"
 )
 
 const (
@@ -15,21 +15,26 @@ const (
 
 // Driver represents an abstraction layer for handling file uploads
 type Driver interface {
-	http.FileSystem
+	fs.FS
+
+	// Save creates or overrites a file with the provided binary data.
 	Save(filePath string, data []byte) error
+
+	// Delete deletes the file at the specified path, if it exists.
 	Delete(filePath string) error
+
+	// DeleteAll deletes all files at or under the specified directory path.
 	DeleteAll(dirPath string) error
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(driver string, path string) Driver {
+func CreateDriver(driver string, path string) (Driver, error) {
 	switch driver {
 	case FileSystemDriver:
 		return newFileSystemDriver(path)
 	case S3Driver:
-		return &s3Driver{path}
+		return newS3Driver(path)
 	}
 
-	log.Fatalf("Invalid UploadDriver '%s' specified", driver)
-	return nil
+	return nil, fmt.Errorf("invalid Driver '%s' specified", driver)
 }

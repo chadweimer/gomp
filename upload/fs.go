@@ -1,24 +1,22 @@
 package upload
 
 import (
-	"net/http"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// FileSystemDriver is an implementation of Driver that uses the local file system.
+// fileSystemDriver is an implementation of Driver that uses the local file system.
 type fileSystemDriver struct {
-	http.FileSystem
+	fs.FS
 	rootPath string
 }
 
-// NewFileSystemDriver constucts a FileSystemDriver.
-func newFileSystemDriver(rootPath string) *fileSystemDriver {
-	return &fileSystemDriver{rootPath: rootPath, FileSystem: &JustFilesFileSystem{http.Dir(rootPath)}}
+func newFileSystemDriver(rootPath string) (Driver, error) {
+	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
 }
 
-// Save creates or overrites a file with the provided binary data.
 func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.rootPath, filePath)
@@ -39,7 +37,6 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	return err
 }
 
-// Delete deletes the file at the specified path, if it exists.
 func (u *fileSystemDriver) Delete(filePath string) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.rootPath, filePath)
@@ -47,7 +44,6 @@ func (u *fileSystemDriver) Delete(filePath string) error {
 	return os.Remove(filePath)
 }
 
-// DeleteAll deletes all files at or under the specified directory path.
 func (u *fileSystemDriver) DeleteAll(dirPath string) error {
 	// First prepend the base UploadPath
 	dirPath = filepath.Join(u.rootPath, dirPath)
@@ -55,36 +51,31 @@ func (u *fileSystemDriver) DeleteAll(dirPath string) error {
 	return os.RemoveAll(dirPath)
 }
 
-// JustFilesFileSystem is an implementation of http.FileSystem that does
-// not allow browsing directories.
-type JustFilesFileSystem struct {
-	fs http.FileSystem
+type justFilesFileSystem struct {
+	fs fs.FS
 }
 
-// NewJustFilesFileSystem constucts a JustFilesFileSystem.
-func NewJustFilesFileSystem(fs http.FileSystem) *JustFilesFileSystem {
-	return &JustFilesFileSystem{fs: fs}
+// OnlyFiles constucts a fs.FS that returns fs.ErrPermission for directories.
+func OnlyFiles(fs fs.FS) fs.FS {
+	return &justFilesFileSystem{fs}
 }
 
-// Open returns a http.File is the assocaiated file exists.
-// If the name specifies a directory, an os.ErrPermission
-// error is returned
-func (fs *JustFilesFileSystem) Open(name string) (http.File, error) {
+func (f *justFilesFileSystem) Open(name string) (fs.File, error) {
 	name = strings.TrimPrefix(name, "/")
 
-	f, err := fs.fs.Open(name)
+	file, err := f.fs.Open(name)
 	if err != nil {
 		return nil, err
 	}
 
-	stat, err := f.Stat()
+	stat, err := file.Stat()
 	if err != nil {
 		return nil, err
 	}
 
 	if stat.IsDir() {
-		return nil, os.ErrPermission
+		return nil, fs.ErrPermission
 	}
 
-	return f, nil
+	return file, nil
 }

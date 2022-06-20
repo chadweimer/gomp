@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"log"
+	"fmt"
 
 	"github.com/chadweimer/gomp/generated/models"
 )
@@ -11,7 +11,7 @@ import (
 
 // ErrNotFound represents the error when a database record cannot be
 // found matching the criteria specified by the caller
-var ErrNotFound = errors.New("No record found matching supplied criteria")
+var ErrNotFound = errors.New("no record found matching supplied criteria")
 
 // ---- End Standard Errors ----
 
@@ -29,7 +29,7 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) Driver {
+func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	switch driver {
 	case PostgresDriverName:
 		drv, err := openPostgres(
@@ -37,22 +37,21 @@ func CreateDriver(driver string, connectionString string, migrationsTableName st
 			migrationsTableName,
 			migrationsForceVersion)
 		if err != nil {
-			log.Fatalf("[db] %s", err.Error())
+			return nil, err
 		}
-		return drv
+		return drv, nil
 	case SQLiteDriverName:
 		drv, err := openSQLite(
 			connectionString,
 			migrationsTableName,
 			migrationsForceVersion)
 		if err != nil {
-			log.Fatalf("[db] %s", err.Error())
+			return nil, err
 		}
-		return drv
+		return drv, nil
 	}
 
-	log.Fatalf("Invalid DatabaseDriver '%s' specified", driver)
-	return nil
+	return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.
