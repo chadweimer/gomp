@@ -57,7 +57,7 @@ type justFilesFileSystem struct {
 
 // OnlyFiles constucts a fs.FS that returns fs.ErrPermission for directories.
 func OnlyFiles(fs fs.FS) fs.FS {
-	return &justFilesFileSystem{fs: fs}
+	return &justFilesFileSystem{fs}
 }
 
 func (f *justFilesFileSystem) Open(name string) (fs.File, error) {
