@@ -46,9 +46,6 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	if cfg.IsDevelopment {
-		if err = cfg.Validate(); err != nil {
-			log.Fatalf("[config] %s", err.Error())
-		}
 		r.Use(middleware.Logger)
 	}
 	r.Use(middleware.StripSlashes)
