@@ -57,6 +57,7 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 	}
 
 	r := chi.NewRouter()
+	r.Use(middleware.AllowContentType("application/json"))
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
 	r.Route("/v1", func(r chi.Router) {
 		// Public
