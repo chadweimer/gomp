@@ -107,8 +107,8 @@ func (h *apiHandler) CreatedWithLocation(resp http.ResponseWriter, location stri
 }
 
 func (h *apiHandler) Error(resp http.ResponseWriter, status int, err error) {
-	log.Print(err.Error())
-	h.JSON(resp, status, err.Error())
+	log.Printf("%+v", err)
+	h.JSON(resp, status, http.StatusText(status))
 }
 
 func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
