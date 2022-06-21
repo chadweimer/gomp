@@ -46,6 +46,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	if cfg.IsDevelopment {
+		r.Use(middleware.RequestID)
 		r.Use(middleware.Logger)
 	}
 	r.Use(middleware.StripSlashes)
