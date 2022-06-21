@@ -44,10 +44,11 @@ func main() {
 	defer dbDriver.Close()
 
 	r := chi.NewRouter()
-	r.Use(middleware.Recoverer)
+	r.Use(middleware.RequestID)
 	if cfg.IsDevelopment {
 		r.Use(middleware.Logger)
 	}
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
 	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
