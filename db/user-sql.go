@@ -31,8 +31,8 @@ func (d *sqlUserDriver) Authenticate(username, password string) (*models.User, e
 }
 
 func (d *sqlUserDriver) Create(user *UserWithPasswordHash) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createImpl(user, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.createImpl(user, db)
 	})
 }
 
@@ -73,8 +73,8 @@ func (d *sqlUserDriver) readImpl(id int64, db sqlx.Queryer) (*UserWithPasswordHa
 }
 
 func (d *sqlUserDriver) Update(user *models.User) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.updateImpl(user, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.updateImpl(user, db)
 	})
 }
 
@@ -85,8 +85,8 @@ func (d *sqlUserDriver) updateImpl(user *models.User, db sqlx.Execer) error {
 }
 
 func (d *sqlUserDriver) UpdatePassword(id int64, password, newPassword string) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.updatePasswordImpl(id, password, newPassword, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.updatePasswordImpl(id, password, newPassword, db)
 	})
 }
 
@@ -121,7 +121,7 @@ func (d *sqlUserDriver) readSettingsImpl(id int64, db sqlx.Queryer) (*models.Use
 	userSettings := new(models.UserSettings)
 
 	if err := sqlx.Get(db, userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
-		return nil, mapSqlErrors(err)
+		return nil, err
 	}
 
 	var tags []string
@@ -134,8 +134,8 @@ func (d *sqlUserDriver) readSettingsImpl(id int64, db sqlx.Queryer) (*models.Use
 }
 
 func (d *sqlUserDriver) UpdateSettings(settings *models.UserSettings) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.updateSettingsImpl(settings, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.updateSettingsImpl(settings, db)
 	})
 }
 
@@ -168,14 +168,14 @@ func (d *sqlUserDriver) updateSettingsImpl(settings *models.UserSettings, db sql
 }
 
 func (d *sqlUserDriver) Delete(id int64) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.deleteImpl(id, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.deleteImpl(id, db)
 	})
 }
 
 func (d *sqlUserDriver) deleteImpl(id int64, db sqlx.Execer) error {
 	_, err := db.Exec("DELETE FROM app_user WHERE id = $1", id)
-	return mapSqlErrors(err)
+	return err
 }
 
 func (d *sqlUserDriver) List() (*[]models.User, error) {
@@ -195,8 +195,8 @@ func (d *sqlUserDriver) listImpl(db sqlx.Queryer) (*[]models.User, error) {
 }
 
 func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createSearchFilterImpl(filter, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.createSearchFilterImpl(filter, db)
 	})
 }
 
@@ -297,7 +297,7 @@ func (d *sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sq
 	filter := new(models.SavedSearchFilter)
 
 	if err := sqlx.Get(db, filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId); err != nil {
-		return nil, mapSqlErrors(err)
+		return nil, err
 	}
 
 	var fields []models.SearchField
@@ -334,12 +334,12 @@ func (d *sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sq
 }
 
 func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.updateSearchFilterTx(filter, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.updateSearchFilterImpl(filter, db)
 	})
 }
 
-func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
 	if filter.Id == nil {
 		return errors.New("filter id is required")
 	}
@@ -348,30 +348,30 @@ func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, t
 	}
 
 	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
-	if _, err := d.readSearchFilterImpl(*filter.UserId, *filter.Id, tx); err != nil {
+	if _, err := d.readSearchFilterImpl(*filter.UserId, *filter.Id, db); err != nil {
 		return err
 	}
 
 	stmt := "UPDATE search_filter SET name = $1, query = $2, with_pictures = $3, sort_by = $4, sort_dir = $5 " +
 		"WHERE id = $6 AND user_id = $7"
 
-	_, err := tx.Exec(
+	_, err := db.Exec(
 		stmt, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir, filter.Id, filter.UserId)
 	if err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, tx)
+	err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db)
 	if err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, tx)
+	err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db)
 	if err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, tx)
+	err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
 	if err != nil {
 		return err
 	}
@@ -380,14 +380,14 @@ func (d *sqlUserDriver) updateSearchFilterTx(filter *models.SavedSearchFilter, t
 }
 
 func (d *sqlUserDriver) DeleteSearchFilter(userId int64, filterId int64) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.deleteSearchFilterImpl(userId, filterId, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.deleteSearchFilterImpl(userId, filterId, db)
 	})
 }
 
 func (d *sqlUserDriver) deleteSearchFilterImpl(userId int64, filterId int64, db sqlx.Execer) error {
 	_, err := db.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId)
-	return mapSqlErrors(err)
+	return err
 }
 
 // List retrieves all user's saved search filters.

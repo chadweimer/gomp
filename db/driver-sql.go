@@ -30,13 +30,13 @@ func (d *sqlDriver) Close() error {
 	return nil
 }
 
-func get[T any](db *sqlx.DB, op func(sqlx.Queryer) (T, error)) (T, error) {
+func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
 	t, err := op(db)
 	return t, mapSqlErrors(err)
 }
 
-func (d *sqlDriver) tx(op func(*sqlx.Tx) error) error {
-	tx, err := d.Db.Beginx()
+func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
+	tx, err := db.Beginx()
 	if err != nil {
 		return err
 	}

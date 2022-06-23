@@ -12,8 +12,8 @@ type postgresUserDriver struct {
 }
 
 func (d *postgresUserDriver) Create(user *UserWithPasswordHash) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createImpl(user, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.createImpl(user, db)
 	})
 }
 
@@ -25,8 +25,8 @@ func (d *postgresUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Quer
 }
 
 func (d *postgresUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createSearchFilterImpl(filter, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.createSearchFilterImpl(filter, db)
 	})
 }
 
@@ -44,18 +44,15 @@ func (d *postgresUserDriver) createSearchFilterImpl(filter *models.SavedSearchFi
 		return err
 	}
 
-	err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db)
-	if err != nil {
+	if err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db); err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db)
-	if err != nil {
+	if err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db); err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
-	if err != nil {
+	if err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db); err != nil {
 		return err
 	}
 

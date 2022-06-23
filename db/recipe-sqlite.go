@@ -14,16 +14,16 @@ type sqliteRecipeDriver struct {
 }
 
 func (d *sqliteRecipeDriver) Create(recipe *models.Recipe) error {
-	return d.sqliteDriver.tx(func(tx *sqlx.Tx) error {
-		return d.createtx(recipe, tx)
+	return tx(d.sqliteDriver.Db, func(db sqlx.Ext) error {
+		return d.createImpl(recipe, db)
 	})
 }
 
-func (d *sqliteRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d *sqliteRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Execer) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url) " +
 		"VALUES ($1, $2, $3, $4, $5, $6, $7)"
 
-	res, err := tx.Exec(stmt,
+	res, err := db.Exec(stmt,
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %v", err)
@@ -32,8 +32,7 @@ func (d *sqliteRecipeDriver) createtx(recipe *models.Recipe, tx *sqlx.Tx) error 
 	recipe.Id = &recipeId
 
 	for _, tag := range recipe.Tags {
-		err := d.tags.createtx(recipeId, tag, tx)
-		if err != nil {
+		if err := d.tags.createImpl(recipeId, tag, db); err != nil {
 			return fmt.Errorf("adding tags to new recipe: %v", err)
 		}
 	}
@@ -45,9 +44,8 @@ func (d *sqliteRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
 		"FROM recipe WHERE id = $1"
 	recipe := new(models.Recipe)
-	err := d.sqliteDriver.Db.Get(recipe, stmt, id)
-	if err != nil {
-		return nil, mapSqlErrors(err)
+	if err := d.sqliteDriver.Db.Get(recipe, stmt, id); err != nil {
+		return nil, err
 	}
 
 	tags, err := d.tags.List(id)
@@ -60,17 +58,17 @@ func (d *sqliteRecipeDriver) Read(id int64) (*models.Recipe, error) {
 }
 
 func (d *sqliteRecipeDriver) Update(recipe *models.Recipe) error {
-	return d.sqliteDriver.tx(func(tx *sqlx.Tx) error {
-		return d.updatetx(recipe, tx)
+	return tx(d.sqliteDriver.Db, func(db sqlx.Ext) error {
+		return d.updateImpl(recipe, db)
 	})
 }
 
-func (d *sqliteRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error {
+func (d *sqliteRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) error {
 	if recipe.Id == nil {
 		return errors.New("recipe id is required")
 	}
 
-	_, err := tx.Exec(
+	_, err := db.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7 "+
 			"WHERE id = $8",
@@ -80,13 +78,11 @@ func (d *sqliteRecipeDriver) updatetx(recipe *models.Recipe, tx *sqlx.Tx) error 
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	err = d.tags.deleteAlltx(*recipe.Id, tx)
-	if err != nil {
+	if err = d.tags.deleteAllImpl(*recipe.Id, db); err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
 	}
 	for _, tag := range recipe.Tags {
-		err = d.tags.createtx(*recipe.Id, tag, tx)
-		if err != nil {
+		if err = d.tags.createImpl(*recipe.Id, tag, db); err != nil {
 			return fmt.Errorf("updating tags on recipe: %v", err)
 		}
 	}
@@ -197,8 +193,7 @@ func (d *sqliteRecipeDriver) Find(filter *models.SearchFilter, page int64, count
 	selectArgs := append(whereArgs, count, offset)
 
 	var recipes []models.RecipeCompact
-	err = d.sqliteDriver.Db.Select(&recipes, selectStmt, selectArgs...)
-	if err != nil {
+	if err = d.sqliteDriver.Db.Select(&recipes, selectStmt, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 

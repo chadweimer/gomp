@@ -10,14 +10,14 @@ type postgresNoteDriver struct {
 }
 
 func (d *postgresNoteDriver) Create(note *models.Note) error {
-	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createtx(note, tx)
+	return tx(d.Db, func(db sqlx.Ext) error {
+		return d.createImpl(note, db)
 	})
 }
 
-func (d *postgresNoteDriver) createtx(note *models.Note, tx *sqlx.Tx) error {
+func (d *postgresNoteDriver) createImpl(note *models.Note, db sqlx.Queryer) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
 		"VALUES ($1, $2) RETURNING id"
 
-	return tx.Get(note, stmt, note.RecipeId, note.Text)
+	return sqlx.Get(db, note, stmt, note.RecipeId, note.Text)
 }
