@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,36 +17,55 @@ import (
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
 	// Write logs to Stdout instead of Stderr
-	log.SetOutput(os.Stdout)
+	zerolog.TimeFieldFormat = time.RFC3339Nano
+	log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
+		w.TimeFormat = zerolog.TimeFieldFormat
+	}))
 
 	// Write the app metadata to logs
-	log.Printf("Starting application: BuildVersion=%s", metadata.BuildVersion)
+	log.Info().Str("version", metadata.BuildVersion).Msg("Starting application")
 
 	cfg := conf.Load()
 	if err := cfg.Validate(); err != nil {
-		log.Fatalf("[config] %s", err.Error())
+		log.Fatal().Err(err).Msg("Configuration validation failed")
+		return
 	}
+
 	fs := upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))
 	upl, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	if err != nil {
-		log.Fatalf("[upload] %s", err.Error())
+		log.Fatal().Err(err).Msg("Establishing upload driver failed")
+		return
 	}
 	dbDriver, err := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
-		log.Fatalf("[db] %s", err.Error())
+		log.Fatal().Err(err).Msg("Establishing database driver failed")
+		return
 	}
 	defer dbDriver.Close()
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
-	if cfg.IsDevelopment {
-		r.Use(middleware.Logger)
-	}
+	r.Use(hlog.NewHandler(log.Logger))
+	r.Use(hlog.RequestIDHandler("req-id", http.CanonicalHeaderKey("request-id")))
+	r.Use(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
+		hlog.FromRequest(r).Info().
+			Int("bytes-written", size).
+			Dur("duration", duration).
+			Str("from", r.RemoteAddr).
+			Str("method", r.Method).
+			Str("referer", r.Referer()).
+			Int("status", status).
+			Msg("")
+	}))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
@@ -69,13 +87,13 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	log.Printf("Starting server on port :%d", cfg.Port)
+	log.Info().Int("port", cfg.Port).Msg("Starting server")
 	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: r}
 	go srv.ListenAndServe()
 
 	// Wait for a stop signal
 	<-stopChan
-	log.Print("Shutting down server...")
+	log.Info().Msg("Shutting down server...")
 
 	// Shutdown the http server
 	srv.Shutdown(ctx)

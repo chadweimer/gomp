@@ -3,7 +3,6 @@ package conf
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -12,6 +11,8 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // Config contains the application configuration settings
@@ -85,38 +86,48 @@ func Load() *Config {
 	loadEnv("PORT", &c.Port)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 
+	// Now that we've loaded configuration, we can finish setting up logging
+	if !c.IsDevelopment {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+		log.Logger = log.Level(zerolog.InfoLevel)
+	}
+
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
-		if c.IsDevelopment {
-			log.Print("[config] DATABASE_DRIVER is empty. Will attempt to infer...")
-		}
+		log.Print("DATABASE_DRIVER is empty. Will attempt to infer...")
 		if strings.HasPrefix(c.DatabaseUrl, "file:") {
-			if c.IsDevelopment {
-				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
-			}
+			log.Printf("Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
 			c.DatabaseDriver = db.SQLiteDriverName
 		} else if strings.HasPrefix(c.DatabaseUrl, "postgres:") {
-			if c.IsDevelopment {
-				log.Printf("[config] Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
-			}
+			log.Printf("Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
 			c.DatabaseDriver = db.PostgresDriverName
-		} else if c.IsDevelopment {
-			log.Print("[config] Unable to infer a value for DATABASE_DRIVER")
+		} else {
+			log.Warn().Msg("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
 		}
 	}
 
+	logCtx := log.Info().
+		Int("port", c.Port).
+		Str("upload-driver", c.UploadDriver).
+		Str("upload-path", c.UploadPath).
+		Bool("is-development", c.IsDevelopment).
+		Str("base-assets-path", c.BaseAssetsPath).
+		Str("database-driver", c.DatabaseDriver).
+		Str("migrations-table-name", c.MigrationsTableName).
+		Int("migrations-force-version", c.MigrationsForceVersion)
+
+	// Only print sensitive info in development mode
 	if c.IsDevelopment {
-		log.Printf("[config] Port=%d", c.Port)
-		log.Printf("[config] UploadDriver=%s", c.UploadDriver)
-		log.Printf("[config] UploadPath=%s", c.UploadPath)
-		log.Printf("[config] IsDevelopment=%t", c.IsDevelopment)
-		log.Printf("[config] SecureKeys=%s", c.SecureKeys)
-		log.Printf("[config] BaseAssetsPath=%s", c.BaseAssetsPath)
-		log.Printf("[config] DatabaseDriver=%s", c.DatabaseDriver)
-		log.Printf("[config] DatabaseURL=%s", c.DatabaseUrl)
-		log.Printf("[config] MigrationsTableName=%s", c.MigrationsTableName)
-		log.Printf("[config] MigrationsForceVersion=%d", c.MigrationsForceVersion)
+		keyArr := zerolog.Arr()
+		for _, key := range c.SecureKeys {
+			keyArr.Str(key)
+		}
+		logCtx = logCtx.
+			Str("database-url", c.DatabaseUrl). // This may contain auth information
+			Array("secure-keys", keyArr)
 	}
+
+	logCtx.Msg("")
 
 	return &c
 }
@@ -138,7 +149,7 @@ func (c *Config) Validate() error {
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
 		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
-		log.Printf("[config] WARNING: SECURE_KEY is set to the default value '%s'. It is highly recommended that this be changed to something unique.", defaultSecureKey)
+		log.Warn().Msgf("SECURE_KEY is set to the default value '%s'. It is highly recommended that this be changed to something unique.", defaultSecureKey)
 	}
 
 	if c.BaseAssetsPath == "" {
@@ -180,8 +191,10 @@ func loadEnv(name string, dest interface{}) {
 		case *int:
 			val, err := strconv.Atoi(envStr)
 			if err != nil {
-				log.Printf("[config] Failed to convert %s environment variable to an integer. Value = %s, Error = %s",
-					name, envStr, err)
+				log.Err(err).
+					Str("env", name).
+					Str("val", envStr).
+					Msg("Failed to convert environment variable to an integer")
 			} else {
 				*dest = val
 			}
