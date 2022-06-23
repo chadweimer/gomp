@@ -23,7 +23,7 @@ plugins:
   fixme:
     enabled: true
   gofmt:
-    enabled: true
+    enabled: false # Doesn't understand generics
   govet:
     enabled: true
 ratings:
