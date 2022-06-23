@@ -53,6 +53,11 @@ func main() {
 	defer dbDriver.Close()
 
 	r := chi.NewRouter()
+
+	// Intentionally register this before the logging middleware
+	r.Use(middleware.Heartbeat("/ping"))
+
+	// Add logging of all requests
 	r.Use(middleware.RequestID)
 	r.Use(hlog.NewHandler(log.Logger))
 	r.Use(hlog.RequestIDHandler("req-id", http.CanonicalHeaderKey("request-id")))
@@ -67,9 +72,12 @@ func main() {
 			Str("url", r.URL.String()).
 			Msg("")
 	}))
+
+	// Don't let a panic bring the server down
 	r.Use(middleware.Recoverer)
+
+	// Don't let the extra slash cause problems
 	r.Use(middleware.StripSlashes)
-	r.Use(middleware.Heartbeat("/ping"))
 
 	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
