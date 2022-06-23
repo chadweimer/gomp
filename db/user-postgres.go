@@ -13,24 +13,24 @@ type postgresUserDriver struct {
 
 func (d *postgresUserDriver) Create(user *UserWithPasswordHash) error {
 	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createtx(user, tx)
+		return d.createImpl(user, tx)
 	})
 }
 
-func (d *postgresUserDriver) createtx(user *UserWithPasswordHash, tx *sqlx.Tx) error {
+func (d *postgresUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Queryer) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3) RETURNING id"
 
-	return tx.Get(user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
+	return sqlx.Get(db, user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
 }
 
 func (d *postgresUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) error {
 	return d.tx(func(tx *sqlx.Tx) error {
-		return d.createSearchFilterTx(filter, tx)
+		return d.createSearchFilterImpl(filter, tx)
 	})
 }
 
-func (d *postgresUserDriver) createSearchFilterTx(filter *models.SavedSearchFilter, tx *sqlx.Tx) error {
+func (d *postgresUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
 	if filter.UserId == nil {
 		return errors.New("user id is required")
 	}
@@ -38,23 +38,23 @@ func (d *postgresUserDriver) createSearchFilterTx(filter *models.SavedSearchFilt
 	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
-	err := tx.Get(filter,
+	err := sqlx.Get(db, filter,
 		stmt, filter.UserId, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
 	if err != nil {
 		return err
 	}
 
-	err = d.SetSearchFilterFieldsTx(*filter.Id, filter.Fields, tx)
+	err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db)
 	if err != nil {
 		return err
 	}
 
-	err = d.SetSearchFilterStatesTx(*filter.Id, filter.States, tx)
+	err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db)
 	if err != nil {
 		return err
 	}
 
-	err = d.SetSearchFilterTagsTx(*filter.Id, filter.Tags, tx)
+	err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
 	if err != nil {
 		return err
 	}

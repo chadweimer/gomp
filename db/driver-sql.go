@@ -1,6 +1,8 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/chadweimer/gomp/generated/models"
@@ -28,6 +30,11 @@ func (d *sqlDriver) Close() error {
 	return nil
 }
 
+func get[T any](db *sqlx.DB, op func(sqlx.Queryer) (T, error)) (T, error) {
+	t, err := op(db)
+	return t, mapSqlErrors(err)
+}
+
 func (d *sqlDriver) tx(op func(*sqlx.Tx) error) error {
 	tx, err := d.Db.Beginx()
 	if err != nil {
@@ -45,8 +52,16 @@ func (d *sqlDriver) tx(op func(*sqlx.Tx) error) error {
 
 	if err = op(tx); err != nil {
 		tx.Rollback()
-		return err
+		return mapSqlErrors(err)
 	}
 
 	return tx.Commit()
+}
+
+func mapSqlErrors(err error) error {
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrNotFound
+	}
+
+	return err
 }
