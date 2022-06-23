@@ -60,7 +60,7 @@ func main() {
 	// Add logging of all requests
 	r.Use(middleware.RequestID)
 	r.Use(hlog.NewHandler(log.Logger))
-	r.Use(hlog.RequestIDHandler("req-id", http.CanonicalHeaderKey("request-id")))
+	r.Use(hlog.RequestIDHandler("req-id", ""))
 	r.Use(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
 		hlog.FromRequest(r).Info().
 			Int("bytes-written", size).
