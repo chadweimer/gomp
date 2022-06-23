@@ -64,10 +64,12 @@ func main() {
 			Str("method", r.Method).
 			Str("referer", r.Referer()).
 			Int("status", status).
+			Str("url", r.URL.String()).
 			Msg("")
 	}))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
+	r.Use(middleware.Heartbeat("/ping"))
 
 	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
