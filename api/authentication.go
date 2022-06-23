@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,18 +14,19 @@ import (
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/rs/zerolog/log"
 )
 
 func (h apiHandler) Authenticate(resp http.ResponseWriter, req *http.Request) {
 	var credentials public.Credentials
 	if err := readJSONFromRequest(req, &credentials); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+		h.Error(resp, req, http.StatusBadRequest, err)
 		return
 	}
 
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		h.Error(resp, http.StatusUnauthorized, err)
+		h.Error(resp, req, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (h apiHandler) Authenticate(resp http.ResponseWriter, req *http.Request) {
 	// Always sign using the 0'th key
 	tokenStr, err := token.SignedString([]byte(h.cfg.SecureKeys[0]))
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 	}
 
 	h.OK(resp, public.AuthenticationResponse{Token: tokenStr, User: *user})
@@ -48,21 +48,21 @@ func (h apiHandler) requireAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		token, err := h.getAuthTokenFromRequest(req)
 		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
+			h.Error(resp, req, http.StatusUnauthorized, err)
 			return
 		}
 		userId, err := h.getUserIdFromToken(token)
 		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
+			h.Error(resp, req, http.StatusUnauthorized, err)
 			return
 		}
 
 		user, err := h.verifyUserExists(userId)
 		if err != nil {
 			if err == db.ErrNotFound {
-				h.Error(resp, http.StatusUnauthorized, errors.New("invalid user"))
+				h.Error(resp, req, http.StatusUnauthorized, errors.New("invalid user"))
 			} else {
-				h.Error(resp, http.StatusInternalServerError, err)
+				h.Error(resp, req, http.StatusInternalServerError, err)
 			}
 			return
 		}
@@ -79,7 +79,7 @@ func (h apiHandler) requireAuthentication(next http.Handler) http.Handler {
 func (h apiHandler) requireAdmin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsAdmin(req); err != nil {
-			h.Error(resp, http.StatusForbidden, err)
+			h.Error(resp, req, http.StatusForbidden, err)
 			return
 		}
 
@@ -91,19 +91,19 @@ func (h apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		urlId, err := getUserIdFromUrl(req)
 		if err != nil {
-			h.Error(resp, http.StatusBadRequest, err)
+			h.Error(resp, req, http.StatusBadRequest, err)
 			return
 		}
 		ctxId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
 		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
+			h.Error(resp, req, http.StatusUnauthorized, err)
 			return
 		}
 
 		// Admin privleges are required if the session user doesn't match the request user
 		if urlId != ctxId {
 			if err := h.verifyUserIsAdmin(req); err != nil {
-				h.Error(resp, http.StatusForbidden, err)
+				h.Error(resp, req, http.StatusForbidden, err)
 				return
 			}
 		}
@@ -115,7 +115,7 @@ func (h apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
 func (h apiHandler) requireEditor(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		if err := h.verifyUserIsEditor(req); err != nil {
-			h.Error(resp, http.StatusForbidden, err)
+			h.Error(resp, req, http.StatusForbidden, err)
 			return
 		}
 
@@ -146,7 +146,7 @@ func (h apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, erro
 			return []byte(key), nil
 		})
 		if err != nil {
-			log.Printf("Failed parsing JWT token with key at index %d: '%+v'", i, err)
+			log.Err(err).Int("key-index", i).Msg("Failed parsing JWT token")
 			if i < (len(h.cfg.SecureKeys) + 1) {
 				log.Print("Will try again with next key")
 			}
@@ -162,7 +162,7 @@ func (h apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
 	claims := token.Claims.(*jwt.RegisteredClaims)
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
-		log.Printf("Invalid claims: '%+v'", err)
+		log.Err(err).Msg("Invalid claims")
 		return -1, errors.New("invalid claims")
 	}
 
@@ -177,7 +177,7 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 			return nil, err
 		}
 
-		log.Printf("Error retrieving user info: '%+v'", err)
+		log.Err(err).Msg("Error retrieving user info")
 		return nil, errors.New("error retrieving user info")
 	}
 

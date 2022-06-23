@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/chadweimer/gomp/conf"
@@ -17,6 +16,8 @@ import (
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/hlog"
 )
 
 // ---- Begin Standard Errors ----
@@ -106,13 +107,15 @@ func (h *apiHandler) CreatedWithLocation(resp http.ResponseWriter, location stri
 	resp.WriteHeader(http.StatusCreated)
 }
 
-func (h *apiHandler) Error(resp http.ResponseWriter, status int, err error) {
-	log.Printf("%+v", err)
+func (h *apiHandler) Error(resp http.ResponseWriter, req *http.Request, status int, err error) {
+	hlog.FromRequest(req).UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Err(err)
+	})
 	h.JSON(resp, status, http.StatusText(status))
 }
 
 func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
-	h.Error(resp, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
+	h.Error(resp, req, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
 }
 
 func readJSONFromRequest(req *http.Request, data interface{}) error {

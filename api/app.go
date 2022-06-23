@@ -20,7 +20,7 @@ func (h apiHandler) GetConfiguration(resp http.ResponseWriter, req *http.Request
 	cfg, err := h.db.AppConfiguration().Read()
 	if err != nil {
 		fullErr := fmt.Errorf("reading application configuration: %v", err)
-		h.Error(resp, http.StatusInternalServerError, fullErr)
+		h.Error(resp, req, http.StatusInternalServerError, fullErr)
 		return
 	}
 
@@ -30,12 +30,12 @@ func (h apiHandler) GetConfiguration(resp http.ResponseWriter, req *http.Request
 func (h apiHandler) SaveConfiguration(resp http.ResponseWriter, req *http.Request) {
 	var cfg models.AppConfiguration
 	if err := readJSONFromRequest(req, &cfg); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+		h.Error(resp, req, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.AppConfiguration().Update(&cfg); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 		return
 	}
 

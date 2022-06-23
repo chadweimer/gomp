@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"path/filepath"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 
 	// postgres database driver
 	_ "github.com/lib/pq"
@@ -47,7 +47,7 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 		}
 
 		if i < maxAttempts {
-			log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
+			log.Err(err).Int("attempt", i).Msg("Failed to open database. Will try again...")
 			time.Sleep(500 * time.Millisecond)
 		} else {
 			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%+v'", i, err)

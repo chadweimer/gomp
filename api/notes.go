@@ -9,7 +9,7 @@ import (
 func (h apiHandler) GetNotes(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	notes, err := h.db.Notes().List(recipeId)
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -19,19 +19,19 @@ func (h apiHandler) GetNotes(resp http.ResponseWriter, req *http.Request, recipe
 func (h apiHandler) AddNote(resp http.ResponseWriter, req *http.Request, recipeId int64) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+		h.Error(resp, req, http.StatusBadRequest, err)
 		return
 	}
 
 	if note.RecipeId == nil {
 		note.RecipeId = &recipeId
 	} else if *note.RecipeId != recipeId {
-		h.Error(resp, http.StatusBadRequest, errMismatchedId)
+		h.Error(resp, req, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
 	if err := h.db.Notes().Create(&note); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -41,26 +41,26 @@ func (h apiHandler) AddNote(resp http.ResponseWriter, req *http.Request, recipeI
 func (h apiHandler) SaveNote(resp http.ResponseWriter, req *http.Request, recipeId int64, noteId int64) {
 	var note models.Note
 	if err := readJSONFromRequest(req, &note); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+		h.Error(resp, req, http.StatusBadRequest, err)
 		return
 	}
 
 	if note.Id == nil {
 		note.Id = &noteId
 	} else if *note.Id != noteId {
-		h.Error(resp, http.StatusBadRequest, errMismatchedId)
+		h.Error(resp, req, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
 	if note.RecipeId == nil {
 		note.RecipeId = &recipeId
 	} else if *note.RecipeId != recipeId {
-		h.Error(resp, http.StatusBadRequest, errMismatchedId)
+		h.Error(resp, req, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
 	if err := h.db.Notes().Update(&note); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h apiHandler) SaveNote(resp http.ResponseWriter, req *http.Request, recipe
 
 func (h apiHandler) DeleteNote(resp http.ResponseWriter, req *http.Request, recipeId int64, noteId int64) {
 	if err := h.db.Notes().Delete(recipeId, noteId); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 		return
 	}
 

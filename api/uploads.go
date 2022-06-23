@@ -11,14 +11,14 @@ import (
 func (h apiHandler) Upload(resp http.ResponseWriter, req *http.Request) {
 	file, fileHeader, err := req.FormFile("file_content")
 	if err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+		h.Error(resp, req, http.StatusBadRequest, err)
 		return
 	}
 	defer file.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(resp, req, http.StatusInternalServerError, err)
 		return
 	}
 
