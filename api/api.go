@@ -81,49 +81,49 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 	return r
 }
 
-func (h *apiHandler) JSON(resp http.ResponseWriter, status int, v interface{}) {
-	resp.WriteHeader(status)
-	enc := json.NewEncoder(resp)
+func (h *apiHandler) JSON(w http.ResponseWriter, status int, v interface{}) {
+	w.WriteHeader(status)
+	enc := json.NewEncoder(w)
 	if h.cfg.IsDevelopment {
 		enc.SetIndent("", "  ")
 	}
 	enc.Encode(v)
 }
 
-func (h *apiHandler) OK(resp http.ResponseWriter, v interface{}) {
-	h.JSON(resp, http.StatusOK, v)
+func (h *apiHandler) OK(w http.ResponseWriter, v interface{}) {
+	h.JSON(w, http.StatusOK, v)
 }
 
-func (h *apiHandler) NoContent(resp http.ResponseWriter) {
-	resp.WriteHeader(http.StatusNoContent)
+func (h *apiHandler) NoContent(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) Created(resp http.ResponseWriter, v interface{}) {
-	h.JSON(resp, http.StatusCreated, v)
+func (h *apiHandler) Created(w http.ResponseWriter, v interface{}) {
+	h.JSON(w, http.StatusCreated, v)
 }
 
-func (h *apiHandler) CreatedWithLocation(resp http.ResponseWriter, location string) {
-	resp.Header().Set("Location", location)
-	resp.WriteHeader(http.StatusCreated)
+func (h *apiHandler) CreatedWithLocation(w http.ResponseWriter, location string) {
+	w.Header().Set("Location", location)
+	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *apiHandler) Error(resp http.ResponseWriter, req *http.Request, status int, err error) {
-	hlog.FromRequest(req).UpdateContext(func(c zerolog.Context) zerolog.Context {
+func (h *apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, err error) {
+	hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
 		return c.Err(err)
 	})
-	h.JSON(resp, status, http.StatusText(status))
+	h.JSON(w, status, http.StatusText(status))
 }
 
-func (h *apiHandler) notFound(resp http.ResponseWriter, req *http.Request) {
-	h.Error(resp, req, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", req.URL.Path))
+func (h *apiHandler) notFound(w http.ResponseWriter, r *http.Request) {
+	h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
 }
 
-func readJSONFromRequest(req *http.Request, data interface{}) error {
-	return json.NewDecoder(req.Body).Decode(data)
+func readJSONFromRequest(r *http.Request, data interface{}) error {
+	return json.NewDecoder(r.Body).Decode(data)
 }
 
-func getResourceIdFromCtx(req *http.Request, idKey *contextKey) (int64, error) {
-	idVal := req.Context().Value(idKey)
+func getResourceIdFromCtx(r *http.Request, idKey *contextKey) (int64, error) {
+	idVal := r.Context().Value(idKey)
 
 	id, ok := idVal.(int64)
 	if ok {

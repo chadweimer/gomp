@@ -8,17 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h apiHandler) Upload(resp http.ResponseWriter, req *http.Request) {
-	file, fileHeader, err := req.FormFile("file_content")
+func (h apiHandler) Upload(w http.ResponseWriter, r *http.Request) {
+	file, fileHeader, err := r.FormFile("file_content")
 	if err != nil {
-		h.Error(resp, req, http.StatusBadRequest, err)
+		h.Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 	defer file.Close()
 
 	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		h.Error(resp, req, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -29,5 +29,5 @@ func (h apiHandler) Upload(resp http.ResponseWriter, req *http.Request) {
 	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	h.upl.Save(imageName, uploadedFileData)
 
-	h.CreatedWithLocation(resp, fileUrl)
+	h.CreatedWithLocation(w, fileUrl)
 }

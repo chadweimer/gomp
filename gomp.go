@@ -82,8 +82,8 @@ func main() {
 	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(upl))))
-	r.NotFound(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		http.ServeFile(resp, req, filepath.Join(cfg.BaseAssetsPath, "index.html"))
+	r.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
 
 	// subscribe to SIGINT signals
