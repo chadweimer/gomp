@@ -62,7 +62,9 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 	r.Route("/v1", func(r chi.Router) {
 		// Public
 		public.HandlerFromMux(h, r)
-		r.NotFound(h.notFound)
+		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+			h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
+		})
 
 		r.Group(func(r chi.Router) {
 			r.Use(h.requireAuthentication)
@@ -113,10 +115,6 @@ func (h *apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, e
 	})
 	status = getStatusFromError(err, status)
 	h.JSON(w, status, http.StatusText(status))
-}
-
-func (h *apiHandler) notFound(w http.ResponseWriter, r *http.Request) {
-	h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
 }
 
 func readJSONFromRequest(r *http.Request, data interface{}) error {
