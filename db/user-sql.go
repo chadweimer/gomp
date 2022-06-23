@@ -51,11 +51,8 @@ func (d *sqlUserDriver) createtx(user *UserWithPasswordHash, tx *sqlx.Tx) error 
 func (d *sqlUserDriver) Read(id int64) (*UserWithPasswordHash, error) {
 	user := new(UserWithPasswordHash)
 
-	err := d.Db.Get(user, "SELECT * FROM app_user WHERE id = $1", id)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	} else if err != nil {
-		return nil, err
+	if err := d.Db.Get(user, "SELECT * FROM app_user WHERE id = $1", id); err != nil {
+		return nil, mapSqlErrors(err)
 	}
 
 	return user, nil
@@ -104,7 +101,7 @@ func (d *sqlUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 	userSettings := new(models.UserSettings)
 
 	if err := d.Db.Get(userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
-		return nil, err
+		return nil, mapSqlErrors(err)
 	}
 
 	var tags []string
@@ -158,7 +155,7 @@ func (d *sqlUserDriver) Delete(id int64) error {
 
 func (d *sqlUserDriver) deletetx(id int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec("DELETE FROM app_user WHERE id = $1", id)
-	return err
+	return mapSqlErrors(err)
 }
 
 func (d *sqlUserDriver) List() (*[]models.User, error) {
@@ -278,39 +275,33 @@ func (d *sqlUserDriver) ReadSearchFilter(userId int64, filterId int64) (*models.
 func (d *sqlUserDriver) readSearchFilterTx(userId int64, filterId int64, tx *sqlx.Tx) (*models.SavedSearchFilter, error) {
 	filter := new(models.SavedSearchFilter)
 
-	err := tx.Get(filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	} else if err != nil {
-		return nil, err
+	if err := tx.Get(filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId); err != nil {
+		return nil, mapSqlErrors(err)
 	}
 
 	var fields []models.SearchField
-	err = tx.Select(
+	if err := tx.Select(
 		&fields,
 		"SELECT field_name FROM search_filter_field WHERE search_filter_id = $1",
-		filterId)
-	if err != nil && err != sql.ErrNoRows {
+		filterId); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.Fields = fields
 
 	var states []models.RecipeState
-	err = tx.Select(
+	if err := tx.Select(
 		&states,
 		"SELECT state FROM search_filter_state WHERE search_filter_id = $1",
-		filterId)
-	if err != nil && err != sql.ErrNoRows {
+		filterId); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.States = states
 
 	var tags []string
-	err = tx.Select(
+	if err := tx.Select(
 		&tags,
 		"SELECT tag FROM search_filter_tag WHERE search_filter_id = $1",
-		filterId)
-	if err != nil && err != sql.ErrNoRows {
+		filterId); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.Tags = tags
@@ -372,10 +363,7 @@ func (d *sqlUserDriver) DeleteSearchFilter(userId int64, filterId int64) error {
 
 func (d *sqlUserDriver) deleteSearchFilterTx(userId int64, filterId int64, tx *sqlx.Tx) error {
 	_, err := tx.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId)
-	if err == sql.ErrNoRows {
-		return ErrNotFound
-	}
-	return err
+	return mapSqlErrors(err)
 }
 
 // List retrieves all user's saved search filters.

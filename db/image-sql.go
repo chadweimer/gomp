@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/chadweimer/gomp/generated/models"
@@ -33,11 +32,11 @@ func (d *sqlRecipeImageDriver) Createtx(image *models.RecipeImage, tx *sqlx.Tx) 
 	return d.setMainImageIfNecessary(*image.RecipeId, tx)
 }
 
-func (d *sqlRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
+func (d *sqlRecipeImageDriver) Read(recipeId, id int64) (*models.RecipeImage, error) {
 	var image *models.RecipeImage
 	err := d.tx(func(tx *sqlx.Tx) error {
 		var err error
-		image, err = d.readtx(id, tx)
+		image, err = d.readtx(recipeId, id, tx)
 
 		return err
 	})
@@ -45,13 +44,10 @@ func (d *sqlRecipeImageDriver) Read(id int64) (*models.RecipeImage, error) {
 	return image, err
 }
 
-func (d *sqlRecipeImageDriver) readtx(id int64, tx *sqlx.Tx) (*models.RecipeImage, error) {
+func (d *sqlRecipeImageDriver) readtx(recipeId, id int64, tx *sqlx.Tx) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
-	err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = $1", id)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	} else if err != nil {
-		return nil, err
+	if err := tx.Get(image, "SELECT * FROM recipe_image WHERE id = $1 AND recipe_id = $2", id, recipeId); err != nil {
+		return nil, mapSqlErrors(err)
 	}
 
 	return image, nil
@@ -59,11 +55,8 @@ func (d *sqlRecipeImageDriver) readtx(id int64, tx *sqlx.Tx) (*models.RecipeImag
 
 func (d *sqlRecipeImageDriver) ReadMainImage(recipeId int64) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
-	err := d.Db.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeId)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	} else if err != nil {
-		return nil, err
+	if err := d.Db.Get(image, "SELECT * FROM recipe_image WHERE id = (SELECT image_id FROM recipe WHERE id = $1)", recipeId); err != nil {
+		return nil, mapSqlErrors(err)
 	}
 
 	return image, nil
@@ -93,24 +86,19 @@ func (d *sqlRecipeImageDriver) List(recipeId int64) (*[]models.RecipeImage, erro
 	return &images, nil
 }
 
-func (d *sqlRecipeImageDriver) Delete(id int64) error {
+func (d *sqlRecipeImageDriver) Delete(recipeId, id int64) error {
 	return d.tx(func(tx *sqlx.Tx) error {
-		return d.deletetx(id, tx)
+		return d.deletetx(recipeId, id, tx)
 	})
 }
 
-func (d *sqlRecipeImageDriver) deletetx(id int64, tx *sqlx.Tx) error {
-	image, err := d.readtx(id, tx)
-	if err != nil {
-		return err
-	}
-
-	if _, err = tx.Exec("DELETE FROM recipe_image WHERE id = $1", id); err != nil {
-		return err
+func (d *sqlRecipeImageDriver) deletetx(recipeId, id int64, tx *sqlx.Tx) error {
+	if _, err := tx.Exec("DELETE FROM recipe_image WHERE id = $1 AND recipe_id = $2", id, recipeId); err != nil {
+		return mapSqlErrors(err)
 	}
 
 	// Switch to a new main image if necessary, since the image we just deleted may have been the main image
-	return d.setMainImageIfNecessary(*image.RecipeId, tx)
+	return d.setMainImageIfNecessary(recipeId, tx)
 }
 
 func (d *sqlRecipeImageDriver) setMainImageIfNecessary(recipeId int64, tx *sqlx.Tx) error {

@@ -59,7 +59,7 @@ func (h apiHandler) requireAuthentication(next http.Handler) http.Handler {
 
 		user, err := h.verifyUserExists(userId)
 		if err != nil {
-			if err == db.ErrNotFound {
+			if errors.Is(err, db.ErrNotFound) {
 				h.Error(w, r, http.StatusUnauthorized, errors.New("invalid user"))
 			} else {
 				h.Error(w, r, http.StatusInternalServerError, err)
@@ -173,7 +173,7 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	// Verify this is a valid user in the DB
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
-		if err == db.ErrNotFound {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, err
 		}
 

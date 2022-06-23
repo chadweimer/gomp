@@ -111,6 +111,7 @@ func (h *apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, e
 	hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
 		return c.Err(err)
 	})
+	status = getStatusFromError(err, status)
 	h.JSON(w, status, http.StatusText(status))
 }
 
@@ -136,4 +137,12 @@ func getResourceIdFromCtx(r *http.Request, idKey *contextKey) (int64, error) {
 	}
 
 	return 0, fmt.Errorf("value of %s is not an integer", idKey)
+}
+
+func getStatusFromError(err error, fallback int) int {
+	if errors.Is(err, db.ErrNotFound) {
+		return http.StatusNotFound
+	}
+
+	return fallback
 }

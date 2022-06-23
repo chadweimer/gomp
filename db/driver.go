@@ -211,7 +211,7 @@ type RecipeImageDriver interface {
 
 	// Read retrieves the information about the image from the database, if found.
 	// If no image exists with the specified ID, a ErrNotFound error is returned.
-	Read(id int64) (*models.RecipeImage, error)
+	Read(recipeId, id int64) (*models.RecipeImage, error)
 
 	// ReadMainImage retrieves the information about the main image for the specified recipe
 	// image from the database. If no main image exists, a ErrNotFound error is returned.
@@ -227,7 +227,7 @@ type RecipeImageDriver interface {
 
 	// Delete removes the specified image from the backing store and database
 	// using a dedicated transation that is committed if there are not errors.
-	Delete(id int64) error
+	Delete(recipeId, id int64) error
 
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transation that is committed if there are not errors.

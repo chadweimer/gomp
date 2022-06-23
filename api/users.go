@@ -208,13 +208,8 @@ func (h apiHandler) AddSearchFilter(w http.ResponseWriter, r *http.Request, user
 
 func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
 	filter, err := h.db.Users().ReadSearchFilter(userId, filterId)
-	if err == db.ErrNotFound {
-		h.Error(w, r, http.StatusNotFound, err)
-		return
-	}
 	if err != nil {
-		fullErr := fmt.Errorf("reading filter: %v", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
+		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("reading filter: %v", err))
 		return
 	}
 
@@ -245,12 +240,7 @@ func (h apiHandler) SaveSearchFilter(w http.ResponseWriter, r *http.Request, use
 	}
 
 	// Check that the filter exists for the specified user
-	_, err := h.db.Users().ReadSearchFilter(userId, filterId)
-	if err == db.ErrNotFound {
-		h.Error(w, r, http.StatusNotFound, err)
-		return
-	}
-	if err != nil {
+	if _, err := h.db.Users().ReadSearchFilter(userId, filterId); err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}

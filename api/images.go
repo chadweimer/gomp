@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/google/uuid"
@@ -24,10 +23,6 @@ func (h apiHandler) GetImages(w http.ResponseWriter, r *http.Request, recipeId i
 
 func (h apiHandler) GetMainImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	image, err := h.db.Images().ReadMainImage(recipeId)
-	if err == db.ErrNotFound {
-		h.Error(w, r, http.StatusNotFound, err)
-		return
-	}
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return
@@ -96,9 +91,9 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 	h.Created(w, imageInfo)
 }
 
-func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId int64, imageId int64) {
+func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId, imageId int64) {
 	// We need to read the info about the image for later
-	image, err := h.db.Images().Read(imageId)
+	image, err := h.db.Images().Read(recipeId, imageId)
 	if err != nil {
 		fullErr := fmt.Errorf("failed to get image database record: %v", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
@@ -106,14 +101,14 @@ func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId
 	}
 
 	// Now delete the record from the database
-	if err := h.db.Images().Delete(imageId); err != nil {
+	if err := h.db.Images().Delete(recipeId, imageId); err != nil {
 		fullErr := fmt.Errorf("failed to delete image database record: %v", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
 
 	// And lastly delete the image file itself
-	if err := upload.Delete(h.upl, *image.RecipeId, *image.Name); err != nil {
+	if err := upload.Delete(h.upl, recipeId, *image.Name); err != nil {
 		fullErr := fmt.Errorf("failed to delete image file: %v", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return

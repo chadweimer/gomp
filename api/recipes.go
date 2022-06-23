@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/api/viewer"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/upload"
@@ -59,10 +58,6 @@ func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params viewer.F
 
 func (h apiHandler) GetRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	recipe, err := h.db.Recipes().Read(recipeId)
-	if err == db.ErrNotFound {
-		h.Error(w, r, http.StatusNotFound, err)
-		return
-	}
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return

@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 
@@ -45,10 +44,8 @@ func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 		"FROM recipe WHERE id = $1"
 	recipe := new(models.Recipe)
 	err := d.postgresDriver.Db.Get(recipe, stmt, id)
-	if err == sql.ErrNoRows {
-		return nil, ErrNotFound
-	} else if err != nil {
-		return nil, fmt.Errorf("reading recipe: %v", err)
+	if err != nil {
+		return nil, mapSqlErrors(err)
 	}
 
 	tags, err := d.tags.List(id)
