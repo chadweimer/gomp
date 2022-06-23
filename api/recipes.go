@@ -162,19 +162,3 @@ func (h apiHandler) SetRating(w http.ResponseWriter, r *http.Request, recipeId i
 
 	h.NoContent(w)
 }
-
-func asStates(arr []string) []models.RecipeState {
-	states := make([]models.RecipeState, len(arr))
-	for i, val := range arr {
-		states[i] = models.RecipeState(val)
-	}
-	return states
-}
-
-func asFields(arr []string) []models.SearchField {
-	fields := make([]models.SearchField, len(arr))
-	for i, val := range arr {
-		fields[i] = models.SearchField(val)
-	}
-	return fields
-}
