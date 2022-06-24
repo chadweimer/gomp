@@ -88,7 +88,7 @@ func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v int
 		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
 			return c.AnErr("encode-error", err).Int("original-status", status)
 		})
-		status = getStatusFromError(err, status)
+		status = http.StatusInternalServerError
 	}
 	w.WriteHeader(status)
 }
