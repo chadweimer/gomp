@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -143,7 +144,7 @@ func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string
 	} else {
 		err = m.Up()
 	}
-	if err != nil && err != migrate.ErrNoChange {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 
@@ -151,13 +152,13 @@ func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string
 }
 
 func lockPostgres(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_lock(1)`
+	stmt := "SELECT pg_advisory_lock(1)"
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err
 }
 
 func unlockPostgres(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_unlock(1)`
+	stmt := "SELECT pg_advisory_unlock(1)"
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err
 }

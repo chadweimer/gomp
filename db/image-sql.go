@@ -33,15 +33,9 @@ func (d *sqlRecipeImageDriver) CreateImpl(image *models.RecipeImage, db sqlx.Exe
 }
 
 func (d *sqlRecipeImageDriver) Read(recipeId, id int64) (*models.RecipeImage, error) {
-	var image *models.RecipeImage
-	err := tx(d.Db, func(db sqlx.Ext) error {
-		var err error
-		image, err = d.readImpl(recipeId, id, db)
-
-		return err
+	return get(d.Db, func(db sqlx.Queryer) (*models.RecipeImage, error) {
+		return d.readImpl(recipeId, id, db)
 	})
-
-	return image, err
 }
 
 func (d *sqlRecipeImageDriver) readImpl(recipeId, id int64, db sqlx.Queryer) (*models.RecipeImage, error) {

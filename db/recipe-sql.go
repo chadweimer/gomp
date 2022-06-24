@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/chadweimer/gomp/generated/models"
@@ -48,7 +49,7 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 		var count int64
 		err := sqlx.Get(db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
-		if err == sql.ErrNoRows || count == 0 {
+		if errors.Is(err, sql.ErrNoRows) || count == 0 {
 			_, err = db.Exec(
 				"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
 			if err != nil {

@@ -76,8 +76,7 @@ func (d *postgresRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer)
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	err = d.tags.deleteAllImpl(*recipe.Id, db)
-	if err != nil {
+	if err = d.tags.deleteAllImpl(*recipe.Id, db); err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
 	}
 	for _, tag := range recipe.Tags {

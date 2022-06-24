@@ -96,8 +96,7 @@ func (d *sqlUserDriver) updatePasswordImpl(id int64, password, newPassword strin
 	if err != nil {
 		return err
 	}
-	err = verifyPassword(user, password)
-	if err != nil {
+	if err = verifyPassword(user, password); err != nil {
 		return err
 	}
 
@@ -212,18 +211,15 @@ func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter,
 	filterId, _ := res.LastInsertId()
 	filter.Id = &filterId
 
-	err = d.setSearchFilterFieldsImpl(filterId, filter.Fields, db)
-	if err != nil {
+	if err = d.setSearchFilterFieldsImpl(filterId, filter.Fields, db); err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterStatesImpl(filterId, filter.States, db)
-	if err != nil {
+	if err = d.setSearchFilterStatesImpl(filterId, filter.States, db); err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterTagsImpl(filterId, filter.Tags, db)
-	if err != nil {
+	if err = d.setSearchFilterTagsImpl(filterId, filter.Tags, db); err != nil {
 		return err
 	}
 
@@ -232,8 +228,7 @@ func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter,
 
 func (d *sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []models.SearchField, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	_, err := db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterId)
-	if err != nil {
+	if _, err := db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterId); err != nil {
 		return err
 	}
 
@@ -251,8 +246,7 @@ func (d *sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []model
 
 func (d *sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []models.RecipeState, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	_, err := db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterId)
-	if err != nil {
+	if _, err := db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterId); err != nil {
 		return err
 	}
 
@@ -270,8 +264,7 @@ func (d *sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []model
 
 func (d *sqlUserDriver) setSearchFilterTagsImpl(filterId int64, tags []string, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	_, err := db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterId)
-	if err != nil {
+	if _, err := db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterId); err != nil {
 		return err
 	}
 
@@ -361,18 +354,15 @@ func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter,
 		return err
 	}
 
-	err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db)
-	if err != nil {
+	if err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db); err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db)
-	if err != nil {
+	if err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db); err != nil {
 		return err
 	}
 
-	err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
-	if err != nil {
+	if err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db); err != nil {
 		return err
 	}
 
