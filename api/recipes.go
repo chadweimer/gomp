@@ -53,7 +53,7 @@ func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params viewer.F
 		return
 	}
 
-	h.OK(w, viewer.SearchResult{Recipes: *recipes, Total: total})
+	h.OK(w, r, viewer.SearchResult{Recipes: *recipes, Total: total})
 }
 
 func (h apiHandler) GetRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
@@ -63,7 +63,7 @@ func (h apiHandler) GetRecipe(w http.ResponseWriter, r *http.Request, recipeId i
 		return
 	}
 
-	h.OK(w, recipe)
+	h.OK(w, r, recipe)
 }
 
 func (h apiHandler) AddRecipe(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +78,7 @@ func (h apiHandler) AddRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.Created(w, recipe)
+	h.Created(w, r, recipe)
 }
 
 func (h apiHandler) SaveRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
@@ -140,7 +140,7 @@ func (h apiHandler) GetRating(w http.ResponseWriter, r *http.Request, recipeId i
 		return
 	}
 
-	h.OK(w, rating)
+	h.OK(w, r, rating)
 }
 
 func (h apiHandler) SetRating(w http.ResponseWriter, r *http.Request, recipeId int64) {

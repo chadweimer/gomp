@@ -15,7 +15,7 @@ func (d *sqlLinkDriver) Create(recipeId, destRecipeId int64) error {
 	})
 }
 
-func (d *sqlLinkDriver) createImpl(recipeId, destRecipeId int64, db sqlx.Execer) error {
+func (*sqlLinkDriver) createImpl(recipeId, destRecipeId int64, db sqlx.Execer) error {
 	stmt := "INSERT INTO recipe_link (recipe_id, dest_recipe_id) VALUES ($1, $2)"
 
 	_, err := db.Exec(stmt, recipeId, destRecipeId)
@@ -28,7 +28,7 @@ func (d *sqlLinkDriver) Delete(recipeId, destRecipeId int64) error {
 	})
 }
 
-func (d *sqlLinkDriver) deleteImpl(recipeId, destRecipeId int64, db sqlx.Execer) error {
+func (*sqlLinkDriver) deleteImpl(recipeId, destRecipeId int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"DELETE FROM recipe_link WHERE (recipe_id = $1 AND dest_recipe_id = $2) OR (recipe_id = $2 AND dest_recipe_id = $1)",
 		recipeId,

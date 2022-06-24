@@ -15,7 +15,7 @@ func (d *postgresNoteDriver) Create(note *models.Note) error {
 	})
 }
 
-func (d *postgresNoteDriver) createImpl(note *models.Note, db sqlx.Queryer) error {
+func (*postgresNoteDriver) createImpl(note *models.Note, db sqlx.Queryer) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
 		"VALUES ($1, $2) RETURNING id"
 

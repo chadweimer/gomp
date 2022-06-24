@@ -18,7 +18,7 @@ func (h apiHandler) GetImages(w http.ResponseWriter, r *http.Request, recipeId i
 		return
 	}
 
-	h.OK(w, images)
+	h.OK(w, r, images)
 }
 
 func (h apiHandler) GetMainImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
@@ -28,7 +28,7 @@ func (h apiHandler) GetMainImage(w http.ResponseWriter, r *http.Request, recipeI
 		return
 	}
 
-	h.OK(w, image)
+	h.OK(w, r, image)
 }
 
 func (h apiHandler) SetMainImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
@@ -88,7 +88,7 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 		return
 	}
 
-	h.Created(w, imageInfo)
+	h.Created(w, r, imageInfo)
 }
 
 func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId, imageId int64) {

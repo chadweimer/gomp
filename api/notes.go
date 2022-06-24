@@ -13,7 +13,7 @@ func (h apiHandler) GetNotes(w http.ResponseWriter, r *http.Request, recipeId in
 		return
 	}
 
-	h.OK(w, notes)
+	h.OK(w, r, notes)
 }
 
 func (h apiHandler) AddNote(w http.ResponseWriter, r *http.Request, recipeId int64) {
@@ -35,7 +35,7 @@ func (h apiHandler) AddNote(w http.ResponseWriter, r *http.Request, recipeId int
 		return
 	}
 
-	h.Created(w, note)
+	h.Created(w, r, note)
 }
 
 func (h apiHandler) SaveNote(w http.ResponseWriter, r *http.Request, recipeId int64, noteId int64) {

@@ -83,38 +83,39 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 	return r
 }
 
-func (h *apiHandler) JSON(w http.ResponseWriter, status int, v interface{}) {
-	w.WriteHeader(status)
-	enc := json.NewEncoder(w)
-	if h.cfg.IsDevelopment {
-		enc.SetIndent("", "  ")
+func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
+			return c.AnErr("encode-error", err).Int("original-status", status)
+		})
+		status = getStatusFromError(err, status)
 	}
-	enc.Encode(v)
+	w.WriteHeader(status)
 }
 
-func (h *apiHandler) OK(w http.ResponseWriter, v interface{}) {
-	h.JSON(w, http.StatusOK, v)
+func (h apiHandler) OK(w http.ResponseWriter, r *http.Request, v interface{}) {
+	h.JSON(w, r, http.StatusOK, v)
 }
 
-func (h *apiHandler) NoContent(w http.ResponseWriter) {
+func (apiHandler) NoContent(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) Created(w http.ResponseWriter, v interface{}) {
-	h.JSON(w, http.StatusCreated, v)
+func (h apiHandler) Created(w http.ResponseWriter, r *http.Request, v interface{}) {
+	h.JSON(w, r, http.StatusCreated, v)
 }
 
-func (h *apiHandler) CreatedWithLocation(w http.ResponseWriter, location string) {
+func (apiHandler) CreatedWithLocation(w http.ResponseWriter, location string) {
 	w.Header().Set("Location", location)
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, err error) {
+func (h apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, err error) {
 	hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
 		return c.Err(err)
 	})
 	status = getStatusFromError(err, status)
-	h.JSON(w, status, http.StatusText(status))
+	h.JSON(w, r, status, http.StatusText(status))
 }
 
 func readJSONFromRequest(r *http.Request, data interface{}) error {

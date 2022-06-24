@@ -36,7 +36,7 @@ func (d *sqlUserDriver) Create(user *UserWithPasswordHash) error {
 	})
 }
 
-func (d *sqlUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Execer) error {
+func (*sqlUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Execer) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3)"
 
@@ -62,7 +62,7 @@ func (d *sqlUserDriver) Read(id int64) (*UserWithPasswordHash, error) {
 	})
 }
 
-func (d *sqlUserDriver) readImpl(id int64, db sqlx.Queryer) (*UserWithPasswordHash, error) {
+func (*sqlUserDriver) readImpl(id int64, db sqlx.Queryer) (*UserWithPasswordHash, error) {
 	user := new(UserWithPasswordHash)
 
 	if err := sqlx.Get(db, user, "SELECT * FROM app_user WHERE id = $1", id); err != nil {
@@ -78,7 +78,7 @@ func (d *sqlUserDriver) Update(user *models.User) error {
 	})
 }
 
-func (d *sqlUserDriver) updateImpl(user *models.User, db sqlx.Execer) error {
+func (*sqlUserDriver) updateImpl(user *models.User, db sqlx.Execer) error {
 	_, err := db.Exec("UPDATE app_user SET username = $1, access_level = $2 WHERE ID = $3",
 		user.Username, user.AccessLevel, user.Id)
 	return err
@@ -116,7 +116,7 @@ func (d *sqlUserDriver) ReadSettings(id int64) (*models.UserSettings, error) {
 	})
 }
 
-func (d *sqlUserDriver) readSettingsImpl(id int64, db sqlx.Queryer) (*models.UserSettings, error) {
+func (*sqlUserDriver) readSettingsImpl(id int64, db sqlx.Queryer) (*models.UserSettings, error) {
 	userSettings := new(models.UserSettings)
 
 	if err := sqlx.Get(db, userSettings, "SELECT * FROM app_user_settings WHERE user_id = $1", id); err != nil {
@@ -138,7 +138,7 @@ func (d *sqlUserDriver) UpdateSettings(settings *models.UserSettings) error {
 	})
 }
 
-func (d *sqlUserDriver) updateSettingsImpl(settings *models.UserSettings, db sqlx.Execer) error {
+func (*sqlUserDriver) updateSettingsImpl(settings *models.UserSettings, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"UPDATE app_user_settings "+
 			"SET home_title = $1, home_image_url = $2 WHERE user_id = $3",
@@ -172,7 +172,7 @@ func (d *sqlUserDriver) Delete(id int64) error {
 	})
 }
 
-func (d *sqlUserDriver) deleteImpl(id int64, db sqlx.Execer) error {
+func (*sqlUserDriver) deleteImpl(id int64, db sqlx.Execer) error {
 	_, err := db.Exec("DELETE FROM app_user WHERE id = $1", id)
 	return err
 }
@@ -183,7 +183,7 @@ func (d *sqlUserDriver) List() (*[]models.User, error) {
 	})
 }
 
-func (d *sqlUserDriver) listImpl(db sqlx.Queryer) (*[]models.User, error) {
+func (*sqlUserDriver) listImpl(db sqlx.Queryer) (*[]models.User, error) {
 	var users []models.User
 
 	if err := sqlx.Select(db, &users, "SELECT id, username, access_level FROM app_user ORDER BY username ASC"); err != nil {
@@ -219,14 +219,10 @@ func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter,
 		return err
 	}
 
-	if err = d.setSearchFilterTagsImpl(filterId, filter.Tags, db); err != nil {
-		return err
-	}
-
-	return nil
+	return d.setSearchFilterTagsImpl(filterId, filter.Tags, db)
 }
 
-func (d *sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []models.SearchField, db sqlx.Execer) error {
+func (*sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []models.SearchField, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	if _, err := db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterId); err != nil {
 		return err
@@ -244,7 +240,7 @@ func (d *sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []model
 	return nil
 }
 
-func (d *sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []models.RecipeState, db sqlx.Execer) error {
+func (*sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []models.RecipeState, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	if _, err := db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterId); err != nil {
 		return err
@@ -262,7 +258,7 @@ func (d *sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []model
 	return nil
 }
 
-func (d *sqlUserDriver) setSearchFilterTagsImpl(filterId int64, tags []string, db sqlx.Execer) error {
+func (*sqlUserDriver) setSearchFilterTagsImpl(filterId int64, tags []string, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	if _, err := db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterId); err != nil {
 		return err
@@ -286,7 +282,7 @@ func (d *sqlUserDriver) ReadSearchFilter(userId int64, filterId int64) (*models.
 	})
 }
 
-func (d *sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx.Queryer) (*models.SavedSearchFilter, error) {
+func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx.Queryer) (*models.SavedSearchFilter, error) {
 	filter := new(models.SavedSearchFilter)
 
 	if err := sqlx.Get(db, filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId); err != nil {
@@ -362,11 +358,7 @@ func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter,
 		return err
 	}
 
-	if err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db); err != nil {
-		return err
-	}
-
-	return nil
+	return d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
 }
 
 func (d *sqlUserDriver) DeleteSearchFilter(userId int64, filterId int64) error {
@@ -375,7 +367,7 @@ func (d *sqlUserDriver) DeleteSearchFilter(userId int64, filterId int64) error {
 	})
 }
 
-func (d *sqlUserDriver) deleteSearchFilterImpl(userId int64, filterId int64, db sqlx.Execer) error {
+func (*sqlUserDriver) deleteSearchFilterImpl(userId int64, filterId int64, db sqlx.Execer) error {
 	_, err := db.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId)
 	return err
 }

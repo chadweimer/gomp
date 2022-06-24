@@ -41,7 +41,7 @@ func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 		h.Error(w, r, http.StatusInternalServerError, err)
 	}
 
-	h.OK(w, public.AuthenticationResponse{Token: tokenStr, User: *user})
+	h.OK(w, r, public.AuthenticationResponse{Token: tokenStr, User: *user})
 }
 
 func (h apiHandler) requireAuthentication(next http.Handler) http.Handler {
@@ -158,7 +158,7 @@ func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error)
 	return nil, errors.New("invalid token")
 }
 
-func (h apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
+func (apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
 	claims := token.Claims.(*jwt.RegisteredClaims)
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
@@ -184,7 +184,7 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	return &user.User, nil
 }
 
-func (h apiHandler) verifyUserIsAdmin(r *http.Request) error {
+func (apiHandler) verifyUserIsAdmin(r *http.Request) error {
 	accessLevel := r.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
 	if accessLevel != models.Admin {
 		return fmt.Errorf("endpoint '%s' requires admin rights", r.URL.Path)
@@ -193,7 +193,7 @@ func (h apiHandler) verifyUserIsAdmin(r *http.Request) error {
 	return nil
 }
 
-func (h apiHandler) verifyUserIsEditor(r *http.Request) error {
+func (apiHandler) verifyUserIsEditor(r *http.Request) error {
 	accessLevel := r.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
 	if accessLevel != models.Admin && accessLevel != models.Editor {
 		return fmt.Errorf("endpoint '%s' requires edit rights", r.URL.Path)

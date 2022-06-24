@@ -15,7 +15,7 @@ func (d *sqlNoteDriver) Create(note *models.Note) error {
 	})
 }
 
-func (d *sqlNoteDriver) createImpl(note *models.Note, db sqlx.Execer) error {
+func (*sqlNoteDriver) createImpl(note *models.Note, db sqlx.Execer) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
 		"VALUES ($1, $2)"
 
@@ -35,7 +35,7 @@ func (d *sqlNoteDriver) Update(note *models.Note) error {
 	})
 }
 
-func (d *sqlNoteDriver) updateImpl(note *models.Note, db sqlx.Execer) error {
+func (*sqlNoteDriver) updateImpl(note *models.Note, db sqlx.Execer) error {
 	_, err := db.Exec("UPDATE recipe_note SET note = $1 WHERE ID = $2 AND recipe_id = $3",
 		note.Text, note.Id, note.RecipeId)
 	return err
@@ -47,7 +47,7 @@ func (d *sqlNoteDriver) Delete(recipeId, noteId int64) error {
 	})
 }
 
-func (d *sqlNoteDriver) deleteImpl(recipeId, noteId int64, db sqlx.Execer) error {
+func (*sqlNoteDriver) deleteImpl(recipeId, noteId int64, db sqlx.Execer) error {
 	_, err := db.Exec("DELETE FROM recipe_note WHERE id = $1 AND recipe_id = $2", noteId, recipeId)
 	return err
 }
@@ -58,7 +58,7 @@ func (d *sqlNoteDriver) DeleteAll(recipeId int64) error {
 	})
 }
 
-func (d *sqlNoteDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
+func (*sqlNoteDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"DELETE FROM recipe_note WHERE recipe_id = $1",
 		recipeId)

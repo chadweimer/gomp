@@ -73,11 +73,7 @@ func Delete(driver Driver, recipeId int64, imageName string) error {
 		return err
 	}
 	thumbPath := filepath.Join(getDirPathForThumbnail(recipeId), imageName)
-	if err := driver.Delete(thumbPath); err != nil {
-		return err
-	}
-
-	return nil
+	return driver.Delete(thumbPath)
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.

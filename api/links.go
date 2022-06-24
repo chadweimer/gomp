@@ -11,7 +11,7 @@ func (h apiHandler) GetLinks(w http.ResponseWriter, r *http.Request, recipeId in
 		return
 	}
 
-	h.OK(w, recipes)
+	h.OK(w, r, recipes)
 }
 
 func (h apiHandler) AddLink(w http.ResponseWriter, r *http.Request, recipeId int64, destRecipeId int64) {

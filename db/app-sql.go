@@ -27,7 +27,7 @@ func (d *sqlAppConfigurationDriver) Update(cfg *models.AppConfiguration) error {
 	})
 }
 
-func (d *sqlAppConfigurationDriver) updateImpl(cfg *models.AppConfiguration, db sqlx.Execer) error {
+func (*sqlAppConfigurationDriver) updateImpl(cfg *models.AppConfiguration, db sqlx.Execer) error {
 	_, err := db.Exec("UPDATE app_configuration SET title = $1", cfg.Title)
 	return err
 }

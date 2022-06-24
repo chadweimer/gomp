@@ -17,7 +17,7 @@ func (d *postgresUserDriver) Create(user *UserWithPasswordHash) error {
 	})
 }
 
-func (d *postgresUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Queryer) error {
+func (*postgresUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Queryer) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3) RETURNING id"
 
@@ -52,9 +52,5 @@ func (d *postgresUserDriver) createSearchFilterImpl(filter *models.SavedSearchFi
 		return err
 	}
 
-	if err = d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db); err != nil {
-		return err
-	}
-
-	return nil
+	return d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
 }

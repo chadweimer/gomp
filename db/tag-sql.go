@@ -14,7 +14,7 @@ func (d *sqlTagDriver) Create(recipeId int64, tag string) error {
 	})
 }
 
-func (d *sqlTagDriver) createImpl(recipeId int64, tag string, db sqlx.Execer) error {
+func (*sqlTagDriver) createImpl(recipeId int64, tag string, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeId, tag)
@@ -27,7 +27,7 @@ func (d *sqlTagDriver) DeleteAll(recipeId int64) error {
 	})
 }
 
-func (d *sqlTagDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
+func (*sqlTagDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"DELETE FROM recipe_tag WHERE recipe_id = $1",
 		recipeId)

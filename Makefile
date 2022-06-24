@@ -34,6 +34,7 @@ OAPI_CFGS := $(shell find oapi-codegen -type f -name "*.yaml")
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
+	go install github.com/mgechev/revive@v1.2.1
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -75,6 +76,8 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 .PHONY: lint-server
 lint-server: $(CODEGEN_DIR)
 	go vet ./...
+	revive -config=revive.toml -exclude=generated/... ./...
+
 
 
 # ---- BUILD ----

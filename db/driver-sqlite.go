@@ -103,7 +103,7 @@ func (d *sqliteDriver) Users() UserDriver {
 	return d.users
 }
 
-func (d *sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (*sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return err

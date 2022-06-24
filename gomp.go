@@ -106,5 +106,8 @@ func main() {
 	log.Info().Msg("Shutting down server...")
 
 	// Shutdown the http server
-	srv.Shutdown(ctx)
+	if err := srv.Shutdown(ctx); err != nil {
+		// We're already going down. Time to panic
+		panic(err)
+	}
 }

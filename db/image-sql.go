@@ -38,7 +38,7 @@ func (d *sqlRecipeImageDriver) Read(recipeId, id int64) (*models.RecipeImage, er
 	})
 }
 
-func (d *sqlRecipeImageDriver) readImpl(recipeId, id int64, db sqlx.Queryer) (*models.RecipeImage, error) {
+func (*sqlRecipeImageDriver) readImpl(recipeId, id int64, db sqlx.Queryer) (*models.RecipeImage, error) {
 	image := new(models.RecipeImage)
 	if err := sqlx.Get(db, image, "SELECT * FROM recipe_image WHERE id = $1 AND recipe_id = $2", id, recipeId); err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (d *sqlRecipeImageDriver) UpdateMainImage(image *models.RecipeImage) error 
 	})
 }
 
-func (d *sqlRecipeImageDriver) updateMainImageImpl(image *models.RecipeImage, db sqlx.Execer) error {
+func (*sqlRecipeImageDriver) updateMainImageImpl(image *models.RecipeImage, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"UPDATE recipe SET image_id = $1 WHERE id = $2",
 		image.Id, image.RecipeId)
@@ -99,7 +99,7 @@ func (d *sqlRecipeImageDriver) deleteImpl(recipeId, id int64, db sqlx.Execer) er
 	return d.setMainImageIfNecessary(recipeId, db)
 }
 
-func (d *sqlRecipeImageDriver) setMainImageIfNecessary(recipeId int64, db sqlx.Execer) error {
+func (*sqlRecipeImageDriver) setMainImageIfNecessary(recipeId int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"UPDATE recipe "+
 			"SET image_id = (SELECT recipe_image.id FROM recipe_image WHERE recipe_image.recipe_id = recipe.id LIMIT 1)"+
@@ -114,7 +114,7 @@ func (d *sqlRecipeImageDriver) DeleteAll(recipeId int64) error {
 	})
 }
 
-func (d *sqlRecipeImageDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
+func (*sqlRecipeImageDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"DELETE FROM recipe_image WHERE recipe_id = $1",
 		recipeId)

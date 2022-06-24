@@ -30,7 +30,7 @@ func (h apiHandler) GetUser(w http.ResponseWriter, r *http.Request, userId int64
 		return
 	}
 
-	h.OK(w, user)
+	h.OK(w, r, user)
 }
 
 func (h apiHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +41,7 @@ func (h apiHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.OK(w, users)
+	h.OK(w, r, users)
 }
 
 func (h apiHandler) AddUser(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +67,7 @@ func (h apiHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.Created(w, user)
+	h.Created(w, r, user)
 }
 
 func (h apiHandler) SaveUser(w http.ResponseWriter, r *http.Request, userId int64) {
@@ -146,7 +146,7 @@ func (h apiHandler) GetSettings(w http.ResponseWriter, r *http.Request, userId i
 		}
 	}
 
-	h.OK(w, userSettings)
+	h.OK(w, r, userSettings)
 }
 
 func (h apiHandler) SaveSettings(w http.ResponseWriter, r *http.Request, userId int64) {
@@ -181,7 +181,7 @@ func (h apiHandler) GetSearchFilters(w http.ResponseWriter, r *http.Request, use
 		return
 	}
 
-	h.OK(w, searches)
+	h.OK(w, r, searches)
 }
 
 func (h apiHandler) AddSearchFilter(w http.ResponseWriter, r *http.Request, userId int64) {
@@ -203,7 +203,7 @@ func (h apiHandler) AddSearchFilter(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	h.Created(w, filter)
+	h.Created(w, r, filter)
 }
 
 func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
@@ -213,7 +213,7 @@ func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, user
 		return
 	}
 
-	h.OK(w, filter)
+	h.OK(w, r, filter)
 }
 
 func (h apiHandler) SaveSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {

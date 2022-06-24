@@ -21,7 +21,7 @@ func (d *sqlRecipeDriver) Delete(id int64) error {
 	})
 }
 
-func (d *sqlRecipeDriver) deleteImpl(id int64, db sqlx.Execer) error {
+func (*sqlRecipeDriver) deleteImpl(id int64, db sqlx.Execer) error {
 	if _, err := db.Exec("DELETE FROM recipe WHERE id = $1", id); err != nil {
 		return fmt.Errorf("deleting recipe: %v", err)
 	}

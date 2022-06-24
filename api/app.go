@@ -13,7 +13,7 @@ func (h apiHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 		Version: &metadata.BuildVersion,
 	}
 
-	h.OK(w, info)
+	h.OK(w, r, info)
 }
 
 func (h apiHandler) GetConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,7 @@ func (h apiHandler) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.OK(w, cfg)
+	h.OK(w, r, cfg)
 }
 
 func (h apiHandler) SaveConfiguration(w http.ResponseWriter, r *http.Request) {
