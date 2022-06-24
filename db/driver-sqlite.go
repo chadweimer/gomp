@@ -37,11 +37,18 @@ type sqliteDriver struct {
 func openSQLite(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// Attempt to create the base path, if necessary
 	fileUrl, err := url.Parse(connectionString)
-	if err == nil && fileUrl.Scheme == "file" {
+	if err != nil {
+		return nil, err
+	}
+	if fileUrl.Scheme == "file" {
 		fullPath, err := filepath.Abs(fileUrl.RequestURI())
-		if err == nil {
-			dir := filepath.Dir(fullPath)
-			_ = os.MkdirAll(dir, 0755)
+		if err != nil {
+			return nil, err
+		}
+
+		dir := filepath.Dir(fullPath)
+		if err = os.MkdirAll(dir, 0750); err != nil {
+			return nil, err
 		}
 	}
 

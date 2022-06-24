@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
@@ -19,7 +21,7 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 
 func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filePath)
+	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
 
 	dir := filepath.Dir(filePath)
 	err := os.MkdirAll(dir, os.ModePerm)
@@ -27,11 +29,19 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 		return err
 	}
 
-	file, err := os.Create(filePath)
+	file, err := os.Create(filePath) //#nosec G304 -- Path already cleaned
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			if err != nil {
+				log.Warn().Err(closeErr).Msgf("Failed to close %s after a previous error", filePath)
+			} else {
+				err = closeErr
+			}
+		}
+	}()
 
 	_, err = file.Write(data)
 	return err
@@ -39,14 +49,14 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 
 func (u *fileSystemDriver) Delete(filePath string) error {
 	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filePath)
+	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
 
 	return os.Remove(filePath)
 }
 
 func (u *fileSystemDriver) DeleteAll(dirPath string) error {
 	// First prepend the base UploadPath
-	dirPath = filepath.Join(u.rootPath, dirPath)
+	dirPath = filepath.Join(u.rootPath, filepath.Clean(dirPath))
 
 	return os.RemoveAll(dirPath)
 }

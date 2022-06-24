@@ -98,7 +98,11 @@ func main() {
 	defer cancel()
 
 	log.Info().Int("port", cfg.Port).Msg("Starting server")
-	srv := &http.Server{Addr: fmt.Sprintf(":%d", cfg.Port), Handler: r}
+	srv := &http.Server{
+		ReadHeaderTimeout: 10 * time.Second,
+		Addr: fmt.Sprintf(":%d", cfg.Port),
+		Handler: r,
+	}
 	go srv.ListenAndServe()
 
 	// Wait for a stop signal
