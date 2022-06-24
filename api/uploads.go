@@ -27,7 +27,10 @@ func (h apiHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	imageName := uuid.New().String() + imageExt
 
 	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
-	h.upl.Save(imageName, uploadedFileData)
+	if err := h.upl.Save(imageName, uploadedFileData); err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
 
 	h.CreatedWithLocation(w, fileUrl)
 }

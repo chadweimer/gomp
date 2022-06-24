@@ -121,7 +121,11 @@ func (*postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, 
 	if err := lockPostgres(conn); err != nil {
 		return err
 	}
-	defer unlockPostgres(conn)
+	defer func() {
+		if unlockErr := unlockPostgres(conn); unlockErr != nil {
+			log.Fatal().Err(unlockErr).Msg("Failed to unlock database")
+		}
+	}()
 
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
 		MigrationsTable: migrationsTableName,
