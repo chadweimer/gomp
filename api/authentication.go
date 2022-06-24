@@ -148,7 +148,7 @@ func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error)
 		if err != nil {
 			log.Err(err).Int("key-index", i).Msg("Failed parsing JWT token")
 			if i < (len(h.cfg.SecureKeys) + 1) {
-				log.Print("Will try again with next key")
+				log.Debug().Msg("Will try again with next key")
 			}
 		} else if token.Valid {
 			return token, nil

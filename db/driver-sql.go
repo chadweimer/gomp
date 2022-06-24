@@ -22,7 +22,7 @@ type sqlDriver struct {
 }
 
 func (d *sqlDriver) Close() error {
-	log.Print("Closing database connection...")
+	log.Debug().Msg("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
 		return fmt.Errorf("failed to close the connection to the database: '%+v'", err)
 	}

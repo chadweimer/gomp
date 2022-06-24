@@ -94,12 +94,12 @@ func Load() *Config {
 
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
-		log.Print("DATABASE_DRIVER is empty. Will attempt to infer...")
+		log.Debug().Msg("DATABASE_DRIVER is empty. Will attempt to infer...")
 		if strings.HasPrefix(c.DatabaseUrl, "file:") {
-			log.Printf("Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
+			log.Debug().Msgf("Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
 			c.DatabaseDriver = db.SQLiteDriverName
 		} else if strings.HasPrefix(c.DatabaseUrl, "postgres:") {
-			log.Printf("Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
+			log.Debug().Msgf("Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
 			c.DatabaseDriver = db.PostgresDriverName
 		} else {
 			log.Warn().Msg("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
