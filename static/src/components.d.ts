@@ -48,6 +48,7 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface PageSettingsSecurity {
+        "activatedCallback": () => Promise<void>;
     }
     interface RecipeCard {
         "recipe": RecipeCompact;

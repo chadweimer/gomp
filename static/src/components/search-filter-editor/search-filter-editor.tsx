@@ -1,9 +1,8 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../generated';
-import { usersApi } from '../../helpers/api';
+import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../generated';
+import { loadSearchFilters, loadUserSettings, usersApi } from '../../helpers/api';
 import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
-import state from '../../stores/state';
 
 @Component({
   tag: 'search-filter-editor',
@@ -16,6 +15,8 @@ export class SearchFilterEditor {
   @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
+
+  @State() currentUserSettings: UserSettings | null;
   @State() selectedFilterId: number | null = null;
   @State() filters: SavedSearchFilterCompact[] = [];
 
@@ -24,8 +25,9 @@ export class SearchFilterEditor {
 
   async connectedCallback() {
     configureModalAutofocus(this.el);
+    this.currentUserSettings = await loadUserSettings();
     if (this.showSavedLoader) {
-      await this.loadSearchFilters();
+      this.filters = await loadSearchFilters();
     }
   }
 
@@ -70,7 +72,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">Search Terms</ion-label>
               <ion-input value={this.searchFilter.query} onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value }} />
             </ion-item>
-            <tags-input value={this.searchFilter.tags} suggestions={state.currentUserSettings?.favoriteTags ?? []}
+            <tags-input value={this.searchFilter.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
               onValueChanged={e => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />
             <ion-item>
               <ion-label position="stacked">Sort By</ion-label>
@@ -137,22 +139,13 @@ export class SearchFilterEditor {
     this.searchFilter = getDefaultSearchFilter();
   }
 
-  private async loadSearchFilters() {
-    try {
-      ({ data: this.filters } = await usersApi.getSearchFilters(state.currentUser.id));
-    } catch (ex) {
-      this.filters = [];
-      console.error(ex);
-    }
-  }
-
   private async onLoadSearchClicked() {
     if (this.selectedFilterId === null) {
       return;
     }
 
     try {
-      ({ data: this.searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, this.selectedFilterId));
+      ({ data: this.searchFilter } = await usersApi.getSearchFilter(this.selectedFilterId));
       this.selectedFilterId = null;
     } catch (ex) {
       console.error(ex);

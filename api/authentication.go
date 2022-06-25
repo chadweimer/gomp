@@ -12,7 +12,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/generated/oapi"
-	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/rs/zerolog/log"
 )
@@ -110,26 +109,7 @@ func (apiHandler) verifyUserHasScope(r *http.Request, scope string) error {
 		return errors.New("invalid token")
 	}
 
-	switch scope {
-	case "adminOrSelf":
-		urlId, err := getUserIdFromUrl(r)
-		if err != nil {
-			return err
-		}
-		ctxId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
-		if err != nil {
-			return err
-		}
-
-		// Admin privleges are required if the session user doesn't match the request user
-		if urlId != ctxId {
-			return hasScope(string(models.Admin), token)
-		}
-
-		return nil
-	default:
-		return hasScope(scope, token)
-	}
+	return hasScope(scope, token)
 }
 
 func getScopes(user *models.User) []string {
@@ -216,19 +196,4 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	}
 
 	return &user.User, nil
-}
-func getUserIdFromUrl(r *http.Request) (int64, error) {
-	idStr := chi.URLParam(r, "userId")
-
-	// Assume current user if not in the route
-	if idStr == "" {
-		return getResourceIdFromCtx(r, currentUserIdCtxKey)
-	}
-
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse user id from URL, value = %s: %v", idStr, err)
-	}
-
-	return id, nil
 }

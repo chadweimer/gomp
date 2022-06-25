@@ -12,13 +12,9 @@ import (
 )
 
 func (h apiHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
-	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
-	}
-
-	h.GetUser(w, r, userId)
+	h.current(w, r, func(userId int64) {
+		h.GetUser(w, r, userId)
+	})
 }
 
 func (h apiHandler) GetUser(w http.ResponseWriter, r *http.Request, userId int64) {
@@ -113,7 +109,13 @@ func (h apiHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userId in
 	h.NoContent(w)
 }
 
-func (h apiHandler) ChangePassword(w http.ResponseWriter, r *http.Request, userId int64) {
+func (h apiHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	h.current(w, r, func(userId int64) {
+		h.ChangeUserPassword(w, r, userId)
+	})
+}
+
+func (h apiHandler) ChangeUserPassword(w http.ResponseWriter, r *http.Request, userId int64) {
 	params := new(oapi.UserPasswordRequest)
 	if err := readJSONFromRequest(r, params); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
@@ -130,7 +132,13 @@ func (h apiHandler) ChangePassword(w http.ResponseWriter, r *http.Request, userI
 	h.NoContent(w)
 }
 
-func (h apiHandler) GetSettings(w http.ResponseWriter, r *http.Request, userId int64) {
+func (h apiHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
+	h.current(w, r, func(userId int64) {
+		h.GetUserSettings(w, r, userId)
+	})
+}
+
+func (h apiHandler) GetUserSettings(w http.ResponseWriter, r *http.Request, userId int64) {
 	userSettings, err := h.db.Users().ReadSettings(userId)
 	if err != nil {
 		fullErr := fmt.Errorf("reading user settings: %v", err)
@@ -148,7 +156,13 @@ func (h apiHandler) GetSettings(w http.ResponseWriter, r *http.Request, userId i
 	h.OK(w, r, userSettings)
 }
 
-func (h apiHandler) SaveSettings(w http.ResponseWriter, r *http.Request, userId int64) {
+func (h apiHandler) SaveSettings(w http.ResponseWriter, r *http.Request) {
+	h.current(w, r, func(userId int64) {
+		h.SaveUserSettings(w, r, userId)
+	})
+}
+
+func (h apiHandler) SaveUserSettings(w http.ResponseWriter, r *http.Request, userId int64) {
 	var userSettings models.UserSettings
 	if err := readJSONFromRequest(r, &userSettings); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
@@ -173,7 +187,13 @@ func (h apiHandler) SaveSettings(w http.ResponseWriter, r *http.Request, userId 
 	h.NoContent(w)
 }
 
-func (h apiHandler) GetSearchFilters(w http.ResponseWriter, r *http.Request, userId int64) {
+func (h apiHandler) GetSearchFilters(w http.ResponseWriter, r *http.Request) {
+	h.current(w, r, func(userId int64) {
+		h.GetUserSearchFilters(w, r, userId)
+	})
+}
+
+func (h apiHandler) GetUserSearchFilters(w http.ResponseWriter, r *http.Request, userId int64) {
 	searches, err := h.db.Users().ListSearchFilters(userId)
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
@@ -183,7 +203,13 @@ func (h apiHandler) GetSearchFilters(w http.ResponseWriter, r *http.Request, use
 	h.OK(w, r, searches)
 }
 
-func (h apiHandler) AddSearchFilter(w http.ResponseWriter, r *http.Request, userId int64) {
+func (h apiHandler) AddSearchFilter(w http.ResponseWriter, r *http.Request) {
+	h.current(w, r, func(userId int64) {
+		h.AddUserSearchFilter(w, r, userId)
+	})
+}
+
+func (h apiHandler) AddUserSearchFilter(w http.ResponseWriter, r *http.Request, userId int64) {
 	var filter models.SavedSearchFilter
 	if err := readJSONFromRequest(r, &filter); err != nil {
 		h.Error(w, r, http.StatusBadRequest, err)
@@ -205,7 +231,13 @@ func (h apiHandler) AddSearchFilter(w http.ResponseWriter, r *http.Request, user
 	h.Created(w, r, filter)
 }
 
-func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
+func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, filterId int64) {
+	h.current(w, r, func(userId int64) {
+		h.GetUserSearchFilter(w, r, userId, filterId)
+	})
+}
+
+func (h apiHandler) GetUserSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
 	filter, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("reading filter: %v", err))
@@ -215,7 +247,13 @@ func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, user
 	h.OK(w, r, filter)
 }
 
-func (h apiHandler) SaveSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
+func (h apiHandler) SaveSearchFilter(w http.ResponseWriter, r *http.Request, filterId int64) {
+	h.current(w, r, func(userId int64) {
+		h.SaveUserSearchFilter(w, r, userId, filterId)
+	})
+}
+
+func (h apiHandler) SaveUserSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
 	var filter models.SavedSearchFilter
 	if err := readJSONFromRequest(r, &filter); err != nil {
 		h.Error(w, r, http.StatusBadRequest, err)
@@ -252,11 +290,27 @@ func (h apiHandler) SaveSearchFilter(w http.ResponseWriter, r *http.Request, use
 	h.NoContent(w)
 }
 
-func (h apiHandler) DeleteSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
+func (h apiHandler) DeleteSearchFilter(w http.ResponseWriter, r *http.Request, filterId int64) {
+	h.current(w, r, func(userId int64) {
+		h.DeleteUserSearchFilter(w, r, userId, filterId)
+	})
+}
+
+func (h apiHandler) DeleteUserSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
 	if err := h.db.Users().DeleteSearchFilter(userId, filterId); err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
 	h.NoContent(w)
+}
+
+func (h apiHandler) current(w http.ResponseWriter, r *http.Request, do func(userId int64)) {
+	userId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
+	if err != nil {
+		h.Error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	do(userId)
 }

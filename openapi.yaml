@@ -588,6 +588,139 @@ paths:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
         - Bearer: [viewer]
+  /users/current/filters:
+    get:
+      tags: [users]
+      description: get a list of search filters
+      operationId: getSearchFilters
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+      security:
+        - Bearer: [viewer]
+    post:
+      tags: [users]
+      description: add a search filter
+      operationId: addSearchFilter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        required: true
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+      security:
+        - Bearer: [viewer]
+      x-codegen-request-body-name: searchFilter
+  /users/current/filters/{filterId}:
+    parameters:
+      - name: filterId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [users]
+      description: get a search filter
+      operationId: getSearchFilter
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+      security:
+        - Bearer: [viewer]
+    put:
+      tags: [users]
+      description: modify the search filter
+      operationId: saveSearchFilter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: [viewer]
+      x-codegen-request-body-name: searchFilter
+    delete:
+      tags: [users]
+      description: delete a search filter
+      operationId: deleteSearchFilter
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: [viewer]
+  /users/current/password:
+    put:
+      tags: [users]
+      description: update the current user's password
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userPasswordRequest"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: [viewer]
+      x-codegen-request-body-name: userPasswordRequest
+  /users/current/settings:
+    get:
+      tags: [users]
+      description: get the settings of the current user
+      operationId: getSettings
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "./models.yaml#/components/schemas/userSettings"
+      security:
+        - Bearer: [viewer]
+    put:
+      tags: [users]
+      description: modify the settings of the current user
+      operationId: saveSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/userSettings"
+        required: true
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: [viewer]
+      x-codegen-request-body-name: settings
   /users/{userId}:
     parameters:
       - name: userId
@@ -608,7 +741,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
     put:
       tags: [users]
       description: modify a user
@@ -647,7 +780,7 @@ paths:
     get:
       tags: [users]
       description: get a list of search filters
-      operationId: getSearchFilters
+      operationId: getUserSearchFilters
       responses:
         200:
           description: OK
@@ -658,11 +791,11 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
     post:
       tags: [users]
       description: add a search filter
-      operationId: addSearchFilter
+      operationId: addUserSearchFilter
       requestBody:
         content:
           application/json:
@@ -677,7 +810,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
       x-codegen-request-body-name: searchFilter
   /users/{userId}/filters/{filterId}:
     parameters:
@@ -696,7 +829,7 @@ paths:
     get:
       tags: [users]
       description: get a search filter
-      operationId: getSearchFilter
+      operationId: getUserSearchFilter
       responses:
         200:
           description: OK
@@ -705,11 +838,11 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
     put:
       tags: [users]
       description: modify the search filter
-      operationId: saveSearchFilter
+      operationId: saveUserSearchFilter
       requestBody:
         content:
           application/json:
@@ -721,18 +854,18 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
       x-codegen-request-body-name: searchFilter
     delete:
       tags: [users]
       description: delete a search filter
-      operationId: deleteSearchFilter
+      operationId: deleteUserSearchFilter
       responses:
         204:
           description: No Content
           content: {}
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
   /users/{userId}/password:
     parameters:
       - name: userId
@@ -744,7 +877,7 @@ paths:
     put:
       tags: [users]
       description: update a user's password
-      operationId: changePassword
+      operationId: changeUserPassword
       requestBody:
         content:
           application/json:
@@ -756,7 +889,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
       x-codegen-request-body-name: userPasswordRequest
   /users/{userId}/settings:
     parameters:
@@ -769,7 +902,7 @@ paths:
     get:
       tags: [users]
       description: get the settings of a user
-      operationId: getSettings
+      operationId: getUserSettings
       responses:
         200:
           description: OK
@@ -778,11 +911,11 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/userSettings"
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
     put:
       tags: [users]
       description: modify the settings of a user
-      operationId: saveSettings
+      operationId: saveUserSettings
       requestBody:
         content:
           application/json:
@@ -794,7 +927,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: [adminOrSelf]
+        - Bearer: [admin]
       x-codegen-request-body-name: settings
 components:
   schemas:

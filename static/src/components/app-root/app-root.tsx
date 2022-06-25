@@ -2,11 +2,12 @@ import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
-import { appApi, usersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback } from '../../helpers/utils';
+import { appApi } from '../../helpers/api';
+import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState, refreshSearchResults } from '../../stores/state';
+import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 
 @Component({
   tag: 'app-root',
@@ -66,18 +67,18 @@ export class AppRoot {
             <ion-route url="/:recipeId" component="page-recipe" />
           </ion-route>
 
-          <ion-route url="/settings" component="tab-settings" beforeEnter={() => this.requireLogin()}>
+          <ion-route url="/settings" component="tab-settings">
             <ion-route component="page-settings">
-              <ion-route component="tab-settings-preferences" />
+              <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
               <ion-route url="/preferences" component="tab-settings-preferences" />
               <ion-route url="/searches" component="tab-settings-searches" />
               <ion-route url="/security" component="tab-settings-security" />
             </ion-route>
           </ion-route>
 
-          <ion-route url="/admin" component="tab-admin" beforeEnter={() => this.requireAdmin()}>
+          <ion-route url="/admin" component="tab-admin">
             <ion-route component="page-admin">
-              <ion-route component="tab-admin-configuration" />
+              <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
               <ion-route url="/configuration" component="tab-admin-configuration" />
               <ion-route url="/users" component="tab-admin-users" />
             </ion-route>
@@ -100,7 +101,7 @@ export class AppRoot {
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
-              {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
+              {hasScope(state.jwtToken, AccessLevel.Admin) ?
                 <ion-item href="/admin" lines="full">
                   <ion-icon name="shield-checkmark" slot="start" />
                   <ion-label>Admin</ion-label>
@@ -121,17 +122,17 @@ export class AppRoot {
         <div class="ion-page" id="main-content">
           <ion-header mode="md">
             <ion-toolbar color="primary">
-              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ?
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="start">
                   <ion-menu-button class="ion-hide-lg-up" />
                 </ion-buttons>
                 : ''}
 
-              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>
+              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasScope(state.jwtToken, AccessLevel.Viewer) }}>
                 <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
-              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ? [
                 <ion-buttons slot="end">
                   <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
                   <ion-button href="/search" class="ion-hide-lg-down">
@@ -139,7 +140,7 @@ export class AppRoot {
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
                   <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
-                  {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
+                  {hasScope(state.jwtToken, AccessLevel.Admin) ?
                     <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
                     : ''}
                   <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
@@ -218,28 +219,16 @@ export class AppRoot {
     return !!state.jwtToken;
   }
 
-  private async requireLogin() {
+  private requireLogin(): NavigationHookResult {
     if (this.isLoggedIn()) {
-      // Refresh the user so that access controls are properly enforced
-      try {
-        ({ data: state.currentUser } = await usersApi.getCurrentUser());
-        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
-      } catch (ex) {
-        console.error(ex);
-      }
       return true;
     }
 
     return { redirect: '/login' };
   }
 
-  private async requireAdmin() {
-    const loginCheck = await this.requireLogin();
-    if (loginCheck !== true) {
-      return loginCheck;
-    }
-
-    if (state.currentUser?.accessLevel === AccessLevel.Admin) {
+  private requireAdmin(): NavigationHookResult {
+    if (hasScope(state.jwtToken, AccessLevel.Admin)) {
       return true;
     }
 
@@ -271,15 +260,7 @@ export class AppRoot {
   }
 
   private async onPageChanged() {
-    // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
-      try {
-        ({ data: state.currentUser } = await usersApi.getCurrentUser());
-        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
-      } catch (ex) {
-        console.error(ex);
-      }
-
       // Make sure there are search results on initial load
       if (state.searchResults === undefined) {
         await refreshSearchResults();

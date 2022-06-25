@@ -1,8 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../generated';
-import { appApi, getLocationFromResponse, usersApi } from '../../../helpers/api';
+import { appApi, getLocationFromResponse, loadUserSettings, usersApi } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/utils';
-import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-preferences',
@@ -17,7 +16,7 @@ export class PageSettingsPreferences {
 
   @Method()
   async activatedCallback() {
-    await this.loadUserSettings();
+    this.settings = await loadUserSettings();
   }
 
   render() {
@@ -52,7 +51,7 @@ export class PageSettingsPreferences {
                           <ion-button color="primary" onClick={() => this.onSaveSettingsClicked()}>Save</ion-button>
                         </ion-buttons>
                         <ion-buttons slot="secondary">
-                          <ion-button color="danger" onClick={() => this.loadUserSettings()}>Reset</ion-button>
+                          <ion-button color="danger" onClick={async () => this.settings = await loadUserSettings()}>Reset</ion-button>
                         </ion-buttons>
                       </ion-toolbar>
                     </ion-footer>
@@ -66,17 +65,9 @@ export class PageSettingsPreferences {
     );
   }
 
-  private async loadUserSettings() {
-    try {
-      ({ data: this.settings } = await usersApi.getSettings(state.currentUser.id));
-    } catch (ex) {
-      console.error(ex);
-    }
-  }
-
   private async saveUserSettings() {
     try {
-      await usersApi.saveSettings(state.currentUser.id, this.settings);
+      await usersApi.saveSettings(this.settings);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save preferences.');
