@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -68,12 +69,20 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 }
 
 func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(v); err != nil {
+	buf := new(bytes.Buffer)
+	if err := json.NewEncoder(buf).Encode(v); err != nil {
 		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
 			return c.AnErr("encode-error", err).Int("original-status", status)
 		})
-		status = http.StatusInternalServerError
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(status)
+	if _, err := w.Write(buf.Bytes()); err != nil {
+		// We tried everything. Time to panic
+		panic(err)
 	}
 }
 
