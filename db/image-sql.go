@@ -23,7 +23,7 @@ func (d *sqlRecipeImageDriver) CreateImpl(image *models.RecipeImage, db sqlx.Exe
 
 	res, err := db.Exec(stmt, image.RecipeId, image.Name, image.Url, image.ThumbnailUrl)
 	if err != nil {
-		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
+		return fmt.Errorf("failed to insert db record for newly saved image: %w", err)
 	}
 	imageId, _ := res.LastInsertId()
 	image.Id = &imageId

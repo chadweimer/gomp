@@ -24,13 +24,13 @@ func Save(driver Driver, recipeId int64, imageName string, data []byte) (string,
 	dataReader := bytes.NewReader(data)
 	image, err := imaging.Decode(dataReader, imaging.AutoOrientation(true))
 	if err != nil {
-		return "", "", fmt.Errorf("failed to decode image: %v", err)
+		return "", "", fmt.Errorf("failed to decode image: %w", err)
 	}
 
 	// Then generate a thumbnail image
 	thumbData, err := generateThumbnail(image, contentType)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate thumbnail image: %v", err)
+		return "", "", fmt.Errorf("failed to generate thumbnail image: %w", err)
 	}
 
 	// Save the original image
@@ -39,7 +39,7 @@ func Save(driver Driver, recipeId int64, imageName string, data []byte) (string,
 	origUrl := filepath.ToSlash(filepath.Join("/uploads/", origPath))
 	err = driver.Save(origPath, data)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to save image using configured upload driver: %v", err)
+		return "", "", fmt.Errorf("failed to save image using configured upload driver: %w", err)
 	}
 
 	// Save the thumbnail image
@@ -48,7 +48,7 @@ func Save(driver Driver, recipeId int64, imageName string, data []byte) (string,
 	thumbUrl := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
 	err = driver.Save(thumbPath, thumbData)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to save thumbnail image using configured upload driver: %v", err)
+		return "", "", fmt.Errorf("failed to save thumbnail image using configured upload driver: %w", err)
 	}
 
 	return origUrl, thumbUrl, nil
@@ -60,7 +60,7 @@ func generateThumbnail(image image.Image, contentType string) ([]byte, error) {
 	thumbBuf := new(bytes.Buffer)
 	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(80))
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode thumbnail image: %v", err)
+		return nil, fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
 
 	return thumbBuf.Bytes(), nil

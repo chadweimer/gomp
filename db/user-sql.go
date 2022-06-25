@@ -152,14 +152,14 @@ func (*sqlUserDriver) updateSettingsImpl(settings *models.UserSettings, db sqlx.
 		"DELETE FROM app_user_favorite_tag WHERE user_id = $1",
 		settings.UserId)
 	if err != nil {
-		return fmt.Errorf("deleting favorite tags before updating on user: %v", err)
+		return fmt.Errorf("deleting favorite tags before updating on user: %w", err)
 	}
 	for _, tag := range settings.FavoriteTags {
 		_, err = db.Exec(
 			"INSERT INTO app_user_favorite_tag (user_id, tag) VALUES ($1, $2)",
 			settings.UserId, tag)
 		if err != nil {
-			return fmt.Errorf("updating favorite tags on user: %v", err)
+			return fmt.Errorf("updating favorite tags on user: %w", err)
 		}
 	}
 

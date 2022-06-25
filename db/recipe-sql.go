@@ -23,7 +23,7 @@ func (d *sqlRecipeDriver) Delete(id int64) error {
 
 func (*sqlRecipeDriver) deleteImpl(id int64, db sqlx.Execer) error {
 	if _, err := db.Exec("DELETE FROM recipe WHERE id = $1", id); err != nil {
-		return fmt.Errorf("deleting recipe: %v", err)
+		return fmt.Errorf("deleting recipe: %w", err)
 	}
 
 	return nil
@@ -37,7 +37,7 @@ func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
 				"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id "+
 				"WHERE r.id = $1", id)
 		if err != nil {
-			return nil, fmt.Errorf("updating recipe state: %v", err)
+			return nil, fmt.Errorf("updating recipe state: %w", err)
 		}
 
 		return &rating, nil
@@ -53,7 +53,7 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 			_, err = db.Exec(
 				"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
 			if err != nil {
-				return fmt.Errorf("creating recipe rating: %v", err)
+				return fmt.Errorf("creating recipe rating: %w", err)
 			}
 		} else if err == nil {
 			_, err = db.Exec(
@@ -61,7 +61,7 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("updating recipe rating: %v", err)
+			return fmt.Errorf("updating recipe rating: %w", err)
 		}
 
 		return nil
@@ -73,7 +73,7 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 		_, err := db.Exec(
 			"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
 		if err != nil {
-			return fmt.Errorf("updating recipe state: %v", err)
+			return fmt.Errorf("updating recipe state: %w", err)
 		}
 
 		return nil

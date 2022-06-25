@@ -49,7 +49,7 @@ func (h apiHandler) SetMainImage(w http.ResponseWriter, r *http.Request, recipeI
 func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	file, fileHeader, err := r.FormFile("file_content")
 	if err != nil {
-		fullErr := fmt.Errorf("failed to read file_content from POSTed image: %v", err)
+		fullErr := fmt.Errorf("failed to read file_content from POSTed image: %w", err)
 		h.Error(w, r, http.StatusBadRequest, fullErr)
 		return
 	}
@@ -57,7 +57,7 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 
 	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to read bytes from POSTed image: %v", err)
+		fullErr := fmt.Errorf("failed to read bytes from POSTed image: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
@@ -69,7 +69,7 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 	// Save the image itself
 	url, thumbUrl, err := upload.Save(h.upl, recipeId, imageName, uploadedFileData)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to save image file: %v", err)
+		fullErr := fmt.Errorf("failed to save image file: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
@@ -83,7 +83,7 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 
 	// Now insert the record in the database
 	if err = h.db.Images().Create(&imageInfo); err != nil {
-		fullErr := fmt.Errorf("failed to insert image database record: %v", err)
+		fullErr := fmt.Errorf("failed to insert image database record: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
@@ -95,21 +95,21 @@ func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId
 	// We need to read the info about the image for later
 	image, err := h.db.Images().Read(recipeId, imageId)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to get image database record: %v", err)
+		fullErr := fmt.Errorf("failed to get image database record: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
 
 	// Now delete the record from the database
 	if err := h.db.Images().Delete(recipeId, imageId); err != nil {
-		fullErr := fmt.Errorf("failed to delete image database record: %v", err)
+		fullErr := fmt.Errorf("failed to delete image database record: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
 
 	// And lastly delete the image file itself
 	if err := upload.Delete(h.upl, recipeId, *image.Name); err != nil {
-		fullErr := fmt.Errorf("failed to delete image file: %v", err)
+		fullErr := fmt.Errorf("failed to delete image file: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}

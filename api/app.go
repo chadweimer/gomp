@@ -19,7 +19,7 @@ func (h apiHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 func (h apiHandler) GetConfiguration(w http.ResponseWriter, r *http.Request) {
 	cfg, err := h.db.AppConfiguration().Read()
 	if err != nil {
-		fullErr := fmt.Errorf("reading application configuration: %v", err)
+		fullErr := fmt.Errorf("reading application configuration: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}

@@ -22,7 +22,7 @@ func (d *postgresRecipeImageDriver) createImpl(image *models.RecipeImage, db sql
 		"VALUES ($1, $2, $3, $4) RETURNING id"
 
 	if err := sqlx.Get(db, image, stmt, image.RecipeId, image.Name, image.Url, image.ThumbnailUrl); err != nil {
-		return fmt.Errorf("failed to insert db record for newly saved image: %v", err)
+		return fmt.Errorf("failed to insert db record for newly saved image: %w", err)
 	}
 
 	// Switch to a new main image if necessary, since this might be the first image attached

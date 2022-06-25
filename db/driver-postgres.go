@@ -51,7 +51,7 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 			log.Err(err).Int("attempt", i).Msg("Failed to open database. Will try again...")
 			time.Sleep(500 * time.Millisecond)
 		} else {
-			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%+v'", i, err)
+			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%w'", i, err)
 		}
 	}
 	// This is meant to mitigate connection drops
@@ -74,7 +74,7 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
+		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
 	return drv, nil

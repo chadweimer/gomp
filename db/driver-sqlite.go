@@ -54,7 +54,7 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 
 	db, err := sqlx.Connect(SQLiteDriverName, connectionString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: '%+v'", err)
+		return nil, fmt.Errorf("failed to open database: '%w'", err)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
@@ -76,7 +76,7 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
+		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
 	return drv, nil

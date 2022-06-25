@@ -26,12 +26,12 @@ func (d *postgresRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Ext) er
 	err := sqlx.Get(db, recipe, stmt,
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl)
 	if err != nil {
-		return fmt.Errorf("creating recipe: %v", err)
+		return fmt.Errorf("creating recipe: %w", err)
 	}
 
 	for _, tag := range recipe.Tags {
 		if err := d.tags.createImpl(*recipe.Id, tag, db); err != nil {
-			return fmt.Errorf("adding tags to new recipe: %v", err)
+			return fmt.Errorf("adding tags to new recipe: %w", err)
 		}
 	}
 
@@ -48,7 +48,7 @@ func (d *postgresRecipeDriver) Read(id int64) (*models.Recipe, error) {
 
 	tags, err := d.tags.List(id)
 	if err != nil {
-		return nil, fmt.Errorf("reading tags for recipe: %v", err)
+		return nil, fmt.Errorf("reading tags for recipe: %w", err)
 	}
 	recipe.Tags = *tags
 
@@ -72,16 +72,16 @@ func (d *postgresRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer)
 			"WHERE id = $8",
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl, recipe.Id)
 	if err != nil {
-		return fmt.Errorf("updating recipe: %v", err)
+		return fmt.Errorf("updating recipe: %w", err)
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	if err = d.tags.deleteAllImpl(*recipe.Id, db); err != nil {
-		return fmt.Errorf("deleting tags before updating on recipe: %v", err)
+		return fmt.Errorf("deleting tags before updating on recipe: %w", err)
 	}
 	for _, tag := range recipe.Tags {
 		if err = d.tags.createImpl(*recipe.Id, tag, db); err != nil {
-			return fmt.Errorf("updating tags on recipe: %v", err)
+			return fmt.Errorf("updating tags on recipe: %w", err)
 		}
 	}
 

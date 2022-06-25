@@ -20,7 +20,7 @@ func (h apiHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 func (h apiHandler) GetUser(w http.ResponseWriter, r *http.Request, userId int64) {
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
-		fullErr := fmt.Errorf("reading user: %v", err)
+		fullErr := fmt.Errorf("reading user: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
@@ -118,13 +118,13 @@ func (h apiHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 func (h apiHandler) ChangeUserPassword(w http.ResponseWriter, r *http.Request, userId int64) {
 	params := new(oapi.UserPasswordRequest)
 	if err := readJSONFromRequest(r, params); err != nil {
-		fullErr := fmt.Errorf("invalid request: %v", err)
+		fullErr := fmt.Errorf("invalid request: %w", err)
 		h.Error(w, r, http.StatusBadRequest, fullErr)
 		return
 	}
 
 	if err := h.db.Users().UpdatePassword(userId, params.CurrentPassword, params.NewPassword); err != nil {
-		fullErr := fmt.Errorf("update failed: %v", err)
+		fullErr := fmt.Errorf("update failed: %w", err)
 		h.Error(w, r, http.StatusForbidden, fullErr)
 		return
 	}
@@ -141,7 +141,7 @@ func (h apiHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
 func (h apiHandler) GetUserSettings(w http.ResponseWriter, r *http.Request, userId int64) {
 	userSettings, err := h.db.Users().ReadSettings(userId)
 	if err != nil {
-		fullErr := fmt.Errorf("reading user settings: %v", err)
+		fullErr := fmt.Errorf("reading user settings: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
@@ -165,7 +165,7 @@ func (h apiHandler) SaveSettings(w http.ResponseWriter, r *http.Request) {
 func (h apiHandler) SaveUserSettings(w http.ResponseWriter, r *http.Request, userId int64) {
 	var userSettings models.UserSettings
 	if err := readJSONFromRequest(r, &userSettings); err != nil {
-		fullErr := fmt.Errorf("invalid request: %v", err)
+		fullErr := fmt.Errorf("invalid request: %w", err)
 		h.Error(w, r, http.StatusBadRequest, fullErr)
 		return
 	}
@@ -179,7 +179,7 @@ func (h apiHandler) SaveUserSettings(w http.ResponseWriter, r *http.Request, use
 	}
 
 	if err := h.db.Users().UpdateSettings(&userSettings); err != nil {
-		fullErr := fmt.Errorf("updating user settings: %v", err)
+		fullErr := fmt.Errorf("updating user settings: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return
 	}
@@ -240,7 +240,7 @@ func (h apiHandler) GetSearchFilter(w http.ResponseWriter, r *http.Request, filt
 func (h apiHandler) GetUserSearchFilter(w http.ResponseWriter, r *http.Request, userId int64, filterId int64) {
 	filter, err := h.db.Users().ReadSearchFilter(userId, filterId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("reading filter: %v", err))
+		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("reading filter: %w", err))
 		return
 	}
 

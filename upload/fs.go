@@ -36,7 +36,7 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			if err != nil {
-				log.Warn().Err(closeErr).Msgf("Failed to close %s after a previous error", filePath)
+				log.Warn().Err(closeErr).Str("file", filePath).Msg("Failed to close file after a previous error")
 			} else {
 				err = closeErr
 			}
