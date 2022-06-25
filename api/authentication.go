@@ -80,6 +80,11 @@ func (h apiHandler) isAuthenticated(r *http.Request) error {
 		return err
 	}
 
+	claims := token.Claims.(*gompClaims)
+	if len(claims.Scopes) == 0 {
+		return errors.New("token had no scopes")
+	}
+
 	userId, err := h.getUserIdFromToken(token)
 	if err != nil {
 		return err
