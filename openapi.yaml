@@ -7,7 +7,7 @@ servers:
 paths:
   /app/info:
     get:
-      tags: [app, public]
+      tags: [app]
       description: get application info
       operationId: getInfo
       responses:
@@ -19,7 +19,7 @@ paths:
                 $ref: "./models.yaml#/components/schemas/appInfo"
   /app/configuration:
     get:
-      tags: [app, public]
+      tags: [app]
       description: get application configuration
       operationId: getConfiguration
       responses:
@@ -30,7 +30,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/appConfiguration"
     put:
-      tags: [app, admin]
+      tags: [app]
       description: modify application configuration
       operationId: saveConfiguration
       requestBody:
@@ -44,11 +44,11 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [admin]
       x-codegen-request-body-name: appConfiguration
   /auth:
     post:
-      tags: [app, public]
+      tags: [app]
       description: perform user authentication
       operationId: authenticate
       requestBody:
@@ -67,7 +67,7 @@ paths:
       x-codegen-request-body-name: credentials
   /recipes:
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: list the recipes
       operationId: find
       parameters:
@@ -133,9 +133,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/searchResult"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
     post:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: add a recipe
       operationId: addRecipe
       requestBody:
@@ -152,7 +152,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipe"
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: recipe
   /recipes/{recipeId}:
     parameters:
@@ -163,7 +163,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: get a single recipe
       operationId: getRecipe
       responses:
@@ -174,9 +174,9 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipe"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
     put:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: modify an existing recipe
       operationId: saveRecipe
       requestBody:
@@ -190,10 +190,10 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: recipe
     delete:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: delete an existing recipe
       operationId: deleteRecipe
       responses:
@@ -201,7 +201,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
   /recipes/{recipeId}/image:
     parameters:
       - name: recipeId
@@ -211,7 +211,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: get the main image of a recipe
       operationId: getMainImage
       responses:
@@ -222,9 +222,9 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipeImage"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
     put:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: set the main image of a recipe
       operationId: setMainImage
       requestBody:
@@ -239,7 +239,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: imageId
   /recipes/{recipeId}/images:
     parameters:
@@ -250,7 +250,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: get the images on a recipe
       operationId: getImages
       responses:
@@ -263,9 +263,9 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/recipeImage"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
     post:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: add an image to a recipe
       operationId: uploadImage
       requestBody:
@@ -284,7 +284,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipeImage"
       security:
-        - Bearer: []
+        - Bearer: [editor]
   /recipes/{recipeId}/images/{imageId}:
     parameters:
       - name: recipeId
@@ -300,7 +300,7 @@ paths:
           type: integer
           format: int64
     delete:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: delete an existing image from a recipe
       operationId: deleteImage
       responses:
@@ -308,7 +308,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
   /recipes/{recipeId}/links:
     parameters:
       - name: recipeId
@@ -318,7 +318,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: get the links on a recipe
       operationId: getLinks
       responses:
@@ -331,7 +331,7 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/recipeCompact"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
   /recipes/{recipeId}/links/{destRecipeId}:
     parameters:
       - name: recipeId
@@ -347,7 +347,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: add a link to a recipe
       operationId: addLink
       responses:
@@ -355,9 +355,9 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
     delete:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: delete an existing link
       operationId: deleteLink
       responses:
@@ -365,7 +365,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
   /recipes/{recipeId}/notes:
     parameters:
       - name: recipeId
@@ -375,7 +375,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: get the notes on a recipe
       operationId: getNotes
       responses:
@@ -388,9 +388,9 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/note"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
     post:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: add a note to a recipe
       operationId: addNote
       requestBody:
@@ -407,7 +407,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/note"
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: note
   /recipes/{recipeId}/notes/{noteId}:
     parameters:
@@ -424,7 +424,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: modify a note
       operationId: saveNote
       requestBody:
@@ -438,10 +438,10 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: note
     delete:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: delete an existing note
       operationId: deleteNote
       responses:
@@ -449,7 +449,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
   /recipes/{recipeId}/rating:
     parameters:
       - name: recipeId
@@ -459,7 +459,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [recipes, viewer]
+      tags: [recipes]
       description: get the current rating of a recipe
       operationId: getRating
       responses:
@@ -471,9 +471,9 @@ paths:
                 type: number
                 format: float
       security:
-        - Bearer: []
+        - Bearer: [viewer]
     put:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: modify the rating of a recipe
       operationId: setRating
       requestBody:
@@ -488,7 +488,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: rating
   /recipes/{recipeId}/state:
     parameters:
@@ -499,7 +499,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [recipes, editor]
+      tags: [recipes]
       description: modify the state of a recipe
       operationId: setState
       requestBody:
@@ -513,11 +513,11 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [editor]
       x-codegen-request-body-name: state
   /uploads:
     post:
-      tags: [app, viewer]
+      tags: [app]
       description: Upload a file
       operationId: upload
       requestBody:
@@ -537,10 +537,10 @@ paths:
                 type: string
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [viewer]
   /users:
     get:
-      tags: [users, admin]
+      tags: [users]
       description: get list of users
       operationId: getAllUsers
       responses:
@@ -553,9 +553,9 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: []
+        - Bearer: [admin]
     post:
-      tags: [users, admin]
+      tags: [users]
       description: add a of user
       operationId: addUser
       requestBody:
@@ -572,11 +572,11 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: []
+        - Bearer: [admin]
       x-codegen-request-body-name: user
   /users/current:
     get:
-      tags: [users, viewer]
+      tags: [users]
       description: get the current user
       operationId: getCurrentUser
       responses:
@@ -587,7 +587,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: []
+        - Bearer: [viewer]
   /users/{userId}:
     parameters:
       - name: userId
@@ -597,7 +597,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: get a user
       operationId: getUser
       responses:
@@ -608,9 +608,9 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
     put:
-      tags: [users, admin]
+      tags: [users]
       description: modify a user
       operationId: saveUser
       requestBody:
@@ -624,10 +624,10 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [admin]
       x-codegen-request-body-name: user
     delete:
-      tags: [users, admin]
+      tags: [users]
       description: delete an existing user
       operationId: deleteUser
       responses:
@@ -635,7 +635,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [admin]
   /users/{userId}/filters:
     parameters:
       - name: userId
@@ -645,7 +645,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: get a list of search filters
       operationId: getSearchFilters
       responses:
@@ -658,9 +658,9 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
     post:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: add a search filter
       operationId: addSearchFilter
       requestBody:
@@ -677,7 +677,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
       x-codegen-request-body-name: searchFilter
   /users/{userId}/filters/{filterId}:
     parameters:
@@ -694,7 +694,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: get a search filter
       operationId: getSearchFilter
       responses:
@@ -705,9 +705,9 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
     put:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: modify the search filter
       operationId: saveSearchFilter
       requestBody:
@@ -721,10 +721,10 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
       x-codegen-request-body-name: searchFilter
     delete:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: delete a search filter
       operationId: deleteSearchFilter
       responses:
@@ -732,7 +732,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
   /users/{userId}/password:
     parameters:
       - name: userId
@@ -742,7 +742,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: update a user's password
       operationId: changePassword
       requestBody:
@@ -756,7 +756,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
       x-codegen-request-body-name: userPasswordRequest
   /users/{userId}/settings:
     parameters:
@@ -767,7 +767,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: get the settings of a user
       operationId: getSettings
       responses:
@@ -778,9 +778,9 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/userSettings"
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
     put:
-      tags: [users, adminOrSelf]
+      tags: [users]
       description: modify the settings of a user
       operationId: saveSettings
       requestBody:
@@ -794,7 +794,7 @@ paths:
           description: No Content
           content: {}
       security:
-        - Bearer: []
+        - Bearer: [adminOrSelf]
       x-codegen-request-body-name: settings
 components:
   schemas:

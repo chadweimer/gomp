@@ -3,12 +3,12 @@ package api
 import (
 	"net/http"
 
-	"github.com/chadweimer/gomp/generated/api/viewer"
 	"github.com/chadweimer/gomp/generated/models"
+	"github.com/chadweimer/gomp/generated/oapi"
 	"github.com/chadweimer/gomp/upload"
 )
 
-func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params viewer.FindParams) {
+func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params oapi.FindParams) {
 	query := ""
 	if params.Q != nil {
 		query = *params.Q
@@ -28,10 +28,10 @@ func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params viewer.F
 	var withPictures *bool
 	if params.Pictures != nil {
 		switch *params.Pictures {
-		case viewer.Yes:
+		case oapi.Yes:
 			val := true
 			withPictures = &val
-		case viewer.No:
+		case oapi.No:
 			val := false
 			withPictures = &val
 		}
@@ -53,7 +53,7 @@ func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params viewer.F
 		return
 	}
 
-	h.OK(w, r, viewer.SearchResult{Recipes: *recipes, Total: total})
+	h.OK(w, r, oapi.SearchResult{Recipes: *recipes, Total: total})
 }
 
 func (h apiHandler) GetRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {

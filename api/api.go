@@ -8,11 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/api/admin"
-	"github.com/chadweimer/gomp/generated/api/adminOrSelf"
-	"github.com/chadweimer/gomp/generated/api/editor"
-	"github.com/chadweimer/gomp/generated/api/public"
-	"github.com/chadweimer/gomp/generated/api/viewer"
+	"github.com/chadweimer/gomp/generated/oapi"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -37,8 +33,8 @@ func (k *contextKey) String() string {
 }
 
 var (
-	currentUserIdCtxKey          = &contextKey{"CurrentUserId"}
-	currentUserAccessLevelCtxKey = &contextKey{"CurrentUserAccessLevel"}
+	currentUserIdCtxKey    = &contextKey{"CurrentUserId"}
+	currentUserTokenCtxKey = &contextKey{"Token"}
 )
 
 // ---- End Context Keys ----
@@ -59,38 +55,26 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 
 	r := chi.NewRouter()
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
-	r.Route("/v1", func(r chi.Router) {
-		// Public
-		public.HandlerFromMux(h, r)
-		r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-			h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
-		})
-
-		r.Group(func(r chi.Router) {
-			r.Use(h.requireAuthentication)
-
-			// Viewer
-			viewer.HandlerFromMux(h, r)
-			// Editor
-			editor.HandlerFromMux(h, r.With(h.requireEditor))
-			// Admin
-			admin.HandlerFromMux(h, r.With(h.requireAdmin))
-			// Admin or Self
-			adminOrSelf.HandlerFromMux(h, r.With(h.requireAdminUnlessSelf))
-		})
+	oapi.HandlerWithOptions(h, oapi.ChiServerOptions{
+		BaseRouter:  r,
+		BaseURL:     "/v1",
+		Middlewares: []oapi.MiddlewareFunc{h.checkScopes},
+	})
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
 	})
 
 	return r
 }
 
 func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
 			return c.AnErr("encode-error", err).Int("original-status", status)
 		})
 		status = http.StatusInternalServerError
 	}
-	w.WriteHeader(status)
 }
 
 func (h apiHandler) OK(w http.ResponseWriter, r *http.Request, v interface{}) {

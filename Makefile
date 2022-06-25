@@ -53,16 +53,8 @@ $(CODEGEN_DIR): openapi.yaml models.yaml $(OAPI_CFGS)
 	rm -rf $@
 	mkdir -p $@/models
 	oapi-codegen --config oapi-codegen/models.yaml models.yaml > $@/models/models.go
-	mkdir -p $@/api/public
-	oapi-codegen --config oapi-codegen/public.yaml openapi.yaml > $@/api/public/public.go
-	mkdir -p $@/api/viewer
-	oapi-codegen --config oapi-codegen/viewer.yaml openapi.yaml > $@/api/viewer/viewer.go
-	mkdir -p $@/api/editor
-	oapi-codegen --config oapi-codegen/editor.yaml openapi.yaml > $@/api/editor/editor.go
-	mkdir -p $@/api/admin
-	oapi-codegen --config oapi-codegen/admin.yaml openapi.yaml > $@/api/admin/admin.go
-	mkdir -p $@/api/adminOrSelf
-	oapi-codegen --config oapi-codegen/adminOrSelf.yaml openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
+	mkdir -p $@/oapi
+	oapi-codegen --config oapi-codegen/api.yaml openapi.yaml > $@/oapi/oapi.go
 
 
 # ---- LINT ----

@@ -6,9 +6,8 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/api/admin"
-	"github.com/chadweimer/gomp/generated/api/adminOrSelf"
 	"github.com/chadweimer/gomp/generated/models"
+	"github.com/chadweimer/gomp/generated/oapi"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -45,7 +44,7 @@ func (h apiHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h apiHandler) AddUser(w http.ResponseWriter, r *http.Request) {
-	var newUser admin.UserWithPassword
+	var newUser oapi.UserWithPassword
 	if err := readJSONFromRequest(r, &newUser); err != nil {
 		h.Error(w, r, http.StatusBadRequest, err)
 		return
@@ -115,7 +114,7 @@ func (h apiHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userId in
 }
 
 func (h apiHandler) ChangePassword(w http.ResponseWriter, r *http.Request, userId int64) {
-	params := new(adminOrSelf.UserPasswordRequest)
+	params := new(oapi.UserPasswordRequest)
 	if err := readJSONFromRequest(r, params); err != nil {
 		fullErr := fmt.Errorf("invalid request: %v", err)
 		h.Error(w, r, http.StatusBadRequest, fullErr)
