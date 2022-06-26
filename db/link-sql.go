@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/chadweimer/gomp/generated/models"
+	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
 

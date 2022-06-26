@@ -10,8 +10,7 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/models"
-	"github.com/chadweimer/gomp/generated/oapi"
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/rs/zerolog/log"
 )
@@ -23,7 +22,7 @@ type gompClaims struct {
 }
 
 func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	var credentials oapi.Credentials
+	var credentials Credentials
 	if err := readJSONFromRequest(r, &credentials); err != nil {
 		h.Error(w, r, http.StatusBadRequest, err)
 		return
@@ -37,7 +36,7 @@ func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, gompClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 14 * 24)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(0, 0, 14)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Subject:   strconv.FormatInt(*user.Id, 10),
 		},
@@ -49,12 +48,12 @@ func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 		h.Error(w, r, http.StatusInternalServerError, err)
 	}
 
-	h.OK(w, r, oapi.AuthenticationResponse{Token: tokenStr, User: *user})
+	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: *user})
 }
 
 func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		scopes, ok := r.Context().Value(oapi.BearerScopes).([]string)
+		scopes, ok := r.Context().Value(BearerScopes).([]string)
 		if ok {
 			if err := h.isAuthenticated(r); err != nil {
 				h.Error(w, r, http.StatusUnauthorized, err)

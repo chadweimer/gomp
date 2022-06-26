@@ -1,5 +1,7 @@
 package api
 
+//go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0 --config cfg.yaml ../openapi.yaml
+
 import (
 	"bytes"
 	"encoding/json"
@@ -9,7 +11,6 @@ import (
 
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/oapi"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -56,10 +57,10 @@ func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler 
 
 	r := chi.NewRouter()
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
-	oapi.HandlerWithOptions(h, oapi.ChiServerOptions{
+	HandlerWithOptions(h, ChiServerOptions{
 		BaseRouter:  r,
 		BaseURL:     "/v1",
-		Middlewares: []oapi.MiddlewareFunc{h.checkScopes},
+		Middlewares: []MiddlewareFunc{h.checkScopes},
 	})
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))

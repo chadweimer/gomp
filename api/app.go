@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/chadweimer/gomp/generated/models"
 	"github.com/chadweimer/gomp/metadata"
+	"github.com/chadweimer/gomp/models"
 )
 
 func (h apiHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
