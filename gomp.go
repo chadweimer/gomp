@@ -60,9 +60,16 @@ func main() {
 	// Add logging of all requests
 	r.Use(middleware.RequestID)
 	r.Use(hlog.NewHandler(log.Logger))
-	r.Use(hlog.RequestIDHandler("req-id", ""))
+	r.Use(hlog.RequestIDHandler("request-id", http.CanonicalHeaderKey("x-request-id")))
 	r.Use(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
-		hlog.FromRequest(r).Info().
+		level := zerolog.DebugLevel
+		switch {
+		case status >= 500:
+			level = zerolog.ErrorLevel
+		case status >= 400:
+			level = zerolog.WarnLevel
+		}
+		hlog.FromRequest(r).WithLevel(level).
 			Int("bytes-written", size).
 			Dur("duration", duration).
 			Str("from", r.RemoteAddr).
@@ -100,8 +107,8 @@ func main() {
 	log.Info().Int("port", cfg.Port).Msg("Starting server")
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
-		Addr: fmt.Sprintf(":%d", cfg.Port),
-		Handler: r,
+		Addr:              fmt.Sprintf(":%d", cfg.Port),
+		Handler:           r,
 	}
 	go srv.ListenAndServe()
 
