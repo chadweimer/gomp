@@ -1,7 +1,5 @@
 package api
 
-//go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0 --config cfg.yaml ../openapi.yaml
-
 import (
 	"bytes"
 	"encoding/json"
