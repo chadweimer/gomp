@@ -86,7 +86,7 @@ func main() {
 	// Don't let the extra slash cause problems
 	r.Use(middleware.StripSlashes)
 
-	r.Mount("/api", api.NewHandler(cfg, upl, dbDriver))
+	r.Mount("/api", api.NewHandler(cfg.SecureKeys, upl, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(upl))))
 	r.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

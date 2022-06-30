@@ -43,7 +43,7 @@ func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 		Scopes: jwt.ClaimStrings(getScopes(user)),
 	})
 	// Always sign using the 0'th key
-	tokenStr, err := token.SignedString([]byte(h.cfg.SecureKeys[0]))
+	tokenStr, err := token.SignedString([]byte(h.secureKeys[0]))
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 	}
@@ -155,7 +155,7 @@ func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error)
 	tokenStr := authHeaderParts[1]
 
 	// Try each key when validating the token
-	for i, key := range h.cfg.SecureKeys {
+	for i, key := range h.secureKeys {
 		token, err := jwt.ParseWithClaims(tokenStr, &gompClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if token.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New("incorrect signing method")
@@ -165,7 +165,7 @@ func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error)
 		})
 		if err != nil {
 			log.Err(err).Int("key-index", i).Msg("Failed parsing JWT token")
-			if i < (len(h.cfg.SecureKeys) + 1) {
+			if i < (len(h.secureKeys) + 1) {
 				log.Debug().Msg("Will try again with next key")
 			}
 		} else if token.Valid {

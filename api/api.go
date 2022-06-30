@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
@@ -40,17 +39,17 @@ var (
 // ---- End Context Keys ----
 
 type apiHandler struct {
-	cfg *conf.Config
-	upl upload.Driver
-	db  db.Driver
+	secureKeys []string
+	upl        upload.Driver
+	db         db.Driver
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(cfg *conf.Config, upl upload.Driver, db db.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl upload.Driver, db db.Driver) http.Handler {
 	h := apiHandler{
-		cfg: cfg,
-		upl: upl,
-		db:  db,
+		secureKeys: secureKeys,
+		upl:        upl,
+		db:         db,
 	}
 
 	r := chi.NewRouter()
