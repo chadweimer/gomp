@@ -23,17 +23,15 @@ var errMismatchedId = errors.New("id in the path does not match the one specifie
 
 // ---- Begin Context Keys ----
 
-type contextKey struct {
-	key string
+type contextKey string
+
+func (k contextKey) String() string {
+	return "gomp context key: " + string(k)
 }
 
-func (k *contextKey) String() string {
-	return "gomp context key: " + k.key
-}
-
-var (
-	currentUserIdCtxKey    = &contextKey{"CurrentUserId"}
-	currentUserTokenCtxKey = &contextKey{"Token"}
+const (
+	currentUserIdCtxKey    = contextKey("current-user-id")
+	currentUserTokenCtxKey = contextKey("current-user-token")
 )
 
 // ---- End Context Keys ----
@@ -113,7 +111,7 @@ func readJSONFromRequest(r *http.Request, data interface{}) error {
 	return json.NewDecoder(r.Body).Decode(data)
 }
 
-func getResourceIdFromCtx(r *http.Request, idKey *contextKey) (int64, error) {
+func getResourceIdFromCtx(r *http.Request, idKey contextKey) (int64, error) {
 	idVal := r.Context().Value(idKey)
 
 	id, ok := idVal.(int64)
