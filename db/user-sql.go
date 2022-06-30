@@ -52,13 +52,7 @@ func (*sqlUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Execer) err
 
 func (d *sqlUserDriver) Read(id int64) (*UserWithPasswordHash, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*UserWithPasswordHash, error) {
-		user := new(UserWithPasswordHash)
-
-		if err := sqlx.Get(db, user, "SELECT * FROM app_user WHERE id = $1", id); err != nil {
-			return nil, err
-		}
-
-		return user, nil
+		return d.readImpl(id, db)
 	})
 }
 
