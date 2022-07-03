@@ -20,6 +20,7 @@ export class AppRoot {
   private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
   private searchBar!: HTMLIonInputElement;
+  private isRefreshingToken = false;
 
   async componentWillLoad() {
     axios.interceptors.request.use(config => {
@@ -45,6 +46,22 @@ export class AppRoot {
       }
       if (error.response?.status === 401) {
         await this.logout();
+      } else if (error.response?.status === 403 && !this.isRefreshingToken) {
+        // Try refreshing the token and repeating the request
+        // This can fix the situation where the access level of
+        // the user has been changed and requires a new token
+        this.isRefreshingToken = true;
+        try {
+          const { data } = await appApi.refreshToken();
+          state.jwtToken = data.token;
+          const resp = await axios.request(error.config);
+          return resp;
+        } catch(retryError) {
+          // Just log this; let the original error propogate
+          console.error(retryError);
+        } finally {
+          this.isRefreshingToken = false;
+        }
       }
 
       return Promise.reject(error);

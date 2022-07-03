@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -34,6 +35,38 @@ func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenStr, err := h.createToken(user)
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: *user})
+}
+
+func (h apiHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	userId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
+	if err != nil {
+		h.Error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	user, err := h.db.Users().Read(userId)
+	if err != nil {
+		h.Error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	tokenStr, err := h.createToken(&user.User)
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: user.User})
+}
+
+func (h apiHandler) createToken(user *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, gompClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(0, 0, 14)),
@@ -42,29 +75,41 @@ func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 		},
 		Scopes: jwt.ClaimStrings(getScopes(user)),
 	})
+
 	// Always sign using the 0'th key
 	tokenStr, err := token.SignedString([]byte(h.secureKeys[0]))
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
+		return "", err
 	}
-
-	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: *user})
+	return tokenStr, nil
 }
 
 func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		scopes, ok := r.Context().Value(BearerScopes).([]string)
 		if ok {
-			if err := h.isAuthenticated(r); err != nil {
+			user, claims, err := h.isAuthenticated(r)
+			if err != nil {
 				h.Error(w, r, http.StatusUnauthorized, err)
 				return
 			}
 
-			for _, scope := range scopes {
-				if err := h.verifyUserHasScope(r, scope); err != nil {
-					err := fmt.Errorf("endpoint '%s' requires '%s' scope: %w", r.URL.Path, scope, err)
-					h.Error(w, r, http.StatusForbidden, err)
+			// If the route requires scopes, check them
+			if len(scopes) > 0 && (len(scopes) != 1 || scopes[0] != "") {
+				// If the scopes of the token don't match the latest scopes of the user,
+				// don't proceed. The client should refresh the token and try again.
+				userScopes := getScopes(user)
+				if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
+					h.Error(w, r, http.StatusForbidden, errors.New("user scopes have changed"))
 					return
+				}
+
+				for _, scope := range scopes {
+					if err := hasScope(scope, claims); err != nil {
+						err := fmt.Errorf("endpoint '%s' requires '%s' scope: %w", r.URL.Path, scope, err)
+						h.Error(w, r, http.StatusForbidden, err)
+						return
+					}
 				}
 			}
 		}
@@ -73,29 +118,29 @@ func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (h apiHandler) isAuthenticated(r *http.Request) error {
+func (h apiHandler) isAuthenticated(r *http.Request) (*models.User, *gompClaims, error) {
 	token, err := h.getAuthTokenFromRequest(r)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	claims := token.Claims.(*gompClaims)
 	if len(claims.Scopes) == 0 {
-		return errors.New("token had no scopes")
+		return nil, nil, errors.New("token had no scopes")
 	}
 
 	userId, err := h.getUserIdFromToken(token)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	user, err := h.verifyUserExists(userId)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
-			return errors.New("invalid user")
+			return nil, nil, errors.New("invalid user")
 		}
 
-		return err
+		return nil, nil, err
 	}
 
 	// Add the user's ID and token to the list of params
@@ -104,16 +149,7 @@ func (h apiHandler) isAuthenticated(r *http.Request) error {
 	ctx = context.WithValue(ctx, currentUserTokenCtxKey, token)
 	*r = *r.WithContext(ctx)
 
-	return nil
-}
-
-func (apiHandler) verifyUserHasScope(r *http.Request, scope string) error {
-	token, ok := r.Context().Value(currentUserTokenCtxKey).(*jwt.Token)
-	if !ok {
-		return errors.New("invalid token")
-	}
-
-	return hasScope(scope, token)
+	return user, claims, nil
 }
 
 func getScopes(user *models.User) []string {
@@ -131,8 +167,7 @@ func getScopes(user *models.User) []string {
 	return scopes
 }
 
-func hasScope(required string, token *jwt.Token) error {
-	claims := token.Claims.(*gompClaims)
+func hasScope(required string, claims *gompClaims) error {
 	for _, scope := range claims.Scopes {
 		if required == scope {
 			return nil
