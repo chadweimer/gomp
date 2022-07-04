@@ -37,17 +37,24 @@ type sqliteDriver struct {
 func openSQLite(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// Attempt to create the base path, if necessary
 	fileUrl, err := url.Parse(connectionString)
-	if err == nil && fileUrl.Scheme == "file" {
+	if err != nil {
+		return nil, err
+	}
+	if fileUrl.Scheme == "file" {
 		fullPath, err := filepath.Abs(fileUrl.RequestURI())
-		if err == nil {
-			dir := filepath.Dir(fullPath)
-			_ = os.MkdirAll(dir, 0755)
+		if err != nil {
+			return nil, err
+		}
+
+		dir := filepath.Dir(fullPath)
+		if err = os.MkdirAll(dir, 0750); err != nil {
+			return nil, err
 		}
 	}
 
 	db, err := sqlx.Connect(SQLiteDriverName, connectionString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: '%+v'", err)
+		return nil, fmt.Errorf("failed to open database: '%w'", err)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
@@ -69,7 +76,7 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
+		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
 	return drv, nil
@@ -103,7 +110,7 @@ func (d *sqliteDriver) Users() UserDriver {
 	return d.users
 }
 
-func (d *sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (*sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return err

@@ -3,14 +3,15 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 	"path/filepath"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 
 	// postgres database driver
 	_ "github.com/lib/pq"
@@ -47,10 +48,10 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 		}
 
 		if i < maxAttempts {
-			log.Printf("Failed to open database on attempt %d: '%+v'. Will try again...", i, err)
+			log.Err(err).Int("attempt", i).Msg("Failed to open database. Will try again...")
 			time.Sleep(500 * time.Millisecond)
 		} else {
-			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%+v'", i, err)
+			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%w'", i, err)
 		}
 	}
 	// This is meant to mitigate connection drops
@@ -73,7 +74,7 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
+		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
 	return drv, nil
@@ -107,7 +108,7 @@ func (d *postgresDriver) Users() UserDriver {
 	return d.users
 }
 
-func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (*postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	// Lock the database while we're migrating so that multiple instances
 	// don't attempt to migrate simultaneously. This requires the same connection
 	// to be used for both locking and unlocking.
@@ -120,7 +121,11 @@ func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string
 	if err := lockPostgres(conn); err != nil {
 		return err
 	}
-	defer unlockPostgres(conn)
+	defer func() {
+		if unlockErr := unlockPostgres(conn); unlockErr != nil {
+			log.Fatal().Err(unlockErr).Msg("Failed to unlock database")
+		}
+	}()
 
 	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
 		MigrationsTable: migrationsTableName,
@@ -143,7 +148,7 @@ func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string
 	} else {
 		err = m.Up()
 	}
-	if err != nil && err != migrate.ErrNoChange {
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 
@@ -151,13 +156,13 @@ func (d *postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string
 }
 
 func lockPostgres(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_lock(1)`
+	stmt := "SELECT pg_advisory_lock(1)"
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err
 }
 
 func unlockPostgres(conn *sql.Conn) error {
-	stmt := `SELECT pg_advisory_unlock(1)`
+	stmt := "SELECT pg_advisory_unlock(1)"
 	_, err := conn.ExecContext(context.Background(), stmt)
 	return err
 }

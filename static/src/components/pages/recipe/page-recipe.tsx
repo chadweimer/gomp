@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, formatDate, hasScope, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state, { refreshSearchResults } from '../../../stores/state';
 
 @Component({
@@ -33,7 +33,7 @@ export class PageRecipe {
   render() {
     return (
       <Host>
-        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-header class="ion-hide-lg-down">
             <ion-toolbar>
               <ion-buttons slot="primary">
@@ -91,7 +91,7 @@ export class PageRecipe {
                         : ''}
                       <div>
                         <h1>{this.recipe?.name}</h1>
-                        <five-star-rating value={this.recipeRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
+                        <five-star-rating value={this.recipeRating} disabled={!hasScope(state.jwtToken, AccessLevel.Editor)}
                           onValueSelected={e => this.onRatingSelected(e)} />
                         <p><ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note></p>
                       </div>
@@ -177,7 +177,7 @@ export class PageRecipe {
                       <ion-col size="auto">
                         <ion-card>
                           <a href={image.url} target="_blank"><img class="thumb" src={image.thumbnailUrl} /></a>
-                          {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+                          {hasScope(state.jwtToken, AccessLevel.Editor) ?
                             <ion-card-content class="ion-no-padding">
                               <ion-buttons>
                                 <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
@@ -206,7 +206,7 @@ export class PageRecipe {
                             <ion-item lines="full">
                               <ion-icon slot="start" icon="chatbox" />
                               <ion-label>{this.getNoteDatesText(note.createdAt, note.modifiedAt)}</ion-label>
-                              {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+                              {hasScope(state.jwtToken, AccessLevel.Editor) ?
                                 <ion-buttons slot="end">
                                   <ion-button size="small" color="warning" onClick={() => this.onEditNoteClicked(note)}>
                                     <ion-icon slot="icon-only" icon="create" size="small" />
@@ -231,7 +231,7 @@ export class PageRecipe {
           </ion-grid>
         </ion-content>
 
-        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
               <ion-buttons slot="primary">

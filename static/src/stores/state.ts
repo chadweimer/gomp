@@ -1,13 +1,11 @@
 import { createStore } from '@stencil/store';
-import { RecipeCompact, SearchFilter, User, UserSettings } from '../generated';
+import { RecipeCompact, SearchFilter } from '../generated';
 import { recipesApi } from '../helpers/api';
 import { toYesNoAny } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings, SearchViewMode } from '../models';
 
 interface AppState {
   jwtToken?: string;
-  currentUser?: User;
-  currentUserSettings?: UserSettings;
   searchFilter: SearchFilter;
   searchSettings: SearchSettings;
   searchPage: number;

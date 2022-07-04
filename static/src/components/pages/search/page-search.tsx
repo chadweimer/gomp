@@ -2,7 +2,7 @@ import { createGesture, Gesture, modalController, popoverController, ScrollBaseD
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, getSwipe, hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading } from '../../../helpers/utils';
+import { capitalizeFirstLetter, getSwipe, redirect, showToast, enableBackForOverlay, showLoading, hasScope } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { refreshSearchResults } from '../../../stores/state';
 
@@ -133,7 +133,7 @@ export class PageSearch {
           </ion-grid>
         </ion-content>
 
-        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
             <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
               <ion-icon icon="add" />

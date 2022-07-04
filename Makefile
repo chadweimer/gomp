@@ -11,8 +11,10 @@ BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 CLIENT_INSTALL_DIR=static/node_modules
 CLIENT_BUILD_DIR=static/www/static
 
-CODEGEN_DIR=generated
 CLIENT_CODEGEN_DIR=static/src/generated
+MODELS_CODEGEN_FILE=models/models.gen.go
+API_CODEGEN_FILE=api/routes.gen.go
+CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE)
 
 GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
 GO_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
@@ -22,10 +24,9 @@ GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
 GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc
 GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
 
-GO_FILES := $(filter-out $(shell test -d $(CODEGEN_DIR) && find ./$(CODEGEN_DIR) -name "*"), $(shell find . -type f -name "*.go"))
+GO_FILES := $(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
 CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find static -maxdepth 1 -type f -name "*") $(shell find static/src -type f -name "*"))
-OAPI_CFGS := $(shell find oapi-codegen -type f -name "*.yaml")
 
 .DEFAULT_GOAL := build
 
@@ -34,6 +35,8 @@ OAPI_CFGS := $(shell find oapi-codegen -type f -name "*.yaml")
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
+	go install github.com/securego/gosec/v2/cmd/gosec@v2.12.0
+	go install github.com/mgechev/revive@v1.2.1
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -47,20 +50,11 @@ uninstall:
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
-$(CODEGEN_DIR): openapi.yaml models.yaml $(OAPI_CFGS)
-	rm -rf $@
-	mkdir -p $@/models
-	oapi-codegen --config oapi-codegen/models.yaml models.yaml > $@/models/models.go
-	mkdir -p $@/api/public
-	oapi-codegen --config oapi-codegen/public.yaml openapi.yaml > $@/api/public/public.go
-	mkdir -p $@/api/viewer
-	oapi-codegen --config oapi-codegen/viewer.yaml openapi.yaml > $@/api/viewer/viewer.go
-	mkdir -p $@/api/editor
-	oapi-codegen --config oapi-codegen/editor.yaml openapi.yaml > $@/api/editor/editor.go
-	mkdir -p $@/api/admin
-	oapi-codegen --config oapi-codegen/admin.yaml openapi.yaml > $@/api/admin/admin.go
-	mkdir -p $@/api/adminOrSelf
-	oapi-codegen --config oapi-codegen/adminOrSelf.yaml openapi.yaml > $@/api/adminOrSelf/adminOrSelf.go
+$(API_CODEGEN_FILE): openapi.yaml api/cfg.yaml
+	oapi-codegen --config api/cfg.yaml openapi.yaml > $@
+
+$(MODELS_CODEGEN_FILE): models.yaml models/cfg.yaml
+	oapi-codegen --config models/cfg.yaml models.yaml > $@
 
 
 # ---- LINT ----
@@ -73,8 +67,11 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 	cd static && npm run lint
 
 .PHONY: lint-server
-lint-server: $(CODEGEN_DIR)
+lint-server: $(CODEGEN_FILES)
 	go vet ./...
+	revive -config=revive.toml ./...
+	gosec -severity medium ./...
+
 
 
 # ---- BUILD ----
@@ -85,7 +82,7 @@ build: $(BUILD_LIN_AMD64_DIR) $(BUILD_LIN_ARM_DIR) $(BUILD_LIN_ARM64_DIR) $(BUIL
 .PHONY: clean
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	rm -rf $(BUILD_DIR)
-	rm -rf $(CODEGEN_DIR)
+	find . -type f -name "*.gen.go" -delete
 	cd static && npm run clean
 
 # - GENERIC ARCH -
@@ -99,9 +96,9 @@ $(BUILD_DIR)/%/db/migrations: $(DB_MIGRATION_FILES)
 $(BUILD_DIR)/%/static: $(CLIENT_BUILD_DIR)
 	rm -rf $@ && mkdir -p $@ && cp -R $</* $@
 
-$(BUILD_DIR)/linux/%/gomp: go.mod $(CODEGEN_DIR) $(GO_FILES)
+$(BUILD_DIR)/linux/%/gomp: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
-$(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_DIR) $(GO_FILES)
+$(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	$(GO_ENV) go build -o $@ $(GO_WIN_LD_FLAGS)
 
 .PHONY: clean-$(BUILD_DIR)/%

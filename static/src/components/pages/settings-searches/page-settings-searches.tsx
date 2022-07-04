@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
-import { usersApi } from '../../../helpers/api';
+import { loadSearchFilters, usersApi } from '../../../helpers/api';
 import { enableBackForOverlay, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -16,7 +16,7 @@ export class PageSettingsSearches {
 
   @Method()
   async activatedCallback() {
-    await this.loadSearchFilters();
+    this.filters = await loadSearchFilters();
   }
 
   render() {
@@ -56,17 +56,9 @@ export class PageSettingsSearches {
     );
   }
 
-  private async loadSearchFilters() {
-    try {
-      ({ data: this.filters } = await usersApi.getSearchFilters(state.currentUser.id));
-    } catch (ex) {
-      console.error(ex);
-    }
-  }
-
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.addSearchFilter(state.currentUser.id, searchFilter);
+      await usersApi.addSearchFilter(searchFilter);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create search filter.');
@@ -75,7 +67,7 @@ export class PageSettingsSearches {
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.saveSearchFilter(state.currentUser.id, searchFilter.id, searchFilter);
+      await usersApi.saveSearchFilter(searchFilter.id, searchFilter);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save search filter.');
@@ -88,7 +80,7 @@ export class PageSettingsSearches {
     }
 
     try {
-      await usersApi.deleteSearchFilter(state.currentUser.id, id);
+      await usersApi.deleteSearchFilter(id);
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete search filter.');
@@ -111,10 +103,9 @@ export class PageSettingsSearches {
       if (data) {
         await this.saveNewSearchFilter({
           ...data.searchFilter,
-          name: data.name,
-          userId: state.currentUser.id
+          name: data.name
         });
-        await this.loadSearchFilters();
+        this.filters = await loadSearchFilters();
       }
     });
   }
@@ -125,7 +116,7 @@ export class PageSettingsSearches {
     }
 
     await enableBackForOverlay(async () => {
-      const { data: searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, id);
+      const { data: searchFilter } = await usersApi.getSearchFilter(id);
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
@@ -146,7 +137,7 @@ export class PageSettingsSearches {
           ...data.searchFilter,
           name: data.name
         });
-        await this.loadSearchFilters();
+        this.filters = await loadSearchFilters();
       }
     });
   }
@@ -162,7 +153,7 @@ export class PageSettingsSearches {
             text: 'Yes',
             handler: async () => {
               await this.deleteSearchFilter(searchFilter.id);
-              await this.loadSearchFilters();
+              this.filters = await loadSearchFilters();
               return true;
             }
           }
@@ -182,7 +173,7 @@ export class PageSettingsSearches {
     }
 
     try {
-      ({ data: state.searchFilter } = await usersApi.getSearchFilter(state.currentUser.id, id));
+      ({ data: state.searchFilter } = await usersApi.getSearchFilter(id));
       await redirect('/search');
     } catch (ex) {
       console.error(ex);
