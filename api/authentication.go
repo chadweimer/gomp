@@ -96,12 +96,16 @@ func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 
 			// If the route requires scopes, check them
 			if len(scopes) > 0 && (len(scopes) != 1 || scopes[0] != "") {
-				// If the scopes of the token don't match the latest scopes of the user,
-				// don't proceed. The client should refresh the token and try again.
-				userScopes := getScopes(user)
-				if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
-					h.Error(w, r, http.StatusForbidden, errors.New("user scopes have changed"))
-					return
+				// If the user has been modified since issuing the token,
+				// we need to check if the scopes are still the same
+				if claims.IssuedAt.Time.Before(*user.ModifiedAt) {
+					// If the scopes of the token don't match the latest scopes of the user,
+					// don't proceed. The client should refresh the token and try again.
+					userScopes := getScopes(user)
+					if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
+						h.Error(w, r, http.StatusForbidden, errors.New("user scopes have changed"))
+						return
+					}
 				}
 
 				for _, scope := range scopes {
