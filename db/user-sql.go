@@ -180,7 +180,7 @@ func (d *sqlUserDriver) List() (*[]models.User, error) {
 func (*sqlUserDriver) listImpl(db sqlx.Queryer) (*[]models.User, error) {
 	var users []models.User
 
-	if err := sqlx.Select(db, &users, "SELECT id, username, access_level FROM app_user ORDER BY username ASC"); err != nil {
+	if err := sqlx.Select(db, &users, "SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC"); err != nil {
 		return nil, err
 	}
 
