@@ -19,6 +19,37 @@ type UserWithPasswordHash struct {
 
 type sqlDriver struct {
 	Db *sqlx.DB
+
+	app    *sqlAppConfigurationDriver
+	images *sqlRecipeImageDriver
+	tags   *sqlTagDriver
+	notes  *sqlNoteDriver
+	links  *sqlLinkDriver
+	users  *sqlUserDriver
+}
+
+func (d *sqlDriver) AppConfiguration() AppConfigurationDriver {
+	return d.app
+}
+
+func (d *sqlDriver) Images() RecipeImageDriver {
+	return d.images
+}
+
+func (d *sqlDriver) Tags() TagDriver {
+	return d.tags
+}
+
+func (d *sqlDriver) Notes() NoteDriver {
+	return d.notes
+}
+
+func (d *sqlDriver) Links() LinkDriver {
+	return d.links
+}
+
+func (d *sqlDriver) Users() UserDriver {
+	return d.users
 }
 
 func (d *sqlDriver) Close() error {

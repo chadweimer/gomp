@@ -11,7 +11,7 @@ import (
 )
 
 type sqlUserDriver struct {
-	*sqlDriver
+	Db *sqlx.DB
 }
 
 func (d *sqlUserDriver) Authenticate(username, password string) (*models.User, error) {
@@ -36,18 +36,11 @@ func (d *sqlUserDriver) Create(user *UserWithPasswordHash) error {
 	})
 }
 
-func (*sqlUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Execer) error {
+func (*sqlUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Queryer) error {
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
-		"VALUES ($1, $2, $3)"
+		"VALUES ($1, $2, $3) RETURNING id"
 
-	res, err := db.Exec(stmt, user.Username, user.PasswordHash, user.AccessLevel)
-	if err != nil {
-		return err
-	}
-	userId, _ := res.LastInsertId()
-	user.Id = &userId
-
-	return nil
+	return sqlx.Get(db, user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
 }
 
 func (d *sqlUserDriver) Read(id int64) (*UserWithPasswordHash, error) {
@@ -193,27 +186,29 @@ func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) err
 	})
 }
 
-func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Execer) error {
-	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
-		"VALUES ($1, $2, $3, $4, $5, $6)"
+func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
+	if filter.UserId == nil {
+		return errors.New("user id is required")
+	}
 
-	res, err := db.Exec(
+	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
+		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
+
+	err := sqlx.Get(db, filter,
 		stmt, filter.UserId, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
 	if err != nil {
 		return err
 	}
-	filterId, _ := res.LastInsertId()
-	filter.Id = &filterId
 
-	if err = d.setSearchFilterFieldsImpl(filterId, filter.Fields, db); err != nil {
+	if err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db); err != nil {
 		return err
 	}
 
-	if err = d.setSearchFilterStatesImpl(filterId, filter.States, db); err != nil {
+	if err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db); err != nil {
 		return err
 	}
 
-	return d.setSearchFilterTagsImpl(filterId, filter.Tags, db)
+	return d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
 }
 
 func (*sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []models.SearchField, db sqlx.Execer) error {

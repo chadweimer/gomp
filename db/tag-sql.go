@@ -5,7 +5,7 @@ import (
 )
 
 type sqlTagDriver struct {
-	*sqlDriver
+	Db *sqlx.DB
 }
 
 func (d *sqlTagDriver) Create(recipeId int64, tag string) error {

@@ -8,25 +8,22 @@ import (
 )
 
 type sqlRecipeImageDriver struct {
-	*sqlDriver
+	Db *sqlx.DB
 }
 
 func (d *sqlRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.CreateImpl(imageInfo, db)
+		return d.createImpl(imageInfo, db)
 	})
 }
 
-func (d *sqlRecipeImageDriver) CreateImpl(image *models.RecipeImage, db sqlx.Execer) error {
+func (d *sqlRecipeImageDriver) createImpl(image *models.RecipeImage, db sqlx.Ext) error {
 	stmt := "INSERT INTO recipe_image (recipe_id, name, url, thumbnail_url) " +
-		"VALUES ($1, $2, $3, $4)"
+		"VALUES ($1, $2, $3, $4) RETURNING id"
 
-	res, err := db.Exec(stmt, image.RecipeId, image.Name, image.Url, image.ThumbnailUrl)
-	if err != nil {
+	if err := sqlx.Get(db, image, stmt, image.RecipeId, image.Name, image.Url, image.ThumbnailUrl); err != nil {
 		return fmt.Errorf("failed to insert db record for newly saved image: %w", err)
 	}
-	imageId, _ := res.LastInsertId()
-	image.Id = &imageId
 
 	// Switch to a new main image if necessary, since this might be the first image attached
 	return d.setMainImageIfNecessary(*image.RecipeId, db)

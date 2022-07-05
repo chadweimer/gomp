@@ -6,7 +6,7 @@ import (
 )
 
 type sqlNoteDriver struct {
-	*sqlDriver
+	Db *sqlx.DB
 }
 
 func (d *sqlNoteDriver) Create(note *models.Note) error {
@@ -15,18 +15,11 @@ func (d *sqlNoteDriver) Create(note *models.Note) error {
 	})
 }
 
-func (*sqlNoteDriver) createImpl(note *models.Note, db sqlx.Execer) error {
+func (*sqlNoteDriver) createImpl(note *models.Note, db sqlx.Queryer) error {
 	stmt := "INSERT INTO recipe_note (recipe_id, note) " +
-		"VALUES ($1, $2)"
+		"VALUES ($1, $2) RETURNING id"
 
-	res, err := db.Exec(stmt, note.RecipeId, note.Text)
-	if err != nil {
-		return err
-	}
-	noteId, _ := res.LastInsertId()
-	note.Id = &noteId
-
-	return nil
+	return sqlx.Get(db, note, stmt, note.RecipeId, note.Text)
 }
 
 func (d *sqlNoteDriver) Update(note *models.Note) error {

@@ -25,13 +25,7 @@ const SQLiteDriverName string = "sqlite3"
 type sqliteDriver struct {
 	*sqlDriver
 
-	app     *sqlAppConfigurationDriver
 	recipes *sqliteRecipeDriver
-	images  *sqlRecipeImageDriver
-	tags    *sqlTagDriver
-	notes   *sqlNoteDriver
-	links   *sqlLinkDriver
-	users   *sqlUserDriver
 }
 
 func openSQLite(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -59,20 +53,19 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	sqlDriver := &sqlDriver{Db: db}
+	sqlDriver := &sqlDriver{
+		Db: db,
+
+		app:    &sqlAppConfigurationDriver{db},
+		images: &sqlRecipeImageDriver{db},
+		tags:   &sqlTagDriver{db},
+		notes:  &sqlNoteDriver{db},
+		links:  &sqlLinkDriver{db},
+		users:  &sqlUserDriver{db},
+	}
 	drv := &sqliteDriver{
 		sqlDriver: sqlDriver,
-
-		app:    &sqlAppConfigurationDriver{sqlDriver},
-		images: &sqlRecipeImageDriver{sqlDriver},
-		tags:   &sqlTagDriver{sqlDriver},
-		notes:  &sqlNoteDriver{sqlDriver},
-		links:  &sqlLinkDriver{sqlDriver},
-		users:  &sqlUserDriver{sqlDriver},
-	}
-	drv.recipes = &sqliteRecipeDriver{
-		sqliteDriver:    drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
+		recipes:   &sqliteRecipeDriver{&sqlRecipeDriver{sqlDriver}},
 	}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
@@ -82,32 +75,8 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	return drv, nil
 }
 
-func (d *sqliteDriver) AppConfiguration() AppConfigurationDriver {
-	return d.app
-}
-
 func (d *sqliteDriver) Recipes() RecipeDriver {
 	return d.recipes
-}
-
-func (d *sqliteDriver) Images() RecipeImageDriver {
-	return d.images
-}
-
-func (d *sqliteDriver) Tags() TagDriver {
-	return d.tags
-}
-
-func (d *sqliteDriver) Notes() NoteDriver {
-	return d.notes
-}
-
-func (d *sqliteDriver) Links() LinkDriver {
-	return d.links
-}
-
-func (d *sqliteDriver) Users() UserDriver {
-	return d.users
 }
 
 func (*sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {

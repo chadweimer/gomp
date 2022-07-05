@@ -26,13 +26,7 @@ const PostgresDriverName string = "postgres"
 type postgresDriver struct {
 	*sqlDriver
 
-	app     *sqlAppConfigurationDriver
 	recipes *postgresRecipeDriver
-	images  *postgresRecipeImageDriver
-	tags    *sqlTagDriver
-	notes   *postgresNoteDriver
-	links   *sqlLinkDriver
-	users   *postgresUserDriver
 }
 
 func openPostgres(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -57,20 +51,19 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	sqlDriver := &sqlDriver{Db: db}
+	sqlDriver := &sqlDriver{
+		Db: db,
+
+		app:    &sqlAppConfigurationDriver{db},
+		images: &sqlRecipeImageDriver{db},
+		tags:   &sqlTagDriver{db},
+		notes:  &sqlNoteDriver{db},
+		links:  &sqlLinkDriver{db},
+		users:  &sqlUserDriver{db},
+	}
 	drv := &postgresDriver{
 		sqlDriver: sqlDriver,
-
-		app:    &sqlAppConfigurationDriver{sqlDriver},
-		images: &postgresRecipeImageDriver{&sqlRecipeImageDriver{sqlDriver}},
-		tags:   &sqlTagDriver{sqlDriver},
-		notes:  &postgresNoteDriver{&sqlNoteDriver{sqlDriver}},
-		links:  &sqlLinkDriver{sqlDriver},
-		users:  &postgresUserDriver{&sqlUserDriver{sqlDriver}},
-	}
-	drv.recipes = &postgresRecipeDriver{
-		postgresDriver:  drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
+		recipes:   &postgresRecipeDriver{&sqlRecipeDriver{sqlDriver}},
 	}
 
 	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
@@ -80,32 +73,8 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	return drv, nil
 }
 
-func (d *postgresDriver) AppConfiguration() AppConfigurationDriver {
-	return d.app
-}
-
 func (d *postgresDriver) Recipes() RecipeDriver {
 	return d.recipes
-}
-
-func (d *postgresDriver) Images() RecipeImageDriver {
-	return d.images
-}
-
-func (d *postgresDriver) Tags() TagDriver {
-	return d.tags
-}
-
-func (d *postgresDriver) Notes() NoteDriver {
-	return d.notes
-}
-
-func (d *postgresDriver) Links() LinkDriver {
-	return d.links
-}
-
-func (d *postgresDriver) Users() UserDriver {
-	return d.users
 }
 
 func (*postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
