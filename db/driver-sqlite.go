@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/jmoiron/sqlx"
@@ -22,16 +23,22 @@ import (
 // SQLiteDriverName is the name to use for this driver
 const SQLiteDriverName string = "sqlite3"
 
-type sqliteDriver struct {
-	*sqlDriver
+type sqliteRecipeDriverAdapter struct{}
 
-	app     *sqlAppConfigurationDriver
-	recipes *sqliteRecipeDriver
-	images  *sqlRecipeImageDriver
-	tags    *sqlTagDriver
-	notes   *sqlNoteDriver
-	links   *sqlLinkDriver
-	users   *sqlUserDriver
+func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+	fieldStr := ""
+	fieldArgs := make([]interface{}, 0)
+	for _, field := range supportedSearchFields {
+		if containsField(filterFields, field) {
+			if fieldStr != "" {
+				fieldStr += " OR "
+			}
+			fieldStr += "r." + string(field) + " LIKE ?"
+			fieldArgs = append(fieldArgs, "%"+query+"%")
+		}
+	}
+
+	return fieldStr, fieldArgs
 }
 
 func openSQLite(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -59,58 +66,15 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	sqlDriver := &sqlDriver{Db: db}
-	drv := &sqliteDriver{
-		sqlDriver: sqlDriver,
-
-		app:    &sqlAppConfigurationDriver{sqlDriver},
-		images: &sqlRecipeImageDriver{sqlDriver},
-		tags:   &sqlTagDriver{sqlDriver},
-		notes:  &sqlNoteDriver{sqlDriver},
-		links:  &sqlLinkDriver{sqlDriver},
-		users:  &sqlUserDriver{sqlDriver},
-	}
-	drv.recipes = &sqliteRecipeDriver{
-		sqliteDriver:    drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
-	}
-
-	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
+	if err := migrateSqliteDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
+	drv := newSqlDriver(db, sqliteRecipeDriverAdapter{})
 	return drv, nil
 }
 
-func (d *sqliteDriver) AppConfiguration() AppConfigurationDriver {
-	return d.app
-}
-
-func (d *sqliteDriver) Recipes() RecipeDriver {
-	return d.recipes
-}
-
-func (d *sqliteDriver) Images() RecipeImageDriver {
-	return d.images
-}
-
-func (d *sqliteDriver) Tags() TagDriver {
-	return d.tags
-}
-
-func (d *sqliteDriver) Notes() NoteDriver {
-	return d.notes
-}
-
-func (d *sqliteDriver) Links() LinkDriver {
-	return d.links
-}
-
-func (d *sqliteDriver) Users() UserDriver {
-	return d.users
-}
-
-func (*sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func migrateSqliteDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return err

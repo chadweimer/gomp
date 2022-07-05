@@ -6,7 +6,7 @@ import (
 )
 
 type sqlLinkDriver struct {
-	*sqlDriver
+	Db *sqlx.DB
 }
 
 func (d *sqlLinkDriver) Create(recipeId, destRecipeId int64) error {

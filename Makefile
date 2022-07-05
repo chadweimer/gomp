@@ -16,6 +16,7 @@ MODELS_CODEGEN_FILE=models/models.gen.go
 API_CODEGEN_FILE=api/routes.gen.go
 CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE)
 
+GO_FLAGS=--tags "sqlite_foreign_keys"
 GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
 GO_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
 GO_WIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS)"
@@ -97,9 +98,9 @@ $(BUILD_DIR)/%/static: $(CLIENT_BUILD_DIR)
 	rm -rf $@ && mkdir -p $@ && cp -R $</* $@
 
 $(BUILD_DIR)/linux/%/gomp: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
+	$(GO_ENV) go build $(GO_FLAGS) -o $@ $(GO_LD_FLAGS)
 $(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	$(GO_ENV) go build -o $@ $(GO_WIN_LD_FLAGS)
+	$(GO_ENV) go build $(GO_FLAGS) -o $@ $(GO_WIN_LD_FLAGS)
 
 .PHONY: clean-$(BUILD_DIR)/%
 clean-$(BUILD_DIR)/%:

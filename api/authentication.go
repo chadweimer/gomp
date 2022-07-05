@@ -86,7 +86,7 @@ func (h apiHandler) createToken(user *models.User) (string, error) {
 
 func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		scopes, ok := r.Context().Value(BearerScopes).([]string)
+		routeScopes, ok := r.Context().Value(BearerScopes).([]string)
 		if ok {
 			user, claims, err := h.isAuthenticated(r)
 			if err != nil {
@@ -95,16 +95,20 @@ func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 			}
 
 			// If the route requires scopes, check them
-			if len(scopes) > 0 && (len(scopes) != 1 || scopes[0] != "") {
-				// If the scopes of the token don't match the latest scopes of the user,
-				// don't proceed. The client should refresh the token and try again.
-				userScopes := getScopes(user)
-				if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
-					h.Error(w, r, http.StatusForbidden, errors.New("user scopes have changed"))
-					return
+			if len(routeScopes) > 0 && (len(routeScopes) != 1 || routeScopes[0] != "") {
+				// If the user has been modified since issuing the token,
+				// we need to check if the scopes are still the same
+				if claims.IssuedAt.Time.Before(*user.ModifiedAt) {
+					// If the scopes of the token don't match the latest scopes of the user,
+					// don't proceed. The client should refresh the token and try again.
+					userScopes := getScopes(user)
+					if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
+						h.Error(w, r, http.StatusForbidden, errors.New("user scopes have changed"))
+						return
+					}
 				}
 
-				for _, scope := range scopes {
+				for _, scope := range routeScopes {
 					if err := hasScope(scope, claims); err != nil {
 						err := fmt.Errorf("endpoint '%s' requires '%s' scope: %w", r.URL.Path, scope, err)
 						h.Error(w, r, http.StatusForbidden, err)

@@ -6,7 +6,7 @@ import (
 )
 
 type sqlAppConfigurationDriver struct {
-	*sqlDriver
+	Db *sqlx.DB
 }
 
 func (d *sqlAppConfigurationDriver) Read() (*models.AppConfiguration, error) {

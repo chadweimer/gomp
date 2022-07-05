@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
@@ -23,16 +24,22 @@ import (
 // PostgresDriverName is the name to use for this driver
 const PostgresDriverName string = "postgres"
 
-type postgresDriver struct {
-	*sqlDriver
+type postgresRecipeDriverAdapter struct{}
 
-	app     *sqlAppConfigurationDriver
-	recipes *postgresRecipeDriver
-	images  *postgresRecipeImageDriver
-	tags    *sqlTagDriver
-	notes   *postgresNoteDriver
-	links   *sqlLinkDriver
-	users   *postgresUserDriver
+func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+	fieldStr := ""
+	fieldArgs := make([]any, 0)
+	for _, field := range supportedSearchFields {
+		if containsField(filterFields, field) {
+			if fieldStr != "" {
+				fieldStr += " OR "
+			}
+			fieldStr += "to_tsvector('english', r." + string(field) + ") @@ plainto_tsquery(?)"
+			fieldArgs = append(fieldArgs, query)
+		}
+	}
+
+	return fieldStr, fieldArgs
 }
 
 func openPostgres(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -57,58 +64,15 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	sqlDriver := &sqlDriver{Db: db}
-	drv := &postgresDriver{
-		sqlDriver: sqlDriver,
-
-		app:    &sqlAppConfigurationDriver{sqlDriver},
-		images: &postgresRecipeImageDriver{&sqlRecipeImageDriver{sqlDriver}},
-		tags:   &sqlTagDriver{sqlDriver},
-		notes:  &postgresNoteDriver{&sqlNoteDriver{sqlDriver}},
-		links:  &sqlLinkDriver{sqlDriver},
-		users:  &postgresUserDriver{&sqlUserDriver{sqlDriver}},
-	}
-	drv.recipes = &postgresRecipeDriver{
-		postgresDriver:  drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
-	}
-
-	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
+	if err := migratePostgresDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
+	drv := newSqlDriver(db, postgresRecipeDriverAdapter{})
 	return drv, nil
 }
 
-func (d *postgresDriver) AppConfiguration() AppConfigurationDriver {
-	return d.app
-}
-
-func (d *postgresDriver) Recipes() RecipeDriver {
-	return d.recipes
-}
-
-func (d *postgresDriver) Images() RecipeImageDriver {
-	return d.images
-}
-
-func (d *postgresDriver) Tags() TagDriver {
-	return d.tags
-}
-
-func (d *postgresDriver) Notes() NoteDriver {
-	return d.notes
-}
-
-func (d *postgresDriver) Links() LinkDriver {
-	return d.links
-}
-
-func (d *postgresDriver) Users() UserDriver {
-	return d.users
-}
-
-func (*postgresDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	// Lock the database while we're migrating so that multiple instances
 	// don't attempt to migrate simultaneously. This requires the same connection
 	// to be used for both locking and unlocking.

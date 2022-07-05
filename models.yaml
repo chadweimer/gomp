@@ -351,6 +351,22 @@ components:
             db: username
         accessLevel:
           $ref: "#/components/schemas/accessLevel"
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"created_at"
+          x-oapi-codegen-extra-tags:
+            db: created_at
+          x-go-type: time.Time
+        modifiedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          x-go-custom-tag: db:"modified_at"
+          x-oapi-codegen-extra-tags:
+            db: modified_at
+          x-go-type: time.Time
     userSettings:
       type: object
       required:
