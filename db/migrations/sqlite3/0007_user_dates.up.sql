@@ -21,6 +21,8 @@ CREATE INDEX user_username_idx ON app_user(username);
 
 CREATE TRIGGER on_app_user_update
     AFTER UPDATE ON app_user
+    -- Intentionally ignore password here
+    WHEN OLD.username IS NOT NEW.username OR OLD.access_level IS NOT NEW.access_level
 BEGIN
     UPDATE app_user SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
