@@ -21,7 +21,6 @@ type Driver interface {
 
 	AppConfiguration() AppConfigurationDriver
 	Recipes() RecipeDriver
-	Tags() TagDriver
 	Notes() NoteDriver
 	Images() RecipeImageDriver
 	Links() LinkDriver
@@ -131,20 +130,17 @@ type RecipeDriver interface {
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
 	Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
-}
 
-// TagDriver provides functionality to edit and retrieve tags attached to recipes.
-type TagDriver interface {
 	// Create stores the tag in the database as a new record using
 	// a dedicated transaction that is committed if there are not errors.
-	Create(recipeId int64, tag string) error
+	CreateTag(recipeId int64, tag string) error
 
 	// DeleteAll removes all tags for the specified recipe from the database using a dedicated
 	// transaction that is committed if there are not errors.
-	DeleteAll(recipeId int64) error
+	DeleteAllTags(recipeId int64) error
 
 	// List retrieves all tags associated with the recipe with the specified id.
-	List(recipeId int64) (*[]string, error)
+	ListTags(recipeId int64) (*[]string, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.

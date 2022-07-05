@@ -20,24 +20,24 @@ type UserWithPasswordHash struct {
 type sqlDriver struct {
 	Db *sqlx.DB
 
-	app    *sqlAppConfigurationDriver
-	images *sqlRecipeImageDriver
-	tags   *sqlTagDriver
-	notes  *sqlNoteDriver
-	links  *sqlLinkDriver
-	users  *sqlUserDriver
+	app     *sqlAppConfigurationDriver
+	recipes *sqlRecipeDriver
+	images  *sqlRecipeImageDriver
+	notes   *sqlNoteDriver
+	links   *sqlLinkDriver
+	users   *sqlUserDriver
 }
 
 func (d *sqlDriver) AppConfiguration() AppConfigurationDriver {
 	return d.app
 }
 
-func (d *sqlDriver) Images() RecipeImageDriver {
-	return d.images
+func (d *sqlDriver) Recipes() RecipeDriver {
+	return d.recipes
 }
 
-func (d *sqlDriver) Tags() TagDriver {
-	return d.tags
+func (d *sqlDriver) Images() RecipeImageDriver {
+	return d.images
 }
 
 func (d *sqlDriver) Notes() NoteDriver {
