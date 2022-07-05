@@ -1,4 +1,4 @@
-PRAGMA foreign_keys=off;
+PRAGMA defer_foreign_keys=on;
 
 CREATE TABLE app_user_new (
     id INTEGER NOT NULL PRIMARY KEY,
@@ -24,5 +24,3 @@ CREATE TRIGGER on_app_user_update
 BEGIN
     UPDATE app_user SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
-
-PRAGMA foreign_keys=on;
