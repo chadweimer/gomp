@@ -26,3 +26,9 @@ CREATE TRIGGER on_app_user_update
 BEGIN
     UPDATE app_user SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+CREATE TRIGGER on_app_user_insert
+    AFTER INSERT ON app_user
+BEGIN
+    INSERT INTO app_user_settings(user_id) VALUES(NEW.id);
+END;

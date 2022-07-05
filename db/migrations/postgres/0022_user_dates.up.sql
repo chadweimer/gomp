@@ -18,4 +18,17 @@ CREATE TRIGGER on_app_user_update
     WHEN (OLD.* IS DISTINCT FROM NEW.*)
     EXECUTE FUNCTION on_app_user_update();
 
+CREATE FUNCTION on_app_user_insert() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO app_user_settings(user_id) VALUES(NEW.id);
+
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_app_user_insert
+    AFTER INSERT ON app_user
+    FOR EACH ROW
+    EXECUTE FUNCTION on_app_user_insert();
+
 COMMIT;
