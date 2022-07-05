@@ -64,21 +64,11 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	drv := &sqlDriver{
-		Db: db,
-
-		app:     &sqlAppConfigurationDriver{db},
-		recipes: &sqlRecipeDriver{db, postgresRecipeDriverAdapter{}},
-		images:  &sqlRecipeImageDriver{db},
-		notes:   &sqlNoteDriver{db},
-		links:   &sqlLinkDriver{db},
-		users:   &sqlUserDriver{db},
-	}
-
 	if err := migratePostgresDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
+	drv := newSqlDriver(db, postgresRecipeDriverAdapter{})
 	return drv, nil
 }
 

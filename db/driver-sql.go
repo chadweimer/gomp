@@ -28,6 +28,19 @@ type sqlDriver struct {
 	users   *sqlUserDriver
 }
 
+func newSqlDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+	return &sqlDriver{
+		Db: db,
+
+		app:     &sqlAppConfigurationDriver{db},
+		recipes: &sqlRecipeDriver{db, adapter},
+		images:  &sqlRecipeImageDriver{db},
+		notes:   &sqlNoteDriver{db},
+		links:   &sqlLinkDriver{db},
+		users:   &sqlUserDriver{db},
+	}
+}
+
 func (d *sqlDriver) AppConfiguration() AppConfigurationDriver {
 	return d.app
 }
