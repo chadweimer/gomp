@@ -1,3 +1,5 @@
+BEGIN;
+
 -- Schema
 
 CREATE TABLE app_user (
@@ -86,3 +88,5 @@ INSERT INTO app_user (username, password_hash, access_level)
 VALUES('admin@example.com', '$2a$08$1C0IMQAwkxLQcYvL/03jpuwOZjyF/6BCXgxHhkoarRoVp1wmiGwAS', 'admin');
 
 INSERT INTO app_user_settings(user_id) SELECT id FROM app_user;
+
+COMMIT;
