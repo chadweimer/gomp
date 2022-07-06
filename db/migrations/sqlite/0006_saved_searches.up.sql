@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE search_filter (
     id INTEGER NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL,
@@ -34,3 +36,5 @@ CREATE TABLE search_filter_tag (
     FOREIGN KEY(search_filter_id) REFERENCES search_filter(id) ON DELETE CASCADE
 );
 CREATE INDEX search_filter_tag_search_filter_id_idx ON search_filter_tag(search_filter_id);
+
+COMMIT;

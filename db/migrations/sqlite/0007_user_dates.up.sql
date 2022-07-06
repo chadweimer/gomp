@@ -1,4 +1,6 @@
-PRAGMA defer_foreign_keys=on;
+PRAGMA foreign_keys=off;
+
+BEGIN;
 
 CREATE TABLE app_user_new (
     id INTEGER NOT NULL PRIMARY KEY,
@@ -32,3 +34,7 @@ CREATE TRIGGER on_app_user_insert
 BEGIN
     INSERT INTO app_user_settings(user_id) VALUES(NEW.id);
 END;
+
+COMMIT;
+
+PRAGMA foreign_keys=on;

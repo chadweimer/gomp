@@ -83,6 +83,7 @@ func migrateSqliteDatabase(db *sqlx.DB, migrationsTableName string, migrationsFo
 
 	driver, err := sqlite.WithInstance(db.DB, &sqlite.Config{
 		MigrationsTable: migrationsTableName,
+		NoTxWrap:        true,
 	})
 	if err != nil {
 		return err
