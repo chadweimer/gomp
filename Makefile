@@ -18,10 +18,10 @@ CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE)
 
 GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
 GO_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS)"
-GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64
-GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm
-GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64
-GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64
+GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=0
+GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm CGO_ENABLED=0
+GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64 CGO_ENABLED=0
+GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=0
 
 GO_FILES := $(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
