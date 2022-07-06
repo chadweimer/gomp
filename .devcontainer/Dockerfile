@@ -14,11 +14,6 @@ RUN apt-get update \
         zip \
         binfmt-support \
         qemu-user-static \
-        gcc-arm-linux-gnueabihf \
-        libc6-dev-armhf-cross \
-        gcc-aarch64-linux-gnu \
-        libc6-dev-arm64-cross \
-        gcc-mingw-w64-x86-64 \
         # openapi-codegen dependencies
         openjdk-11-jdk-headless \
         # Puppeteer dependencies
