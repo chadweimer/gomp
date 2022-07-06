@@ -10,18 +10,18 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
 
 	// sqlite database driver
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 
 	// File source for db migration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // SQLiteDriverName is the name to use for this driver
-const SQLiteDriverName string = "sqlite3"
+const SQLiteDriverName string = "sqlite"
 
 type sqliteRecipeDriverAdapter struct{}
 
@@ -81,7 +81,7 @@ func migrateSqliteDatabase(db *sqlx.DB, migrationsTableName string, migrationsFo
 	}
 	defer conn.Close()
 
-	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{
+	driver, err := sqlite.WithInstance(db.DB, &sqlite.Config{
 		MigrationsTable: migrationsTableName,
 	})
 	if err != nil {

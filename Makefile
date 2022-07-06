@@ -16,14 +16,12 @@ MODELS_CODEGEN_FILE=models/models.gen.go
 API_CODEGEN_FILE=api/routes.gen.go
 CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE)
 
-GO_FLAGS=--tags "sqlite_foreign_keys"
 GO_VERSION_FLAGS=-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'
-GO_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS) -extldflags '-static -static-libgcc'"
-GO_WIN_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS)"
-GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64 CGO_ENABLED=1
-GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm CGO_ENABLED=1 CC=arm-linux-gnueabihf-gcc
-GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64 CGO_ENABLED=1 CC=aarch64-linux-gnu-gcc
-GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc
+GO_LD_FLAGS=-ldflags "$(GO_VERSION_FLAGS)"
+GO_ENV_LIN_AMD64=GOOS=linux GOARCH=amd64
+GO_ENV_LIN_ARM=GOOS=linux GOARCH=arm
+GO_ENV_LIN_ARM64=GOOS=linux GOARCH=arm64
+GO_ENV_WIN_AMD64=GOOS=windows GOARCH=amd64
 
 GO_FILES := $(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
@@ -98,9 +96,9 @@ $(BUILD_DIR)/%/static: $(CLIENT_BUILD_DIR)
 	rm -rf $@ && mkdir -p $@ && cp -R $</* $@
 
 $(BUILD_DIR)/linux/%/gomp: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	$(GO_ENV) go build $(GO_FLAGS) -o $@ $(GO_LD_FLAGS)
+	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
 $(BUILD_DIR)/windows/%/gomp.exe: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	$(GO_ENV) go build $(GO_FLAGS) -o $@ $(GO_WIN_LD_FLAGS)
+	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
 
 .PHONY: clean-$(BUILD_DIR)/%
 clean-$(BUILD_DIR)/%:

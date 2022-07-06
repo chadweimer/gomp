@@ -57,7 +57,12 @@ type Config struct {
 	BaseAssetsPath string
 }
 
-const defaultSecureKey string = "ChangeMe"
+const (
+	defaultSecureKey = "ChangeMe"
+
+	// Needed for backward compatibility
+	sqliteLegacyDriverName = "sqlite3"
+)
 
 // Load reads the configuration file from the specified path
 func Load() *Config {
@@ -68,7 +73,7 @@ func Load() *Config {
 		IsDevelopment:          false,
 		SecureKeys:             []string{defaultSecureKey},
 		DatabaseDriver:         "",
-		DatabaseUrl:            "file:" + filepath.Join("data", "data.db"),
+		DatabaseUrl:            "file:" + filepath.Join("data", "data.db") + "?_pragma=foreign_keys(1)",
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
 		BaseAssetsPath:         "static",
@@ -104,6 +109,11 @@ func Load() *Config {
 		} else {
 			log.Warn().Msg("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
 		}
+	} else if c.DatabaseDriver == sqliteLegacyDriverName {
+		// If the old driver name for sqlite is being used,
+		// we'll allow it and map it to the new one
+		log.Debug().Msgf("Detected DATABASE_DRIVER legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, db.SQLiteDriverName)
+		c.DatabaseDriver = db.SQLiteDriverName
 	}
 
 	logCtx := log.Info().
