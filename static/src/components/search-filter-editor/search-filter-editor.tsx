@@ -1,8 +1,8 @@
-import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { RecipeState, SearchField, SearchFilter, SortBy, SortDir, YesNoAny } from '../../generated';
+import { Component, Element, Host, h, Prop, State } from '@stencil/core';
+import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../generated';
+import { loadSearchFilters, loadUserSettings, usersApi } from '../../helpers/api';
 import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
-import state from '../../stores/state';
 
 @Component({
   tag: 'search-filter-editor',
@@ -10,15 +10,25 @@ import state from '../../stores/state';
 })
 export class SearchFilterEditor {
   @Prop() name = '';
+  @Prop() saveLabel = 'Save';
   @Prop() showName = true;
+  @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
+
+  @State() currentUserSettings: UserSettings | null;
+  @State() selectedFilterId: number | null = null;
+  @State() filters: SavedSearchFilterCompact[] = [];
 
   @Element() el!: HTMLSearchFilterEditorElement;
   private form!: HTMLFormElement;
 
-  connectedCallback() {
+  async connectedCallback() {
     configureModalAutofocus(this.el);
+    this.currentUserSettings = await loadUserSettings();
+    if (this.showSavedLoader) {
+      this.filters = await loadSearchFilters();
+    }
   }
 
   render() {
@@ -32,13 +42,26 @@ export class SearchFilterEditor {
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
             <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+              <ion-button onClick={() => this.onSaveClicked()}>{this.saveLabel}</ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+            {this.showSavedLoader ?
+              <ion-item>
+                <ion-label>Load From Saved</ion-label>
+                <ion-select value={this.selectedFilterId} interface="popover" onIonChange={e => this.selectedFilterId = e.detail.value }>
+                  {this.filters?.map(item =>
+                    <ion-select-option value={item.id}>{item.name}</ion-select-option>
+                  )}
+                </ion-select>
+                <ion-button slot="end" fill="clear" disabled={this.selectedFilterId === null} onClick={() => this.onLoadSearchClicked()}>
+                  <ion-icon slot="icon-only" name="open-outline" />
+                </ion-button>
+              </ion-item>
+              : ''}
             {this.showName ?
               <ion-item>
                 <ion-label position="stacked">Name</ion-label>
@@ -49,7 +72,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">Search Terms</ion-label>
               <ion-input value={this.searchFilter.query} onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value }} />
             </ion-item>
-            <tags-input value={this.searchFilter.tags} suggestions={state.currentUserSettings?.favoriteTags ?? []}
+            <tags-input value={this.searchFilter.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
               onValueChanged={e => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />
             <ion-item>
               <ion-label position="stacked">Sort By</ion-label>
@@ -114,6 +137,19 @@ export class SearchFilterEditor {
 
   private onResetClicked() {
     this.searchFilter = getDefaultSearchFilter();
+  }
+
+  private async onLoadSearchClicked() {
+    if (this.selectedFilterId === null) {
+      return;
+    }
+
+    try {
+      ({ data: this.searchFilter } = await usersApi.getSearchFilter(this.selectedFilterId));
+      this.selectedFilterId = null;
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 
 }

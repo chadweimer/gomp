@@ -1,16 +1,17 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { recipesApi, usersApi } from '../../../helpers/api';
-import { hasAccessLevel, redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny } from '../../../helpers/utils';
-import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy } from '../../../generated';
+import { loadUserSettings, recipesApi, usersApi } from '../../../helpers/api';
+import { redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny, hasScope } from '../../../helpers/utils';
+import state, { refreshSearchResults } from '../../../stores/state';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
 
 @Component({
   tag: 'page-home',
   styleUrl: 'page-home.css'
 })
 export class PageHome {
+  @State() currentUserSettings: UserSettings | null;
   @State() searches: {
     title: string,
     filter: SearchFilter,
@@ -22,6 +23,7 @@ export class PageHome {
 
   @Method()
   async activatedCallback() {
+   this.currentUserSettings = await loadUserSettings();
     await this.loadSearchFilters();
   }
 
@@ -33,8 +35,8 @@ export class PageHome {
             <ion-row>
               <ion-col>
                 <header class="ion-text-center">
-                  <h1>{state.currentUserSettings?.homeTitle}</h1>
-                  <img alt="Home Image" src={state.currentUserSettings?.homeImageUrl} hidden={!state.currentUserSettings?.homeImageUrl} />
+                  <h1>{this.currentUserSettings?.homeTitle}</h1>
+                  <img alt="Home Image" src={this.currentUserSettings?.homeImageUrl} hidden={!this.currentUserSettings?.homeImageUrl} />
                 </header>
               </ion-col>
             </ion-row>
@@ -62,7 +64,7 @@ export class PageHome {
           )}
         </ion-content>
 
-        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
             <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
               <ion-icon icon="add" />
@@ -96,10 +98,10 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const { data: savedFilters } = await usersApi.getSearchFilters(state.currentUser.id);
+      const { data: savedFilters } = await usersApi.getSearchFilters();
       if (savedFilters) {
         for (const savedFilter of savedFilters) {
-          const { data: savedSearchFilter } = (await usersApi.getSearchFilter(savedFilter.userId, savedFilter.id));
+          const { data: savedSearchFilter } = (await usersApi.getSearchFilter(savedFilter.id));
           const { total, recipes } = await this.performSearch(savedSearchFilter);
           searches.push({
             title: savedSearchFilter.name,
@@ -142,6 +144,9 @@ export class PageHome {
           'Uploading picture...');
       }
 
+      // Update the search results since the new recipe may be in them
+      await refreshSearchResults();
+
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
@@ -154,6 +159,7 @@ export class PageHome {
       const modal = await modalController.create({
         component: 'recipe-editor',
         animated: false,
+        backdropDismiss: false,
       });
 
       await modal.present();
@@ -169,7 +175,6 @@ export class PageHome {
     state.searchFilter = {
       ...filter
     };
-    state.searchPage = 1;
     await redirect('/search');
   }
 

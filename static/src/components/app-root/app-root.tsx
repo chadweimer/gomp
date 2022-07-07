@@ -2,11 +2,12 @@ import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
-import { appApi, usersApi } from '../../helpers/api';
-import { hasAccessLevel, redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, getActiveComponent } from '../../helpers/utils';
+import { appApi } from '../../helpers/api';
+import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState } from '../../stores/state';
+import state, { clearState, refreshSearchResults } from '../../stores/state';
+import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 
 @Component({
   tag: 'app-root',
@@ -19,6 +20,7 @@ export class AppRoot {
   private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
   private searchBar!: HTMLIonInputElement;
+  private isRefreshingToken = false;
 
   async componentWillLoad() {
     axios.interceptors.request.use(config => {
@@ -44,6 +46,22 @@ export class AppRoot {
       }
       if (error.response?.status === 401) {
         await this.logout();
+      } else if (error.response?.status === 403 && !this.isRefreshingToken) {
+        // Try refreshing the token and repeating the request
+        // This can fix the situation where the access level of
+        // the user has been changed and requires a new token
+        this.isRefreshingToken = true;
+        try {
+          const { data } = await appApi.refreshToken();
+          state.jwtToken = data.token;
+          const resp = await axios.request(error.config);
+          return resp;
+        } catch(retryError) {
+          // Just log this; let the original error propogate
+          console.error(retryError);
+        } finally {
+          this.isRefreshingToken = false;
+        }
       }
 
       return Promise.reject(error);
@@ -66,18 +84,18 @@ export class AppRoot {
             <ion-route url="/:recipeId" component="page-recipe" />
           </ion-route>
 
-          <ion-route url="/settings" component="tab-settings" beforeEnter={() => this.requireLogin()}>
+          <ion-route url="/settings" component="tab-settings">
             <ion-route component="page-settings">
-              <ion-route component="tab-settings-preferences" />
+              <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
               <ion-route url="/preferences" component="tab-settings-preferences" />
               <ion-route url="/searches" component="tab-settings-searches" />
               <ion-route url="/security" component="tab-settings-security" />
             </ion-route>
           </ion-route>
 
-          <ion-route url="/admin" component="tab-admin" beforeEnter={() => this.requireAdmin()}>
+          <ion-route url="/admin" component="tab-admin">
             <ion-route component="page-admin">
-              <ion-route component="tab-admin-configuration" />
+              <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
               <ion-route url="/configuration" component="tab-admin-configuration" />
               <ion-route url="/users" component="tab-admin-users" />
             </ion-route>
@@ -100,7 +118,7 @@ export class AppRoot {
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
-              {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
+              {hasScope(state.jwtToken, AccessLevel.Admin) ?
                 <ion-item href="/admin" lines="full">
                   <ion-icon name="shield-checkmark" slot="start" />
                   <ion-label>Admin</ion-label>
@@ -114,24 +132,24 @@ export class AppRoot {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. Copyright © 2016-2021 Chad Weimer</div>
+            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. Copyright © 2016-2022 Chad Weimer</div>
           </ion-footer>
         </ion-menu>
 
         <div class="ion-page" id="main-content">
           <ion-header mode="md">
             <ion-toolbar color="primary">
-              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ?
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="start">
                   <ion-menu-button class="ion-hide-lg-up" />
                 </ion-buttons>
                 : ''}
 
-              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasAccessLevel(state.currentUser, AccessLevel.Viewer) }}>
+              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasScope(state.jwtToken, AccessLevel.Viewer) }}>
                 <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
-              {hasAccessLevel(state.currentUser, AccessLevel.Viewer) ? [
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ? [
                 <ion-buttons slot="end">
                   <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
                   <ion-button href="/search" class="ion-hide-lg-down">
@@ -139,7 +157,7 @@ export class AppRoot {
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
                   <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
-                  {hasAccessLevel(state.currentUser, AccessLevel.Admin) ?
+                  {hasScope(state.jwtToken, AccessLevel.Admin) ?
                     <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
                     : ''}
                   <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
@@ -148,7 +166,7 @@ export class AppRoot {
                   <ion-icon icon="search" slot="start" />
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     onKeyDown={e => this.onSearchKeyDown(e)}
-                    onIonBlur={() => this.restoreSearchQuery()}
+                    onIonBlur={() => this.searchBar.value = state.searchFilter?.query ?? ''}
                     ref={el => this.searchBar = el} />
                   <ion-buttons slot="end" class="ion-no-margin">
                     <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
@@ -218,45 +236,20 @@ export class AppRoot {
     return !!state.jwtToken;
   }
 
-  private async requireLogin() {
+  private requireLogin(): NavigationHookResult {
     if (this.isLoggedIn()) {
-      // Refresh the user so that access controls are properly enforced
-      try {
-        ({ data: state.currentUser } = await usersApi.getCurrentUser());
-        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
-      } catch (ex) {
-        console.error(ex);
-      }
       return true;
     }
 
     return { redirect: '/login' };
   }
 
-  private async requireAdmin() {
-    const loginCheck = await this.requireLogin();
-    if (loginCheck !== true) {
-      return loginCheck;
-    }
-
-    if (state.currentUser?.accessLevel === AccessLevel.Admin) {
+  private requireAdmin(): NavigationHookResult {
+    if (hasScope(state.jwtToken, AccessLevel.Admin)) {
       return true;
     }
 
     return { redirect: '/' };
-  }
-
-  private async performSearch() {
-    state.searchPage = 1;
-
-    const el = await getActiveComponent(this.tabs) as any;
-    if (el && typeof el.performSearch === 'function') {
-      // If the active page is the search page, perform the search right away
-      await el.performSearch();
-    } else {
-      // Otherwise, redirect to it
-      await redirect('/search');
-    }
   }
 
   private async closeAllOverlays() {
@@ -284,13 +277,10 @@ export class AppRoot {
   }
 
   private async onPageChanged() {
-    // Refresh the user so that access controls are properly enforced
     if (this.isLoggedIn()) {
-      try {
-        ({ data: state.currentUser } = await usersApi.getCurrentUser());
-        ({ data: state.currentUserSettings } = await usersApi.getSettings(state.currentUser.id));
-      } catch (ex) {
-        console.error(ex);
+      // Make sure there are search results on initial load
+      if (state.searchResults === undefined) {
+        await refreshSearchResults();
       }
     }
 
@@ -306,21 +296,13 @@ export class AppRoot {
         ...state.searchFilter,
         query: this.searchBar.value?.toString()
       };
-      await this.performSearch();
+      await redirect('/search');
     }
-  }
-
-  private restoreSearchQuery() {
-    this.searchBar.value = state.searchFilter?.query ?? '';
   }
 
   private async onSearchClearClicked() {
     state.searchFilter = getDefaultSearchFilter();
-
-    // Workaround for binding to empty string bug
-    this.restoreSearchQuery();
-
-    await this.performSearch();
+    await redirect('/search');
   }
 
   private async onSearchFilterClicked() {
@@ -328,22 +310,21 @@ export class AppRoot {
       const modal = await modalController.create({
         component: 'search-filter-editor',
         componentProps: {
+          saveLabel: 'Search',
           prompt: 'Search',
           showName: false,
+          showSavedLoader: true,
           searchFilter: state.searchFilter
         },
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (data) {
         state.searchFilter = data.searchFilter;
-
-        // Workaround for binding to empty string bug
-        this.restoreSearchQuery();
-
-        await this.performSearch();
+        await redirect('/search');
       }
     });
   }

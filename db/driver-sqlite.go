@@ -8,110 +8,82 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
 
 	// sqlite database driver
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 
 	// File source for db migration
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 // SQLiteDriverName is the name to use for this driver
-const SQLiteDriverName string = "sqlite3"
+const SQLiteDriverName string = "sqlite"
 
-type sqliteDriver struct {
-	*sqlDriver
+type sqliteRecipeDriverAdapter struct{}
 
-	app     *sqlAppConfigurationDriver
-	recipes *sqliteRecipeDriver
-	images  *sqlRecipeImageDriver
-	tags    *sqlTagDriver
-	notes   *sqlNoteDriver
-	links   *sqlLinkDriver
-	users   *sqlUserDriver
+func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+	fieldStr := ""
+	fieldArgs := make([]interface{}, 0)
+	for _, field := range supportedSearchFields {
+		if containsField(filterFields, field) {
+			if fieldStr != "" {
+				fieldStr += " OR "
+			}
+			fieldStr += "r." + string(field) + " LIKE ?"
+			fieldArgs = append(fieldArgs, "%"+query+"%")
+		}
+	}
+
+	return fieldStr, fieldArgs
 }
 
 func openSQLite(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// Attempt to create the base path, if necessary
 	fileUrl, err := url.Parse(connectionString)
-	if err == nil && fileUrl.Scheme == "file" {
+	if err != nil {
+		return nil, err
+	}
+	if fileUrl.Scheme == "file" {
 		fullPath, err := filepath.Abs(fileUrl.RequestURI())
-		if err == nil {
-			dir := filepath.Dir(fullPath)
-			_ = os.MkdirAll(dir, 0755)
+		if err != nil {
+			return nil, err
+		}
+
+		dir := filepath.Dir(fullPath)
+		if err = os.MkdirAll(dir, 0750); err != nil {
+			return nil, err
 		}
 	}
 
 	db, err := sqlx.Connect(SQLiteDriverName, connectionString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: '%+v'", err)
+		return nil, fmt.Errorf("failed to open database: '%w'", err)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	sqlDriver := &sqlDriver{Db: db}
-	drv := &sqliteDriver{
-		sqlDriver: sqlDriver,
-
-		app:    &sqlAppConfigurationDriver{sqlDriver},
-		images: &sqlRecipeImageDriver{sqlDriver},
-		tags:   &sqlTagDriver{sqlDriver},
-		notes:  &sqlNoteDriver{sqlDriver},
-		links:  &sqlLinkDriver{sqlDriver},
-		users:  &sqlUserDriver{sqlDriver},
-	}
-	drv.recipes = &sqliteRecipeDriver{
-		sqliteDriver:    drv,
-		sqlRecipeDriver: &sqlRecipeDriver{sqlDriver},
+	if err := migrateSqliteDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
+		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	if err := drv.migrateDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%+v'", err)
-	}
-
+	drv := newSqlDriver(db, sqliteRecipeDriverAdapter{})
 	return drv, nil
 }
 
-func (d *sqliteDriver) AppConfiguration() AppConfigurationDriver {
-	return d.app
-}
-
-func (d *sqliteDriver) Recipes() RecipeDriver {
-	return d.recipes
-}
-
-func (d *sqliteDriver) Images() RecipeImageDriver {
-	return d.images
-}
-
-func (d *sqliteDriver) Tags() TagDriver {
-	return d.tags
-}
-
-func (d *sqliteDriver) Notes() NoteDriver {
-	return d.notes
-}
-
-func (d *sqliteDriver) Links() LinkDriver {
-	return d.links
-}
-
-func (d *sqliteDriver) Users() UserDriver {
-	return d.users
-}
-
-func (d *sqliteDriver) migrateDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func migrateSqliteDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
 	conn, err := db.Conn(context.Background())
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	driver, err := sqlite3.WithInstance(db.DB, &sqlite3.Config{
+	driver, err := sqlite.WithInstance(db.DB, &sqlite.Config{
 		MigrationsTable: migrationsTableName,
+		NoTxWrap:        true,
 	})
 	if err != nil {
 		return err

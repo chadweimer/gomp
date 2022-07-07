@@ -1,3 +1,4 @@
+BEGIN;
 
 -- Schema
 
@@ -8,3 +9,5 @@ CREATE TABLE app_configuration (
 -- Seed data
 
 INSERT INTO app_configuration (title) VALUES('GOMP: Go Meal Planner');
+
+COMMIT;

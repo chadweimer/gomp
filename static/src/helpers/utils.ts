@@ -1,26 +1,22 @@
 import { GestureDetail, loadingController, toastController } from '@ionic/core';
-import { AccessLevel, User, YesNoAny } from '../generated';
+import jwtDecode, { JwtPayload } from 'jwt-decode';
+import { AccessLevel, YesNoAny } from '../generated';
 import { SwipeDirection } from '../models';
+
+interface GompClaims extends JwtPayload {
+  scopes?: string[]
+}
 
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
 }
 
-export function hasAccessLevel(user: User | null | undefined, accessLevel: AccessLevel) {
-  if (!user) {
+export function hasScope(token: string | null | undefined, accessLevel: AccessLevel) {
+  if (token === null || token === undefined) {
     return false;
   }
-
-  switch (accessLevel) {
-    case AccessLevel.Admin:
-      return user.accessLevel === AccessLevel.Admin;
-
-    case AccessLevel.Editor:
-      return user.accessLevel === AccessLevel.Admin || user.accessLevel === AccessLevel.Editor;
-
-    default:
-      return true;
-  }
+  const decoded = jwtDecode<GompClaims>(token);
+  return decoded.scopes?.includes(accessLevel) ?? false;
 }
 
 export async function redirect(route: string) {
@@ -29,7 +25,7 @@ export async function redirect(route: string) {
 }
 
 export function capitalizeFirstLetter(val: string) {
-  return val.charAt(0).toLocaleUpperCase() + val.slice(1);
+  return val?.charAt(0).toLocaleUpperCase() + val?.slice(1);
 }
 
 export function toYesNoAny(value: boolean | null) {
@@ -88,14 +84,14 @@ export function getContainingModal(el: HTMLElement) {
 }
 
 export function configureModalAutofocus(el: HTMLElement) {
-  const performAutofocus = () => {
-    const focusEl = el.querySelector('[autofocus]');
-    if (focusEl instanceof HTMLElement) {
-      focusEl.focus();
-    }
-    el.removeEventListener('focus', performAutofocus);
-  };
   getContainingModal(el)?.addEventListener('focus', performAutofocus);
+}
+function performAutofocus(this: HTMLIonModalElement) {
+  const focusEl = this.querySelector('[autofocus]');
+  if (focusEl instanceof HTMLElement) {
+    focusEl.focus();
+  }
+  this.removeEventListener('focus', performAutofocus);
 }
 
 export async function dismissContainingModal(el: HTMLElement, data?: any) {

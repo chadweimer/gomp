@@ -2,8 +2,8 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, formatDate, hasAccessLevel, redirect, showLoading, showToast } from '../../../helpers/utils';
-import state from '../../../stores/state';
+import { enableBackForOverlay, formatDate, hasScope, redirect, showLoading, showToast } from '../../../helpers/utils';
+import state, { refreshSearchResults } from '../../../stores/state';
 
 @Component({
   tag: 'page-recipe',
@@ -33,7 +33,7 @@ export class PageRecipe {
   render() {
     return (
       <Host>
-        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-header class="ion-hide-lg-down">
             <ion-toolbar>
               <ion-buttons slot="primary">
@@ -82,12 +82,16 @@ export class PageRecipe {
                 <ion-card>
                   <ion-card-content>
                     <ion-item lines="none">
-                      <ion-avatar slot="start" class="large">
-                        {this.mainImage?.thumbnailUrl ? <img src={this.mainImage?.thumbnailUrl} /> : ''}
-                      </ion-avatar>
+                      {this.mainImage ?
+                        <a class="ion-margin-end" href={this.mainImage.url} target="_blank">
+                          <ion-avatar slot="start" class="large">
+                            <img src={this.mainImage.thumbnailUrl} />
+                          </ion-avatar>
+                        </a>
+                        : ''}
                       <div>
                         <h1>{this.recipe?.name}</h1>
-                        <five-star-rating value={this.recipeRating} disabled={!hasAccessLevel(state.currentUser, AccessLevel.Editor)}
+                        <five-star-rating value={this.recipeRating} disabled={!hasScope(state.jwtToken, AccessLevel.Editor)}
                           onValueSelected={e => this.onRatingSelected(e)} />
                         <p><ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note></p>
                       </div>
@@ -173,7 +177,7 @@ export class PageRecipe {
                       <ion-col size="auto">
                         <ion-card>
                           <a href={image.url} target="_blank"><img class="thumb" src={image.thumbnailUrl} /></a>
-                          {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+                          {hasScope(state.jwtToken, AccessLevel.Editor) ?
                             <ion-card-content class="ion-no-padding">
                               <ion-buttons>
                                 <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
@@ -202,7 +206,7 @@ export class PageRecipe {
                             <ion-item lines="full">
                               <ion-icon slot="start" icon="chatbox" />
                               <ion-label>{this.getNoteDatesText(note.createdAt, note.modifiedAt)}</ion-label>
-                              {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+                              {hasScope(state.jwtToken, AccessLevel.Editor) ?
                                 <ion-buttons slot="end">
                                   <ion-button size="small" color="warning" onClick={() => this.onEditNoteClicked(note)}>
                                     <ion-icon slot="icon-only" icon="create" size="small" />
@@ -227,7 +231,7 @@ export class PageRecipe {
           </ion-grid>
         </ion-content>
 
-        {hasAccessLevel(state.currentUser, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
               <ion-buttons slot="primary">
@@ -286,7 +290,9 @@ export class PageRecipe {
 
   private async load() {
     await this.loadRecipe();
+    await this.loadRating();
     await this.loadLinks();
+    await this.loadMainImage();
     await this.loadImages();
     await this.loadNotes();
   }
@@ -294,9 +300,17 @@ export class PageRecipe {
   private async loadRecipe() {
     try {
       ({ data: this.recipe } = await recipesApi.getRecipe(this.recipeId));
-      ({ data: this.mainImage } = await recipesApi.getMainImage(this.recipeId));
+    } catch (ex) {
+      this.recipe = null;
+      console.error(ex);
+    }
+  }
+
+  private async loadRating() {
+    try {
       ({ data: this.recipeRating } = await recipesApi.getRating(this.recipeId));
     } catch (ex) {
+      this.recipeRating = null;
       console.error(ex);
     }
   }
@@ -305,6 +319,7 @@ export class PageRecipe {
     try {
       ({ data: this.links } = await recipesApi.getLinks(this.recipeId));
     } catch (ex) {
+      this.links = [];
       console.error(ex);
     }
   }
@@ -313,6 +328,16 @@ export class PageRecipe {
     try {
       ({ data: this.images } = await recipesApi.getImages(this.recipeId));
     } catch (ex) {
+      this.images = [];
+      console.error(ex);
+    }
+  }
+
+  private async loadMainImage() {
+    try {
+      ({ data: this.mainImage } = await recipesApi.getMainImage(this.recipeId));
+    } catch (ex) {
+      this.mainImage = null;
       console.error(ex);
     }
   }
@@ -321,6 +346,7 @@ export class PageRecipe {
     try {
       ({ data: this.notes } = await recipesApi.getNotes(this.recipeId));
     } catch (ex) {
+      this.notes = [];
       console.error(ex);
     }
   }
@@ -490,6 +516,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'recipe-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -505,6 +532,9 @@ export class PageRecipe {
           ...data.recipe
         });
         await this.loadRecipe();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
@@ -521,6 +551,11 @@ export class PageRecipe {
             role: 'yes',
             handler: async () => {
               await this.deleteRecipe();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+              await redirect('/search');
+
               return true;
             }
           }
@@ -530,10 +565,7 @@ export class PageRecipe {
 
       await confirmation.present();
 
-      const { role } = await confirmation.onDidDismiss();
-      if (role === 'yes') {
-        await redirect('/search');
-      }
+      await confirmation.onDidDismiss();
     });
   }
 
@@ -550,6 +582,10 @@ export class PageRecipe {
             handler: async () => {
               await this.setRecipeState(RecipeState.Archived);
               await this.loadRecipe();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           }
@@ -576,6 +612,10 @@ export class PageRecipe {
             handler: async () => {
               await this.setRecipeState(RecipeState.Active);
               await this.loadRecipe();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           },
@@ -593,10 +633,11 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'recipe-link-editor',
-        animated: false,
         componentProps: {
           parentRecipeId: this.recipeId
-        }
+        },
+        animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -639,6 +680,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'note-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -655,6 +697,7 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'note-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -704,21 +747,28 @@ export class PageRecipe {
       const modal = await modalController.create({
         component: 'image-upload-browser',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ file: File }>();
       if (data) {
         await this.uploadImage(data.file);
-        await this.loadRecipe();
+        await this.loadMainImage();
         await this.loadImages();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
       }
     });
   }
 
   private async onRatingSelected(e: CustomEvent<number>) {
     await this.setRating(e.detail);
-    await this.loadRecipe();
+    await this.loadRating();
+
+    // Update the search results since the modified recipe may be in them
+    await refreshSearchResults();
   }
 
   private async onSetMainImageClicked(image: RecipeImage) {
@@ -730,9 +780,14 @@ export class PageRecipe {
           'No',
           {
             text: 'Yes',
+            role: 'yes',
             handler: async () => {
               await this.setMainImage(image);
-              await this.loadRecipe();
+              await this.loadMainImage();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           }
@@ -755,10 +810,15 @@ export class PageRecipe {
           'No',
           {
             text: 'Yes',
+            role: 'yes',
             handler: async () => {
               await this.deleteImage(image);
-              await this.loadRecipe();
+              await this.loadMainImage();
               await this.loadImages();
+
+              // Update the search results since the modified recipe may be in them
+              await refreshSearchResults();
+
               return true;
             }
           }

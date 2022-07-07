@@ -4,127 +4,184 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/api/public"
-	"github.com/chadweimer/gomp/generated/models"
-	"github.com/go-chi/chi/v5"
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/rs/zerolog/log"
 )
 
-func (h apiHandler) Authenticate(resp http.ResponseWriter, req *http.Request) {
-	var credentials public.Credentials
-	if err := readJSONFromRequest(req, &credentials); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+type gompClaims struct {
+	jwt.RegisteredClaims
+
+	Scopes jwt.ClaimStrings `json:"scopes"`
+}
+
+func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
+	var credentials Credentials
+	if err := readJSONFromRequest(r, &credentials); err != nil {
+		h.Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		h.Error(resp, http.StatusUnauthorized, err)
+		h.Error(w, r, http.StatusUnauthorized, err)
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 14 * 24)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		Subject:   strconv.FormatInt(*user.Id, 10),
-	})
-	// Always sign using the 0'th key
-	tokenStr, err := token.SignedString([]byte(h.cfg.SecureKeys[0]))
+	tokenStr, err := h.createToken(user)
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
 	}
 
-	h.OK(resp, public.AuthenticationResponse{Token: tokenStr, User: *user})
+	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: *user})
 }
 
-func (h apiHandler) requireAuthentication(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		token, err := h.getAuthTokenFromRequest(req)
-		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
-			return
-		}
-		userId, err := h.getUserIdFromToken(token)
-		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
-			return
-		}
+func (h apiHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	userId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
+	if err != nil {
+		h.Error(w, r, http.StatusUnauthorized, err)
+		return
+	}
 
-		user, err := h.verifyUserExists(userId)
-		if err != nil {
-			if err == db.ErrNotFound {
-				h.Error(resp, http.StatusUnauthorized, errors.New("invalid user"))
-			} else {
-				h.Error(resp, http.StatusInternalServerError, err)
-			}
-			return
-		}
+	user, err := h.db.Users().Read(userId)
+	if err != nil {
+		h.Error(w, r, http.StatusUnauthorized, err)
+		return
+	}
 
-		// Add the user's ID and access level to the list of params
-		ctx := req.Context()
-		ctx = context.WithValue(ctx, currentUserIdCtxKey, user.Id)
-		ctx = context.WithValue(ctx, currentUserAccessLevelCtxKey, user.AccessLevel)
+	tokenStr, err := h.createToken(&user.User)
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
 
-		next.ServeHTTP(resp, req.WithContext(ctx))
+	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: user.User})
+}
+
+func (h apiHandler) createToken(user *models.User) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, gompClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(0, 0, 14)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Subject:   strconv.FormatInt(*user.Id, 10),
+		},
+		Scopes: jwt.ClaimStrings(getScopes(user)),
 	})
+
+	// Always sign using the 0'th key
+	tokenStr, err := token.SignedString([]byte(h.secureKeys[0]))
+	if err != nil {
+		return "", err
+	}
+	return tokenStr, nil
 }
 
-func (h apiHandler) requireAdmin(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		if err := h.verifyUserIsAdmin(req); err != nil {
-			h.Error(resp, http.StatusForbidden, err)
-			return
-		}
-
-		next.ServeHTTP(resp, req)
-	})
-}
-
-func (h apiHandler) requireAdminUnlessSelf(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		urlId, err := getUserIdFromUrl(req)
-		if err != nil {
-			h.Error(resp, http.StatusBadRequest, err)
-			return
-		}
-		ctxId, err := getResourceIdFromCtx(req, currentUserIdCtxKey)
-		if err != nil {
-			h.Error(resp, http.StatusUnauthorized, err)
-			return
-		}
-
-		// Admin privleges are required if the session user doesn't match the request user
-		if urlId != ctxId {
-			if err := h.verifyUserIsAdmin(req); err != nil {
-				h.Error(resp, http.StatusForbidden, err)
+func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		routeScopes, ok := r.Context().Value(BearerScopes).([]string)
+		if ok {
+			user, claims, err := h.isAuthenticated(r)
+			if err != nil {
+				h.Error(w, r, http.StatusUnauthorized, err)
 				return
 			}
+
+			// If the route requires scopes, check them
+			if len(routeScopes) > 0 && (len(routeScopes) != 1 || routeScopes[0] != "") {
+				// If the user has been modified since issuing the token,
+				// we need to check if the scopes are still the same
+				if claims.IssuedAt.Time.Before(*user.ModifiedAt) {
+					// If the scopes of the token don't match the latest scopes of the user,
+					// don't proceed. The client should refresh the token and try again.
+					userScopes := getScopes(user)
+					if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
+						h.Error(w, r, http.StatusForbidden, errors.New("user scopes have changed"))
+						return
+					}
+				}
+
+				for _, scope := range routeScopes {
+					if err := hasScope(scope, claims); err != nil {
+						err := fmt.Errorf("endpoint '%s' requires '%s' scope: %w", r.URL.Path, scope, err)
+						h.Error(w, r, http.StatusForbidden, err)
+						return
+					}
+				}
+			}
 		}
 
-		next.ServeHTTP(resp, req)
-	})
+		next.ServeHTTP(w, r)
+	}
 }
 
-func (h apiHandler) requireEditor(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		if err := h.verifyUserIsEditor(req); err != nil {
-			h.Error(resp, http.StatusForbidden, err)
-			return
+func (h apiHandler) isAuthenticated(r *http.Request) (*models.User, *gompClaims, error) {
+	token, err := h.getAuthTokenFromRequest(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	claims := token.Claims.(*gompClaims)
+	if len(claims.Scopes) == 0 {
+		return nil, nil, errors.New("token had no scopes")
+	}
+
+	userId, err := h.getUserIdFromToken(token)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	user, err := h.verifyUserExists(userId)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return nil, nil, errors.New("invalid user")
 		}
 
-		next.ServeHTTP(resp, req)
-	})
+		return nil, nil, err
+	}
+
+	// Add the user's ID and token to the list of params
+	ctx := r.Context()
+	ctx = context.WithValue(ctx, currentUserIdCtxKey, user.Id)
+	ctx = context.WithValue(ctx, currentUserTokenCtxKey, token)
+	*r = *r.WithContext(ctx)
+
+	return user, claims, nil
 }
 
-func (h apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, error) {
-	authHeader := req.Header.Get("Authorization")
+func getScopes(user *models.User) []string {
+	var scopes []string
+
+	scopes = append(scopes, string(models.Viewer))
+	switch user.AccessLevel {
+	case models.Admin:
+		scopes = append(scopes, string(models.Admin))
+		scopes = append(scopes, string(models.Editor))
+	case models.Editor:
+		scopes = append(scopes, string(models.Editor))
+	}
+
+	return scopes
+}
+
+func hasScope(required string, claims *gompClaims) error {
+	for _, scope := range claims.Scopes {
+		if required == scope {
+			return nil
+		}
+	}
+	return errors.New("missing scope")
+}
+
+func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error) {
+	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return nil, errors.New("authorization header missing")
 	}
@@ -137,8 +194,8 @@ func (h apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, erro
 	tokenStr := authHeaderParts[1]
 
 	// Try each key when validating the token
-	for i, key := range h.cfg.SecureKeys {
-		token, err := jwt.ParseWithClaims(tokenStr, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+	for i, key := range h.secureKeys {
+		token, err := jwt.ParseWithClaims(tokenStr, &gompClaims{}, func(token *jwt.Token) (interface{}, error) {
 			if token.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New("incorrect signing method")
 			}
@@ -146,9 +203,9 @@ func (h apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, erro
 			return []byte(key), nil
 		})
 		if err != nil {
-			log.Printf("Failed parsing JWT token with key at index %d: '%+v'", i, err)
-			if i < (len(h.cfg.SecureKeys) + 1) {
-				log.Print("Will try again with next key")
+			log.Err(err).Int("key-index", i).Msg("Failed parsing JWT token")
+			if i < (len(h.secureKeys) + 1) {
+				log.Debug().Msg("Will try again with next key")
 			}
 		} else if token.Valid {
 			return token, nil
@@ -158,11 +215,11 @@ func (h apiHandler) getAuthTokenFromRequest(req *http.Request) (*jwt.Token, erro
 	return nil, errors.New("invalid token")
 }
 
-func (h apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
-	claims := token.Claims.(*jwt.RegisteredClaims)
+func (apiHandler) getUserIdFromToken(token *jwt.Token) (int64, error) {
+	claims := token.Claims.(*gompClaims)
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
-		log.Printf("Invalid claims: '%+v'", err)
+		log.Err(err).Msg("Invalid claims")
 		return -1, errors.New("invalid claims")
 	}
 
@@ -173,47 +230,13 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	// Verify this is a valid user in the DB
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
-		if err == db.ErrNotFound {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, err
 		}
 
-		log.Printf("Error retrieving user info: '%+v'", err)
+		log.Err(err).Msg("Error retrieving user info")
 		return nil, errors.New("error retrieving user info")
 	}
 
 	return &user.User, nil
-}
-
-func (h apiHandler) verifyUserIsAdmin(req *http.Request) error {
-	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
-	if accessLevel != models.AccessLevelAdmin {
-		return fmt.Errorf("endpoint '%s' requires admin rights", req.URL.Path)
-	}
-
-	return nil
-}
-
-func (h apiHandler) verifyUserIsEditor(req *http.Request) error {
-	accessLevel := req.Context().Value(currentUserAccessLevelCtxKey).(models.AccessLevel)
-	if accessLevel != models.AccessLevelAdmin && accessLevel != models.AccessLevelEditor {
-		return fmt.Errorf("endpoint '%s' requires edit rights", req.URL.Path)
-	}
-
-	return nil
-}
-
-func getUserIdFromUrl(req *http.Request) (int64, error) {
-	idStr := chi.URLParam(req, "userId")
-
-	// Assume current user if not in the route
-	if idStr == "" {
-		return getResourceIdFromCtx(req, currentUserIdCtxKey)
-	}
-
-	id, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("failed to parse user id from URL, value = %s: %v", idStr, err)
-	}
-
-	return id, nil
 }

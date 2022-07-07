@@ -3,13 +3,11 @@ package api
 import (
 	"net/http"
 
-	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/generated/api/viewer"
-	"github.com/chadweimer/gomp/generated/models"
+	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 )
 
-func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params viewer.FindParams) {
+func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params FindParams) {
 	query := ""
 	if params.Q != nil {
 		query = *params.Q
@@ -29,10 +27,10 @@ func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params vie
 	var withPictures *bool
 	if params.Pictures != nil {
 		switch *params.Pictures {
-		case viewer.YesNoAnyYes:
+		case Yes:
 			val := true
 			withPictures = &val
-		case viewer.YesNoAnyNo:
+		case No:
 			val := false
 			withPictures = &val
 		}
@@ -50,131 +48,111 @@ func (h apiHandler) Find(resp http.ResponseWriter, req *http.Request, params vie
 
 	recipes, total, err := h.db.Recipes().Find(&filter, params.Page, params.Count)
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.OK(resp, viewer.SearchResult{Recipes: *recipes, Total: total})
+	h.OK(w, r, SearchResult{Recipes: *recipes, Total: total})
 }
 
-func (h apiHandler) GetRecipe(resp http.ResponseWriter, req *http.Request, recipeId int64) {
+func (h apiHandler) GetRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	recipe, err := h.db.Recipes().Read(recipeId)
-	if err == db.ErrNotFound {
-		h.Error(resp, http.StatusNotFound, err)
-		return
-	}
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.OK(resp, recipe)
+	h.OK(w, r, recipe)
 }
 
-func (h apiHandler) AddRecipe(resp http.ResponseWriter, req *http.Request) {
+func (h apiHandler) AddRecipe(w http.ResponseWriter, r *http.Request) {
 	var recipe models.Recipe
-	if err := readJSONFromRequest(req, &recipe); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+	if err := readJSONFromRequest(r, &recipe); err != nil {
+		h.Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.Recipes().Create(&recipe); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.Created(resp, recipe)
+	h.Created(w, r, recipe)
 }
 
-func (h apiHandler) SaveRecipe(resp http.ResponseWriter, req *http.Request, recipeId int64) {
+func (h apiHandler) SaveRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	var recipe models.Recipe
-	if err := readJSONFromRequest(req, &recipe); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+	if err := readJSONFromRequest(r, &recipe); err != nil {
+		h.Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	if recipe.Id == nil {
 		recipe.Id = &recipeId
 	} else if *recipe.Id != recipeId {
-		h.Error(resp, http.StatusBadRequest, errMismatchedId)
+		h.Error(w, r, http.StatusBadRequest, errMismatchedId)
 		return
 	}
 
 	if err := h.db.Recipes().Update(&recipe); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.NoContent(resp)
+	h.NoContent(w)
 }
 
-func (h apiHandler) DeleteRecipe(resp http.ResponseWriter, req *http.Request, recipeId int64) {
+func (h apiHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	if err := h.db.Recipes().Delete(recipeId); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
 	if err := upload.DeleteAll(h.upl, recipeId); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.NoContent(resp)
+	h.NoContent(w)
 }
 
-func (h apiHandler) SetState(resp http.ResponseWriter, req *http.Request, recipeId int64) {
+func (h apiHandler) SetState(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	var state models.RecipeState
-	if err := readJSONFromRequest(req, &state); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+	if err := readJSONFromRequest(r, &state); err != nil {
+		h.Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.Recipes().SetState(recipeId, state); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.NoContent(resp)
+	h.NoContent(w)
 }
 
-func (h apiHandler) GetRating(resp http.ResponseWriter, req *http.Request, recipeId int64) {
+func (h apiHandler) GetRating(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	rating, err := h.db.Recipes().GetRating(recipeId)
 	if err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.OK(resp, rating)
+	h.OK(w, r, rating)
 }
 
-func (h apiHandler) SetRating(resp http.ResponseWriter, req *http.Request, recipeId int64) {
+func (h apiHandler) SetRating(w http.ResponseWriter, r *http.Request, recipeId int64) {
 	var rating float32
-	if err := readJSONFromRequest(req, &rating); err != nil {
-		h.Error(resp, http.StatusBadRequest, err)
+	if err := readJSONFromRequest(r, &rating); err != nil {
+		h.Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := h.db.Recipes().SetRating(recipeId, rating); err != nil {
-		h.Error(resp, http.StatusInternalServerError, err)
+		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	h.NoContent(resp)
-}
-
-func asStates(arr []string) []models.RecipeState {
-	states := make([]models.RecipeState, len(arr))
-	for i, val := range arr {
-		states[i] = models.RecipeState(val)
-	}
-	return states
-}
-
-func asFields(arr []string) []models.SearchField {
-	fields := make([]models.SearchField, len(arr))
-	for i, val := range arr {
-		fields[i] = models.SearchField(val)
-	}
-	return fields
+	h.NoContent(w)
 }

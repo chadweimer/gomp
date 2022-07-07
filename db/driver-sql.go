@@ -1,11 +1,13 @@
 package db
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 
-	"github.com/chadweimer/gomp/generated/models"
+	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 // UserWithPasswordHash reprents a user including the password hash in the database
@@ -17,19 +19,68 @@ type UserWithPasswordHash struct {
 
 type sqlDriver struct {
 	Db *sqlx.DB
+
+	app     *sqlAppConfigurationDriver
+	recipes *sqlRecipeDriver
+	images  *sqlRecipeImageDriver
+	notes   *sqlNoteDriver
+	links   *sqlLinkDriver
+	users   *sqlUserDriver
+}
+
+func newSqlDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+	return &sqlDriver{
+		Db: db,
+
+		app:     &sqlAppConfigurationDriver{db},
+		recipes: &sqlRecipeDriver{db, adapter},
+		images:  &sqlRecipeImageDriver{db},
+		notes:   &sqlNoteDriver{db},
+		links:   &sqlLinkDriver{db},
+		users:   &sqlUserDriver{db},
+	}
+}
+
+func (d *sqlDriver) AppConfiguration() AppConfigurationDriver {
+	return d.app
+}
+
+func (d *sqlDriver) Recipes() RecipeDriver {
+	return d.recipes
+}
+
+func (d *sqlDriver) Images() RecipeImageDriver {
+	return d.images
+}
+
+func (d *sqlDriver) Notes() NoteDriver {
+	return d.notes
+}
+
+func (d *sqlDriver) Links() LinkDriver {
+	return d.links
+}
+
+func (d *sqlDriver) Users() UserDriver {
+	return d.users
 }
 
 func (d *sqlDriver) Close() error {
-	log.Print("Closing database connection...")
+	log.Debug().Msg("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
-		return fmt.Errorf("failed to close the connection to the database: '%+v'", err)
+		return fmt.Errorf("failed to close the connection to the database: '%w'", err)
 	}
 
 	return nil
 }
 
-func (d *sqlDriver) tx(op func(*sqlx.Tx) error) error {
-	tx, err := d.Db.Beginx()
+func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
+	t, err := op(db)
+	return t, mapSqlErrors(err)
+}
+
+func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
+	tx, err := db.Beginx()
 	if err != nil {
 		return err
 	}
@@ -45,8 +96,16 @@ func (d *sqlDriver) tx(op func(*sqlx.Tx) error) error {
 
 	if err = op(tx); err != nil {
 		tx.Rollback()
-		return err
+		return mapSqlErrors(err)
 	}
 
 	return tx.Commit()
+}
+
+func mapSqlErrors(err error) error {
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrNotFound
+	}
+
+	return err
 }

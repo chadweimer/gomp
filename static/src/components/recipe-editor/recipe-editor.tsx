@@ -1,7 +1,8 @@
-import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { Recipe } from '../../generated';
+
+import { Component, Element, Host, h, Prop, State } from '@stencil/core';
+import { Recipe, UserSettings } from '../../generated';
+import { loadUserSettings } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, insertIfTabKey } from '../../helpers/utils';
-import state from '../../stores/state';
 
 @Component({
   tag: 'recipe-editor',
@@ -19,11 +20,14 @@ export class RecipeEditor {
     tags: []
   };
 
+  @State() currentUserSettings: UserSettings | null;
+
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
   private imageInput!: HTMLInputElement;
 
-  connectedCallback() {
+  async connectedCallback() {
+    this.currentUserSettings = await loadUserSettings();
     configureModalAutofocus(this.el);
   }
 
@@ -88,7 +92,7 @@ export class RecipeEditor {
               <ion-label position="stacked">Source</ion-label>
               <ion-input inputMode="url" value={this.recipe.sourceUrl} onIonChange={e => this.recipe = { ...this.recipe, sourceUrl: e.detail.value }} />
             </ion-item>
-            <tags-input value={this.recipe.tags} suggestions={state.currentUserSettings?.favoriteTags ?? []}
+            <tags-input value={this.recipe.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
               onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }} />
           </form>
         </ion-content>

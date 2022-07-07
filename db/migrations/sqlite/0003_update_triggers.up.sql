@@ -1,3 +1,5 @@
+BEGIN;
+
 -- recipe
 CREATE TRIGGER on_recipe_update
     AFTER UPDATE ON recipe
@@ -30,3 +32,5 @@ CREATE TRIGGER on_recipe_image_update
 BEGIN
     UPDATE recipe_image SET modified_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+COMMIT;

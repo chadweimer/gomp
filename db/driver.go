@@ -2,16 +2,16 @@ package db
 
 import (
 	"errors"
-	"log"
+	"fmt"
 
-	"github.com/chadweimer/gomp/generated/models"
+	"github.com/chadweimer/gomp/models"
 )
 
 // ---- Begin Standard Errors ----
 
 // ErrNotFound represents the error when a database record cannot be
 // found matching the criteria specified by the caller
-var ErrNotFound = errors.New("No record found matching supplied criteria")
+var ErrNotFound = errors.New("no record found matching supplied criteria")
 
 // ---- End Standard Errors ----
 
@@ -21,7 +21,6 @@ type Driver interface {
 
 	AppConfiguration() AppConfigurationDriver
 	Recipes() RecipeDriver
-	Tags() TagDriver
 	Notes() NoteDriver
 	Images() RecipeImageDriver
 	Links() LinkDriver
@@ -29,7 +28,7 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) Driver {
+func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	switch driver {
 	case PostgresDriverName:
 		drv, err := openPostgres(
@@ -37,22 +36,21 @@ func CreateDriver(driver string, connectionString string, migrationsTableName st
 			migrationsTableName,
 			migrationsForceVersion)
 		if err != nil {
-			log.Fatalf("[db] %s", err.Error())
+			return nil, err
 		}
-		return drv
+		return drv, nil
 	case SQLiteDriverName:
 		drv, err := openSQLite(
 			connectionString,
 			migrationsTableName,
 			migrationsForceVersion)
 		if err != nil {
-			log.Fatalf("[db] %s", err.Error())
+			return nil, err
 		}
-		return drv
+		return drv, nil
 	}
 
-	log.Fatalf("Invalid DatabaseDriver '%s' specified", driver)
-	return nil
+	return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.
@@ -61,17 +59,17 @@ type AppConfigurationDriver interface {
 	Read() (*models.AppConfiguration, error)
 
 	// Update stores the application configuration in the database
-	// using a dedicated transation that is committed if there are not errors.
+	// using a dedicated transaction that is committed if there are not errors.
 	Update(cfg *models.AppConfiguration) error
 }
 
 // LinkDriver provides functionality to edit and retrieve recipe links.
 type LinkDriver interface {
 	// Create stores a link between 2 recipes in the database as a new record
-	// using a dedicated transation that is committed if there are not errors.
+	// using a dedicated transaction that is committed if there are not errors.
 	Create(recipeId, destRecipeId int64) error
 
-	// Delete removes the linked recipe from the database using a dedicated transation
+	// Delete removes the linked recipe from the database using a dedicated transaction
 	// that is committed if there are not errors.
 	Delete(recipeId, destRecipeId int64) error
 
@@ -82,19 +80,19 @@ type LinkDriver interface {
 // NoteDriver provides functionality to edit and retrieve notes attached to recipes.
 type NoteDriver interface {
 	// Create stores the note in the database as a new record using
-	// a dedicated transation that is committed if there are not errors.
+	// a dedicated transaction that is committed if there are not errors.
 	Create(note *models.Note) error
 
 	// Update stores the note in the database by updating the existing record with the specified
-	// id using a dedicated transation that is committed if there are not errors.
+	// id using a dedicated transaction that is committed if there are not errors.
 	Update(note *models.Note) error
 
-	// Delete removes the specified note from the database using a dedicated transation
+	// Delete removes the specified note from the database using a dedicated transaction
 	// that is committed if there are not errors.
 	Delete(recipeId, noteId int64) error
 
 	// DeleteAll removes all notes for the specified recipe from the database using a dedicated
-	// transation that is committed if there are not errors.
+	// transaction that is committed if there are not errors.
 	DeleteAll(recipeId int64) error
 
 	// List retrieves all notes associated with the recipe with the specified id.
@@ -132,20 +130,17 @@ type RecipeDriver interface {
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
 	Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
-}
 
-// TagDriver provides functionality to edit and retrieve tags attached to recipes.
-type TagDriver interface {
 	// Create stores the tag in the database as a new record using
-	// a dedicated transation that is committed if there are not errors.
-	Create(recipeId int64, tag string) error
+	// a dedicated transaction that is committed if there are not errors.
+	CreateTag(recipeId int64, tag string) error
 
 	// DeleteAll removes all tags for the specified recipe from the database using a dedicated
-	// transation that is committed if there are not errors.
-	DeleteAll(recipeId int64) error
+	// transaction that is committed if there are not errors.
+	DeleteAllTags(recipeId int64) error
 
 	// List retrieves all tags associated with the recipe with the specified id.
-	List(recipeId int64) (*[]string, error)
+	ListTags(recipeId int64) (*[]string, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.
@@ -154,7 +149,7 @@ type UserDriver interface {
 	Authenticate(username, password string) (*models.User, error)
 
 	// Create stores the user in the database as a new record using
-	// a dedicated transation that is committed if there are not errors.
+	// a dedicated transaction that is committed if there are not errors.
 	Create(user *UserWithPasswordHash) error
 
 	// Read retrieves the information about the user from the database, if found.
@@ -162,10 +157,10 @@ type UserDriver interface {
 	Read(id int64) (*UserWithPasswordHash, error)
 
 	// Update stores the user in the database by updating the existing record with the specified
-	// id using a dedicated transation that is committed if there are not errors.
+	// id using a dedicated transaction that is committed if there are not errors.
 	Update(user *models.User) error
 
-	// Delete removes the specified user from the database using a dedicated transation
+	// Delete removes the specified user from the database using a dedicated transaction
 	// that is committed if there are not errors.
 	Delete(id int64) error
 
@@ -173,7 +168,7 @@ type UserDriver interface {
 	List() (*[]models.User, error)
 
 	// UpdatePassword updates the associated user's password, first verifying that the existing
-	// password is correct, using a dedicated transation that is committed if there are not errors.
+	// password is correct, using a dedicated transaction that is committed if there are not errors.
 	UpdatePassword(id int64, password, newPassword string) error
 
 	// ReadSettings retrieves the settings for the specified user from the database, if found.
@@ -181,11 +176,11 @@ type UserDriver interface {
 	ReadSettings(id int64) (*models.UserSettings, error)
 
 	// UpdateSettings stores the specified user settings in the database by updating the
-	// existing record using a dedicated transation that is committed if there are not errors.
+	// existing record using a dedicated transaction that is committed if there are not errors.
 	UpdateSettings(settings *models.UserSettings) error
 
 	// CreateSearchFilter stores the search filter in the database as a new record using
-	// a dedicated transation that is committed if there are not errors.
+	// a dedicated transaction that is committed if there are not errors.
 	CreateSearchFilter(filter *models.SavedSearchFilter) error
 
 	// ReadSearchFilter retrieves the information about the search filter from the database, if found.
@@ -193,10 +188,10 @@ type UserDriver interface {
 	ReadSearchFilter(userId int64, filterId int64) (*models.SavedSearchFilter, error)
 
 	// UpdateSearchFilter stores the filter in the database by updating the existing record with the specified
-	// id using a dedicated transation that is committed if there are not errors.
+	// id using a dedicated transaction that is committed if there are not errors.
 	UpdateSearchFilter(filter *models.SavedSearchFilter) error
 
-	// DeleteSearchFilter removes the specified filter from the database using a dedicated transation
+	// DeleteSearchFilter removes the specified filter from the database using a dedicated transaction
 	// that is committed if there are not errors.
 	DeleteSearchFilter(userId int64, filterId int64) error
 
@@ -206,20 +201,20 @@ type UserDriver interface {
 
 // RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.
 type RecipeImageDriver interface {
-	// Create creates a record in the database using a dedicated transation
+	// Create creates a record in the database using a dedicated transaction
 	// that is committed if there are not errors.
 	Create(imageInfo *models.RecipeImage) error
 
 	// Read retrieves the information about the image from the database, if found.
 	// If no image exists with the specified ID, a ErrNotFound error is returned.
-	Read(id int64) (*models.RecipeImage, error)
+	Read(recipeId, id int64) (*models.RecipeImage, error)
 
 	// ReadMainImage retrieves the information about the main image for the specified recipe
 	// image from the database. If no main image exists, a ErrNotFound error is returned.
 	ReadMainImage(recipeId int64) (*models.RecipeImage, error)
 
 	// UpdateMainImage sets the id of the main image for the specified recipe
-	// using a dedicated transation that is committed if there are not errors.
+	// using a dedicated transaction that is committed if there are not errors.
 	UpdateMainImage(image *models.RecipeImage) error
 
 	// List returns a RecipeImage slice that contains data for all images
@@ -227,10 +222,10 @@ type RecipeImageDriver interface {
 	List(recipeId int64) (*[]models.RecipeImage, error)
 
 	// Delete removes the specified image from the backing store and database
-	// using a dedicated transation that is committed if there are not errors.
-	Delete(id int64) error
+	// using a dedicated transaction that is committed if there are not errors.
+	Delete(recipeId, id int64) error
 
 	// DeleteAll removes all images for the specified recipe from the database
-	// using a dedicated transation that is committed if there are not errors.
+	// using a dedicated transaction that is committed if there are not errors.
 	DeleteAll(recipeId int64) error
 }

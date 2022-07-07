@@ -95,6 +95,7 @@ export class PageAdminUsers {
       const modal = await modalController.create({
         component: 'user-editor',
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 
@@ -114,6 +115,7 @@ export class PageAdminUsers {
           user: user
         },
         animated: false,
+        backdropDismiss: false,
       });
       await modal.present();
 

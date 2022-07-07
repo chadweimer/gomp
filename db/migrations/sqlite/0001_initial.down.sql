@@ -1,3 +1,5 @@
+BEGIN;
+
 DROP TYPE user_level;
 DROP TYPE recipe_state;
 
@@ -9,3 +11,5 @@ DROP TABLE recipe_note;
 DROP TABLE recipe_rating;
 DROP TABLE recipe_image;
 DROP TABLE recipe_link;
+
+COMMIT;

@@ -1,5 +1,7 @@
 {
-    "files.associations": {
-    },
-    "editor.renderWhitespace": "boundary"
+  "editor.renderWhitespace": "boundary",
+  "go.lintTool": "revive",
+  "go.lintFlags": [
+    "-config=${workspaceRoot}/revive.toml"
+  ],
 }

@@ -38,8 +38,6 @@ export namespace Components {
         "recipeId": number;
     }
     interface PageSearch {
-        "activatedCallback": () => Promise<void>;
-        "performSearch": (pageNum?: any) => Promise<void>;
     }
     interface PageSettings {
     }
@@ -50,6 +48,7 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface PageSettingsSecurity {
+        "activatedCallback": () => Promise<void>;
     }
     interface RecipeCard {
         "recipe": RecipeCompact;
@@ -67,8 +66,10 @@ export namespace Components {
     interface SearchFilterEditor {
         "name": string;
         "prompt": string;
+        "saveLabel": string;
         "searchFilter": SearchFilter;
         "showName": boolean;
+        "showSavedLoader": boolean;
     }
     interface SortBySelector {
         "sortBy": SortBy;
@@ -81,6 +82,22 @@ export namespace Components {
     interface UserEditor {
         "user": User;
     }
+}
+export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLFiveStarRatingElement;
+}
+export interface RecipeStateSelectorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLRecipeStateSelectorElement;
+}
+export interface SortBySelectorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLSortBySelectorElement;
+}
+export interface TagsInputCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLTagsInputElement;
 }
 declare global {
     interface HTMLAppRootElement extends Components.AppRoot, HTMLStencilElement {
@@ -253,7 +270,7 @@ declare namespace LocalJSX {
     interface FiveStarRating {
         "disabled"?: boolean;
         "icon"?: string;
-        "onValueSelected"?: (event: CustomEvent<number>) => void;
+        "onValueSelected"?: (event: FiveStarRatingCustomEvent<number>) => void;
         "size"?: string;
         "value"?: number;
     }
@@ -296,22 +313,24 @@ declare namespace LocalJSX {
         "parentRecipeId"?: number;
     }
     interface RecipeStateSelector {
-        "onSelectedStatesChanged"?: (event: CustomEvent<RecipeState[]>) => void;
+        "onSelectedStatesChanged"?: (event: RecipeStateSelectorCustomEvent<RecipeState[]>) => void;
         "selectedStates"?: RecipeState[];
     }
     interface SearchFilterEditor {
         "name"?: string;
         "prompt"?: string;
+        "saveLabel"?: string;
         "searchFilter"?: SearchFilter;
         "showName"?: boolean;
+        "showSavedLoader"?: boolean;
     }
     interface SortBySelector {
-        "onSortByChanged"?: (event: CustomEvent<SortBy>) => void;
+        "onSortByChanged"?: (event: SortBySelectorCustomEvent<SortBy>) => void;
         "sortBy"?: SortBy;
     }
     interface TagsInput {
         "label"?: string;
-        "onValueChanged"?: (event: CustomEvent<string[]>) => void;
+        "onValueChanged"?: (event: TagsInputCustomEvent<string[]>) => void;
         "suggestions"?: string[];
         "value"?: string[];
     }

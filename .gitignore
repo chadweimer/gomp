@@ -45,3 +45,7 @@ _testmain.go
 
 # Ignore generated files
 generated/
+*.gen.*
+
+# Logs
+*.log
