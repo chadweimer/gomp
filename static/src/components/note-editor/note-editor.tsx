@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../generated';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, insertIfTabKey } from '../../helpers/utils';
 
 @Component({
   tag: 'note-editor',
@@ -37,7 +37,9 @@ export class NoteEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item>
               <ion-label position="stacked">Text</ion-label>
-              <ion-textarea value={this.note.text} onIonChange={e => this.note = { ...this.note, text: e.detail.value }} required autofocus auto-grow />
+              <ion-textarea value={this.note.text} required autofocus auto-grow
+                onIonChange={e => this.note = { ...this.note, text: e.detail.value }}
+                onKeyDown={e => this.onTextAreaKeyDown(e)} />
             </ion-item>
           </form>
         </ion-content>
@@ -55,6 +57,10 @@ export class NoteEditor {
 
   private onCancelClicked() {
     dismissContainingModal(this.el);
+  }
+
+  private onTextAreaKeyDown(e: KeyboardEvent) {
+    insertIfTabKey(e);
   }
 
 }

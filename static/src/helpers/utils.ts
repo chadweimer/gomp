@@ -147,3 +147,24 @@ export async function sendDeactivatingCallback(tabs: HTMLIonTabsElement) {
     el.deactivatingCallback();
   }
 }
+
+export function insertIfTabKey(e: KeyboardEvent) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+
+    const input = e.target as HTMLTextAreaElement | HTMLInputElement;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const curVal = input.value;
+
+    // set textarea value to: text before caret + tab + text after caret
+    input.value = `${curVal.substring(0, start)}\t${curVal.substring(end)}`;
+
+    // put caret at right position again
+    input.selectionStart = input.selectionEnd = start + 1;
+
+    return true;
+  }
+
+  return false;
+}

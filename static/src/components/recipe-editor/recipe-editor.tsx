@@ -1,7 +1,8 @@
+
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, UserSettings } from '../../generated';
 import { loadUserSettings } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, insertIfTabKey } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-editor',
@@ -65,19 +66,27 @@ export class RecipeEditor {
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Ingredients</ion-label>
-              <ion-textarea value={this.recipe.ingredients} onIonChange={e => this.recipe = { ...this.recipe, ingredients: e.detail.value }} auto-grow />
+              <ion-textarea value={this.recipe.ingredients} auto-grow
+                onIonChange={e => this.recipe = { ...this.recipe, ingredients: e.detail.value }}
+                onKeyDown={e => this.onTextAreaKeyDown(e)} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Directions</ion-label>
-              <ion-textarea value={this.recipe.directions} onIonChange={e => this.recipe = { ...this.recipe, directions: e.detail.value }} auto-grow />
+              <ion-textarea value={this.recipe.directions} auto-grow
+                onIonChange={e => this.recipe = { ...this.recipe, directions: e.detail.value }}
+                onKeyDown={e => this.onTextAreaKeyDown(e)} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-              <ion-textarea value={this.recipe.storageInstructions} onIonChange={e => this.recipe = { ...this.recipe, storageInstructions: e.detail.value }} auto-grow />
+              <ion-textarea value={this.recipe.storageInstructions} auto-grow
+                onIonChange={e => this.recipe = { ...this.recipe, storageInstructions: e.detail.value }}
+                onKeyDown={e => this.onTextAreaKeyDown(e)} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Nutrition</ion-label>
-              <ion-textarea value={this.recipe.nutritionInfo} onIonChange={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail.value }} auto-grow />
+              <ion-textarea value={this.recipe.nutritionInfo} auto-grow
+                onIonChange={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail.value }}
+                onKeyDown={e => this.onTextAreaKeyDown(e)} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Source</ion-label>
@@ -104,5 +113,9 @@ export class RecipeEditor {
 
   private onCancelClicked() {
     dismissContainingModal(this.el);
+  }
+
+  private onTextAreaKeyDown(e: KeyboardEvent) {
+    insertIfTabKey(e);
   }
 }
