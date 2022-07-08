@@ -19,6 +19,26 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
 }
 
+func (u *fileSystemDriver) List(basePath string) ([]string, error) {
+	// First prepend the base UploadPath
+	fullBasePath := filepath.Join(u.rootPath, filepath.Clean(basePath))
+
+	files := make([]string, 0)
+	entries, err := os.ReadDir(fullBasePath)
+	if err != nil {
+		// TODO: Log and continue?
+		return nil, err
+	}
+	for _, d := range entries {
+		if d != nil && !d.IsDir() {
+			filePath := filepath.Join(basePath, d.Name())
+			files = append(files, filePath)
+		}
+	}
+
+	return files, nil
+}
+
 func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))

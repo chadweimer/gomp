@@ -29,6 +29,24 @@ func newS3Driver(bucket string) (Driver, error) {
 	return &s3Driver{OnlyFiles(s3fs), svc, bucket}, nil
 }
 
+func (u *s3Driver) List(basePath string) ([]string, error) {
+	keyPrefix := filepath.ToSlash(basePath)
+	resp, err := u.s3.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: &u.bucket,
+		Prefix: &keyPrefix,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	keys := make([]string, *resp.KeyCount)
+	for _, obj := range resp.Contents {
+		keys = append(keys, *obj.Key)
+	}
+
+	return keys, nil
+}
+
 func (u *s3Driver) Save(filePath string, data []byte) error {
 	key := filepath.ToSlash(filePath)
 	contentType := http.DetectContentType(data)
