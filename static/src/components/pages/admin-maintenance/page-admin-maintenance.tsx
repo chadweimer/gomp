@@ -34,6 +34,8 @@ export class PageAdminMaintenance {
     try {
       await appApi.performMaintenance({
         op: 'optimizeImages'
+      }, {
+        timeout: 10 * 60 * 1000 // 10 minutes
       });
     } catch(ex) {
       console.error(ex);
