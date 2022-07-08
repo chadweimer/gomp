@@ -46,24 +46,6 @@ paths:
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: appConfiguration
-  /app/maintenance:
-    post:
-      tags: [app]
-      description: perform an application maintenance operation
-      operationId: performMaintenance
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/appMaintenanceRequest"
-        required: true
-      responses:
-        204:
-          description: No Content
-          content: {}
-      security:
-        - Bearer: [admin]
-      x-codegen-request-body-name: appMaintenanceRequest
   /auth:
     post:
       tags: [app]
@@ -331,6 +313,16 @@ paths:
         schema:
           type: integer
           format: int64
+    patch:
+      tags: [recipes]
+      description: optimize an existing image from a recipe
+      operationId: optimizeImage
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: [admin]
     delete:
       tags: [recipes]
       description: delete an existing image from a recipe
@@ -963,15 +955,6 @@ paths:
       x-codegen-request-body-name: settings
 components:
   schemas:
-    appMaintenanceRequest:
-      required:
-        - op
-      type: object
-      properties:
-        op:
-          type: string
-          enum:
-            - optimizeImages
     authenticationResponse:
       type: object
       required:

@@ -1,7 +1,8 @@
 import { alertController } from '@ionic/core';
 import { Component, Host, h } from '@stencil/core';
-import { appApi } from '../../../helpers/api';
-import { enableBackForOverlay, showToast } from '../../../helpers/utils';
+import { RecipeState, SortBy, SortDir, YesNoAny } from '../../../generated';
+import { recipesApi } from '../../../helpers/api';
+import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-maintenance',
@@ -36,11 +37,16 @@ export class PageAdminMaintenance {
 
   private async optimizeImages() {
     try {
-      await appApi.performMaintenance({
-        op: 'optimizeImages'
-      }, {
-        timeout: 10 * 60 * 1000 // 10 minutes
-      });
+      await showLoading(
+        async () => {
+          const { data: { recipes } } = await recipesApi.find(SortBy.Id, SortDir.Asc, 1, -1, '', YesNoAny.Yes, [], [RecipeState.Active, RecipeState.Archived], []);
+          for (const recipe of recipes) {
+            const { data: images } = await recipesApi.getImages(recipe.id);
+            for (const image of images) {
+              await recipesApi.optimizeImage(recipe.id, image.id);
+            }
+          }
+        }, 'Optimizing images...');
     } catch(ex) {
       console.error(ex);
       showToast('Failed to optimize images.');

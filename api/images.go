@@ -115,3 +115,30 @@ func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId
 
 	h.NoContent(w)
 }
+
+func (h apiHandler) OptimizeImage(w http.ResponseWriter, r *http.Request, recipeId, imageId int64) {
+	// We need to read the info about the image for later
+	image, err := h.db.Images().Read(recipeId, imageId)
+	if err != nil {
+		fullErr := fmt.Errorf("failed to get image database record: %w", err)
+		h.Error(w, r, http.StatusInternalServerError, fullErr)
+		return
+	}
+
+	// Load the current original
+	data, err := h.upl.Load(recipeId, *image.Name)
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Resave it, which will downscale if larger than the threshold,
+	// as well as regenerate the thumbnail
+	h.upl.Save(recipeId, *image.Name, data)
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.NoContent(w)
+}
