@@ -53,40 +53,46 @@ func (h apiHandler) PerformMaintenance(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Op {
 	case OptimizeImages:
-		recipes, err := h.db.Recipes().List()
+		h.optimizeImages(w, r)
+	default:
+		h.Error(w, r, http.StatusBadRequest, fmt.Errorf("Invalid operation: '%s'", req.Op))
+		return
+	}
+}
+
+func (h apiHandler) optimizeImages(w http.ResponseWriter, r *http.Request) {
+	recipes, err := h.db.Recipes().List()
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	for _, recipe := range *recipes {
+		// Get all the images for the recipe
+		images, err := h.db.Images().List(*recipe.Id)
 		if err != nil {
 			h.Error(w, r, http.StatusInternalServerError, err)
 			return
 		}
 
-		for _, recipe := range *recipes {
-			// Get all the images for the recipe
-			images, err := h.db.Images().List(*recipe.Id)
+		for _, image := range *images {
+			// Load the current original
+			log.Debug().Msgf("Loading %s", *image.Url)
+			data, err := upload.Load(h.upl, *recipe.Id, *image.Name)
 			if err != nil {
 				h.Error(w, r, http.StatusInternalServerError, err)
 				return
 			}
 
-			for _, image := range *images {
-				// Load the current original
-				log.Debug().Msgf("Loading %s", *image.Url)
-				data, err := upload.Load(h.upl, *recipe.Id, *image.Name)
-				if err != nil {
-					h.Error(w, r, http.StatusInternalServerError, err)
-					return
-				}
-
-				// Resave it, which will downscale if larger than the threshold,
-				// as well as regenerate the thumbnail
-				log.Debug().Msgf("Re-saving %s", *image.Url)
-				upload.Save(h.upl, *recipe.Id, *image.Name, data)
-				if err != nil {
-					h.Error(w, r, http.StatusInternalServerError, err)
-					return
-				}
+			// Resave it, which will downscale if larger than the threshold,
+			// as well as regenerate the thumbnail
+			log.Debug().Msgf("Re-saving %s", *image.Url)
+			upload.Save(h.upl, *recipe.Id, *image.Name, data)
+			if err != nil {
+				h.Error(w, r, http.StatusInternalServerError, err)
+				return
 			}
 		}
-	default:
 	}
 
 	h.NoContent(w)
