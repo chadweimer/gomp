@@ -94,7 +94,7 @@ func (u ImageUploader) Load(recipeId int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
-	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumnbailSize, u.imgCfg.ThumnbailSize, toReshapeFilter(u.imgCfg.ThumbnailQuality))
+	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize, toReshapeFilter(u.imgCfg.ThumbnailQuality))
 
 	thumbBuf := new(bytes.Buffer)
 	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ThumbnailQuality)))

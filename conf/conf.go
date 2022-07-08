@@ -66,8 +66,8 @@ type Config struct {
 	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
 	ThumbnailQuality models.ImageQualityLevel
 
-	// ThumnbailSize gets the size of the bounding box to fit the thumbnails recipe images to.
-	ThumnbailSize int
+	// ThumbnailSize gets the size of the bounding box to fit the thumbnails recipe images to.
+	ThumbnailSize int
 }
 
 const (
@@ -93,7 +93,7 @@ func Load() *Config {
 		ImageQuality:           models.ImageQualityOriginal,
 		ImageSize:              2000,
 		ThumbnailQuality:       models.ImageQualityMedium,
-		ThumnbailSize:          500,
+		ThumbnailSize:          500,
 	}
 
 	// If environment variables are set, use them.
@@ -110,7 +110,7 @@ func Load() *Config {
 	loadEnv("IMAGE_QUALITY", &c.ImageQuality)
 	loadEnv("IMAGE_Size", &c.ImageSize)
 	loadEnv("THUMBNAIL_QUALITY", &c.ThumbnailQuality)
-	loadEnv("THUMBNAIL_Size", &c.ThumnbailSize)
+	loadEnv("THUMBNAIL_Size", &c.ThumbnailSize)
 
 	// Now that we've loaded configuration, we can finish setting up logging
 	if !c.IsDevelopment {
@@ -149,7 +149,7 @@ func Load() *Config {
 		Str("image-quality", string(c.ImageQuality)).
 		Int("image-size", c.ImageSize).
 		Str("thumbnail-quality", string(c.ThumbnailQuality)).
-		Int("thumbnail-size", c.ThumnbailSize)
+		Int("thumbnail-size", c.ThumbnailSize)
 
 	// Only print sensitive info in development mode
 	if c.IsDevelopment {
@@ -215,7 +215,7 @@ func (c *Config) Validate() error {
 		return errors.New("THUMBNAIL_QUALITY is invalid")
 	}
 
-	if c.ThumnbailSize <= 0 {
+	if c.ThumbnailSize <= 0 {
 		return errors.New("THUMBNAIL_SIZE must be positive")
 	}
 
@@ -228,7 +228,7 @@ func (c Config) ToImageConfiguration() models.ImageConfiguration {
 		ImageQuality:     c.ImageQuality,
 		ImageSize:        c.ImageSize,
 		ThumbnailQuality: c.ThumbnailQuality,
-		ThumnbailSize:    c.ThumnbailSize,
+		ThumbnailSize:    c.ThumbnailSize,
 	}
 }
 

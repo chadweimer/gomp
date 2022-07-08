@@ -38,6 +38,6 @@ type ImageConfiguration struct {
 	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
 	ThumbnailQuality ImageQualityLevel
 
-	// ThumnbailSize gets the size of the bounding box to fit the thumbnails recipe images to.
-	ThumnbailSize int
+	// ThumbnailSize gets the size of the bounding box to fit the thumbnails recipe images to.
+	ThumbnailSize int
 }
