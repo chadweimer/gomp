@@ -39,11 +39,14 @@ func main() {
 	}
 
 	fs := upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))
-	upl, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
+
+	uplDriver, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Establishing upload driver failed")
 		return
 	}
+	uploader := upload.CreateImageUploader(uplDriver, cfg.ToImageConfiguration())
+
 	dbDriver, err := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
@@ -86,9 +89,9 @@ func main() {
 	// Don't let the extra slash cause problems
 	r.Use(middleware.StripSlashes)
 
-	r.Mount("/api", api.NewHandler(cfg.SecureKeys, upl, dbDriver))
+	r.Mount("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(upl))))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
 	r.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
