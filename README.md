@@ -140,6 +140,10 @@ PORT                    |uint            |5000                                  
 SECURE_KEY              |[]string        |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas.
 UPLOAD_DRIVER           |fs, s3          |fs                                       |Used to select which backend data store is used for file uploads.
 UPLOAD_PATH             |string          |data/uploads                             |The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name.
+IMAGE_QUALITY           |original, high, medium, low|original                      |The quality level for recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighber instead of the Box resizing algorithm.
+IMAGE_SIZE              |unit            |2000                                     |The size of the bounding box to fit recipe images to. Ignored if IMAGE_QUALITY == original.
+THUMBNAIL_QUALITY       |high, medium, low|medium                                  |The quality level for the thumbnails of recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighber instead of the Box resizing algorithm.
+THUMBNAIL_SIZE          |unit            |500                                      |The size of the bounding box to fit the thumbnails of recipe images to.
 
 All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.
 The name with "GOMP_" is prefered if both are present.

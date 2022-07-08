@@ -6,8 +6,6 @@ import (
 
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
-	"github.com/rs/zerolog/log"
 )
 
 func (h apiHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
@@ -77,8 +75,7 @@ func (h apiHandler) optimizeImages(w http.ResponseWriter, r *http.Request) {
 
 		for _, image := range *images {
 			// Load the current original
-			log.Debug().Msgf("Loading %s", *image.Url)
-			data, err := upload.Load(h.upl, *recipe.Id, *image.Name)
+			data, err := h.upl.Load(*recipe.Id, *image.Name)
 			if err != nil {
 				h.Error(w, r, http.StatusInternalServerError, err)
 				return
@@ -86,8 +83,7 @@ func (h apiHandler) optimizeImages(w http.ResponseWriter, r *http.Request) {
 
 			// Resave it, which will downscale if larger than the threshold,
 			// as well as regenerate the thumbnail
-			log.Debug().Msgf("Re-saving %s", *image.Url)
-			upload.Save(h.upl, *recipe.Id, *image.Name, data)
+			h.upl.Save(*recipe.Id, *image.Name, data)
 			if err != nil {
 				h.Error(w, r, http.StatusInternalServerError, err)
 				return

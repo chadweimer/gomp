@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
 	"github.com/google/uuid"
 )
 
@@ -67,7 +66,7 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 	imageName := uuid.New().String() + imageExt
 
 	// Save the image itself
-	url, thumbUrl, err := upload.Save(h.upl, recipeId, imageName, uploadedFileData)
+	url, thumbUrl, err := h.upl.Save(recipeId, imageName, uploadedFileData)
 	if err != nil {
 		fullErr := fmt.Errorf("failed to save image file: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
@@ -108,7 +107,7 @@ func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId
 	}
 
 	// And lastly delete the image file itself
-	if err := upload.Delete(h.upl, recipeId, *image.Name); err != nil {
+	if err := h.upl.Delete(recipeId, *image.Name); err != nil {
 		fullErr := fmt.Errorf("failed to delete image file: %w", err)
 		h.Error(w, r, http.StatusInternalServerError, fullErr)
 		return

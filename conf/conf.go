@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -55,6 +56,18 @@ type Config struct {
 
 	// BaseAssetsPath gets the base path to the client assets.
 	BaseAssetsPath string
+
+	// ImageQuality gets the quality level for recipe images.
+	ImageQuality models.ImageQualityLevel
+
+	// ImageSize gets the size of the bounding box to fit recipe images to. Ignored if ImageQuality == original.
+	ImageSize int
+
+	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
+	ThumbnailQuality models.ImageQualityLevel
+
+	// ThumnbailSize gets the size of the bounding box to fit the thumbnails recipe images to.
+	ThumnbailSize int
 }
 
 const (
@@ -77,6 +90,10 @@ func Load() *Config {
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
 		BaseAssetsPath:         "static",
+		ImageQuality:           models.ImageQualityOriginal,
+		ImageSize:              2000,
+		ThumbnailQuality:       models.ImageQualityMedium,
+		ThumnbailSize:          500,
 	}
 
 	// If environment variables are set, use them.
@@ -90,6 +107,10 @@ func Load() *Config {
 	loadEnv("DATABASE_URL", &c.DatabaseUrl)
 	loadEnv("PORT", &c.Port)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
+	loadEnv("IMAGE_QUALITY", &c.ImageQuality)
+	loadEnv("IMAGE_Size", &c.ImageSize)
+	loadEnv("THUMBNAIL_QUALITY", &c.ThumbnailQuality)
+	loadEnv("THUMBNAIL_Size", &c.ThumnbailSize)
 
 	// Now that we've loaded configuration, we can finish setting up logging
 	if !c.IsDevelopment {
@@ -124,7 +145,11 @@ func Load() *Config {
 		Str("base-assets-path", c.BaseAssetsPath).
 		Str("database-driver", c.DatabaseDriver).
 		Str("migrations-table-name", c.MigrationsTableName).
-		Int("migrations-force-version", c.MigrationsForceVersion)
+		Int("migrations-force-version", c.MigrationsForceVersion).
+		Str("image-quality", string(c.ImageQuality)).
+		Int("image-size", c.ImageSize).
+		Str("thumbnail-quality", string(c.ThumbnailQuality)).
+		Int("thumbnail-size", c.ThumnbailSize)
 
 	// Only print sensitive info in development mode
 	if c.IsDevelopment {
@@ -178,7 +203,33 @@ func (c *Config) Validate() error {
 		return errors.New("DATABASE_URL is invalid")
 	}
 
+	if !c.ImageQuality.IsValid() {
+		return errors.New("IMAGE_QUALITY is invalid")
+	}
+
+	if c.ImageSize <= 0 {
+		return errors.New("IMAGE_SIZE must be positive")
+	}
+
+	if !c.ThumbnailQuality.IsValid() || c.ThumbnailQuality == models.ImageQualityOriginal {
+		return errors.New("THUMBNAIL_QUALITY is invalid")
+	}
+
+	if c.ThumnbailSize <= 0 {
+		return errors.New("THUMBNAIL_SIZE must be positive")
+	}
+
 	return nil
+}
+
+// ToImageConfiguration converts the configuration to a models.ImageConfiguration
+func (c Config) ToImageConfiguration() models.ImageConfiguration {
+	return models.ImageConfiguration{
+		ImageQuality:     c.ImageQuality,
+		ImageSize:        c.ImageSize,
+		ThumbnailQuality: c.ThumbnailQuality,
+		ThumnbailSize:    c.ThumnbailSize,
+	}
 }
 
 func loadEnv(name string, dest interface{}) {
@@ -196,6 +247,8 @@ func loadEnv(name string, dest interface{}) {
 		switch dest := dest.(type) {
 		case *string:
 			*dest = envStr
+		case *models.ImageQualityLevel:
+			*dest = models.ImageQualityLevel(envStr)
 		case *[]string:
 			*dest = strings.Split(envStr, ",")
 		case *int:

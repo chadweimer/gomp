@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
 )
 
 func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params FindParams) {
@@ -109,7 +108,7 @@ func (h apiHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request, recipeI
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
-	if err := upload.DeleteAll(h.upl, recipeId); err != nil {
+	if err := h.upl.DeleteAll(recipeId); err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}

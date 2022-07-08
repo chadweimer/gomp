@@ -38,12 +38,12 @@ const (
 
 type apiHandler struct {
 	secureKeys []string
-	upl        upload.Driver
+	upl        *upload.ImageUploader
 	db         db.Driver
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl upload.Driver, db db.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) http.Handler {
 	h := apiHandler{
 		secureKeys: secureKeys,
 		upl:        upl,

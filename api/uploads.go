@@ -27,7 +27,7 @@ func (h apiHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	imageName := uuid.New().String() + imageExt
 
 	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
-	if err := h.upl.Save(imageName, uploadedFileData); err != nil {
+	if err := h.upl.Driver.Save(imageName, uploadedFileData); err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
