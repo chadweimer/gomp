@@ -119,6 +119,9 @@ type RecipeDriver interface {
 	// any attachments that we associated with the deleted recipe.
 	Delete(id int64) error
 
+	// List retrieves all recipes in the database.
+	List() (*[]models.Recipe, error)
+
 	// GetRating gets the current rating of the specific recipe.
 	GetRating(id int64) (*float32, error)
 

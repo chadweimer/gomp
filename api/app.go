@@ -7,6 +7,7 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
+	"github.com/rs/zerolog/log"
 )
 
 func (h apiHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
@@ -52,30 +53,37 @@ func (h apiHandler) PerformMaintenance(w http.ResponseWriter, r *http.Request) {
 
 	switch req.Op {
 	case OptimizeImages:
-		allStates := make([]models.RecipeState, 2)
-		allStates = append(allStates, models.Active)
-		allStates = append(allStates, models.Archived)
-		allFilter := models.SearchFilter{
-			Query:        "",
-			Fields:       make([]models.SearchField, 0),
-			Tags:         make([]string, 0),
-			WithPictures: nil,
-			States:       allStates,
-			SortBy:       models.SortById,
-			SortDir:      models.Asc,
-		}
-		// TODO: Paging?
-		allRecipes, _, err := h.db.Recipes().Find(&allFilter, 1, 1000000)
+		recipes, err := h.db.Recipes().List()
 		if err != nil {
 			h.Error(w, r, http.StatusInternalServerError, err)
 			return
 		}
-		for _, recipe := range *allRecipes {
-			err = upload.OptimizeImages(h.upl, *recipe.Id)
+
+		for _, recipe := range *recipes {
+			// Get all the images for the recipe
+			images, err := h.db.Images().List(*recipe.Id)
 			if err != nil {
-				// TODO: Log and continue?
 				h.Error(w, r, http.StatusInternalServerError, err)
 				return
+			}
+
+			for _, image := range *images {
+				// Load the current original
+				log.Debug().Msgf("Loading %s", *image.Url)
+				data, err := upload.Load(h.upl, *recipe.Id, *image.Name)
+				if err != nil {
+					h.Error(w, r, http.StatusInternalServerError, err)
+					return
+				}
+
+				// Resave it, which will downscale if larger than the threshold,
+				// as well as regenerate the thumbnail
+				log.Debug().Msgf("Re-saving %s", *image.Url)
+				upload.Save(h.upl, *recipe.Id, *image.Name, data)
+				if err != nil {
+					h.Error(w, r, http.StatusInternalServerError, err)
+					return
+				}
 			}
 		}
 	default:

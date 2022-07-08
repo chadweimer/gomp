@@ -109,6 +109,24 @@ func (*sqlRecipeDriver) deleteImpl(id int64, db sqlx.Execer) error {
 	return nil
 }
 
+func (d *sqlRecipeDriver) List() (*[]models.Recipe, error) {
+	return get(d.Db, func(db sqlx.Queryer) (*[]models.Recipe, error) {
+		return d.listImpl(db)
+	})
+}
+
+func (*sqlRecipeDriver) listImpl(db sqlx.Queryer) (*[]models.Recipe, error) {
+	var recipes []models.Recipe
+
+	stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
+		"FROM recipe ORDER BY id ASC"
+	if err := sqlx.Select(db, &recipes, stmt); err != nil {
+		return nil, err
+	}
+
+	return &recipes, nil
+}
+
 func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*float32, error) {
 		var rating float32

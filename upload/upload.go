@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/rs/zerolog/log"
 )
 
 // Save saves the uploaded image, including generating a thumbnail,
@@ -62,37 +61,16 @@ func DeleteAll(driver Driver, recipeId int64) error {
 	return err
 }
 
-// OptimizeImages regenerates all images and thumbnails from the currently saved originals
-func OptimizeImages(driver Driver, recipeId int64) error {
-	recipePath := getDirPathForImage(recipeId)
-	imagePaths, err := driver.List(recipePath)
+// Load reads the image for the given recipe, returning the bytes of the file
+func Load(driver Driver, recipeId int64, imageName string) ([]byte, error) {
+	origPath := filepath.Join(getDirPathForImage(recipeId), imageName)
+
+	file, err := driver.Open(origPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for _, imagePath := range imagePaths {
-		file, err := driver.Open(imagePath)
-		if err != nil {
-			// TODO: Log and move on?
-			return err
-		}
-
-		stat, err := file.Stat()
-		if err != nil {
-			// TODO: Log and move on?
-			return err
-		}
-		log.Debug().Msg(stat.Name())
-
-		origData, err := ioutil.ReadAll(file)
-		_, _, err = Save(driver, recipeId, stat.Name(), origData)
-		if err != nil {
-			// TODO: Log and move on?
-			return err
-		}
-	}
-
-	return nil
+	return ioutil.ReadAll(file)
 }
 
 func generateThumbnail(original image.Image, contentType string, saveDir string, imageName string, driver Driver) (string, error) {

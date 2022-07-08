@@ -17,9 +17,6 @@ const (
 type Driver interface {
 	fs.FS
 
-	// List lists all files at the specified base path
-	List(basePath string) ([]string, error)
-
 	// Save creates or overrites a file with the provided binary data.
 	Save(filePath string, data []byte) error
 
