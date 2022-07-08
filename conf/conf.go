@@ -108,9 +108,9 @@ func Load() *Config {
 	loadEnv("PORT", &c.Port)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 	loadEnv("IMAGE_QUALITY", &c.ImageQuality)
-	loadEnv("IMAGE_Size", &c.ImageSize)
+	loadEnv("IMAGE_SIZE", &c.ImageSize)
 	loadEnv("THUMBNAIL_QUALITY", &c.ThumbnailQuality)
-	loadEnv("THUMBNAIL_Size", &c.ThumbnailSize)
+	loadEnv("THUMBNAIL_SIZE", &c.ThumbnailSize)
 
 	// Now that we've loaded configuration, we can finish setting up logging
 	if !c.IsDevelopment {

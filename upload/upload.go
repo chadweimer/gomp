@@ -94,7 +94,7 @@ func (u ImageUploader) Load(recipeId int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
-	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize, toReshapeFilter(u.imgCfg.ThumbnailQuality))
+	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize, toResampleFilter(u.imgCfg.ThumbnailQuality))
 
 	thumbBuf := new(bytes.Buffer)
 	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ThumbnailQuality)))
@@ -112,7 +112,7 @@ func (u ImageUploader) generateFitted(original image.Image, contentType string, 
 	if bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize {
 		fittedImage = original
 	} else {
-		fittedImage = imaging.Fit(original, u.imgCfg.ImageSize, u.imgCfg.ImageSize, toReshapeFilter(u.imgCfg.ImageQuality))
+		fittedImage = imaging.Fit(original, u.imgCfg.ImageSize, u.imgCfg.ImageSize, toResampleFilter(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
@@ -170,7 +170,7 @@ func getDirPathForThumbnail(recipeId int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeId), "thumbs")
 }
 
-func toReshapeFilter(q models.ImageQualityLevel) imaging.ResampleFilter {
+func toResampleFilter(q models.ImageQualityLevel) imaging.ResampleFilter {
 	switch q {
 	case models.ImageQualityHigh:
 		return imaging.Box
