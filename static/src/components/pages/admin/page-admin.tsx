@@ -1,5 +1,5 @@
 import { createGesture, Gesture } from '@ionic/core';
-import { Component, Element, h } from '@stencil/core';
+import { Component, Element, Host, h } from '@stencil/core';
 import { getSwipe, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
 import { SwipeDirection } from '../../../models';
 
@@ -29,8 +29,18 @@ export class PageAdmin {
               }
               break;
             case 'tab-admin-users':
+              switch (swipe) {
+                case SwipeDirection.Left:
+                  this.tabs.select('tab-admin-maintenance');
+                  break
+                case SwipeDirection.Right:
+                  this.tabs.select('tab-admin-configuration');
+                  break;
+              }
+              break;
+            case 'tab-admin-maintenance':
               if (swipe === SwipeDirection.Right) {
-                this.tabs.select('tab-admin-configuration');
+                this.tabs.select('tab-admin-users');
               }
               break;
           }
@@ -47,21 +57,28 @@ export class PageAdmin {
 
   render() {
     return (
-      <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)} onIonTabsDidChange={() => sendActivatedCallback(this.tabs)} ref={el => this.tabs = el}>
-        <ion-tab tab="tab-admin-configuration" component="page-admin-configuration" />
-        <ion-tab tab="tab-admin-users" component="page-admin-users" />
+      <Host>
+        <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)} onIonTabsDidChange={() => sendActivatedCallback(this.tabs)} ref={el => this.tabs = el}>
+          <ion-tab tab="tab-admin-configuration" component="page-admin-configuration" />
+          <ion-tab tab="tab-admin-users" component="page-admin-users" />
+          <ion-tab tab="tab-admin-maintenance" component="page-admin-maintenance" />
 
-        <ion-tab-bar slot="top">
-          <ion-tab-button tab="tab-admin-configuration" href="/admin/configuration">
-            <ion-icon name="construct" />
-            <ion-label>Configuration</ion-label>
-          </ion-tab-button>
-          <ion-tab-button tab="tab-admin-users" href="/admin/users">
-            <ion-icon name="people" />
-            <ion-label>Users</ion-label>
-          </ion-tab-button>
-        </ion-tab-bar>
-      </ion-tabs>
+          <ion-tab-bar slot="top">
+            <ion-tab-button tab="tab-admin-configuration" href="/admin/configuration">
+              <ion-icon name="settings" />
+              <ion-label>Configuration</ion-label>
+            </ion-tab-button>
+            <ion-tab-button tab="tab-admin-users" href="/admin/users">
+              <ion-icon name="people" />
+              <ion-label>Users</ion-label>
+            </ion-tab-button>
+            <ion-tab-button tab="tab-admin-maintenance" href="/admin/maintenance">
+              <ion-icon name="build" />
+              <ion-label>Maintenance</ion-label>
+            </ion-tab-button>
+          </ion-tab-bar>
+        </ion-tabs>
+      </Host>
     );
   }
 }

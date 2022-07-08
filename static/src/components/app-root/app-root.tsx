@@ -98,6 +98,7 @@ export class AppRoot {
               <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
               <ion-route url="/configuration" component="tab-admin-configuration" />
               <ion-route url="/users" component="tab-admin-users" />
+              <ion-route url="/maintenance" component="tab-admin-maintenance" />
             </ion-route>
           </ion-route>
         </ion-router>

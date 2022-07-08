@@ -25,6 +25,8 @@ export namespace Components {
     interface PageAdminConfiguration {
         "activatedCallback": () => Promise<void>;
     }
+    interface PageAdminMaintenance {
+    }
     interface PageAdminUsers {
         "activatedCallback": () => Promise<void>;
     }
@@ -136,6 +138,12 @@ declare global {
         prototype: HTMLPageAdminConfigurationElement;
         new (): HTMLPageAdminConfigurationElement;
     };
+    interface HTMLPageAdminMaintenanceElement extends Components.PageAdminMaintenance, HTMLStencilElement {
+    }
+    var HTMLPageAdminMaintenanceElement: {
+        prototype: HTMLPageAdminMaintenanceElement;
+        new (): HTMLPageAdminMaintenanceElement;
+    };
     interface HTMLPageAdminUsersElement extends Components.PageAdminUsers, HTMLStencilElement {
     }
     var HTMLPageAdminUsersElement: {
@@ -245,6 +253,7 @@ declare global {
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
         "page-admin-configuration": HTMLPageAdminConfigurationElement;
+        "page-admin-maintenance": HTMLPageAdminMaintenanceElement;
         "page-admin-users": HTMLPageAdminUsersElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
@@ -282,6 +291,8 @@ declare namespace LocalJSX {
     interface PageAdmin {
     }
     interface PageAdminConfiguration {
+    }
+    interface PageAdminMaintenance {
     }
     interface PageAdminUsers {
     }
@@ -344,6 +355,7 @@ declare namespace LocalJSX {
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
         "page-admin-configuration": PageAdminConfiguration;
+        "page-admin-maintenance": PageAdminMaintenance;
         "page-admin-users": PageAdminUsers;
         "page-home": PageHome;
         "page-login": PageLogin;
@@ -373,6 +385,7 @@ declare module "@stencil/core" {
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
             "page-admin-configuration": LocalJSX.PageAdminConfiguration & JSXBase.HTMLAttributes<HTMLPageAdminConfigurationElement>;
+            "page-admin-maintenance": LocalJSX.PageAdminMaintenance & JSXBase.HTMLAttributes<HTMLPageAdminMaintenanceElement>;
             "page-admin-users": LocalJSX.PageAdminUsers & JSXBase.HTMLAttributes<HTMLPageAdminUsersElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
