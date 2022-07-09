@@ -1,8 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
-import { RecipeCompact, RecipeState, SearchField, SearchFilter } from '../../generated';
+import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir, YesNoAny } from '../../generated';
 import { recipesApi } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, toYesNoAny } from '../../helpers/utils';
-import { getDefaultSearchFilter } from '../../models';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -75,15 +74,11 @@ export class RecipeLinkEditor {
   @Watch('query')
   @Watch('includeArchived')
   async onSearchInputChanged() {
-    const filter: SearchFilter = {
-      ...getDefaultSearchFilter(),
-      query: this.query,
-      fields: [SearchField.Name],
-    };
+    let states: RecipeState[] = [RecipeState.Active];
     if (this.includeArchived) {
-      filter.states = [...filter.states, RecipeState.Archived];
+      states = [...states, RecipeState.Archived];
     }
-    const { data: { recipes } } = await recipesApi.find(filter.sortBy, filter.sortDir, 1, 20, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
+    const { data: { recipes } } = await recipesApi.find(SortBy.Modified, SortDir.Desc, 1, 25, this.query, YesNoAny.Any, [SearchField.Name], states, []);
 
     // Clear current selection
     this.selectedRecipeId = null;
