@@ -48,7 +48,7 @@ export class PageAdminMaintenance {
               await recipesApi.optimizeImage(recipe.id, image.id);
             }
           }
-        }, 'Optimizing images...');
+        }, 'Optimizing images. This might take a while...');
     } catch(ex) {
       console.error(ex);
       showToast('Failed to optimize images.');
