@@ -134,8 +134,7 @@ func (h apiHandler) OptimizeImage(w http.ResponseWriter, r *http.Request, recipe
 
 	// Resave it, which will downscale if larger than the threshold,
 	// as well as regenerate the thumbnail
-	h.upl.Save(recipeId, *image.Name, data)
-	if err != nil {
+	if _, _, err = h.upl.Save(recipeId, *image.Name, data); err != nil {
 		h.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
