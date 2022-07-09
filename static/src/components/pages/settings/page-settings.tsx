@@ -1,6 +1,6 @@
-import { createGesture, Gesture } from '@ionic/core';
+import { Gesture } from '@ionic/core';
 import { Component, Element, h } from '@stencil/core';
-import { getSwipe, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
+import { createSwipeGesture, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
 import { SwipeDirection } from '../../../models';
 
 @Component({
@@ -13,39 +13,31 @@ export class PageSettings {
   private gesture: Gesture;
 
   connectedCallback() {
-    this.gesture = createGesture({
-      el: this.el,
-      threshold: 30,
-      gestureName: 'swipe',
-      onEnd: e => {
-        const swipe = getSwipe(e);
-        if (!swipe) return
-
-        this.tabs.getSelected().then(selectedTab => {
-          switch (selectedTab) {
-            case 'tab-settings-preferences':
-              if (swipe === SwipeDirection.Left) {
-                this.tabs.select('tab-settings-searches');
-              }
-              break;
-            case 'tab-settings-searches':
-              switch (swipe) {
-                case SwipeDirection.Left:
-                  this.tabs.select('tab-settings-security');
-                  break
-                case SwipeDirection.Right:
-                  this.tabs.select('tab-settings-preferences');
-                  break;
-              }
-              break;
-            case 'tab-settings-security':
-              if (swipe === SwipeDirection.Right) {
-                this.tabs.select('tab-settings-searches');
-              }
-              break;
-          }
-        });
-      }
+    this.gesture = createSwipeGesture(this.el, swipe => {
+      this.tabs.getSelected().then(selectedTab => {
+        switch (selectedTab) {
+          case 'tab-settings-preferences':
+            if (swipe === SwipeDirection.Left) {
+              this.tabs.select('tab-settings-searches');
+            }
+            break;
+          case 'tab-settings-searches':
+            switch (swipe) {
+              case SwipeDirection.Left:
+                this.tabs.select('tab-settings-security');
+                break
+              case SwipeDirection.Right:
+                this.tabs.select('tab-settings-preferences');
+                break;
+            }
+            break;
+          case 'tab-settings-security':
+            if (swipe === SwipeDirection.Right) {
+              this.tabs.select('tab-settings-searches');
+            }
+            break;
+        }
+      });
     });
     this.gesture.enable();
   }

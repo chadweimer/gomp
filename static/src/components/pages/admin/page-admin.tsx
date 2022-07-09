@@ -1,6 +1,6 @@
-import { createGesture, Gesture } from '@ionic/core';
+import { Gesture } from '@ionic/core';
 import { Component, Element, Host, h } from '@stencil/core';
-import { getSwipe, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
+import { createSwipeGesture, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
 import { SwipeDirection } from '../../../models';
 
 @Component({
@@ -13,39 +13,31 @@ export class PageAdmin {
   private gesture: Gesture;
 
   connectedCallback() {
-    this.gesture = createGesture({
-      el: this.el,
-      threshold: 30,
-      gestureName: 'swipe',
-      onEnd: e => {
-        const swipe = getSwipe(e);
-        if (!swipe) return
-
-        this.tabs.getSelected().then(selectedTab => {
-          switch (selectedTab) {
-            case 'tab-admin-configuration':
-              if (swipe === SwipeDirection.Left) {
-                this.tabs.select('tab-admin-users');
-              }
-              break;
-            case 'tab-admin-users':
-              switch (swipe) {
-                case SwipeDirection.Left:
-                  this.tabs.select('tab-admin-maintenance');
-                  break
-                case SwipeDirection.Right:
-                  this.tabs.select('tab-admin-configuration');
-                  break;
-              }
-              break;
-            case 'tab-admin-maintenance':
-              if (swipe === SwipeDirection.Right) {
-                this.tabs.select('tab-admin-users');
-              }
-              break;
-          }
-        });
-      }
+    this.gesture = createSwipeGesture(this.el, swipe => {
+      this.tabs.getSelected().then(selectedTab => {
+        switch (selectedTab) {
+          case 'tab-admin-configuration':
+            if (swipe === SwipeDirection.Left) {
+              this.tabs.select('tab-admin-users');
+            }
+            break;
+          case 'tab-admin-users':
+            switch (swipe) {
+              case SwipeDirection.Left:
+                this.tabs.select('tab-admin-maintenance');
+                break
+              case SwipeDirection.Right:
+                this.tabs.select('tab-admin-configuration');
+                break;
+            }
+            break;
+          case 'tab-admin-maintenance':
+            if (swipe === SwipeDirection.Right) {
+              this.tabs.select('tab-admin-users');
+            }
+            break;
+        }
+      });
     });
     this.gesture.enable();
   }
