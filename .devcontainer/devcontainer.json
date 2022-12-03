@@ -11,7 +11,6 @@
 			"VARIANT": "1.18-bullseye"
 		}
 	},
-	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -44,6 +43,7 @@
 		}
 	},
 
+	// Features to add to the dev container. More info: https://containers.dev/features.
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:1": {},
 		"ghcr.io/devcontainers/features/docker-from-docker:1": {},
@@ -61,6 +61,6 @@
     "source=/etc/localtime,target=/etc/localtime,type=bind"
   ]
 
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 }
