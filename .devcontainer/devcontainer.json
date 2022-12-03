@@ -8,12 +8,9 @@
 			// Update the VARIANT arg to pick a version of Go: 1, 1.18, 1.17
 			// Append -bullseye or -buster to pin to an OS version.
 			// Use -bullseye variants on local arm64/Apple Silicon.
-			"VARIANT": "1.18-bullseye",
-			// Options
-			"NODE_VERSION": "16"
+			"VARIANT": "1.18-bullseye"
 		}
 	},
-	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -40,9 +37,17 @@
 				"ms-azuretools.vscode-docker",
 				"redhat.vscode-yaml",
 				"spmeesseman.vscode-taskexplorer",
-				"visualstudioexptteam.vscodeintellicode"
+				"visualstudioexptteam.vscodeintellicode",
+				"GitHub.vscode-pull-request-github"
 			]
 		}
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:1": {},
+		"ghcr.io/devcontainers/features/docker-from-docker:1": {},
+		"ghcr.io/devcontainers/features/node:1": {}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -54,11 +59,8 @@
   "mounts": [
     "source=/etc/timezone,target=/etc/timezone,type=bind",
     "source=/etc/localtime,target=/etc/localtime,type=bind"
-  ],
+  ]
 
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode",
-	"features": {
-		"docker-from-docker": "latest"
-	}
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }
