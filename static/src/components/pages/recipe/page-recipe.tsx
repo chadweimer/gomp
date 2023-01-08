@@ -133,7 +133,7 @@ export class PageRecipe {
                       <ion-item lines="full">
                         <ion-label position="stacked">Source</ion-label>
                         <p class="plain ion-padding">
-                          <a href={this.recipe?.sourceUrl} target="_blank">{this.recipe?.sourceUrl}</a>
+                          <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a>
                         </p>
                       </ion-item>
                       : ''}
