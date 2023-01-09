@@ -65,19 +65,35 @@ export class RecipeEditor {
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Ingredients</ion-label>
-              <ion-textarea value={this.recipe.ingredients} onIonChange={e => this.recipe = { ...this.recipe, ingredients: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.ingredients}
+                onIonChange={e => this.recipe = { ...this.recipe, ingredients: e.detail.value }}
+                auto-grow
+                debounce={100} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Directions</ion-label>
-              <ion-textarea value={this.recipe.directions} onIonChange={e => this.recipe = { ...this.recipe, directions: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.directions}
+                onIonChange={e => this.recipe = { ...this.recipe, directions: e.detail.value }}
+                auto-grow
+                debounce={100} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-              <ion-textarea value={this.recipe.storageInstructions} onIonChange={e => this.recipe = { ...this.recipe, storageInstructions: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.storageInstructions}
+                onIonChange={e => this.recipe = { ...this.recipe, storageInstructions: e.detail.value }}
+                auto-grow
+                debounce={100} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Nutrition</ion-label>
-              <ion-textarea value={this.recipe.nutritionInfo} onIonChange={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.nutritionInfo}
+                onIonChange={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail.value }}
+                auto-grow
+                debounce={100}/>
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Source</ion-label>
