@@ -42,7 +42,7 @@ export class UserEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item>
               <ion-label position="stacked">Email</ion-label>
-              <ion-input type="email" value={this.user.username} disabled={!!this.user.id} onIonChange={e => this.user = { ...this.user, username: e.detail.value }} required autofocus />
+              <ion-input type="email" value={this.user.username} disabled={!!this.user.id} onIonBlur={e => this.user = { ...this.user, username: e.target.value as string }} required autofocus />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Access Level</ion-label>
@@ -64,11 +64,11 @@ export class UserEditor {
       return [
         <ion-item>
           <ion-label position="stacked">Password</ion-label>
-          <ion-input type="password" onIonChange={e => this.password = e.detail.value} required />
+          <ion-input type="password" onIonBlur={e => this.password = e.target.value as string} required />
         </ion-item>,
         <ion-item>
           <ion-label position="stacked">Confirm Password</ion-label>
-          <ion-input type="password" onIonChange={e => this.repeatPassword = e.detail.value} ref={el => this.repeatPasswordInput = el} required />
+          <ion-input type="password" onIonBlur={e => this.repeatPassword = e.target.value as string} ref={el => this.repeatPasswordInput = el} required />
         </ion-item>,
       ];
     }

@@ -42,15 +42,15 @@ export class PageSettingsSecurity {
                       </ion-item>
                       <ion-item>
                         <ion-label position="stacked">Current Password</ion-label>
-                        <ion-input type="password" value={this.currentPassword} onIonChange={e => this.currentPassword = e.detail.value} required />
+                        <ion-input type="password" value={this.currentPassword} onIonBlur={e => this.currentPassword = e.target.value as string} required />
                       </ion-item>
                       <ion-item>
                         <ion-label position="stacked">New Password</ion-label>
-                        <ion-input type="password" value={this.newPassword} onIonChange={e => this.newPassword = e.detail.value} required />
+                        <ion-input type="password" value={this.newPassword} onIonBlur={e => this.newPassword = e.target.value as string} required />
                       </ion-item>
                       <ion-item>
                         <ion-label position="stacked">Confirm Password</ion-label>
-                        <ion-input type="password" value={this.repeatPassword} onIonChange={e => this.repeatPassword = e.detail.value} ref={el => this.repeatPasswordInput = el} required />
+                        <ion-input type="password" value={this.repeatPassword} onIonBlur={e => this.repeatPassword = e.target.value as string} ref={el => this.repeatPasswordInput = el} required />
                       </ion-item>
                     </ion-card-content>
                     <ion-footer>
