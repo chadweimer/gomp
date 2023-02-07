@@ -84,8 +84,8 @@ func (h apiHandler) createToken(user *models.User) (string, error) {
 	return tokenStr, nil
 }
 
-func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (h apiHandler) checkScopes(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		routeScopes, ok := r.Context().Value(BearerScopes).([]string)
 		if ok {
 			user, claims, err := h.isAuthenticated(r)
@@ -119,7 +119,7 @@ func (h apiHandler) checkScopes(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		next.ServeHTTP(w, r)
-	}
+	})
 }
 
 func (h apiHandler) isAuthenticated(r *http.Request) (*models.User, *gompClaims, error) {

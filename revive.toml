@@ -15,7 +15,6 @@ warningCode = 2
 [rule.if-return]
 [rule.increment-decrement]
 [rule.var-declaration]
-[rule.package-comments]
 [rule.range]
 [rule.receiver-naming]
 [rule.modifies-value-receiver]
