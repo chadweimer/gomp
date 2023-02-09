@@ -9,17 +9,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (h apiHandler) GetCurrentUser(ctx context.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
-	return withCurrentUser[GetCurrentUserRequestObject, GetCurrentUserResponseObject](
-		ctx, request, h, GetCurrentUser401Response{}, func(ctx context.Context, _ GetCurrentUserRequestObject, userId int64) (GetCurrentUserResponseObject, error) {
-			user, err := h.db.Users().Read(userId)
-			if err != nil {
-				fullErr := fmt.Errorf("reading user: %w", err)
-				return nil, fullErr
-			}
+func (h apiHandler) GetCurrentUser(ctx context.Context, _ GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
+	return withCurrentUser[GetCurrentUserResponseObject](ctx, h, GetCurrentUser401Response{}, func(userId int64) (GetCurrentUserResponseObject, error) {
+		user, err := h.db.Users().Read(userId)
+		if err != nil {
+			fullErr := fmt.Errorf("reading user: %w", err)
+			return nil, fullErr
+		}
 
-			return GetCurrentUser200JSONResponse(user.User), nil
-		})
+		return GetCurrentUser200JSONResponse(user.User), nil
+	})
 }
 
 func (h apiHandler) GetUser(_ context.Context, request GetUserRequestObject) (GetUserResponseObject, error) {
@@ -78,32 +77,30 @@ func (h apiHandler) SaveUser(_ context.Context, request SaveUserRequestObject) (
 }
 
 func (h apiHandler) DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error) {
-	return withCurrentUser[DeleteUserRequestObject, DeleteUserResponseObject](
-		ctx, request, h, DeleteUser401Response{}, func(ctx context.Context, _ DeleteUserRequestObject, userId int64) (DeleteUserResponseObject, error) {
-			// Don't allow deleting self
-			if request.UserId == userId {
-				return DeleteUser403Response{}, nil
-			}
+	return withCurrentUser[DeleteUserResponseObject](ctx, h, DeleteUser401Response{}, func(userId int64) (DeleteUserResponseObject, error) {
+		// Don't allow deleting self
+		if request.UserId == userId {
+			return DeleteUser403Response{}, nil
+		}
 
-			if err := h.db.Users().Delete(request.UserId); err != nil {
-				return nil, err
-			}
+		if err := h.db.Users().Delete(request.UserId); err != nil {
+			return nil, err
+		}
 
-			return DeleteUser204Response{}, nil
-		})
+		return DeleteUser204Response{}, nil
+	})
 }
 
 func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRequestObject) (ChangePasswordResponseObject, error) {
-	return withCurrentUser[ChangePasswordRequestObject, ChangePasswordResponseObject](
-		ctx, request, h, ChangePassword401Response{}, func(ctx context.Context, _ ChangePasswordRequestObject, userId int64) (ChangePasswordResponseObject, error) {
-			if err := h.db.Users().UpdatePassword(userId, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-				fullErr := fmt.Errorf("update failed: %w", err)
-				h.LogError(ctx, fullErr)
-				return ChangePassword403Response{}, nil
-			}
+	return withCurrentUser[ChangePasswordResponseObject](ctx, h, ChangePassword401Response{}, func(userId int64) (ChangePasswordResponseObject, error) {
+		if err := h.db.Users().UpdatePassword(userId, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
+			fullErr := fmt.Errorf("update failed: %w", err)
+			h.LogError(ctx, fullErr)
+			return ChangePassword403Response{}, nil
+		}
 
-			return ChangePassword204Response{}, nil
-		})
+		return ChangePassword204Response{}, nil
+	})
 }
 
 func (h apiHandler) ChangeUserPassword(ctx context.Context, request ChangeUserPasswordRequestObject) (ChangeUserPasswordResponseObject, error) {
@@ -116,16 +113,15 @@ func (h apiHandler) ChangeUserPassword(ctx context.Context, request ChangeUserPa
 	return ChangeUserPassword204Response{}, nil
 }
 
-func (h apiHandler) GetSettings(ctx context.Context, request GetSettingsRequestObject) (GetSettingsResponseObject, error) {
-	return withCurrentUser[GetSettingsRequestObject, GetSettingsResponseObject](
-		ctx, request, h, GetSettings401Response{}, func(ctx context.Context, _ GetSettingsRequestObject, userId int64) (GetSettingsResponseObject, error) {
-			userSettings, err := h.getUserSettings(userId)
-			if err != nil {
-				return nil, err
-			}
+func (h apiHandler) GetSettings(ctx context.Context, _ GetSettingsRequestObject) (GetSettingsResponseObject, error) {
+	return withCurrentUser[GetSettingsResponseObject](ctx, h, GetSettings401Response{}, func(userId int64) (GetSettingsResponseObject, error) {
+		userSettings, err := h.getUserSettings(userId)
+		if err != nil {
+			return nil, err
+		}
 
-			return GetSettings200JSONResponse(*userSettings), nil
-		})
+		return GetSettings200JSONResponse(*userSettings), nil
+	})
 }
 
 func (h apiHandler) GetUserSettings(_ context.Context, request GetUserSettingsRequestObject) (GetUserSettingsResponseObject, error) {
@@ -155,14 +151,13 @@ func (h apiHandler) getUserSettings(userId int64) (*models.UserSettings, error) 
 }
 
 func (h apiHandler) SaveSettings(ctx context.Context, request SaveSettingsRequestObject) (SaveSettingsResponseObject, error) {
-	return withCurrentUser[SaveSettingsRequestObject, SaveSettingsResponseObject](
-		ctx, request, h, SaveSettings401Response{}, func(ctx context.Context, _ SaveSettingsRequestObject, userId int64) (SaveSettingsResponseObject, error) {
-			if err := h.saveUserSettings(userId, request.Body); err != nil {
-				return nil, err
-			}
+	return withCurrentUser[SaveSettingsResponseObject](ctx, h, SaveSettings401Response{}, func(userId int64) (SaveSettingsResponseObject, error) {
+		if err := h.saveUserSettings(userId, request.Body); err != nil {
+			return nil, err
+		}
 
-			return SaveSettings204Response{}, nil
-		})
+		return SaveSettings204Response{}, nil
+	})
 }
 
 func (h apiHandler) SaveUserSettings(_ context.Context, request SaveUserSettingsRequestObject) (SaveUserSettingsResponseObject, error) {
@@ -189,16 +184,15 @@ func (h apiHandler) saveUserSettings(userId int64, userSettings *models.UserSett
 	return nil
 }
 
-func (h apiHandler) GetSearchFilters(ctx context.Context, request GetSearchFiltersRequestObject) (GetSearchFiltersResponseObject, error) {
-	return withCurrentUser[GetSearchFiltersRequestObject, GetSearchFiltersResponseObject](
-		ctx, request, h, GetSearchFilters401Response{}, func(ctx context.Context, _ GetSearchFiltersRequestObject, userId int64) (GetSearchFiltersResponseObject, error) {
-			searches, err := h.db.Users().ListSearchFilters(userId)
-			if err != nil {
-				return nil, err
-			}
+func (h apiHandler) GetSearchFilters(ctx context.Context, _ GetSearchFiltersRequestObject) (GetSearchFiltersResponseObject, error) {
+	return withCurrentUser[GetSearchFiltersResponseObject](ctx, h, GetSearchFilters401Response{}, func(userId int64) (GetSearchFiltersResponseObject, error) {
+		searches, err := h.db.Users().ListSearchFilters(userId)
+		if err != nil {
+			return nil, err
+		}
 
-			return GetSearchFilters200JSONResponse(*searches), nil
-		})
+		return GetSearchFilters200JSONResponse(*searches), nil
+	})
 }
 
 func (h apiHandler) GetUserSearchFilters(_ context.Context, request GetUserSearchFiltersRequestObject) (GetUserSearchFiltersResponseObject, error) {
@@ -211,15 +205,14 @@ func (h apiHandler) GetUserSearchFilters(_ context.Context, request GetUserSearc
 }
 
 func (h apiHandler) AddSearchFilter(ctx context.Context, request AddSearchFilterRequestObject) (AddSearchFilterResponseObject, error) {
-	return withCurrentUser[AddSearchFilterRequestObject, AddSearchFilterResponseObject](
-		ctx, request, h, AddSearchFilter401Response{}, func(ctx context.Context, _ AddSearchFilterRequestObject, userId int64) (AddSearchFilterResponseObject, error) {
-			filter, err := h.addUserSearchFilter(userId, request.Body)
-			if err != nil {
-				return nil, err
-			}
+	return withCurrentUser[AddSearchFilterResponseObject](ctx, h, AddSearchFilter401Response{}, func(userId int64) (AddSearchFilterResponseObject, error) {
+		filter, err := h.addUserSearchFilter(userId, request.Body)
+		if err != nil {
+			return nil, err
+		}
 
-			return AddSearchFilter201JSONResponse(*filter), nil
-		})
+		return AddSearchFilter201JSONResponse(*filter), nil
+	})
 }
 
 func (h apiHandler) AddUserSearchFilter(_ context.Context, request AddUserSearchFilterRequestObject) (AddUserSearchFilterResponseObject, error) {
@@ -247,16 +240,15 @@ func (h apiHandler) addUserSearchFilter(userId int64, filter *models.SavedSearch
 }
 
 func (h apiHandler) GetSearchFilter(ctx context.Context, request GetSearchFilterRequestObject) (GetSearchFilterResponseObject, error) {
-	return withCurrentUser[GetSearchFilterRequestObject, GetSearchFilterResponseObject](
-		ctx, request, h, GetSearchFilter401Response{}, func(ctx context.Context, _ GetSearchFilterRequestObject, userId int64) (GetSearchFilterResponseObject, error) {
-			filter, err := h.db.Users().ReadSearchFilter(userId, request.FilterId)
-			if err != nil {
-				fullErr := fmt.Errorf("reading filter: %w", err)
-				return nil, fullErr
-			}
+	return withCurrentUser[GetSearchFilterResponseObject](ctx, h, GetSearchFilter401Response{}, func(userId int64) (GetSearchFilterResponseObject, error) {
+		filter, err := h.db.Users().ReadSearchFilter(userId, request.FilterId)
+		if err != nil {
+			fullErr := fmt.Errorf("reading filter: %w", err)
+			return nil, fullErr
+		}
 
-			return GetSearchFilter200JSONResponse(*filter), nil
-		})
+		return GetSearchFilter200JSONResponse(*filter), nil
+	})
 }
 
 func (h apiHandler) GetUserSearchFilter(_ context.Context, request GetUserSearchFilterRequestObject) (GetUserSearchFilterResponseObject, error) {
@@ -270,14 +262,13 @@ func (h apiHandler) GetUserSearchFilter(_ context.Context, request GetUserSearch
 }
 
 func (h apiHandler) SaveSearchFilter(ctx context.Context, request SaveSearchFilterRequestObject) (SaveSearchFilterResponseObject, error) {
-	return withCurrentUser[SaveSearchFilterRequestObject, SaveSearchFilterResponseObject](
-		ctx, request, h, SaveSearchFilter401Response{}, func(ctx context.Context, _ SaveSearchFilterRequestObject, userId int64) (SaveSearchFilterResponseObject, error) {
-			if err := h.saveUserSearchFilter(userId, request.FilterId, request.Body); err != nil {
-				return nil, err
-			}
+	return withCurrentUser[SaveSearchFilterResponseObject](ctx, h, SaveSearchFilter401Response{}, func(userId int64) (SaveSearchFilterResponseObject, error) {
+		if err := h.saveUserSearchFilter(userId, request.FilterId, request.Body); err != nil {
+			return nil, err
+		}
 
-			return SaveSearchFilter204Response{}, nil
-		})
+		return SaveSearchFilter204Response{}, nil
+	})
 }
 
 func (h apiHandler) SaveUserSearchFilter(_ context.Context, request SaveUserSearchFilterRequestObject) (SaveUserSearchFilterResponseObject, error) {
@@ -312,14 +303,13 @@ func (h apiHandler) saveUserSearchFilter(userId int64, filterId int64, filter *m
 }
 
 func (h apiHandler) DeleteSearchFilter(ctx context.Context, request DeleteSearchFilterRequestObject) (DeleteSearchFilterResponseObject, error) {
-	return withCurrentUser[DeleteSearchFilterRequestObject, DeleteSearchFilterResponseObject](
-		ctx, request, h, DeleteSearchFilter401Response{}, func(ctx context.Context, _ DeleteSearchFilterRequestObject, userId int64) (DeleteSearchFilterResponseObject, error) {
-			if err := h.db.Users().DeleteSearchFilter(userId, request.FilterId); err != nil {
-				return nil, err
-			}
+	return withCurrentUser[DeleteSearchFilterResponseObject](ctx, h, DeleteSearchFilter401Response{}, func(userId int64) (DeleteSearchFilterResponseObject, error) {
+		if err := h.db.Users().DeleteSearchFilter(userId, request.FilterId); err != nil {
+			return nil, err
+		}
 
-			return DeleteSearchFilter204Response{}, nil
-		})
+		return DeleteSearchFilter204Response{}, nil
+	})
 }
 
 func (h apiHandler) DeleteUserSearchFilter(_ context.Context, request DeleteUserSearchFilterRequestObject) (DeleteUserSearchFilterResponseObject, error) {

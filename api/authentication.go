@@ -38,22 +38,21 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 	return Authenticate200JSONResponse{Token: tokenStr, User: *user}, nil
 }
 
-func (h apiHandler) RefreshToken(ctx context.Context, request RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
-	return withCurrentUser[RefreshTokenRequestObject, RefreshTokenResponseObject](
-		ctx, request, h, RefreshToken401Response{}, func(ctx context.Context, _ RefreshTokenRequestObject, userId int64) (RefreshTokenResponseObject, error) {
-			user, err := h.db.Users().Read(userId)
-			if err != nil {
-				h.LogError(ctx, err)
-				return RefreshToken401Response{}, nil
-			}
+func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
+	return withCurrentUser[RefreshTokenResponseObject](ctx, h, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
+		user, err := h.db.Users().Read(userId)
+		if err != nil {
+			h.LogError(ctx, err)
+			return RefreshToken401Response{}, nil
+		}
 
-			tokenStr, err := h.createToken(&user.User)
-			if err != nil {
-				return nil, err
-			}
+		tokenStr, err := h.createToken(&user.User)
+		if err != nil {
+			return nil, err
+		}
 
-			return RefreshToken200JSONResponse{Token: tokenStr, User: user.User}, nil
-		})
+		return RefreshToken200JSONResponse{Token: tokenStr, User: user.User}, nil
+	})
 }
 
 func (h apiHandler) createToken(user *models.User) (string, error) {
@@ -231,12 +230,12 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	return &user.User, nil
 }
 
-func withCurrentUser[TRequest interface{}, TResponse interface{}](ctx context.Context, request TRequest, h apiHandler, invalidUserResponse TResponse, do func(ctx context.Context, _ TRequest, userId int64) (TResponse, error)) (TResponse, error) {
+func withCurrentUser[TResponse interface{}](ctx context.Context, h apiHandler, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
 	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
 	if err != nil {
 		h.LogError(ctx, err)
 		return invalidUserResponse, nil
 	}
 
-	return do(ctx, request, userId)
+	return do(userId)
 }
