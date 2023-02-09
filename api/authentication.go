@@ -233,3 +233,13 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 
 	return &user.User, nil
 }
+
+func withCurrentUser[TRequest interface{}, TResponse interface{}](ctx context.Context, request TRequest, h apiHandler, invalidUserResponse TResponse, do func(ctx context.Context, _ TRequest, userId int64) (TResponse, error)) (TResponse, error) {
+	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
+	if err != nil {
+		h.LogError(ctx, err)
+		return invalidUserResponse, nil
+	}
+
+	return do(ctx, request, userId)
+}
