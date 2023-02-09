@@ -13,13 +13,12 @@ func (h apiHandler) GetNotes(_ context.Context, request GetNotesRequestObject) (
 	return GetNotes200JSONResponse(*notes), nil
 }
 
-func (h apiHandler) AddNote(ctx context.Context, request AddNoteRequestObject) (AddNoteResponseObject, error) {
+func (h apiHandler) AddNote(_ context.Context, request AddNoteRequestObject) (AddNoteResponseObject, error) {
 	note := request.Body
 	if note.RecipeId == nil {
 		note.RecipeId = &request.RecipeId
 	} else if *note.RecipeId != request.RecipeId {
-		h.LogError(ctx, errMismatchedId)
-		return AddNote400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Notes().Create(note); err != nil {
@@ -29,20 +28,18 @@ func (h apiHandler) AddNote(ctx context.Context, request AddNoteRequestObject) (
 	return AddNote201JSONResponse(*note), nil
 }
 
-func (h apiHandler) SaveNote(ctx context.Context, request SaveNoteRequestObject) (SaveNoteResponseObject, error) {
+func (h apiHandler) SaveNote(_ context.Context, request SaveNoteRequestObject) (SaveNoteResponseObject, error) {
 	note := request.Body
 	if note.Id == nil {
 		note.Id = &request.NoteId
 	} else if *note.Id != request.NoteId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveNote400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if note.RecipeId == nil {
 		note.RecipeId = &request.RecipeId
 	} else if *note.RecipeId != request.RecipeId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveNote400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Notes().Update(note); err != nil {

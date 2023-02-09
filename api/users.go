@@ -64,13 +64,12 @@ func (h apiHandler) AddUser(_ context.Context, request AddUserRequestObject) (Ad
 	return AddUser201JSONResponse(user.User), nil
 }
 
-func (h apiHandler) SaveUser(ctx context.Context, request SaveUserRequestObject) (SaveUserResponseObject, error) {
+func (h apiHandler) SaveUser(_ context.Context, request SaveUserRequestObject) (SaveUserResponseObject, error) {
 	user := request.Body
 	if user.Id == nil {
 		user.Id = &request.UserId
 	} else if *user.Id != request.UserId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveUser400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Users().Update(request.Body); err != nil {
@@ -178,8 +177,7 @@ func (h apiHandler) SaveSettings(ctx context.Context, request SaveSettingsReques
 	if userSettings.UserId == nil {
 		userSettings.UserId = &currentUserId
 	} else if *userSettings.UserId != currentUserId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveSettings400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
@@ -190,15 +188,14 @@ func (h apiHandler) SaveSettings(ctx context.Context, request SaveSettingsReques
 	return SaveSettings204Response{}, nil
 }
 
-func (h apiHandler) SaveUserSettings(ctx context.Context, request SaveUserSettingsRequestObject) (SaveUserSettingsResponseObject, error) {
+func (h apiHandler) SaveUserSettings(_ context.Context, request SaveUserSettingsRequestObject) (SaveUserSettingsResponseObject, error) {
 	userSettings := request.Body
 
 	// Make sure the ID is set in the object
 	if userSettings.UserId == nil {
 		userSettings.UserId = &request.UserId
 	} else if *userSettings.UserId != request.UserId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveUserSettings400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
@@ -246,8 +243,7 @@ func (h apiHandler) AddSearchFilter(ctx context.Context, request AddSearchFilter
 	if filter.UserId == nil {
 		filter.UserId = &currentUserId
 	} else if *filter.UserId != currentUserId {
-		h.LogError(ctx, errMismatchedId)
-		return AddSearchFilter400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Users().CreateSearchFilter(filter); err != nil {
@@ -257,15 +253,14 @@ func (h apiHandler) AddSearchFilter(ctx context.Context, request AddSearchFilter
 	return AddSearchFilter201JSONResponse(*filter), nil
 }
 
-func (h apiHandler) AddUserSearchFilter(ctx context.Context, request AddUserSearchFilterRequestObject) (AddUserSearchFilterResponseObject, error) {
+func (h apiHandler) AddUserSearchFilter(_ context.Context, request AddUserSearchFilterRequestObject) (AddUserSearchFilterResponseObject, error) {
 	filter := request.Body
 
 	// Make sure the ID is set in the object
 	if filter.UserId == nil {
 		filter.UserId = &request.UserId
 	} else if *filter.UserId != request.UserId {
-		h.LogError(ctx, errMismatchedId)
-		return AddUserSearchFilter400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Users().CreateSearchFilter(filter); err != nil {
@@ -314,16 +309,14 @@ func (h apiHandler) SaveSearchFilter(ctx context.Context, request SaveSearchFilt
 	if filter.Id == nil {
 		filter.Id = &request.FilterId
 	} else if *filter.Id != request.FilterId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveSearchFilter400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	// Make sure the UserId is set in the object
 	if filter.UserId == nil {
 		filter.UserId = &currentUserId
 	} else if *filter.UserId != currentUserId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveSearchFilter400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	// Check that the filter exists for the specified user
@@ -338,23 +331,21 @@ func (h apiHandler) SaveSearchFilter(ctx context.Context, request SaveSearchFilt
 	return SaveSearchFilter204Response{}, nil
 }
 
-func (h apiHandler) SaveUserSearchFilter(ctx context.Context, request SaveUserSearchFilterRequestObject) (SaveUserSearchFilterResponseObject, error) {
+func (h apiHandler) SaveUserSearchFilter(_ context.Context, request SaveUserSearchFilterRequestObject) (SaveUserSearchFilterResponseObject, error) {
 	filter := request.Body
 
 	// Make sure the ID is set in the object
 	if filter.Id == nil {
 		filter.Id = &request.FilterId
 	} else if *filter.Id != request.FilterId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveUserSearchFilter400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	// Make sure the UserId is set in the object
 	if filter.UserId == nil {
 		filter.UserId = &request.UserId
 	} else if *filter.UserId != request.UserId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveUserSearchFilter400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	// Check that the filter exists for the specified user

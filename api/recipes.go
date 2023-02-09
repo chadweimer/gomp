@@ -73,13 +73,12 @@ func (h apiHandler) AddRecipe(_ context.Context, request AddRecipeRequestObject)
 	return AddRecipe201JSONResponse(*recipe), nil
 }
 
-func (h apiHandler) SaveRecipe(ctx context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
+func (h apiHandler) SaveRecipe(_ context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
 	recipe := request.Body
 	if recipe.Id == nil {
 		recipe.Id = &request.RecipeId
 	} else if *recipe.Id != request.RecipeId {
-		h.LogError(ctx, errMismatchedId)
-		return SaveRecipe400Response{}, nil
+		return nil, errMismatchedId
 	}
 
 	if err := h.db.Recipes().Update(recipe); err != nil {

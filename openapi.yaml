@@ -205,8 +205,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: recipe
@@ -421,8 +419,6 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/note"
-        400:
-          description: Bad Request
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: note
@@ -453,8 +449,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: note
@@ -641,8 +635,6 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
-        400:
-          description: Bad Request
         401:
           description: Unauthorized
       security:
@@ -684,8 +676,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
         401:
           description: Unauthorized
       security:
@@ -752,8 +742,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
         401:
           description: Unauthorized
       security:
@@ -793,8 +781,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: user
@@ -851,8 +837,6 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
-        400:
-          description: Bad Request
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: searchFilter
@@ -896,8 +880,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: searchFilter
@@ -972,8 +954,6 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: settings

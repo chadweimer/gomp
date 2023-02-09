@@ -124,6 +124,8 @@ func getResourceIdFromCtx(ctx context.Context, idKey contextKey) (int64, error) 
 func getStatusFromError(err error, fallback int) int {
 	if errors.Is(err, db.ErrNotFound) {
 		return http.StatusNotFound
+	} else if errors.Is(err, errMismatchedId) {
+		return http.StatusBadRequest
 	}
 
 	return fallback
