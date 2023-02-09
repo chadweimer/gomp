@@ -3,13 +3,9 @@ package api
 import (
 	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"path/filepath"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/google/uuid"
 )
 
 func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
@@ -39,22 +35,10 @@ func (h apiHandler) SetMainImage(_ context.Context, request SetMainImageRequestO
 	return SetMainImage204Response{}, nil
 }
 func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
-	part, err := request.Body.NextPart()
-	if err == io.EOF {
-		return UploadImage400Response{}, nil
-	}
+	uploadedFileData, imageName, err := readFile(request.Body)
 	if err != nil {
 		return nil, err
 	}
-
-	fileName := part.FileName()
-	uploadedFileData, err := ioutil.ReadAll(part)
-	if err != nil {
-		return nil, err
-	}
-	// Generate a unique name for the image
-	imageExt := filepath.Ext(fileName)
-	imageName := uuid.New().String() + imageExt
 
 	// Save the image itself
 	url, thumbUrl, err := upload.Save(h.upl, request.RecipeId, imageName, uploadedFileData)
