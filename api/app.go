@@ -8,11 +8,9 @@ import (
 )
 
 func (apiHandler) GetInfo(_ context.Context, _ GetInfoRequestObject) (GetInfoResponseObject, error) {
-	info := GetInfo200JSONResponse{
+	return GetInfo200JSONResponse{
 		Version: &metadata.BuildVersion,
-	}
-
-	return info, nil
+	}, nil
 }
 
 func (h apiHandler) GetConfiguration(_ context.Context, _ GetConfigurationRequestObject) (GetConfigurationResponseObject, error) {
