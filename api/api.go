@@ -67,6 +67,9 @@ func NewHandler(secureKeys []string, upl upload.Driver, db db.Driver) http.Handl
 		}),
 		ChiServerOptions{
 			Middlewares: []MiddlewareFunc{h.checkScopes},
+			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+				h.Error(w, r, http.StatusBadRequest, err)
+			},
 		}))
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
