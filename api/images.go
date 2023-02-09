@@ -1,9 +1,10 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"net/http"
 	"path/filepath"
 
 	"github.com/chadweimer/gomp/models"
@@ -11,71 +12,59 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h apiHandler) GetImages(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	images, err := h.db.Images().List(recipeId)
+func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
+	images, err := h.db.Images().List(request.RecipeId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, images)
+	return GetImages200JSONResponse(*images), nil
 }
 
-func (h apiHandler) GetMainImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	image, err := h.db.Images().ReadMainImage(recipeId)
+func (h apiHandler) GetMainImage(_ context.Context, request GetMainImageRequestObject) (GetMainImageResponseObject, error) {
+	image, err := h.db.Images().ReadMainImage(request.RecipeId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, image)
+	return GetMainImage200JSONResponse(*image), nil
 }
 
-func (h apiHandler) SetMainImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	var imageId int64
-	if err := readJSONFromRequest(r, &imageId); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
-	image := models.RecipeImage{Id: &imageId, RecipeId: &recipeId}
+func (h apiHandler) SetMainImage(_ context.Context, request SetMainImageRequestObject) (SetMainImageResponseObject, error) {
+	image := models.RecipeImage{Id: request.Body, RecipeId: &request.RecipeId}
 	if err := h.db.Images().UpdateMainImage(&image); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return SetMainImage204Response{}, nil
 }
-func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	file, fileHeader, err := r.FormFile("file_content")
-	if err != nil {
-		fullErr := fmt.Errorf("failed to read file_content from POSTed image: %w", err)
-		h.Error(w, r, http.StatusBadRequest, fullErr)
-		return
+func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
+	part, err := request.Body.NextPart()
+	if err == io.EOF {
+		return UploadImage400Response{}, nil
 	}
-	defer file.Close()
-
-	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to read bytes from POSTed image: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, err
 	}
 
+	fileName := part.FileName()
+	uploadedFileData, err := ioutil.ReadAll(part)
+	if err != nil {
+		return nil, err
+	}
 	// Generate a unique name for the image
-	imageExt := filepath.Ext(fileHeader.Filename)
+	imageExt := filepath.Ext(fileName)
 	imageName := uuid.New().String() + imageExt
 
 	// Save the image itself
-	url, thumbUrl, err := upload.Save(h.upl, recipeId, imageName, uploadedFileData)
+	url, thumbUrl, err := upload.Save(h.upl, request.RecipeId, imageName, uploadedFileData)
 	if err != nil {
 		fullErr := fmt.Errorf("failed to save image file: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fullErr
 	}
 
 	imageInfo := models.RecipeImage{
-		RecipeId:     &recipeId,
+		RecipeId:     &request.RecipeId,
 		Name:         &imageName,
 		Url:          &url,
 		ThumbnailUrl: &thumbUrl,
@@ -84,35 +73,31 @@ func (h apiHandler) UploadImage(w http.ResponseWriter, r *http.Request, recipeId
 	// Now insert the record in the database
 	if err = h.db.Images().Create(&imageInfo); err != nil {
 		fullErr := fmt.Errorf("failed to insert image database record: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fullErr
 	}
 
-	h.Created(w, r, imageInfo)
+	return UploadImage201JSONResponse(imageInfo), nil
 }
 
-func (h apiHandler) DeleteImage(w http.ResponseWriter, r *http.Request, recipeId, imageId int64) {
+func (h apiHandler) DeleteImage(_ context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
 	// We need to read the info about the image for later
-	image, err := h.db.Images().Read(recipeId, imageId)
+	image, err := h.db.Images().Read(request.RecipeId, request.ImageId)
 	if err != nil {
 		fullErr := fmt.Errorf("failed to get image database record: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fullErr
 	}
 
 	// Now delete the record from the database
-	if err := h.db.Images().Delete(recipeId, imageId); err != nil {
+	if err := h.db.Images().Delete(request.RecipeId, request.ImageId); err != nil {
 		fullErr := fmt.Errorf("failed to delete image database record: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fullErr
 	}
 
 	// And lastly delete the image file itself
-	if err := upload.Delete(h.upl, recipeId, *image.Name); err != nil {
+	if err := upload.Delete(h.upl, request.RecipeId, *image.Name); err != nil {
 		fullErr := fmt.Errorf("failed to delete image file: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fullErr
 	}
 
-	h.NoContent(w)
+	return DeleteImage204Response{}, nil
 }

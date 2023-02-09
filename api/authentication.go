@@ -22,48 +22,41 @@ type gompClaims struct {
 	Scopes jwt.ClaimStrings `json:"scopes"`
 }
 
-func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	var credentials Credentials
-	if err := readJSONFromRequest(r, &credentials); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateRequestObject) (AuthenticateResponseObject, error) {
+	credentials := request.Body
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
+		h.LogError(ctx, err)
+		return Authenticate401Response{}, nil
 	}
 
 	tokenStr, err := h.createToken(user)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: *user})
+	return Authenticate200JSONResponse{Token: tokenStr, User: *user}, nil
 }
 
-func (h apiHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	userId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
+func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
+	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
 	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
+		h.LogError(ctx, err)
+		return RefreshToken401Response{}, nil
 	}
 
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
+		h.LogError(ctx, err)
+		return RefreshToken401Response{}, nil
 	}
 
 	tokenStr, err := h.createToken(&user.User)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: user.User})
+	return RefreshToken200JSONResponse{Token: tokenStr, User: user.User}, nil
 }
 
 func (h apiHandler) createToken(user *models.User) (string, error) {

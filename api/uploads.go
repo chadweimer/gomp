@@ -1,36 +1,40 @@
 package api
 
 import (
+	"context"
+	"io"
 	"io/ioutil"
-	"net/http"
 	"path/filepath"
 
 	"github.com/google/uuid"
 )
 
-func (h apiHandler) Upload(w http.ResponseWriter, r *http.Request) {
-	file, fileHeader, err := r.FormFile("file_content")
-	if err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
+func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (UploadResponseObject, error) {
+	part, err := request.Body.NextPart()
+	if err == io.EOF {
+		return Upload400Response{}, nil
 	}
-	defer file.Close()
-
-	uploadedFileData, err := ioutil.ReadAll(file)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
+	fileName := part.FileName()
+	uploadedFileData, err := ioutil.ReadAll(part)
+	if err != nil {
+		return nil, err
+	}
 	// Generate a unique name for the image
-	imageExt := filepath.Ext(fileHeader.Filename)
+	imageExt := filepath.Ext(fileName)
 	imageName := uuid.New().String() + imageExt
 
 	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	if err := h.upl.Save(imageName, uploadedFileData); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.CreatedWithLocation(w, fileUrl)
+	return Upload201Response{
+		Headers: Upload201ResponseHeaders{
+			Location: fileUrl,
+		},
+	}, nil
 }

@@ -1,77 +1,61 @@
 package api
 
 import (
-	"net/http"
-
-	"github.com/chadweimer/gomp/models"
+	"context"
 )
 
-func (h apiHandler) GetNotes(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	notes, err := h.db.Notes().List(recipeId)
+func (h apiHandler) GetNotes(_ context.Context, request GetNotesRequestObject) (GetNotesResponseObject, error) {
+	notes, err := h.db.Notes().List(request.RecipeId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, notes)
+	return GetNotes200JSONResponse(*notes), nil
 }
 
-func (h apiHandler) AddNote(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	var note models.Note
-	if err := readJSONFromRequest(r, &note); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) AddNote(ctx context.Context, request AddNoteRequestObject) (AddNoteResponseObject, error) {
+	note := request.Body
 	if note.RecipeId == nil {
-		note.RecipeId = &recipeId
-	} else if *note.RecipeId != recipeId {
-		h.Error(w, r, http.StatusBadRequest, errMismatchedId)
-		return
+		note.RecipeId = &request.RecipeId
+	} else if *note.RecipeId != request.RecipeId {
+		h.LogError(ctx, errMismatchedId)
+		return AddNote400Response{}, nil
 	}
 
-	if err := h.db.Notes().Create(&note); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+	if err := h.db.Notes().Create(note); err != nil {
+		return nil, err
 	}
 
-	h.Created(w, r, note)
+	return AddNote201JSONResponse(*note), nil
 }
 
-func (h apiHandler) SaveNote(w http.ResponseWriter, r *http.Request, recipeId int64, noteId int64) {
-	var note models.Note
-	if err := readJSONFromRequest(r, &note); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) SaveNote(ctx context.Context, request SaveNoteRequestObject) (SaveNoteResponseObject, error) {
+	note := request.Body
 	if note.Id == nil {
-		note.Id = &noteId
-	} else if *note.Id != noteId {
-		h.Error(w, r, http.StatusBadRequest, errMismatchedId)
-		return
+		note.Id = &request.NoteId
+	} else if *note.Id != request.NoteId {
+		h.LogError(ctx, errMismatchedId)
+		return SaveNote400Response{}, nil
 	}
 
 	if note.RecipeId == nil {
-		note.RecipeId = &recipeId
-	} else if *note.RecipeId != recipeId {
-		h.Error(w, r, http.StatusBadRequest, errMismatchedId)
-		return
+		note.RecipeId = &request.RecipeId
+	} else if *note.RecipeId != request.RecipeId {
+		h.LogError(ctx, errMismatchedId)
+		return SaveNote400Response{}, nil
 	}
 
-	if err := h.db.Notes().Update(&note); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+	if err := h.db.Notes().Update(note); err != nil {
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return SaveNote204Response{}, nil
 }
 
-func (h apiHandler) DeleteNote(w http.ResponseWriter, r *http.Request, recipeId int64, noteId int64) {
-	if err := h.db.Notes().Delete(recipeId, noteId); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+func (h apiHandler) DeleteNote(_ context.Context, request DeleteNoteRequestObject) (DeleteNoteResponseObject, error) {
+	if err := h.db.Notes().Delete(request.RecipeId, request.NoteId); err != nil {
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return DeleteNote204Response{}, nil
 }

@@ -1,13 +1,14 @@
 package api
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 )
 
-func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params FindParams) {
+func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResponseObject, error) {
+	params := request.Params
 	query := ""
 	if params.Q != nil {
 		query = *params.Q
@@ -48,111 +49,80 @@ func (h apiHandler) Find(w http.ResponseWriter, r *http.Request, params FindPara
 
 	recipes, total, err := h.db.Recipes().Find(&filter, params.Page, params.Count)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, SearchResult{Recipes: *recipes, Total: total})
+	return Find200JSONResponse{Recipes: *recipes, Total: total}, nil
 }
 
-func (h apiHandler) GetRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	recipe, err := h.db.Recipes().Read(recipeId)
+func (h apiHandler) GetRecipe(_ context.Context, request GetRecipeRequestObject) (GetRecipeResponseObject, error) {
+	recipe, err := h.db.Recipes().Read(request.RecipeId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, recipe)
+	return GetRecipe200JSONResponse(*recipe), nil
 }
 
-func (h apiHandler) AddRecipe(w http.ResponseWriter, r *http.Request) {
-	var recipe models.Recipe
-	if err := readJSONFromRequest(r, &recipe); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
+func (h apiHandler) AddRecipe(_ context.Context, request AddRecipeRequestObject) (AddRecipeResponseObject, error) {
+	recipe := request.Body
+	if err := h.db.Recipes().Create(recipe); err != nil {
+		return nil, err
 	}
 
-	if err := h.db.Recipes().Create(&recipe); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.Created(w, r, recipe)
+	return AddRecipe201JSONResponse(*recipe), nil
 }
 
-func (h apiHandler) SaveRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	var recipe models.Recipe
-	if err := readJSONFromRequest(r, &recipe); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) SaveRecipe(ctx context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
+	recipe := request.Body
 	if recipe.Id == nil {
-		recipe.Id = &recipeId
-	} else if *recipe.Id != recipeId {
-		h.Error(w, r, http.StatusBadRequest, errMismatchedId)
-		return
+		recipe.Id = &request.RecipeId
+	} else if *recipe.Id != request.RecipeId {
+		h.LogError(ctx, errMismatchedId)
+		return SaveRecipe400Response{}, nil
 	}
 
-	if err := h.db.Recipes().Update(&recipe); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+	if err := h.db.Recipes().Update(recipe); err != nil {
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return SaveRecipe204Response{}, nil
 }
 
-func (h apiHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	if err := h.db.Recipes().Delete(recipeId); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+func (h apiHandler) DeleteRecipe(_ context.Context, request DeleteRecipeRequestObject) (DeleteRecipeResponseObject, error) {
+	if err := h.db.Recipes().Delete(request.RecipeId); err != nil {
+		return nil, err
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
-	if err := upload.DeleteAll(h.upl, recipeId); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+	if err := upload.DeleteAll(h.upl, request.RecipeId); err != nil {
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return DeleteRecipe204Response{}, nil
 }
 
-func (h apiHandler) SetState(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	var state models.RecipeState
-	if err := readJSONFromRequest(r, &state); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
+func (h apiHandler) SetState(_ context.Context, request SetStateRequestObject) (SetStateResponseObject, error) {
+	if err := h.db.Recipes().SetState(request.RecipeId, *request.Body); err != nil {
+		return nil, err
 	}
 
-	if err := h.db.Recipes().SetState(recipeId, state); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.NoContent(w)
+	return SetState204Response{}, nil
 }
 
-func (h apiHandler) GetRating(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	rating, err := h.db.Recipes().GetRating(recipeId)
+func (h apiHandler) GetRating(_ context.Context, request GetRatingRequestObject) (GetRatingResponseObject, error) {
+	rating, err := h.db.Recipes().GetRating(request.RecipeId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, rating)
+	return GetRating200JSONResponse(*rating), nil
 }
 
-func (h apiHandler) SetRating(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	var rating float32
-	if err := readJSONFromRequest(r, &rating); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
+func (h apiHandler) SetRating(_ context.Context, request SetRatingRequestObject) (SetRatingResponseObject, error) {
+	if err := h.db.Recipes().SetRating(request.RecipeId, *request.Body); err != nil {
+		return nil, err
 	}
 
-	if err := h.db.Recipes().SetRating(recipeId, rating); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.NoContent(w)
+	return SetRating204Response{}, nil
 }

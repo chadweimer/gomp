@@ -1,43 +1,34 @@
 package api
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/chadweimer/gomp/metadata"
-	"github.com/chadweimer/gomp/models"
 )
 
-func (h apiHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
-	info := models.AppInfo{
+func (apiHandler) GetInfo(_ context.Context, _ GetInfoRequestObject) (GetInfoResponseObject, error) {
+	info := GetInfo200JSONResponse{
 		Version: &metadata.BuildVersion,
 	}
 
-	h.OK(w, r, info)
+	return info, nil
 }
 
-func (h apiHandler) GetConfiguration(w http.ResponseWriter, r *http.Request) {
+func (h apiHandler) GetConfiguration(_ context.Context, _ GetConfigurationRequestObject) (GetConfigurationResponseObject, error) {
 	cfg, err := h.db.AppConfiguration().Read()
 	if err != nil {
 		fullErr := fmt.Errorf("reading application configuration: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fullErr
 	}
 
-	h.OK(w, r, cfg)
+	return GetConfiguration200JSONResponse(*cfg), nil
 }
 
-func (h apiHandler) SaveConfiguration(w http.ResponseWriter, r *http.Request) {
-	var cfg models.AppConfiguration
-	if err := readJSONFromRequest(r, &cfg); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
+func (h apiHandler) SaveConfiguration(_ context.Context, request SaveConfigurationRequestObject) (SaveConfigurationResponseObject, error) {
+	if err := h.db.AppConfiguration().Update(request.Body); err != nil {
+		return nil, err
 	}
 
-	if err := h.db.AppConfiguration().Update(&cfg); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.NoContent(w)
+	return SaveConfiguration204Response{}, nil
 }
