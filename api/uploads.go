@@ -36,6 +36,7 @@ func readFile(reader *multipart.Reader) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+	defer part.Close()
 
 	fileName := part.FileName()
 	uploadedFileData, err := ioutil.ReadAll(part)
