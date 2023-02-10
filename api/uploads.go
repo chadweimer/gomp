@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"path/filepath"
@@ -30,9 +29,6 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 
 func readFile(reader *multipart.Reader) ([]byte, string, error) {
 	part, err := reader.NextPart()
-	if err == io.EOF {
-		return nil, "", nil
-	}
 	if err != nil {
 		return nil, "", err
 	}
