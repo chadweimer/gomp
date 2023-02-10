@@ -13,8 +13,7 @@ func (h apiHandler) GetCurrentUser(ctx context.Context, _ GetCurrentUserRequestO
 	return withCurrentUser[GetCurrentUserResponseObject](ctx, h, GetCurrentUser401Response{}, func(userId int64) (GetCurrentUserResponseObject, error) {
 		user, err := h.db.Users().Read(userId)
 		if err != nil {
-			fullErr := fmt.Errorf("reading user: %w", err)
-			return nil, fullErr
+			return nil, fmt.Errorf("reading user: %w", err)
 		}
 
 		return GetCurrentUser200JSONResponse(user.User), nil
@@ -24,8 +23,7 @@ func (h apiHandler) GetCurrentUser(ctx context.Context, _ GetCurrentUserRequestO
 func (h apiHandler) GetUser(_ context.Context, request GetUserRequestObject) (GetUserResponseObject, error) {
 	user, err := h.db.Users().Read(request.UserId)
 	if err != nil {
-		fullErr := fmt.Errorf("reading user: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("reading user: %w", err)
 	}
 
 	return GetUser200JSONResponse(user.User), nil
@@ -45,8 +43,7 @@ func (h apiHandler) AddUser(_ context.Context, request AddUserRequestObject) (Ad
 	newUser := request.Body
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
 	if err != nil {
-		fullErr := fmt.Errorf("invalid password specified: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("invalid password specified: %w", err)
 	}
 
 	user := db.UserWithPasswordHash{
@@ -101,8 +98,7 @@ func (h apiHandler) DeleteUser(ctx context.Context, request DeleteUserRequestObj
 func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRequestObject) (ChangePasswordResponseObject, error) {
 	return withCurrentUser[ChangePasswordResponseObject](ctx, h, ChangePassword401Response{}, func(userId int64) (ChangePasswordResponseObject, error) {
 		if err := h.db.Users().UpdatePassword(userId, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-			fullErr := fmt.Errorf("update failed: %w", err)
-			h.LogError(ctx, fullErr)
+			h.LogError(ctx, fmt.Errorf("update failed: %w", err))
 			return ChangePassword403Response{}, nil
 		}
 
@@ -112,8 +108,7 @@ func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRe
 
 func (h apiHandler) ChangeUserPassword(ctx context.Context, request ChangeUserPasswordRequestObject) (ChangeUserPasswordResponseObject, error) {
 	if err := h.db.Users().UpdatePassword(request.UserId, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-		fullErr := fmt.Errorf("update failed: %w", err)
-		h.LogError(ctx, fullErr)
+		h.LogError(ctx, fmt.Errorf("update failed: %w", err))
 		return ChangeUserPassword403Response{}, nil
 	}
 
@@ -143,8 +138,7 @@ func (h apiHandler) GetUserSettings(_ context.Context, request GetUserSettingsRe
 func (h apiHandler) getUserSettings(userId int64) (*models.UserSettings, error) {
 	userSettings, err := h.db.Users().ReadSettings(userId)
 	if err != nil {
-		fullErr := fmt.Errorf("reading user settings: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("reading user settings: %w", err)
 	}
 
 	// Default to the application title if the user hasn't set their own
@@ -184,8 +178,7 @@ func (h apiHandler) saveUserSettings(userId int64, userSettings *models.UserSett
 	}
 
 	if err := h.db.Users().UpdateSettings(userSettings); err != nil {
-		fullErr := fmt.Errorf("updating user settings: %w", err)
-		return fullErr
+		return fmt.Errorf("updating user settings: %w", err)
 	}
 
 	return nil
@@ -250,8 +243,7 @@ func (h apiHandler) GetSearchFilter(ctx context.Context, request GetSearchFilter
 	return withCurrentUser[GetSearchFilterResponseObject](ctx, h, GetSearchFilter401Response{}, func(userId int64) (GetSearchFilterResponseObject, error) {
 		filter, err := h.db.Users().ReadSearchFilter(userId, request.FilterId)
 		if err != nil {
-			fullErr := fmt.Errorf("reading filter: %w", err)
-			return nil, fullErr
+			return nil, fmt.Errorf("reading filter: %w", err)
 		}
 
 		return GetSearchFilter200JSONResponse(*filter), nil
@@ -261,8 +253,7 @@ func (h apiHandler) GetSearchFilter(ctx context.Context, request GetSearchFilter
 func (h apiHandler) GetUserSearchFilter(_ context.Context, request GetUserSearchFilterRequestObject) (GetUserSearchFilterResponseObject, error) {
 	filter, err := h.db.Users().ReadSearchFilter(request.UserId, request.FilterId)
 	if err != nil {
-		fullErr := fmt.Errorf("reading filter: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("reading filter: %w", err)
 	}
 
 	return GetUserSearchFilter200JSONResponse(*filter), nil

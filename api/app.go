@@ -16,8 +16,7 @@ func (apiHandler) GetInfo(_ context.Context, _ GetInfoRequestObject) (GetInfoRes
 func (h apiHandler) GetConfiguration(_ context.Context, _ GetConfigurationRequestObject) (GetConfigurationResponseObject, error) {
 	cfg, err := h.db.AppConfiguration().Read()
 	if err != nil {
-		fullErr := fmt.Errorf("reading application configuration: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("reading application configuration: %w", err)
 	}
 
 	return GetConfiguration200JSONResponse(*cfg), nil

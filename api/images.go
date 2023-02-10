@@ -43,8 +43,7 @@ func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObj
 	// Save the image itself
 	url, thumbUrl, err := upload.Save(h.upl, request.RecipeId, imageName, uploadedFileData)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to save image file: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("failed to save image file: %w", err)
 	}
 
 	imageInfo := models.RecipeImage{
@@ -56,8 +55,7 @@ func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObj
 
 	// Now insert the record in the database
 	if err = h.db.Images().Create(&imageInfo); err != nil {
-		fullErr := fmt.Errorf("failed to insert image database record: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("failed to insert image database record: %w", err)
 	}
 
 	return UploadImage201JSONResponse(imageInfo), nil
@@ -67,20 +65,17 @@ func (h apiHandler) DeleteImage(_ context.Context, request DeleteImageRequestObj
 	// We need to read the info about the image for later
 	image, err := h.db.Images().Read(request.RecipeId, request.ImageId)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to get image database record: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("failed to get image database record: %w", err)
 	}
 
 	// Now delete the record from the database
 	if err := h.db.Images().Delete(request.RecipeId, request.ImageId); err != nil {
-		fullErr := fmt.Errorf("failed to delete image database record: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("failed to delete image database record: %w", err)
 	}
 
 	// And lastly delete the image file itself
 	if err := upload.Delete(h.upl, request.RecipeId, *image.Name); err != nil {
-		fullErr := fmt.Errorf("failed to delete image file: %w", err)
-		return nil, fullErr
+		return nil, fmt.Errorf("failed to delete image file: %w", err)
 	}
 
 	return DeleteImage204Response{}, nil
