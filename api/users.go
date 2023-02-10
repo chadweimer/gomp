@@ -70,7 +70,7 @@ func (h apiHandler) SaveUser(ctx context.Context, request SaveUserRequestObject)
 			return nil, errMismatchedId
 		}
 
-		// Don't allow admin's make themselves non-admins
+		// Don't allow admins to make themselves non-admins
 		if request.UserId == currentUserId && user.AccessLevel != models.Admin {
 			return SaveUser403Response{}, nil
 		}
