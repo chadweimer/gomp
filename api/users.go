@@ -61,19 +61,26 @@ func (h apiHandler) AddUser(_ context.Context, request AddUserRequestObject) (Ad
 	return AddUser201JSONResponse(user.User), nil
 }
 
-func (h apiHandler) SaveUser(_ context.Context, request SaveUserRequestObject) (SaveUserResponseObject, error) {
-	user := request.Body
-	if user.Id == nil {
-		user.Id = &request.UserId
-	} else if *user.Id != request.UserId {
-		return nil, errMismatchedId
-	}
+func (h apiHandler) SaveUser(ctx context.Context, request SaveUserRequestObject) (SaveUserResponseObject, error) {
+	return withCurrentUser[SaveUserResponseObject](ctx, h, SaveUser401Response{}, func(currentUserId int64) (SaveUserResponseObject, error) {
+		user := request.Body
+		if user.Id == nil {
+			user.Id = &request.UserId
+		} else if *user.Id != request.UserId {
+			return nil, errMismatchedId
+		}
 
-	if err := h.db.Users().Update(request.Body); err != nil {
-		return nil, err
-	}
+		// Don't allow admin's make themselves non-admins
+		if request.UserId == currentUserId && user.AccessLevel != models.Admin {
+			return SaveUser403Response{}, nil
+		}
 
-	return SaveUser204Response{}, nil
+		if err := h.db.Users().Update(request.Body); err != nil {
+			return nil, err
+		}
+
+		return SaveUser204Response{}, nil
+	})
 }
 
 func (h apiHandler) DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error) {

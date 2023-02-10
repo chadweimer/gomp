@@ -781,6 +781,10 @@ paths:
       responses:
         204:
           description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: user
