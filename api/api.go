@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
+	"github.com/rs/zerolog/log"
 )
 
 // ---- Begin Standard Errors ----
@@ -52,11 +54,23 @@ func NewHandler(secureKeys []string, upl upload.Driver, db db.Driver) http.Handl
 
 	r := chi.NewRouter()
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
-	r.Mount("/v1", HandlerWithOptions(h, ChiServerOptions{
-		Middlewares: []MiddlewareFunc{h.checkScopes},
-		ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-			h.Error(w, r, http.StatusBadRequest, err)
-		}}))
+	r.Mount("/v1", HandlerWithOptions(NewStrictHandlerWithOptions(
+		h,
+		[]StrictMiddlewareFunc{},
+		StrictHTTPServerOptions{
+			RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+				h.Error(w, r, http.StatusBadRequest, err)
+			},
+			ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+				h.Error(w, r, http.StatusInternalServerError, err)
+			},
+		}),
+		ChiServerOptions{
+			Middlewares: []MiddlewareFunc{h.checkScopes},
+			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+				h.Error(w, r, http.StatusBadRequest, err)
+			},
+		}))
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
 	})
@@ -82,37 +96,20 @@ func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v int
 	}
 }
 
-func (h apiHandler) OK(w http.ResponseWriter, r *http.Request, v interface{}) {
-	h.JSON(w, r, http.StatusOK, v)
-}
-
-func (apiHandler) NoContent(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (h apiHandler) Created(w http.ResponseWriter, r *http.Request, v interface{}) {
-	h.JSON(w, r, http.StatusCreated, v)
-}
-
-func (apiHandler) CreatedWithLocation(w http.ResponseWriter, location string) {
-	w.Header().Set("Location", location)
-	w.WriteHeader(http.StatusCreated)
+func (apiHandler) LogError(ctx context.Context, err error) {
+	log.Ctx(ctx).UpdateContext(func(c zerolog.Context) zerolog.Context {
+		return c.Err(err)
+	})
 }
 
 func (h apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, err error) {
-	hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
-		return c.Err(err)
-	})
+	h.LogError(r.Context(), err)
 	status = getStatusFromError(err, status)
 	h.JSON(w, r, status, http.StatusText(status))
 }
 
-func readJSONFromRequest(r *http.Request, data interface{}) error {
-	return json.NewDecoder(r.Body).Decode(data)
-}
-
-func getResourceIdFromCtx(r *http.Request, idKey contextKey) (int64, error) {
-	idVal := r.Context().Value(idKey)
+func getResourceIdFromCtx(ctx context.Context, idKey contextKey) (int64, error) {
+	idVal := ctx.Value(idKey)
 
 	id, ok := idVal.(int64)
 	if ok {
@@ -130,6 +127,8 @@ func getResourceIdFromCtx(r *http.Request, idKey contextKey) (int64, error) {
 func getStatusFromError(err error, fallback int) int {
 	if errors.Is(err, db.ErrNotFound) {
 		return http.StatusNotFound
+	} else if errors.Is(err, errMismatchedId) {
+		return http.StatusBadRequest
 	}
 
 	return fallback

@@ -22,48 +22,37 @@ type gompClaims struct {
 	Scopes jwt.ClaimStrings `json:"scopes"`
 }
 
-func (h apiHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	var credentials Credentials
-	if err := readJSONFromRequest(r, &credentials); err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
+func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateRequestObject) (AuthenticateResponseObject, error) {
+	credentials := request.Body
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
+		h.LogError(ctx, err)
+		return Authenticate401Response{}, nil
 	}
 
 	tokenStr, err := h.createToken(user)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: *user})
+	return Authenticate200JSONResponse{Token: tokenStr, User: *user}, nil
 }
 
-func (h apiHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	userId, err := getResourceIdFromCtx(r, currentUserIdCtxKey)
-	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
-	}
+func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
+	return withCurrentUser[RefreshTokenResponseObject](ctx, h, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
+		user, err := h.db.Users().Read(userId)
+		if err != nil {
+			h.LogError(ctx, err)
+			return RefreshToken401Response{}, nil
+		}
 
-	user, err := h.db.Users().Read(userId)
-	if err != nil {
-		h.Error(w, r, http.StatusUnauthorized, err)
-		return
-	}
+		tokenStr, err := h.createToken(&user.User)
+		if err != nil {
+			return nil, err
+		}
 
-	tokenStr, err := h.createToken(&user.User)
-	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
-	h.OK(w, r, AuthenticationResponse{Token: tokenStr, User: user.User})
+		return RefreshToken200JSONResponse{Token: tokenStr, User: user.User}, nil
+	})
 }
 
 func (h apiHandler) createToken(user *models.User) (string, error) {
@@ -239,4 +228,14 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	}
 
 	return &user.User, nil
+}
+
+func withCurrentUser[TResponse interface{}](ctx context.Context, h apiHandler, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
+	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
+	if err != nil {
+		h.LogError(ctx, err)
+		return invalidUserResponse, nil
+	}
+
+	return do(userId)
 }

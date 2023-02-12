@@ -42,7 +42,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: appConfiguration
@@ -64,6 +63,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/authenticationResponse"
+        401:
+          description: Unauthorized
       x-codegen-request-body-name: credentials
   /auth/refresh:
     get:
@@ -77,6 +78,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/authenticationResponse"
+        401:
+          description: Unauthorized
       security:
         - Bearer: []
   /recipes:
@@ -202,7 +205,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: recipe
@@ -213,7 +215,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
   /recipes/{recipeId}/image:
@@ -251,7 +252,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: imageId
@@ -297,6 +297,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipeImage"
+        400:
+          description: Bad Request
       security:
         - Bearer: [editor]
   /recipes/{recipeId}/images/{imageId}:
@@ -320,7 +322,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
   /recipes/{recipeId}/links:
@@ -367,7 +368,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
     delete:
@@ -377,7 +377,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
   /recipes/{recipeId}/notes:
@@ -450,7 +449,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: note
@@ -461,7 +459,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
   /recipes/{recipeId}/rating:
@@ -500,7 +497,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: rating
@@ -525,7 +521,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: state
@@ -549,7 +544,8 @@ paths:
             Location:
               schema:
                 type: string
-          content: {}
+        400:
+          description: Bad Request
       security:
         - Bearer: [viewer]
   /users:
@@ -600,6 +596,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
   /users/current/filters:
@@ -616,6 +614,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
     post:
@@ -635,6 +635,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
       x-codegen-request-body-name: searchFilter
@@ -657,6 +659,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
     put:
@@ -672,7 +676,8 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
       x-codegen-request-body-name: searchFilter
@@ -683,7 +688,8 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
   /users/current/password:
@@ -700,7 +706,10 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
       security:
         - Bearer: [viewer]
       x-codegen-request-body-name: userPasswordRequest
@@ -716,6 +725,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/userSettings"
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
     put:
@@ -731,7 +742,8 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
       security:
         - Bearer: [viewer]
       x-codegen-request-body-name: settings
@@ -769,7 +781,10 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: user
@@ -780,7 +795,10 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
       security:
         - Bearer: [admin]
   /users/{userId}/filters:
@@ -866,7 +884,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: searchFilter
@@ -877,7 +894,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [admin]
   /users/{userId}/password:
@@ -901,7 +917,10 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: userPasswordRequest
@@ -939,7 +958,6 @@ paths:
       responses:
         204:
           description: No Content
-          content: {}
       security:
         - Bearer: [admin]
       x-codegen-request-body-name: settings

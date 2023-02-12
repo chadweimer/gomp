@@ -1,36 +1,47 @@
 package api
 
 import (
+	"context"
 	"io/ioutil"
-	"net/http"
+	"mime/multipart"
 	"path/filepath"
 
 	"github.com/google/uuid"
 )
 
-func (h apiHandler) Upload(w http.ResponseWriter, r *http.Request) {
-	file, fileHeader, err := r.FormFile("file_content")
+func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (UploadResponseObject, error) {
+	uploadedFileData, imageName, err := readFile(request.Body)
 	if err != nil {
-		h.Error(w, r, http.StatusBadRequest, err)
-		return
+		return nil, err
 	}
-	defer file.Close()
-
-	uploadedFileData, err := ioutil.ReadAll(file)
-	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
-	// Generate a unique name for the image
-	imageExt := filepath.Ext(fileHeader.Filename)
-	imageName := uuid.New().String() + imageExt
 
 	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
 	if err := h.upl.Save(imageName, uploadedFileData); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.CreatedWithLocation(w, fileUrl)
+	return Upload201Response{
+		Headers: Upload201ResponseHeaders{
+			Location: fileUrl,
+		},
+	}, nil
+}
+
+func readFile(reader *multipart.Reader) ([]byte, string, error) {
+	part, err := reader.NextPart()
+	if err != nil {
+		return nil, "", err
+	}
+	defer part.Close()
+
+	fileName := part.FileName()
+	uploadedFileData, err := ioutil.ReadAll(part)
+	if err != nil {
+		return nil, "", err
+	}
+
+	// Generate a unique name for the image
+	imageExt := filepath.Ext(fileName)
+	imageName := uuid.New().String() + imageExt
+	return uploadedFileData, imageName, nil
 }

@@ -1,33 +1,30 @@
 package api
 
 import (
-	"net/http"
+	"context"
 )
 
-func (h apiHandler) GetLinks(w http.ResponseWriter, r *http.Request, recipeId int64) {
-	recipes, err := h.db.Links().List(recipeId)
+func (h apiHandler) GetLinks(_ context.Context, request GetLinksRequestObject) (GetLinksResponseObject, error) {
+	recipes, err := h.db.Links().List(request.RecipeId)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
-	h.OK(w, r, recipes)
+	return GetLinks200JSONResponse(*recipes), nil
 }
 
-func (h apiHandler) AddLink(w http.ResponseWriter, r *http.Request, recipeId int64, destRecipeId int64) {
-	if err := h.db.Links().Create(recipeId, destRecipeId); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+func (h apiHandler) AddLink(_ context.Context, request AddLinkRequestObject) (AddLinkResponseObject, error) {
+	if err := h.db.Links().Create(request.RecipeId, request.DestRecipeId); err != nil {
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return AddLink204Response{}, nil
 }
 
-func (h apiHandler) DeleteLink(w http.ResponseWriter, r *http.Request, recipeId int64, destRecipeId int64) {
-	if err := h.db.Links().Delete(recipeId, destRecipeId); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+func (h apiHandler) DeleteLink(_ context.Context, request DeleteLinkRequestObject) (DeleteLinkResponseObject, error) {
+	if err := h.db.Links().Delete(request.RecipeId, request.DestRecipeId); err != nil {
+		return nil, err
 	}
 
-	h.NoContent(w)
+	return DeleteLink204Response{}, nil
 }
