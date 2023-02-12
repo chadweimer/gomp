@@ -151,9 +151,11 @@ export class PageRecipe {
                                   {link.name}
                                 </ion-router-link>
                               </ion-label>
-                              <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
-                                <ion-icon slot="icon-only" icon="close-circle" />
-                              </ion-button>
+                              {hasScope(state.jwtToken, AccessLevel.Editor) ?
+                                <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
+                                  <ion-icon slot="icon-only" icon="close-circle" />
+                                </ion-button>
+                                : ''}
                             </ion-item>
                           )}
                         </div>
