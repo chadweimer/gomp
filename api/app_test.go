@@ -22,7 +22,7 @@ func TestGetConfiguration(t *testing.T) {
 	}, nil)
 
 	// Act
-	resp, err := api.GetConfiguration(context.TODO(), GetConfigurationRequestObject{})
+	resp, err := api.GetConfiguration(context.Background(), GetConfigurationRequestObject{})
 
 	// Assert
 	if err != nil {
@@ -48,7 +48,7 @@ func TestSaveConfiguration(t *testing.T) {
 	appDriver.EXPECT().Update(appCfg).Times(1)
 
 	// Act
-	resp, err := api.SaveConfiguration(context.TODO(), SaveConfigurationRequestObject{Body: appCfg})
+	resp, err := api.SaveConfiguration(context.Background(), SaveConfigurationRequestObject{Body: appCfg})
 
 	// Assert
 	if err != nil {
