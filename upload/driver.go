@@ -1,5 +1,7 @@
 package upload
 
+//go:generate mockgen -destination=../mocks/upload/driver.gen.go -package=upload . Driver
+
 import (
 	"fmt"
 	"io/fs"

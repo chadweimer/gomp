@@ -27,7 +27,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: make install
-      - run: make lint
+      - run: make lint test
       - run: make build docker BUILD_VERSION="v0.0.0 (master)" DOCKER_TAG=latest
         if: startswith(github.ref, 'refs/heads/master')
       - run: make build docker BUILD_VERSION="v0.0.0 ($(echo $GITHUB_REF | sed -e 's/^refs\/pull\///'))" DOCKER_TAG=dev

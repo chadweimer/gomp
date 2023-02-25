@@ -14,7 +14,8 @@ CLIENT_BUILD_DIR=static/www/static
 CLIENT_CODEGEN_DIR=static/src/generated
 MODELS_CODEGEN_FILE=models/models.gen.go
 API_CODEGEN_FILE=api/routes.gen.go
-CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE)
+MOCKS_CODEGEN_DIR=mocks
+CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)
 
 GOOS := linux
 GOARCH := amd64
@@ -53,6 +54,8 @@ $(API_CODEGEN_FILE): openapi.yaml api/cfg.yaml
 $(MODELS_CODEGEN_FILE): models.yaml models/cfg.yaml
 	oapi-codegen --config models/cfg.yaml models.yaml > $@
 
+$(MOCKS_CODEGEN_DIR): $(GO_FILES)
+	go generate ./...
 
 # ---- LINT ----
 
@@ -79,6 +82,7 @@ build: $(BUILD_LIN_AMD64_DIR) $(BUILD_LIN_ARM_DIR) $(BUILD_LIN_ARM64_DIR) $(BUIL
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	rm -rf $(BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
+	rm -rf $(MOCKS_CODEGEN_DIR)
 	cd static && npm run clean
 
 # - GENERIC ARCH -
@@ -144,6 +148,11 @@ $(BUILD_WIN_AMD64_DIR): $(BUILD_WIN_AMD64_DIR)/gomp.exe $(BUILD_WIN_AMD64_DIR)/d
 .PHONY: clean-windows-amd64
 clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD64_DIR) clean-$(BUILD_DIR)/gomp-windows-amd64.zip
 
+
+# ---- TEST ----
+.PHONY: test
+test: go.mod $(CODEGEN_FILES) $(GO_FILES)
+	go test ./...
 
 # ---- DOCKER ----
 
