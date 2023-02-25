@@ -153,7 +153,7 @@ clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD
 # ---- TEST ----
 .PHONY: test
 test: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	go test ./...
+	go test -v -cover ./...
 
 # ---- DOCKER ----
 

@@ -10,12 +10,12 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestGetConfiguration(t *testing.T) {
+func Test_GetConfiguration(t *testing.T) {
 	// Arrange
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api, appDriver := getMockApi(ctrl)
+	api, appDriver := getMockAppConfigurationApi(ctrl)
 	const expectedTitle = "The App Title"
 	appDriver.EXPECT().Read().Return(&models.AppConfiguration{
 		Title: expectedTitle,
@@ -37,12 +37,12 @@ func TestGetConfiguration(t *testing.T) {
 	}
 }
 
-func TestSaveConfiguration(t *testing.T) {
+func Test_SaveConfiguration(t *testing.T) {
 	// Arrange
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api, appDriver := getMockApi(ctrl)
+	api, appDriver := getMockAppConfigurationApi(ctrl)
 	const expectedTitle = "The App Title"
 	appCfg := &models.AppConfiguration{Title: expectedTitle}
 	appDriver.EXPECT().Update(appCfg).Times(1)
@@ -60,7 +60,7 @@ func TestSaveConfiguration(t *testing.T) {
 	}
 }
 
-func getMockApi(ctrl *gomock.Controller) (apiHandler, *db.MockAppConfigurationDriver) {
+func getMockAppConfigurationApi(ctrl *gomock.Controller) (apiHandler, *db.MockAppConfigurationDriver) {
 	dbDriver := db.NewMockDriver(ctrl)
 	appDriver := db.NewMockAppConfigurationDriver(ctrl)
 	dbDriver.EXPECT().AppConfiguration().Return(appDriver)
