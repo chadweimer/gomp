@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -16,11 +17,18 @@ func Test_getStatusFromError(t *testing.T) {
 	}
 
 	var tests = []getStatusFromErrorTest{
+		{db.ErrNotFound, http.StatusNotFound, http.StatusNotFound},
 		{db.ErrNotFound, http.StatusForbidden, http.StatusNotFound},
 		{db.ErrNotFound, http.StatusConflict, http.StatusNotFound},
-		{errMismatchedId, http.StatusNotFound, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusNotFound, http.StatusNotFound},
+		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusForbidden, http.StatusNotFound},
+		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusConflict, http.StatusNotFound},
+		{errMismatchedId, http.StatusBadRequest, http.StatusBadRequest},
 		{errMismatchedId, http.StatusForbidden, http.StatusBadRequest},
 		{errMismatchedId, http.StatusConflict, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", errMismatchedId), http.StatusBadRequest, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", errMismatchedId), http.StatusForbidden, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", errMismatchedId), http.StatusConflict, http.StatusBadRequest},
 		{errors.New("some error"), http.StatusForbidden, http.StatusForbidden},
 		{errors.New("some error"), http.StatusBadRequest, http.StatusBadRequest},
 		{errors.New("some error"), http.StatusInternalServerError, http.StatusInternalServerError},
