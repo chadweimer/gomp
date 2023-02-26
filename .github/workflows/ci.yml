@@ -44,5 +44,6 @@ jobs:
             build/gomp-linux-arm.tar.gz
             build/gomp-linux-arm64.tar.gz
             build/gomp-windows-amd64.zip
+            build/coverage.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
