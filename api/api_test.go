@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,7 +17,8 @@ func Test_getStatusFromError(t *testing.T) {
 		expectedStatus int
 	}
 
-	var tests = []getStatusFromErrorTest{
+	// Arrange
+	tests := []getStatusFromErrorTest{
 		{db.ErrNotFound, http.StatusNotFound, http.StatusNotFound},
 		{db.ErrNotFound, http.StatusForbidden, http.StatusNotFound},
 		{db.ErrNotFound, http.StatusConflict, http.StatusNotFound},
@@ -35,12 +37,53 @@ func Test_getStatusFromError(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		// Act
 		if actualStatus := getStatusFromError(test.err, test.fallbackStatus); actualStatus != test.expectedStatus {
+			// Assert
 			t.Errorf("actual '%s' not equal to expected '%s'. err: %v, fallback: %s",
 				http.StatusText(actualStatus),
 				http.StatusText(test.expectedStatus),
 				test.err,
 				http.StatusText(test.fallbackStatus))
+		}
+	}
+}
+
+func Test_getResourceIdFromCtx(t *testing.T) {
+	type getResourceIdFromCtxTest struct {
+		key    contextKey
+		val    int64
+		usePtr bool
+	}
+
+	// Arrange
+	tests := []getResourceIdFromCtxTest{
+		{contextKey("the-item"), 10, false},
+		{contextKey("the-item"), 10, true},
+		{contextKey("the-item"), -1, false},
+	}
+
+	for _, test := range tests {
+		ctx := context.Background()
+		// Treat non-positive as not adding to context
+		if test.val > 0 {
+			if test.usePtr {
+				ctx = context.WithValue(ctx, test.key, &test.val)
+			} else {
+				ctx = context.WithValue(ctx, test.key, test.val)
+			}
+		}
+
+		// Act
+		id, err := getResourceIdFromCtx(ctx, test.key)
+
+		// Assert
+		if err != nil && test.val > 0 {
+			t.Errorf("test: %v, received err: %v", test, err)
+		} else if err == nil {
+			if id != test.val {
+				t.Errorf("test: %v, actual: %d, expected: %d", test, id, test.val)
+			}
 		}
 	}
 }

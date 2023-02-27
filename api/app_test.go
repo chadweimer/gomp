@@ -38,7 +38,7 @@ func Test_GetInfo(t *testing.T) {
 
 func Test_GetConfiguration(t *testing.T) {
 	// Arrange
-	var tests = []bool{false, true}
+	tests := []bool{false, true}
 	for _, expectError := range tests {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -57,8 +57,8 @@ func Test_GetConfiguration(t *testing.T) {
 		resp, err := api.GetConfiguration(context.Background(), GetConfigurationRequestObject{})
 
 		// Assert
-		if err != nil && !expectError {
-			t.Errorf("received error: %v", err)
+		if (err != nil) != expectError {
+			t.Errorf("error expected?: %v, received error: %v", expectError, err)
 		} else if err == nil {
 			typedResp, ok := resp.(GetConfiguration200JSONResponse)
 			if !ok {
@@ -73,7 +73,7 @@ func Test_GetConfiguration(t *testing.T) {
 
 func Test_SaveConfiguration(t *testing.T) {
 	// Arrange
-	var tests = []bool{false, true}
+	tests := []bool{false, true}
 	for _, expectError := range tests {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -91,8 +91,8 @@ func Test_SaveConfiguration(t *testing.T) {
 		resp, err := api.SaveConfiguration(context.Background(), SaveConfigurationRequestObject{Body: appCfg})
 
 		// Assert
-		if err != nil && !expectError {
-			t.Errorf("received error: %v", err)
+		if (err != nil) != expectError {
+			t.Errorf("error expected?: %v, received error: %v", expectError, err)
 		} else if err == nil {
 			_, ok := resp.(SaveConfiguration204Response)
 			if !ok {

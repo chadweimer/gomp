@@ -63,7 +63,7 @@ func Test_AddLink(t *testing.T) {
 	}
 
 	// Arrange
-	var tests = []addLinkTest{
+	tests := []addLinkTest{
 		{1, 2, false},
 		{4, 7, false},
 		{3, 1, false},
@@ -86,7 +86,7 @@ func Test_AddLink(t *testing.T) {
 		resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
 
 		// Assert
-		if err != nil && !test.expectError {
+		if (err != nil) != test.expectError {
 			t.Errorf("test %v: received error '%v'", test, err)
 		} else if err == nil {
 			_, ok := resp.(AddLink204Response)
@@ -105,7 +105,7 @@ func Test_DeleteLink(t *testing.T) {
 	}
 
 	// Arrange
-	var tests = []deleteLinkTest{
+	tests := []deleteLinkTest{
 		{1, 2, false},
 		{4, 7, false},
 		{3, 1, false},
@@ -128,7 +128,7 @@ func Test_DeleteLink(t *testing.T) {
 		resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
 
 		// Assert
-		if err != nil && !test.expectError {
+		if (err != nil) != test.expectError {
 			t.Errorf("test %v: received error '%v'", test, err)
 		} else if err == nil {
 			_, ok := resp.(DeleteLink204Response)
