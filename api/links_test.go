@@ -59,31 +59,79 @@ func Test_AddLink(t *testing.T) {
 	type addLinkTest struct {
 		recipeId     int64
 		destRecipeId int64
+		expectError  bool
 	}
 
 	// Arrange
 	var tests = []addLinkTest{
-		{1, 2},
-		{4, 7},
-		{3, 1},
-		{2, 9},
+		{1, 2, false},
+		{4, 7, false},
+		{3, 1, false},
+		{2, 9, false},
+		{8, 2, true},
 	}
 	for _, test := range tests {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		api, linkDriver := getMockLinkApi(ctrl)
-		linkDriver.EXPECT().Create(test.recipeId, test.destRecipeId).Return(nil)
-		linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
+		if test.expectError {
+			linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+		} else {
+			linkDriver.EXPECT().Create(test.recipeId, test.destRecipeId).Return(nil)
+			linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
+		}
 
 		// Act
 		resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
 
 		// Assert
-		if err != nil {
+		if err != nil && !test.expectError {
 			t.Errorf("test %v: received error '%v'", test, err)
-		} else {
+		} else if err == nil {
 			_, ok := resp.(AddLink204Response)
+			if !ok {
+				t.Errorf("test %v: invalid response", test)
+			}
+		}
+	}
+}
+
+func Test_DeleteLink(t *testing.T) {
+	type deleteLinkTest struct {
+		recipeId     int64
+		destRecipeId int64
+		expectError  bool
+	}
+
+	// Arrange
+	var tests = []deleteLinkTest{
+		{1, 2, false},
+		{4, 7, false},
+		{3, 1, false},
+		{2, 9, false},
+		{8, 2, true},
+	}
+	for _, test := range tests {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		api, linkDriver := getMockLinkApi(ctrl)
+		if test.expectError {
+			linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+		} else {
+			linkDriver.EXPECT().Delete(test.recipeId, test.destRecipeId).Return(nil)
+			linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
+		}
+
+		// Act
+		resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
+
+		// Assert
+		if err != nil && !test.expectError {
+			t.Errorf("test %v: received error '%v'", test, err)
+		} else if err == nil {
+			_, ok := resp.(DeleteLink204Response)
 			if !ok {
 				t.Errorf("test %v: invalid response", test)
 			}
@@ -94,7 +142,7 @@ func Test_AddLink(t *testing.T) {
 func getMockLinkApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockLinkDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	linkDriver := dbmock.NewMockLinkDriver(ctrl)
-	dbDriver.EXPECT().Links().Return(linkDriver)
+	dbDriver.EXPECT().Links().AnyTimes().Return(linkDriver)
 
 	api := apiHandler{
 		secureKeys: []string{},
