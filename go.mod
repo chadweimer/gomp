@@ -13,6 +13,7 @@ require (
 	github.com/jszwec/s3fs v0.4.0
 	github.com/lib/pq v1.10.7
 	github.com/rs/zerolog v1.29.0
+	github.com/samber/lo v1.37.0
 	golang.org/x/crypto v0.5.0
 	modernc.org/sqlite v1.20.3
 )
@@ -28,7 +29,6 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	github.com/samber/lo v1.37.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/image v0.3.0 // indirect
