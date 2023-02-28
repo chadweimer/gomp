@@ -38,7 +38,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: build/*
+          path: |
+            build/gomp-*
+            build/coverage.*
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:

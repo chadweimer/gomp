@@ -152,7 +152,7 @@ clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD
 
 # ---- TEST ----
 .PHONY: test
-test: $(BUILD_DIR)/coverage.out
+test: $(BUILD_DIR)/coverage.html
 
 $(BUILD_DIR)/coverage.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	mkdir -p $(BUILD_DIR)
