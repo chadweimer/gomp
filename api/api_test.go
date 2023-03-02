@@ -36,16 +36,18 @@ func Test_getStatusFromError(t *testing.T) {
 		{errors.New("some error"), http.StatusInternalServerError, http.StatusInternalServerError},
 	}
 
-	for _, test := range tests {
-		// Act
-		if actualStatus := getStatusFromError(test.err, test.fallbackStatus); actualStatus != test.expectedStatus {
-			// Assert
-			t.Errorf("actual '%s' not equal to expected '%s'. err: %v, fallback: %s",
-				http.StatusText(actualStatus),
-				http.StatusText(test.expectedStatus),
-				test.err,
-				http.StatusText(test.fallbackStatus))
-		}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Act
+			if actualStatus := getStatusFromError(test.err, test.fallbackStatus); actualStatus != test.expectedStatus {
+				// Assert
+				t.Errorf("actual '%s' not equal to expected '%s'. err: %v, fallback: %s",
+					http.StatusText(actualStatus),
+					http.StatusText(test.expectedStatus),
+					test.err,
+					http.StatusText(test.fallbackStatus))
+			}
+		})
 	}
 }
 
@@ -63,27 +65,29 @@ func Test_getResourceIdFromCtx(t *testing.T) {
 		{contextKey("the-item"), -1, false},
 	}
 
-	for _, test := range tests {
-		ctx := context.Background()
-		// Treat non-positive as not adding to context
-		if test.val > 0 {
-			if test.usePtr {
-				ctx = context.WithValue(ctx, test.key, &test.val)
-			} else {
-				ctx = context.WithValue(ctx, test.key, test.val)
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctx := context.Background()
+			// Treat non-positive as not adding to context
+			if test.val > 0 {
+				if test.usePtr {
+					ctx = context.WithValue(ctx, test.key, &test.val)
+				} else {
+					ctx = context.WithValue(ctx, test.key, test.val)
+				}
 			}
-		}
 
-		// Act
-		id, err := getResourceIdFromCtx(ctx, test.key)
+			// Act
+			id, err := getResourceIdFromCtx(ctx, test.key)
 
-		// Assert
-		if err != nil && test.val > 0 {
-			t.Errorf("test: %v, received err: %v", test, err)
-		} else if err == nil {
-			if id != test.val {
-				t.Errorf("test: %v, actual: %d, expected: %d", test, id, test.val)
+			// Assert
+			if err != nil && test.val > 0 {
+				t.Errorf("received err: %v", err)
+			} else if err == nil {
+				if id != test.val {
+					t.Errorf("actual: %d, expected: %d", id, test.val)
+				}
 			}
-		}
+		})
 	}
 }

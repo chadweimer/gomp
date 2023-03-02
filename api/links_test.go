@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -70,30 +71,32 @@ func Test_AddLink(t *testing.T) {
 		{2, 9, false},
 		{8, 2, true},
 	}
-	for _, test := range tests {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		api, linkDriver := getMockLinkApi(ctrl)
-		if test.expectError {
-			linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
-		} else {
-			linkDriver.EXPECT().Create(test.recipeId, test.destRecipeId).Return(nil)
-			linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
-		}
-
-		// Act
-		resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
-
-		// Assert
-		if (err != nil) != test.expectError {
-			t.Errorf("test %v: received error '%v'", test, err)
-		} else if err == nil {
-			_, ok := resp.(AddLink204Response)
-			if !ok {
-				t.Errorf("test %v: invalid response", test)
+			api, linkDriver := getMockLinkApi(ctrl)
+			if test.expectError {
+				linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+			} else {
+				linkDriver.EXPECT().Create(test.recipeId, test.destRecipeId).Return(nil)
+				linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
-		}
+
+			// Act
+			resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
+
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				_, ok := resp.(AddLink204Response)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+			}
+		})
 	}
 }
 
@@ -112,30 +115,32 @@ func Test_DeleteLink(t *testing.T) {
 		{2, 9, false},
 		{8, 2, true},
 	}
-	for _, test := range tests {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		api, linkDriver := getMockLinkApi(ctrl)
-		if test.expectError {
-			linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
-		} else {
-			linkDriver.EXPECT().Delete(test.recipeId, test.destRecipeId).Return(nil)
-			linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
-		}
-
-		// Act
-		resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
-
-		// Assert
-		if (err != nil) != test.expectError {
-			t.Errorf("test %v: received error '%v'", test, err)
-		} else if err == nil {
-			_, ok := resp.(DeleteLink204Response)
-			if !ok {
-				t.Errorf("test %v: invalid response", test)
+			api, linkDriver := getMockLinkApi(ctrl)
+			if test.expectError {
+				linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+			} else {
+				linkDriver.EXPECT().Delete(test.recipeId, test.destRecipeId).Return(nil)
+				linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
-		}
+
+			// Act
+			resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
+
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				_, ok := resp.(DeleteLink204Response)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+			}
+		})
 	}
 }
 

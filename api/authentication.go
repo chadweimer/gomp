@@ -143,13 +143,7 @@ func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error)
 
 	// Try each key when validating the token
 	for i, key := range h.secureKeys {
-		token, err := jwt.ParseWithClaims(tokenStr, &gompClaims{}, func(token *jwt.Token) (interface{}, error) {
-			if token.Method != jwt.SigningMethodHS256 {
-				return nil, errors.New("incorrect signing method")
-			}
-
-			return []byte(key), nil
-		})
+		token, err := parseToken(tokenStr, key)
 		if err != nil {
 			log.Err(err).Int("key-index", i).Msg("Failed parsing JWT token")
 			if i < (len(h.secureKeys) + 1) {
@@ -176,6 +170,23 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 	}
 
 	return &user.User, nil
+}
+
+func parseToken(tokenStr, key string) (*jwt.Token, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &gompClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, errors.New("incorrect signing method")
+		}
+
+		return []byte(key), nil
+	})
+	if err != nil {
+		return nil, err
+	} else if token.Valid {
+		return token, nil
+	}
+
+	return nil, errors.New("invalid token")
 }
 
 func getScopes(accessLevel models.AccessLevel) []string {
