@@ -78,11 +78,12 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		routeScopes, ok := r.Context().Value(BearerScopes).([]string)
 		if ok {
-			user, claims, err := h.isAuthenticated(r)
+			user, claims, ctx, err := h.isAuthenticated(r.Context(), r.Header)
 			if err != nil {
 				h.Error(w, r, http.StatusUnauthorized, err)
 				return
 			}
+			*r = *r.WithContext(ctx)
 
 			if err := checkScopes(routeScopes, user, claims); err != nil {
 				h.Error(w, r, http.StatusForbidden, fmt.Errorf("%w, endpoint '%s'", err, r.URL.Path))
@@ -94,42 +95,40 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 	})
 }
 
-func (h apiHandler) isAuthenticated(r *http.Request) (*models.User, *gompClaims, error) {
-	token, err := h.getAuthTokenFromRequest(r)
+func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*models.User, *gompClaims, context.Context, error) {
+	token, err := h.getAuthTokenFromRequest(header)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	claims := token.Claims.(*gompClaims)
 	if len(claims.Scopes) == 0 {
-		return nil, nil, errors.New("token had no scopes")
+		return nil, nil, nil, errors.New("token had no scopes")
 	}
 
 	userId, err := getUserIdFromClaims(claims.RegisteredClaims)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	user, err := h.verifyUserExists(userId)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
-			return nil, nil, errors.New("invalid user")
+			return nil, nil, nil, errors.New("invalid user")
 		}
 
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// Add the user's ID and token to the list of params
-	ctx := r.Context()
 	ctx = context.WithValue(ctx, currentUserIdCtxKey, user.Id)
 	ctx = context.WithValue(ctx, currentUserTokenCtxKey, token)
-	*r = *r.WithContext(ctx)
 
-	return user, claims, nil
+	return user, claims, ctx, nil
 }
 
-func (h apiHandler) getAuthTokenFromRequest(r *http.Request) (*jwt.Token, error) {
-	authHeader := r.Header.Get("Authorization")
+func (h apiHandler) getAuthTokenFromRequest(header http.Header) (*jwt.Token, error) {
+	authHeader := header.Get("Authorization")
 	if authHeader == "" {
 		return nil, errors.New("authorization header missing")
 	}
