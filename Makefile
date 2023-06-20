@@ -32,8 +32,8 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
 	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.4
-	go install github.com/securego/gosec/v2/cmd/gosec@v2.15.0
-	go install github.com/mgechev/revive@v1.2.5
+	go install github.com/securego/gosec/v2/cmd/gosec@v2.16.0
+	go install github.com/mgechev/revive@v1.3.2
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
