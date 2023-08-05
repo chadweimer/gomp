@@ -13,6 +13,7 @@ require (
 	github.com/jszwec/s3fs v0.4.0
 	github.com/lib/pq v1.10.9
 	github.com/rs/zerolog v1.29.1
+	github.com/samber/lo v1.37.0
 	golang.org/x/crypto v0.10.0
 	modernc.org/sqlite v1.23.1
 )
@@ -51,6 +52,7 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
+	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
 	golang.org/x/image v0.8.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/net v0.11.0 // indirect

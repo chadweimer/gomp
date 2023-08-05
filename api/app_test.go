@@ -1,0 +1,116 @@
+package api
+
+import (
+	"context"
+	"errors"
+	"testing"
+
+	"github.com/chadweimer/gomp/metadata"
+	"github.com/chadweimer/gomp/mocks/db"
+	"github.com/chadweimer/gomp/mocks/upload"
+	"github.com/chadweimer/gomp/models"
+	"github.com/golang/mock/gomock"
+)
+
+func Test_GetInfo(t *testing.T) {
+	// Arrange
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	api, _ := getMockAppConfigurationApi(ctrl)
+
+	// Act
+	resp, err := api.GetInfo(context.Background(), GetInfoRequestObject{})
+
+	// Assert
+	if err != nil {
+		t.Errorf("received error: %v", err)
+	} else {
+		typedResp, ok := resp.(GetInfo200JSONResponse)
+		if !ok {
+			t.Fatal("invalid response")
+		}
+		if typedResp.Version != &metadata.BuildVersion {
+			t.Errorf("unexpected version: %s", *typedResp.Version)
+		}
+	}
+}
+
+func Test_GetConfiguration(t *testing.T) {
+	// Arrange
+	tests := []bool{false, true}
+	for _, expectError := range tests {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		api, appDriver := getMockAppConfigurationApi(ctrl)
+		const expectedTitle = "The App Title"
+		if expectError {
+			appDriver.EXPECT().Read().Return(nil, errors.New("an error"))
+		} else {
+			appDriver.EXPECT().Read().Return(&models.AppConfiguration{
+				Title: expectedTitle,
+			}, nil)
+		}
+
+		// Act
+		resp, err := api.GetConfiguration(context.Background(), GetConfigurationRequestObject{})
+
+		// Assert
+		if (err != nil) != expectError {
+			t.Errorf("error expected?: %v, received error: %v", expectError, err)
+		} else if err == nil {
+			typedResp, ok := resp.(GetConfiguration200JSONResponse)
+			if !ok {
+				t.Fatal("invalid response")
+			}
+			if typedResp.Title != expectedTitle {
+				t.Errorf("unexpected title: %s", typedResp.Title)
+			}
+		}
+	}
+}
+
+func Test_SaveConfiguration(t *testing.T) {
+	// Arrange
+	tests := []bool{false, true}
+	for _, expectError := range tests {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		api, appDriver := getMockAppConfigurationApi(ctrl)
+		const expectedTitle = "The App Title"
+		appCfg := &models.AppConfiguration{Title: expectedTitle}
+		if expectError {
+			appDriver.EXPECT().Update(appCfg).Return(errors.New("an error"))
+		} else {
+			appDriver.EXPECT().Update(appCfg)
+		}
+
+		// Act
+		resp, err := api.SaveConfiguration(context.Background(), SaveConfigurationRequestObject{Body: appCfg})
+
+		// Assert
+		if (err != nil) != expectError {
+			t.Errorf("error expected?: %v, received error: %v", expectError, err)
+		} else if err == nil {
+			_, ok := resp.(SaveConfiguration204Response)
+			if !ok {
+				t.Fatal("invalid response")
+			}
+		}
+	}
+}
+
+func getMockAppConfigurationApi(ctrl *gomock.Controller) (apiHandler, *db.MockAppConfigurationDriver) {
+	dbDriver := db.NewMockDriver(ctrl)
+	appDriver := db.NewMockAppConfigurationDriver(ctrl)
+	dbDriver.EXPECT().AppConfiguration().AnyTimes().Return(appDriver)
+
+	api := apiHandler{
+		secureKeys: []string{},
+		upl:        upload.NewMockDriver(ctrl),
+		db:         dbDriver,
+	}
+	return api, appDriver
+}
