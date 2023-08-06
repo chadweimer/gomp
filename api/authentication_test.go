@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
-	dbmock "github.com/chadweimer/gomp/mocks/db"
-	"github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
@@ -397,17 +395,4 @@ func checkToken(tokenStr string, key string, expectedUserId int64, expectedScope
 	}
 
 	return nil
-}
-
-func getMockUsersApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockUserDriver) {
-	dbDriver := dbmock.NewMockDriver(ctrl)
-	userDriver := dbmock.NewMockUserDriver(ctrl)
-	dbDriver.EXPECT().Users().AnyTimes().Return(userDriver)
-
-	api := apiHandler{
-		secureKeys: []string{"secure-key"},
-		upl:        upload.NewMockDriver(ctrl),
-		db:         dbDriver,
-	}
-	return api, userDriver
 }

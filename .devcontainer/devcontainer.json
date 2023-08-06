@@ -29,12 +29,12 @@
         "dbaeumer.vscode-eslint",
         "eamodio.gitlens",
         "editorconfig.editorconfig",
-        "eg2.vscode-npm-script",
         "formulahendry.auto-rename-tag",
         "golang.go",
         "ms-azuretools.vscode-docker",
         "redhat.vscode-yaml",
         "spmeesseman.vscode-taskexplorer",
+        "tamasfe.even-better-toml",
         "visualstudioexptteam.vscodeintellicode",
         "GitHub.vscode-pull-request-github"
       ]
