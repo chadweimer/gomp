@@ -16,16 +16,16 @@ Web-based recipe book.
 The easiest method is via docker.
 
 ```bash
-docker run -p 5000:5000 cwmr/gomp
+docker run -p 5000:5000 ghcr.io/chadweimer/gomp
 ```
 
-On a fresh deployment, you can log into the application using the default user "admin@example.com" with password "password".
+On a fresh deployment, you can log into the application using the default user "<admin@example.com>" with password "password".
 
 The above command will use the default configuration, which includes using an embedded SQLite database and ephemeral storage, which is not recommended in production.
 In order to have persistent storage, you can use a bind mount or named volume with the volume exposed by the container at "/var/app/gomp/data".
 
 ```bash
-docker run -p 5000:5000 -v /path/on/host:/var/app/gomp/data cwmr/gomp
+docker run -p 5000:5000 -v /path/on/host:/var/app/gomp/data ghcr.io/chadweimer/gomp
 ```
 
 The equivalent compose file, this time using a named volume, would look like the following.
@@ -37,7 +37,7 @@ volumes:
   data:
 services:
   web:
-    image: cwmr/gomp
+    image: ghcr.io/chadweimer/gomp
     volumes:
       - data:/var/app/gomp/data
     ports:
@@ -57,7 +57,7 @@ volumes:
   db-data:
 services:
   web:
-    image: cwmr/gomp
+    image: ghcr.io/chadweimer/gomp
     depends_on:
       - db
     environment:
@@ -80,7 +80,7 @@ You will obviously want to cater the values (e.g., passwords) for your deploymen
 
 ### Kubernetes
 
-A basic manifest is shown below. This manifest is roughly equivalent to the first docker command shown in the [Docker](#Docker) section above, and is thus not recommended for production use.
+A basic manifest is shown below. This manifest is roughly equivalent to the first docker command shown in the [Docker](#docker) section above, and is thus not recommended for production use.
 
 ```yaml
 apiVersion: apps/v1
@@ -99,7 +99,7 @@ spec:
         app.service: web
     spec:
       containers:
-      - image: cwmr/gomp
+      - image: ghcr.io/chadweimer/gomp
         name: web
         ports:
         - containerPort: 5000
