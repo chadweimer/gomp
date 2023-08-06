@@ -5,7 +5,7 @@ volumes:
   db-data:
 services:
   web:
-    image: cwmr/gomp
+    image: ghcr.io/chadweimer/gomp
     depends_on:
       - db
     environment:

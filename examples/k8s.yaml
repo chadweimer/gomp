@@ -8,8 +8,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 5000
-    targetPort: 5000
+    - port: 5000
+      targetPort: 5000
   selector:
     app: gomp
     tier: frontend
@@ -23,8 +23,8 @@ metadata:
     tier: database
 spec:
   ports:
-  - port: 5432
-    targetPort: 5432
+    - port: 5432
+      targetPort: 5432
   selector:
     app: gomp
     tier: database
@@ -75,22 +75,22 @@ spec:
         tier: frontend
     spec:
       containers:
-      - name: web
-        image: cwmr/gomp
-        env:
-        - name: DATABASE_URL
-          value: postgres://gomp:dbpassword@db/gomp?sslmode=disable
-        - name: SECURE_KEY
-          value: UpdateMe
-        ports:
-        - containerPort: 5000
-        volumeMounts:
-        - name: data
-          mountPath: /data
+        - name: web
+          image: ghcr.io/chadweimer/gomp
+          env:
+            - name: DATABASE_URL
+              value: postgres://gomp:dbpassword@db/gomp?sslmode=disable
+            - name: SECURE_KEY
+              value: UpdateMe
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: data
+              mountPath: /data
       volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: data
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -109,20 +109,20 @@ spec:
         tier: database
     spec:
       containers:
-      - name: db
-        image: postgres:alpine
-        env:
-        - name: POSTGRES_PASSWORD
-          value: dbpassword
-        - name: POSTGRES_USER
-          value: gomp
-        ports:
-        - containerPort: 5432
-          name: pgsql
-        volumeMounts:
-        - name: data
-          mountPath: /var/lib/postgresql/data
+        - name: db
+          image: postgres:alpine
+          env:
+            - name: POSTGRES_PASSWORD
+              value: dbpassword
+            - name: POSTGRES_USER
+              value: gomp
+          ports:
+            - containerPort: 5432
+              name: pgsql
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
       volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: pgsql
+        - name: data
+          persistentVolumeClaim:
+            claimName: pgsql
