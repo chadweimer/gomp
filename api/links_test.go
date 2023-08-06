@@ -13,46 +13,53 @@ import (
 )
 
 func Test_GetLinks(t *testing.T) {
+	type getLinksTest struct {
+		recipeId    int64
+		links       []models.RecipeCompact
+		expectError bool
+	}
+
 	// Arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	api, linkDriver := getMockLinkApi(ctrl)
-	expectedLinks := []models.RecipeCompact{
-		{},
+	tests := []getLinksTest{
+		{
+			1,
+			[]models.RecipeCompact{
+				{Name: "Recipe 1"},
+				{Name: "Recipe 2"},
+			},
+			false,
+		},
+		{2, []models.RecipeCompact{}, true},
 	}
-	linkDriver.EXPECT().List(gomock.Any()).Return(&expectedLinks, nil)
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	// Act
-	resp, err := api.GetLinks(context.Background(), GetLinksRequestObject{RecipeId: 1})
+			api, linkDriver := getMockLinkApi(ctrl)
+			if test.expectError {
+				linkDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
+			} else {
+				linkDriver.EXPECT().List(test.recipeId).Return(&test.links, nil)
+				linkDriver.EXPECT().List(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
+			}
 
-	// Assert
-	if err != nil {
-		t.Errorf("received error: %v", err)
-	}
-	typedResp, ok := resp.(GetLinks200JSONResponse)
-	if !ok {
-		t.Fatal("invalid response")
-	}
-	if len(typedResp) != len(expectedLinks) {
-		t.Errorf("expected length: %d, actual length: %d", len(expectedLinks), len(typedResp))
-	}
-}
+			// Act
+			resp, err := api.GetLinks(context.Background(), GetLinksRequestObject{RecipeId: test.recipeId})
 
-func Test_GetLinks_NotFound(t *testing.T) {
-	// Arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	api, linkDriver := getMockLinkApi(ctrl)
-	linkDriver.EXPECT().List(gomock.Any()).Return(nil, db.ErrNotFound)
-
-	// Act
-	_, err := api.GetLinks(context.Background(), GetLinksRequestObject{RecipeId: 1})
-
-	// Assert
-	if err != db.ErrNotFound {
-		t.Error("ErrNotFound was expected")
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				typedResp, ok := resp.(GetLinks200JSONResponse)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+				if len(typedResp) != len(test.links) {
+					t.Errorf("test %v: expected length: %d, actual length: %d", test, len(test.links), len(typedResp))
+				}
+			}
+		})
 	}
 }
 

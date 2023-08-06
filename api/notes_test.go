@@ -13,49 +13,53 @@ import (
 )
 
 func Test_GetNotes(t *testing.T) {
+	type getNotesTest struct {
+		recipeId    int64
+		notes       []models.Note
+		expectError bool
+	}
+
 	// Arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	api, notesDriver := getMockNotesApi(ctrl)
-	const recipeId int64 = 1
-	expectedNotes := []models.Note{
-		{Text: "Note 1"},
-		{Text: "Note 2"},
+	tests := []getNotesTest{
+		{
+			1,
+			[]models.Note{
+				{Text: "Note 1"},
+				{Text: "Note 2"},
+			},
+			false,
+		},
+		{2, []models.Note{}, true},
 	}
-	notesDriver.EXPECT().List(recipeId).Return(&expectedNotes, nil)
-	notesDriver.EXPECT().List(gomock.Any()).Times(0).Return(&[]models.Note{}, nil)
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	// Act
-	resp, err := api.GetNotes(context.Background(), GetNotesRequestObject{RecipeId: recipeId})
+			api, notesDriver := getMockNotesApi(ctrl)
+			if test.expectError {
+				notesDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
+			} else {
+				notesDriver.EXPECT().List(test.recipeId).Return(&test.notes, nil)
+				notesDriver.EXPECT().List(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
+			}
 
-	// Assert
-	if err != nil {
-		t.Errorf("received error: %v", err)
-	}
-	typedResp, ok := resp.(GetNotes200JSONResponse)
-	if !ok {
-		t.Fatal("invalid response")
-	}
-	if len(typedResp) != len(expectedNotes) {
-		t.Errorf("expected length: %d, actual length: %d", len(expectedNotes), len(typedResp))
-	}
-}
+			// Act
+			resp, err := api.GetNotes(context.Background(), GetNotesRequestObject{RecipeId: test.recipeId})
 
-func Test_GetNotes_NotFound(t *testing.T) {
-	// Arrange
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	api, notesDriver := getMockNotesApi(ctrl)
-	notesDriver.EXPECT().List(gomock.Any()).Return(nil, db.ErrNotFound)
-
-	// Act
-	_, err := api.GetNotes(context.Background(), GetNotesRequestObject{RecipeId: 1})
-
-	// Assert
-	if err != db.ErrNotFound {
-		t.Error("ErrNotFound was expected")
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				typedResp, ok := resp.(GetNotes200JSONResponse)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+				if len(typedResp) != len(test.notes) {
+					t.Errorf("test %v: expected length: %d, actual length: %d", test, len(test.notes), len(typedResp))
+				}
+			}
+		})
 	}
 }
 
