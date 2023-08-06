@@ -22,6 +22,9 @@ GOARCH := amd64
 GO_ENV=GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
 GO_LD_FLAGS=-ldflags "-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'"
 
+CONTAINER_REGISTRY ?= ghcr.io
+CONTAINER_IMAGE_NAME ?= chadweimer/gomp
+
 GO_FILES := $(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
 CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find static -maxdepth 1 -type f -name "*") $(shell find static/src -type f -name "*"))
@@ -168,10 +171,10 @@ $(BUILD_DIR)/coverage.html: $(BUILD_DIR)/coverage.out
 
 .PHONY: docker
 docker: build
-ifndef DOCKER_TAG
-	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:local .
+ifndef CONTAINER_TAG
+	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(CONTAINER_IMAGE_NAME):local .
 else
-	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:$(DOCKER_TAG) .
+	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(CONTAINER_IMAGE_NAME):$(CONTAINER_TAG) .
 endif
 
 

@@ -6,6 +6,11 @@ on:
     branches: [master]
   release:
     types: [published]
+
+env:
+  CONTAINER_REGISTRY: ghcr.io
+  CONTAINER_IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   check:
     name: Check
@@ -30,8 +35,8 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageLocations: |
-            ${{github.workspace}}/build/coverage.out:gocov
-          prefix: github.com/${{github.repository}}
+            ${{ github.workspace }}/build/coverage.out:gocov
+          prefix: github.com/${{ github.repository }}
   build:
     name: Build
     runs-on: ubuntu-22.04
@@ -49,14 +54,15 @@ jobs:
           platforms: arm,arm64
       - uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.CONTAINER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - run: make install
-      - run: make build docker BUILD_VERSION="v0.0.0 (master)" DOCKER_TAG=latest
+      - run: make build docker BUILD_VERSION="v0.0.0 (master)" CONTAINER_TAG=latest
         if: startswith(github.ref, 'refs/heads/master')
-      - run: make build docker BUILD_VERSION="v0.0.0 ($(echo $GITHUB_REF | sed -e 's/^refs\/pull\///'))" DOCKER_TAG=dev
+      - run: make build docker BUILD_VERSION="v0.0.0 ($(echo $GITHUB_REF | sed -e 's/^refs\/pull\///'))" CONTAINER_TAG=dev
         if: startswith(github.ref, 'refs/pull/')
-      - run: make build docker BUILD_VERSION="v$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')" DOCKER_TAG="$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')"
+      - run: make build docker BUILD_VERSION="v$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')" CONTAINER_TAG="$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')"
         if: startswith(github.ref, 'refs/tags/')
       - run: make archive
       - uses: actions/upload-artifact@v3
