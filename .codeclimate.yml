@@ -23,23 +23,12 @@ plugins:
   fixme:
     enabled: true
   gofmt:
-    enabled: false # Doesn't understand generics
+    enabled: true
   govet:
     enabled: true
-ratings:
-  paths:
-    - "**.css"
-    - "**.inc"
-    - "**.ts"
-    - "**.tsx"
-    - "**.js"
-    - "**.jsx"
-    - "**.go"
-    - "**.html"
-exclude_paths:
-  - build/
-  - db/migrations/
-  - static/node_modules/
-  - static/www/
-  - vendor/
-  - static/src/components.d.ts
+exclude_patterns:
+  - "build/"
+  - "db/migrations/"
+  - "**/node_modules/"
+  - "static/www/"
+  - "**/*.d.ts"
