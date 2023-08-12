@@ -4,6 +4,7 @@ import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } fr
 import { recipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasScope, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state, { refreshSearchResults } from '../../../stores/state';
+import { getDefaultSearchFilter } from '../../../models';
 
 @Component({
   tag: 'page-recipe',
@@ -163,7 +164,7 @@ export class PageRecipe {
                       : ''}
                     <div class="ion-margin-top">
                       {this.recipe?.tags?.map(tag =>
-                        <ion-chip>{tag}</ion-chip>
+                        <ion-chip onClick={() => this.onTagClicked(tag)}>{tag}</ion-chip>
                       )}
                     </div>
                   </ion-card-content>
@@ -832,5 +833,14 @@ export class PageRecipe {
 
       await confirmation.onDidDismiss();
     });
+  }
+
+  private async onTagClicked(tag: string) {
+    const filter = getDefaultSearchFilter();
+    state.searchFilter = {
+      ...filter,
+      tags: [tag]
+    };
+    await redirect('/search');
   }
 }
