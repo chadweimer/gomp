@@ -7,8 +7,9 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	"github.com/chadweimer/gomp/mocks/upload"
+	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/golang/mock/gomock"
 )
 
@@ -262,10 +263,17 @@ func getMockNotesApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockNoteDrive
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	notesDriver := dbmock.NewMockNoteDriver(ctrl)
 	dbDriver.EXPECT().Notes().AnyTimes().Return(notesDriver)
+	uplDriver := uploadmock.NewMockDriver(ctrl)
+	imgCfg := models.ImageConfiguration{
+		ImageQuality:     models.ImageQualityOriginal,
+		ImageSize:        2000,
+		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailSize:    500,
+	}
 
 	api := apiHandler{
 		secureKeys: []string{},
-		upl:        upload.NewMockDriver(ctrl),
+		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
 		db:         dbDriver,
 	}
 	return api, notesDriver

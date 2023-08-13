@@ -1,8 +1,8 @@
-import { createGesture, Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
+import { Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, getSwipe, redirect, showToast, enableBackForOverlay, showLoading, hasScope } from '../../../helpers/utils';
+import { capitalizeFirstLetter, redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { refreshSearchResults } from '../../../stores/state';
 
@@ -16,26 +16,18 @@ export class PageSearch {
   private gesture: Gesture;
 
   connectedCallback() {
-    this.gesture = createGesture({
-      el: this.el,
-      threshold: 30,
-      gestureName: 'swipe',
-      onEnd: e => {
-        const swipe = getSwipe(e);
-        if (!swipe) return
-
-        switch (swipe) {
-          case SwipeDirection.Right:
-            if (state.searchPage > 1) {
-              state.searchPage--;
-            }
-            break;
-          case SwipeDirection.Left:
-            if (state.searchPage < state.searchNumPages) {
-              state.searchPage++;
-            }
-            break;
-        }
+    this.gesture = createSwipeGesture(this.el, swipe => {
+      switch (swipe) {
+        case SwipeDirection.Right:
+          if (state.searchPage > 1) {
+            state.searchPage--;
+          }
+          break;
+        case SwipeDirection.Left:
+          if (state.searchPage < state.searchNumPages) {
+            state.searchPage++;
+          }
+          break;
       }
     });
     this.gesture.enable();

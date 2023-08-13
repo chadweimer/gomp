@@ -4,17 +4,30 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/disintegration/imaging"
 )
 
+// ImageUploader represents an object to handle image uploads
+type ImageUploader struct {
+	Driver Driver
+	imgCfg models.ImageConfiguration
+}
+
+// CreateImageUploader returns an ImageUploader implementation that uses the specified Driver
+func CreateImageUploader(driver Driver, imgCfg models.ImageConfiguration) *ImageUploader {
+	return &ImageUploader{driver, imgCfg}
+}
+
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func Save(driver Driver, recipeId int64, imageName string, data []byte) (string, string, error) {
+func (u ImageUploader) Save(recipeId int64, imageName string, data []byte) (string, string, error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
 		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)
@@ -22,66 +35,103 @@ func Save(driver Driver, recipeId int64, imageName string, data []byte) (string,
 
 	// First decode the image
 	dataReader := bytes.NewReader(data)
-	image, err := imaging.Decode(dataReader, imaging.AutoOrientation(true))
+	original, err := imaging.Decode(dataReader, imaging.AutoOrientation(true))
 	if err != nil {
 		return "", "", fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// Then generate a thumbnail image
-	thumbData, err := generateThumbnail(image, contentType)
+	// Then determine if it should be resized before saving
+	var origUrl string
+	imgDir := getDirPathForImage(recipeId)
+	if u.imgCfg.ImageQuality == models.ImageQualityOriginal {
+		// Save the original as-is
+		origUrl, err = u.saveImage(data, imgDir, imageName)
+	} else {
+		// Resize and save
+		origUrl, err = u.generateFitted(original, contentType, imgDir, imageName)
+	}
 	if err != nil {
-		return "", "", fmt.Errorf("failed to generate thumbnail image: %w", err)
+		return "", "", err
 	}
 
-	// Save the original image
-	origDir := getDirPathForImage(recipeId)
-	origPath := filepath.Join(origDir, imageName)
-	origUrl := filepath.ToSlash(filepath.Join("/uploads/", origPath))
-	err = driver.Save(origPath, data)
+	// And generate a thumbnail and save it
+	thumbUrl, err := u.generateThumbnail(original, contentType, getDirPathForThumbnail(recipeId), imageName)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to save image using configured upload driver: %w", err)
-	}
-
-	// Save the thumbnail image
-	thumbDir := getDirPathForThumbnail(recipeId)
-	thumbPath := filepath.Join(thumbDir, imageName)
-	thumbUrl := filepath.ToSlash(filepath.Join("/uploads/", thumbPath))
-	err = driver.Save(thumbPath, thumbData)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to save thumbnail image using configured upload driver: %w", err)
+		return "", "", err
 	}
 
 	return origUrl, thumbUrl, nil
 }
 
-func generateThumbnail(image image.Image, contentType string) ([]byte, error) {
-	thumbImage := imaging.Thumbnail(image, 500, 500, imaging.NearestNeighbor)
-
-	thumbBuf := new(bytes.Buffer)
-	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(80))
-	if err != nil {
-		return nil, fmt.Errorf("failed to encode thumbnail image: %w", err)
-	}
-
-	return thumbBuf.Bytes(), nil
-}
-
 // Delete removes the specified image files from the upload store.
-func Delete(driver Driver, recipeId int64, imageName string) error {
+func (u ImageUploader) Delete(recipeId int64, imageName string) error {
 	origPath := filepath.Join(getDirPathForImage(recipeId), imageName)
-	if err := driver.Delete(origPath); err != nil {
+	if err := u.Driver.Delete(origPath); err != nil {
 		return err
 	}
 	thumbPath := filepath.Join(getDirPathForThumbnail(recipeId), imageName)
-	return driver.Delete(thumbPath)
+	return u.Driver.Delete(thumbPath)
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.
-func DeleteAll(driver Driver, recipeId int64) error {
+func (u ImageUploader) DeleteAll(recipeId int64) error {
 	dirPath := getDirPathForRecipe(recipeId)
-	err := driver.DeleteAll(dirPath)
+	err := u.Driver.DeleteAll(dirPath)
 
 	return err
+}
+
+// Load reads the image for the given recipe, returning the bytes of the file
+func (u ImageUploader) Load(recipeId int64, imageName string) ([]byte, error) {
+	origPath := filepath.Join(getDirPathForImage(recipeId), imageName)
+
+	file, err := u.Driver.Open(origPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadAll(file)
+}
+
+func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
+	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize, toResampleFilter(u.imgCfg.ThumbnailQuality))
+
+	thumbBuf := new(bytes.Buffer)
+	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ThumbnailQuality)))
+	if err != nil {
+		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
+	}
+
+	return u.saveImage(thumbBuf.Bytes(), saveDir, imageName)
+}
+
+func (u ImageUploader) generateFitted(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
+	var fittedImage image.Image
+
+	bounds := original.Bounds()
+	if bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize {
+		fittedImage = original
+	} else {
+		fittedImage = imaging.Fit(original, u.imgCfg.ImageSize, u.imgCfg.ImageSize, toResampleFilter(u.imgCfg.ImageQuality))
+	}
+
+	fittedBuf := new(bytes.Buffer)
+	err := imaging.Encode(fittedBuf, fittedImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ImageQuality)))
+	if err != nil {
+		return "", fmt.Errorf("failed to encode fitted image: %w", err)
+	}
+
+	return u.saveImage(fittedBuf.Bytes(), saveDir, imageName)
+}
+
+func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) (string, error) {
+	fullPath := filepath.Join(baseDir, imageName)
+	url := filepath.ToSlash(filepath.Join("/uploads/", fullPath))
+	err := u.Driver.Save(fullPath, data)
+	if err != nil {
+		return "", fmt.Errorf("failed to save image to '%s' using configured upload driver: %w", fullPath, err)
+	}
+	return url, nil
 }
 
 func isImageFile(data []byte) (bool, string) {
@@ -118,4 +168,30 @@ func getDirPathForImage(recipeId int64) string {
 
 func getDirPathForThumbnail(recipeId int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeId), "thumbs")
+}
+
+func toResampleFilter(q models.ImageQualityLevel) imaging.ResampleFilter {
+	switch q {
+	case models.ImageQualityHigh:
+		return imaging.Box
+	case models.ImageQualityMedium:
+		return imaging.Box
+	case models.ImageQualityLow:
+		return imaging.NearestNeighbor
+	default:
+		return imaging.Box
+	}
+}
+
+func toJPEGQuality(q models.ImageQualityLevel) int {
+	switch q {
+	case models.ImageQualityHigh:
+		return 92
+	case models.ImageQualityMedium:
+		return 80
+	case models.ImageQualityLow:
+		return 70
+	default:
+		return 92
+	}
 }

@@ -7,8 +7,9 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	"github.com/chadweimer/gomp/mocks/upload"
+	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/golang/mock/gomock"
 )
 
@@ -155,10 +156,17 @@ func getMockLinkApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockLinkDriver
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	linkDriver := dbmock.NewMockLinkDriver(ctrl)
 	dbDriver.EXPECT().Links().AnyTimes().Return(linkDriver)
+	uplDriver := uploadmock.NewMockDriver(ctrl)
+	imgCfg := models.ImageConfiguration{
+		ImageQuality:     models.ImageQualityOriginal,
+		ImageSize:        2000,
+		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailSize:    500,
+	}
 
 	api := apiHandler{
 		secureKeys: []string{},
-		upl:        upload.NewMockDriver(ctrl),
+		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
 		db:         dbDriver,
 	}
 	return api, linkDriver

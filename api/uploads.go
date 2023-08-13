@@ -16,7 +16,7 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 	}
 
 	fileUrl := filepath.ToSlash(filepath.Join("/uploads/", imageName))
-	if err := h.upl.Save(imageName, uploadedFileData); err != nil {
+	if err := h.upl.Driver.Save(imageName, uploadedFileData); err != nil {
 		return nil, err
 	}
 

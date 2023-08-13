@@ -211,8 +211,6 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		return nil, 0, err
 	}
 
-	offset := count * (page - 1)
-
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
 	case models.SortById:
@@ -241,7 +239,12 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		orderStmt += ", r.modified_at DESC"
 	}
 
-	orderStmt += " LIMIT ? OFFSET ?"
+	// Build the offset and limit
+	selectArgs := whereArgs
+	if count > 0 {
+		orderStmt += " LIMIT ? OFFSET ?"
+		selectArgs = append(selectArgs, count, count*(page-1))
+	}
 
 	selectStmt := d.Db.Rebind("SELECT " +
 		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
@@ -249,7 +252,6 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 		"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
 		whereStmt + orderStmt)
-	selectArgs := append(whereArgs, count, offset)
 
 	var recipes []models.RecipeCompact
 	if err = d.Db.Select(&recipes, selectStmt, selectArgs...); err != nil {

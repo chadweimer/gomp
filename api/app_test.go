@@ -7,8 +7,9 @@ import (
 
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/mocks/db"
-	"github.com/chadweimer/gomp/mocks/upload"
+	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/upload"
 	"github.com/golang/mock/gomock"
 )
 
@@ -106,10 +107,17 @@ func getMockAppConfigurationApi(ctrl *gomock.Controller) (apiHandler, *db.MockAp
 	dbDriver := db.NewMockDriver(ctrl)
 	appDriver := db.NewMockAppConfigurationDriver(ctrl)
 	dbDriver.EXPECT().AppConfiguration().AnyTimes().Return(appDriver)
+	uplDriver := uploadmock.NewMockDriver(ctrl)
+	imgCfg := models.ImageConfiguration{
+		ImageQuality:     models.ImageQualityOriginal,
+		ImageSize:        2000,
+		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailSize:    500,
+	}
 
 	api := apiHandler{
 		secureKeys: []string{},
-		upl:        upload.NewMockDriver(ctrl),
+		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
 		db:         dbDriver,
 	}
 	return api, appDriver

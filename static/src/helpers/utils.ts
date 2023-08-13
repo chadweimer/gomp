@@ -1,4 +1,4 @@
-import { GestureDetail, loadingController, toastController } from '@ionic/core';
+import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
 import jwtDecode, { JwtPayload } from 'jwt-decode';
 import { AccessLevel, YesNoAny } from '../generated';
 import { SwipeDirection } from '../models';
@@ -67,7 +67,21 @@ export async function enableBackForOverlay(presenter: () => Promise<void>) {
   }
 }
 
-export function getSwipe(e: GestureDetail) {
+export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirection) => void) {
+  return createGesture({
+    el: el,
+    threshold: 30,
+    gestureName: 'swipe',
+    onEnd: e => {
+      const swipe = getSwipe(e);
+      if (!swipe) return
+
+      handler(swipe);
+    }
+  });
+}
+
+function getSwipe(e: GestureDetail) {
   if (Math.abs(e.velocityX) < 0.1) {
     return undefined
   }

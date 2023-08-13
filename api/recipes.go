@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
 )
 
 func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResponseObject, error) {
@@ -94,7 +93,7 @@ func (h apiHandler) DeleteRecipe(_ context.Context, request DeleteRecipeRequestO
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
-	if err := upload.DeleteAll(h.upl, request.RecipeId); err != nil {
+	if err := h.upl.DeleteAll(request.RecipeId); err != nil {
 		return nil, err
 	}
 

@@ -315,6 +315,16 @@ paths:
         schema:
           type: integer
           format: int64
+    patch:
+      tags: [recipes]
+      description: optimize an existing image from a recipe
+      operationId: optimizeImage
+      responses:
+        204:
+          description: No Content
+          content: {}
+      security:
+        - Bearer: [admin]
     delete:
       tags: [recipes]
       description: delete an existing image from a recipe
