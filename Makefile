@@ -14,12 +14,16 @@ CLIENT_BUILD_DIR=static/www/static
 CLIENT_CODEGEN_DIR=static/src/generated
 MODELS_CODEGEN_FILE=models/models.gen.go
 API_CODEGEN_FILE=api/routes.gen.go
-CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE)
+MOCKS_CODEGEN_DIR=mocks
+CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)
 
 GOOS := linux
 GOARCH := amd64
 GO_ENV=GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
 GO_LD_FLAGS=-ldflags "-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'"
+
+CONTAINER_REGISTRY ?= ghcr.io
+CONTAINER_IMAGE_NAME ?= chadweimer/gomp
 
 GO_FILES := $(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
@@ -31,9 +35,10 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
-	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.11.0
-	go install github.com/securego/gosec/v2/cmd/gosec@v2.12.0
-	go install github.com/mgechev/revive@v1.2.1
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0
+	go install github.com/securego/gosec/v2/cmd/gosec@v2.16.0
+	go install github.com/mgechev/revive@v1.3.2
+	go install github.com/golang/mock/mockgen@v1.6.0
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -53,6 +58,8 @@ $(API_CODEGEN_FILE): openapi.yaml api/cfg.yaml
 $(MODELS_CODEGEN_FILE): models.yaml models/cfg.yaml
 	oapi-codegen --config models/cfg.yaml models.yaml > $@
 
+$(MOCKS_CODEGEN_DIR): $(GO_FILES)
+	go generate ./...
 
 # ---- LINT ----
 
@@ -79,6 +86,7 @@ build: $(BUILD_LIN_AMD64_DIR) $(BUILD_LIN_ARM_DIR) $(BUILD_LIN_ARM64_DIR) $(BUIL
 clean: clean-linux-amd64 clean-linux-arm clean-linux-arm64 clean-windows-amd64
 	rm -rf $(BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
+	rm -rf $(MOCKS_CODEGEN_DIR)
 	cd static && npm run clean
 
 # - GENERIC ARCH -
@@ -145,14 +153,28 @@ $(BUILD_WIN_AMD64_DIR): $(BUILD_WIN_AMD64_DIR)/gomp.exe $(BUILD_WIN_AMD64_DIR)/d
 clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD64_DIR) clean-$(BUILD_DIR)/gomp-windows-amd64.zip
 
 
+# ---- TEST ----
+.PHONY: test
+test: $(BUILD_DIR)/coverage.html
+
+$(BUILD_DIR)/coverage.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
+	mkdir -p $(BUILD_DIR)
+	go test -coverprofile=$@ ./...
+	sed -i '/^.\+\.gen\.go.\+$$/d' $@
+	go tool cover -func=$@
+
+$(BUILD_DIR)/coverage.html: $(BUILD_DIR)/coverage.out
+	go tool cover -html=$< -o $@
+
+
 # ---- DOCKER ----
 
 .PHONY: docker
 docker: build
-ifndef DOCKER_TAG
-	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:local .
+ifndef CONTAINER_TAG
+	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(CONTAINER_IMAGE_NAME):local .
 else
-	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t cwmr/gomp:$(DOCKER_TAG) .
+	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(CONTAINER_IMAGE_NAME):$(CONTAINER_TAG) .
 endif
 
 

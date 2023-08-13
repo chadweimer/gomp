@@ -6,6 +6,7 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
+export { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
 export namespace Components {
     interface AppRoot {
     }

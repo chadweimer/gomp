@@ -7,7 +7,7 @@ module.exports = {
   'extends': [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:@stencil/recommended',
+    'plugin:@stencil-community/recommended',
   ],
   'rules': {
     'quotes': ['error', 'single'],
@@ -29,7 +29,7 @@ module.exports = {
         'allowArrowFunctions': true,
       }
     ],
-    '@stencil/required-jsdoc': 'off',
-    '@stencil/async-methods': 'off'
+    '@stencil-community/required-jsdoc': 'off',
+    '@stencil-community/async-methods': 'off'
   },
 };

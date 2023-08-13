@@ -31,7 +31,7 @@ export class PageSettingsPreferences {
                     <ion-card-content>
                       <ion-item>
                         <ion-label position="stacked">Home Title</ion-label>
-                        <ion-input value={this.settings?.homeTitle} onIonChange={e => this.settings = { ...this.settings, homeTitle: e.detail.value }} required />
+                        <ion-input value={this.settings?.homeTitle} onIonBlur={e => this.settings = { ...this.settings, homeTitle: e.target.value as string }} required />
                       </ion-item>
                       <ion-item lines="full">
                         <form enctype="multipart/form-data">

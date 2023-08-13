@@ -49,7 +49,7 @@ export class RecipeEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item>
               <ion-label position="stacked">Name</ion-label>
-              <ion-input value={this.recipe.name} onIonChange={e => this.recipe = { ...this.recipe, name: e.detail.value }} required autofocus />
+              <ion-input value={this.recipe.name} onIonBlur={e => this.recipe = { ...this.recipe, name: e.target.value as string }} required autofocus />
             </ion-item>
             {!this.recipe.id ?
               <ion-item lines="full">
@@ -61,27 +61,39 @@ export class RecipeEditor {
               : ''}
             <ion-item>
               <ion-label position="stacked">Serving Size</ion-label>
-              <ion-input value={this.recipe.servingSize} onIonChange={e => this.recipe = { ...this.recipe, servingSize: e.detail.value }} />
+              <ion-input value={this.recipe.servingSize} onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Ingredients</ion-label>
-              <ion-textarea value={this.recipe.ingredients} onIonChange={e => this.recipe = { ...this.recipe, ingredients: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.ingredients}
+                onIonBlur={e => this.recipe = { ...this.recipe, ingredients: e.target.value }}
+                auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Directions</ion-label>
-              <ion-textarea value={this.recipe.directions} onIonChange={e => this.recipe = { ...this.recipe, directions: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.directions}
+                onIonBlur={e => this.recipe = { ...this.recipe, directions: e.target.value }}
+                auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-              <ion-textarea value={this.recipe.storageInstructions} onIonChange={e => this.recipe = { ...this.recipe, storageInstructions: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.storageInstructions}
+                onIonBlur={e => this.recipe = { ...this.recipe, storageInstructions: e.target.value }}
+                auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Nutrition</ion-label>
-              <ion-textarea value={this.recipe.nutritionInfo} onIonChange={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail.value }} auto-grow />
+              <ion-textarea
+                value={this.recipe.nutritionInfo}
+                onIonBlur={e => this.recipe = { ...this.recipe, nutritionInfo: e.target.value }}
+                auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Source</ion-label>
-              <ion-input inputMode="url" value={this.recipe.sourceUrl} onIonChange={e => this.recipe = { ...this.recipe, sourceUrl: e.detail.value }} />
+              <ion-input inputMode="url" value={this.recipe.sourceUrl} onIonBlur={e => this.recipe = { ...this.recipe, sourceUrl: e.target.value as string }} />
             </ion-item>
             <tags-input value={this.recipe.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
               onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }} />

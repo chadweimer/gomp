@@ -34,7 +34,7 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 			if fieldStr != "" {
 				fieldStr += " OR "
 			}
-			fieldStr += "to_tsvector('english', r." + string(field) + ") @@ plainto_tsquery(?)"
+			fieldStr += "to_tsvector('english', r." + string(field) + ") @@ plainto_tsquery('english', ?)"
 			fieldArgs = append(fieldArgs, query)
 		}
 	}

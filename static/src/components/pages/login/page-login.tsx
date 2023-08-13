@@ -8,11 +8,12 @@ import state from '../../../stores/state';
   styleUrl: 'page-login.css'
 })
 export class PageLogin {
-  @State() username = '';
-  @State() password = '';
   @State() errorMessage = '';
 
   @Element() el!: HTMLPageLoginElement;
+
+  private usernameInput!: HTMLIonInputElement;
+  private passwordInput!: HTMLIonInputElement;
 
   render() {
     return (
@@ -27,16 +28,12 @@ export class PageLogin {
                 <ion-card-content>
                   <ion-item>
                     <ion-label>Email</ion-label>
-                    <ion-input type="email" value={this.username}
-                      onIonChange={e => this.username = e.detail.value}
-                      onKeyDown={e => this.onInputKeyDown(e)} />
+                    <ion-input ref={el => this.usernameInput = el} type="email" onKeyDown={e => this.onInputKeyDown(e)} />
                   </ion-item>
                   <ion-item>
                     <ion-icon slot="end" name="eye-off" />
                     <ion-label>Password</ion-label>
-                    <ion-input type="password" value={this.password}
-                      onIonChange={e => this.password = e.detail.value}
-                      onKeyDown={e => this.onInputKeyDown(e)} />
+                    <ion-input ref={el => this.passwordInput = el} type="password" onKeyDown={e => this.onInputKeyDown(e)} />
                   </ion-item>
                   <ion-text color="danger">{this.errorMessage}</ion-text>
                 </ion-card-content>
@@ -58,13 +55,15 @@ export class PageLogin {
   private async onLoginClicked() {
     try {
       this.errorMessage = '';
-      const { data } = await appApi.authenticate({ username: this.username, password: this.password });
+      const username = this.usernameInput.value as string;
+      const password = this.passwordInput.value as string;
+      const { data } = await appApi.authenticate({ username, password });
 
       // Store the token so we stay logged in
       state.jwtToken = data.token;
 
       // Clear the username so it's not left around when the next login is needed
-      this.username = '';
+      this.usernameInput.value = '';
 
       await redirect('/');
     } catch (ex) {
@@ -72,7 +71,7 @@ export class PageLogin {
       console.error(ex);
     } finally {
       // Clear password no matter what, success or failure
-      this.password = '';
+      this.passwordInput.value = '';
     }
   }
 

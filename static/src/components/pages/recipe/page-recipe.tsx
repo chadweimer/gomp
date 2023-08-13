@@ -4,6 +4,7 @@ import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } fr
 import { recipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, formatDate, hasScope, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state, { refreshSearchResults } from '../../../stores/state';
+import { getDefaultSearchFilter } from '../../../models';
 
 @Component({
   tag: 'page-recipe',
@@ -133,7 +134,7 @@ export class PageRecipe {
                       <ion-item lines="full">
                         <ion-label position="stacked">Source</ion-label>
                         <p class="plain ion-padding">
-                          <a href={this.recipe?.sourceUrl} target="_blank">{this.recipe?.sourceUrl}</a>
+                          <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a>
                         </p>
                       </ion-item>
                       : ''}
@@ -151,9 +152,11 @@ export class PageRecipe {
                                   {link.name}
                                 </ion-router-link>
                               </ion-label>
-                              <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
-                                <ion-icon slot="icon-only" icon="close-circle" />
-                              </ion-button>
+                              {hasScope(state.jwtToken, AccessLevel.Editor) ?
+                                <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteLinkClicked(link)}>
+                                  <ion-icon slot="icon-only" icon="close-circle" />
+                                </ion-button>
+                                : ''}
                             </ion-item>
                           )}
                         </div>
@@ -161,7 +164,7 @@ export class PageRecipe {
                       : ''}
                     <div class="ion-margin-top">
                       {this.recipe?.tags?.map(tag =>
-                        <ion-chip>{tag}</ion-chip>
+                        <ion-chip onClick={() => this.onTagClicked(tag)}>{tag}</ion-chip>
                       )}
                     </div>
                   </ion-card-content>
@@ -830,5 +833,14 @@ export class PageRecipe {
 
       await confirmation.onDidDismiss();
     });
+  }
+
+  private async onTagClicked(tag: string) {
+    const filter = getDefaultSearchFilter();
+    state.searchFilter = {
+      ...filter,
+      tags: [tag]
+    };
+    await redirect('/search');
   }
 }
