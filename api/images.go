@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
-	"github.com/google/uuid"
 )
 
 func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
@@ -82,28 +80,24 @@ func (h apiHandler) DeleteImage(_ context.Context, request DeleteImageRequestObj
 	return DeleteImage204Response{}, nil
 }
 
-func (h apiHandler) OptimizeImage(w http.ResponseWriter, r *http.Request, recipeId, imageId int64) {
+func (h apiHandler) OptimizeImage(_ context.Context, request OptimizeImageRequestObject) (OptimizeImageResponseObject, error) {
 	// We need to read the info about the image for later
-	image, err := h.db.Images().Read(recipeId, imageId)
+	image, err := h.db.Images().Read(request.RecipeId, request.ImageId)
 	if err != nil {
-		fullErr := fmt.Errorf("failed to get image database record: %w", err)
-		h.Error(w, r, http.StatusInternalServerError, fullErr)
-		return
+		return nil, fmt.Errorf("failed to get image database record: %w", err)
 	}
 
 	// Load the current original
-	data, err := h.upl.Load(recipeId, *image.Name)
+	data, err := h.upl.Load(request.RecipeId, *image.Name)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+		return nil, fmt.Errorf("failed to read existing image data: %w", err)
 	}
 
 	// Resave it, which will downscale if larger than the threshold,
 	// as well as regenerate the thumbnail
-	if _, _, err = h.upl.Save(recipeId, *image.Name, data); err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
+	if _, _, err = h.upl.Save(request.RecipeId, *image.Name, data); err != nil {
+		return nil, fmt.Errorf("failed to re-save image data: %w", err)
 	}
 
-	h.NoContent(w)
+	return OptimizeImage204Response{}, nil
 }
