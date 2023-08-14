@@ -49,6 +49,9 @@ uninstall:
 
 
 # ---- CODEGEN ----
+.PHONY: codegen
+codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
+
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
