@@ -162,6 +162,7 @@ $(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	go test -coverprofile=$@ ./...
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@
 	go tool cover -func=$@
+	sed -i 's#github\.com/chadweimer/gomp#$(shell pwd)#g' $@
 
 $(BUILD_DIR)/coverage/server.html: $(BUILD_DIR)/coverage/server.out
 	go tool cover -html=$< -o $@
