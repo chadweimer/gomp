@@ -49,17 +49,14 @@ uninstall:
 
 
 # ---- CODEGEN ----
-.PHONY: codegen
-codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
-
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
 $(API_CODEGEN_FILE): openapi.yaml api/cfg.yaml
-	go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0 --config api/cfg.yaml openapi.yaml > $@
+	oapi-codegen --config api/cfg.yaml openapi.yaml > $@
 
 $(MODELS_CODEGEN_FILE): models.yaml models/cfg.yaml
-	go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0 --config models/cfg.yaml models.yaml > $@
+	oapi-codegen --config models/cfg.yaml models.yaml > $@
 
 $(MOCKS_CODEGEN_DIR): $(GO_FILES)
 	go generate ./...
