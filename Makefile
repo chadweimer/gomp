@@ -166,6 +166,9 @@ $(BUILD_DIR)/coverage.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
 $(BUILD_DIR)/coverage.html: $(BUILD_DIR)/coverage.out
 	go tool cover -html=$< -o $@
 
+static/coverage: $(CLIENT_FILES)
+	cd static && npm run cover
+
 
 # ---- DOCKER ----
 
