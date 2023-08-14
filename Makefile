@@ -155,19 +155,22 @@ clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD
 
 # ---- TEST ----
 .PHONY: test
-test: $(BUILD_DIR)/coverage.html
+test: $(BUILD_DIR)/coverage/server.html $(BUILD_DIR)/coverage/client
 
-$(BUILD_DIR)/coverage.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	mkdir -p $(BUILD_DIR)
+$(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
+	mkdir -p $(BUILD_DIR)/coverage
 	go test -coverprofile=$@ ./...
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@
 	go tool cover -func=$@
 
-$(BUILD_DIR)/coverage.html: $(BUILD_DIR)/coverage.out
+$(BUILD_DIR)/coverage/server.html: $(BUILD_DIR)/coverage/server.out
 	go tool cover -html=$< -o $@
 
-static/coverage: $(CLIENT_FILES)
-	cd static && npm run cover
+$(BUILD_DIR)/coverage/client: $(CLIENT_FILES)
+	rm -rf $@
+	mkdir -p $@
+	-cd static && npm run cover
+	cp -r static/coverage/* $@
 
 
 # ---- DOCKER ----
