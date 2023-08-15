@@ -53,7 +53,7 @@ describe('tags-input', () => {
       template: () => (<tags-input suggestions={expectedTags}></tags-input>),
     });
     const component = page.rootInstance as TagsInput;
-    expect(component.value).toBeFalsy();
+    expect(component.value).toEqual([]);
     expect(component.suggestions).toEqual(expectedTags);
     const chips = page.root.querySelectorAll('ion-chip');
     expect(chips).toBeTruthy();
