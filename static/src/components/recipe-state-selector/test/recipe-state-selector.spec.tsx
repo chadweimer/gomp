@@ -1,4 +1,3 @@
-import { h } from '@stencil/core';
 import { newSpecPage } from '@stencil/core/testing';
 import { RecipeStateSelector } from '../recipe-state-selector';
 import { RecipeState } from '../../../generated';
