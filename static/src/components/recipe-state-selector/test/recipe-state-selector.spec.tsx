@@ -4,8 +4,12 @@ import { RecipeStateSelector } from '../recipe-state-selector';
 import { RecipeState } from '../../../generated';
 
 describe('recipe-state-selector', () => {
-  it('builds', () => {
-    expect(new RecipeStateSelector()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [RecipeStateSelector],
+      html: '<recipe-state-selector></recipe-state-selector>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(RecipeStateSelector);
   });
 
   it('defaults to Active', async () => {

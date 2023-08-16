@@ -4,8 +4,12 @@ import { RecipeCard } from '../recipe-card';
 import { RecipeCompact } from '../../../generated';
 
 describe('recipe-card', () => {
-  it('renders', async () => {
-    expect(new RecipeCard()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [RecipeCard],
+      html: '<recipe-card></recipe-card>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(RecipeCard);
   });
 
   it('no initial value', async () => {

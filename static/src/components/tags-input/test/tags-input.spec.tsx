@@ -3,8 +3,12 @@ import { TagsInput } from '../tags-input';
 import { h } from '@stencil/core';
 
 describe('tags-input', () => {
-  it('builds', () => {
-    expect(new TagsInput()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [TagsInput],
+      html: '<tags-input></tags-input>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(TagsInput);
   });
 
   it('default label', async () => {

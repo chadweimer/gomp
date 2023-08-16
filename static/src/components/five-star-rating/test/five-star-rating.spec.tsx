@@ -2,8 +2,12 @@ import { newSpecPage } from '@stencil/core/testing';
 import { FiveStarRating } from '../five-star-rating';
 
 describe('five-star-rating', () => {
-  it('builds', () => {
-    expect(new FiveStarRating()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [FiveStarRating],
+      html: '<five-star-rating></five-star-rating>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(FiveStarRating);
   });
 
   it('renders', async () => {

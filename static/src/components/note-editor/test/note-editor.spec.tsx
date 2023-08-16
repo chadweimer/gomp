@@ -4,8 +4,12 @@ import { NoteEditor } from '../note-editor';
 import { Note } from '../../../generated';
 
 describe('note-editor', () => {
-  it('builds', () => {
-    expect(new NoteEditor()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [NoteEditor],
+      html: '<note-editor></note-editor>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(NoteEditor);
   });
 
   it('no initial value', async () => {

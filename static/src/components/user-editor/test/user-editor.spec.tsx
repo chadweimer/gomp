@@ -4,8 +4,12 @@ import { UserEditor } from '../user-editor';
 import { AccessLevel, User } from '../../../generated';
 
 describe('user-editor', () => {
-  it('builds', () => {
-    expect(new UserEditor()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [UserEditor],
+      html: '<user-editor></user-editor>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(UserEditor);
   });
 
   it('defaults', async () => {

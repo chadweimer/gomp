@@ -4,8 +4,12 @@ import { SortBySelector } from '../sort-by-selector';
 import { SortBy } from '../../../generated';
 
 describe('sort-by-selector', () => {
-  it('builds', () => {
-    expect(new SortBySelector()).toBeTruthy();
+  it('builds', async () => {
+    const page = await newSpecPage({
+      components: [SortBySelector],
+      html: '<sort-by-selector></sort-by-selector>',
+    });
+    expect(page.rootInstance).toBeInstanceOf(SortBySelector);
   });
 
   it('defaults to Name', async () => {
@@ -20,8 +24,7 @@ describe('sort-by-selector', () => {
     expect(radioGroup).toEqualAttribute('value', SortBy.Name);
   });
 
-  for (const value in SortBy)
-  {
+  for (const value in SortBy) {
     it('can be set to ' + value, async () => {
       const page = await newSpecPage({
         components: [SortBySelector],
