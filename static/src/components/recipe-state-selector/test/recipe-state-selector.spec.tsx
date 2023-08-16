@@ -15,35 +15,30 @@ describe('recipe-state-selector', () => {
     });
     const component = page.rootInstance as RecipeStateSelector;
     expect(component.selectedStates).toEqual([RecipeState.Active]);
-    // const checkboxes = page.root.querySelectorAll('ion-checkbox');
-    // let numChecked = 0;
-    // checkboxes.forEach(e => {
-    //   if (e.checked) {
-    //     expect(e).toEqualAttribute('value', RecipeState.Active);
-    //     numChecked++;
-    //   }
-    // });
-    // expect(numChecked).toEqual(1);
+    const checkboxes = page.root.querySelectorAll('ion-checkbox');
+    let numChecked = 0;
+    checkboxes.forEach(e => {
+      if (e.hasAttribute('checked')) {
+        expect(e).toEqualAttribute('value', RecipeState.Active);
+        numChecked++;
+      }
+    });
+    expect(numChecked).toEqual(1);
   });
 
-  for (const value in RecipeState)
-  {
-   it('can be set to ' + value, async () => {
-     const page = await newSpecPage({
-       components: [RecipeStateSelector],
-       template: () => (<recipe-state-selector selectedStates={[value as RecipeState]}></recipe-state-selector>),
-     });
-     const component = page.rootInstance as RecipeStateSelector;
-     expect(component.selectedStates).toEqual([value]);
-    //  const checkboxes = page.root.querySelectorAll('ion-checkbox');
-    //  let numChecked = 0;
-    //  checkboxes.forEach(e => {
-    //    if (e.hasAttribute('checked')) {
-    //      expect(e).toEqualAttribute('value', value);
-    //      numChecked++;
-    //    }
-    //  });
-    //  expect(numChecked).toEqual(1);
-   });
-  }
+  it('can be set to Archived', async () => {
+    const page = await newSpecPage({
+      components: [RecipeStateSelector],
+      template: () => (<recipe-state-selector selectedStates={[RecipeState.Archived]}></recipe-state-selector>),
+    });
+    const checkboxes = page.root.querySelectorAll('ion-checkbox');
+    let numChecked = 0;
+    checkboxes.forEach(e => {
+      if (e.hasAttribute('checked')) {
+        expect(e).toEqualAttribute('value', RecipeState.Archived);
+        numChecked++;
+      }
+    });
+    expect(numChecked).toEqual(1);
+  });
 });
