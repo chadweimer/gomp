@@ -39,7 +39,9 @@ export class PageSearch {
   }
 
   componentDidRender() {
-    if (state.searchScrollPosition !== null && typeof (this.content.scrollToPoint) === typeof (Function)) {
+    if (typeof state.searchScrollPosition !== typeof undefined
+      && state.searchScrollPosition !== null
+      && typeof this.content.scrollToPoint === typeof Function) {
       this.content.scrollToPoint(0, state.searchScrollPosition);
     }
   }
