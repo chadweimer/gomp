@@ -9,13 +9,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type sqlRecipeDriverAdapter interface {
+// SQLRecipeDriverAdapter provides for injecting difference implementations of recipe field searching
+// for different database backends (e.g., full text search in pgsql)
+type SQLRecipeDriverAdapter interface {
 	GetSearchFields(filterFields []models.SearchField, query string) (string, []any)
 }
 
 type sqlRecipeDriver struct {
-	Db      *sqlx.DB
-	adapter sqlRecipeDriverAdapter
+	Db      DB
+	adapter SQLRecipeDriverAdapter
 }
 
 var supportedSearchFields = [...]models.SearchField{models.SearchFieldName, models.SearchFieldIngredients, models.SearchFieldDirections}
@@ -49,7 +51,7 @@ func (d *sqlRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
 		"FROM recipe WHERE id = $1"
 	recipe := new(models.Recipe)
-	if err := d.Db.Get(recipe, stmt, id); err != nil {
+	if err := sqlx.Get(d.Db, recipe, stmt, id); err != nil {
 		return nil, err
 	}
 
@@ -207,7 +209,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 
 	var total int64
 	countStmt := d.Db.Rebind("SELECT count(r.id) FROM recipe AS r " + whereStmt)
-	if err := d.Db.Get(&total, countStmt, whereArgs...); err != nil {
+	if err := sqlx.Get(d.Db, &total, countStmt, whereArgs...); err != nil {
 		return nil, 0, err
 	}
 
@@ -254,7 +256,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		whereStmt + orderStmt)
 
 	var recipes []models.RecipeCompact
-	if err = d.Db.Select(&recipes, selectStmt, selectArgs...); err != nil {
+	if err = sqlx.Select(d.Db, &recipes, selectStmt, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 

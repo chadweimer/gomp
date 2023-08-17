@@ -1,14 +1,26 @@
 package db
 
+//go:generate mockgen -destination=../mocks/db/driver-sql.gen.go -package=db . DB,SQLRecipeDriverAdapter
+
 import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
+
+// DB represents an abstraction for sqlx.DB
+type DB interface {
+	sqlx.Ext
+	io.Closer
+
+	// Beginx begins a transaction and returns an *sqlx.Tx instead of an *sql.Tx.
+	Beginx() (*sqlx.Tx, error)
+}
 
 // UserWithPasswordHash reprents a user including the password hash in the database
 type UserWithPasswordHash struct {
@@ -18,7 +30,7 @@ type UserWithPasswordHash struct {
 }
 
 type sqlDriver struct {
-	Db *sqlx.DB
+	Db DB
 
 	app     *sqlAppConfigurationDriver
 	recipes *sqlRecipeDriver
@@ -28,7 +40,7 @@ type sqlDriver struct {
 	users   *sqlUserDriver
 }
 
-func newSqlDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+func newSqlDriver(db DB, adapter SQLRecipeDriverAdapter) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
@@ -79,7 +91,7 @@ func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
 	return t, mapSqlErrors(err)
 }
 
-func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
+func tx(db DB, op func(sqlx.Ext) error) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err

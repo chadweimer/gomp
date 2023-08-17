@@ -5,6 +5,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/chadweimer/gomp/models"
 )
@@ -19,7 +20,7 @@ var ErrNotFound = errors.New("no record found matching supplied criteria")
 
 // Driver represents the interface of a backing data store
 type Driver interface {
-	Close() error
+	io.Closer
 
 	AppConfiguration() AppConfigurationDriver
 	Recipes() RecipeDriver

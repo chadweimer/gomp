@@ -11,7 +11,7 @@ import (
 )
 
 type sqlUserDriver struct {
-	Db *sqlx.DB
+	Db DB
 }
 
 func (d *sqlUserDriver) Authenticate(username, password string) (*models.User, error) {

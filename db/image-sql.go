@@ -8,7 +8,7 @@ import (
 )
 
 type sqlRecipeImageDriver struct {
-	Db *sqlx.DB
+	Db DB
 }
 
 func (d *sqlRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
