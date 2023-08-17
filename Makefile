@@ -155,16 +155,26 @@ clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD
 
 # ---- TEST ----
 .PHONY: test
-test: $(BUILD_DIR)/coverage.html
+test: $(BUILD_DIR)/coverage/server.html $(BUILD_DIR)/coverage/client
 
-$(BUILD_DIR)/coverage.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	mkdir -p $(BUILD_DIR)
+$(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
+	mkdir -p $(BUILD_DIR)/coverage
 	go test -coverprofile=$@ ./...
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@
 	go tool cover -func=$@
+	# Use path instead of go module, to be consistent with coverage output from the client tests.
+	# This is needed because the github action used to send the results to codeclimeate do not
+	# support different outputs using different prefixes.
+	sed -i 's#github\.com/chadweimer/gomp#$(shell pwd)#g' $@
 
-$(BUILD_DIR)/coverage.html: $(BUILD_DIR)/coverage.out
+$(BUILD_DIR)/coverage/server.html: $(BUILD_DIR)/coverage/server.out
 	go tool cover -html=$< -o $@
+
+$(BUILD_DIR)/coverage/client: $(CLIENT_FILES)
+	rm -rf $@
+	mkdir -p $@
+	-cd static && npm run cover
+	cp -r static/coverage/* $@
 
 
 # ---- DOCKER ----

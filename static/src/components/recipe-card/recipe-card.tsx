@@ -8,7 +8,8 @@ import { RecipeCompact, RecipeState } from '../../generated';
 export class RecipeCard {
   @Prop() recipe: RecipeCompact = {
     name: '',
-    thumbnailUrl: ''
+    thumbnailUrl: '',
+    averageRating: 0,
   };
   @Prop() size: 'large' | 'small' = 'large';
 

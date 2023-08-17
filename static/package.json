@@ -14,15 +14,16 @@
     "clean": "rm -fr ./www && rm -fr src/generated",
     "codegen": "rm -rf src/generated && openapi-generator-cli generate",
     "start": "stencil build --dev --watch --serve",
-    "test": "stencil test --spec --e2e",
-    "test.watch": "stencil test --spec --e2e --watch",
+    "test": "stencil test --config stencil.test.config.ts --spec --e2e",
+    "test.watch": "stencil test --config stencil.test.config.ts --spec --e2e --watch",
+    "cover": "stencil test --spec --coverage --coverageProvider v8",
     "generate": "stencil generate"
   },
   "devDependencies": {
     "@ionic/core": "^7.0.0",
     "@openapitools/openapi-generator-cli": "^2.7.0",
-    "@stencil/core": "^3.0.0",
     "@stencil-community/eslint-plugin": "^0.5.0",
+    "@stencil/core": "^3.0.0",
     "@stencil/store": "^2.0.0",
     "@types/jest": "^27.5.2",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -32,7 +33,7 @@
     "jest": "^27.0.0",
     "jest-cli": "^27.0.0",
     "jwt-decode": "^3.1.2",
-    "puppeteer": "^20.0.0",
+    "puppeteer": "^20.9.0",
     "typescript": "^4.7.0"
   }
 }
