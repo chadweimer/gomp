@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Test_Read(t *testing.T) {
+func Test_AppConfiguration_Read(t *testing.T) {
 	type testArgs struct {
 		title         string
 		dbError       error
@@ -60,7 +60,7 @@ func Test_Read(t *testing.T) {
 	}
 }
 
-func Test_Update(t *testing.T) {
+func Test_AppConfiguration_Update(t *testing.T) {
 	type testArgs struct {
 		title         string
 		dbError       error
