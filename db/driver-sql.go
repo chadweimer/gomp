@@ -1,7 +1,5 @@
 package db
 
-//go:generate mockgen -destination=../mocks/db/driver-sql.gen.go -package=db . DB,SQLRecipeDriverAdapter
-
 import (
 	"database/sql"
 	"errors"
