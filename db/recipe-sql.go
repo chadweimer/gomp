@@ -9,15 +9,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// SQLRecipeDriverAdapter provides for injecting difference implementations of recipe field searching
-// for different database backends (e.g., full text search in pgsql)
-type SQLRecipeDriverAdapter interface {
+type sqlRecipeDriverAdapter interface {
 	GetSearchFields(filterFields []models.SearchField, query string) (string, []any)
 }
 
 type sqlRecipeDriver struct {
-	Db      DB
-	adapter SQLRecipeDriverAdapter
+	Db      *sqlx.DB
+	adapter sqlRecipeDriverAdapter
 }
 
 var supportedSearchFields = [...]models.SearchField{models.SearchFieldName, models.SearchFieldIngredients, models.SearchFieldDirections}

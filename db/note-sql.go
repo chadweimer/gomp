@@ -6,7 +6,7 @@ import (
 )
 
 type sqlNoteDriver struct {
-	Db DB
+	Db *sqlx.DB
 }
 
 func (d *sqlNoteDriver) Create(note *models.Note) error {
