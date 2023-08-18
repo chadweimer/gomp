@@ -8,7 +8,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/jmoiron/sqlx"
 )
 
 func Test_AppConfiguration_Read(t *testing.T) {
@@ -30,8 +29,9 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlAppConfigurationDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlAppConfigurationDriver{db}
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_configuration")
 			if test.dbError == nil {
@@ -78,8 +78,9 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlAppConfigurationDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlAppConfigurationDriver{db}
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("UPDATE app_configuration SET title = \\$1").WithArgs(test.title)
@@ -103,14 +104,4 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			}
 		})
 	}
-}
-
-func getSqlAppConfigurationDriver(t *testing.T) (sqlAppConfigurationDriver, sqlmock.Sqlmock, *sql.DB) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-
-	dbx := sqlx.NewDb(db, "sqlmock")
-	return sqlAppConfigurationDriver{dbx}, mock, db
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/jmoiron/sqlx"
 )
 
 func Test_Note_Create(t *testing.T) {
@@ -33,8 +32,9 @@ func Test_Note_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlNoteDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlNoteDriver{db}
 
 			note := &models.Note{RecipeId: &test.recipeId, Text: test.text}
 			expectedId := rand.Int63()
@@ -87,8 +87,9 @@ func Test_Note_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlNoteDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlNoteDriver{db}
 
 			note := &models.Note{Id: &test.noteId, RecipeId: &test.recipeId, Text: test.text}
 
@@ -136,8 +137,9 @@ func Test_Note_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlNoteDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlNoteDriver{db}
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.noteId, test.recipeId)
@@ -182,8 +184,9 @@ func Test_Note_DeleteAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlNoteDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlNoteDriver{db}
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeId)
@@ -243,8 +246,9 @@ func Test_Note_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlNoteDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlNoteDriver{db}
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -286,14 +290,4 @@ func Test_Note_List(t *testing.T) {
 			}
 		})
 	}
-}
-
-func getSqlNoteDriver(t *testing.T) (sqlNoteDriver, sqlmock.Sqlmock, *sql.DB) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-
-	dbx := sqlx.NewDb(db, "sqlmock")
-	return sqlNoteDriver{dbx}, mock, db
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	gomock "github.com/golang/mock/gomock"
-	"github.com/jmoiron/sqlx"
 )
 
 func Test_Link_Create(t *testing.T) {
@@ -32,8 +31,9 @@ func Test_Link_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlLinkDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlLinkDriver{db}
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId)
@@ -79,8 +79,9 @@ func Test_Link_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlLinkDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlLinkDriver{db}
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId)
@@ -146,8 +147,9 @@ func Test_Link_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock, db := getSqlLinkDriver(t)
+			db, dbmock := getMockDb(t)
 			defer db.Close()
+			sut := sqlLinkDriver{db}
 
 			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -189,14 +191,4 @@ func Test_Link_List(t *testing.T) {
 			}
 		})
 	}
-}
-
-func getSqlLinkDriver(t *testing.T) (sqlLinkDriver, sqlmock.Sqlmock, *sql.DB) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-
-	dbx := sqlx.NewDb(db, "sqlmock")
-	return sqlLinkDriver{dbx}, mock, db
 }
