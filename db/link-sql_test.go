@@ -35,15 +35,13 @@ func Test_Link_Create(t *testing.T) {
 			sut, dbmock, db := getSqlLinkDriver(t)
 			defer db.Close()
 
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId)
 			if test.dbError == nil {
-				dbmock.ExpectBegin()
-				dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId).
-					WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(sqlmock.NewResult(1, 1))
 				dbmock.ExpectCommit()
 			} else {
-				dbmock.ExpectBegin()
-				dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId).
-					WillReturnError(test.dbError)
+				exec.WillReturnError(test.dbError)
 				dbmock.ExpectRollback()
 			}
 
@@ -84,15 +82,13 @@ func Test_Link_Delete(t *testing.T) {
 			sut, dbmock, db := getSqlLinkDriver(t)
 			defer db.Close()
 
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId)
 			if test.dbError == nil {
-				dbmock.ExpectBegin()
-				dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId).
-					WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(sqlmock.NewResult(1, 1))
 				dbmock.ExpectCommit()
 			} else {
-				dbmock.ExpectBegin()
-				dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId).
-					WillReturnError(test.dbError)
+				exec.WillReturnError(test.dbError)
 				dbmock.ExpectRollback()
 			}
 
@@ -153,16 +149,15 @@ func Test_Link_List(t *testing.T) {
 			sut, dbmock, db := getSqlLinkDriver(t)
 			defer db.Close()
 
+			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"})
 				for _, recipe := range *test.expectedResult {
 					rows.AddRow(recipe.Id, recipe.Name, recipe.State, recipe.CreatedAt, recipe.ModifiedAt, recipe.AverageRating, recipe.ThumbnailUrl)
 				}
-				dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId).
-					WillReturnRows(rows)
+				query.WillReturnRows(rows)
 			} else {
-				dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId).
-					WillReturnError(test.dbError)
+				query.WillReturnError(test.dbError)
 			}
 
 			// Act

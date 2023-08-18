@@ -33,12 +33,11 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			sut, dbmock, db := getSqlAppConfigurationDriver(t)
 			defer db.Close()
 
+			query := dbmock.ExpectQuery("SELECT \\* FROM app_configuration")
 			if test.dbError == nil {
-				dbmock.ExpectQuery("SELECT \\* FROM app_configuration").
-					WillReturnRows(sqlmock.NewRows([]string{"title"}).FromCSVString(test.title))
+				query.WillReturnRows(sqlmock.NewRows([]string{"title"}).FromCSVString(test.title))
 			} else {
-				dbmock.ExpectQuery("SELECT \\* FROM app_configuration").
-					WillReturnError(test.dbError)
+				query.WillReturnError(test.dbError)
 			}
 
 			// Act
@@ -82,15 +81,13 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			sut, dbmock, db := getSqlAppConfigurationDriver(t)
 			defer db.Close()
 
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("UPDATE app_configuration SET title = \\$1").WithArgs(test.title)
 			if test.dbError == nil {
-				dbmock.ExpectBegin()
-				dbmock.ExpectExec("UPDATE app_configuration SET title = \\$1").WithArgs(test.title).
-					WillReturnResult(sqlmock.NewResult(0, 1))
+				exec.WillReturnResult(sqlmock.NewResult(0, 1))
 				dbmock.ExpectCommit()
 			} else {
-				dbmock.ExpectBegin()
-				dbmock.ExpectExec("UPDATE app_configuration SET title = \\$1").WithArgs(test.title).
-					WillReturnError(test.dbError)
+				exec.WillReturnError(test.dbError)
 				dbmock.ExpectRollback()
 			}
 
