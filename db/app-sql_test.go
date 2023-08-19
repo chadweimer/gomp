@@ -37,7 +37,7 @@ func Test_AppConfiguration_Read(t *testing.T) {
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_configuration")
 			if test.dbError == nil {
-				query.WillReturnRows(sqlmock.NewRows([]string{"title"}).FromCSVString(test.title))
+				query.WillReturnRows(sqlmock.NewRows([]string{"title"}).AddRow(test.title))
 			} else {
 				query.WillReturnError(test.dbError)
 			}
@@ -52,10 +52,8 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if test.expectedError == nil {
-				if cfg.Title != test.title {
-					t.Errorf("expected: '%s', received: '%s'", test.title, cfg.Title)
-				}
+			if test.expectedError == nil && cfg.Title != test.title {
+				t.Errorf("expected: '%s', received: '%s'", test.title, cfg.Title)
 			}
 		})
 	}

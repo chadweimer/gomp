@@ -61,7 +61,7 @@ func Test_Note_Create(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if err == nil && *note.Id != expectedId {
+			if test.expectedError == nil && *note.Id != expectedId {
 				t.Errorf("expected note id %d, received %d", expectedId, *note.Id)
 			}
 		})
