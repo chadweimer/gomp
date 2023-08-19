@@ -5,6 +5,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/chadweimer/gomp/models"
 )
@@ -19,7 +20,7 @@ var ErrNotFound = errors.New("no record found matching supplied criteria")
 
 // Driver represents the interface of a backing data store
 type Driver interface {
-	Close() error
+	io.Closer
 
 	AppConfiguration() AppConfigurationDriver
 	Recipes() RecipeDriver
@@ -217,7 +218,7 @@ type RecipeImageDriver interface {
 
 	// UpdateMainImage sets the id of the main image for the specified recipe
 	// using a dedicated transaction that is committed if there are not errors.
-	UpdateMainImage(image *models.RecipeImage) error
+	UpdateMainImage(recipeId, id int64) error
 
 	// List returns a RecipeImage slice that contains data for all images
 	// attached to the specified recipe.

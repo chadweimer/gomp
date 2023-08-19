@@ -1,6 +1,7 @@
 module github.com/chadweimer/gomp
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/aws/aws-sdk-go v1.44.285
 	github.com/deepmap/oapi-codegen v1.13.0
 	github.com/disintegration/imaging v1.6.2
