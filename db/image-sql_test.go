@@ -105,7 +105,7 @@ func Test_Image_Read(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.imageId, test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "name", "url", "thumbnail_url", "created_at", "modified_at"}).
-					AddRow(test.imageId, test.recipeId, "My Image", "Mu Url", "My Thumbnail Url", time.Now(), time.Now())
+					AddRow(test.imageId, test.recipeId, "My Image", "My Url", "My Thumbnail Url", time.Now(), time.Now())
 				query.WillReturnRows(rows)
 			} else {
 				query.WillReturnError(test.dbError)
@@ -155,7 +155,7 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\(SELECT image_id FROM recipe WHERE id = \\$1\\)").WithArgs(test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "name", "url", "thumbnail_url", "created_at", "modified_at"}).
-					AddRow(test.imageId, test.recipeId, "My Image", "Mu Url", "My Thumbnail Url", time.Now(), time.Now())
+					AddRow(test.imageId, test.recipeId, "My Image", "My Url", "My Thumbnail Url", time.Now(), time.Now())
 				query.WillReturnRows(rows)
 			} else {
 				query.WillReturnError(test.dbError)
