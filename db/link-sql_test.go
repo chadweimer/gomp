@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -38,7 +40,7 @@ func Test_Link_Create(t *testing.T) {
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId)
 			if test.dbError == nil {
-				exec.WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
 			} else {
 				exec.WillReturnError(test.dbError)
@@ -49,7 +51,7 @@ func Test_Link_Create(t *testing.T) {
 			err := sut.Create(test.srcId, test.dstId)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -86,7 +88,7 @@ func Test_Link_Delete(t *testing.T) {
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId)
 			if test.dbError == nil {
-				exec.WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
 			} else {
 				exec.WillReturnError(test.dbError)
@@ -97,7 +99,7 @@ func Test_Link_Delete(t *testing.T) {
 			err := sut.Delete(test.srcId, test.dstId)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -120,21 +122,21 @@ func Test_Link_List(t *testing.T) {
 	tests := []testArgs{
 		{1, &[]models.RecipeCompact{
 			{
-				Id:            new(int64),
+				Id:            getPtr[int64](1),
 				Name:          "My Linked Recipe",
-				State:         new(models.RecipeState),
+				State:         getPtr(models.Active),
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
-				AverageRating: new(float32),
+				AverageRating: getPtr[float32](2.5),
 				ThumbnailUrl:  nil,
 			},
 			{
-				Id:            new(int64),
+				Id:            getPtr[int64](2),
 				Name:          "My Other Linked Recipe",
-				State:         new(models.RecipeState),
+				State:         getPtr(models.Archived),
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
-				AverageRating: new(float32),
+				AverageRating: getPtr[float32](4),
 				ThumbnailUrl:  nil,
 			},
 		}, nil, nil},
@@ -166,7 +168,7 @@ func Test_Link_List(t *testing.T) {
 			result, err := sut.List(test.recipeId)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {

@@ -218,7 +218,7 @@ type RecipeImageDriver interface {
 
 	// UpdateMainImage sets the id of the main image for the specified recipe
 	// using a dedicated transaction that is committed if there are not errors.
-	UpdateMainImage(image *models.RecipeImage) error
+	UpdateMainImage(recipeId, id int64) error
 
 	// List returns a RecipeImage slice that contains data for all images
 	// attached to the specified recipe.

@@ -55,16 +55,16 @@ func (d *sqlRecipeImageDriver) ReadMainImage(recipeId int64) (*models.RecipeImag
 	})
 }
 
-func (d *sqlRecipeImageDriver) UpdateMainImage(image *models.RecipeImage) error {
+func (d *sqlRecipeImageDriver) UpdateMainImage(recipeId, id int64) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.updateMainImageImpl(image, db)
+		return d.updateMainImageImpl(recipeId, id, db)
 	})
 }
 
-func (*sqlRecipeImageDriver) updateMainImageImpl(image *models.RecipeImage, db sqlx.Execer) error {
+func (*sqlRecipeImageDriver) updateMainImageImpl(recipeId, id int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"UPDATE recipe SET image_id = $1 WHERE id = $2",
-		image.Id, image.RecipeId)
+		id, recipeId)
 
 	return err
 }
@@ -99,7 +99,7 @@ func (d *sqlRecipeImageDriver) deleteImpl(recipeId, id int64, db sqlx.Execer) er
 func (*sqlRecipeImageDriver) setMainImageIfNecessary(recipeId int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"UPDATE recipe "+
-			"SET image_id = (SELECT recipe_image.id FROM recipe_image WHERE recipe_image.recipe_id = recipe.id LIMIT 1)"+
+			"SET image_id = (SELECT recipe_image.id FROM recipe_image WHERE recipe_image.recipe_id = recipe.id LIMIT 1) "+
 			"WHERE id = $1 AND image_id IS NULL",
 		recipeId)
 	return err

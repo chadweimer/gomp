@@ -27,7 +27,7 @@ func (h apiHandler) GetMainImage(_ context.Context, request GetMainImageRequestO
 
 func (h apiHandler) SetMainImage(_ context.Context, request SetMainImageRequestObject) (SetMainImageResponseObject, error) {
 	image := models.RecipeImage{Id: request.Body, RecipeId: &request.RecipeId}
-	if err := h.db.Images().UpdateMainImage(&image); err != nil {
+	if err := h.db.Images().UpdateMainImage(*image.RecipeId, *image.Id); err != nil {
 		return nil, err
 	}
 

@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -44,7 +46,7 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			cfg, err := sut.Read()
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -85,7 +87,7 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("UPDATE app_configuration SET title = \\$1").WithArgs(test.title)
 			if test.dbError == nil {
-				exec.WillReturnResult(sqlmock.NewResult(0, 1))
+				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
 			} else {
 				exec.WillReturnError(test.dbError)
@@ -96,7 +98,7 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			err := sut.Update(&models.AppConfiguration{Title: test.title})
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {

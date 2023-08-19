@@ -2,6 +2,8 @@ package db
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -53,7 +55,7 @@ func Test_Note_Create(t *testing.T) {
 			err := sut.Create(note)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -96,7 +98,7 @@ func Test_Note_Update(t *testing.T) {
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("UPDATE recipe_note SET note = \\$1 WHERE ID = \\$2 AND recipe_id = \\$3").WithArgs(note.Text, note.Id, note.RecipeId)
 			if test.dbError == nil {
-				exec.WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
 			} else {
 				exec.WillReturnError(test.dbError)
@@ -107,7 +109,7 @@ func Test_Note_Update(t *testing.T) {
 			err := sut.Update(note)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -144,7 +146,7 @@ func Test_Note_Delete(t *testing.T) {
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.noteId, test.recipeId)
 			if test.dbError == nil {
-				exec.WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
 			} else {
 				exec.WillReturnError(test.dbError)
@@ -155,7 +157,7 @@ func Test_Note_Delete(t *testing.T) {
 			err := sut.Delete(test.recipeId, test.noteId)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -191,7 +193,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeId)
 			if test.dbError == nil {
-				exec.WillReturnResult(sqlmock.NewResult(1, 1))
+				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
 			} else {
 				exec.WillReturnError(test.dbError)
@@ -202,7 +204,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			err := sut.DeleteAll(test.recipeId)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
@@ -225,13 +227,13 @@ func Test_Note_List(t *testing.T) {
 	tests := []testArgs{
 		{1, &[]models.Note{
 			{
-				Id:         new(int64),
+				Id:         getPtr[int64](1),
 				Text:       "My Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
 			},
 			{
-				Id:         new(int64),
+				Id:         getPtr[int64](2),
 				Text:       "My Other Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
@@ -265,7 +267,7 @@ func Test_Note_List(t *testing.T) {
 			result, err := sut.List(test.recipeId)
 
 			// Assert
-			if err != test.expectedError {
+			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
