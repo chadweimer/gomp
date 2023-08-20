@@ -11,6 +11,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/utils"
 	gomock "github.com/golang/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -295,14 +296,14 @@ func Test_User_List(t *testing.T) {
 	tests := []testArgs{
 		{&[]models.User{
 			{
-				Id:          getPtr[int64](1),
+				Id:          utils.GetPtr[int64](1),
 				Username:    "user@example.com",
 				AccessLevel: models.Editor,
 				CreatedAt:   &now,
 				ModifiedAt:  &now,
 			},
 			{
-				Id:          getPtr[int64](2),
+				Id:          utils.GetPtr[int64](2),
 				Username:    "admin@example.com",
 				AccessLevel: models.Admin,
 				CreatedAt:   &now,

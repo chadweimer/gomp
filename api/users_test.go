@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -11,6 +12,7 @@ import (
 	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
+	"github.com/chadweimer/gomp/utils"
 	"github.com/golang/mock/gomock"
 )
 
@@ -217,6 +219,66 @@ func Test_AddUser(t *testing.T) {
 				}
 				if models.User(resp) != expectedUser {
 					t.Errorf("expected user: %v, actual user: %v", expectedUser, resp)
+				}
+			}
+		})
+	}
+}
+
+func Test_SaveUser(t *testing.T) {
+	type getUserTest struct {
+		currentUserId    int64
+		userId           *int64
+		requestUserId    int64
+		username         string
+		accessLevel      models.AccessLevel
+		expectedDbError  error
+		expectedError    error
+		expectedResponse reflect.Type
+	}
+
+	// Arrange
+	tests := []getUserTest{
+		{1, utils.GetPtr[int64](1), 1, "user1", models.Admin, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+		{1, nil, 1, "user1", models.Admin, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+
+		{1, utils.GetPtr[int64](1), 1, "user1", models.Editor, nil, nil, reflect.TypeOf(SaveUser403Response{})},
+		{1, nil, 1, "user1", models.Editor, nil, nil, reflect.TypeOf(SaveUser403Response{})},
+
+		{1, utils.GetPtr[int64](2), 2, "user2", models.Editor, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+		{1, nil, 2, "user2", models.Editor, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+
+		{1, utils.GetPtr[int64](2), 2, "user2", models.Viewer, db.ErrNotFound, db.ErrNotFound, nil},
+
+		{1, utils.GetPtr[int64](2), 3, "user2", models.Viewer, nil, errMismatchedId, nil},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, usersDriver := getMockUsersApi(ctrl)
+			expectedUser := models.User{
+				Id:          test.userId,
+				Username:    test.username,
+				AccessLevel: test.accessLevel,
+			}
+			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			if test.expectedDbError != nil {
+				usersDriver.EXPECT().Update(gomock.Any()).Return(test.expectedDbError)
+			} else {
+				usersDriver.EXPECT().Update(&expectedUser).MaxTimes(1).Return(nil)
+			}
+
+			// Act
+			resp, err := api.SaveUser(ctx, SaveUserRequestObject{UserId: test.requestUserId, Body: &expectedUser})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("test %v: expected error: %v, received error '%v'", test, test.expectedError, err)
+			} else if err == nil {
+				if reflect.TypeOf(resp) != test.expectedResponse {
+					t.Errorf("test %v: expected response: %v, actual response: %v", test, test.expectedResponse, reflect.TypeOf(resp))
 				}
 			}
 		})

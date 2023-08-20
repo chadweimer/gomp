@@ -15,7 +15,3 @@ func getMockDb(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock) {
 
 	return sqlx.NewDb(db, "sqlmock"), mock
 }
-
-func getPtr[T any](str T) *T {
-	return &str
-}

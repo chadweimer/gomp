@@ -11,6 +11,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/utils"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -336,18 +337,18 @@ func Test_Image_List(t *testing.T) {
 	tests := []testArgs{
 		{1, &[]models.RecipeImage{
 			{
-				Id:           getPtr[int64](1),
-				Name:         getPtr("My Image"),
-				Url:          getPtr("My Url"),
-				ThumbnailUrl: getPtr("My Thumbnail Url"),
+				Id:           utils.GetPtr[int64](1),
+				Name:         utils.GetPtr("My Image"),
+				Url:          utils.GetPtr("My Url"),
+				ThumbnailUrl: utils.GetPtr("My Thumbnail Url"),
 				CreatedAt:    &now,
 				ModifiedAt:   &now,
 			},
 			{
-				Id:           getPtr[int64](2),
-				Name:         getPtr("My Other Image"),
-				Url:          getPtr("My Url"),
-				ThumbnailUrl: getPtr("My Thumbnail Url"),
+				Id:           utils.GetPtr[int64](2),
+				Name:         utils.GetPtr("My Other Image"),
+				Url:          utils.GetPtr("My Url"),
+				ThumbnailUrl: utils.GetPtr("My Thumbnail Url"),
 				CreatedAt:    &now,
 				ModifiedAt:   &now,
 			},
