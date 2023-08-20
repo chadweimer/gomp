@@ -1,6 +1,6 @@
 package utils
 
-// GetPtr returns a pointer to the specific object
-func GetPtr[T any](str T) *T {
-	return &str
+// GetPtr returns a pointer to the specified object
+func GetPtr[T any](obj T) *T {
+	return &obj
 }
