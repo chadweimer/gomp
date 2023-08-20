@@ -62,10 +62,8 @@ func Test_GetUser(t *testing.T) {
 				} else if *resp.Id != *expectedUser.Id {
 					t.Errorf("expected id: %d, actual id: %d", *expectedUser.Id, *resp.Id)
 				}
-				if resp.Id == nil {
-					t.Error("expected non-null username")
-				} else if resp.Username != expectedUser.Username {
-					t.Errorf("expected id: %s, actual id: %s", expectedUser.Username, resp.Username)
+				if resp.Username != expectedUser.Username {
+					t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
 				}
 			}
 		})
@@ -121,10 +119,8 @@ func Test_GetCurrentUser(t *testing.T) {
 				} else if *resp.Id != *expectedUser.Id {
 					t.Errorf("expected id: %d, actual id: %d", *expectedUser.Id, *resp.Id)
 				}
-				if resp.Id == nil {
-					t.Error("expected non-null username")
-				} else if resp.Username != expectedUser.Username {
-					t.Errorf("expected id: %s, actual id: %s", expectedUser.Username, resp.Username)
+				if resp.Username != expectedUser.Username {
+					t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
 				}
 			}
 		})
@@ -172,6 +168,55 @@ func Test_GetAllUsers(t *testing.T) {
 				}
 				if len(typedResp) != len(test.users) {
 					t.Errorf("test %v: expected length: %d, actual length: %d", test, len(test.users), len(typedResp))
+				}
+			}
+		})
+	}
+}
+
+func Test_AddUser(t *testing.T) {
+	type getUserTest struct {
+		username    string
+		accessLevel models.AccessLevel
+		password    string
+		expectError bool
+	}
+
+	// Arrange
+	tests := []getUserTest{
+		{"user1", models.Editor, "password", false},
+		{"user2", models.Admin, "password", false},
+		{"", models.Viewer, "", true},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, usersDriver := getMockUsersApi(ctrl)
+			expectedUser := models.User{
+				Username:    test.username,
+				AccessLevel: test.accessLevel,
+			}
+			if test.expectError {
+				usersDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrAuthenticationFailed)
+			} else {
+				usersDriver.EXPECT().Create(&expectedUser, test.password).Return(nil)
+			}
+
+			// Act
+			resp, err := api.AddUser(context.Background(), AddUserRequestObject{Body: &UserWithPassword{User: expectedUser, Password: test.password}})
+
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				resp, ok := resp.(AddUser201JSONResponse)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+				if models.User(resp) != expectedUser {
+					t.Errorf("expected user: %v, actual user: %v", expectedUser, resp)
 				}
 			}
 		})

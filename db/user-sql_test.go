@@ -18,7 +18,7 @@ import (
 func Test_User_Create(t *testing.T) {
 	type testArgs struct {
 		username      string
-		passwordHash  string
+		password      string
 		accessLevel   models.AccessLevel
 		dbError       error
 		expectedError error
@@ -26,8 +26,8 @@ func Test_User_Create(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{"user@example.com", "somehash", models.Editor, nil, nil},
-		{"admin@example.com", "somehash", models.Admin, nil, nil},
+		{"user@example.com", "password", models.Editor, nil, nil},
+		{"admin@example.com", "password", models.Admin, nil, nil},
 		{"", "", models.Viewer, sql.ErrNoRows, ErrNotFound},
 		{"", "", models.Viewer, sql.ErrConnDone, sql.ErrConnDone},
 	}
@@ -41,18 +41,15 @@ func Test_User_Create(t *testing.T) {
 			defer db.Close()
 			sut := sqlUserDriver{db}
 
-			user := &UserWithPasswordHash{
-				User: models.User{
-					Username:    test.username,
-					AccessLevel: test.accessLevel,
-				},
-				PasswordHash: test.passwordHash,
+			user := &models.User{
+				Username:    test.username,
+				AccessLevel: test.accessLevel,
 			}
 			expectedId := rand.Int63()
 
 			dbmock.ExpectBegin()
 			query := dbmock.ExpectQuery("INSERT INTO app_user \\(username, password_hash, access_level\\) VALUES \\(\\$1, \\$2, \\$3\\) RETURNING id").
-				WithArgs(user.Username, user.PasswordHash, user.AccessLevel)
+				WithArgs(user.Username, passwordHashArgument(test.password), user.AccessLevel)
 			if test.dbError == nil {
 				query.WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedId))
 				dbmock.ExpectCommit()
@@ -62,7 +59,7 @@ func Test_User_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(user)
+			err := sut.Create(user, test.password)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -365,4 +362,15 @@ func Test_User_List(t *testing.T) {
 			}
 		})
 	}
+}
+
+type passwordHashArgument string
+
+func (p passwordHashArgument) Match(value driver.Value) bool {
+	valueBytes, ok := value.([]byte)
+	if !ok {
+		return false
+	}
+
+	return verifyPassword(valueBytes, string(p))
 }

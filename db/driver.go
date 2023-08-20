@@ -156,7 +156,7 @@ type UserDriver interface {
 
 	// Create stores the user in the database as a new record using
 	// a dedicated transaction that is committed if there are not errors.
-	Create(user *UserWithPasswordHash) error
+	Create(user *models.User, password string) error
 
 	// Read retrieves the information about the user from the database, if found.
 	// If no user exists with the specified ID, a NoRecordFound error is returned.
