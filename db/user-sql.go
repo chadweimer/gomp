@@ -381,7 +381,7 @@ func (d *sqlUserDriver) ListSearchFilters(userId int64) (*[]models.SavedSearchFi
 
 func verifyPassword(user *UserWithPasswordHash, password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return errors.New("username or password invalid")
+		return ErrAuthenticationFailed
 	}
 
 	return nil

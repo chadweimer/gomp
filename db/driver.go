@@ -16,6 +16,9 @@ import (
 // found matching the criteria specified by the caller
 var ErrNotFound = errors.New("no record found matching supplied criteria")
 
+// ErrAuthenticationFailed represents the error when authenticating fails
+var ErrAuthenticationFailed = errors.New("username or password invalid")
+
 // ---- End Standard Errors ----
 
 // Driver represents the interface of a backing data store
