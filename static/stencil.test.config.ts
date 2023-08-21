@@ -17,10 +17,10 @@ export const config: Config = {
   testing: {
     browserHeadless: 'new',
     coveragePathIgnorePatterns: [
-      "<rootDir>/node_modules/",
-      "<rootDir>/www/",
-      "<rootDir>/src/generated/",
-      "stencil.*.ts"
+      '<rootDir>/node_modules/',
+      '<rootDir>/www/',
+      '<rootDir>/src/generated/',
+      'stencil.*.ts'
     ],
   },
 };
