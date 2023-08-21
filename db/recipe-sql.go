@@ -164,7 +164,7 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 
 func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := "WHERE r.current_state = 'active'"
-	whereArgs := make([]interface{}, 0)
+	whereArgs := make([]any, 0)
 	var err error
 
 	if len(filter.States) > 0 {

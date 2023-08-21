@@ -28,7 +28,7 @@ type sqliteRecipeDriverAdapter struct{}
 
 func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
-	fieldArgs := make([]interface{}, 0)
+	fieldArgs := make([]any, 0)
 	for _, field := range supportedSearchFields {
 		if lo.Contains(filterFields, field) {
 			if fieldStr != "" {
