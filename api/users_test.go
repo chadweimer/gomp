@@ -74,16 +74,17 @@ func Test_GetUser(t *testing.T) {
 
 func Test_GetCurrentUser(t *testing.T) {
 	type testArgs struct {
-		userId      int64
-		username    string
-		expectError bool
+		userId           *int64
+		username         string
+		expectedError    error
+		expectedResponse reflect.Type
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, "user1", false},
-		{2, "user2", false},
-		{3, "", true},
+		{utils.GetPtr[int64](1), "user1", nil, reflect.TypeOf(GetCurrentUser200JSONResponse{})},
+		{nil, "", nil, reflect.TypeOf(GetCurrentUser401Response{})},
+		{utils.GetPtr[int64](3), "", db.ErrNotFound, nil},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -93,15 +94,18 @@ func Test_GetCurrentUser(t *testing.T) {
 			api, usersDriver := getMockUsersApi(ctrl)
 			expectedUser := &db.UserWithPasswordHash{
 				User: models.User{
-					Id:       &test.userId,
+					Id:       test.userId,
 					Username: test.username,
 				},
 			}
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
-			if test.expectError {
-				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, db.ErrNotFound)
-			} else {
-				usersDriver.EXPECT().Read(test.userId).Return(expectedUser, nil)
+			ctx := context.Background()
+			if test.userId != nil {
+				ctx = context.WithValue(ctx, currentUserIdCtxKey, *test.userId)
+			}
+			if test.expectedError != nil {
+				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
+			} else if test.userId != nil {
+				usersDriver.EXPECT().Read(*test.userId).Return(expectedUser, nil)
 				usersDriver.EXPECT().Read(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
@@ -109,20 +113,25 @@ func Test_GetCurrentUser(t *testing.T) {
 			resp, err := api.GetCurrentUser(ctx, GetCurrentUserRequestObject{})
 
 			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("test %v: expected error '%v', received error '%v'", test, test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(GetCurrentUser200JSONResponse)
-				if !ok {
-					t.Errorf("test %v: invalid response", test)
+				if reflect.TypeOf(resp) != test.expectedResponse {
+					t.Errorf("test %v: expected response: %v, actual response: %v", test, test.expectedResponse, reflect.TypeOf(resp))
 				}
-				if resp.Id == nil {
-					t.Error("expected non-null id")
-				} else if *resp.Id != *expectedUser.Id {
-					t.Errorf("expected id: %d, actual id: %d", *expectedUser.Id, *resp.Id)
-				}
-				if resp.Username != expectedUser.Username {
-					t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
+				if test.expectedResponse == reflect.TypeOf(GetCurrentUser200JSONResponse{}) {
+					resp, ok := resp.(GetCurrentUser200JSONResponse)
+					if !ok {
+						t.Errorf("test %v: invalid response", test)
+					}
+					if resp.Id == nil {
+						t.Error("expected non-null id")
+					} else if *resp.Id != *expectedUser.Id {
+						t.Errorf("expected id: %d, actual id: %d", *expectedUser.Id, *resp.Id)
+					}
+					if resp.Username != expectedUser.Username {
+						t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
+					}
 				}
 			}
 		})
