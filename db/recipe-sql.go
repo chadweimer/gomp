@@ -46,20 +46,22 @@ func (d *sqlRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Ext) error {
 }
 
 func (d *sqlRecipeDriver) Read(id int64) (*models.Recipe, error) {
-	stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
-		"FROM recipe WHERE id = $1"
-	recipe := new(models.Recipe)
-	if err := sqlx.Get(d.Db, recipe, stmt, id); err != nil {
-		return nil, err
-	}
+	return get(d.Db, func(q sqlx.Queryer) (*models.Recipe, error) {
+		stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
+			"FROM recipe WHERE id = $1"
+		recipe := new(models.Recipe)
+		if err := sqlx.Get(q, recipe, stmt, id); err != nil {
+			return nil, err
+		}
 
-	tags, err := d.ListTags(id)
-	if err != nil {
-		return nil, fmt.Errorf("reading tags for recipe: %w", err)
-	}
-	recipe.Tags = *tags
+		tags, err := d.ListTags(id)
+		if err != nil {
+			return nil, fmt.Errorf("reading tags for recipe: %w", err)
+		}
+		recipe.Tags = *tags
 
-	return recipe, nil
+		return recipe, nil
+	})
 }
 
 func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
@@ -70,7 +72,7 @@ func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
 
 func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) error {
 	if recipe.Id == nil {
-		return errors.New("recipe id is required")
+		return ErrMissingId
 	}
 
 	_, err := db.Exec(

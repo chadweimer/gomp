@@ -47,7 +47,7 @@ func Test_AppConfiguration_Read(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -97,7 +97,7 @@ func Test_AppConfiguration_Update(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)

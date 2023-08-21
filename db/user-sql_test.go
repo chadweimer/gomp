@@ -64,7 +64,7 @@ func Test_User_Create(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -113,7 +113,7 @@ func Test_User_Read(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -169,7 +169,7 @@ func Test_User_Authenticate(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -228,7 +228,7 @@ func Test_User_Update(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -275,7 +275,7 @@ func Test_User_Delete(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -286,7 +286,7 @@ func Test_User_Delete(t *testing.T) {
 
 func Test_User_List(t *testing.T) {
 	type testArgs struct {
-		expectedResult *[]models.User
+		expectedResult []models.User
 		dbError        error
 		expectedError  error
 	}
@@ -294,7 +294,7 @@ func Test_User_List(t *testing.T) {
 	// Arrange
 	now := time.Now()
 	tests := []testArgs{
-		{&[]models.User{
+		{[]models.User{
 			{
 				Id:          utils.GetPtr[int64](1),
 				Username:    "user@example.com",
@@ -326,7 +326,7 @@ func Test_User_List(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC")
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "username", "access_level", "created_at", "modified_at"})
-				for _, user := range *test.expectedResult {
+				for _, user := range test.expectedResult {
 					rows.AddRow(user.Id, user.Username, user.AccessLevel, user.CreatedAt, user.ModifiedAt)
 				}
 				query.WillReturnRows(rows)
@@ -339,7 +339,7 @@ func Test_User_List(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -351,10 +351,10 @@ func Test_User_List(t *testing.T) {
 			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(*test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(*test.expectedResult), len(*result))
+				} else if len(test.expectedResult) != len(*result) {
+					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
 				} else {
-					for i, user := range *test.expectedResult {
+					for i, user := range test.expectedResult {
 						if user.Username != (*result)[i].Username {
 							t.Errorf("names don't match, expected: %s, received: %s", user.Username, (*result)[i].Username)
 						}

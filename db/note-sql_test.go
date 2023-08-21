@@ -57,7 +57,7 @@ func Test_Note_Create(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -111,7 +111,7 @@ func Test_Note_Update(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -159,7 +159,7 @@ func Test_Note_Delete(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -206,7 +206,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -218,7 +218,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 func Test_Note_List(t *testing.T) {
 	type testArgs struct {
 		recipeId       int64
-		expectedResult *[]models.Note
+		expectedResult []models.Note
 		dbError        error
 		expectedError  error
 	}
@@ -226,7 +226,7 @@ func Test_Note_List(t *testing.T) {
 	// Arrange
 	now := time.Now()
 	tests := []testArgs{
-		{1, &[]models.Note{
+		{1, []models.Note{
 			{
 				Id:         utils.GetPtr[int64](1),
 				Text:       "My Note",
@@ -256,7 +256,7 @@ func Test_Note_List(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "note", "created_at", "modified_at"})
-				for _, note := range *test.expectedResult {
+				for _, note := range test.expectedResult {
 					rows.AddRow(note.Id, test.recipeId, note.Text, note.CreatedAt, note.ModifiedAt)
 				}
 				query.WillReturnRows(rows)
@@ -269,7 +269,7 @@ func Test_Note_List(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -281,10 +281,10 @@ func Test_Note_List(t *testing.T) {
 			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(*test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(*test.expectedResult), len(*result))
+				} else if len(test.expectedResult) != len(*result) {
+					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
 				} else {
-					for i, note := range *test.expectedResult {
+					for i, note := range test.expectedResult {
 						if note.Text != (*result)[i].Text {
 							t.Errorf("names don't match, expected: %s, received: %s", note.Text, (*result)[i].Text)
 						}

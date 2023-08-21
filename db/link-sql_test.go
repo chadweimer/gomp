@@ -53,7 +53,7 @@ func Test_Link_Create(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -101,7 +101,7 @@ func Test_Link_Delete(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -113,7 +113,7 @@ func Test_Link_Delete(t *testing.T) {
 func Test_Link_List(t *testing.T) {
 	type testArgs struct {
 		recipeId       int64
-		expectedResult *[]models.RecipeCompact
+		expectedResult []models.RecipeCompact
 		dbError        error
 		expectedError  error
 	}
@@ -121,7 +121,7 @@ func Test_Link_List(t *testing.T) {
 	// Arrange
 	now := time.Now()
 	tests := []testArgs{
-		{1, &[]models.RecipeCompact{
+		{1, []models.RecipeCompact{
 			{
 				Id:            utils.GetPtr[int64](1),
 				Name:          "My Linked Recipe",
@@ -157,7 +157,7 @@ func Test_Link_List(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"})
-				for _, recipe := range *test.expectedResult {
+				for _, recipe := range test.expectedResult {
 					rows.AddRow(recipe.Id, recipe.Name, recipe.State, recipe.CreatedAt, recipe.ModifiedAt, recipe.AverageRating, recipe.ThumbnailUrl)
 				}
 				query.WillReturnRows(rows)
@@ -170,7 +170,7 @@ func Test_Link_List(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -182,10 +182,10 @@ func Test_Link_List(t *testing.T) {
 			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(*test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(*test.expectedResult), len(*result))
+				} else if len(test.expectedResult) != len(*result) {
+					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
 				} else {
-					for i, recipe := range *test.expectedResult {
+					for i, recipe := range test.expectedResult {
 						if recipe.Name != (*result)[i].Name {
 							t.Errorf("names don't match, expected: %s, received: %s", recipe.Name, (*result)[i].Name)
 						}

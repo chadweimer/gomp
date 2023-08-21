@@ -193,7 +193,7 @@ func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) err
 
 func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
 	if filter.UserId == nil {
-		return errors.New("user id is required")
+		return ErrMissingId
 	}
 
 	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
@@ -324,10 +324,10 @@ func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) err
 
 func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
 	if filter.Id == nil {
-		return errors.New("filter id is required")
+		return ErrMissingId
 	}
 	if filter.UserId == nil {
-		return errors.New("user id is required")
+		return ErrMissingId
 	}
 
 	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
