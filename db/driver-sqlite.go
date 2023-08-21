@@ -12,6 +12,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/lo"
 
 	// sqlite database driver
 	_ "modernc.org/sqlite"
@@ -29,7 +30,7 @@ func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchFie
 	fieldStr := ""
 	fieldArgs := make([]interface{}, 0)
 	for _, field := range supportedSearchFields {
-		if containsField(filterFields, field) {
+		if lo.Contains(filterFields, field) {
 			if fieldStr != "" {
 				fieldStr += " OR "
 			}

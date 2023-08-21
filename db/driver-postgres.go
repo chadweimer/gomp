@@ -13,6 +13,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
+	"github.com/samber/lo"
 
 	// postgres database driver
 	_ "github.com/lib/pq"
@@ -30,7 +31,7 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
 	for _, field := range supportedSearchFields {
-		if containsField(filterFields, field) {
+		if lo.Contains(filterFields, field) {
 			if fieldStr != "" {
 				fieldStr += " OR "
 			}

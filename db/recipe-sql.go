@@ -299,12 +299,3 @@ func (d *sqlRecipeDriver) ListTags(recipeId int64) (*[]string, error) {
 		return &tags, nil
 	})
 }
-
-func containsField(fields []models.SearchField, field models.SearchField) bool {
-	for _, a := range fields {
-		if a == field {
-			return true
-		}
-	}
-	return false
-}
