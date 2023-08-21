@@ -1,6 +1,6 @@
 package db
 
-//go:generate mockgen -destination=../mocks/db/driver.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,RecipeImageDriver,UserDriver
+//go:generate mockgen -destination=../mocks/db/driver.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
 
 import (
 	"errors"
