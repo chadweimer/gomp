@@ -128,7 +128,7 @@ func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
 
 func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		var count int64
+		count := -1
 		err := sqlx.Get(db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
 		if errors.Is(err, sql.ErrNoRows) || count == 0 {

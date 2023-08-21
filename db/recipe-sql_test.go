@@ -44,6 +44,18 @@ func Test_Recipe_Create(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Tags:                []string{"A", "B"},
+			}, nil, nil,
+		},
+		{
+			models.Recipe{
+				Name:                "My Recipe",
+				Ingredients:         "My Ingredients",
+				Directions:          "My Directions",
+				NutritionInfo:       "My Nutrition Info",
+				ServingSize:         "My Serving Size",
+				StorageInstructions: "My Storage Instructions",
+				SourceUrl:           "My Url",
 			}, sql.ErrNoRows, ErrNotFound,
 		},
 		{
@@ -73,6 +85,10 @@ func Test_Recipe_Create(t *testing.T) {
 				WithArgs(test.recipe.Name, test.recipe.ServingSize, test.recipe.NutritionInfo, test.recipe.Ingredients, test.recipe.Directions, test.recipe.StorageInstructions, test.recipe.SourceUrl)
 			if test.dbError == nil {
 				query.WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedId))
+				for _, tag := range test.recipe.Tags {
+					dbmock.ExpectExec("INSERT INTO recipe_tag \\(recipe_id, tag\\) VALUES \\(\\$1, \\$2\\)").WithArgs(expectedId, tag).
+						WillReturnResult(driver.RowsAffected(1))
+				}
 				dbmock.ExpectCommit()
 			} else {
 				query.WillReturnError(test.dbError)
@@ -169,6 +185,19 @@ func Test_Recipe_Update(t *testing.T) {
 		},
 		{
 			models.Recipe{
+				Id:                  utils.GetPtr[int64](1),
+				Name:                "My Recipe",
+				Ingredients:         "My Ingredients",
+				Directions:          "My Directions",
+				NutritionInfo:       "My Nutrition Info",
+				ServingSize:         "My Serving Size",
+				StorageInstructions: "My Storage Instructions",
+				SourceUrl:           "My Url",
+				Tags:                []string{"A", "B"},
+			}, nil, nil,
+		},
+		{
+			models.Recipe{
 				Id:                  utils.GetPtr[int64](2),
 				Name:                "My Recipe",
 				Ingredients:         "My Ingredients",
@@ -222,6 +251,10 @@ func Test_Recipe_Update(t *testing.T) {
 				if test.dbError == nil {
 					exec.WillReturnResult(driver.RowsAffected(1))
 					dbmock.ExpectExec("DELETE FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipe.Id).WillReturnResult(driver.RowsAffected(0))
+					for _, tag := range test.recipe.Tags {
+						dbmock.ExpectExec("INSERT INTO recipe_tag \\(recipe_id, tag\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.recipe.Id, tag).
+							WillReturnResult(driver.RowsAffected(1))
+					}
 					dbmock.ExpectCommit()
 				} else {
 					exec.WillReturnError(test.dbError)
@@ -333,6 +366,65 @@ func Test_Recipe_GetRating(t *testing.T) {
 			}
 			if test.expectedError == nil && *rating != test.expectedRating {
 				t.Errorf("ratings don't match, expected: %f, received: %f", test.expectedRating, *rating)
+			}
+		})
+	}
+}
+
+func Test_Recipe_SetRating(t *testing.T) {
+	type testArgs struct {
+		recipeId         int64
+		hasCurrentRating bool
+		expectedRating   float32
+		dbError          error
+		expectedError    error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, false, 3.5, nil, nil},
+		{1, true, 3.5, nil, nil},
+		{0, false, 0, sql.ErrNoRows, ErrNotFound},
+		{0, true, 0, sql.ErrNoRows, ErrNotFound},
+		{0, false, 0, sql.ErrConnDone, sql.ErrConnDone},
+		{0, true, 0, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			ratingSelect := dbmock.ExpectQuery("SELECT count\\(\\*\\) FROM recipe_rating WHERE recipe_id = \\$1")
+			var updateExec *sqlmock.ExpectedExec
+			if test.hasCurrentRating {
+				ratingSelect.WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+				updateExec = dbmock.ExpectExec("UPDATE recipe_rating SET rating = \\$1 WHERE recipe_id = \\$2").WithArgs(test.expectedRating, test.recipeId)
+			} else {
+				ratingSelect.WillReturnRows(&sqlmock.Rows{})
+				updateExec = dbmock.ExpectExec("INSERT INTO recipe_rating \\(recipe_id, rating\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.recipeId, test.expectedRating)
+			}
+			if test.dbError == nil {
+				updateExec.WillReturnResult(driver.RowsAffected(1))
+				dbmock.ExpectCommit()
+			} else {
+				updateExec.WillReturnError(test.dbError)
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Recipes().SetRating(test.recipeId, test.expectedRating)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
