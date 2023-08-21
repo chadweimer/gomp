@@ -59,6 +59,91 @@ func Test_GetImages(t *testing.T) {
 	}
 }
 
+func Test_GetMainImage(t *testing.T) {
+	type testArgs struct {
+		recipeId      int64
+		image         *models.RecipeImage
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, &models.RecipeImage{Id: utils.GetPtr[int64](1), Name: utils.GetPtr("My Image")}, nil},
+		{2, nil, db.ErrNotFound},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, imagesDriver := getMockImagesApi(ctrl)
+			if test.expectedError != nil {
+				imagesDriver.EXPECT().ReadMainImage(gomock.Any()).Return(nil, test.expectedError)
+			} else {
+				imagesDriver.EXPECT().ReadMainImage(test.recipeId).Return(test.image, nil)
+				imagesDriver.EXPECT().ReadMainImage(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
+			}
+
+			// Act
+			resp, err := api.GetMainImage(context.Background(), GetMainImageRequestObject{RecipeId: test.recipeId})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				resp, ok := resp.(GetMainImage200JSONResponse)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+				if test.expectedError == nil && *resp.Id != *test.image.Id {
+					t.Errorf("ids don't match, expected: %d, received: %d", *test.image.Id, *resp.Id)
+				}
+			}
+		})
+	}
+}
+
+func Test_SetMainImage(t *testing.T) {
+	type testArgs struct {
+		recipeId      int64
+		imageId       int64
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, 1, nil},
+		{2, 1, db.ErrNotFound},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, imagesDriver := getMockImagesApi(ctrl)
+			if test.expectedError != nil {
+				imagesDriver.EXPECT().UpdateMainImage(gomock.Any(), gomock.Any()).Return(test.expectedError)
+			} else {
+				imagesDriver.EXPECT().UpdateMainImage(test.recipeId, test.imageId).Return(nil)
+				imagesDriver.EXPECT().UpdateMainImage(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
+			}
+
+			// Act
+			resp, err := api.SetMainImage(context.Background(), SetMainImageRequestObject{RecipeId: test.recipeId, Body: &test.imageId})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("test %v: received error '%v'", test, err)
+			} else if err == nil {
+				_, ok := resp.(SetMainImage204Response)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+			}
+		})
+	}
+}
+
 func getMockImagesApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeImageDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	imagesDriver := dbmock.NewMockRecipeImageDriver(ctrl)
