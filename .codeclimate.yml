@@ -30,5 +30,8 @@ exclude_patterns:
   - "build/"
   - "db/migrations/"
   - "**/node_modules/"
+  - "mocks/"
+  - "static/src/generated/"
   - "static/www/"
   - "**/*.d.ts"
+  - "*.gen.go"
