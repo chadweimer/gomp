@@ -35,9 +35,8 @@ func Test_Note_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			note := &models.Note{RecipeId: &test.recipeId, Text: test.text}
 			expectedId := rand.Int63()
@@ -53,7 +52,7 @@ func Test_Note_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(note)
+			err := sut.Notes().Create(note)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -90,9 +89,8 @@ func Test_Note_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			note := &models.Note{Id: &test.noteId, RecipeId: &test.recipeId, Text: test.text}
 
@@ -107,7 +105,7 @@ func Test_Note_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Update(note)
+			err := sut.Notes().Update(note)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -140,9 +138,8 @@ func Test_Note_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.noteId, test.recipeId)
@@ -155,7 +152,7 @@ func Test_Note_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.recipeId, test.noteId)
+			err := sut.Notes().Delete(test.recipeId, test.noteId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -187,9 +184,8 @@ func Test_Note_DeleteAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeId)
@@ -202,7 +198,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.DeleteAll(test.recipeId)
+			err := sut.Notes().DeleteAll(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -249,9 +245,8 @@ func Test_Note_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -265,7 +260,7 @@ func Test_Note_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.List(test.recipeId)
+			result, err := sut.Notes().List(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

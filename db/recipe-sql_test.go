@@ -64,9 +64,8 @@ func Test_Recipe_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 			expectedId := rand.Int63()
 
 			dbmock.ExpectBegin()
@@ -81,7 +80,7 @@ func Test_Recipe_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(&test.recipe)
+			err := sut.Recipes().Create(&test.recipe)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -116,9 +115,8 @@ func Test_Recipe_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at FROM recipe WHERE id = \\$1").
 				WithArgs(test.recipeId)
@@ -132,7 +130,7 @@ func Test_Recipe_Read(t *testing.T) {
 			}
 
 			// Act
-			recipe, err := sut.Read(test.recipeId)
+			recipe, err := sut.Recipes().Read(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -212,9 +210,8 @@ func Test_Recipe_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			if test.expectedError != nil && test.dbError == nil {
@@ -233,7 +230,7 @@ func Test_Recipe_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Update(&test.recipe)
+			err := sut.Recipes().Update(&test.recipe)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -265,9 +262,8 @@ func Test_Recipe_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe WHERE id = \\$1").WithArgs(test.recipeId)
@@ -280,7 +276,7 @@ func Test_Recipe_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.recipeId)
+			err := sut.Recipes().Delete(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -313,9 +309,8 @@ func Test_Recipe_GetRating(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT COALESCE\\(g\\.rating, 0\\) AS avg_rating FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.id = \\$1").
 				WithArgs(test.recipeId)
@@ -327,7 +322,7 @@ func Test_Recipe_GetRating(t *testing.T) {
 			}
 
 			// Act
-			rating, err := sut.GetRating(test.recipeId)
+			rating, err := sut.Recipes().GetRating(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -364,9 +359,8 @@ func Test_Recipe_SetState(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("UPDATE recipe SET current_state = \\$1 WHERE id = \\$2").
@@ -380,7 +374,7 @@ func Test_Recipe_SetState(t *testing.T) {
 			}
 
 			// Act
-			err := sut.SetState(test.recipeId, test.expectedState)
+			err := sut.Recipes().SetState(test.recipeId, test.expectedState)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -413,9 +407,8 @@ func Test_Recipe_CreateTag(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("INSERT INTO recipe_tag \\(recipe_id, tag\\) VALUES \\(\\$1, \\$2\\)").
@@ -429,7 +422,7 @@ func Test_Recipe_CreateTag(t *testing.T) {
 			}
 
 			// Act
-			err := sut.CreateTag(test.recipeId, test.tag)
+			err := sut.Recipes().CreateTag(test.recipeId, test.tag)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -461,9 +454,8 @@ func Test_Recipe_DeleteAllTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeId)
@@ -476,7 +468,7 @@ func Test_Recipe_DeleteAllTags(t *testing.T) {
 			}
 
 			// Act
-			err := sut.DeleteAllTags(test.recipeId)
+			err := sut.Recipes().DeleteAllTags(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -509,9 +501,8 @@ func Test_Recipe_ListTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeDriver{db, mockRecipeDriverAdapter{}}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -525,7 +516,7 @@ func Test_Recipe_ListTags(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.ListTags(test.recipeId)
+			result, err := sut.Recipes().ListTags(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -553,10 +544,4 @@ func Test_Recipe_ListTags(t *testing.T) {
 			}
 		})
 	}
-}
-
-type mockRecipeDriverAdapter struct{}
-
-func (mockRecipeDriverAdapter) GetSearchFields(_ []models.SearchField, _ string) (string, []any) {
-	return "", make([]any, 0)
 }

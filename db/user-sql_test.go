@@ -38,9 +38,8 @@ func Test_User_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlUserDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			user := &models.User{
 				Username:    test.username,
@@ -60,7 +59,7 @@ func Test_User_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(user, test.password)
+			err := sut.Users().Create(user, test.password)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -95,9 +94,8 @@ func Test_User_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlUserDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_user WHERE id = \\$1").WithArgs(test.userId)
 			if test.dbError == nil {
@@ -109,7 +107,7 @@ func Test_User_Read(t *testing.T) {
 			}
 
 			// Act
-			user, err := sut.Read(test.userId)
+			user, err := sut.Users().Read(test.userId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -147,9 +145,8 @@ func Test_User_Authenticate(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlUserDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			passwordHash, err := bcrypt.GenerateFromPassword([]byte(test.currentPassword), bcrypt.DefaultCost)
 			if err != nil {
@@ -165,7 +162,7 @@ func Test_User_Authenticate(t *testing.T) {
 			}
 
 			// Act
-			user, err := sut.Authenticate(test.username, test.attemptedPassword)
+			user, err := sut.Users().Authenticate(test.username, test.attemptedPassword)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -202,9 +199,8 @@ func Test_User_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlUserDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			user := &models.User{
 				Id:          &test.userId,
@@ -224,7 +220,7 @@ func Test_User_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Update(user)
+			err := sut.Users().Update(user)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -256,9 +252,8 @@ func Test_User_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlUserDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM app_user WHERE id = \\$1").WithArgs(test.userId)
@@ -271,7 +266,7 @@ func Test_User_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.userId)
+			err := sut.Users().Delete(test.userId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -319,9 +314,8 @@ func Test_User_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlUserDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC")
 			if test.dbError == nil {
@@ -335,7 +329,7 @@ func Test_User_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.List()
+			result, err := sut.Users().List()
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

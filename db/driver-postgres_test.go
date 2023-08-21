@@ -83,9 +83,9 @@ func Test_lockPostgres(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			conn, err := db.Conn(context.Background())
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+			conn, err := sut.Db.Conn(context.Background())
 			if err != nil {
 				t.Fatalf("failed to open connection, error: %v", err)
 			}

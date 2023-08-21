@@ -34,9 +34,8 @@ func Test_Link_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlLinkDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId)
@@ -49,7 +48,7 @@ func Test_Link_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(test.srcId, test.dstId)
+			err := sut.Links().Create(test.srcId, test.dstId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -82,9 +81,8 @@ func Test_Link_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlLinkDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId)
@@ -97,7 +95,7 @@ func Test_Link_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.srcId, test.dstId)
+			err := sut.Links().Delete(test.srcId, test.dstId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -150,9 +148,8 @@ func Test_Link_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlLinkDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -166,7 +163,7 @@ func Test_Link_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.List(test.recipeId)
+			result, err := sut.Links().List(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

@@ -37,9 +37,8 @@ func Test_Image_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			image := &models.RecipeImage{
 				RecipeId:     &test.recipeId,
@@ -63,7 +62,7 @@ func Test_Image_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(image)
+			err := sut.Images().Create(image)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -99,9 +98,8 @@ func Test_Image_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.imageId, test.recipeId)
 			if test.dbError == nil {
@@ -113,7 +111,7 @@ func Test_Image_Read(t *testing.T) {
 			}
 
 			// Act
-			image, err := sut.Read(test.recipeId, test.imageId)
+			image, err := sut.Images().Read(test.recipeId, test.imageId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -149,9 +147,8 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\(SELECT image_id FROM recipe WHERE id = \\$1\\)").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -163,7 +160,7 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			}
 
 			// Act
-			image, err := sut.ReadMainImage(test.recipeId)
+			image, err := sut.Images().ReadMainImage(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -199,9 +196,8 @@ func Test_Image_UpdateMainImage(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("UPDATE recipe SET image_id = \\$1 WHERE id = \\$2").WithArgs(test.imageId, test.recipeId)
@@ -214,7 +210,7 @@ func Test_Image_UpdateMainImage(t *testing.T) {
 			}
 
 			// Act
-			err := sut.UpdateMainImage(test.recipeId, test.imageId)
+			err := sut.Images().UpdateMainImage(test.recipeId, test.imageId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -247,9 +243,8 @@ func Test_Image_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_image WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.imageId, test.recipeId)
@@ -264,7 +259,7 @@ func Test_Image_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.recipeId, test.imageId)
+			err := sut.Images().Delete(test.recipeId, test.imageId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -296,9 +291,8 @@ func Test_Image_DeleteAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_image WHERE recipe_id = \\$1").WithArgs(test.recipeId)
@@ -311,7 +305,7 @@ func Test_Image_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.DeleteAll(test.recipeId)
+			err := sut.Images().DeleteAll(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -362,9 +356,8 @@ func Test_Image_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlRecipeImageDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE recipe_id = \\$1 ORDER BY created_at ASC").WithArgs(test.recipeId)
 			if test.dbError == nil {
@@ -378,7 +371,7 @@ func Test_Image_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.List(test.recipeId)
+			result, err := sut.Images().List(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
