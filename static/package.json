@@ -16,7 +16,7 @@
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --config stencil.test.config.ts --spec --e2e",
     "test.watch": "stencil test --config stencil.test.config.ts --spec --e2e --watch",
-    "cover": "stencil test --spec --coverage --coverageProvider v8",
+    "cover": "stencil test --config stencil.test.config.ts --spec --coverage --coverageProvider v8",
     "generate": "stencil generate"
   },
   "devDependencies": {
