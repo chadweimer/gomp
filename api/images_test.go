@@ -45,7 +45,6 @@ func Test_GetImages(t *testing.T) {
 				imagesDriver.EXPECT().List(gomock.Any()).Return(nil, test.expectedError)
 			} else {
 				imagesDriver.EXPECT().List(test.recipeId).Return(&test.images, nil)
-				imagesDriver.EXPECT().List(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -89,7 +88,6 @@ func Test_GetMainImage(t *testing.T) {
 				imagesDriver.EXPECT().ReadMainImage(gomock.Any()).Return(nil, test.expectedError)
 			} else {
 				imagesDriver.EXPECT().ReadMainImage(test.recipeId).Return(test.image, nil)
-				imagesDriver.EXPECT().ReadMainImage(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -133,7 +131,6 @@ func Test_SetMainImage(t *testing.T) {
 				imagesDriver.EXPECT().UpdateMainImage(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
 				imagesDriver.EXPECT().UpdateMainImage(test.recipeId, test.imageId).Return(nil)
-				imagesDriver.EXPECT().UpdateMainImage(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act

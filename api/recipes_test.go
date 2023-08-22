@@ -41,7 +41,6 @@ func Test_GetRecipe(t *testing.T) {
 				recipesDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
 			} else {
 				recipesDriver.EXPECT().Read(test.recipeId).Return(&expectedRecipe, nil)
-				recipesDriver.EXPECT().Read(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act

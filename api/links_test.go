@@ -42,7 +42,6 @@ func Test_GetLinks(t *testing.T) {
 				linkDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
 			} else {
 				linkDriver.EXPECT().List(test.recipeId).Return(&test.links, nil)
-				linkDriver.EXPECT().List(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -89,7 +88,6 @@ func Test_AddLink(t *testing.T) {
 				linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				linkDriver.EXPECT().Create(test.recipeId, test.destRecipeId).Return(nil)
-				linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
@@ -133,7 +131,6 @@ func Test_DeleteLink(t *testing.T) {
 				linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				linkDriver.EXPECT().Delete(test.recipeId, test.destRecipeId).Return(nil)
-				linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act

@@ -45,7 +45,6 @@ func Test_GetUser(t *testing.T) {
 				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().Read(test.userId).Return(expectedUser, nil)
-				usersDriver.EXPECT().Read(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -106,7 +105,6 @@ func Test_GetCurrentUser(t *testing.T) {
 				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
 			} else if test.userId != nil {
 				usersDriver.EXPECT().Read(*test.userId).Return(expectedUser, nil)
-				usersDriver.EXPECT().Read(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -447,7 +445,6 @@ func Test_GetUserSettings(t *testing.T) {
 				usersDriver.EXPECT().ReadSettings(gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().ReadSettings(test.userId).Return(expectedSettings, nil)
-				usersDriver.EXPECT().ReadSettings(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -504,7 +501,6 @@ func Test_GetSettings(t *testing.T) {
 				usersDriver.EXPECT().ReadSettings(gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().ReadSettings(test.userId).Return(expectedSettings, nil)
-				usersDriver.EXPECT().ReadSettings(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -657,7 +653,6 @@ func Test_GetUserSearchFilters(t *testing.T) {
 				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().ListSearchFilters(test.userId).Return(&test.filters, nil)
-				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -708,7 +703,6 @@ func Test_GetSearchFilters(t *testing.T) {
 				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().ListSearchFilters(test.userId).Return(&test.filters, nil)
-				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -753,7 +747,6 @@ func Test_GetUserSearchFilter(t *testing.T) {
 				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().ReadSearchFilter(test.userId, test.filterId).Return(&models.SavedSearchFilter{}, nil)
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -796,7 +789,6 @@ func Test_GetSearchFilter(t *testing.T) {
 				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, db.ErrNotFound)
 			} else {
 				usersDriver.EXPECT().ReadSearchFilter(test.userId, test.filterId).Return(&models.SavedSearchFilter{}, nil)
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act

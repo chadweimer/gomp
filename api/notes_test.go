@@ -42,7 +42,6 @@ func Test_GetNotes(t *testing.T) {
 				notesDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().List(test.recipeId).Return(&test.notes, nil)
-				notesDriver.EXPECT().List(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -87,7 +86,6 @@ func Test_AddNote(t *testing.T) {
 				notesDriver.EXPECT().Create(gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().Create(&test.note).Return(nil)
-				notesDriver.EXPECT().Create(gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
@@ -123,7 +121,6 @@ func Test_AddNote_MismatchedId(t *testing.T) {
 
 			api, notesDriver := getMockNotesApi(ctrl)
 			notesDriver.EXPECT().Create(test.note).Times(0).Return(nil)
-			notesDriver.EXPECT().Create(gomock.Any()).Times(0).Return(nil)
 
 			// Act
 			_, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeId: test.recipeId, Body: &test.note})
@@ -162,7 +159,6 @@ func Test_SaveNote(t *testing.T) {
 				notesDriver.EXPECT().Update(gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().Update(&test.note).Return(nil)
-				notesDriver.EXPECT().Update(gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
@@ -200,7 +196,6 @@ func Test_SaveNote_MismatchedId(t *testing.T) {
 
 			api, notesDriver := getMockNotesApi(ctrl)
 			notesDriver.EXPECT().Update(test.note).Times(0).Return(nil)
-			notesDriver.EXPECT().Update(gomock.Any()).Times(0).Return(nil)
 
 			// Act
 			_, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeId: test.recipeId, NoteId: test.noteId, Body: &test.note})
@@ -240,7 +235,6 @@ func Test_DeleteNote(t *testing.T) {
 				notesDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().Delete(test.recipeId, test.noteId).Return(nil)
-				notesDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
