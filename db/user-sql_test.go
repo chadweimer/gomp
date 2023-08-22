@@ -233,6 +233,68 @@ func Test_User_Update(t *testing.T) {
 	}
 }
 
+func Test_User_UpdatePassword(t *testing.T) {
+	type testArgs struct {
+		userId            int64
+		currentPassword   string
+		attemptedPassword string
+		newPassword       string
+		dbError           error
+		expectedError     error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, "password", "password", "newpassword", nil, nil},
+		{1, "password", "wrongpassword", "newpassword", nil, ErrAuthenticationFailed},
+		{0, "password", "password", "newpassword", sql.ErrNoRows, ErrNotFound},
+		{0, "password", "password", "newpassword", sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			currentPasswordHash, err := hashPassword(test.currentPassword)
+			if err != nil {
+				t.Fatalf("failed to hash password: %v", err)
+			}
+
+			dbmock.ExpectBegin()
+			rows := sqlmock.NewRows([]string{"id", "username", "password_hash", "access_level", "created_at", "modified_at"}).
+				AddRow(test.userId, "user@example.com", currentPasswordHash, models.Editor, time.Now(), time.Now())
+			dbmock.ExpectQuery("SELECT \\* FROM app_user WHERE id = \\$1").WithArgs(test.userId).WillReturnRows(rows)
+			if test.dbError != nil || test.expectedError == nil {
+				exec := dbmock.ExpectExec("UPDATE app_user SET password_hash = \\$1 WHERE ID = \\$2").WithArgs(passwordHashArgument(test.newPassword), test.userId)
+				if test.dbError == nil {
+					exec.WillReturnResult(driver.RowsAffected(1))
+					dbmock.ExpectCommit()
+				} else {
+					exec.WillReturnError(test.dbError)
+					dbmock.ExpectRollback()
+				}
+			} else {
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err = sut.Users().UpdatePassword(test.userId, test.attemptedPassword, test.newPassword)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %v", err)
+			}
+		})
+	}
+}
+
 func Test_User_Delete(t *testing.T) {
 	type testArgs struct {
 		userId        int64
