@@ -22,7 +22,6 @@ func Test_Authenticate(t *testing.T) {
 		err         error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{"user1", models.Viewer, db.ErrNotFound},
 		{"user2", models.Viewer, errors.New("unknown error")},
@@ -32,6 +31,7 @@ func Test_Authenticate(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -85,7 +85,6 @@ func Test_RefreshToken(t *testing.T) {
 		err         error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{"user1", models.Viewer, db.ErrNotFound},
 		{"user2", models.Viewer, errors.New("unknown error")},
@@ -96,6 +95,7 @@ func Test_RefreshToken(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -152,7 +152,6 @@ func Test_isAuthentication(t *testing.T) {
 		expectError       bool
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{true, "Bearer %s", true, false},
 		{true, "Bearer %s", false, true},
@@ -165,6 +164,7 @@ func Test_isAuthentication(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -246,7 +246,6 @@ func Test_checkScopes(t *testing.T) {
 		expectError bool
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{[]string{string(models.Admin)}, models.Admin, false},
 		{[]string{string(models.Admin)}, models.Editor, true},
@@ -261,6 +260,7 @@ func Test_checkScopes(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			now := time.Now()
 			user := models.User{AccessLevel: test.accessLevel, ModifiedAt: &now}
 			claims := gompClaims{
@@ -288,7 +288,6 @@ func Test_checkScopes_UserUpdated(t *testing.T) {
 		expectError    bool
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{[]string{string(models.Editor)}, 1, models.Admin, models.Admin, false},
 		{[]string{string(models.Editor)}, 1, models.Admin, models.Editor, false},
@@ -298,6 +297,7 @@ func Test_checkScopes_UserUpdated(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			now := time.Now()
 			user := models.User{AccessLevel: test.newAccessLevel, ModifiedAt: &now}
 			claims := gompClaims{

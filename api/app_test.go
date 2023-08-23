@@ -38,9 +38,9 @@ func Test_GetInfo(t *testing.T) {
 }
 
 func Test_GetConfiguration(t *testing.T) {
-	// Arrange
 	tests := []bool{false, true}
 	for _, expectError := range tests {
+		// Arrange
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -66,16 +66,16 @@ func Test_GetConfiguration(t *testing.T) {
 				t.Fatal("invalid response")
 			}
 			if typedResp.Title != expectedTitle {
-				t.Errorf("unexpected title: %s", typedResp.Title)
+				t.Errorf("expected title: %s, received title: %s", expectedTitle, typedResp.Title)
 			}
 		}
 	}
 }
 
 func Test_SaveConfiguration(t *testing.T) {
-	// Arrange
 	tests := []bool{false, true}
 	for _, expectError := range tests {
+		// Arrange
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 

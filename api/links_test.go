@@ -20,7 +20,6 @@ func Test_GetLinks(t *testing.T) {
 		expectError bool
 	}
 
-	// Arrange
 	tests := []getLinksTest{
 		{
 			1,
@@ -34,6 +33,7 @@ func Test_GetLinks(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -49,14 +49,14 @@ func Test_GetLinks(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error %v", err)
 			} else if err == nil {
 				typedResp, ok := resp.(GetLinks200JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 				if len(typedResp) != len(test.links) {
-					t.Errorf("test %v: expected length: %d, actual length: %d", test, len(test.links), len(typedResp))
+					t.Errorf("expected length: %d, actual length: %d", len(test.links), len(typedResp))
 				}
 			}
 		})
@@ -70,7 +70,6 @@ func Test_AddLink(t *testing.T) {
 		expectError  bool
 	}
 
-	// Arrange
 	tests := []addLinkTest{
 		{1, 2, false},
 		{4, 7, false},
@@ -80,6 +79,7 @@ func Test_AddLink(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -95,11 +95,11 @@ func Test_AddLink(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error %v", err)
 			} else if err == nil {
 				_, ok := resp.(AddLink204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
@@ -113,7 +113,6 @@ func Test_DeleteLink(t *testing.T) {
 		expectError  bool
 	}
 
-	// Arrange
 	tests := []deleteLinkTest{
 		{1, 2, false},
 		{4, 7, false},
@@ -123,6 +122,7 @@ func Test_DeleteLink(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -138,11 +138,11 @@ func Test_DeleteLink(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error %v", err)
 			} else if err == nil {
 				_, ok := resp.(DeleteLink204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})

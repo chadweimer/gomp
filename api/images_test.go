@@ -30,13 +30,13 @@ func Test_GetImages(t *testing.T) {
 		expectedError error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{1, []models.RecipeImage{{Id: utils.GetPtr[int64](1), Name: utils.GetPtr("My Image")}}, nil},
 		{2, nil, db.ErrNotFound},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -52,14 +52,14 @@ func Test_GetImages(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected erro: %v, received error %v", test.expectedError, err)
 			} else if err == nil {
 				resp, ok := resp.(GetImages200JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 				if len(resp) != len(test.images) {
-					t.Errorf("test %v: expected length: %d, actual length: %d", test, len(test.images), len(resp))
+					t.Errorf("expected length: %d, actual length: %d", len(test.images), len(resp))
 				}
 			}
 		})
@@ -73,13 +73,13 @@ func Test_GetMainImage(t *testing.T) {
 		expectedError error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{1, &models.RecipeImage{Id: utils.GetPtr[int64](1), Name: utils.GetPtr("My Image")}, nil},
 		{2, nil, db.ErrNotFound},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -95,14 +95,14 @@ func Test_GetMainImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
 			} else if err == nil {
 				resp, ok := resp.(GetMainImage200JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 				if test.expectedError == nil && *resp.Id != *test.image.Id {
-					t.Errorf("ids don't match, expected: %d, received: %d", *test.image.Id, *resp.Id)
+					t.Errorf("expected id: %d, received id: %d", *test.image.Id, *resp.Id)
 				}
 			}
 		})
@@ -116,13 +116,13 @@ func Test_SetMainImage(t *testing.T) {
 		expectedError error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{1, 1, nil},
 		{2, 1, db.ErrNotFound},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -138,11 +138,11 @@ func Test_SetMainImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(SetMainImage204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
@@ -155,13 +155,13 @@ func Test_UploadImage(t *testing.T) {
 		expectedError error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{1, nil},
 		{2, db.ErrNotFound},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -183,11 +183,11 @@ func Test_UploadImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(UploadImage201JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
@@ -205,7 +205,6 @@ func Test_DeleteImage(t *testing.T) {
 		expectedError          error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{1, 1, "img.jpeg", nil, nil, nil, nil},
 		{2, 1, "img.jpeg", db.ErrNotFound, nil, nil, db.ErrNotFound},
@@ -214,6 +213,7 @@ func Test_DeleteImage(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -242,11 +242,11 @@ func Test_DeleteImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(DeleteImage204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
@@ -264,7 +264,6 @@ func Test_OptimizeImage(t *testing.T) {
 		expectedError     error
 	}
 
-	// Arrange
 	tests := []testArgs{
 		{1, 1, "img.jpeg", nil, nil, nil, nil},
 		{2, 1, "img.jpeg", db.ErrNotFound, nil, nil, db.ErrNotFound},
@@ -273,6 +272,7 @@ func Test_OptimizeImage(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -310,11 +310,11 @@ func Test_OptimizeImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %vreceived error %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(OptimizeImage204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
