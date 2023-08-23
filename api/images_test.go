@@ -52,7 +52,7 @@ func Test_GetImages(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected erro: %v, received error %v", test.expectedError, err)
+				t.Errorf("expected erro: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				resp, ok := resp.(GetImages200JSONResponse)
 				if !ok {
@@ -95,7 +95,7 @@ func Test_GetMainImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				resp, ok := resp.(GetMainImage200JSONResponse)
 				if !ok {
@@ -138,7 +138,7 @@ func Test_SetMainImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(SetMainImage204Response)
 				if !ok {
@@ -183,7 +183,7 @@ func Test_UploadImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(UploadImage201JSONResponse)
 				if !ok {
@@ -242,7 +242,7 @@ func Test_DeleteImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error %v", test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(DeleteImage204Response)
 				if !ok {
@@ -310,7 +310,7 @@ func Test_OptimizeImage(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %vreceived error %v", test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(OptimizeImage204Response)
 				if !ok {
