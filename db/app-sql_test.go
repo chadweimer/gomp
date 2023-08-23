@@ -31,9 +31,8 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlAppConfigurationDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_configuration")
 			if test.dbError == nil {
@@ -43,11 +42,11 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			}
 
 			// Act
-			cfg, err := sut.Read()
+			cfg, err := sut.AppConfiguration().Read()
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -78,9 +77,8 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlAppConfigurationDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("UPDATE app_configuration SET title = \\$1").WithArgs(test.title)
@@ -93,11 +91,11 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Update(&models.AppConfiguration{Title: test.title})
+			err := sut.AppConfiguration().Update(&models.AppConfiguration{Title: test.title})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)

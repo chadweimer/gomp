@@ -10,6 +10,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/utils"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -33,9 +34,8 @@ func Test_Link_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlLinkDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("INSERT INTO recipe_link \\(recipe_id, dest_recipe_id\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.srcId, test.dstId)
@@ -48,11 +48,11 @@ func Test_Link_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(test.srcId, test.dstId)
+			err := sut.Links().Create(test.srcId, test.dstId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -81,9 +81,8 @@ func Test_Link_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlLinkDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_link WHERE \\(recipe_id = \\$1 AND dest_recipe_id = \\$2\\) OR \\(recipe_id = \\$2 AND dest_recipe_id = \\$1\\)").WithArgs(test.srcId, test.dstId)
@@ -96,11 +95,11 @@ func Test_Link_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.srcId, test.dstId)
+			err := sut.Links().Delete(test.srcId, test.dstId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -112,7 +111,7 @@ func Test_Link_Delete(t *testing.T) {
 func Test_Link_List(t *testing.T) {
 	type testArgs struct {
 		recipeId       int64
-		expectedResult *[]models.RecipeCompact
+		expectedResult []models.RecipeCompact
 		dbError        error
 		expectedError  error
 	}
@@ -120,23 +119,23 @@ func Test_Link_List(t *testing.T) {
 	// Arrange
 	now := time.Now()
 	tests := []testArgs{
-		{1, &[]models.RecipeCompact{
+		{1, []models.RecipeCompact{
 			{
-				Id:            getPtr[int64](1),
+				Id:            utils.GetPtr[int64](1),
 				Name:          "My Linked Recipe",
-				State:         getPtr(models.Active),
+				State:         utils.GetPtr(models.Active),
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
-				AverageRating: getPtr[float32](2.5),
+				AverageRating: utils.GetPtr[float32](2.5),
 				ThumbnailUrl:  nil,
 			},
 			{
-				Id:            getPtr[int64](2),
+				Id:            utils.GetPtr[int64](2),
 				Name:          "My Other Linked Recipe",
-				State:         getPtr(models.Archived),
+				State:         utils.GetPtr(models.Archived),
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
-				AverageRating: getPtr[float32](4),
+				AverageRating: utils.GetPtr[float32](4),
 				ThumbnailUrl:  nil,
 			},
 		}, nil, nil},
@@ -149,14 +148,13 @@ func Test_Link_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlLinkDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"})
-				for _, recipe := range *test.expectedResult {
+				for _, recipe := range test.expectedResult {
 					rows.AddRow(recipe.Id, recipe.Name, recipe.State, recipe.CreatedAt, recipe.ModifiedAt, recipe.AverageRating, recipe.ThumbnailUrl)
 				}
 				query.WillReturnRows(rows)
@@ -165,11 +163,11 @@ func Test_Link_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.List(test.recipeId)
+			result, err := sut.Links().List(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -181,10 +179,10 @@ func Test_Link_List(t *testing.T) {
 			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(*test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(*test.expectedResult), len(*result))
+				} else if len(test.expectedResult) != len(*result) {
+					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
 				} else {
-					for i, recipe := range *test.expectedResult {
+					for i, recipe := range test.expectedResult {
 						if recipe.Name != (*result)[i].Name {
 							t.Errorf("names don't match, expected: %s, received: %s", recipe.Name, (*result)[i].Name)
 						}

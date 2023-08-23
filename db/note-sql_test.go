@@ -11,6 +11,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/utils"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -34,9 +35,8 @@ func Test_Note_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			note := &models.Note{RecipeId: &test.recipeId, Text: test.text}
 			expectedId := rand.Int63()
@@ -52,11 +52,11 @@ func Test_Note_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Create(note)
+			err := sut.Notes().Create(note)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -89,9 +89,8 @@ func Test_Note_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			note := &models.Note{Id: &test.noteId, RecipeId: &test.recipeId, Text: test.text}
 
@@ -106,11 +105,11 @@ func Test_Note_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Update(note)
+			err := sut.Notes().Update(note)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -139,9 +138,8 @@ func Test_Note_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.noteId, test.recipeId)
@@ -154,11 +152,11 @@ func Test_Note_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Delete(test.recipeId, test.noteId)
+			err := sut.Notes().Delete(test.recipeId, test.noteId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -186,9 +184,8 @@ func Test_Note_DeleteAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			dbmock.ExpectBegin()
 			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeId)
@@ -201,11 +198,11 @@ func Test_Note_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.DeleteAll(test.recipeId)
+			err := sut.Notes().DeleteAll(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -217,7 +214,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 func Test_Note_List(t *testing.T) {
 	type testArgs struct {
 		recipeId       int64
-		expectedResult *[]models.Note
+		expectedResult []models.Note
 		dbError        error
 		expectedError  error
 	}
@@ -225,15 +222,15 @@ func Test_Note_List(t *testing.T) {
 	// Arrange
 	now := time.Now()
 	tests := []testArgs{
-		{1, &[]models.Note{
+		{1, []models.Note{
 			{
-				Id:         getPtr[int64](1),
+				Id:         utils.GetPtr[int64](1),
 				Text:       "My Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
 			},
 			{
-				Id:         getPtr[int64](2),
+				Id:         utils.GetPtr[int64](2),
 				Text:       "My Other Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
@@ -248,14 +245,13 @@ func Test_Note_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			db, dbmock := getMockDb(t)
-			defer db.Close()
-			sut := sqlNoteDriver{db}
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeId)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "note", "created_at", "modified_at"})
-				for _, note := range *test.expectedResult {
+				for _, note := range test.expectedResult {
 					rows.AddRow(note.Id, test.recipeId, note.Text, note.CreatedAt, note.ModifiedAt)
 				}
 				query.WillReturnRows(rows)
@@ -264,11 +260,11 @@ func Test_Note_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.List(test.recipeId)
+			result, err := sut.Notes().List(test.recipeId)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", ErrNotFound, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
@@ -280,10 +276,10 @@ func Test_Note_List(t *testing.T) {
 			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(*test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(*test.expectedResult), len(*result))
+				} else if len(test.expectedResult) != len(*result) {
+					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
 				} else {
-					for i, note := range *test.expectedResult {
+					for i, note := range test.expectedResult {
 						if note.Text != (*result)[i].Text {
 							t.Errorf("names don't match, expected: %s, received: %s", note.Text, (*result)[i].Text)
 						}

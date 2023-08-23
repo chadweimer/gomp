@@ -159,7 +159,7 @@ test: $(BUILD_DIR)/coverage/server.html $(BUILD_DIR)/coverage/client
 
 $(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	mkdir -p $(BUILD_DIR)/coverage
-	go test -coverprofile=$@ ./...
+	go test -coverprofile=$@ -coverpkg=./... ./...
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@
 	go tool cover -func=$@
 	# Use path instead of go module, to be consistent with coverage output from the client tests.

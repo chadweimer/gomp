@@ -22,25 +22,30 @@ func (d *sqlUserDriver) Authenticate(username, password string) (*models.User, e
 			return nil, err
 		}
 
-		if err := verifyPassword(user, password); err != nil {
-			return nil, err
+		if !verifyPassword([]byte(user.PasswordHash), password) {
+			return nil, ErrAuthenticationFailed
 		}
 
 		return &user.User, nil
 	})
 }
 
-func (d *sqlUserDriver) Create(user *UserWithPasswordHash) error {
+func (d *sqlUserDriver) Create(user *models.User, password string) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.createImpl(user, db)
+		return d.createImpl(user, password, db)
 	})
 }
 
-func (*sqlUserDriver) createImpl(user *UserWithPasswordHash, db sqlx.Queryer) error {
+func (*sqlUserDriver) createImpl(user *models.User, password string, db sqlx.Queryer) error {
+	passwordHash, err := hashPassword(password)
+	if err != nil {
+		return errors.New("invalid password specified")
+	}
+
 	stmt := "INSERT INTO app_user (username, password_hash, access_level) " +
 		"VALUES ($1, $2, $3) RETURNING id"
 
-	return sqlx.Get(db, user, stmt, user.Username, user.PasswordHash, user.AccessLevel)
+	return sqlx.Get(db, user, stmt, user.Username, passwordHash, user.AccessLevel)
 }
 
 func (d *sqlUserDriver) Read(id int64) (*UserWithPasswordHash, error) {
@@ -83,8 +88,8 @@ func (d *sqlUserDriver) updatePasswordImpl(id int64, password, newPassword strin
 	if err != nil {
 		return err
 	}
-	if err = verifyPassword(user, password); err != nil {
-		return err
+	if !verifyPassword([]byte(user.PasswordHash), password) {
+		return ErrAuthenticationFailed
 	}
 
 	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
@@ -188,7 +193,7 @@ func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) err
 
 func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
 	if filter.UserId == nil {
-		return errors.New("user id is required")
+		return ErrMissingId
 	}
 
 	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
@@ -319,10 +324,10 @@ func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) err
 
 func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
 	if filter.Id == nil {
-		return errors.New("filter id is required")
+		return ErrMissingId
 	}
 	if filter.UserId == nil {
-		return errors.New("user id is required")
+		return ErrMissingId
 	}
 
 	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
@@ -379,10 +384,14 @@ func (d *sqlUserDriver) ListSearchFilters(userId int64) (*[]models.SavedSearchFi
 	})
 }
 
-func verifyPassword(user *UserWithPasswordHash, password string) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
-		return errors.New("username or password invalid")
+func hashPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+}
+
+func verifyPassword(passwordHash []byte, password string) bool {
+	if err := bcrypt.CompareHashAndPassword(passwordHash, []byte(password)); err != nil {
+		return false
 	}
 
-	return nil
+	return true
 }

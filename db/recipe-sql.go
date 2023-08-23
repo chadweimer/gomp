@@ -46,20 +46,22 @@ func (d *sqlRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Ext) error {
 }
 
 func (d *sqlRecipeDriver) Read(id int64) (*models.Recipe, error) {
-	stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
-		"FROM recipe WHERE id = $1"
-	recipe := new(models.Recipe)
-	if err := sqlx.Get(d.Db, recipe, stmt, id); err != nil {
-		return nil, err
-	}
+	return get(d.Db, func(q sqlx.Queryer) (*models.Recipe, error) {
+		stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at " +
+			"FROM recipe WHERE id = $1"
+		recipe := new(models.Recipe)
+		if err := sqlx.Get(q, recipe, stmt, id); err != nil {
+			return nil, err
+		}
 
-	tags, err := d.ListTags(id)
-	if err != nil {
-		return nil, fmt.Errorf("reading tags for recipe: %w", err)
-	}
-	recipe.Tags = *tags
+		tags, err := d.ListTags(id)
+		if err != nil {
+			return nil, fmt.Errorf("reading tags for recipe: %w", err)
+		}
+		recipe.Tags = *tags
 
-	return recipe, nil
+		return recipe, nil
+	})
 }
 
 func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
@@ -70,7 +72,7 @@ func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
 
 func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) error {
 	if recipe.Id == nil {
-		return errors.New("recipe id is required")
+		return ErrMissingId
 	}
 
 	_, err := db.Exec(
@@ -126,7 +128,7 @@ func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
 
 func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		var count int64
+		count := -1
 		err := sqlx.Get(db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
 		if errors.Is(err, sql.ErrNoRows) || count == 0 {
@@ -162,7 +164,7 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 
 func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := "WHERE r.current_state = 'active'"
-	whereArgs := make([]interface{}, 0)
+	whereArgs := make([]any, 0)
 	var err error
 
 	if len(filter.States) > 0 {
@@ -296,13 +298,4 @@ func (d *sqlRecipeDriver) ListTags(recipeId int64) (*[]string, error) {
 
 		return &tags, nil
 	})
-}
-
-func containsField(fields []models.SearchField, field models.SearchField) bool {
-	for _, a := range fields {
-		if a == field {
-			return true
-		}
-	}
-	return false
 }

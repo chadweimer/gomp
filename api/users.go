@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func (h apiHandler) GetCurrentUser(ctx context.Context, _ GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
@@ -41,21 +39,12 @@ func (h apiHandler) GetAllUsers(_ context.Context, _ GetAllUsersRequestObject) (
 
 func (h apiHandler) AddUser(_ context.Context, request AddUserRequestObject) (AddUserResponseObject, error) {
 	newUser := request.Body
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, fmt.Errorf("invalid password specified: %w", err)
-	}
 
-	user := db.UserWithPasswordHash{
-		User:         newUser.User,
-		PasswordHash: string(passwordHash),
-	}
-
-	if err := h.db.Users().Create(&user); err != nil {
+	if err := h.db.Users().Create(&newUser.User, newUser.Password); err != nil {
 		return nil, err
 	}
 
-	return AddUser201JSONResponse(user.User), nil
+	return AddUser201JSONResponse(newUser.User), nil
 }
 
 func (h apiHandler) SaveUser(ctx context.Context, request SaveUserRequestObject) (SaveUserResponseObject, error) {

@@ -1,6 +1,6 @@
 package db
 
-//go:generate mockgen -destination=../mocks/db/driver.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,UserDriver
+//go:generate mockgen -destination=../mocks/db/driver.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
 
 import (
 	"errors"
@@ -15,6 +15,12 @@ import (
 // ErrNotFound represents the error when a database record cannot be
 // found matching the criteria specified by the caller
 var ErrNotFound = errors.New("no record found matching supplied criteria")
+
+// ErrAuthenticationFailed represents the error when authenticating fails
+var ErrAuthenticationFailed = errors.New("username or password invalid")
+
+// ErrMissingId represents the error when no id is provided on an operation that requires it
+var ErrMissingId = errors.New("id is required")
 
 // ---- End Standard Errors ----
 
@@ -153,7 +159,7 @@ type UserDriver interface {
 
 	// Create stores the user in the database as a new record using
 	// a dedicated transaction that is committed if there are not errors.
-	Create(user *UserWithPasswordHash) error
+	Create(user *models.User, password string) error
 
 	// Read retrieves the information about the user from the database, if found.
 	// If no user exists with the specified ID, a NoRecordFound error is returned.

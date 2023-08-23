@@ -20,7 +20,6 @@ func Test_GetNotes(t *testing.T) {
 		expectError bool
 	}
 
-	// Arrange
 	tests := []getNotesTest{
 		{
 			1,
@@ -34,6 +33,7 @@ func Test_GetNotes(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -42,7 +42,6 @@ func Test_GetNotes(t *testing.T) {
 				notesDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().List(test.recipeId).Return(&test.notes, nil)
-				notesDriver.EXPECT().List(gomock.Any()).Times(0).Return(nil, db.ErrNotFound)
 			}
 
 			// Act
@@ -50,14 +49,14 @@ func Test_GetNotes(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error: %v", err)
 			} else if err == nil {
 				typedResp, ok := resp.(GetNotes200JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 				if len(typedResp) != len(test.notes) {
-					t.Errorf("test %v: expected length: %d, actual length: %d", test, len(test.notes), len(typedResp))
+					t.Errorf("expected length: %d, actual length: %d", len(test.notes), len(typedResp))
 				}
 			}
 		})
@@ -71,7 +70,6 @@ func Test_AddNote(t *testing.T) {
 		expectError bool
 	}
 
-	// Arrange
 	tests := []addNoteTest{
 		{1, models.Note{Text: "some note"}, false},
 		{2, models.Note{Text: "some other note"}, false},
@@ -79,6 +77,7 @@ func Test_AddNote(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -87,7 +86,6 @@ func Test_AddNote(t *testing.T) {
 				notesDriver.EXPECT().Create(gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().Create(&test.note).Return(nil)
-				notesDriver.EXPECT().Create(gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
@@ -95,11 +93,11 @@ func Test_AddNote(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error: %v", err)
 			} else if err == nil {
 				_, ok := resp.(AddNote201JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
@@ -112,27 +110,26 @@ func Test_AddNote_MismatchedId(t *testing.T) {
 		note     models.Note
 	}
 
-	// Arrange
 	tests := []addNoteTest{
 		{1, models.Note{RecipeId: new(int64), Text: "some note"}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesApi(ctrl)
 			notesDriver.EXPECT().Create(test.note).Times(0).Return(nil)
-			notesDriver.EXPECT().Create(gomock.Any()).Times(0).Return(nil)
 
 			// Act
 			_, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeId: test.recipeId, Body: &test.note})
 
 			// Assert
 			if err == nil {
-				t.Errorf("test %v: expected error", test)
+				t.Error("expected error")
 			} else if err != errMismatchedId {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %v, received error: %v", errMismatchedId, err)
 			}
 		})
 	}
@@ -146,7 +143,6 @@ func Test_SaveNote(t *testing.T) {
 		expectError bool
 	}
 
-	// Arrange
 	tests := []addNoteTest{
 		{1, 1, models.Note{Text: "some note"}, false},
 		{2, 3, models.Note{Text: "some other note"}, false},
@@ -154,6 +150,7 @@ func Test_SaveNote(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -162,7 +159,6 @@ func Test_SaveNote(t *testing.T) {
 				notesDriver.EXPECT().Update(gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().Update(&test.note).Return(nil)
-				notesDriver.EXPECT().Update(gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
@@ -170,11 +166,11 @@ func Test_SaveNote(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error: %v", err)
 			} else if err == nil {
 				_, ok := resp.(SaveNote204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
@@ -188,28 +184,27 @@ func Test_SaveNote_MismatchedId(t *testing.T) {
 		note     models.Note
 	}
 
-	// Arrange
 	tests := []addNoteTest{
 		{1, 1, models.Note{RecipeId: new(int64), Text: "some note"}},
 		{1, 1, models.Note{Id: new(int64), Text: "some other note"}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesApi(ctrl)
 			notesDriver.EXPECT().Update(test.note).Times(0).Return(nil)
-			notesDriver.EXPECT().Update(gomock.Any()).Times(0).Return(nil)
 
 			// Act
 			_, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeId: test.recipeId, NoteId: test.noteId, Body: &test.note})
 
 			// Assert
 			if err == nil {
-				t.Errorf("test %v: expected error", test)
+				t.Error("expected error")
 			} else if err != errMismatchedId {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("expected error: %v, received error: %v", errMismatchedId, err)
 			}
 		})
 	}
@@ -222,7 +217,6 @@ func Test_DeleteNote(t *testing.T) {
 		expectError bool
 	}
 
-	// Arrange
 	tests := []deleteLinkTest{
 		{1, 2, false},
 		{4, 7, false},
@@ -232,6 +226,7 @@ func Test_DeleteNote(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -240,7 +235,6 @@ func Test_DeleteNote(t *testing.T) {
 				notesDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
 				notesDriver.EXPECT().Delete(test.recipeId, test.noteId).Return(nil)
-				notesDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(0).Return(db.ErrNotFound)
 			}
 
 			// Act
@@ -248,11 +242,11 @@ func Test_DeleteNote(t *testing.T) {
 
 			// Assert
 			if (err != nil) != test.expectError {
-				t.Errorf("test %v: received error '%v'", test, err)
+				t.Errorf("received error: %v", err)
 			} else if err == nil {
 				_, ok := resp.(DeleteNote204Response)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Error("invalid response")
 				}
 			}
 		})
