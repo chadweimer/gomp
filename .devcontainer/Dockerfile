@@ -10,7 +10,7 @@ RUN apt-get update \
         zip \
         binfmt-support \
         qemu-user-static \
-        # openapi-codegen dependencies
+        # openapi-generator dependencies
         openjdk-11-jdk-headless \
         # Puppeteer dependencies
         ca-certificates \
@@ -44,7 +44,6 @@ RUN apt-get update \
         libxi6 \
         libxrandr2 \
         libxrender1 \
-        libxshmfence1 \
         libxss1 \
         libxtst6 \
         lsb-release \
