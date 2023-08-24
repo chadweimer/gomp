@@ -2,7 +2,7 @@
 
 # [Choice] Go version (use -bullseye variants on local arm64/Apple Silicon): 1, 1.16, 1.17, 1-bullseye, 1.16-bullseye, 1.17-bullseye, 1-buster, 1.16-buster, 1.17-buster
 ARG VARIANT="1.18-bullseye"
-FROM mcr.microsoft.com/vscode/devcontainers/go:0-${VARIANT}
+FROM mcr.microsoft.com/devcontainers/go:1-${VARIANT}
 
 RUN apt-get update \
     && export DEBIAN_FRONTEND=noninteractive \
@@ -10,8 +10,8 @@ RUN apt-get update \
         zip \
         binfmt-support \
         qemu-user-static \
-        # openapi-codegen dependencies
-        openjdk-11-jdk-headless \
+        # openapi-generator dependencies
+        openjdk-17-jdk-headless \
         # Puppeteer dependencies
         ca-certificates \
         fonts-liberation \
@@ -44,7 +44,6 @@ RUN apt-get update \
         libxi6 \
         libxrandr2 \
         libxrender1 \
-        libxshmfence1 \
         libxss1 \
         libxtst6 \
         lsb-release \
