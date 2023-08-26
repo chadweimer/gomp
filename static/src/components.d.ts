@@ -6,7 +6,9 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
+import { Color } from "@ionic/core";
 export { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
+export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {
     }
@@ -35,6 +37,12 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface PageLogin {
+    }
+    interface PageNavigator {
+        "color": Color;
+        "fill": 'clear' | 'outline' | 'solid' | 'default';
+        "numPages": number;
+        "page": number;
     }
     interface PageRecipe {
         "activatedCallback": () => Promise<void>;
@@ -89,6 +97,10 @@ export namespace Components {
 export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
+}
+export interface PageNavigatorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLPageNavigatorElement;
 }
 export interface RecipeStateSelectorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -162,6 +174,12 @@ declare global {
     var HTMLPageLoginElement: {
         prototype: HTMLPageLoginElement;
         new (): HTMLPageLoginElement;
+    };
+    interface HTMLPageNavigatorElement extends Components.PageNavigator, HTMLStencilElement {
+    }
+    var HTMLPageNavigatorElement: {
+        prototype: HTMLPageNavigatorElement;
+        new (): HTMLPageNavigatorElement;
     };
     interface HTMLPageRecipeElement extends Components.PageRecipe, HTMLStencilElement {
     }
@@ -258,6 +276,7 @@ declare global {
         "page-admin-users": HTMLPageAdminUsersElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
+        "page-navigator": HTMLPageNavigatorElement;
         "page-recipe": HTMLPageRecipeElement;
         "page-search": HTMLPageSearchElement;
         "page-settings": HTMLPageSettingsElement;
@@ -300,6 +319,13 @@ declare namespace LocalJSX {
     interface PageHome {
     }
     interface PageLogin {
+    }
+    interface PageNavigator {
+        "color"?: Color;
+        "fill"?: 'clear' | 'outline' | 'solid' | 'default';
+        "numPages"?: number;
+        "onPageChanged"?: (event: PageNavigatorCustomEvent<number>) => void;
+        "page"?: number;
     }
     interface PageRecipe {
         "recipeId"?: number;
@@ -360,6 +386,7 @@ declare namespace LocalJSX {
         "page-admin-users": PageAdminUsers;
         "page-home": PageHome;
         "page-login": PageLogin;
+        "page-navigator": PageNavigator;
         "page-recipe": PageRecipe;
         "page-search": PageSearch;
         "page-settings": PageSettings;
@@ -390,6 +417,7 @@ declare module "@stencil/core" {
             "page-admin-users": LocalJSX.PageAdminUsers & JSXBase.HTMLAttributes<HTMLPageAdminUsersElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
+            "page-navigator": LocalJSX.PageNavigator & JSXBase.HTMLAttributes<HTMLPageNavigatorElement>;
             "page-recipe": LocalJSX.PageRecipe & JSXBase.HTMLAttributes<HTMLPageRecipeElement>;
             "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;

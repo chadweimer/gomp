@@ -83,13 +83,7 @@ export class PageSearch {
                 </ion-buttons>
               </ion-col>
               <ion-col class="ion-hide-lg-down">
-                <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage = 1}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage--}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {state.searchNumPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage++}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage = state.searchNumPages}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
-                </ion-buttons>
+                <page-navigator class="ion-justify-content-center" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
               </ion-col>
               <ion-col class="ion-hide-lg-down" />
             </ion-row>
@@ -115,13 +109,7 @@ export class PageSearch {
           <ion-grid>
             <ion-row>
               <ion-col>
-                <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage = 1}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage--}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {state.searchNumPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage++}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage = state.searchNumPages}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
-                </ion-buttons>
+                <page-navigator class="ion-justify-content-center" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
               </ion-col>
             </ion-row>
           </ion-grid>
