@@ -204,27 +204,9 @@ export class PageRecipe {
                   {this.notes?.map(note =>
                     <ion-row>
                       <ion-col>
-                        <ion-card>
-                          <ion-card-header>
-                            <ion-item lines="full">
-                              <ion-icon slot="start" icon="chatbox" />
-                              <ion-label>{this.getNoteDatesText(note.createdAt, note.modifiedAt)}</ion-label>
-                              {hasScope(state.jwtToken, AccessLevel.Editor) ?
-                                <ion-buttons slot="end">
-                                  <ion-button size="small" color="warning" onClick={() => this.onEditNoteClicked(note)}>
-                                    <ion-icon slot="icon-only" icon="create" size="small" />
-                                  </ion-button>
-                                  <ion-button size="small" color="danger" onClick={() => this.onDeleteNoteClicked(note)}>
-                                    <ion-icon slot="icon-only" icon="trash" size="small" />
-                                  </ion-button>
-                                </ion-buttons>
-                                : ''}
-                            </ion-item>
-                          </ion-card-header>
-                          <ion-card-content>
-                            <p class="plain">{note.text}</p>
-                          </ion-card-content>
-                        </ion-card>
+                        <note-card note={note} readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
+                          onEdit={e => this.onEditNoteClicked(e.detail)}
+                          onDelete={e => this.onDeleteNoteClicked(e.detail)} />
                       </ion-col>
                     </ion-row>
                   )}
@@ -275,19 +257,6 @@ export class PageRecipe {
     }
     return (
       <span class="ion-text-nowrap">Created: {formatDate(createdAt)}</span>
-    );
-  }
-
-  private getNoteDatesText(createdAt: string, modifiedAt: string) {
-    if (createdAt !== modifiedAt) {
-      return (
-        <span>
-          <span class="ion-text-nowrap">{formatDate(createdAt)}</span> <span class="ion-text-nowrap">(edited: {formatDate(modifiedAt)})</span>
-        </span>
-      );
-    }
-    return (
-      <span class="ion-text-nowrap">{formatDate(createdAt)}</span>
     );
   }
 

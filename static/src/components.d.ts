@@ -20,6 +20,10 @@ export namespace Components {
     }
     interface ImageUploadBrowser {
     }
+    interface NoteCard {
+        "note": Note;
+        "readonly": boolean;
+    }
     interface NoteEditor {
         "note": Note;
     }
@@ -98,6 +102,10 @@ export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
 }
+export interface NoteCardCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLNoteCardElement;
+}
 export interface PageNavigatorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLPageNavigatorElement;
@@ -132,6 +140,12 @@ declare global {
     var HTMLImageUploadBrowserElement: {
         prototype: HTMLImageUploadBrowserElement;
         new (): HTMLImageUploadBrowserElement;
+    };
+    interface HTMLNoteCardElement extends Components.NoteCard, HTMLStencilElement {
+    }
+    var HTMLNoteCardElement: {
+        prototype: HTMLNoteCardElement;
+        new (): HTMLNoteCardElement;
     };
     interface HTMLNoteEditorElement extends Components.NoteEditor, HTMLStencilElement {
     }
@@ -269,6 +283,7 @@ declare global {
         "app-root": HTMLAppRootElement;
         "five-star-rating": HTMLFiveStarRatingElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
+        "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
         "page-admin-configuration": HTMLPageAdminConfigurationElement;
@@ -304,6 +319,12 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface ImageUploadBrowser {
+    }
+    interface NoteCard {
+        "note"?: Note;
+        "onDelete"?: (event: NoteCardCustomEvent<Note>) => void;
+        "onEdit"?: (event: NoteCardCustomEvent<Note>) => void;
+        "readonly"?: boolean;
     }
     interface NoteEditor {
         "note"?: Note;
@@ -379,6 +400,7 @@ declare namespace LocalJSX {
         "app-root": AppRoot;
         "five-star-rating": FiveStarRating;
         "image-upload-browser": ImageUploadBrowser;
+        "note-card": NoteCard;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
         "page-admin-configuration": PageAdminConfiguration;
@@ -410,6 +432,7 @@ declare module "@stencil/core" {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
+            "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
             "page-admin-configuration": LocalJSX.PageAdminConfiguration & JSXBase.HTMLAttributes<HTMLPageAdminConfigurationElement>;
