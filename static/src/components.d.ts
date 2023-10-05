@@ -5,9 +5,9 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
+import { Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, SortBy, User } from "./generated";
 import { Color } from "@ionic/core";
-export { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
+export { Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, SortBy, User } from "./generated";
 export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {
@@ -78,6 +78,13 @@ export namespace Components {
     interface RecipeStateSelector {
         "selectedStates": RecipeState[];
     }
+    interface RecipeViewer {
+        "links": RecipeCompact[];
+        "mainImage": RecipeImage;
+        "rating": number;
+        "readonly": boolean;
+        "recipe": Recipe;
+    }
     interface SearchFilterEditor {
         "name": string;
         "prompt": string;
@@ -113,6 +120,10 @@ export interface PageNavigatorCustomEvent<T> extends CustomEvent<T> {
 export interface RecipeStateSelectorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLRecipeStateSelectorElement;
+}
+export interface RecipeViewerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLRecipeViewerElement;
 }
 export interface SortBySelectorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -255,6 +266,12 @@ declare global {
         prototype: HTMLRecipeStateSelectorElement;
         new (): HTMLRecipeStateSelectorElement;
     };
+    interface HTMLRecipeViewerElement extends Components.RecipeViewer, HTMLStencilElement {
+    }
+    var HTMLRecipeViewerElement: {
+        prototype: HTMLRecipeViewerElement;
+        new (): HTMLRecipeViewerElement;
+    };
     interface HTMLSearchFilterEditorElement extends Components.SearchFilterEditor, HTMLStencilElement {
     }
     var HTMLSearchFilterEditorElement: {
@@ -302,6 +319,7 @@ declare global {
         "recipe-editor": HTMLRecipeEditorElement;
         "recipe-link-editor": HTMLRecipeLinkEditorElement;
         "recipe-state-selector": HTMLRecipeStateSelectorElement;
+        "recipe-viewer": HTMLRecipeViewerElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
         "sort-by-selector": HTMLSortBySelectorElement;
         "tags-input": HTMLTagsInputElement;
@@ -375,6 +393,16 @@ declare namespace LocalJSX {
         "onSelectedStatesChanged"?: (event: RecipeStateSelectorCustomEvent<RecipeState[]>) => void;
         "selectedStates"?: RecipeState[];
     }
+    interface RecipeViewer {
+        "links"?: RecipeCompact[];
+        "mainImage"?: RecipeImage;
+        "onDeleteLinkClicked"?: (event: RecipeViewerCustomEvent<RecipeCompact>) => void;
+        "onRatingSelected"?: (event: RecipeViewerCustomEvent<number>) => void;
+        "onTagClicked"?: (event: RecipeViewerCustomEvent<string>) => void;
+        "rating"?: number;
+        "readonly"?: boolean;
+        "recipe"?: Recipe;
+    }
     interface SearchFilterEditor {
         "name"?: string;
         "prompt"?: string;
@@ -419,6 +447,7 @@ declare namespace LocalJSX {
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": RecipeLinkEditor;
         "recipe-state-selector": RecipeStateSelector;
+        "recipe-viewer": RecipeViewer;
         "search-filter-editor": SearchFilterEditor;
         "sort-by-selector": SortBySelector;
         "tags-input": TagsInput;
@@ -451,6 +480,7 @@ declare module "@stencil/core" {
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
             "recipe-state-selector": LocalJSX.RecipeStateSelector & JSXBase.HTMLAttributes<HTMLRecipeStateSelectorElement>;
+            "recipe-viewer": LocalJSX.RecipeViewer & JSXBase.HTMLAttributes<HTMLRecipeViewerElement>;
             "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
             "sort-by-selector": LocalJSX.SortBySelector & JSXBase.HTMLAttributes<HTMLSortBySelectorElement>;
             "tags-input": LocalJSX.TagsInput & JSXBase.HTMLAttributes<HTMLTagsInputElement>;
