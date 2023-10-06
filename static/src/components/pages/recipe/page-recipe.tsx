@@ -124,8 +124,8 @@ export class PageRecipe {
                     <ion-row>
                       <ion-col>
                         <note-card note={note} readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                          onEdit={e => this.onEditNoteClicked(e.detail)}
-                          onDelete={e => this.onDeleteNoteClicked(e.detail)} />
+                          onEditClicked={e => this.onEditNoteClicked(e.detail)}
+                          onDeleteClicked={e => this.onDeleteNoteClicked(e.detail)} />
                       </ion-col>
                     </ion-row>
                   )}
