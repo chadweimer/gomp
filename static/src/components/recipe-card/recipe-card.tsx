@@ -4,6 +4,7 @@ import { RecipeCompact, RecipeState } from '../../generated';
 @Component({
   tag: 'recipe-card',
   styleUrl: 'recipe-card.css',
+  scoped: true,
 })
 export class RecipeCard {
   @Prop() recipe: RecipeCompact = {
