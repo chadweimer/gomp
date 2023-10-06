@@ -25,7 +25,7 @@ export class RecipeViewer {
           <ion-card-content>
             <ion-item lines="none">
               {this.mainImage ?
-                <a class="ion-margin-end" href={this.mainImage.url} target="_blank">
+                <a class="ion-margin-end" href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
                   <ion-avatar slot="start" class="large">
                     <img src={this.mainImage.thumbnailUrl} />
                   </ion-avatar>
