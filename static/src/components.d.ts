@@ -5,8 +5,10 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
-export { Note, Recipe, RecipeCompact, RecipeState, SearchFilter, SortBy, User } from "./generated";
+import { Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, SortBy, User } from "./generated";
+import { Color } from "@ionic/core";
+export { Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, SortBy, User } from "./generated";
+export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {
     }
@@ -17,6 +19,10 @@ export namespace Components {
         "value": number;
     }
     interface ImageUploadBrowser {
+    }
+    interface NoteCard {
+        "note": Note;
+        "readonly": boolean;
     }
     interface NoteEditor {
         "note": Note;
@@ -35,6 +41,12 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface PageLogin {
+    }
+    interface PageNavigator {
+        "color": Color;
+        "fill": 'clear' | 'outline' | 'solid' | 'default';
+        "numPages": number;
+        "page": number;
     }
     interface PageRecipe {
         "activatedCallback": () => Promise<void>;
@@ -66,6 +78,13 @@ export namespace Components {
     interface RecipeStateSelector {
         "selectedStates": RecipeState[];
     }
+    interface RecipeViewer {
+        "links": RecipeCompact[];
+        "mainImage": RecipeImage;
+        "rating": number;
+        "readonly": boolean;
+        "recipe": Recipe;
+    }
     interface SearchFilterEditor {
         "name": string;
         "prompt": string;
@@ -90,9 +109,21 @@ export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
 }
+export interface NoteCardCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLNoteCardElement;
+}
+export interface PageNavigatorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLPageNavigatorElement;
+}
 export interface RecipeStateSelectorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLRecipeStateSelectorElement;
+}
+export interface RecipeViewerCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLRecipeViewerElement;
 }
 export interface SortBySelectorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -120,6 +151,12 @@ declare global {
     var HTMLImageUploadBrowserElement: {
         prototype: HTMLImageUploadBrowserElement;
         new (): HTMLImageUploadBrowserElement;
+    };
+    interface HTMLNoteCardElement extends Components.NoteCard, HTMLStencilElement {
+    }
+    var HTMLNoteCardElement: {
+        prototype: HTMLNoteCardElement;
+        new (): HTMLNoteCardElement;
     };
     interface HTMLNoteEditorElement extends Components.NoteEditor, HTMLStencilElement {
     }
@@ -162,6 +199,12 @@ declare global {
     var HTMLPageLoginElement: {
         prototype: HTMLPageLoginElement;
         new (): HTMLPageLoginElement;
+    };
+    interface HTMLPageNavigatorElement extends Components.PageNavigator, HTMLStencilElement {
+    }
+    var HTMLPageNavigatorElement: {
+        prototype: HTMLPageNavigatorElement;
+        new (): HTMLPageNavigatorElement;
     };
     interface HTMLPageRecipeElement extends Components.PageRecipe, HTMLStencilElement {
     }
@@ -223,6 +266,12 @@ declare global {
         prototype: HTMLRecipeStateSelectorElement;
         new (): HTMLRecipeStateSelectorElement;
     };
+    interface HTMLRecipeViewerElement extends Components.RecipeViewer, HTMLStencilElement {
+    }
+    var HTMLRecipeViewerElement: {
+        prototype: HTMLRecipeViewerElement;
+        new (): HTMLRecipeViewerElement;
+    };
     interface HTMLSearchFilterEditorElement extends Components.SearchFilterEditor, HTMLStencilElement {
     }
     var HTMLSearchFilterEditorElement: {
@@ -251,6 +300,7 @@ declare global {
         "app-root": HTMLAppRootElement;
         "five-star-rating": HTMLFiveStarRatingElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
+        "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
         "page-admin-configuration": HTMLPageAdminConfigurationElement;
@@ -258,6 +308,7 @@ declare global {
         "page-admin-users": HTMLPageAdminUsersElement;
         "page-home": HTMLPageHomeElement;
         "page-login": HTMLPageLoginElement;
+        "page-navigator": HTMLPageNavigatorElement;
         "page-recipe": HTMLPageRecipeElement;
         "page-search": HTMLPageSearchElement;
         "page-settings": HTMLPageSettingsElement;
@@ -268,6 +319,7 @@ declare global {
         "recipe-editor": HTMLRecipeEditorElement;
         "recipe-link-editor": HTMLRecipeLinkEditorElement;
         "recipe-state-selector": HTMLRecipeStateSelectorElement;
+        "recipe-viewer": HTMLRecipeViewerElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
         "sort-by-selector": HTMLSortBySelectorElement;
         "tags-input": HTMLTagsInputElement;
@@ -286,6 +338,12 @@ declare namespace LocalJSX {
     }
     interface ImageUploadBrowser {
     }
+    interface NoteCard {
+        "note"?: Note;
+        "onDeleteClicked"?: (event: NoteCardCustomEvent<Note>) => void;
+        "onEditClicked"?: (event: NoteCardCustomEvent<Note>) => void;
+        "readonly"?: boolean;
+    }
     interface NoteEditor {
         "note"?: Note;
     }
@@ -300,6 +358,13 @@ declare namespace LocalJSX {
     interface PageHome {
     }
     interface PageLogin {
+    }
+    interface PageNavigator {
+        "color"?: Color;
+        "fill"?: 'clear' | 'outline' | 'solid' | 'default';
+        "numPages"?: number;
+        "onPageChanged"?: (event: PageNavigatorCustomEvent<number>) => void;
+        "page"?: number;
     }
     interface PageRecipe {
         "recipeId"?: number;
@@ -328,6 +393,16 @@ declare namespace LocalJSX {
         "onSelectedStatesChanged"?: (event: RecipeStateSelectorCustomEvent<RecipeState[]>) => void;
         "selectedStates"?: RecipeState[];
     }
+    interface RecipeViewer {
+        "links"?: RecipeCompact[];
+        "mainImage"?: RecipeImage;
+        "onDeleteLinkClicked"?: (event: RecipeViewerCustomEvent<RecipeCompact>) => void;
+        "onRatingSelected"?: (event: RecipeViewerCustomEvent<number>) => void;
+        "onTagClicked"?: (event: RecipeViewerCustomEvent<string>) => void;
+        "rating"?: number;
+        "readonly"?: boolean;
+        "recipe"?: Recipe;
+    }
     interface SearchFilterEditor {
         "name"?: string;
         "prompt"?: string;
@@ -353,6 +428,7 @@ declare namespace LocalJSX {
         "app-root": AppRoot;
         "five-star-rating": FiveStarRating;
         "image-upload-browser": ImageUploadBrowser;
+        "note-card": NoteCard;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
         "page-admin-configuration": PageAdminConfiguration;
@@ -360,6 +436,7 @@ declare namespace LocalJSX {
         "page-admin-users": PageAdminUsers;
         "page-home": PageHome;
         "page-login": PageLogin;
+        "page-navigator": PageNavigator;
         "page-recipe": PageRecipe;
         "page-search": PageSearch;
         "page-settings": PageSettings;
@@ -370,6 +447,7 @@ declare namespace LocalJSX {
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": RecipeLinkEditor;
         "recipe-state-selector": RecipeStateSelector;
+        "recipe-viewer": RecipeViewer;
         "search-filter-editor": SearchFilterEditor;
         "sort-by-selector": SortBySelector;
         "tags-input": TagsInput;
@@ -383,6 +461,7 @@ declare module "@stencil/core" {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
+            "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
             "page-admin-configuration": LocalJSX.PageAdminConfiguration & JSXBase.HTMLAttributes<HTMLPageAdminConfigurationElement>;
@@ -390,6 +469,7 @@ declare module "@stencil/core" {
             "page-admin-users": LocalJSX.PageAdminUsers & JSXBase.HTMLAttributes<HTMLPageAdminUsersElement>;
             "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
             "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
+            "page-navigator": LocalJSX.PageNavigator & JSXBase.HTMLAttributes<HTMLPageNavigatorElement>;
             "page-recipe": LocalJSX.PageRecipe & JSXBase.HTMLAttributes<HTMLPageRecipeElement>;
             "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
             "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
@@ -400,6 +480,7 @@ declare module "@stencil/core" {
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
             "recipe-state-selector": LocalJSX.RecipeStateSelector & JSXBase.HTMLAttributes<HTMLRecipeStateSelectorElement>;
+            "recipe-viewer": LocalJSX.RecipeViewer & JSXBase.HTMLAttributes<HTMLRecipeViewerElement>;
             "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
             "sort-by-selector": LocalJSX.SortBySelector & JSXBase.HTMLAttributes<HTMLSortBySelectorElement>;
             "tags-input": LocalJSX.TagsInput & JSXBase.HTMLAttributes<HTMLTagsInputElement>;

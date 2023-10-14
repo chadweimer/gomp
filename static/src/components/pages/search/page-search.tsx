@@ -62,34 +62,16 @@ export class PageSearch {
                     <ion-icon slot="start" icon="swap-vertical" />
                     {capitalizeFirstLetter(state.searchFilter.sortBy)}
                   </ion-button>
-                  {state.searchFilter.sortDir === SortDir.Asc ?
-                    <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Desc)}>
-                      <ion-icon slot="icon-only" icon="arrow-up" />
-                    </ion-button>
-                    :
-                    <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(SortDir.Asc)}>
-                      <ion-icon slot="icon-only" icon="arrow-down" />
-                    </ion-button>
-                  }
-                  {state.searchSettings.viewMode === SearchViewMode.Card ?
-                    <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(SearchViewMode.List)}>
-                      <ion-icon slot="icon-only" icon="grid" />
-                    </ion-button>
-                    :
-                    <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(SearchViewMode.Card)}>
-                      <ion-icon slot="icon-only" icon="list" />
-                    </ion-button>
-                  }
+                  <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}>
+                    <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
+                  </ion-button>
+                  <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}>
+                    <ion-icon slot="icon-only" icon={state.searchSettings.viewMode === SearchViewMode.Card ? 'grid' : 'list'} />
+                  </ion-button>
                 </ion-buttons>
               </ion-col>
               <ion-col class="ion-hide-lg-down">
-                <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage = 1}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage--}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {state.searchNumPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage++}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage = state.searchNumPages}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
-                </ion-buttons>
+                <page-navigator class="ion-justify-content-center" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
               </ion-col>
               <ion-col class="ion-hide-lg-down" />
             </ion-row>
@@ -115,13 +97,7 @@ export class PageSearch {
           <ion-grid>
             <ion-row>
               <ion-col>
-                <ion-buttons class="ion-justify-content-center">
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage = 1}><ion-icon slot="icon-only" icon="arrow-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === 1} onClick={() => state.searchPage--}><ion-icon slot="icon-only" icon="chevron-back" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled>{state.searchPage} of {state.searchNumPages}</ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage++}><ion-icon slot="icon-only" icon="chevron-forward" /></ion-button>
-                  <ion-button fill="solid" color="secondary" disabled={state.searchPage === state.searchNumPages} onClick={() => state.searchPage = state.searchNumPages}><ion-icon slot="icon-only" icon="arrow-forward" /></ion-button>
-                </ion-buttons>
+                <page-navigator class="ion-justify-content-center" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
               </ion-col>
             </ion-row>
           </ion-grid>
