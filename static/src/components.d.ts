@@ -340,8 +340,8 @@ declare namespace LocalJSX {
     }
     interface NoteCard {
         "note"?: Note;
-        "onDelete"?: (event: NoteCardCustomEvent<Note>) => void;
-        "onEdit"?: (event: NoteCardCustomEvent<Note>) => void;
+        "onDeleteClicked"?: (event: NoteCardCustomEvent<Note>) => void;
+        "onEditClicked"?: (event: NoteCardCustomEvent<Note>) => void;
         "readonly"?: boolean;
     }
     interface NoteEditor {

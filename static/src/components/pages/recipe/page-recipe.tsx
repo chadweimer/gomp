@@ -85,6 +85,7 @@ export class PageRecipe {
                   rating={this.recipeRating}
                   mainImage={this.mainImage}
                   links={this.links}
+                  readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
                   onRatingSelected={e => this.onRatingSelected(e.detail)}
                   onDeleteLinkClicked={e => this.onDeleteLinkClicked(e.detail)}
                   onTagClicked={e => this.onTagClicked(e.detail)} />
@@ -123,7 +124,9 @@ export class PageRecipe {
                   {this.notes?.map(note =>
                     <ion-row>
                       <ion-col>
-                        <note-card note={note} readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
+                        <note-card
+                          note={note}
+                          readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
                           onEditClicked={e => this.onEditNoteClicked(e.detail)}
                           onDeleteClicked={e => this.onDeleteNoteClicked(e.detail)} />
                       </ion-col>
