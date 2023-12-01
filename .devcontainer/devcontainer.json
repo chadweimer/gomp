@@ -3,13 +3,7 @@
 {
   "name": "Go",
   "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      // Update the VARIANT arg to pick a version of Go: 1, 1.18, 1.17
-      // Append -bullseye or -buster to pin to an OS version.
-      // Use -bullseye variants on local arm64/Apple Silicon.
-      "VARIANT": "1.20"
-    }
+    "dockerfile": "Dockerfile"
   },
   // Configure tool-specific properties.
   "customizations": {
@@ -46,10 +40,7 @@
       "configureZshAsDefaultShell": true,
       "installOhMyZsh": false
     },
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest",
-      "ppa": false
-    },
+    "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/go:1": {
       "version": "1.20"
