@@ -30,13 +30,13 @@ jobs:
           name: coverage
           path: |
             build/coverage/*
-      - uses: paambaati/codeclimate-action@v5.0.0
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          coverageLocations: |
-            ${{ github.workspace }}/build/coverage/server.out:gocov
-            ${{ github.workspace }}/build/coverage/client/clover.xml:clover
+      # - uses: paambaati/codeclimate-action@v5.0.0
+      #   env:
+      #     CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      #   with:
+      #     coverageLocations: |
+      #       ${{ github.workspace }}/build/coverage/server.out:gocov
+      #       ${{ github.workspace }}/build/coverage/client/clover.xml:clover
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
