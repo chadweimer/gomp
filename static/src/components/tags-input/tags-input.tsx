@@ -63,7 +63,7 @@ export class TagsInput {
 
   private filterSuggestedTags(suggestions: string[]) {
     this.filteredSuggestions =
-      suggestions?.filter(value => !this.internalValue.includes(value) ?? true)
+      suggestions?.filter(value => !(this.internalValue?.includes(value) ?? false))
       ?? [];
   }
 
@@ -77,7 +77,7 @@ export class TagsInput {
   }
 
   private removeTag(tag: string) {
-    this.internalValue = this.internalValue.filter(value => value !== tag);
+    this.internalValue = this.internalValue?.filter(value => value !== tag) ?? [];
     this.filterSuggestedTags(this.suggestions);
     this.valueChanged.emit(this.internalValue);
   }
