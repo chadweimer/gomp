@@ -22,7 +22,7 @@ export class RecipeStateSelector {
     return (
       <ion-list>
         {Object.values(RecipeState).map(item =>
-          <ion-item>
+          <ion-item key={item}>
             <ion-label>{capitalizeFirstLetter(item)}</ion-label>
             <ion-checkbox slot="end" value={item} checked={this.selectedStates.includes(item)} onIonChange={e => this.onSelectionChanged(e)}></ion-checkbox>
           </ion-item>

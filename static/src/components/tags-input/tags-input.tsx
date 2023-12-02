@@ -40,7 +40,7 @@ export class TagsInput {
           {this.internalValue?.length > 0 ?
             <div class="ion-padding-top">
               {this.internalValue?.map(tag =>
-                <ion-chip onClick={() => this.removeTag(tag)}>
+                <ion-chip key={tag} onClick={() => this.removeTag(tag)}>
                   {tag}
                   <ion-icon icon="close-circle" />
                 </ion-chip>
@@ -51,7 +51,7 @@ export class TagsInput {
         </ion-item>
         <div class="ion-padding">
           {this.filteredSuggestions?.map(tag =>
-            <ion-chip color="success" onClick={() => this.addTag(tag)}>
+            <ion-chip key={tag} color="success" onClick={() => this.addTag(tag)}>
               {tag}
               <ion-icon icon="add-circle" />
             </ion-chip>

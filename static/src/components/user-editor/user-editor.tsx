@@ -48,7 +48,7 @@ export class UserEditor {
               <ion-label position="stacked">Access Level</ion-label>
               <ion-select value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
                 {Object.values(AccessLevel).map(item =>
-                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>

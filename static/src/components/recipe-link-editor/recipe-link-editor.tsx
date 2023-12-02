@@ -54,7 +54,7 @@ export class RecipeLinkEditor {
                 </ion-list-header>
                 <ion-radio-group value={this.selectedRecipeId} onIonChange={e => this.selectedRecipeId = e.detail.value} allow-empty-selection>
                   {this.matchingRecipes.map(recipe =>
-                    <ion-item>
+                    <ion-item key={recipe.id}>
                       <ion-avatar slot="start">
                         {recipe.thumbnailUrl ? <img src={recipe.thumbnailUrl} /> : ''}
                       </ion-avatar>

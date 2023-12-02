@@ -30,7 +30,7 @@ export class FiveStarRating {
     return (
       <Host>
         {this.ratings.map(rating =>
-          <ion-icon icon={this.icon} size={this.size}
+          <ion-icon key={rating} icon={this.icon} size={this.size}
             class={{
               ['icon']: true,
               [rating.class]: true,
