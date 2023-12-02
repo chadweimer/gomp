@@ -28,6 +28,7 @@
         "golang.go",
         "ms-azuretools.vscode-docker",
         "redhat.vscode-yaml",
+        "SonarSource.sonarlint-vscode",
         "spmeesseman.vscode-taskexplorer",
         "tamasfe.even-better-toml",
         "visualstudioexptteam.vscodeintellicode",

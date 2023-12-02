@@ -4,4 +4,8 @@
   "go.lintFlags": [
     "-config=${workspaceRoot}/revive.toml"
   ],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "chadweimer",
+    "projectKey": "chadweimer_gomp"
+  },
 }
