@@ -52,9 +52,9 @@ export class SearchFilterEditor {
             {this.showSavedLoader ?
               <ion-item>
                 <ion-label>Load From Saved</ion-label>
-                <ion-select value={this.selectedFilterId} interface="popover" onIonChange={e => this.selectedFilterId = e.detail.value }>
+                <ion-select value={this.selectedFilterId} interface="popover" onIonChange={e => this.selectedFilterId = e.detail.value}>
                   {this.filters?.map(item =>
-                    <ion-select-option value={item.id}>{item.name}</ion-select-option>
+                    <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
                   )}
                 </ion-select>
                 <ion-button slot="end" fill="clear" disabled={this.selectedFilterId === null} onClick={() => this.onLoadSearchClicked()}>
@@ -78,7 +78,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">Sort By</ion-label>
               <ion-select value={this.searchFilter.sortBy} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}>
                 {Object.values(SortBy).map(item =>
-                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>
@@ -86,7 +86,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">Sort Order</ion-label>
               <ion-select value={this.searchFilter.sortDir} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value }}>
                 {Object.values(SortDir).map(item =>
-                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>
@@ -94,7 +94,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">Pictures</ion-label>
               <ion-select value={toYesNoAny(this.searchFilter.withPictures)} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) }}>
                 {Object.values(YesNoAny).map(item =>
-                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>
@@ -102,7 +102,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">States</ion-label>
               <ion-select multiple value={this.searchFilter.states} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, states: e.detail.value }}>
                 {Object.values(RecipeState).map(item =>
-                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>
@@ -110,7 +110,7 @@ export class SearchFilterEditor {
               <ion-label position="stacked">Fields to Search</ion-label>
               <ion-select multiple value={this.searchFilter.fields} interface="popover" onIonChange={e => this.searchFilter = { ...this.searchFilter, fields: e.detail.value }}>
                 {Object.values(SearchField).map(item =>
-                  <ion-select-option value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>

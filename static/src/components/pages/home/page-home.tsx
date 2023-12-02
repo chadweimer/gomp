@@ -23,7 +23,7 @@ export class PageHome {
 
   @Method()
   async activatedCallback() {
-   this.currentUserSettings = await loadUserSettings();
+    this.currentUserSettings = await loadUserSettings();
     await this.loadSearchFilters();
   }
 
@@ -42,7 +42,7 @@ export class PageHome {
             </ion-row>
           </ion-grid>
           {this.searches.map(search =>
-            <div>
+            <div key={search.title}>
               <ion-grid class="no-pad">
                 <ion-row>
                   <ion-col>
@@ -54,7 +54,7 @@ export class PageHome {
                 </ion-row>
                 <ion-row>
                   {search.results.map(recipe =>
-                    <ion-col size="6" size-md="4" size-xl="2">
+                    <ion-col key={recipe.id} size="6" size-md="4" size-xl="2">
                       <recipe-card recipe={recipe} size="small" />
                     </ion-col>
                   )}

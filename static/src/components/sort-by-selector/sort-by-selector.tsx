@@ -18,7 +18,7 @@ export class SortBySelector {
       <ion-list>
         <ion-radio-group value={this.sortBy} onIonChange={e => this.onSelectionChanged(e)}>
           {Object.values(SortBy).map(item =>
-            <ion-item>
+            <ion-item key={item}>
               <ion-label>{capitalizeFirstLetter(item)}</ion-label>
               <ion-radio slot="end" value={item}></ion-radio>
             </ion-item>

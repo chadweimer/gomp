@@ -84,7 +84,7 @@ export class RecipeViewer {
                 <ion-label position="stacked">Related Recipes</ion-label>
                 <div class="ion-padding-top fill">
                   {this.links.map(link =>
-                    <ion-item lines="none">
+                    <ion-item key={link.id} lines="none">
                       <ion-avatar slot="start">
                         {link.thumbnailUrl ? <img src={link.thumbnailUrl} /> : ''}
                       </ion-avatar>
@@ -105,7 +105,7 @@ export class RecipeViewer {
               : ''}
             <div class="ion-margin-top">
               {this.recipe?.tags?.map(tag =>
-                <ion-chip onClick={() => this.tagClicked.emit(tag)}>{tag}</ion-chip>
+                <ion-chip key={tag} onClick={() => this.tagClicked.emit(tag)}>{tag}</ion-chip>
               )}
             </div>
           </ion-card-content>

@@ -26,7 +26,7 @@ export class PageSettingsSearches {
           <ion-grid class="no-pad">
             <ion-row>
               {this.filters?.map(filter =>
-                <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
+                <ion-col key={filter.id} size="12" size-md="6" size-lg="4" size-xl="3">
                   <ion-card>
                     <ion-card-content>
                       <ion-item lines="none">

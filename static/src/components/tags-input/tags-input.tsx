@@ -40,7 +40,7 @@ export class TagsInput {
           {this.internalValue?.length > 0 ?
             <div class="ion-padding-top">
               {this.internalValue?.map(tag =>
-                <ion-chip onClick={() => this.removeTag(tag)}>
+                <ion-chip key={tag} onClick={() => this.removeTag(tag)}>
                   {tag}
                   <ion-icon icon="close-circle" />
                 </ion-chip>
@@ -51,7 +51,7 @@ export class TagsInput {
         </ion-item>
         <div class="ion-padding">
           {this.filteredSuggestions?.map(tag =>
-            <ion-chip color="success" onClick={() => this.addTag(tag)}>
+            <ion-chip key={tag} color="success" onClick={() => this.addTag(tag)}>
               {tag}
               <ion-icon icon="add-circle" />
             </ion-chip>
@@ -63,7 +63,7 @@ export class TagsInput {
 
   private filterSuggestedTags(suggestions: string[]) {
     this.filteredSuggestions =
-      suggestions?.filter(value => !this.internalValue.includes(value) ?? true)
+      suggestions?.filter(value => !(this.internalValue?.includes(value) ?? false))
       ?? [];
   }
 
@@ -77,7 +77,7 @@ export class TagsInput {
   }
 
   private removeTag(tag: string) {
-    this.internalValue = this.internalValue.filter(value => value !== tag);
+    this.internalValue = this.internalValue?.filter(value => value !== tag) ?? [];
     this.filterSuggestedTags(this.suggestions);
     this.valueChanged.emit(this.internalValue);
   }

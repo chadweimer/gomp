@@ -97,7 +97,7 @@ export class PageRecipe {
                 <ion-grid class="no-pad">
                   <ion-row class="ion-justify-content-center">
                     {this.images?.map(image =>
-                      <ion-col size="auto">
+                      <ion-col key={image.id} size="auto">
                         <ion-card>
                           <a href={image.url} target="_blank" rel="noopener noreferrer"><img class="thumb" src={image.thumbnailUrl} /></a>
                           {hasScope(state.jwtToken, AccessLevel.Editor) ?
@@ -122,7 +122,7 @@ export class PageRecipe {
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
                 <ion-grid>
                   {this.notes?.map(note =>
-                    <ion-row>
+                    <ion-row key={note.id}>
                       <ion-col>
                         <note-card
                           note={note}
