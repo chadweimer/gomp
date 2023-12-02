@@ -129,28 +129,28 @@ export class PageSearch {
     return RecipeState.Active;
   }
 
-  private async setRecipeStates(states: RecipeState[]) {
+  private setRecipeStates(states: RecipeState[]) {
     state.searchFilter = {
       ...state.searchFilter,
       states: states
     };
   }
 
-  private async setSortBy(sortBy: SortBy) {
+  private setSortBy(sortBy: SortBy) {
     state.searchFilter = {
       ...state.searchFilter,
       sortBy: sortBy
     };
   }
 
-  private async setSortDir(sortDir: SortDir) {
+  private setSortDir(sortDir: SortDir) {
     state.searchFilter = {
       ...state.searchFilter,
       sortDir: sortDir
     };
   }
 
-  private async setViewMode(viewMode: SearchViewMode) {
+  private setViewMode(viewMode: SearchViewMode) {
     state.searchSettings = {
       ...state.searchSettings,
       viewMode: viewMode
