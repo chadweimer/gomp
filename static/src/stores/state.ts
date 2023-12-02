@@ -35,7 +35,13 @@ for (const prop of propsToSync) {
   if (val) {
     set(prop.key, prop.isObject ? JSON.parse(val) : val);
   }
-  onChange(prop.key, val => val ? prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val) : prop.storage.removeItem(prop.key));
+  onChange(prop.key, val => {
+    if (val) {
+      prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val);
+    } else {
+      prop.storage.removeItem(prop.key);
+    }
+  });
 }
 
 // Retrieve search results when search filters change
@@ -48,7 +54,7 @@ for (const prop of propsToSearch) {
     state.searchScrollPosition = 0;
 
     await refreshSearchResults();
-});
+  });
 }
 
 async function refreshSearchResults() {
