@@ -3,8 +3,8 @@
 Web-based recipe book.
 
 ![Continuous Integration](https://img.shields.io/github/actions/workflow/status/chadweimer/gomp/ci.yml?branch=master)
-[![Code Climate](https://img.shields.io/codeclimate/maintainability/chadweimer/gomp.svg)](https://codeclimate.com/github/chadweimer/gomp)
-[![Code Climate coverage](https://img.shields.io/codeclimate/coverage/chadweimer/gomp.svg)](https://codeclimate.com/github/chadweimer/gomp)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=chadweimer_gomp&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=chadweimer_gomp)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=chadweimer_gomp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=chadweimer_gomp)
 [![Closed Pull Requests](https://img.shields.io/github/issues-pr-closed-raw/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/pulls)
 [![GitHub release](https://img.shields.io/github/release/chadweimer/gomp.svg)](https://github.com/chadweimer/gomp/releases)
 [![license](https://img.shields.io/github/license/chadweimer/gomp.svg)](LICENSE)

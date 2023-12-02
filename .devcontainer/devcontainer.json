@@ -24,6 +24,7 @@
         "eamodio.gitlens",
         "editorconfig.editorconfig",
         "formulahendry.auto-rename-tag",
+        "GitHub.vscode-github-actions",
         "golang.go",
         "ms-azuretools.vscode-docker",
         "redhat.vscode-yaml",
