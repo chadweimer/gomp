@@ -161,11 +161,11 @@ $(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	mkdir -p $(BUILD_DIR)/coverage
 	go test -coverprofile=$@ -coverpkg=./... ./...
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@
-	go tool cover -func=$@
+	#go tool cover -func=$@
 	# Use path instead of go module, to be consistent with coverage output from the client tests.
 	# This is needed because the github action used to send the results to codeclimeate do not
 	# support different outputs using different prefixes.
-	sed -i 's#github\.com/chadweimer/gomp#$(shell pwd)#g' $@
+	#sed -i 's#github\.com/chadweimer/gomp#$(shell pwd)#g' $@
 
 $(BUILD_DIR)/coverage/server.html: $(BUILD_DIR)/coverage/server.out
 	go tool cover -html=$< -o $@
