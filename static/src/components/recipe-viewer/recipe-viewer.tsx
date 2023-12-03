@@ -27,7 +27,7 @@ export class RecipeViewer {
               {this.mainImage ?
                 <a class="ion-margin-end" href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
                   <ion-avatar slot="start" class="large">
-                    <img src={this.mainImage.thumbnailUrl} />
+                    <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
                   </ion-avatar>
                 </a>
                 : ''}
@@ -86,7 +86,7 @@ export class RecipeViewer {
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
                       <ion-avatar slot="start">
-                        {link.thumbnailUrl ? <img src={link.thumbnailUrl} /> : ''}
+                        {link.thumbnailUrl ? <img alt="" src={link.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">

@@ -19,7 +19,7 @@ export class RecipeCard {
       <Host>
         <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}` : ''}>
           {this.recipe.thumbnailUrl
-            ? <img class={{ ['image']: true, [this.size]: true }} src={this.recipe.thumbnailUrl} />
+            ? <img class={{ ['image']: true, [this.size]: true }} alt="" src={this.recipe.thumbnailUrl} />
             : <div class={{ ['image']: true, [this.size]: true }} />}
           <ion-card-content>
             <div class="no-overflow">
