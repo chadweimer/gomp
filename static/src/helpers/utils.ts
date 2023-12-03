@@ -135,7 +135,11 @@ export async function getActiveComponent(tabs: HTMLIonTabsElement) {
   if (tabId !== undefined) {
     const tab = await tabs.getTab(tabId);
     if (tab.component !== undefined) {
-      return tab.querySelector(tab.component.toString());
+      if (tab.component instanceof HTMLElement) {
+        return tab.component;
+      } else if (typeof tab.component === 'string') {
+        return tab.querySelector(tab.component);
+      }
     } else {
       const nav = tab.querySelector('ion-nav');
       const activePage = await nav.getActive();
