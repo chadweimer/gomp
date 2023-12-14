@@ -1,4 +1,4 @@
-FROM alpine:3.18 as alpine
+FROM alpine:3.18 AS alpine
 ARG TARGETPLATFORM
 LABEL org.opencontainers.image.source "https://github.com/chadweimer/gomp"
 LABEL org.opencontainers.image.title "GOMP: Go Meal Planner"
