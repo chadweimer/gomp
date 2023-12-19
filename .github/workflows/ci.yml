@@ -24,7 +24,7 @@ jobs:
           node-version: "lts/*"
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.20.x"
+          go-version: "1.21.x"
       - run: make install
       - run: make lint test
       - uses: actions/upload-artifact@v3
@@ -47,7 +47,7 @@ jobs:
           node-version: "lts/*"
       - uses: actions/setup-go@v3
         with:
-          go-version: "1.20.x"
+          go-version: "1.21.x"
       - uses: docker/setup-buildx-action@v2
       - uses: docker/setup-qemu-action@v2
         with:

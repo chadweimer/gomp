@@ -35,9 +35,9 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
-	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0
-	go install github.com/securego/gosec/v2/cmd/gosec@v2.16.0
-	go install github.com/mgechev/revive@v1.3.2
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.16.2
+	go install github.com/securego/gosec/v2/cmd/gosec@v2.18.2
+	go install github.com/mgechev/revive@v1.3.4
 	go install github.com/golang/mock/mockgen@v1.6.0
 
 $(CLIENT_INSTALL_DIR): static/package.json
