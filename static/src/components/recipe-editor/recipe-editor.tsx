@@ -107,7 +107,7 @@ export class RecipeEditor {
             <ion-item>
               <ion-label position="stacked">Source</ion-label>
               <ion-input value={this.recipe.sourceUrl}
-                inputMode="url"
+                inputmode="url"
                 onIonBlur={e => this.recipe = { ...this.recipe, sourceUrl: e.target.value as string }} />
             </ion-item>
             <tags-input value={this.recipe.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
