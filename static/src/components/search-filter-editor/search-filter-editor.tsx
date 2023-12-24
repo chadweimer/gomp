@@ -65,12 +65,20 @@ export class SearchFilterEditor {
             {this.showName ?
               <ion-item>
                 <ion-label position="stacked">Name</ion-label>
-                <ion-input value={this.name} onIonBlur={e => this.name = e.target.value as string} required autofocus />
+                <ion-input value={this.name}
+                  autocorrect="on"
+                  spellcheck="true"
+                  onIonBlur={e => this.name = e.target.value as string}
+                  required
+                  autofocus />
               </ion-item>
               : ''}
             <ion-item>
               <ion-label position="stacked">Search Terms</ion-label>
-              <ion-input value={this.searchFilter.query} onIonBlur={e => this.searchFilter = { ...this.searchFilter, query: e.target.value as string }} />
+              <ion-input value={this.searchFilter.query}
+                autocorrect="on"
+                spellcheck="true"
+                onIonBlur={e => this.searchFilter = { ...this.searchFilter, query: e.target.value as string }} />
             </ion-item>
             <tags-input value={this.searchFilter.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
               onValueChanged={e => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />

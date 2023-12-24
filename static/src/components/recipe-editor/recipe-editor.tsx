@@ -49,7 +49,12 @@ export class RecipeEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item>
               <ion-label position="stacked">Name</ion-label>
-              <ion-input value={this.recipe.name} onIonBlur={e => this.recipe = { ...this.recipe, name: e.target.value as string }} required autofocus />
+              <ion-input value={this.recipe.name}
+                autocorrect="on"
+                spellcheck="true"
+                onIonBlur={e => this.recipe = { ...this.recipe, name: e.target.value as string }}
+                required
+                autofocus />
             </ion-item>
             {!this.recipe.id ?
               <ion-item lines="full">
@@ -61,39 +66,49 @@ export class RecipeEditor {
               : ''}
             <ion-item>
               <ion-label position="stacked">Serving Size</ion-label>
-              <ion-input value={this.recipe.servingSize} onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
+              <ion-input value={this.recipe.servingSize}
+                autocorrect="on"
+                inputmode="numeric"
+                spellcheck="true"
+                onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Ingredients</ion-label>
-              <ion-textarea
-                value={this.recipe.ingredients}
+              <ion-textarea value={this.recipe.ingredients}
+                autocorrect="on"
+                spellcheck="true"
                 onIonBlur={e => this.recipe = { ...this.recipe, ingredients: e.target.value }}
                 auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Directions</ion-label>
-              <ion-textarea
-                value={this.recipe.directions}
+              <ion-textarea value={this.recipe.directions}
+                autocorrect="on"
+                spellcheck="true"
                 onIonBlur={e => this.recipe = { ...this.recipe, directions: e.target.value }}
                 auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
-              <ion-textarea
-                value={this.recipe.storageInstructions}
+              <ion-textarea value={this.recipe.storageInstructions}
+                autocorrect="on"
+                spellcheck="true"
                 onIonBlur={e => this.recipe = { ...this.recipe, storageInstructions: e.target.value }}
                 auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Nutrition</ion-label>
-              <ion-textarea
-                value={this.recipe.nutritionInfo}
+              <ion-textarea value={this.recipe.nutritionInfo}
+                autocorrect="on"
+                spellcheck="true"
                 onIonBlur={e => this.recipe = { ...this.recipe, nutritionInfo: e.target.value }}
                 auto-grow />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Source</ion-label>
-              <ion-input inputMode="url" value={this.recipe.sourceUrl} onIonBlur={e => this.recipe = { ...this.recipe, sourceUrl: e.target.value as string }} />
+              <ion-input value={this.recipe.sourceUrl}
+                inputmode="url"
+                onIonBlur={e => this.recipe = { ...this.recipe, sourceUrl: e.target.value as string }} />
             </ion-item>
             <tags-input value={this.recipe.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
               onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }} />

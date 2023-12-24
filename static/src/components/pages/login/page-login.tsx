@@ -28,12 +28,20 @@ export class PageLogin {
                 <ion-card-content>
                   <ion-item>
                     <ion-label>Email</ion-label>
-                    <ion-input ref={el => this.usernameInput = el} type="email" onKeyDown={e => this.onInputKeyDown(e)} />
+                    <ion-input type="email"
+                      autocomplete="username"
+                      onKeyDown={e => this.onInputKeyDown(e)}
+                      ref={el => this.usernameInput = el}
+                      required />
                   </ion-item>
                   <ion-item>
                     <ion-icon slot="end" name="eye-off" />
                     <ion-label>Password</ion-label>
-                    <ion-input ref={el => this.passwordInput = el} type="password" onKeyDown={e => this.onInputKeyDown(e)} />
+                    <ion-input type="password"
+                      autocomplete="current-password"
+                      onKeyDown={e => this.onInputKeyDown(e)}
+                      ref={el => this.passwordInput = el}
+                      required />
                   </ion-item>
                   <ion-text color="danger">{this.errorMessage}</ion-text>
                 </ion-card-content>

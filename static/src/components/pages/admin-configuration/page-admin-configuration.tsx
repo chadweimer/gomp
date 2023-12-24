@@ -33,7 +33,11 @@ export class PageAdminConfiguration {
                     <ion-card-content>
                       <ion-item>
                         <ion-label position="stacked">Application Title</ion-label>
-                        <ion-input value={this.appConfig.title} onIonBlur={e => this.appConfig = { ...this.appConfig, title: e.target.value as string }} required />
+                        <ion-input value={this.appConfig.title}
+                          autocorrect="on"
+                          spellcheck="true"
+                          onIonBlur={e => this.appConfig = { ...this.appConfig, title: e.target.value as string }}
+                          required />
                       </ion-item>
                     </ion-card-content>
                     <ion-footer>

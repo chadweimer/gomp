@@ -41,7 +41,12 @@ export class RecipeLinkEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item>
               <ion-label position="stacked">Find Recipe</ion-label>
-              <ion-input value={this.query} onIonBlur={e => this.query = e.target.value as string} ref={el => this.searchInput = el} autofocus />
+              <ion-input value={this.query} type="search"
+                autocorrect="on"
+                spellcheck="true"
+                onIonBlur={e => this.query = e.target.value as string}
+                ref={el => this.searchInput = el}
+                autofocus />
             </ion-item>
             <ion-content>
               <ion-list lines="none">

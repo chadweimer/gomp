@@ -56,7 +56,7 @@ export class AppRoot {
           state.jwtToken = data.token;
           const resp = await axios.request(error.config);
           return resp;
-        } catch(retryError) {
+        } catch (retryError) {
           // Just log this; let the original error propogate
           console.error(retryError);
         } finally {
@@ -166,6 +166,8 @@ export class AppRoot {
                 <ion-item slot="end" lines="none" class="search">
                   <ion-icon icon="search" slot="start" />
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
+                    autocorrect="on"
+                    spellcheck="true"
                     onKeyDown={e => this.onSearchKeyDown(e)}
                     onIonBlur={() => this.searchBar.value = state.searchFilter?.query ?? ''}
                     ref={el => this.searchBar = el} />
