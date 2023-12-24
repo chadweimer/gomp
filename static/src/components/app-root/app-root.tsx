@@ -166,7 +166,7 @@ export class AppRoot {
                 <ion-item slot="end" lines="none" class="search">
                   <ion-icon icon="search" slot="start" />
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
-                    autocorrect="true"
+                    autocorrect="on"
                     spellcheck="true"
                     onKeyDown={e => this.onSearchKeyDown(e)}
                     onIonBlur={() => this.searchBar.value = state.searchFilter?.query ?? ''}

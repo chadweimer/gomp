@@ -66,7 +66,7 @@ export class SearchFilterEditor {
               <ion-item>
                 <ion-label position="stacked">Name</ion-label>
                 <ion-input value={this.name}
-                  autocorrect="true"
+                  autocorrect="on"
                   spellcheck="true"
                   onIonBlur={e => this.name = e.target.value as string}
                   required
@@ -76,7 +76,7 @@ export class SearchFilterEditor {
             <ion-item>
               <ion-label position="stacked">Search Terms</ion-label>
               <ion-input value={this.searchFilter.query}
-                autocorrect="true"
+                autocorrect="on"
                 spellcheck="true"
                 onIonBlur={e => this.searchFilter = { ...this.searchFilter, query: e.target.value as string }} />
             </ion-item>

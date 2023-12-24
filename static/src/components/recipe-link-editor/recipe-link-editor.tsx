@@ -42,7 +42,7 @@ export class RecipeLinkEditor {
             <ion-item>
               <ion-label position="stacked">Find Recipe</ion-label>
               <ion-input value={this.query} type="search"
-                autocorrect="true"
+                autocorrect="on"
                 spellcheck="true"
                 onIonBlur={e => this.query = e.target.value as string}
                 ref={el => this.searchInput = el}
