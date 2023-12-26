@@ -11,6 +11,7 @@ export class RecipeEditor {
   @Prop() recipe: Recipe = {
     name: '',
     servingSize: '',
+    time: '',
     nutritionInfo: '',
     ingredients: '',
     directions: '',
@@ -77,7 +78,7 @@ export class RecipeEditor {
               <ion-input value={this.recipe.time}
                 autocorrect="on"
                 spellcheck="true"
-                onIonBlur={e => this.recipe = { ...this.recipe, time: e.target.value }} />
+                onIonBlur={e => this.recipe = { ...this.recipe, time: e.target.value as string }} />
             </ion-item>
             <ion-item>
               <ion-label position="stacked">Ingredients</ion-label>
