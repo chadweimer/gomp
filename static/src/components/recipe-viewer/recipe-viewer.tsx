@@ -47,6 +47,12 @@ export class RecipeViewer {
                 <p class="plain ion-padding">{this.recipe?.servingSize}</p>
               </ion-item>
               : ''}
+            {this.recipe?.time ?
+              <ion-item lines="full">
+                <ion-label position="stacked">Time</ion-label>
+                <p class="plain ion-padding">{this.recipe?.time}</p>
+              </ion-item>
+              : ''}
             {this.recipe?.ingredients ?
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>

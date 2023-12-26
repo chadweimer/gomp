@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE recipe
+DROP COLUMN recipe_time;
+
+COMMIT;

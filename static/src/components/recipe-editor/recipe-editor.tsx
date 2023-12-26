@@ -73,6 +73,13 @@ export class RecipeEditor {
                 onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
             </ion-item>
             <ion-item>
+              <ion-label position="stacked">Time</ion-label>
+              <ion-input value={this.recipe.time}
+                autocorrect="on"
+                spellcheck="true"
+                onIonBlur={e => this.recipe = { ...this.recipe, time: e.target.value }} />
+            </ion-item>
+            <ion-item>
               <ion-label position="stacked">Ingredients</ion-label>
               <ion-textarea value={this.recipe.ingredients}
                 autocorrect="on"
