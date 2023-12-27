@@ -24,8 +24,20 @@ export async function redirect(route: string) {
   await router.push(route);
 }
 
-export function capitalizeFirstLetter(val: string) {
-  return val?.charAt(0).toLocaleUpperCase() + val?.slice(1);
+export function insertSpacesBetweenWords(val: string) {
+  if (val == undefined) {
+    return '';
+  }
+
+  return val.replace(/([A-Z])/g, ' $1').trim()
+}
+
+export function enumKeyFromValue(keys: object, val: string) {
+  if (val == undefined) {
+    return '';
+  }
+
+  return Object.keys(keys).find(key => keys[key] === val);
 }
 
 export function toYesNoAny(value: boolean | null) {

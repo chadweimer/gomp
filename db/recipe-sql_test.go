@@ -33,6 +33,7 @@ func Test_Recipe_Create(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, nil, nil,
 		},
 		{
@@ -44,6 +45,7 @@ func Test_Recipe_Create(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 				Tags:                []string{"A", "B"},
 			}, nil, nil,
 		},
@@ -56,6 +58,7 @@ func Test_Recipe_Create(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, sql.ErrNoRows, ErrNotFound,
 		},
 		{
@@ -67,6 +70,7 @@ func Test_Recipe_Create(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, sql.ErrConnDone, sql.ErrConnDone,
 		},
 	}
@@ -81,8 +85,8 @@ func Test_Recipe_Create(t *testing.T) {
 			expectedId := rand.Int63()
 
 			dbmock.ExpectBegin()
-			query := dbmock.ExpectQuery("INSERT INTO recipe \\(name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6, \\$7\\) RETURNING id").
-				WithArgs(test.recipe.Name, test.recipe.ServingSize, test.recipe.NutritionInfo, test.recipe.Ingredients, test.recipe.Directions, test.recipe.StorageInstructions, test.recipe.SourceUrl)
+			query := dbmock.ExpectQuery("INSERT INTO recipe \\(name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6, \\$7\\, \\$8\\) RETURNING id").
+				WithArgs(test.recipe.Name, test.recipe.ServingSize, test.recipe.NutritionInfo, test.recipe.Ingredients, test.recipe.Directions, test.recipe.StorageInstructions, test.recipe.SourceUrl, test.recipe.Time)
 			if test.dbError == nil {
 				query.WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedId))
 				for _, tag := range test.recipe.Tags {
@@ -134,11 +138,11 @@ func Test_Recipe_Read(t *testing.T) {
 			sut, dbmock := getMockDb(t)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, current_state, created_at, modified_at FROM recipe WHERE id = \\$1").
+			query := dbmock.ExpectQuery("SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, created_at, modified_at FROM recipe WHERE id = \\$1").
 				WithArgs(test.recipeId)
 			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"id", "name", "serving_size", "nutrition_info", "ingredients", "directions", "storage_instructions", "source_url", "current_state", "created_at", "modified_at"}).
-					AddRow(test.recipeId, "My Recipe", "My Serving Size", "My Nutrition Info", "My Ingredients", "My Directions", "My Storage Instructions", "My Url", models.Active, time.Now(), time.Now())
+				rows := sqlmock.NewRows([]string{"id", "name", "serving_size", "nutrition_info", "ingredients", "directions", "storage_instructions", "source_url", "recipe_time", "current_state", "created_at", "modified_at"}).
+					AddRow(test.recipeId, "My Recipe", "My Serving Size", "My Nutrition Info", "My Ingredients", "My Directions", "My Storage Instructions", "My Url", "My Time", models.Active, time.Now(), time.Now())
 				query.WillReturnRows(rows)
 				dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeId).WillReturnRows(&sqlmock.Rows{})
 			} else {
@@ -181,6 +185,7 @@ func Test_Recipe_Update(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, nil, nil,
 		},
 		{
@@ -193,6 +198,7 @@ func Test_Recipe_Update(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 				Tags:                []string{"A", "B"},
 			}, nil, nil,
 		},
@@ -206,6 +212,7 @@ func Test_Recipe_Update(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, sql.ErrNoRows, ErrNotFound,
 		},
 		{
@@ -218,6 +225,7 @@ func Test_Recipe_Update(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, sql.ErrConnDone, sql.ErrConnDone,
 		},
 		{
@@ -230,6 +238,7 @@ func Test_Recipe_Update(t *testing.T) {
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
 				SourceUrl:           "My Url",
+				Time:                "My Time",
 			}, nil, ErrMissingId,
 		},
 	}
@@ -246,8 +255,8 @@ func Test_Recipe_Update(t *testing.T) {
 			if test.expectedError != nil && test.dbError == nil {
 				dbmock.ExpectRollback()
 			} else {
-				exec := dbmock.ExpectExec("UPDATE recipe SET name = \\$1, serving_size = \\$2, nutrition_info = \\$3, ingredients = \\$4, directions = \\$5, storage_instructions = \\$6, source_url = \\$7 WHERE id = \\$8").
-					WithArgs(test.recipe.Name, test.recipe.ServingSize, test.recipe.NutritionInfo, test.recipe.Ingredients, test.recipe.Directions, test.recipe.StorageInstructions, test.recipe.SourceUrl, test.recipe.Id)
+				exec := dbmock.ExpectExec("UPDATE recipe SET name = \\$1, serving_size = \\$2, nutrition_info = \\$3, ingredients = \\$4, directions = \\$5, storage_instructions = \\$6, source_url = \\$7, recipe_time = \\$8 WHERE id = \\$9").
+					WithArgs(test.recipe.Name, test.recipe.ServingSize, test.recipe.NutritionInfo, test.recipe.Ingredients, test.recipe.Directions, test.recipe.StorageInstructions, test.recipe.SourceUrl, test.recipe.Time, test.recipe.Id)
 				if test.dbError == nil {
 					exec.WillReturnResult(driver.RowsAffected(1))
 					dbmock.ExpectExec("DELETE FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipe.Id).WillReturnResult(driver.RowsAffected(0))

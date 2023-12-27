@@ -1,7 +1,7 @@
 import { CheckboxChangeEventDetail } from '@ionic/core';
 import { Component, Event, EventEmitter, h, Prop, State } from '@stencil/core';
 import { RecipeState } from '../../generated';
-import { capitalizeFirstLetter } from '../../helpers/utils';
+import { insertSpacesBetweenWords } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-state-selector',
@@ -21,10 +21,9 @@ export class RecipeStateSelector {
   render() {
     return (
       <ion-list>
-        {Object.values(RecipeState).map(item =>
-          <ion-item key={item}>
-            <ion-label>{capitalizeFirstLetter(item)}</ion-label>
-            <ion-checkbox slot="end" value={item} checked={this.selectedStates.includes(item)} onIonChange={e => this.onSelectionChanged(e)}></ion-checkbox>
+        {Object.keys(RecipeState).map(item =>
+          <ion-item key={item} lines="full">
+            <ion-checkbox value={RecipeState[item]} checked={this.selectedStates.includes(RecipeState[item])} onIonChange={e => this.onSelectionChanged(e)}>{insertSpacesBetweenWords(item)}</ion-checkbox>
           </ion-item>
         )}
       </ion-list>

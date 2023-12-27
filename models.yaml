@@ -28,6 +28,14 @@ components:
         - name
         - ingredients
         - directions
+        - storage_instructions
+        - nutrition_info
+      x-enum-varnames:
+        - Name
+        - Ingredients
+        - Directions
+        - StorageInstructions
+        - Nutrition
     sortBy:
       type: string
       enum:
@@ -152,6 +160,7 @@ components:
             - directions
             - storageInstructions
             - sourceUrl
+            - time
             - tags
           properties:
             servingSize:
@@ -159,6 +168,11 @@ components:
               x-go-custom-tag: db:"serving_size"
               x-oapi-codegen-extra-tags:
                 db: serving_size
+            time:
+              type: string
+              x-go-custom-tag: db:"recipe_time"
+              x-oapi-codegen-extra-tags:
+                db: recipe_time
             nutritionInfo:
               type: string
               x-go-custom-tag: db:"nutrition_info"

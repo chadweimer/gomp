@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { User } from '../../../generated';
+import { AccessLevel, User } from '../../../generated';
 import { usersApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, showToast } from '../../../helpers/utils';
+import { enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-security',
@@ -32,31 +32,26 @@ export class PageSettingsSecurity {
                 <form onSubmit={e => e.preventDefault()} ref={el => this.securityForm = el}>
                   <ion-card>
                     <ion-card-content>
-                      <ion-item>
-                        <ion-label position="stacked">Email</ion-label>
-                        <ion-input type="email" value={this.currentUser?.username} disabled />
+                      <ion-item lines="full">
+                        <ion-input label="Email" label-placement="stacked" type="email" value={this.currentUser?.username} disabled />
                       </ion-item>
-                      <ion-item>
-                        <ion-label position="stacked">Access Level</ion-label>
-                        <ion-input value={capitalizeFirstLetter(this.currentUser?.accessLevel)} disabled />
+                      <ion-item lines="full">
+                        <ion-input label="Access Level" label-placement="stacked" value={insertSpacesBetweenWords(enumKeyFromValue(AccessLevel, this.currentUser?.accessLevel))} disabled />
                       </ion-item>
-                      <ion-item>
-                        <ion-label position="stacked">Current Password</ion-label>
-                        <ion-input type="password" value={this.currentPassword}
+                      <ion-item lines="full">
+                        <ion-input label="Current Password" label-placement="stacked" type="password" value={this.currentPassword}
                           autocomplete="current-password"
                           onIonBlur={e => this.currentPassword = e.target.value as string}
                           required />
                       </ion-item>
-                      <ion-item>
-                        <ion-label position="stacked">New Password</ion-label>
-                        <ion-input type="password" value={this.newPassword}
+                      <ion-item lines="full">
+                        <ion-input label="New Password" label-placement="stacked" type="password" value={this.newPassword}
                           autocomplete="new-password"
                           onIonBlur={e => this.newPassword = e.target.value as string}
                           required />
                       </ion-item>
-                      <ion-item>
-                        <ion-label position="stacked">Confirm Password</ion-label>
-                        <ion-input type="password" value={this.repeatPassword}
+                      <ion-item lines="full">
+                        <ion-input label="Confirm Password" label-placement="stacked" type="password" value={this.repeatPassword}
                           autocomplete="new-password"
                           onIonBlur={e => this.repeatPassword = e.target.value as string}
                           ref={el => this.repeatPasswordInput = el}

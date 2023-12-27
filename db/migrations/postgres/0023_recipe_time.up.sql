@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE recipe
+ADD COLUMN recipe_time TEXT NOT NULL DEFAULT '';
+
+COMMIT;

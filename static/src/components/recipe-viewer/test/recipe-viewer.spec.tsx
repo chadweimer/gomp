@@ -16,6 +16,7 @@ describe('recipe-viewer', () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
       servingSize: null,
+      time: null,
       ingredients: null,
       directions: null,
       nutritionInfo: null,
@@ -38,6 +39,7 @@ describe('recipe-viewer', () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
       servingSize: null,
+      time: null,
       ingredients: null,
       directions: null,
       nutritionInfo: null,
@@ -67,6 +69,15 @@ describe('recipe-viewer', () => {
     expect(para).toBeTruthy();
     expect(para).toEqualText(component.recipe.servingSize);
 
+    // Time
+    component.recipe = { ...recipe, time: 'time' };
+    await page.waitForChanges();
+    items = page.root.querySelectorAll('ion-item');
+    expect(items.length).toBe(2);
+    para = items[1].querySelector('p');
+    expect(para).toBeTruthy();
+    expect(para).toEqualText(component.recipe.time);
+
     // Ingredients
     component.recipe = { ...recipe, ingredients: 'ingredients' };
     await page.waitForChanges();
@@ -76,7 +87,7 @@ describe('recipe-viewer', () => {
     expect(para).toBeTruthy();
     expect(para).toEqualText(component.recipe.ingredients);
 
-    // Ingredients
+    // Directions
     component.recipe = { ...recipe, directions: 'directions' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
@@ -134,6 +145,7 @@ describe('recipe-viewer', () => {
       const recipe: Recipe = {
         name: 'Some Recipe',
         servingSize: null,
+        time: null,
         ingredients: null,
         directions: null,
         nutritionInfo: null,
