@@ -31,9 +31,8 @@ export class PageAdminConfiguration {
                 <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el}>
                   <ion-card>
                     <ion-card-content>
-                      <ion-item>
-                        <ion-label position="stacked">Application Title</ion-label>
-                        <ion-input value={this.appConfig.title}
+                      <ion-item lines="full">
+                        <ion-input label="Application Title" label-placement="stacked" value={this.appConfig.title}
                           autocorrect="on"
                           spellcheck="true"
                           onIonBlur={e => this.appConfig = { ...this.appConfig, title: e.target.value as string }}

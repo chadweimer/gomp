@@ -39,9 +39,8 @@ export class RecipeLinkEditor {
 
         <ion-content scrollY={false}>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-            <ion-item>
-              <ion-label position="stacked">Find Recipe</ion-label>
-              <ion-input value={this.query} type="search"
+            <ion-item lines="full">
+              <ion-input label="Find Recipe" label-placement="stacked" value={this.query} type="search"
                 autocorrect="on"
                 spellcheck="true"
                 onIonBlur={e => this.query = e.target.value as string}
@@ -59,12 +58,11 @@ export class RecipeLinkEditor {
                 </ion-list-header>
                 <ion-radio-group value={this.selectedRecipeId} onIonChange={e => this.selectedRecipeId = e.detail.value} allow-empty-selection>
                   {this.matchingRecipes.map(recipe =>
-                    <ion-item key={recipe.id}>
+                    <ion-item key={recipe.id} lines="full">
                       <ion-avatar slot="start">
                         {recipe.thumbnailUrl ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
                       </ion-avatar>
-                      <ion-label>{recipe.name}</ion-label>
-                      <ion-radio slot="end" value={recipe.id} />
+                      <ion-radio value={recipe.id}>{recipe.name}</ion-radio>
                     </ion-item>
                   )}
                 </ion-radio-group>

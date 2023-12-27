@@ -2,7 +2,7 @@ import { Gesture, modalController, popoverController, ScrollBaseDetail } from '@
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { capitalizeFirstLetter, redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture } from '../../../helpers/utils';
+import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { refreshSearchResults } from '../../../stores/state';
 
@@ -56,11 +56,11 @@ export class PageSearch {
                 <ion-buttons class="justify-content-center-lg-down">
                   <ion-button fill="solid" color="secondary" onClick={e => this.onSearchStatesClicked(e)}>
                     <ion-icon slot="start" icon="filter" />
-                    {capitalizeFirstLetter(this.getRecipeStatesText(state.searchFilter.states))}
+                    {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
                   </ion-button>
                   <ion-button fill="solid" color="secondary" onClick={e => this.onSortByClicked(e)}>
                     <ion-icon slot="start" icon="swap-vertical" />
-                    {capitalizeFirstLetter(state.searchFilter.sortBy)}
+                    {insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
                   </ion-button>
                   <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}>
                     <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
@@ -117,16 +117,16 @@ export class PageSearch {
   private getRecipeStatesText(states: RecipeState[]) {
     if (states.includes(RecipeState.Active)) {
       if (states.includes(RecipeState.Archived)) {
-        return 'all';
+        return 'All';
       }
-      return RecipeState.Active;
+      return enumKeyFromValue(RecipeState, RecipeState.Active);
     }
 
     if (states.includes(RecipeState.Archived)) {
-      return RecipeState.Archived;
+      return enumKeyFromValue(RecipeState, RecipeState.Archived);
     }
 
-    return RecipeState.Active;
+    return enumKeyFromValue(RecipeState, RecipeState.Active);
   }
 
   private setRecipeStates(states: RecipeState[]) {

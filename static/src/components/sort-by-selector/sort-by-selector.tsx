@@ -1,6 +1,6 @@
 import { RadioGroupChangeEventDetail } from '@ionic/core';
 import { Component, Event, EventEmitter, h, Prop } from '@stencil/core';
-import { capitalizeFirstLetter } from '../../helpers/utils';
+import { insertSpacesBetweenWords } from '../../helpers/utils';
 import { SortBy } from '../../generated';
 
 @Component({
@@ -17,10 +17,9 @@ export class SortBySelector {
     return (
       <ion-list>
         <ion-radio-group value={this.sortBy} onIonChange={e => this.onSelectionChanged(e)}>
-          {Object.values(SortBy).map(item =>
-            <ion-item key={item}>
-              <ion-label>{capitalizeFirstLetter(item)}</ion-label>
-              <ion-radio slot="end" value={item}></ion-radio>
+          {Object.keys(SortBy).map(item =>
+            <ion-item key={item} lines="full">
+              <ion-radio value={SortBy[item]}>{insertSpacesBetweenWords(item)}</ion-radio>
             </ion-item>
           )}
         </ion-radio-group>

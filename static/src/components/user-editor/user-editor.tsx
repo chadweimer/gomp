@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../generated';
-import { capitalizeFirstLetter, configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, insertSpacesBetweenWords } from '../../helpers/utils';
 
 @Component({
   tag: 'user-editor',
@@ -40,47 +40,39 @@ export class UserEditor {
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-            <ion-item>
-              <ion-label position="stacked">Email</ion-label>
-              <ion-input type="email" value={this.user.username} disabled={!!this.user.id}
+            <ion-item lines="full">
+              <ion-input label="Email" label-placement="stacked" type="email" value={this.user.username} disabled={!!this.user.id}
                 onIonBlur={e => this.user = { ...this.user, username: e.target.value as string }}
                 required
                 autofocus />
             </ion-item>
-            <ion-item>
-              <ion-label position="stacked">Access Level</ion-label>
-              <ion-select value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
-                {Object.values(AccessLevel).map(item =>
-                  <ion-select-option key={item} value={item}>{capitalizeFirstLetter(item)}</ion-select-option>
+            <ion-item lines="full">
+              <ion-select label="Access Level" label-placement="stacked" value={this.user.accessLevel} interface="popover" onIonChange={e => this.user = { ...this.user, accessLevel: e.detail.value }}>
+                {Object.keys(AccessLevel).map(item =>
+                  <ion-select-option key={item} value={AccessLevel[item]}>{insertSpacesBetweenWords(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>
-            {this.renderPasswords()}
+            {!this.user.id ?
+              <ion-item lines="full">
+                <ion-input label="Password" label-placement="stacked" type="password"
+                  autocomplete="new-password"
+                  onIonBlur={e => this.password = e.target.value as string}
+                  required />
+              </ion-item>
+              : ''}
+            {!this.user.id ?
+              <ion-item lines="full">
+                <ion-input label="Confirm Password" label-placement="stacked" type="password"
+                  autocomplete="new-password"
+                  onIonBlur={e => this.repeatPassword = e.target.value as string} ref={el => this.repeatPasswordInput = el}
+                  required />
+              </ion-item>
+              : ''}
           </form>
         </ion-content>
       </Host>
     );
-  }
-
-  private renderPasswords() {
-    if (!this.user.id) {
-      return [
-        <ion-item>
-          <ion-label position="stacked">Password</ion-label>
-          <ion-input type="password"
-            autocomplete="new-password"
-            onIonBlur={e => this.password = e.target.value as string}
-            required />
-        </ion-item>,
-        <ion-item>
-          <ion-label position="stacked">Confirm Password</ion-label>
-          <ion-input type="password"
-            autocomplete="new-password"
-            onIonBlur={e => this.repeatPassword = e.target.value as string} ref={el => this.repeatPasswordInput = el}
-            required />
-        </ion-item>,
-      ];
-    }
   }
 
   private async onSaveClicked() {

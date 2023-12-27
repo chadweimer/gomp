@@ -35,8 +35,7 @@ export class TagsInput {
   render() {
     return (
       <Host>
-        <ion-item>
-          <ion-label position="stacked">{this.label}</ion-label>
+        <ion-item lines="full">
           {this.internalValue?.length > 0 ?
             <div class="ion-padding-top">
               {this.internalValue?.map(tag =>
@@ -47,16 +46,16 @@ export class TagsInput {
               )}
             </div>
             : ''}
-          <ion-input enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
+          <ion-input label={this.label} label-placement="stacked" enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
+          <div class="ion-padding">
+            {this.filteredSuggestions?.map(tag =>
+              <ion-chip key={tag} color="success" onClick={() => this.addTag(tag)}>
+                {tag}
+                <ion-icon icon="add-circle" />
+              </ion-chip>
+            )}
+          </div>
         </ion-item>
-        <div class="ion-padding">
-          {this.filteredSuggestions?.map(tag =>
-            <ion-chip key={tag} color="success" onClick={() => this.addTag(tag)}>
-              {tag}
-              <ion-icon icon="add-circle" />
-            </ion-chip>
-          )}
-        </div>
       </Host>
     );
   }

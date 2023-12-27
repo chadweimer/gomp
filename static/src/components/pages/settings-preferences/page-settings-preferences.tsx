@@ -29,9 +29,8 @@ export class PageSettingsPreferences {
                 <form onSubmit={e => e.preventDefault()} ref={el => this.settingsForm = el}>
                   <ion-card>
                     <ion-card-content>
-                      <ion-item>
-                        <ion-label position="stacked">Home Title</ion-label>
-                        <ion-input value={this.settings?.homeTitle}
+                      <ion-item lines="full">
+                        <ion-input label="Home Title" label-placement="stacked" value={this.settings?.homeTitle}
                           autocorrect="on"
                           spellcheck="true"
                           onIonBlur={e => this.settings = { ...this.settings, homeTitle: e.target.value as string }}
