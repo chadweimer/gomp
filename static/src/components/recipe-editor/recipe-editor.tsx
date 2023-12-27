@@ -67,7 +67,6 @@ export class RecipeEditor {
             <ion-item lines="full">
               <ion-input label="Serving Size" label-placement="stacked" value={this.recipe.servingSize}
                 autocorrect="on"
-                inputmode="numeric"
                 spellcheck="true"
                 onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
             </ion-item>
