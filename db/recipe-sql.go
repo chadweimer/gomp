@@ -18,7 +18,13 @@ type sqlRecipeDriver struct {
 	adapter sqlRecipeDriverAdapter
 }
 
-var supportedSearchFields = [...]models.SearchField{models.SearchFieldName, models.SearchFieldIngredients, models.SearchFieldDirections}
+var supportedSearchFields = [...]models.SearchField{
+	models.SearchFieldName,
+	models.SearchFieldIngredients,
+	models.SearchFieldDirections,
+	models.SearchFieldStorageInstructions,
+	models.SearchFieldNutrition,
+}
 
 func (d *sqlRecipeDriver) Create(recipe *models.Recipe) error {
 	return tx(d.Db, func(db sqlx.Ext) error {

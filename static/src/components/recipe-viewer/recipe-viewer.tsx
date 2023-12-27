@@ -67,7 +67,7 @@ export class RecipeViewer {
               : ''}
             {this.recipe?.storageInstructions ?
               <ion-item lines="full">
-                <ion-label position="stacked">Storage/Freezer Instructions</ion-label>
+                <ion-label position="stacked">Storage Instructions</ion-label>
                 <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
               </ion-item>
               : ''}
