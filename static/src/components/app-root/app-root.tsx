@@ -19,7 +19,6 @@ export class AppRoot {
   @Element() el!: HTMLAppRootElement;
   private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
-  private searchBar!: HTMLIonInputElement;
   private isRefreshingToken = false;
 
   async componentWillLoad() {
@@ -146,38 +145,55 @@ export class AppRoot {
                 </ion-buttons>
                 : ''}
 
-              <ion-title slot="start" class={{ ['ion-hide-sm-down']: hasScope(state.jwtToken, AccessLevel.Viewer) }}>
+              <ion-title slot="start">
                 <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
-              {hasScope(state.jwtToken, AccessLevel.Viewer) ? [
-                <ion-buttons slot="end">
-                  <ion-button href="/" class="ion-hide-lg-down">Home</ion-button>
-                  <ion-button href="/search" class="ion-hide-lg-down">
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+                <ion-buttons slot="end" class="ion-hide-lg-down">
+                  <ion-button href="/">Home</ion-button>
+                  <ion-button href="/search">
                     Recipes
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
-                  <ion-button href="/settings" class="ion-hide-lg-down">Settings</ion-button>
+                  <ion-button href="/settings">Settings</ion-button>
                   {hasScope(state.jwtToken, AccessLevel.Admin) ?
-                    <ion-button href="/admin" class="ion-hide-lg-down">Admin</ion-button>
+                    <ion-button href="/admin">Admin</ion-button>
                     : ''}
-                  <ion-button class="ion-hide-lg-down" onClick={() => this.logout()}>Logout</ion-button>
-                </ion-buttons>,
-                <ion-item slot="end" lines="none" class="search">
-                  <ion-icon icon="search" slot="start" />
-                  <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
+                  <ion-button onClick={() => this.logout()}>Logout</ion-button>
+                </ion-buttons>
+                : ''}
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+                <ion-item slot="end" lines="none" class="search ion-hide-sm-down">
+                  <ion-input type="search" placeholder="🔍︎ Search" value={state.searchFilter?.query}
                     autocorrect="on"
                     spellcheck="true"
                     onKeyDown={e => this.onSearchKeyDown(e)}
-                    onIonBlur={() => this.searchBar.value = state.searchFilter?.query ?? ''}
-                    ref={el => this.searchBar = el} />
+                    onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
+                  </ion-input>
                   <ion-buttons slot="end" class="ion-no-margin">
                     <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
                     <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
                   </ion-buttons>
                 </ion-item>
-              ] : ''}
+                : ''}
             </ion-toolbar>
+            {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+              <ion-toolbar color="primary" class="ion-hide-sm-up">
+                <ion-item lines="none" class="search">
+                  <ion-input type="search" placeholder="🔍︎ Search" value={state.searchFilter?.query}
+                    autocorrect="on"
+                    spellcheck="true"
+                    onKeyDown={e => this.onSearchKeyDown(e)}
+                    onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
+                  </ion-input>
+                  <ion-buttons slot="end" class="ion-no-margin">
+                    <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
+                    <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
+                  </ion-buttons>
+                </ion-item>
+              </ion-toolbar>
+              : ''}
             {this.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
               :
@@ -295,9 +311,10 @@ export class AppRoot {
 
   private async onSearchKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
+      const searchBar = e.target as HTMLIonInputElement;
       state.searchFilter = {
         ...state.searchFilter,
-        query: this.searchBar.value?.toString()
+        query: searchBar.value?.toString()
       };
       await redirect('/search');
     }
