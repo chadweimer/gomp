@@ -11,3 +11,7 @@ ion-footer {
 .search {
   text-align: start;
 }
+
+.always-clickable {
+  pointer-events: auto;
+}
