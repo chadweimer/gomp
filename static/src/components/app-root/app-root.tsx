@@ -167,7 +167,7 @@ export class AppRoot {
                 <ion-item slot="end" lines="none" class="search ion-hide-sm-down">
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     autocorrect="on"
-                    spellcheck="true"
+                    spellcheck
                     onKeyDown={e => this.onSearchKeyDown(e)}
                     onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
                     <ion-icon slot="start" icon="search" color="medium" />
@@ -184,7 +184,7 @@ export class AppRoot {
                 <ion-item lines="none" class="search">
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     autocorrect="on"
-                    spellcheck="true"
+                    spellcheck
                     onKeyDown={e => this.onSearchKeyDown(e)}
                     onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
                     <ion-icon slot="start" icon="search" color="medium" />

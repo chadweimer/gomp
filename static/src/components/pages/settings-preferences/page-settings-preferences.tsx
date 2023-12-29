@@ -32,7 +32,7 @@ export class PageSettingsPreferences {
                       <ion-item lines="full">
                         <ion-input label="Home Title" label-placement="stacked" value={this.settings?.homeTitle}
                           autocorrect="on"
-                          spellcheck="true"
+                          spellcheck
                           onIonBlur={e => this.settings = { ...this.settings, homeTitle: e.target.value as string }}
                           required />
                       </ion-item>
