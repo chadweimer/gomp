@@ -166,7 +166,7 @@ $(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
 $(BUILD_DIR)/coverage/server.html: $(BUILD_DIR)/coverage/server.out
 	go tool cover -html=$< -o $@
 
-$(BUILD_DIR)/coverage/client: $(CLIENT_FILES)
+$(BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	rm -rf $@
 	mkdir -p $@
 	-cd static && npm run cover
