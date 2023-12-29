@@ -20,7 +20,7 @@ export function formatDate(dateStr: string) {
 }
 
 export function hasScope(token: string | null | undefined, accessLevel: AccessLevel) {
-  if (token === null || token === undefined) {
+  if (isNullOrEmpty(token)) {
     return false;
   }
   const decoded = jwtDecode<GompClaims>(token);

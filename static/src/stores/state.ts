@@ -32,7 +32,7 @@ const propsToSync: { storage: Storage, key: keyof AppState, isObject: boolean }[
 ];
 for (const prop of propsToSync) {
   const val = prop.storage.getItem(prop.key);
-  if (val !== null) {
+  if (!isNull(val)) {
     set(prop.key, prop.isObject ? JSON.parse(val) : val);
   }
   onChange(prop.key, val => {

@@ -39,8 +39,7 @@ export class PageSearch {
   }
 
   componentDidRender() {
-    if (typeof state.searchScrollPosition !== typeof undefined
-      && state.searchScrollPosition !== null
+    if (!isNull(state.searchScrollPosition)
       && typeof this.content.scrollToPoint === typeof Function) {
       this.content.scrollToPoint(0, state.searchScrollPosition);
     }
@@ -161,7 +160,7 @@ export class PageSearch {
     try {
       const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
-      if (file !== null) {
+      if (!isNull(file)) {
         await showLoading(
           async () => {
             await recipesApi.uploadImage(newRecipe.id, file);

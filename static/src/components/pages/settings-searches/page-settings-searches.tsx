@@ -75,7 +75,7 @@ export class PageSettingsSearches {
   }
 
   private async deleteSearchFilter(id: number | null) {
-    if (id === null) {
+    if (isNull(id)) {
       return;
     }
 
@@ -111,7 +111,7 @@ export class PageSettingsSearches {
   }
 
   private async onEditFilterClicked(id: number | null) {
-    if (id === null) {
+    if (isNull(id)) {
       return;
     }
 
@@ -168,7 +168,7 @@ export class PageSettingsSearches {
   }
 
   private async onLoadSearchClicked(id: number | null) {
-    if (id === null) {
+    if (isNull(id)) {
       return;
     }
 

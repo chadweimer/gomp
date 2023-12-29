@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../generated';
 import { loadSearchFilters, loadUserSettings, usersApi } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
 @Component({
@@ -56,7 +56,7 @@ export class SearchFilterEditor {
                     <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
                   )}
                 </ion-select>
-                <ion-button slot="end" fill="clear" disabled={this.selectedFilterId === null} onClick={() => this.onLoadSearchClicked()}>
+                <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
                   <ion-icon slot="icon-only" name="open-outline" />
                 </ion-button>
               </ion-item>
@@ -140,7 +140,7 @@ export class SearchFilterEditor {
   }
 
   private async onLoadSearchClicked() {
-    if (this.selectedFilterId === null) {
+    if (isNull(this.selectedFilterId)) {
       return;
     }
 

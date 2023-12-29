@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir, YesNoAny } from '../../generated';
 import { recipesApi } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, isNullOrEmpty } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -92,7 +92,7 @@ export class RecipeLinkEditor {
 
   private async onSaveClicked() {
     const native = await this.searchInput.getInputElement();
-    if (this.selectedRecipeId === null || this.selectedRecipeId === undefined) {
+    if (isNull(this.selectedRecipeId)) {
       native.setCustomValidity('A recipe must be selected');
     } else {
       native.setCustomValidity('');

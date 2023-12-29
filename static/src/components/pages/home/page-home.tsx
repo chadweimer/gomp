@@ -134,7 +134,7 @@ export class PageHome {
     try {
       const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
-      if (file !== null) {
+      if (!isNull(file)) {
         await showLoading(
           async () => {
             await recipesApi.uploadImage(newRecipe.id, file);
