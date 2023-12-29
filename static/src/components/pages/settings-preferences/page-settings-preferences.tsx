@@ -33,8 +33,8 @@ export class PageSettingsPreferences {
                         <ion-input label="Home Title" label-placement="stacked" value={this.settings?.homeTitle}
                           autocorrect="on"
                           spellcheck
-                          onIonBlur={e => this.settings = { ...this.settings, homeTitle: e.target.value as string }}
-                          required />
+                          required
+                          onIonBlur={e => this.settings = { ...this.settings, homeTitle: e.target.value as string }} />
                       </ion-item>
                       <ion-item lines="full">
                         <form enctype="multipart/form-data">

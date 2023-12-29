@@ -66,9 +66,9 @@ export class SearchFilterEditor {
                 <ion-input label="Name" label-placement="stacked" value={this.name}
                   autocorrect="on"
                   spellcheck
-                  onIonBlur={e => this.name = e.target.value as string}
                   required
-                  autofocus />
+                  autofocus
+                  onIonBlur={e => this.name = e.target.value as string} />
               </ion-item>
               : ''}
             <ion-item lines="full">

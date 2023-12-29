@@ -39,10 +39,10 @@ export class NoteEditor {
               <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.note = { ...this.note, text: e.target.value }}
                 required
                 autofocus
-                auto-grow />
+                auto-grow
+                onIonBlur={e => this.note = { ...this.note, text: e.target.value }} />
             </ion-item>
           </form>
         </ion-content>
