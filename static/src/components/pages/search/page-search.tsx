@@ -161,7 +161,7 @@ export class PageSearch {
     try {
       const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
-      if (file) {
+      if (file !== null) {
         await showLoading(
           async () => {
             await recipesApi.uploadImage(newRecipe.id, file);
@@ -196,7 +196,7 @@ export class PageSearch {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
-      if (data) {
+      if (typeof data !== 'undefined') {
         await this.saveNewRecipe(data.recipe, data.file);
       }
     });

@@ -99,17 +99,15 @@ export class PageHome {
 
       // Then load all the user's saved filters
       const { data: savedFilters } = await usersApi.getSearchFilters();
-      if (savedFilters) {
-        for (const savedFilter of savedFilters) {
-          const { data: savedSearchFilter } = (await usersApi.getSearchFilter(savedFilter.id));
-          const { total, recipes } = await this.performSearch(savedSearchFilter);
-          searches.push({
-            title: savedSearchFilter.name,
-            filter: savedSearchFilter,
-            count: total,
-            results: recipes ?? []
-          });
-        }
+      for (const savedFilter of savedFilters ?? []) {
+        const { data: savedSearchFilter } = await usersApi.getSearchFilter(savedFilter.id);
+        const { total, recipes } = await this.performSearch(savedSearchFilter);
+        searches.push({
+          title: savedSearchFilter.name,
+          filter: savedSearchFilter,
+          count: total,
+          results: recipes ?? []
+        });
       }
 
       this.searches = searches;
@@ -132,11 +130,11 @@ export class PageHome {
     }
   }
 
-  private async saveNewRecipe(recipe: Recipe, file: File) {
+  private async saveNewRecipe(recipe: Recipe, file: File | null) {
     try {
       const { data: newRecipe } = await recipesApi.addRecipe(recipe);
 
-      if (file) {
+      if (file !== null) {
         await showLoading(
           async () => {
             await recipesApi.uploadImage(newRecipe.id, file);
@@ -164,8 +162,8 @@ export class PageHome {
 
       await modal.present();
 
-      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
-      if (data) {
+      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File | null }>();
+      if (typeof data !== 'undefined') {
         await this.saveNewRecipe(data.recipe, data.file);
       }
     });

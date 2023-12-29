@@ -100,7 +100,7 @@ export class PageSettingsSearches {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (data) {
+      if (typeof data !== 'undefined') {
         await this.saveNewSearchFilter({
           ...data.searchFilter,
           name: data.name
@@ -131,7 +131,7 @@ export class PageSettingsSearches {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (data) {
+      if (typeof data !== 'undefined') {
         await this.saveExistingSearchFilter({
           ...searchFilter,
           ...data.searchFilter,

@@ -32,11 +32,11 @@ const propsToSync: { storage: Storage, key: keyof AppState, isObject: boolean }[
 ];
 for (const prop of propsToSync) {
   const val = prop.storage.getItem(prop.key);
-  if (val) {
+  if (val !== null) {
     set(prop.key, prop.isObject ? JSON.parse(val) : val);
   }
   onChange(prop.key, val => {
-    if (val) {
+    if (typeof val !== 'undefined' && val !== null) {
       prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val);
     } else {
       prop.storage.removeItem(prop.key);

@@ -100,7 +100,7 @@ export class PageAdminUsers {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ user: User, password: string }>();
-      if (data) {
+      if (typeof data !== 'undefined') {
         await this.saveNewUser(data.user, data.password);
         await this.loadUsers();
       }
@@ -120,7 +120,7 @@ export class PageAdminUsers {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ user: User }>();
-      if (data) {
+      if (typeof data !== 'undefined') {
         await this.saveExistingUser({
           ...user,
           ...data.user

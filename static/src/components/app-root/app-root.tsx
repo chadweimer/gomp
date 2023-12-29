@@ -344,7 +344,7 @@ export class AppRoot {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (data) {
+      if (typeof data !== 'undefined') {
         state.searchFilter = data.searchFilter;
         await redirect('/search');
       }
