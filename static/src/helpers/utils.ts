@@ -7,6 +7,14 @@ interface GompClaims extends JwtPayload {
   scopes?: string[]
 }
 
+export function isNull<T>(val: T | null) {
+  return typeof val === 'undefined' || val === null;
+}
+
+export function isNullOrEmpty(val: string | null) {
+  return isNull(val) || val === '';
+}
+
 export function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString();
 }
@@ -86,7 +94,7 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
     gestureName: 'swipe',
     onEnd: e => {
       const swipe = getSwipe(e);
-      if (!swipe) return
+      if (isNullOrEmpty(swipe)) return
 
       handler(swipe);
     }
@@ -144,9 +152,9 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
 
 export async function getActiveComponent(tabs: HTMLIonTabsElement) {
   const tabId = await tabs.getSelected();
-  if (tabId !== undefined) {
+  if (!isNull(tabId)) {
     const tab = await tabs.getTab(tabId);
-    if (tab.component !== undefined) {
+    if (!isNull(tab.component)) {
       if (tab.component instanceof HTMLElement) {
         return tab.component;
       } else if (typeof tab.component === 'string') {

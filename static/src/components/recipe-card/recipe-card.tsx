@@ -1,5 +1,6 @@
 import { Component, Host, h, Prop } from '@stencil/core';
 import { RecipeCompact, RecipeState } from '../../generated';
+import { isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-card',
@@ -17,8 +18,8 @@ export class RecipeCard {
   render() {
     return (
       <Host>
-        <ion-card href={this.recipe.id ? `/recipes/${this.recipe.id}` : ''}>
-          {this.recipe.thumbnailUrl
+        <ion-card href={!isNull(this.recipe.id) ? `/recipes/${this.recipe.id}` : ''}>
+          {!isNullOrEmpty(this.recipe.thumbnailUrl)
             ? <img class={{ ['image']: true, [this.size]: true }} alt="" src={this.recipe.thumbnailUrl} />
             : <div class={{ ['image']: true, [this.size]: true }} />}
           <ion-card-content>

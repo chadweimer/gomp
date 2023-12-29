@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../generated';
 import { appApi, getLocationFromResponse, loadUserSettings, usersApi } from '../../../helpers/api';
-import { showLoading, showToast } from '../../../helpers/utils';
+import { isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-preferences',
@@ -42,7 +42,7 @@ export class PageSettingsPreferences {
                           <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
                         </form>
                         <ion-thumbnail>
-                          <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={!this.settings?.homeImageUrl} />
+                          <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
                         </ion-thumbnail>
                       </ion-item>
                       <tags-input label="Favorite Tags" value={this.settings?.favoriteTags ?? []}
@@ -82,7 +82,7 @@ export class PageSettingsPreferences {
       return;
     }
 
-    if (this.imageInput.value) {
+    if (this.imageInput.files.length > 0) {
       await showLoading(
         async () => {
           const resp = await appApi.upload(this.imageInput.files[0]);

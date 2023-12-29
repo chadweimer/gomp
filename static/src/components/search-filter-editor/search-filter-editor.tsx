@@ -11,7 +11,7 @@ import { getDefaultSearchFilter } from '../../models';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() saveLabel = 'Save';
-  @Prop() showName = true;
+  @Prop() hideName = false;
   @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
@@ -61,7 +61,7 @@ export class SearchFilterEditor {
                 </ion-button>
               </ion-item>
               : ''}
-            {this.showName ?
+            {!this.hideName ?
               <ion-item lines="full">
                 <ion-input label="Name" label-placement="stacked" value={this.name}
                   autocorrect="on"

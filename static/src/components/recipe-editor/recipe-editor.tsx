@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, UserSettings } from '../../generated';
 import { loadUserSettings } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-editor',
@@ -39,7 +39,7 @@ export class RecipeEditor {
             <ion-buttons slot="primary">
               <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{!this.recipe.id ? 'New Recipe' : 'Edit Recipe'}</ion-title>
+            <ion-title>{isNull(this.recipe.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -56,7 +56,7 @@ export class RecipeEditor {
                 required
                 autofocus />
             </ion-item>
-            {!this.recipe.id ?
+            {isNull(this.recipe.id) ?
               <ion-item lines="full">
                 <form enctype="multipart/form-data">
                   <ion-label position="stacked">Picture</ion-label>
@@ -124,7 +124,7 @@ export class RecipeEditor {
 
     dismissContainingModal(this.el, {
       recipe: this.recipe,
-      file: this.imageInput?.value ? this.imageInput.files[0] : null
+      file: this.imageInput?.files.length > 0 ? this.imageInput.files[0] : null
     });
   }
 

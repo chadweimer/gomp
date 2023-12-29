@@ -1,7 +1,7 @@
 import { createStore } from '@stencil/store';
 import { RecipeCompact, SearchFilter } from '../generated';
 import { recipesApi } from '../helpers/api';
-import { toYesNoAny } from '../helpers/utils';
+import { isNull, isNullOrEmpty, toYesNoAny } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings, SearchViewMode } from '../models';
 
 interface AppState {
@@ -36,7 +36,7 @@ for (const prop of propsToSync) {
     set(prop.key, prop.isObject ? JSON.parse(val) : val);
   }
   onChange(prop.key, val => {
-    if (typeof val !== 'undefined' && val !== null) {
+    if (!isNull(val)) {
       prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val);
     } else {
       prop.storage.removeItem(prop.key);
@@ -58,7 +58,7 @@ for (const prop of propsToSearch) {
 }
 
 async function refreshSearchResults() {
-  if (!state.jwtToken) return;
+  if (isNullOrEmpty(state.jwtToken)) return;
 
   // Make sure to fill in any missing fields
   const defaultFilter = getDefaultSearchFilter();

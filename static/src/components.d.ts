@@ -86,11 +86,11 @@ export namespace Components {
         "recipe": Recipe;
     }
     interface SearchFilterEditor {
+        "hideName": boolean;
         "name": string;
         "prompt": string;
         "saveLabel": string;
         "searchFilter": SearchFilter;
-        "showName": boolean;
         "showSavedLoader": boolean;
     }
     interface SortBySelector {
@@ -484,11 +484,11 @@ declare namespace LocalJSX {
         "recipe"?: Recipe;
     }
     interface SearchFilterEditor {
+        "hideName"?: boolean;
         "name"?: string;
         "prompt"?: string;
         "saveLabel"?: string;
         "searchFilter"?: SearchFilter;
-        "showName"?: boolean;
         "showSavedLoader"?: boolean;
     }
     interface SortBySelector {

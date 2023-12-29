@@ -2,7 +2,7 @@ import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
 import { loadUserSettings, recipesApi, usersApi } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny, hasScope } from '../../../helpers/utils';
+import { redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny, hasScope, isNull, isNullOrEmpty } from '../../../helpers/utils';
 import state, { refreshSearchResults } from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
 
@@ -36,7 +36,7 @@ export class PageHome {
               <ion-col>
                 <header class="ion-text-center">
                   <h1>{this.currentUserSettings?.homeTitle}</h1>
-                  <img alt="Home Image" src={this.currentUserSettings?.homeImageUrl} hidden={!this.currentUserSettings?.homeImageUrl} />
+                  <img alt="Home Image" src={this.currentUserSettings?.homeImageUrl} hidden={isNullOrEmpty(this.currentUserSettings?.homeImageUrl)} />
                 </header>
               </ion-col>
             </ion-row>
@@ -163,7 +163,7 @@ export class PageHome {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File | null }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         await this.saveNewRecipe(data.recipe, data.file);
       }
     });

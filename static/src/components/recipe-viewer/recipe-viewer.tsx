@@ -1,6 +1,6 @@
 import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
 import { Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../generated';
-import { formatDate } from '../../helpers/utils';
+import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-viewer',
@@ -24,7 +24,7 @@ export class RecipeViewer {
         <ion-card>
           <ion-card-content>
             <ion-item lines="none">
-              {this.mainImage ?
+              {!isNull(this.mainImage) ?
                 <a class="ion-margin-end" href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
                   <ion-avatar slot="start" class="large">
                     <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
@@ -41,43 +41,43 @@ export class RecipeViewer {
                 ? <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>
                 : ''}
             </ion-item>
-            {this.recipe?.servingSize ?
+            {!isNullOrEmpty(this.recipe?.servingSize) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Serving Size</ion-label>
                 <p class="plain ion-padding">{this.recipe?.servingSize}</p>
               </ion-item>
               : ''}
-            {this.recipe?.time ?
+            {!isNullOrEmpty(this.recipe?.time) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Time</ion-label>
                 <p class="plain ion-padding">{this.recipe?.time}</p>
               </ion-item>
               : ''}
-            {this.recipe?.ingredients ?
+            {!isNullOrEmpty(this.recipe?.ingredients) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>
                 <p class="plain ion-padding">{this.recipe?.ingredients}</p>
               </ion-item>
               : ''}
-            {this.recipe?.directions ?
+            {!isNullOrEmpty(this.recipe?.directions) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
                 <p class="plain ion-padding">{this.recipe?.directions}</p>
               </ion-item>
               : ''}
-            {this.recipe?.storageInstructions ?
+            {!isNullOrEmpty(this.recipe?.storageInstructions) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Storage Instructions</ion-label>
                 <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
               </ion-item>
               : ''}
-            {this.recipe?.nutritionInfo ?
+            {!isNullOrEmpty(this.recipe?.nutritionInfo) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Nutrition</ion-label>
                 <p class="plain ion-padding">{this.recipe?.nutritionInfo}</p>
               </ion-item>
               : ''}
-            {this.recipe?.sourceUrl ?
+            {!isNullOrEmpty(this.recipe?.sourceUrl) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Source</ion-label>
                 <p class="plain ion-padding">
@@ -92,7 +92,7 @@ export class RecipeViewer {
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
                       <ion-avatar slot="start">
-                        {link.thumbnailUrl ? <img alt="" src={link.thumbnailUrl} /> : ''}
+                        {!isNullOrEmpty(link.thumbnailUrl) ? <img alt="" src={link.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">

@@ -3,7 +3,7 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi } from '../../helpers/api';
-import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope } from '../../helpers/utils';
+import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState, refreshSearchResults } from '../../stores/state';
@@ -254,7 +254,7 @@ export class AppRoot {
   }
 
   private isLoggedIn() {
-    return !!state.jwtToken;
+    return !isNullOrEmpty(state.jwtToken);
   }
 
   private requireLogin(): NavigationHookResult {
@@ -344,7 +344,7 @@ export class AppRoot {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         state.searchFilter = data.searchFilter;
         await redirect('/search');
       }

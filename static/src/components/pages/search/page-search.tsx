@@ -2,7 +2,7 @@ import { Gesture, modalController, popoverController, ScrollBaseDetail } from '@
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords } from '../../../helpers/utils';
+import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { refreshSearchResults } from '../../../stores/state';
 
@@ -85,7 +85,7 @@ export class PageSearch {
                     :
                     <ion-item href={`/recipes/${recipe.id}`} lines="none">
                       <ion-avatar slot="start">
-                        {recipe.thumbnailUrl ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
+                        {!isNullOrEmpty(recipe.thumbnailUrl) ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <ion-label>{recipe.name}</ion-label>
                     </ion-item>
@@ -196,7 +196,7 @@ export class PageSearch {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         await this.saveNewRecipe(data.recipe, data.file);
       }
     });

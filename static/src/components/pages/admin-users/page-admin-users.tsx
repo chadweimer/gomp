@@ -2,7 +2,7 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { User } from '../../../generated';
 import { usersApi } from '../../../helpers/api';
-import { enableBackForOverlay, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-users',
@@ -100,7 +100,7 @@ export class PageAdminUsers {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ user: User, password: string }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         await this.saveNewUser(data.user, data.password);
         await this.loadUsers();
       }
@@ -120,7 +120,7 @@ export class PageAdminUsers {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ user: User }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         await this.saveExistingUser({
           ...user,
           ...data.user

@@ -2,7 +2,7 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
 import { loadSearchFilters, usersApi } from '../../../helpers/api';
-import { enableBackForOverlay, redirect, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -100,7 +100,7 @@ export class PageSettingsSearches {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         await this.saveNewSearchFilter({
           ...data.searchFilter,
           name: data.name
@@ -131,7 +131,7 @@ export class PageSettingsSearches {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (typeof data !== 'undefined') {
+      if (!isNull(data)) {
         await this.saveExistingSearchFilter({
           ...searchFilter,
           ...data.searchFilter,
