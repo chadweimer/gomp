@@ -128,7 +128,7 @@ function performAutofocus(this: HTMLIonModalElement) {
   this.removeEventListener('focus', performAutofocus);
 }
 
-export async function dismissContainingModal(el: HTMLElement, data?: any) {
+export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
   return getContainingModal(el).dismiss(data);
 }
 
@@ -172,6 +172,7 @@ export async function getActiveComponent(tabs: HTMLIonTabsElement) {
 
 export async function sendActivatedCallback(tabs: HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const el = await getActiveComponent(tabs) as any;
   if (el && typeof el.activatedCallback === 'function') {
     el.activatedCallback();
@@ -180,6 +181,7 @@ export async function sendActivatedCallback(tabs: HTMLIonTabsElement) {
 
 export async function sendDeactivatingCallback(tabs: HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const el = await getActiveComponent(tabs) as any;
   if (el && typeof el.deactivatingCallback === 'function') {
     el.deactivatingCallback();
