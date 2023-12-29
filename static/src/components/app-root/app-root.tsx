@@ -236,11 +236,11 @@ export class AppRoot {
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
-      if (appName) {
+      if (appName != null) {
         appName.setAttribute('content', document.title);
       }
       const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (appTitle) {
+      if (appTitle != null) {
         appTitle.setAttribute('content', document.title);
       }
     } catch (ex) {
