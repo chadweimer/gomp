@@ -1,10 +1,11 @@
 module.exports = {
-  root: true,
-  parser: '@typescript-eslint/parser',
+  'root': true,
+  'parser': '@typescript-eslint/parser',
   'parserOptions': {
-    'project': './tsconfig.json'
+    'project': './tsconfig.json',
+    'tsconfigRootDir': __dirname
   },
-  plugins: [
+  'plugins': [
     '@typescript-eslint',
   ],
   'extends': [
@@ -12,19 +13,10 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:@stencil-community/recommended',
   ],
+  'ignorePatterns': [".eslintrc.js"],
   'rules': {
-    'quotes': ['error', 'single'],
-    '@typescript-eslint/ban-types': 'off',
     'no-empty-function': 'off',
-    '@typescript-eslint/no-empty-function': ['error'],
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': [
-      'error',
-      {
-        'varsIgnorePattern': '^h$'
-      }
-    ],
+    'quotes': ['error', 'single'],
     'react/jsx-no-bind': [
       'warn',
       {
@@ -33,6 +25,12 @@ module.exports = {
       }
     ],
     '@stencil-community/required-jsdoc': 'off',
-    '@stencil-community/async-methods': 'off'
+    '@typescript-eslint/no-empty-function': ['error'],
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        'varsIgnorePattern': '^h$'
+      }
+    ]
   },
 };
