@@ -1,14 +1,16 @@
 import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from './generated';
 
-export enum SearchViewMode {
-  Card = 'card',
-  List = 'list'
-}
+export const SearchViewMode = {
+  Card: 'card',
+  List: 'list'
+} as const;
+export type SearchViewMode = typeof SearchViewMode[keyof typeof SearchViewMode];
 
-export enum SwipeDirection {
-  Left = 'left',
-  Right = 'right'
-}
+export const SwipeDirection = {
+  Left: 'left',
+  Right: 'right'
+} as const;
+export type SwipeDirection = typeof SwipeDirection[keyof typeof SwipeDirection];
 
 export function getDefaultSearchFilter(): SearchFilter {
   return {
