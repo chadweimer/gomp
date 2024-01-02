@@ -27,7 +27,7 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 	credentials := request.Body
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		h.LogError(ctx, err)
+		logErrorToContext(ctx, err)
 		return Authenticate401Response{}, nil
 	}
 
@@ -43,7 +43,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 	return withCurrentUser[RefreshTokenResponseObject](ctx, h, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
 		user, err := h.db.Users().Read(userId)
 		if err != nil {
-			h.LogError(ctx, err)
+			logErrorToContext(ctx, err)
 			return RefreshToken401Response{}, nil
 		}
 
@@ -80,13 +80,13 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 		if ok {
 			user, claims, ctx, err := h.isAuthenticated(r.Context(), r.Header)
 			if err != nil {
-				h.Error(w, r, http.StatusUnauthorized, err)
+				writeErrorResponse(w, r, http.StatusUnauthorized, err)
 				return
 			}
 			*r = *r.WithContext(ctx)
 
 			if err := checkScopes(routeScopes, user, claims); err != nil {
-				h.Error(w, r, http.StatusForbidden, fmt.Errorf("%w, endpoint '%s'", err, r.URL.Path))
+				writeErrorResponse(w, r, http.StatusForbidden, fmt.Errorf("%w, endpoint '%s'", err, r.URL.Path))
 				return
 			}
 		}
@@ -239,7 +239,7 @@ func getUserIdFromClaims(claims jwt.RegisteredClaims) (int64, error) {
 func withCurrentUser[TResponse interface{}](ctx context.Context, h apiHandler, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
 	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
 	if err != nil {
-		h.LogError(ctx, err)
+		logErrorToContext(ctx, err)
 		return invalidUserResponse, nil
 	}
 

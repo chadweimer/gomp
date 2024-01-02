@@ -87,7 +87,7 @@ func (h apiHandler) DeleteUser(ctx context.Context, request DeleteUserRequestObj
 func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRequestObject) (ChangePasswordResponseObject, error) {
 	return withCurrentUser[ChangePasswordResponseObject](ctx, h, ChangePassword401Response{}, func(userId int64) (ChangePasswordResponseObject, error) {
 		if err := h.db.Users().UpdatePassword(userId, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-			h.LogError(ctx, fmt.Errorf("update failed: %w", err))
+			logErrorToContext(ctx, fmt.Errorf("update failed: %w", err))
 			return ChangePassword403Response{}, nil
 		}
 
@@ -97,7 +97,7 @@ func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRe
 
 func (h apiHandler) ChangeUserPassword(ctx context.Context, request ChangeUserPasswordRequestObject) (ChangeUserPasswordResponseObject, error) {
 	if err := h.db.Users().UpdatePassword(request.UserId, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-		h.LogError(ctx, fmt.Errorf("update failed: %w", err))
+		logErrorToContext(ctx, fmt.Errorf("update failed: %w", err))
 		return ChangeUserPassword403Response{}, nil
 	}
 

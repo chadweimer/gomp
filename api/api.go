@@ -59,26 +59,26 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 		[]StrictMiddlewareFunc{},
 		StrictHTTPServerOptions{
 			RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-				h.Error(w, r, http.StatusBadRequest, err)
+				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
 			ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-				h.Error(w, r, http.StatusInternalServerError, err)
+				writeErrorResponse(w, r, http.StatusInternalServerError, err)
 			},
 		}),
 		ChiServerOptions{
 			Middlewares: []MiddlewareFunc{h.checkScopes},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
-				h.Error(w, r, http.StatusBadRequest, err)
+				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
 		}))
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		h.Error(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
+		writeErrorResponse(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
 	})
 
 	return r
 }
 
-func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
 	buf := new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(v); err != nil {
 		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
@@ -96,16 +96,16 @@ func (apiHandler) JSON(w http.ResponseWriter, r *http.Request, status int, v int
 	}
 }
 
-func (apiHandler) LogError(ctx context.Context, err error) {
+func logErrorToContext(ctx context.Context, err error) {
 	log.Ctx(ctx).UpdateContext(func(c zerolog.Context) zerolog.Context {
 		return c.Err(err)
 	})
 }
 
-func (h apiHandler) Error(w http.ResponseWriter, r *http.Request, status int, err error) {
-	h.LogError(r.Context(), err)
+func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
+	logErrorToContext(r.Context(), err)
 	status = getStatusFromError(err, status)
-	h.JSON(w, r, status, http.StatusText(status))
+	writeJSONResponse(w, r, status, http.StatusText(status))
 }
 
 func getResourceIdFromCtx(ctx context.Context, idKey contextKey) (int64, error) {
