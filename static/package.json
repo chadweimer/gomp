@@ -23,6 +23,7 @@
     "@ionic/core": "^7.6.2",
     "@openapitools/openapi-generator-cli": "^2.7.0",
     "@stencil-community/eslint-plugin": "^0.7.1",
+    "@stencil-community/helmet": "^0.3.3",
     "@stencil/core": "^4.9.0",
     "@stencil/store": "^2.0.12",
     "@types/jest": "^27.5.2",
