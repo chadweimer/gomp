@@ -40,7 +40,7 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 }
 
 func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
-	return withCurrentUser[RefreshTokenResponseObject](ctx, h, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
+	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
 		user, err := h.db.Users().Read(userId)
 		if err != nil {
 			logErrorToContext(ctx, err)
@@ -236,7 +236,7 @@ func getUserIdFromClaims(claims jwt.RegisteredClaims) (int64, error) {
 	return userId, nil
 }
 
-func withCurrentUser[TResponse interface{}](ctx context.Context, h apiHandler, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
+func withCurrentUser[TResponse interface{}](ctx context.Context, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
 	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
 	if err != nil {
 		logErrorToContext(ctx, err)
