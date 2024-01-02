@@ -82,6 +82,29 @@ describe('tags-input', () => {
     expect(handleValueChanged).toHaveBeenCalledTimes(initialTags.length);
   });
 
+  it('tag can be added', async () => {
+    const expectedTags = ['tag1', 'tag2'];
+    const handleValueChanged = jest.fn();
+    const page = await newSpecPage({
+      components: [TagsInput],
+      template: () => (<tags-input onValueChanged={handleValueChanged}></tags-input>),
+    });
+    const component = page.rootInstance as TagsInput;
+    expect(component.value).toEqual([]);
+    const input = page.root.querySelector('ion-input');
+    expect(input).toBeTruthy();
+    for (const tag of expectedTags) {
+      input.value = tag;
+      input.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Enter' }));
+      await page.waitForChanges();
+      expect(input.value).toEqualText('');
+    }
+    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    expect(addedChips).toHaveLength(expectedTags.length);
+    expect(handleValueChanged).toHaveBeenCalledTimes(expectedTags.length);
+    expect(component.internalValue).toEqual(expectedTags);
+  });
+
   it('suggestions can be added', async () => {
     const initialSuggestions = ['tag1', 'tag2'];
     const handleValueChanged = jest.fn();
