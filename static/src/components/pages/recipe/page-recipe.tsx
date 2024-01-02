@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, hasScope, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state, { refreshSearchResults } from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -407,7 +407,7 @@ export class PageRecipe {
       modal.querySelector('recipe-editor').recipe = this.recipe;
 
       const { data } = await modal.onDidDismiss<{ recipe: Recipe }>();
-      if (data) {
+      if (!isNull(data)) {
         await this.saveRecipe({
           ...this.recipe,
           ...data.recipe
@@ -523,7 +523,7 @@ export class PageRecipe {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ recipeId: number }>();
-      if (data) {
+      if (!isNull(data)) {
         await this.addLink(data.recipeId);
         await this.loadLinks();
       }
@@ -566,7 +566,7 @@ export class PageRecipe {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ note: Note }>();
-      if (data) {
+      if (!isNull(data)) {
         await this.saveNewNote(data.note);
         await this.loadNotes();
       }
@@ -588,7 +588,7 @@ export class PageRecipe {
       modal.querySelector('note-editor').note = note;
 
       const { data } = await modal.onDidDismiss<{ note: Note }>();
-      if (data) {
+      if (!isNull(data)) {
         await this.saveExistingNote({
           ...note,
           ...data.note
@@ -633,7 +633,7 @@ export class PageRecipe {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ file: File }>();
-      if (data) {
+      if (!isNull(data)) {
         await this.uploadImage(data.file);
         await this.loadMainImage();
         await this.loadImages();

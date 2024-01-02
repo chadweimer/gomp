@@ -1,4 +1,5 @@
 import { Component, Event, Host, h, Prop, State, EventEmitter, Watch } from '@stencil/core';
+import { isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'tags-input',
@@ -82,7 +83,7 @@ export class TagsInput {
   }
 
   private onTagsKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && this.tagsInput.value) {
+    if (e.key === 'Enter' && !isNullOrEmpty(this.tagsInput.value?.toString())) {
       this.addTag(this.tagsInput.value.toString());
       this.tagsInput.value = '';
     }

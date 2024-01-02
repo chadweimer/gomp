@@ -86,11 +86,11 @@ export namespace Components {
         "recipe": Recipe;
     }
     interface SearchFilterEditor {
+        "hideName": boolean;
         "name": string;
         "prompt": string;
         "saveLabel": string;
         "searchFilter": SearchFilter;
-        "showName": boolean;
         "showSavedLoader": boolean;
     }
     interface SortBySelector {
@@ -140,7 +140,18 @@ declare global {
         prototype: HTMLAppRootElement;
         new (): HTMLAppRootElement;
     };
+    interface HTMLFiveStarRatingElementEventMap {
+        "valueSelected": number;
+    }
     interface HTMLFiveStarRatingElement extends Components.FiveStarRating, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLFiveStarRatingElementEventMap>(type: K, listener: (this: HTMLFiveStarRatingElement, ev: FiveStarRatingCustomEvent<HTMLFiveStarRatingElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLFiveStarRatingElementEventMap>(type: K, listener: (this: HTMLFiveStarRatingElement, ev: FiveStarRatingCustomEvent<HTMLFiveStarRatingElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLFiveStarRatingElement: {
         prototype: HTMLFiveStarRatingElement;
@@ -152,7 +163,19 @@ declare global {
         prototype: HTMLImageUploadBrowserElement;
         new (): HTMLImageUploadBrowserElement;
     };
+    interface HTMLNoteCardElementEventMap {
+        "editClicked": Note;
+        "deleteClicked": Note;
+    }
     interface HTMLNoteCardElement extends Components.NoteCard, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLNoteCardElementEventMap>(type: K, listener: (this: HTMLNoteCardElement, ev: NoteCardCustomEvent<HTMLNoteCardElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLNoteCardElementEventMap>(type: K, listener: (this: HTMLNoteCardElement, ev: NoteCardCustomEvent<HTMLNoteCardElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLNoteCardElement: {
         prototype: HTMLNoteCardElement;
@@ -200,7 +223,18 @@ declare global {
         prototype: HTMLPageLoginElement;
         new (): HTMLPageLoginElement;
     };
+    interface HTMLPageNavigatorElementEventMap {
+        "pageChanged": number;
+    }
     interface HTMLPageNavigatorElement extends Components.PageNavigator, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLPageNavigatorElementEventMap>(type: K, listener: (this: HTMLPageNavigatorElement, ev: PageNavigatorCustomEvent<HTMLPageNavigatorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLPageNavigatorElementEventMap>(type: K, listener: (this: HTMLPageNavigatorElement, ev: PageNavigatorCustomEvent<HTMLPageNavigatorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLPageNavigatorElement: {
         prototype: HTMLPageNavigatorElement;
@@ -260,13 +294,37 @@ declare global {
         prototype: HTMLRecipeLinkEditorElement;
         new (): HTMLRecipeLinkEditorElement;
     };
+    interface HTMLRecipeStateSelectorElementEventMap {
+        "selectedStatesChanged": RecipeState[];
+    }
     interface HTMLRecipeStateSelectorElement extends Components.RecipeStateSelector, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLRecipeStateSelectorElementEventMap>(type: K, listener: (this: HTMLRecipeStateSelectorElement, ev: RecipeStateSelectorCustomEvent<HTMLRecipeStateSelectorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLRecipeStateSelectorElementEventMap>(type: K, listener: (this: HTMLRecipeStateSelectorElement, ev: RecipeStateSelectorCustomEvent<HTMLRecipeStateSelectorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLRecipeStateSelectorElement: {
         prototype: HTMLRecipeStateSelectorElement;
         new (): HTMLRecipeStateSelectorElement;
     };
+    interface HTMLRecipeViewerElementEventMap {
+        "ratingSelected": number;
+        "deleteLinkClicked": RecipeCompact;
+        "tagClicked": string;
+    }
     interface HTMLRecipeViewerElement extends Components.RecipeViewer, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLRecipeViewerElementEventMap>(type: K, listener: (this: HTMLRecipeViewerElement, ev: RecipeViewerCustomEvent<HTMLRecipeViewerElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLRecipeViewerElementEventMap>(type: K, listener: (this: HTMLRecipeViewerElement, ev: RecipeViewerCustomEvent<HTMLRecipeViewerElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLRecipeViewerElement: {
         prototype: HTMLRecipeViewerElement;
@@ -278,13 +336,35 @@ declare global {
         prototype: HTMLSearchFilterEditorElement;
         new (): HTMLSearchFilterEditorElement;
     };
+    interface HTMLSortBySelectorElementEventMap {
+        "sortByChanged": SortBy;
+    }
     interface HTMLSortBySelectorElement extends Components.SortBySelector, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLSortBySelectorElementEventMap>(type: K, listener: (this: HTMLSortBySelectorElement, ev: SortBySelectorCustomEvent<HTMLSortBySelectorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLSortBySelectorElementEventMap>(type: K, listener: (this: HTMLSortBySelectorElement, ev: SortBySelectorCustomEvent<HTMLSortBySelectorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLSortBySelectorElement: {
         prototype: HTMLSortBySelectorElement;
         new (): HTMLSortBySelectorElement;
     };
+    interface HTMLTagsInputElementEventMap {
+        "valueChanged": string[];
+    }
     interface HTMLTagsInputElement extends Components.TagsInput, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLTagsInputElementEventMap>(type: K, listener: (this: HTMLTagsInputElement, ev: TagsInputCustomEvent<HTMLTagsInputElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLTagsInputElementEventMap>(type: K, listener: (this: HTMLTagsInputElement, ev: TagsInputCustomEvent<HTMLTagsInputElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
     var HTMLTagsInputElement: {
         prototype: HTMLTagsInputElement;
@@ -404,11 +484,11 @@ declare namespace LocalJSX {
         "recipe"?: Recipe;
     }
     interface SearchFilterEditor {
+        "hideName"?: boolean;
         "name"?: string;
         "prompt"?: string;
         "saveLabel"?: string;
         "searchFilter"?: SearchFilter;
-        "showName"?: boolean;
         "showSavedLoader"?: boolean;
     }
     interface SortBySelector {

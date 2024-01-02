@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../generated';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
 
 @Component({
   tag: 'note-editor',
@@ -26,7 +26,7 @@ export class NoteEditor {
             <ion-buttons slot="primary">
               <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{!this.note.id ? 'New Note' : 'Edit Note'}</ion-title>
+            <ion-title>{isNull(this.note.id) ? 'New Note' : 'Edit Note'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -38,11 +38,11 @@ export class NoteEditor {
             <ion-item lines="full">
               <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
                 autocorrect="on"
-                spellcheck="true"
-                onIonBlur={e => this.note = { ...this.note, text: e.target.value }}
+                spellcheck
                 required
                 autofocus
-                auto-grow />
+                auto-grow
+                onIonBlur={e => this.note = { ...this.note, text: e.target.value }} />
             </ion-item>
           </form>
         </ion-content>

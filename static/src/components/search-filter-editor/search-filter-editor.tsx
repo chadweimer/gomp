@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../generated';
 import { loadSearchFilters, loadUserSettings, usersApi } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
 @Component({
@@ -11,7 +11,7 @@ import { getDefaultSearchFilter } from '../../models';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() saveLabel = 'Save';
-  @Prop() showName = true;
+  @Prop() hideName = false;
   @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
@@ -56,25 +56,25 @@ export class SearchFilterEditor {
                     <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
                   )}
                 </ion-select>
-                <ion-button slot="end" fill="clear" disabled={this.selectedFilterId === null} onClick={() => this.onLoadSearchClicked()}>
+                <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
                   <ion-icon slot="icon-only" name="open-outline" />
                 </ion-button>
               </ion-item>
               : ''}
-            {this.showName ?
+            {!this.hideName ?
               <ion-item lines="full">
                 <ion-input label="Name" label-placement="stacked" value={this.name}
                   autocorrect="on"
-                  spellcheck="true"
-                  onIonBlur={e => this.name = e.target.value as string}
+                  spellcheck
                   required
-                  autofocus />
+                  autofocus
+                  onIonBlur={e => this.name = e.target.value as string} />
               </ion-item>
               : ''}
             <ion-item lines="full">
               <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter.query}
                 autocorrect="on"
-                spellcheck="true"
+                spellcheck
                 onIonBlur={e => this.searchFilter = { ...this.searchFilter, query: e.target.value as string }} />
             </ion-item>
             <tags-input value={this.searchFilter.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
@@ -140,7 +140,7 @@ export class SearchFilterEditor {
   }
 
   private async onLoadSearchClicked() {
-    if (this.selectedFilterId === null) {
+    if (isNull(this.selectedFilterId)) {
       return;
     }
 

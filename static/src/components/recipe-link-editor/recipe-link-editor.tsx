@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir, YesNoAny } from '../../generated';
 import { recipesApi } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -42,10 +42,10 @@ export class RecipeLinkEditor {
             <ion-item lines="full">
               <ion-input label="Find Recipe" label-placement="stacked" value={this.query} type="search"
                 autocorrect="on"
-                spellcheck="true"
+                spellcheck
+                autofocus
                 onIonBlur={e => this.query = e.target.value as string}
-                ref={el => this.searchInput = el}
-                autofocus />
+                ref={el => this.searchInput = el} />
             </ion-item>
             <ion-content>
               <ion-list lines="none">
@@ -60,7 +60,7 @@ export class RecipeLinkEditor {
                   {this.matchingRecipes.map(recipe =>
                     <ion-item key={recipe.id} lines="full">
                       <ion-avatar slot="start">
-                        {recipe.thumbnailUrl ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
+                        {!isNullOrEmpty(recipe.thumbnailUrl) ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <ion-radio value={recipe.id}>{recipe.name}</ion-radio>
                     </ion-item>
@@ -92,7 +92,7 @@ export class RecipeLinkEditor {
 
   private async onSaveClicked() {
     const native = await this.searchInput.getInputElement();
-    if (this.selectedRecipeId === null || this.selectedRecipeId === undefined) {
+    if (isNull(this.selectedRecipeId)) {
       native.setCustomValidity('A recipe must be selected');
     } else {
       native.setCustomValidity('');

@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../generated';
-import { configureModalAutofocus, dismissContainingModal, insertSpacesBetweenWords } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({
   tag: 'user-editor',
@@ -31,7 +31,7 @@ export class UserEditor {
             <ion-buttons slot="primary">
               <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{!this.user.id ? 'New User' : 'Edit User'}</ion-title>
+            <ion-title>{isNull(this.user.id) ? 'New User' : 'Edit User'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -41,7 +41,7 @@ export class UserEditor {
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item lines="full">
-              <ion-input label="Email" label-placement="stacked" type="email" value={this.user.username} disabled={!!this.user.id}
+              <ion-input label="Email" label-placement="stacked" type="email" value={this.user.username} disabled={!isNull(this.user.id)}
                 onIonBlur={e => this.user = { ...this.user, username: e.target.value as string }}
                 required
                 autofocus />
@@ -53,7 +53,7 @@ export class UserEditor {
                 )}
               </ion-select>
             </ion-item>
-            {!this.user.id ?
+            {isNull(this.user.id) ?
               <ion-item lines="full">
                 <ion-input label="Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
@@ -61,7 +61,7 @@ export class UserEditor {
                   required />
               </ion-item>
               : ''}
-            {!this.user.id ?
+            {isNull(this.user.id) ?
               <ion-item lines="full">
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
@@ -76,7 +76,7 @@ export class UserEditor {
   }
 
   private async onSaveClicked() {
-    if (!this.user.id) {
+    if (isNull(this.user.id)) {
       const native = await this.repeatPasswordInput.getInputElement();
       if (this.password !== this.repeatPassword) {
         native.setCustomValidity('Passwords must match');

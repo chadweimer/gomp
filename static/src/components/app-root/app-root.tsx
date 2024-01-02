@@ -3,7 +3,7 @@ import { actionSheetController, alertController, modalController, pickerControll
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi } from '../../helpers/api';
-import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope } from '../../helpers/utils';
+import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState, refreshSearchResults } from '../../stores/state';
@@ -167,7 +167,7 @@ export class AppRoot {
                 <ion-item slot="end" lines="none" class="search ion-hide-sm-down">
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     autocorrect="on"
-                    spellcheck="true"
+                    spellcheck
                     onKeyDown={e => this.onSearchKeyDown(e)}
                     onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
                     <ion-icon slot="start" icon="search" color="medium" />
@@ -184,7 +184,7 @@ export class AppRoot {
                 <ion-item lines="none" class="search">
                   <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
                     autocorrect="on"
-                    spellcheck="true"
+                    spellcheck
                     onKeyDown={e => this.onSearchKeyDown(e)}
                     onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
                     <ion-icon slot="start" icon="search" color="medium" />
@@ -236,11 +236,11 @@ export class AppRoot {
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
-      if (appName) {
+      if (!isNull(appName)) {
         appName.setAttribute('content', document.title);
       }
       const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (appTitle) {
+      if (!isNull(appTitle)) {
         appTitle.setAttribute('content', document.title);
       }
     } catch (ex) {
@@ -254,7 +254,7 @@ export class AppRoot {
   }
 
   private isLoggedIn() {
-    return !!state.jwtToken;
+    return !isNullOrEmpty(state.jwtToken);
   }
 
   private requireLogin(): NavigationHookResult {
@@ -300,7 +300,7 @@ export class AppRoot {
   private async onPageChanged() {
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
-      if (state.searchResults === undefined) {
+      if (isNull(state.searchResults)) {
         await refreshSearchResults();
       }
     }
@@ -334,7 +334,7 @@ export class AppRoot {
         componentProps: {
           saveLabel: 'Search',
           prompt: 'Search',
-          showName: false,
+          hideName: true,
           showSavedLoader: true,
           searchFilter: state.searchFilter
         },
@@ -344,7 +344,7 @@ export class AppRoot {
       await modal.present();
 
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (data) {
+      if (!isNull(data)) {
         state.searchFilter = data.searchFilter;
         await redirect('/search');
       }

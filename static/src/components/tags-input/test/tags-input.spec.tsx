@@ -19,9 +19,9 @@ describe('tags-input', () => {
     const expectedLabel = 'Tags';
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
-    const label = page.root.querySelector('ion-label');
-    expect(label).toBeTruthy();
-    expect(label).toEqualText(expectedLabel);
+    const input = page.root.querySelector('ion-input');
+    expect(input).toBeTruthy();
+    expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
 
   it('label is used', async () => {
@@ -32,9 +32,9 @@ describe('tags-input', () => {
     });
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
-    const label = page.root.querySelector('ion-label');
-    expect(label).toBeTruthy();
-    expect(label).toEqualText(expectedLabel);
+    const input = page.root.querySelector('ion-input');
+    expect(input).toBeTruthy();
+    expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
 
   it('uses tags', async () => {
