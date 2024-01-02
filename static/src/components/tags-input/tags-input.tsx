@@ -50,7 +50,7 @@ export class TagsInput {
           <ion-input label={this.label} label-placement="stacked" enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
           <div class="ion-padding">
             {this.filteredSuggestions?.map(tag =>
-              <ion-chip key={tag} color="success" onClick={() => this.addTag(tag)}>
+              <ion-chip key={tag} class="suggested" color="success" onClick={() => this.addTag(tag)}>
                 {tag}
                 <ion-icon icon="add-circle" />
               </ion-chip>
