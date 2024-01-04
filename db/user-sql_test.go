@@ -295,6 +295,126 @@ func Test_User_UpdatePassword(t *testing.T) {
 	}
 }
 
+func Test_User_ReadSettings(t *testing.T) {
+	type testArgs struct {
+		userId        int64
+		dbError       error
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, nil, nil},
+		{0, sql.ErrNoRows, ErrNotFound},
+		{0, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			query := dbmock.ExpectQuery("SELECT \\* FROM app_user_settings WHERE user_id = \\$1").WithArgs(test.userId)
+			if test.dbError == nil {
+				rows := sqlmock.NewRows([]string{"user_id", "home_title", "home_image_url"}).
+					AddRow(test.userId, "My Home Title", "https://example.com/my-image.jpg")
+				query.WillReturnRows(rows)
+
+				dbmock.ExpectQuery("SELECT tag FROM app_user_favorite_tag WHERE user_id = \\$1 ORDER BY tag ASC").
+					WithArgs(test.userId).
+					WillReturnRows(sqlmock.NewRows([]string{"tag"}).AddRow("A").AddRow("B"))
+			} else {
+				query.WillReturnError(test.dbError)
+			}
+
+			// Act
+			userSettings, err := sut.Users().ReadSettings(test.userId)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+			if test.expectedError == nil && *userSettings.UserId != test.userId {
+				t.Errorf("ids don't match, expected: %d, received: %d", test.userId, *userSettings.UserId)
+			}
+		})
+	}
+}
+
+func Test_User_UpdateSettings(t *testing.T) {
+	type testArgs struct {
+		userId        int64
+		homeTitle     string
+		homeImageUrl  string
+		favoriteTags  []string
+		dbError       error
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, "My Home Title", "https://example.com/my-image.jpg", []string{"A", "B"}, nil, nil},
+		{0, "", "", []string{"A", "B"}, sql.ErrNoRows, ErrNotFound},
+		{0, "", "", []string{"A", "B"}, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			userSettings := &models.UserSettings{
+				UserId:       &test.userId,
+				HomeTitle:    &test.homeTitle,
+				HomeImageUrl: &test.homeImageUrl,
+				FavoriteTags: test.favoriteTags,
+			}
+
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("UPDATE app_user_settings SET home_title = \\$1, home_image_url = \\$2 WHERE user_id = \\$3").
+				WithArgs(userSettings.HomeTitle, userSettings.HomeImageUrl, userSettings.UserId)
+			if test.dbError == nil {
+				exec.WillReturnResult(driver.RowsAffected(1))
+
+				dbmock.ExpectExec("DELETE FROM app_user_favorite_tag WHERE user_id = \\$1").
+					WithArgs(test.userId).
+					WillReturnResult(driver.RowsAffected(1))
+
+				for _, tag := range test.favoriteTags {
+					dbmock.ExpectExec("INSERT INTO app_user_favorite_tag \\(user_id, tag\\) VALUES \\(\\$1, \\$2\\)").
+						WithArgs(test.userId, tag).
+						WillReturnResult(driver.RowsAffected(1))
+				}
+
+				dbmock.ExpectCommit()
+			} else {
+				exec.WillReturnError(test.dbError)
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Users().UpdateSettings(userSettings)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func Test_User_Delete(t *testing.T) {
 	type testArgs struct {
 		userId        int64
@@ -416,6 +536,380 @@ func Test_User_List(t *testing.T) {
 						}
 					}
 				}
+			}
+		})
+	}
+}
+
+func Test_User_CreateSearchFilter(t *testing.T) {
+	type testArgs struct {
+		searchFilter      *models.SavedSearchFilter
+		preConditionError error
+		dbError           error
+		expectedError     error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{
+			&models.SavedSearchFilter{
+				UserId:       utils.GetPtr[int64](1),
+				Name:         "My Filter",
+				Query:        "My Query",
+				WithPictures: utils.GetPtr[bool](true),
+				SortBy:       models.SortByCreated,
+				SortDir:      models.Desc,
+				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
+				States:       []models.RecipeState{models.Active, models.Archived},
+				Tags:         []string{"A", "B"},
+			},
+			nil,
+			nil,
+			nil,
+		},
+		{
+			&models.SavedSearchFilter{},
+			ErrMissingId,
+			nil,
+			ErrMissingId,
+		},
+		{
+			&models.SavedSearchFilter{
+				UserId: utils.GetPtr[int64](1),
+			},
+			nil,
+			sql.ErrNoRows,
+			ErrNotFound,
+		},
+		{
+			&models.SavedSearchFilter{
+				UserId: utils.GetPtr[int64](1),
+			},
+			nil,
+			sql.ErrConnDone,
+			sql.ErrConnDone,
+		},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			expectedId := rand.Int63()
+
+			dbmock.ExpectBegin()
+			if test.preConditionError == nil {
+				query := dbmock.ExpectQuery(
+					"INSERT INTO search_filter \\(user_id, name, query, with_pictures, sort_by, sort_dir\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6\\) RETURNING id").
+					WithArgs(
+						test.searchFilter.UserId,
+						test.searchFilter.Name,
+						test.searchFilter.Query,
+						test.searchFilter.WithPictures,
+						test.searchFilter.SortBy,
+						test.searchFilter.SortDir)
+				if test.dbError == nil {
+					query.WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedId))
+
+					dbmock.ExpectExec("DELETE FROM search_filter_field WHERE search_filter_id = \\$1").
+						WithArgs(expectedId).
+						WillReturnResult(driver.RowsAffected(1))
+					for _, field := range test.searchFilter.Fields {
+						dbmock.ExpectExec("INSERT INTO search_filter_field \\(search_filter_id, field_name\\) VALUES \\(\\$1, \\$2\\)").
+							WithArgs(expectedId, field).
+							WillReturnResult(driver.RowsAffected(1))
+					}
+
+					dbmock.ExpectExec("DELETE FROM search_filter_state WHERE search_filter_id = \\$1").
+						WithArgs(expectedId).
+						WillReturnResult(driver.RowsAffected(1))
+					for _, state := range test.searchFilter.States {
+						dbmock.ExpectExec("INSERT INTO search_filter_state \\(search_filter_id, state\\) VALUES \\(\\$1, \\$2\\)").
+							WithArgs(expectedId, state).
+							WillReturnResult(driver.RowsAffected(1))
+					}
+
+					dbmock.ExpectExec("DELETE FROM search_filter_tag WHERE search_filter_id = \\$1").
+						WithArgs(expectedId).
+						WillReturnResult(driver.RowsAffected(1))
+					for _, tag := range test.searchFilter.Tags {
+						dbmock.ExpectExec("INSERT INTO search_filter_tag \\(search_filter_id, tag\\) VALUES \\(\\$1, \\$2\\)").
+							WithArgs(expectedId, tag).
+							WillReturnResult(driver.RowsAffected(1))
+					}
+
+					dbmock.ExpectCommit()
+				} else {
+					query.WillReturnError(test.dbError)
+					dbmock.ExpectRollback()
+				}
+			} else {
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Users().CreateSearchFilter(test.searchFilter)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+			if err == nil && *test.searchFilter.Id != expectedId {
+				t.Errorf("expected note id %d, received %d", expectedId, *test.searchFilter.Id)
+			}
+		})
+	}
+}
+
+func Test_User_ReadSearchFilter(t *testing.T) {
+	type testArgs struct {
+		userId        int64
+		filterId      int64
+		dbError       error
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, 2, nil, nil},
+		{1, 2, sql.ErrNoRows, ErrNotFound},
+		{1, 2, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			query := dbmock.ExpectQuery("SELECT \\* FROM search_filter WHERE id = \\$1 AND user_id = \\$2").
+				WithArgs(test.filterId, test.userId)
+			if test.dbError == nil {
+				rows := sqlmock.NewRows([]string{"id", "name", "query", "with_pictures", "sort_by", "sort_dir"}).
+					AddRow(test.filterId, "My Filter", "My Query", true, models.SortById, models.Asc)
+				query.WillReturnRows(rows)
+
+				dbmock.ExpectQuery("SELECT field_name FROM search_filter_field WHERE search_filter_id = \\$1").
+					WithArgs(test.filterId).
+					WillReturnRows(&sqlmock.Rows{})
+
+				dbmock.ExpectQuery("SELECT state FROM search_filter_state WHERE search_filter_id = \\$1").
+					WithArgs(test.filterId).
+					WillReturnRows(&sqlmock.Rows{})
+
+				dbmock.ExpectQuery("SELECT tag FROM search_filter_tag WHERE search_filter_id = \\$1").
+					WithArgs(test.filterId).
+					WillReturnRows(&sqlmock.Rows{})
+			} else {
+				query.WillReturnError(test.dbError)
+			}
+
+			// Act
+			_, err := sut.Users().ReadSearchFilter(test.userId, test.filterId)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func Test_User_UpdateSearchFilter(t *testing.T) {
+	type testArgs struct {
+		searchFilter      *models.SavedSearchFilter
+		preConditionError error
+		dbError           error
+		expectedError     error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{
+			&models.SavedSearchFilter{
+				UserId:       utils.GetPtr[int64](1),
+				Id:           utils.GetPtr[int64](2),
+				Name:         "My Filter",
+				Query:        "My Query",
+				WithPictures: utils.GetPtr[bool](true),
+				SortBy:       models.SortByCreated,
+				SortDir:      models.Desc,
+				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
+				States:       []models.RecipeState{models.Active, models.Archived},
+				Tags:         []string{"A", "B"},
+			},
+			nil,
+			nil,
+			nil,
+		},
+		{
+			&models.SavedSearchFilter{
+				Id: utils.GetPtr[int64](2),
+			},
+			ErrMissingId,
+			nil,
+			ErrMissingId,
+		},
+		{
+			&models.SavedSearchFilter{
+				UserId: utils.GetPtr[int64](1),
+			},
+			ErrMissingId,
+			nil,
+			ErrMissingId,
+		},
+		{
+			&models.SavedSearchFilter{
+				UserId: utils.GetPtr[int64](1),
+				Id:     utils.GetPtr[int64](2),
+			},
+			nil,
+			sql.ErrNoRows,
+			ErrNotFound,
+		},
+		{
+			&models.SavedSearchFilter{
+				UserId: utils.GetPtr[int64](1),
+				Id:     utils.GetPtr[int64](2),
+			},
+			nil,
+			sql.ErrConnDone,
+			sql.ErrConnDone,
+		},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			if test.preConditionError == nil {
+				dbmock.ExpectQuery("SELECT id FROM search_filter WHERE id = \\$1 AND user_id = \\$2").
+					WithArgs(*test.searchFilter.Id, *test.searchFilter.UserId).
+					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(test.searchFilter.Id))
+
+				exec := dbmock.ExpectExec(
+					"UPDATE search_filter SET name = \\$1, query = \\$2, with_pictures = \\$3, sort_by = \\$4, sort_dir = \\$5 WHERE id = \\$6 AND user_id = \\$7").
+					WithArgs(
+						test.searchFilter.Name,
+						test.searchFilter.Query,
+						test.searchFilter.WithPictures,
+						test.searchFilter.SortBy,
+						test.searchFilter.SortDir,
+						test.searchFilter.Id,
+						test.searchFilter.UserId)
+				if test.dbError == nil {
+					exec.WillReturnResult(driver.RowsAffected(1))
+
+					dbmock.ExpectExec("DELETE FROM search_filter_field WHERE search_filter_id = \\$1").
+						WithArgs(test.searchFilter.Id).
+						WillReturnResult(driver.RowsAffected(1))
+					for _, field := range test.searchFilter.Fields {
+						dbmock.ExpectExec("INSERT INTO search_filter_field \\(search_filter_id, field_name\\) VALUES \\(\\$1, \\$2\\)").
+							WithArgs(test.searchFilter.Id, field).
+							WillReturnResult(driver.RowsAffected(1))
+					}
+
+					dbmock.ExpectExec("DELETE FROM search_filter_state WHERE search_filter_id = \\$1").
+						WithArgs(test.searchFilter.Id).
+						WillReturnResult(driver.RowsAffected(1))
+					for _, state := range test.searchFilter.States {
+						dbmock.ExpectExec("INSERT INTO search_filter_state \\(search_filter_id, state\\) VALUES \\(\\$1, \\$2\\)").
+							WithArgs(test.searchFilter.Id, state).
+							WillReturnResult(driver.RowsAffected(1))
+					}
+
+					dbmock.ExpectExec("DELETE FROM search_filter_tag WHERE search_filter_id = \\$1").
+						WithArgs(test.searchFilter.Id).
+						WillReturnResult(driver.RowsAffected(1))
+					for _, tag := range test.searchFilter.Tags {
+						dbmock.ExpectExec("INSERT INTO search_filter_tag \\(search_filter_id, tag\\) VALUES \\(\\$1, \\$2\\)").
+							WithArgs(test.searchFilter.Id, tag).
+							WillReturnResult(driver.RowsAffected(1))
+					}
+
+					dbmock.ExpectCommit()
+				} else {
+					exec.WillReturnError(test.dbError)
+					dbmock.ExpectRollback()
+				}
+			} else {
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Users().UpdateSearchFilter(test.searchFilter)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func Test_User_DeleteSearchFilter(t *testing.T) {
+	type testArgs struct {
+		userId        int64
+		filterId      int64
+		dbError       error
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, 2, nil, nil},
+		{0, 0, sql.ErrNoRows, ErrNotFound},
+		{0, 0, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("DELETE FROM search_filter WHERE id = \\$1 AND user_id = \\$2").
+				WithArgs(test.filterId, test.userId)
+			if test.dbError == nil {
+				exec.WillReturnResult(driver.RowsAffected(1))
+				dbmock.ExpectCommit()
+			} else {
+				exec.WillReturnError(test.dbError)
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Users().DeleteSearchFilter(test.userId, test.filterId)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
