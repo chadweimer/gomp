@@ -31,7 +31,7 @@ describe('recipe-viewer', () => {
     const component = page.rootInstance as RecipeViewer;
     expect(component.recipe).toEqual(recipe);
     const para = page.root.querySelector('h1');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(recipe.name);
   });
 
@@ -57,7 +57,7 @@ describe('recipe-viewer', () => {
     // By default, the only item should be the name since the other fields are null
     expect(items.length).toBe(1);
     const heading = items[0].querySelector('h1');
-    expect(heading).toBeTruthy();
+    expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
 
     // Serving Size
@@ -66,7 +66,7 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     let para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(component.recipe.servingSize);
 
     // Time
@@ -75,7 +75,7 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(component.recipe.time);
 
     // Ingredients
@@ -84,7 +84,7 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(component.recipe.ingredients);
 
     // Directions
@@ -93,7 +93,7 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(component.recipe.directions);
 
     // Nutrition Info
@@ -102,7 +102,7 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(component.recipe.nutritionInfo);
 
     // Storage Instructions
@@ -111,7 +111,7 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(component.recipe.storageInstructions);
 
     // Source URL
@@ -120,9 +120,9 @@ describe('recipe-viewer', () => {
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
     para = items[1].querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     const link = para.querySelector('a');
-    expect(link).toBeTruthy();
+    expect(link).not.toBeNull();
     expect(link.href).toEqualText(component.recipe.sourceUrl);
     expect(link).toEqualText(component.recipe.sourceUrl);
 
@@ -161,7 +161,7 @@ describe('recipe-viewer', () => {
       });
       const heading = page.root.querySelector('h1');
       const label = heading.parentElement.querySelector('ion-note')
-      expect(label).toBeTruthy();
+      expect(label).not.toBeNull();
       expect(label.textContent.includes('Last Modified')).toBe(modified);
     }
   });
@@ -180,9 +180,9 @@ describe('recipe-viewer', () => {
     const component = page.rootInstance as RecipeViewer;
     expect(component.mainImage).toEqual(mainImage);
     const img = page.root.querySelector(`img[src='${mainImage.thumbnailUrl}']`);
-    expect(img).toBeTruthy();
+    expect(img).not.toBeNull();
     const link = img.closest('a');
-    expect(link).toBeTruthy();
+    expect(link).not.toBeNull();
     expect(link.href).toEqual(mainImage.url);
   });
 
@@ -212,8 +212,8 @@ describe('recipe-viewer', () => {
 
     // Each link should be present
     for (const link of links) {
-      const linkElement = items[1].querySelectorAll(`ion-router-link[href='/recipes/${link.id}']`);
-      expect(linkElement).toBeTruthy();
+      const linkElement = items[1].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
+      expect(linkElement).not.toBeNull();
       expect(linkElement).toEqualText(link.name);
     }
   });

@@ -33,7 +33,7 @@ describe('note-card', () => {
       if (readonly) {
         expect(para).toBeNull();
       } else {
-        expect(para).toBeTruthy();
+        expect(para).not.toBeNull();
         expect(para.childNodes.length).toBe(2);
       }
     }
@@ -52,7 +52,7 @@ describe('note-card', () => {
         template: () => (<note-card note={note}></note-card>),
       });
       const label = page.root.querySelector('ion-card-header ion-label');
-      expect(label).toBeTruthy();
+      expect(label).not.toBeNull();
       expect(label.textContent.includes('edited')).toBe(modified);
     }
   });

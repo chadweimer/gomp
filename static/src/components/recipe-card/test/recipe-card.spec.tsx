@@ -20,12 +20,12 @@ describe('recipe-card', () => {
     const component = page.rootInstance as RecipeCard;
     expect(component.recipe.name).toEqual('');
     const image = page.root.querySelector('img');
-    expect(image).toBeFalsy();
+    expect(image).toBeNull();
     const para = page.root.querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText('');
     const rating = page.root.querySelector('five-star-rating');
-    expect(rating).toBeTruthy();
+    expect(rating).not.toBeNull();
     expect(rating).toEqualAttribute('value', 0);
   });
 
@@ -41,12 +41,12 @@ describe('recipe-card', () => {
     const component = page.rootInstance as RecipeCard;
     expect(component.recipe).toEqual(recipe);
     const image = page.root.querySelector('img');
-    expect(image).toBeFalsy();
+    expect(image).toBeNull();
     const para = page.root.querySelector('p');
-    expect(para).toBeTruthy();
+    expect(para).not.toBeNull();
     expect(para).toEqualText(recipe.name);
     const rating = page.root.querySelector('five-star-rating');
-    expect(rating).toBeTruthy();
+    expect(rating).not.toBeNull();
     expect(rating).toEqualAttribute('value', recipe.averageRating);
   });
 });

@@ -20,7 +20,7 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
     const input = page.root.querySelector('ion-input');
-    expect(input).toBeTruthy();
+    expect(input).not.toBeNull();
     expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
 
@@ -33,7 +33,7 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
     const input = page.root.querySelector('ion-input');
-    expect(input).toBeTruthy();
+    expect(input).not.toBeNull();
     expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
 
@@ -46,7 +46,6 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual(expectedTags);
     const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
-    expect(chips).toBeTruthy();
     expect(chips).toHaveLength(expectedTags.length);
   });
 
@@ -60,7 +59,6 @@ describe('tags-input', () => {
     expect(component.value).toEqual([]);
     expect(component.suggestions).toEqual(expectedTags);
     const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
-    expect(chips).toBeTruthy();
     expect(chips).toHaveLength(expectedTags.length);
   });
 
@@ -72,7 +70,7 @@ describe('tags-input', () => {
       template: () => (<tags-input value={initialTags} onValueChanged={handleValueChanged}></tags-input>),
     });
     let chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
-    expect(chips).toBeTruthy();
+    expect(chips).toHaveLength(initialTags.length);
     chips.forEach(chip => chip.click());
     await page.waitForChanges();
     const component = page.rootInstance as TagsInput;
@@ -92,7 +90,7 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual([]);
     const input = page.root.querySelector('ion-input');
-    expect(input).toBeTruthy();
+    expect(input).not.toBeNull();
     for (const tag of expectedTags) {
       input.value = tag;
       input.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Enter' }));

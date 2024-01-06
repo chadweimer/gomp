@@ -18,14 +18,14 @@ describe('user-editor', () => {
       html: '<user-editor></user-editor>',
     });
     const component = page.rootInstance as UserEditor;
-    expect(component.user.id).toBeFalsy();
+    expect(component.user.id).toBeUndefined();
     expect(component.user.username).toEqual('');
     expect(component.user.accessLevel).toEqual(AccessLevel.Editor);
     const usernameInput = page.root.querySelector('ion-input[type=\'email\']');
-    expect(usernameInput).toBeTruthy();
+    expect(usernameInput).not.toBeNull();
     expect(usernameInput).toEqualAttribute('value', '');
     const accessLevelSelect = page.root.querySelector('ion-select');
-    expect(accessLevelSelect).toBeTruthy();
+    expect(accessLevelSelect).not.toBeNull();
     expect(accessLevelSelect).toEqualAttribute('value', AccessLevel.Editor);
   });
 
@@ -42,10 +42,10 @@ describe('user-editor', () => {
     const component = page.rootInstance as UserEditor;
     expect(component.user).toEqual(user);
     const usernameInput = page.root.querySelector('ion-input[type=\'email\']');
-    expect(usernameInput).toBeTruthy();
+    expect(usernameInput).not.toBeNull();
     expect(usernameInput).toEqualAttribute('value', user.username);
     const accessLevelSelect = page.root.querySelector('ion-select');
-    expect(accessLevelSelect).toBeTruthy();
+    expect(accessLevelSelect).not.toBeNull();
     expect(accessLevelSelect).toEqualAttribute('value', user.accessLevel);
   });
 
@@ -62,7 +62,7 @@ describe('user-editor', () => {
     const component = page.rootInstance as UserEditor;
     expect(component.user).toEqual(user);
     const passwordInput = page.root.querySelector('ion-input[type=\'password\']');
-    expect(passwordInput).toBeTruthy();
+    expect(passwordInput).not.toBeNull();
   });
 
   it('hides passwords', async () => {
@@ -78,6 +78,6 @@ describe('user-editor', () => {
     const component = page.rootInstance as UserEditor;
     expect(component.user).toEqual(user);
     const passwordInput = page.root.querySelector('ion-input[type=\'password\']');
-    expect(passwordInput).toBeFalsy();
+    expect(passwordInput).toBeNull();
   });
 });
