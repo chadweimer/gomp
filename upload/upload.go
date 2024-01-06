@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -90,7 +90,7 @@ func (u ImageUploader) Load(recipeId int64, imageName string) ([]byte, error) {
 		return nil, err
 	}
 
-	return ioutil.ReadAll(file)
+	return io.ReadAll(file)
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {

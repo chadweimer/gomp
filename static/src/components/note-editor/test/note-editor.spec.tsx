@@ -18,7 +18,7 @@ describe('note-editor', () => {
       html: '<note-editor></note-editor>',
     });
     const textArea = page.root.querySelector('ion-textarea');
-    expect(textArea).toBeTruthy();
+    expect(textArea).not.toBeNull();
     expect(textArea).toEqualAttribute('value', '');
   });
 

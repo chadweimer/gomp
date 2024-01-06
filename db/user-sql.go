@@ -331,7 +331,8 @@ func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter,
 	}
 
 	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
-	if _, err := d.readSearchFilterImpl(*filter.UserId, *filter.Id, db); err != nil {
+	var id int64
+	if err := sqlx.Get(db, &id, "SELECT id FROM search_filter WHERE id = $1 AND user_id = $2", filter.Id, filter.UserId); err != nil {
 		return err
 	}
 

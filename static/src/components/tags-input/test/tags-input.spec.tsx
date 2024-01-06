@@ -20,7 +20,7 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
     const input = page.root.querySelector('ion-input');
-    expect(input).toBeTruthy();
+    expect(input).not.toBeNull();
     expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
 
@@ -33,7 +33,7 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
     const input = page.root.querySelector('ion-input');
-    expect(input).toBeTruthy();
+    expect(input).not.toBeNull();
     expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
 
@@ -45,8 +45,7 @@ describe('tags-input', () => {
     });
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual(expectedTags);
-    const chips = page.root.querySelectorAll('ion-chip');
-    expect(chips).toBeTruthy();
+    const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(expectedTags.length);
   });
 
@@ -59,8 +58,68 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual([]);
     expect(component.suggestions).toEqual(expectedTags);
-    const chips = page.root.querySelectorAll('ion-chip');
-    expect(chips).toBeTruthy();
+    const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
     expect(chips).toHaveLength(expectedTags.length);
+  });
+
+  it('tag can be removed', async () => {
+    const initialTags = ['tag1', 'tag2'];
+    const handleValueChanged = jest.fn();
+    const page = await newSpecPage({
+      components: [TagsInput],
+      template: () => (<tags-input value={initialTags} onValueChanged={handleValueChanged}></tags-input>),
+    });
+    let chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    expect(chips).toHaveLength(initialTags.length);
+    chips.forEach(chip => chip.click());
+    await page.waitForChanges();
+    const component = page.rootInstance as TagsInput;
+    expect(component.internalValue).toEqual([]);
+    chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    expect(chips).toHaveLength(0);
+    expect(handleValueChanged).toHaveBeenCalledTimes(initialTags.length);
+  });
+
+  it('tag can be added', async () => {
+    const expectedTags = ['tag1', 'tag2'];
+    const handleValueChanged = jest.fn();
+    const page = await newSpecPage({
+      components: [TagsInput],
+      template: () => (<tags-input onValueChanged={handleValueChanged}></tags-input>),
+    });
+    const component = page.rootInstance as TagsInput;
+    expect(component.value).toEqual([]);
+    const input = page.root.querySelector('ion-input');
+    expect(input).not.toBeNull();
+    for (const tag of expectedTags) {
+      input.value = tag;
+      input.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Enter' }));
+      await page.waitForChanges();
+      expect(input.value).toEqualText('');
+    }
+    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    expect(addedChips).toHaveLength(expectedTags.length);
+    expect(handleValueChanged).toHaveBeenCalledTimes(expectedTags.length);
+    expect(component.internalValue).toEqual(expectedTags);
+  });
+
+  it('suggestions can be added', async () => {
+    const initialSuggestions = ['tag1', 'tag2'];
+    const handleValueChanged = jest.fn();
+    const page = await newSpecPage({
+      components: [TagsInput],
+      template: () => (<tags-input suggestions={initialSuggestions} onValueChanged={handleValueChanged}></tags-input>),
+    });
+    let suggestedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    expect(suggestedChips).toHaveLength(initialSuggestions.length);
+    suggestedChips.forEach(chip => chip.click());
+    await page.waitForChanges();
+    const component = page.rootInstance as TagsInput;
+    expect(component.internalValue).toEqual(initialSuggestions);
+    suggestedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    expect(suggestedChips).toHaveLength(0);
+    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    expect(addedChips).toHaveLength(initialSuggestions.length);
+    expect(handleValueChanged).toHaveBeenCalledTimes(initialSuggestions.length);
   });
 });

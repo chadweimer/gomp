@@ -20,7 +20,7 @@ describe('sort-by-selector', () => {
     const component = page.rootInstance as SortBySelector;
     expect(component.sortBy).toEqual(SortBy.Name);
     const radioGroup = page.root.shadowRoot.querySelector('ion-radio-group');
-    expect(radioGroup).toBeTruthy();
+    expect(radioGroup).not.toBeNull();
     expect(radioGroup).toEqualAttribute('value', SortBy.Name);
   });
 

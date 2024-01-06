@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -87,6 +90,48 @@ func Test_getResourceIdFromCtx(t *testing.T) {
 				if id != test.val {
 					t.Errorf("actual: %d, expected: %d", id, test.val)
 				}
+			}
+		})
+	}
+}
+
+func Test_writeErrorResponse(t *testing.T) {
+	type testArgs struct {
+		code int
+		err  error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{http.StatusConflict, errors.New("A conflict error")},
+		{http.StatusBadGateway, errors.New("A bad gateway error")},
+		{http.StatusInternalServerError, db.ErrNotFound},
+		{http.StatusInternalServerError, errMismatchedId},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			r := httptest.NewRequest("GET", "/some/path", nil)
+			w := httptest.NewRecorder()
+
+			// Act
+			writeErrorResponse(w, r, test.code, test.err)
+
+			// Assert
+			actualCode := w.Result().StatusCode
+			expectedCode := getStatusFromError(test.err, test.code)
+			if actualCode != expectedCode {
+				t.Errorf("expected code: %d, received code: %d", expectedCode, actualCode)
+			}
+
+			actualBodyBytes, err := io.ReadAll(w.Result().Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			actualBody := strings.TrimSpace(string(actualBodyBytes))
+			expectedBody := strings.TrimSpace(fmt.Sprintf("\"%s\"", http.StatusText(expectedCode)))
+			if actualBody != expectedBody {
+				t.Errorf("expected: %s, received: %s", expectedBody, actualBody)
 			}
 		})
 	}

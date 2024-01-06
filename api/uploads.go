@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"path/filepath"
 
@@ -35,7 +35,7 @@ func readFile(reader *multipart.Reader) ([]byte, string, error) {
 	defer part.Close()
 
 	fileName := part.FileName()
-	uploadedFileData, err := ioutil.ReadAll(part)
+	uploadedFileData, err := io.ReadAll(part)
 	if err != nil {
 		return nil, "", err
 	}
