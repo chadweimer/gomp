@@ -915,6 +915,82 @@ func Test_User_DeleteSearchFilter(t *testing.T) {
 	}
 }
 
+func Test_User_ListSearchFilters(t *testing.T) {
+	type testArgs struct {
+		userId         int64
+		expectedResult []models.SavedSearchFilterCompact
+		dbError        error
+		expectedError  error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, []models.SavedSearchFilterCompact{
+			{
+				Id:     utils.GetPtr[int64](1),
+				Name:   "Filter 1",
+				UserId: utils.GetPtr[int64](1),
+			},
+			{
+				Id:     utils.GetPtr[int64](2),
+				Name:   "Filter 2",
+				UserId: utils.GetPtr[int64](1),
+			},
+		}, nil, nil},
+		{0, nil, sql.ErrNoRows, ErrNotFound},
+		{0, nil, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			query := dbmock.ExpectQuery("SELECT id, user_id, name FROM search_filter WHERE user_id = \\$1 ORDER BY name ASC")
+			if test.dbError == nil {
+				rows := sqlmock.NewRows([]string{"id", "name", "user_id"})
+				for _, filter := range test.expectedResult {
+					rows.AddRow(filter.Id, filter.Name, filter.UserId)
+				}
+				query.WillReturnRows(rows)
+			} else {
+				query.WillReturnError(test.dbError)
+			}
+
+			// Act
+			result, err := sut.Users().ListSearchFilters(test.userId)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+			if test.expectedResult == nil {
+				if result != nil {
+					t.Errorf("did not expect results, but received %v", result)
+				}
+			} else {
+				if result == nil {
+					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
+				} else if len(test.expectedResult) != len(*result) {
+					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
+				} else {
+					for i, user := range test.expectedResult {
+						if user.Name != (*result)[i].Name {
+							t.Errorf("names don't match, expected: %s, received: %s", user.Name, (*result)[i].Name)
+						}
+					}
+				}
+			}
+		})
+	}
+}
+
 type passwordHashArgument string
 
 func (p passwordHashArgument) Match(value driver.Value) bool {
