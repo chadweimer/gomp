@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
+import { Helmet } from '@stencil-community/helmet';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
@@ -72,6 +73,12 @@ export class AppRoot {
   render() {
     return (
       <ion-app>
+        <Helmet>
+          <title>{appConfig.config.title}</title>
+          <meta name="application-name" content={appConfig.config.title} />
+          <meta name="apple-mobile-web-app-title" content={appConfig.config.title} />
+        </Helmet>
+
         <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
           <ion-route url="/login" component="tab-login" />
 
@@ -233,16 +240,6 @@ export class AppRoot {
     try {
       ({ data: appConfig.info } = await appApi.getInfo());
       ({ data: appConfig.config } = await appApi.getConfiguration());
-
-      document.title = appConfig.config.title;
-      const appName = document.querySelector('meta[name="application-name"]');
-      if (!isNull(appName)) {
-        appName.setAttribute('content', document.title);
-      }
-      const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (!isNull(appTitle)) {
-        appTitle.setAttribute('content', document.title);
-      }
     } catch (ex) {
       console.error(ex);
     }
