@@ -1,4 +1,4 @@
-import { AxiosResponseHeaders } from 'axios';
+import { AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios';
 import { AppApi, Configuration, RecipesApi, UsersApi } from '../generated';
 import state from '../stores/state';
 
@@ -29,6 +29,6 @@ export async function loadSearchFilters() {
   }
 }
 
-export function getLocationFromResponse(headers: AxiosResponseHeaders) {
+export function getLocationFromResponse(headers: RawAxiosResponseHeaders | AxiosResponseHeaders) {
   return headers['location'] ?? '';
 }
