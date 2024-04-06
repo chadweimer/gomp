@@ -22,5 +22,8 @@ export const config: Config = {
       '<rootDir>/src/generated/',
       'stencil.*.ts'
     ],
+    moduleNameMapper: {
+      '^axios$': '<rootDir>/node_modules/axios/dist/node/axios.cjs'
+    },
   },
 };
