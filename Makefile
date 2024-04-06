@@ -22,6 +22,10 @@ GOARCH := amd64
 GO_ENV=GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
 GO_LD_FLAGS=-ldflags "-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'"
 
+OAPI_CODEGEN=github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.1.0
+GOSEC=github.com/securego/gosec/v2/cmd/gosec@v2.19.0
+REVIVE=github.com/mgechev/revive@v1.3.7
+
 CONTAINER_REGISTRY ?= ghcr.io
 CONTAINER_IMAGE_NAME ?= chadweimer/gomp
 
@@ -35,10 +39,6 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
-	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.1.0
-	go install github.com/securego/gosec/v2/cmd/gosec@v2.19.0
-	go install github.com/mgechev/revive@v1.3.7
-	go install github.com/golang/mock/mockgen@v1.6.0
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -53,10 +53,10 @@ $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
 $(API_CODEGEN_FILE): openapi.yaml api/cfg.yaml
-	oapi-codegen --config api/cfg.yaml openapi.yaml > $@
+	go run $(OAPI_CODEGEN) --config api/cfg.yaml openapi.yaml > $@
 
 $(MODELS_CODEGEN_FILE): models.yaml models/cfg.yaml
-	oapi-codegen --config models/cfg.yaml models.yaml > $@
+	go run $(OAPI_CODEGEN) --config models/cfg.yaml models.yaml > $@
 
 $(MOCKS_CODEGEN_DIR): $(GO_FILES)
 	go generate ./...
@@ -73,8 +73,8 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)
 	go vet ./...
-	revive -config=revive.toml ./...
-	gosec -severity medium ./...
+	go run $(REVIVE) -config=revive.toml ./...
+	go run $(GOSEC) -severity medium ./...
 
 
 # ---- BUILD ----
