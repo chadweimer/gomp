@@ -16,18 +16,18 @@ jobs:
     name: Check
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.22.x"
       - run: make install
       - run: make lint test
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: |
@@ -41,18 +41,18 @@ jobs:
     name: Build
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "lts/*"
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.22.x"
-      - uses: docker/setup-buildx-action@v2
-      - uses: docker/setup-qemu-action@v2
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v3
         with:
           platforms: arm,arm64
-      - uses: docker/login-action@v2
+      - uses: docker/login-action@v3
         with:
           registry: ${{ env.CONTAINER_REGISTRY }}
           username: ${{ github.actor }}
@@ -65,12 +65,12 @@ jobs:
       - run: make build docker BUILD_VERSION="v$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')" CONTAINER_TAG="$(echo $GITHUB_REF | sed -e 's/^refs\/tags\///')"
         if: startswith(github.ref, 'refs/tags/')
       - run: make archive
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: |
             build/gomp-*
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
