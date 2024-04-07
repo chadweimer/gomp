@@ -1,4 +1,4 @@
-import { AppApi, Configuration, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
+import { AppApi, Configuration, FetchAPI, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
 import { SearchViewMode, getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNullOrEmpty, toYesNoAny } from './utils';
@@ -34,7 +34,7 @@ class LoadingMiddleware implements Middleware {
   }
 }
 
-const customFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestInit) => {
   let response = await window.fetch(input, init);
   if (response.status === 403) {
     // Try refreshing the token and repeating the request
