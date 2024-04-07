@@ -1,11 +1,11 @@
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
-import { appApi } from '../../helpers/api';
+import { appApi, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState, refreshSearchResults } from '../../stores/state';
+import state, { clearState } from '../../stores/state';
 import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 
 @Component({

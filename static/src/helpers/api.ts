@@ -1,6 +1,20 @@
 import { AppApi, Configuration, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
-import state from '../stores/state';
-import { toYesNoAny } from './utils';
+import { SearchViewMode, getDefaultSearchFilter } from '../models';
+import state, { AppState, onStateChange } from '../stores/state';
+import { isNullOrEmpty, toYesNoAny } from './utils';
+
+// Retrieve search results when search filters change
+const propsToSearch: (keyof AppState)[] = ['searchSettings', 'searchFilter', 'searchPage'];
+for (const prop of propsToSearch) {
+  onStateChange(prop, async () => {
+    if (prop !== 'searchPage') {
+      state.searchPage = 1;
+    }
+    state.searchScrollPosition = 0;
+
+    await refreshSearchResults();
+  });
+}
 
 class LoadingMiddleware implements Middleware {
   pre(): Promise<void | FetchParams> {
@@ -64,4 +78,30 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
 
 export function getLocationFromResponse(headers: Headers) {
   return headers.get('location') ?? '';
+}
+
+export async function refreshSearchResults() {
+  if (isNullOrEmpty(state.jwtToken)) return;
+
+  // Make sure to fill in any missing fields
+  const defaultFilter = getDefaultSearchFilter();
+  const filter = { ...defaultFilter, ...state.searchFilter };
+
+  const count = state.searchSettings.viewMode === SearchViewMode.Card ? 24 : 60;
+
+  try {
+    const { total, recipes } = await performRecipeSearch(filter, state.searchPage, count);
+    state.searchResults = recipes ?? [];
+    state.searchResultCount = total;
+    state.searchNumPages = Math.max(Math.ceil(total / count), 1);
+  } catch (ex) {
+    console.error(ex);
+    state.searchResults = [];
+    state.searchResultCount = null;
+    state.searchNumPages = 1;
+  } finally {
+    if (state.searchPage > state.searchNumPages) {
+      state.searchPage = state.searchNumPages;
+    }
+  }
 }

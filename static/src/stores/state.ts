@@ -1,8 +1,7 @@
 import { createStore } from '@stencil/store';
 import { RecipeCompact, SearchFilter } from '../generated';
-import { performRecipeSearch } from '../helpers/api';
-import { isNull, isNullOrEmpty } from '../helpers/utils';
-import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings, SearchViewMode } from '../models';
+import { isNull } from '../helpers/utils';
+import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 
 interface AppState {
   jwtToken?: string;
@@ -46,43 +45,4 @@ for (const prop of propsToSync) {
   });
 }
 
-// Retrieve search results when search filters change
-const propsToSearch: (keyof AppState)[] = ['searchSettings', 'searchFilter', 'searchPage'];
-for (const prop of propsToSearch) {
-  onChange(prop, async () => {
-    if (prop !== 'searchPage') {
-      state.searchPage = 1;
-    }
-    state.searchScrollPosition = 0;
-
-    await refreshSearchResults();
-  });
-}
-
-async function refreshSearchResults() {
-  if (isNullOrEmpty(state.jwtToken)) return;
-
-  // Make sure to fill in any missing fields
-  const defaultFilter = getDefaultSearchFilter();
-  const filter = { ...defaultFilter, ...state.searchFilter };
-
-  const count = state.searchSettings.viewMode === SearchViewMode.Card ? 24 : 60;
-
-  try {
-    const { total, recipes } = await performRecipeSearch(filter, state.searchPage, count);
-    state.searchResults = recipes ?? [];
-    state.searchResultCount = total;
-    state.searchNumPages = Math.max(Math.ceil(total / count), 1);
-  } catch (ex) {
-    console.error(ex);
-    state.searchResults = [];
-    state.searchResultCount = null;
-    state.searchNumPages = 1;
-  } finally {
-    if (state.searchPage > state.searchNumPages) {
-      state.searchPage = state.searchNumPages;
-    }
-  }
-}
-
-export { state as default, reset as clearState, refreshSearchResults };
+export { state as default, reset as clearState, onChange as onStateChange, AppState };

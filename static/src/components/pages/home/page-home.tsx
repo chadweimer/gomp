@@ -1,9 +1,9 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { loadUserSettings, performRecipeSearch, recipesApi, usersApi } from '../../../helpers/api';
+import { loadUserSettings, performRecipeSearch, recipesApi, refreshSearchResults, usersApi } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, isNull, isNullOrEmpty } from '../../../helpers/utils';
-import state, { refreshSearchResults } from '../../../stores/state';
+import state from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
 
 @Component({
