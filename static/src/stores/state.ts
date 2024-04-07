@@ -45,4 +45,4 @@ for (const prop of propsToSync) {
   });
 }
 
-export { state as default, reset as clearState, onChange as onStateChange, AppState };
+export { state as default, reset as clearState, onChange as onStateChange };

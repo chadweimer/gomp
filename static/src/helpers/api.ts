@@ -1,10 +1,10 @@
 import { AppApi, Configuration, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
 import { SearchViewMode, getDefaultSearchFilter } from '../models';
-import state, { AppState, onStateChange } from '../stores/state';
+import state, { onStateChange } from '../stores/state';
 import { isNullOrEmpty, toYesNoAny } from './utils';
 
 // Retrieve search results when search filters change
-const propsToSearch: (keyof AppState)[] = ['searchSettings', 'searchFilter', 'searchPage'];
+const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage'];
 for (const prop of propsToSearch) {
   onStateChange(prop, async () => {
     if (prop !== 'searchPage') {
