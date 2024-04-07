@@ -46,7 +46,7 @@ export const usersApi = new UsersApi(configuration);
 
 export async function loadUserSettings() {
   try {
-    return (await usersApi.getSettings());
+    return await usersApi.getSettings();
   } catch (ex) {
     console.error(ex);
     return null
@@ -55,7 +55,7 @@ export async function loadUserSettings() {
 
 export async function loadSearchFilters() {
   try {
-    return (await usersApi.getSearchFilters());
+    return await usersApi.getSearchFilters();
   } catch (ex) {
     console.error(ex);
     return [];
