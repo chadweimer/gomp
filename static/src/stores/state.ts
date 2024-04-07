@@ -13,6 +13,7 @@ interface AppState {
   searchResults?: RecipeCompact[];
   searchResultCount?: number;
   searchScrollPosition?: number;
+  loadingCount: number;
 }
 
 // Start with an empty state
@@ -20,7 +21,8 @@ const { state, set, onChange, reset } = createStore<AppState>({
   searchFilter: getDefaultSearchFilter(),
   searchSettings: getDefaultSearchSettings(),
   searchPage: 1,
-  searchNumPages: 1
+  searchNumPages: 1,
+  loadingCount: 0
 });
 
 // Sync certain properties from browser storage

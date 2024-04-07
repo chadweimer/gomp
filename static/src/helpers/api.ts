@@ -1,10 +1,29 @@
-import { AppApi, Configuration, RecipesApi, SearchFilter, UsersApi } from '../generated';
+import { AppApi, Configuration, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
 import state from '../stores/state';
 import { toYesNoAny } from './utils';
 
+class LoadingMiddleware implements Middleware {
+  pre(): Promise<void | FetchParams> {
+    state.loadingCount++;
+    return Promise.resolve();
+  }
+
+  post(): Promise<void | Response> {
+    if (state.loadingCount > 0) {
+      state.loadingCount--;
+    }
+    return Promise.resolve();
+  }
+
+  onError(): Promise<void | Response> {
+    return this.post();
+  }
+}
+
 const configuration = new Configuration({
   basePath: `${window.location.origin}/api/v1`,
-  accessToken: () => state.jwtToken
+  accessToken: () => state.jwtToken,
+  middleware: [new LoadingMiddleware()]
 });
 
 export const appApi = new AppApi(configuration);

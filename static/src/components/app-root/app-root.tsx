@@ -13,8 +13,6 @@ import { NavigationHookResult } from '@ionic/core/dist/types/components/route/ro
   styleUrl: 'app-root.css',
 })
 export class AppRoot {
-  @State() loadingCount = 0;
-
   @Element() el!: HTMLAppRootElement;
   private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
@@ -23,33 +21,30 @@ export class AppRoot {
   async componentWillLoad() {
     const { fetch: originalFetch } = window;
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      this.loadingCount++;
-      try {
-        let response = await originalFetch(input, init);
-        if (response.status === 401) {
-          await this.logout();
-        } else if (response.status === 403 && !this.isRefreshingToken) {
-          // Try refreshing the token and repeating the request
-          // This can fix the situation where the access level of
-          // the user has been changed and requires a new token
-          this.isRefreshingToken = true;
-          try {
-            const { token } = await appApi.refreshToken();
-            state.jwtToken = token;
-            response = await originalFetch(input, init);
-          } catch (retryError) {
-            // Just log this; let the original error propogate
-            console.error(retryError);
-          } finally {
-            this.isRefreshingToken = false;
-          }
-        }
-        return response;
-      } finally {
-        if (this.loadingCount > 0) {
-          this.loadingCount--;
+      let response = await originalFetch(input, init);
+      if (response.status === 401) {
+        await this.logout();
+      } else if (response.status === 403 && !this.isRefreshingToken) {
+        // Try refreshing the token and repeating the request
+        // This can fix the situation where the access level of
+        // the user has been changed and requires a new token
+        this.isRefreshingToken = true;
+        try {
+          const { token } = await appApi.refreshToken();
+          state.jwtToken = token;
+          init.headers = {
+            ...init.headers,
+            'Authorization': `Bearer ${state.jwtToken}`
+          };
+          response = await originalFetch(input, init);
+        } catch (retryError) {
+          // Just log this; let the original error propogate
+          console.error(retryError);
+        } finally {
+          this.isRefreshingToken = false;
         }
       }
+      return response;
     };
 
     await this.loadAppConfiguration();
@@ -182,7 +177,7 @@ export class AppRoot {
                 </ion-item>
               </ion-toolbar>
               : ''}
-            {this.loadingCount > 0 ?
+            {state.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
               :
               <ion-progress-bar value={100} color="primary" />
