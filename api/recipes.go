@@ -12,15 +12,15 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 	if params.Q != nil {
 		query = *params.Q
 	}
-	var fields []models.SearchField
+	fields := make([]models.SearchField, 0)
 	if params.Fields != nil {
 		fields = *params.Fields
 	}
-	var states []models.RecipeState
+	states := make([]models.RecipeState, 0)
 	if params.States != nil {
 		states = *params.States
 	}
-	var tags []string
+	tags := make([]string, 0)
 	if params.Tags != nil {
 		tags = *params.Tags
 	}
@@ -51,7 +51,7 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 		return nil, err
 	}
 
-	return Find200JSONResponse{Recipes: *recipes, Total: total}, nil
+	return Find200JSONResponse{Recipes: recipes, Total: total}, nil
 }
 
 func (h apiHandler) GetRecipe(_ context.Context, request GetRecipeRequestObject) (GetRecipeResponseObject, error) {

@@ -60,7 +60,7 @@ func (*sqlNoteDriver) deleteAllImpl(recipeId int64, db sqlx.Execer) error {
 
 func (d *sqlNoteDriver) List(recipeId int64) (*[]models.Note, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]models.Note, error) {
-		var notes []models.Note
+		notes := make([]models.Note, 0)
 
 		if err := sqlx.Select(db, &notes, "SELECT * FROM recipe_note WHERE recipe_id = $1 ORDER BY created_at DESC", recipeId); err != nil {
 			return nil, err

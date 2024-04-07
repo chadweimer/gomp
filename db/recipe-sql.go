@@ -261,7 +261,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
 		whereStmt + orderStmt)
 
-	var recipes []models.RecipeCompact
+	recipes := make([]models.RecipeCompact, 0)
 	if err = sqlx.Select(d.Db, &recipes, selectStmt, selectArgs...); err != nil {
 		return nil, 0, err
 	}
@@ -297,7 +297,7 @@ func (*sqlRecipeDriver) deleteAllTagsImpl(recipeId int64, db sqlx.Execer) error 
 
 func (d *sqlRecipeDriver) ListTags(recipeId int64) (*[]string, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]string, error) {
-		var tags []string
+		tags := make([]string, 0)
 		if err := sqlx.Select(db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeId); err != nil {
 			return nil, err
 		}
