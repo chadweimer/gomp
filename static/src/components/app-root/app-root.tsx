@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
-import { Component, Element, h, Listen, State } from '@stencil/core';
+import { Component, Element, h, Listen } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
