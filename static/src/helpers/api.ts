@@ -16,12 +16,6 @@ for (const prop of propsToSearch) {
   });
 }
 
-const coreConfiguration = new Configuration({
-  basePath: `${window.location.origin}/api/v1`,
-  accessToken: () => state.jwtToken
-});
-const coreAppApi = new AppApi(coreConfiguration);
-
 class LoadingMiddleware implements Middleware {
   pre(): Promise<void | FetchParams> {
     state.loadingCount++;
@@ -47,7 +41,11 @@ const customFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     // This can fix the situation where the access level of
     // the user has been changed and requires a new token
     try {
-      const { token } = await coreAppApi.refreshToken();
+      const localAppApi = new AppApi(new Configuration({
+        basePath: `${window.location.origin}/api/v1`,
+        accessToken: () => state.jwtToken
+      }));
+      const { token } = await localAppApi.refreshToken();
       state.jwtToken = token;
       init.headers = {
         ...init.headers,
