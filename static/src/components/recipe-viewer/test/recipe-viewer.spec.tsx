@@ -138,10 +138,10 @@ describe('recipe-viewer', () => {
   it('modified date used', async () => {
     const values = [true, false];
     for (const modified of values) {
-      const createdAtStr = new Date().toLocaleDateString();
-      const modifiedAt = new Date();
+      const createdAt = new Date();
+      let modifiedAt = new Date();
       modifiedAt.setDate(modifiedAt.getDate() + 1);
-      const modifiedAtStr = modified ? modifiedAt.toLocaleDateString() : createdAtStr;
+      modifiedAt = modified ? modifiedAt : createdAt;
       const recipe: Recipe = {
         name: 'Some Recipe',
         servingSize: null,
@@ -152,8 +152,8 @@ describe('recipe-viewer', () => {
         storageInstructions: null,
         sourceUrl: null,
         tags: [],
-        createdAt: createdAtStr,
-        modifiedAt: modifiedAtStr
+        createdAt: createdAt,
+        modifiedAt: modifiedAt
       };
       const page = await newSpecPage({
         components: [RecipeViewer],

@@ -61,7 +61,7 @@ export class PageAdminConfiguration {
 
   private async loadAppConfiguration() {
     try {
-      ({ data: this.appConfig } = await appApi.getConfiguration());
+      this.appConfig = await appApi.getConfiguration();
     } catch (ex) {
       console.error(ex);
     }
@@ -73,7 +73,7 @@ export class PageAdminConfiguration {
     }
 
     try {
-      await appApi.saveConfiguration(this.appConfig);
+      await appApi.saveConfiguration({ appConfiguration: this.appConfig });
       appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);

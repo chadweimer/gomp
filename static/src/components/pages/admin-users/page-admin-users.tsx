@@ -57,7 +57,7 @@ export class PageAdminUsers {
 
   private async loadUsers() {
     try {
-      ({ data: this.users } = await usersApi.getAllUsers());
+      this.users = await usersApi.getAllUsers();
     } catch (ex) {
       console.error(ex);
     }
@@ -65,7 +65,7 @@ export class PageAdminUsers {
 
   private async saveNewUser(user: User, password: string) {
     try {
-      await usersApi.addUser({ ...user, password });
+      await usersApi.addUser({ user: { ...user, password } });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create new user.');
@@ -74,7 +74,10 @@ export class PageAdminUsers {
 
   private async saveExistingUser(user: User) {
     try {
-      await usersApi.saveUser(user.id, user);
+      await usersApi.saveUser({
+        userId: user.id,
+        user: user
+      });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save user.');
@@ -83,7 +86,7 @@ export class PageAdminUsers {
 
   private async deleteUser(user: User) {
     try {
-      await usersApi.deleteUser(user.id);
+      await usersApi.deleteUser({ userId: user.id });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete user.');

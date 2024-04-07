@@ -58,7 +58,7 @@ export class PageSettingsSearches {
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.addSearchFilter(searchFilter);
+      await usersApi.addSearchFilter({ searchFilter });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to create search filter.');
@@ -67,7 +67,10 @@ export class PageSettingsSearches {
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.saveSearchFilter(searchFilter.id, searchFilter);
+      await usersApi.saveSearchFilter({
+        filterId: searchFilter.id,
+        searchFilter: searchFilter
+      });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save search filter.');
@@ -80,7 +83,7 @@ export class PageSettingsSearches {
     }
 
     try {
-      await usersApi.deleteSearchFilter(id);
+      await usersApi.deleteSearchFilter({ filterId: id });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to delete search filter.');
@@ -116,7 +119,7 @@ export class PageSettingsSearches {
     }
 
     await enableBackForOverlay(async () => {
-      const { data: searchFilter } = await usersApi.getSearchFilter(id);
+      const searchFilter = await usersApi.getSearchFilter({ filterId: id });
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
@@ -173,7 +176,7 @@ export class PageSettingsSearches {
     }
 
     try {
-      ({ data: state.searchFilter } = await usersApi.getSearchFilter(id));
+      state.searchFilter = await usersApi.getSearchFilter({ filterId: id });
       await redirect('/search');
     } catch (ex) {
       console.error(ex);

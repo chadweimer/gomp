@@ -189,7 +189,7 @@ func parseToken(tokenStr, key string) (*jwt.Token, error) {
 }
 
 func getScopes(accessLevel models.AccessLevel) []string {
-	var scopes []string
+	scopes := make([]string, 0)
 
 	scopes = append(scopes, string(models.Viewer))
 	switch accessLevel {

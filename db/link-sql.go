@@ -38,7 +38,7 @@ func (*sqlLinkDriver) deleteImpl(recipeId, destRecipeId int64, db sqlx.Execer) e
 
 func (d *sqlLinkDriver) List(recipeId int64) (*[]models.RecipeCompact, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]models.RecipeCompact, error) {
-		var recipes []models.RecipeCompact
+		recipes := make([]models.RecipeCompact, 0)
 
 		selectStmt := "SELECT " +
 			"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +

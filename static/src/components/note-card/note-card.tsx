@@ -42,7 +42,7 @@ export class NoteCard {
     );
   }
 
-  private getNoteDatesText(createdAt: string, modifiedAt: string) {
+  private getNoteDatesText(createdAt: Date, modifiedAt: Date) {
     if (createdAt !== modifiedAt) {
       return (
         <span>

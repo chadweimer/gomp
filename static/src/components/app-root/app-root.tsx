@@ -1,12 +1,11 @@
-import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
-import { Component, Element, h, Listen, State } from '@stencil/core';
+import { Component, Element, h, Listen } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
-import { appApi } from '../../helpers/api';
+import { appApi, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState, refreshSearchResults } from '../../stores/state';
+import state, { clearState } from '../../stores/state';
 import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 
 @Component({
@@ -14,57 +13,20 @@ import { NavigationHookResult } from '@ionic/core/dist/types/components/route/ro
   styleUrl: 'app-root.css',
 })
 export class AppRoot {
-  @State() loadingCount = 0;
-
   @Element() el!: HTMLAppRootElement;
   private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
-  private isRefreshingToken = false;
 
   async componentWillLoad() {
-    axios.interceptors.request.use(config => {
-      this.loadingCount++;
-
-      return config;
-    }, error => {
-      if (this.loadingCount > 0) {
-        this.loadingCount--;
-      }
-
-      return error;
-    });
-    axios.interceptors.response.use(resp => {
-      if (this.loadingCount > 0) {
-        this.loadingCount--;
-      }
-
-      return resp;
-    }, async error => {
-      if (this.loadingCount > 0) {
-        this.loadingCount--;
-      }
-      if (error.response?.status === 401) {
+    // Automatically trigger a logout if an API returns a 401
+    const { fetch: originalFetch } = window;
+    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const response = await originalFetch(input, init);
+      if (response.status === 401) {
         await this.logout();
-      } else if (error.response?.status === 403 && !this.isRefreshingToken) {
-        // Try refreshing the token and repeating the request
-        // This can fix the situation where the access level of
-        // the user has been changed and requires a new token
-        this.isRefreshingToken = true;
-        try {
-          const { data } = await appApi.refreshToken();
-          state.jwtToken = data.token;
-          const resp = await axios.request(error.config);
-          return resp;
-        } catch (retryError) {
-          // Just log this; let the original error propogate
-          console.error(retryError);
-        } finally {
-          this.isRefreshingToken = false;
-        }
       }
-
-      return Promise.reject(error);
-    });
+      return response;
+    };
 
     await this.loadAppConfiguration();
   }
@@ -196,7 +158,7 @@ export class AppRoot {
                 </ion-item>
               </ion-toolbar>
               : ''}
-            {this.loadingCount > 0 ?
+            {state.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
               :
               <ion-progress-bar value={100} color="primary" />
@@ -231,8 +193,8 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      ({ data: appConfig.info } = await appApi.getInfo());
-      ({ data: appConfig.config } = await appApi.getConfiguration());
+      appConfig.info = await appApi.getInfo();
+      appConfig.config = await appApi.getConfiguration();
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');

@@ -997,7 +997,6 @@ components:
       type: object
       required:
         - total
-        - recipes
       properties:
         total:
           type: integer

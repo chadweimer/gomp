@@ -1,10 +1,10 @@
 import { Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
-import { recipesApi } from '../../../helpers/api';
+import { recipesApi, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
-import state, { refreshSearchResults } from '../../../stores/state';
+import state from '../../../stores/state';
 
 @Component({
   tag: 'page-search',
@@ -158,12 +158,15 @@ export class PageSearch {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
+      const newRecipe = await recipesApi.addRecipe({ recipe });
 
       if (!isNull(file)) {
         await showLoading(
           async () => {
-            await recipesApi.uploadImage(newRecipe.id, file);
+            await recipesApi.uploadImage({
+              recipeId: newRecipe.id,
+              fileContent: file
+            });
           },
           'Uploading picture...');
       }

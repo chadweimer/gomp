@@ -71,7 +71,7 @@ func (*sqlRecipeImageDriver) updateMainImageImpl(recipeId, id int64, db sqlx.Exe
 
 func (d *sqlRecipeImageDriver) List(recipeId int64) (*[]models.RecipeImage, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]models.RecipeImage, error) {
-		var images []models.RecipeImage
+		images := make([]models.RecipeImage, 0)
 
 		if err := sqlx.Select(db, &images, "SELECT * FROM recipe_image WHERE recipe_id = $1 ORDER BY created_at ASC", recipeId); err != nil {
 			return nil, err

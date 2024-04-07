@@ -115,7 +115,7 @@ func (*sqlUserDriver) readSettingsImpl(id int64, db sqlx.Queryer) (*models.UserS
 		return nil, err
 	}
 
-	var tags []string
+	tags := make([]string, 0)
 	if err := sqlx.Select(db, &tags, "SELECT tag FROM app_user_favorite_tag WHERE user_id = $1 ORDER BY tag ASC", id); err != nil {
 		return nil, err
 	}
@@ -176,7 +176,7 @@ func (d *sqlUserDriver) List() (*[]models.User, error) {
 }
 
 func (*sqlUserDriver) listImpl(db sqlx.Queryer) (*[]models.User, error) {
-	var users []models.User
+	users := make([]models.User, 0)
 
 	if err := sqlx.Select(db, &users, "SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC"); err != nil {
 		return nil, err
@@ -283,7 +283,7 @@ func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx
 		return nil, err
 	}
 
-	var fields []models.SearchField
+	fields := make([]models.SearchField, 0)
 	if err := sqlx.Select(
 		db,
 		&fields,
@@ -293,7 +293,7 @@ func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx
 	}
 	filter.Fields = fields
 
-	var states []models.RecipeState
+	states := make([]models.RecipeState, 0)
 	if err := sqlx.Select(
 		db,
 		&states,
@@ -303,7 +303,7 @@ func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx
 	}
 	filter.States = states
 
-	var tags []string
+	tags := make([]string, 0)
 	if err := sqlx.Select(
 		db,
 		&tags,
@@ -370,7 +370,7 @@ func (*sqlUserDriver) deleteSearchFilterImpl(userId int64, filterId int64, db sq
 // List retrieves all user's saved search filters.
 func (d *sqlUserDriver) ListSearchFilters(userId int64) (*[]models.SavedSearchFilterCompact, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]models.SavedSearchFilterCompact, error) {
-		var filters []models.SavedSearchFilterCompact
+		filters := make([]models.SavedSearchFilterCompact, 0)
 
 		err := sqlx.Select(
 			db,
