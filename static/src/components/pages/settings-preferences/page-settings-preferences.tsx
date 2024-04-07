@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../generated';
-import { appApi, getLocationFromResponse, loadUserSettings, usersApi } from '../../../helpers/api';
+import { appApi, loadUserSettings, usersApi } from '../../../helpers/api';
 import { isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -90,7 +90,7 @@ export class PageSettingsPreferences {
           });
           this.settings = {
             ...this.settings,
-            homeImageUrl: getLocationFromResponse(resp.raw.headers)
+            homeImageUrl: resp.raw.headers.get('location') ?? ''
           }
         },
         'Uploading picture...');

@@ -76,10 +76,6 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
   });
 }
 
-export function getLocationFromResponse(headers: Headers) {
-  return headers.get('location') ?? '';
-}
-
 export async function refreshSearchResults() {
   if (isNullOrEmpty(state.jwtToken)) return;
 
