@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
-import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir, YesNoAny } from '../../generated';
-import { recipesApi } from '../../helpers/api';
+import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../generated';
+import { performRecipeSearch } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -81,13 +81,21 @@ export class RecipeLinkEditor {
     if (this.includeArchived) {
       states = [...states, RecipeState.Archived];
     }
-    const { data: { recipes } } = await recipesApi.find(SortBy.Modified, SortDir.Desc, 1, 25, this.query, YesNoAny.Any, [SearchField.Name], states, []);
+    const { recipes } = await performRecipeSearch({
+      sortBy: SortBy.Modified,
+      sortDir: SortDir.Desc,
+      query: this.query,
+      withPictures: undefined,
+      fields: [SearchField.Name],
+      states: states,
+      tags: []
+    }, 1, 25);
 
     // Clear current selection
     this.selectedRecipeId = null;
 
     // Don't allow linking to self
-    this.matchingRecipes = recipes?.filter(r => r.id !== this.parentRecipeId) ?? [];
+    this.matchingRecipes = recipes.filter(r => r.id !== this.parentRecipeId) ?? [];
   }
 
   private async onSaveClicked() {

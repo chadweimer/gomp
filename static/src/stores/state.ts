@@ -1,7 +1,7 @@
 import { createStore } from '@stencil/store';
 import { RecipeCompact, SearchFilter } from '../generated';
-import { recipesApi } from '../helpers/api';
-import { isNull, isNullOrEmpty, toYesNoAny } from '../helpers/utils';
+import { performRecipeSearch } from '../helpers/api';
+import { isNull, isNullOrEmpty } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings, SearchViewMode } from '../models';
 
 interface AppState {
@@ -67,16 +67,7 @@ async function refreshSearchResults() {
   const count = state.searchSettings.viewMode === SearchViewMode.Card ? 24 : 60;
 
   try {
-    const { data: { total, recipes } } = await recipesApi.find(
-      filter.sortBy,
-      filter.sortDir,
-      state.searchPage,
-      count,
-      filter.query,
-      toYesNoAny(filter.withPictures),
-      filter.fields,
-      filter.states,
-      filter.tags);
+    const { total, recipes } = await performRecipeSearch(filter, state.searchPage, count);
     state.searchResults = recipes ?? [];
     state.searchResultCount = total;
     state.searchNumPages = Math.max(Math.ceil(total / count), 1);

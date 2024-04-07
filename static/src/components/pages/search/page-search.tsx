@@ -158,12 +158,15 @@ export class PageSearch {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
+      const newRecipe = await recipesApi.addRecipe({ recipe });
 
       if (!isNull(file)) {
         await showLoading(
           async () => {
-            await recipesApi.uploadImage(newRecipe.id, file);
+            await recipesApi.uploadImage({
+              recipeId: newRecipe.id!,
+              fileContent: file
+            });
           },
           'Uploading picture...');
       }

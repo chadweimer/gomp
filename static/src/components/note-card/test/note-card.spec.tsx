@@ -13,7 +13,7 @@ describe('note-card', () => {
   });
 
   it('bind to note', async () => {
-    const note: Note = { text: 'Some text', createdAt: new Date().toLocaleDateString() };
+    const note: Note = { text: 'Some text', createdAt: new Date() };
     const page = await newSpecPage({
       components: [NoteCard],
       template: () => (<note-card note={note}></note-card>),
@@ -42,11 +42,11 @@ describe('note-card', () => {
   it('modified date used', async () => {
     const values = [true, false];
     for (const modified of values) {
-      const createdAtStr = new Date().toLocaleDateString();
-      const modifiedAt = new Date();
+      const createdAt = new Date();
+      let modifiedAt = new Date();
       modifiedAt.setDate(modifiedAt.getDate() + 1);
-      const modifiedAtStr = modified ? modifiedAt.toLocaleDateString() : createdAtStr;
-      const note: Note = { text: 'Some text', createdAt: createdAtStr, modifiedAt: modifiedAtStr };
+      modifiedAt = modified ? modifiedAt : createdAt;
+      const note: Note = { text: 'Some text', createdAt: createdAt, modifiedAt: modifiedAt };
       const page = await newSpecPage({
         components: [NoteCard],
         template: () => (<note-card note={note}></note-card>),

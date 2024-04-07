@@ -77,7 +77,7 @@ export class PageSettingsSecurity {
 
   private async loadUser() {
     try {
-      ({ data: this.currentUser } = await usersApi.getCurrentUser());
+      this.currentUser = await usersApi.getCurrentUser();
     } catch (ex) {
       console.error(ex);
     }
@@ -85,7 +85,9 @@ export class PageSettingsSecurity {
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
     try {
-      await usersApi.changePassword({ currentPassword, newPassword });
+      await usersApi.changePassword({
+        userPasswordRequest: { currentPassword, newPassword }
+      });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to update password.');

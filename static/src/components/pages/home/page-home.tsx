@@ -1,8 +1,8 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { loadUserSettings, recipesApi, usersApi } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, toYesNoAny, hasScope, isNull, isNullOrEmpty } from '../../../helpers/utils';
+import { loadUserSettings, performRecipeSearch, recipesApi, usersApi } from '../../../helpers/api';
+import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, isNull, isNullOrEmpty } from '../../../helpers/utils';
 import state, { refreshSearchResults } from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
 
@@ -98,9 +98,9 @@ export class PageHome {
       });
 
       // Then load all the user's saved filters
-      const { data: savedFilters } = await usersApi.getSearchFilters();
+      const savedFilters = await usersApi.getSearchFilters();
       for (const savedFilter of savedFilters ?? []) {
-        const { data: savedSearchFilter } = await usersApi.getSearchFilter(savedFilter.id);
+        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id });
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
           title: savedSearchFilter.name,
@@ -122,8 +122,8 @@ export class PageHome {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      const { data } = await recipesApi.find(filter.sortBy, filter.sortDir, 1, 6, filter.query, toYesNoAny(filter.withPictures), filter.fields, filter.states, filter.tags);
-      return data;
+      const resp = await performRecipeSearch(filter, 1, 6);
+      return resp;
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');
@@ -132,12 +132,15 @@ export class PageHome {
 
   private async saveNewRecipe(recipe: Recipe, file: File | null) {
     try {
-      const { data: newRecipe } = await recipesApi.addRecipe(recipe);
+      const newRecipe = await recipesApi.addRecipe({ recipe });
 
       if (!isNull(file)) {
         await showLoading(
           async () => {
-            await recipesApi.uploadImage(newRecipe.id, file);
+            await recipesApi.uploadImage({
+              recipeId: newRecipe.id,
+              fileContent: file
+            });
           },
           'Uploading picture...');
       }

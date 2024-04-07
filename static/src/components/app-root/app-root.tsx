@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
@@ -22,49 +21,36 @@ export class AppRoot {
   private isRefreshingToken = false;
 
   async componentWillLoad() {
-    axios.interceptors.request.use(config => {
+    const { fetch: originalFetch } = window;
+    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       this.loadingCount++;
-
-      return config;
-    }, error => {
-      if (this.loadingCount > 0) {
-        this.loadingCount--;
-      }
-
-      return error;
-    });
-    axios.interceptors.response.use(resp => {
-      if (this.loadingCount > 0) {
-        this.loadingCount--;
-      }
-
-      return resp;
-    }, async error => {
-      if (this.loadingCount > 0) {
-        this.loadingCount--;
-      }
-      if (error.response?.status === 401) {
-        await this.logout();
-      } else if (error.response?.status === 403 && !this.isRefreshingToken) {
-        // Try refreshing the token and repeating the request
-        // This can fix the situation where the access level of
-        // the user has been changed and requires a new token
-        this.isRefreshingToken = true;
-        try {
-          const { data } = await appApi.refreshToken();
-          state.jwtToken = data.token;
-          const resp = await axios.request(error.config);
-          return resp;
-        } catch (retryError) {
-          // Just log this; let the original error propogate
-          console.error(retryError);
-        } finally {
-          this.isRefreshingToken = false;
+      try {
+        let response = await originalFetch(input, init);
+        if (response.status === 401) {
+          await this.logout();
+        } else if (response.status === 403 && !this.isRefreshingToken) {
+          // Try refreshing the token and repeating the request
+          // This can fix the situation where the access level of
+          // the user has been changed and requires a new token
+          this.isRefreshingToken = true;
+          try {
+            const { token } = await appApi.refreshToken();
+            state.jwtToken = token;
+            response = await originalFetch(input, init);
+          } catch (retryError) {
+            // Just log this; let the original error propogate
+            console.error(retryError);
+          } finally {
+            this.isRefreshingToken = false;
+          }
+        }
+        return response;
+      } finally {
+        if (this.loadingCount > 0) {
+          this.loadingCount--;
         }
       }
-
-      return Promise.reject(error);
-    });
+    };
 
     await this.loadAppConfiguration();
   }
@@ -231,8 +217,8 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      ({ data: appConfig.info } = await appApi.getInfo());
-      ({ data: appConfig.config } = await appApi.getConfiguration());
+      appConfig.info = await appApi.getInfo();
+      appConfig.config = await appApi.getConfiguration();
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');

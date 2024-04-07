@@ -120,7 +120,7 @@ export class RecipeViewer {
     );
   }
 
-  private getRecipeDatesText(createdAt: string, modifiedAt: string) {
+  private getRecipeDatesText(createdAt: Date, modifiedAt: Date) {
     if (createdAt !== modifiedAt) {
       return (
         <span>

@@ -145,7 +145,9 @@ export class SearchFilterEditor {
     }
 
     try {
-      ({ data: this.searchFilter } = await usersApi.getSearchFilter(this.selectedFilterId));
+      this.searchFilter = await usersApi.getSearchFilter({
+        filterId: this.selectedFilterId
+      });
       this.selectedFilterId = null;
     } catch (ex) {
       console.error(ex);

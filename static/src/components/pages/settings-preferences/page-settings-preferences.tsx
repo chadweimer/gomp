@@ -70,7 +70,7 @@ export class PageSettingsPreferences {
 
   private async saveUserSettings() {
     try {
-      await usersApi.saveSettings(this.settings);
+      await usersApi.saveSettings({ settings: this.settings });
     } catch (ex) {
       console.error(ex);
       showToast('Failed to save preferences.');
@@ -85,10 +85,12 @@ export class PageSettingsPreferences {
     if (this.imageInput.files.length > 0) {
       await showLoading(
         async () => {
-          const resp = await appApi.upload(this.imageInput.files[0]);
+          const resp = await appApi.uploadRaw({
+            fileContent: this.imageInput.files[0]
+          });
           this.settings = {
             ...this.settings,
-            homeImageUrl: getLocationFromResponse(resp.headers)
+            homeImageUrl: getLocationFromResponse(resp.raw.headers)
           }
         },
         'Uploading picture...');

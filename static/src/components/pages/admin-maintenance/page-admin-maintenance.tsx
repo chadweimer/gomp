@@ -1,7 +1,7 @@
 import { alertController } from '@ionic/core';
 import { Component, Host, h } from '@stencil/core';
-import { RecipeState, SortBy, SortDir, YesNoAny } from '../../../generated';
-import { recipesApi } from '../../../helpers/api';
+import { RecipeState, SortBy, SortDir } from '../../../generated';
+import { performRecipeSearch, recipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -41,15 +41,26 @@ export class PageAdminMaintenance {
     try {
       await showLoading(
         async () => {
-          const { data: { recipes } } = await recipesApi.find(SortBy.Id, SortDir.Asc, 1, -1, '', YesNoAny.Yes, [], [RecipeState.Active, RecipeState.Archived], []);
+          const { recipes } = await performRecipeSearch({
+            sortBy: SortBy.Id,
+            sortDir: SortDir.Asc,
+            query: '',
+            withPictures: true,
+            fields: [],
+            states: [RecipeState.Active, RecipeState.Archived],
+            tags: []
+          }, 1, -1,);
           for (const recipe of recipes) {
-            const { data: images } = await recipesApi.getImages(recipe.id);
+            const images = await recipesApi.getImages({ recipeId: recipe.id });
             for (const image of images) {
-              await recipesApi.optimizeImage(recipe.id, image.id);
+              await recipesApi.optimizeImage({
+                recipeId: recipe.id,
+                imageId: image.id
+              });
             }
           }
         }, 'Optimizing images. This might take a while...');
-    } catch(ex) {
+    } catch (ex) {
       console.error(ex);
       showToast('Failed to optimize images.');
     }
