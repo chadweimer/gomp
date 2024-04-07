@@ -16,33 +16,14 @@ export class AppRoot {
   @Element() el!: HTMLAppRootElement;
   private tabs!: HTMLIonTabsElement;
   private menu!: HTMLIonMenuElement;
-  private isRefreshingToken = false;
 
   async componentWillLoad() {
+    // Automatically trigger a logout if an API returns a 401
     const { fetch: originalFetch } = window;
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      let response = await originalFetch(input, init);
+      const response = await originalFetch(input, init);
       if (response.status === 401) {
         await this.logout();
-      } else if (response.status === 403 && !this.isRefreshingToken) {
-        // Try refreshing the token and repeating the request
-        // This can fix the situation where the access level of
-        // the user has been changed and requires a new token
-        this.isRefreshingToken = true;
-        try {
-          const { token } = await appApi.refreshToken();
-          state.jwtToken = token;
-          init.headers = {
-            ...init.headers,
-            'Authorization': `Bearer ${state.jwtToken}`
-          };
-          response = await originalFetch(input, init);
-        } catch (retryError) {
-          // Just log this; let the original error propogate
-          console.error(retryError);
-        } finally {
-          this.isRefreshingToken = false;
-        }
       }
       return response;
     };

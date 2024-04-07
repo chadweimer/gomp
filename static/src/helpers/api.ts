@@ -16,6 +16,12 @@ for (const prop of propsToSearch) {
   });
 }
 
+const coreConfiguration = new Configuration({
+  basePath: `${window.location.origin}/api/v1`,
+  accessToken: () => state.jwtToken
+});
+const coreAppApi = new AppApi(coreConfiguration);
+
 class LoadingMiddleware implements Middleware {
   pre(): Promise<void | FetchParams> {
     state.loadingCount++;
@@ -34,9 +40,32 @@ class LoadingMiddleware implements Middleware {
   }
 }
 
+const customFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  let response = await window.fetch(input, init);
+  if (response.status === 403) {
+    // Try refreshing the token and repeating the request
+    // This can fix the situation where the access level of
+    // the user has been changed and requires a new token
+    try {
+      const { token } = await coreAppApi.refreshToken();
+      state.jwtToken = token;
+      init.headers = {
+        ...init.headers,
+        'Authorization': `Bearer ${state.jwtToken}`
+      };
+      response = await window.fetch(input, init);
+    } catch (retryError) {
+      // Just log this; let the original error propogate
+      console.error(retryError);
+    }
+  }
+  return response;
+};
+
 const configuration = new Configuration({
   basePath: `${window.location.origin}/api/v1`,
   accessToken: () => state.jwtToken,
+  fetchApi: customFetch,
   middleware: [new LoadingMiddleware()]
 });
 
