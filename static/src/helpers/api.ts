@@ -63,6 +63,10 @@ export async function loadSearchFilters() {
 }
 
 export async function performRecipeSearch(filter: SearchFilter, page: number, count: number) {
+  // Make sure to fill in any missing fields
+  const defaultFilter = getDefaultSearchFilter();
+  filter = { ...defaultFilter, ...filter };
+
   return recipesApi.find({
     sort: filter.sortBy,
     dir: filter.sortDir,
@@ -79,14 +83,10 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
 export async function refreshSearchResults() {
   if (isNullOrEmpty(state.jwtToken)) return;
 
-  // Make sure to fill in any missing fields
-  const defaultFilter = getDefaultSearchFilter();
-  const filter = { ...defaultFilter, ...state.searchFilter };
-
   const count = state.searchSettings.viewMode === SearchViewMode.Card ? 24 : 60;
 
   try {
-    const { total, recipes } = await performRecipeSearch(filter, state.searchPage, count);
+    const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, count);
     state.searchResults = recipes ?? [];
     state.searchResultCount = total;
     state.searchNumPages = Math.max(Math.ceil(total / count), 1);
