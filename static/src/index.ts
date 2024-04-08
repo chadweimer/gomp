@@ -1,2 +1,3 @@
 export { Components, JSX } from './components';
-import 'quill';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import Quill from 'quill';
