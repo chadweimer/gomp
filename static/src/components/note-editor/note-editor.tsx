@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../generated';
 import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
-import { QuillEditor } from 'stencil-quill';
+import { QuillEditor } from 'stencil-quill/dist/components/quill-editor';
 
 @Component({
   tag: 'note-editor',
