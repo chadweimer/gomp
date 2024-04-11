@@ -1,7 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../generated';
 import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
-import { QuillEditor } from 'stencil-quill/dist/components/quill-editor';
 
 @Component({
   tag: 'note-editor',
@@ -14,7 +13,6 @@ export class NoteEditor {
 
   @Element() el!: HTMLNoteEditorElement;
   private form!: HTMLFormElement;
-  private qe!: QuillEditor;
 
   connectedCallback() {
     configureModalAutofocus(this.el);
@@ -37,7 +35,8 @@ export class NoteEditor {
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-            <quill-editor format="text" content={this.note.text} />
+            <quill-editor format="html" content={this.note.text}
+              onEditorContentChange={e => this.note = { ...this.note, text: e.detail.html }} />
             {/* <ion-item lines="full">
               <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
                 autocorrect="on"
