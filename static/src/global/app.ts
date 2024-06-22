@@ -1,5 +1,6 @@
 import { setupConfig } from '@ionic/core';
-import 'stencil-quill/dist/components/quill-editor';
+import 'quill/core';
+import 'stencil-quill';
 
 export default () => {
   setupConfig({});
