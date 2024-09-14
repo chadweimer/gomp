@@ -23,7 +23,7 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
 
 	dir := filepath.Dir(filePath)
-	err := os.MkdirAll(dir, os.ModePerm)
+	err := os.MkdirAll(dir, fs.FileMode(0777))
 	if err != nil {
 		return err
 	}
