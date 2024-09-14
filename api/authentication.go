@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -13,7 +14,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -27,7 +27,7 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 	credentials := request.Body
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		logErrorToContext(ctx, err)
+		logger(ctx).With("error", err).Error("failure authenticating")
 		return Authenticate401Response{}, nil
 	}
 
@@ -43,7 +43,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
 		user, err := h.db.Users().Read(userId)
 		if err != nil {
-			logErrorToContext(ctx, err)
+			logger(ctx).With("error", err).Error("failure refreshing token")
 			return RefreshToken401Response{}, nil
 		}
 
@@ -96,7 +96,9 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 }
 
 func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*models.User, *gompClaims, context.Context, error) {
-	token, err := h.getAuthTokenFromRequest(header)
+	logger := logger(ctx)
+
+	token, err := h.getAuthTokenFromRequest(header, logger)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -106,12 +108,12 @@ func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*m
 		return nil, nil, nil, errors.New("token had no scopes")
 	}
 
-	userId, err := getUserIdFromClaims(claims.RegisteredClaims)
+	userId, err := getUserIdFromClaims(claims.RegisteredClaims, logger)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	user, err := h.verifyUserExists(userId)
+	user, err := h.verifyUserExists(userId, logger)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, nil, nil, errors.New("invalid user")
@@ -127,7 +129,7 @@ func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*m
 	return user, claims, ctx, nil
 }
 
-func (h apiHandler) getAuthTokenFromRequest(header http.Header) (*jwt.Token, error) {
+func (h apiHandler) getAuthTokenFromRequest(header http.Header, logger *slog.Logger) (*jwt.Token, error) {
 	authHeader := header.Get("Authorization")
 	if authHeader == "" {
 		return nil, errors.New("authorization header missing")
@@ -144,9 +146,12 @@ func (h apiHandler) getAuthTokenFromRequest(header http.Header) (*jwt.Token, err
 	for i, key := range h.secureKeys {
 		token, err := parseToken(tokenStr, key)
 		if err != nil {
-			log.Err(err).Int("key-index", i).Msg("Failed parsing JWT token")
+			logger.
+				With("error", err).
+				With("key-index", i).
+				Error("Failed parsing JWT token")
 			if i < (len(h.secureKeys) + 1) {
-				log.Debug().Msg("Will try again with next key")
+				logger.Debug("Will try again with next key")
 			}
 		} else if token.Valid {
 			return token, nil
@@ -156,7 +161,7 @@ func (h apiHandler) getAuthTokenFromRequest(header http.Header) (*jwt.Token, err
 	return nil, errors.New("invalid token")
 }
 
-func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
+func (h apiHandler) verifyUserExists(userId int64, logger *slog.Logger) (*models.User, error) {
 	// Verify this is a valid user in the DB
 	user, err := h.db.Users().Read(userId)
 	if err != nil {
@@ -164,7 +169,9 @@ func (h apiHandler) verifyUserExists(userId int64) (*models.User, error) {
 			return nil, err
 		}
 
-		log.Err(err).Msg("Error retrieving user info")
+		logger.
+			With("error", err).
+			Error("Error retrieving user info")
 		return nil, errors.New("error retrieving user info")
 	}
 
@@ -226,10 +233,12 @@ func checkScopes(routeScopes []string, user *models.User, claims *gompClaims) er
 	return nil
 }
 
-func getUserIdFromClaims(claims jwt.RegisteredClaims) (int64, error) {
+func getUserIdFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int64, error) {
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
-		log.Err(err).Msg("Invalid claims")
+		logger.
+			With("error", err).
+			Error("Invalid claims")
 		return -1, errors.New("invalid claims")
 	}
 
@@ -239,7 +248,9 @@ func getUserIdFromClaims(claims jwt.RegisteredClaims) (int64, error) {
 func withCurrentUser[TResponse interface{}](ctx context.Context, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
 	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
 	if err != nil {
-		logErrorToContext(ctx, err)
+		logger(ctx).
+			With("error", err).
+			Error("failed to get current user from request context")
 		return invalidUserResponse, nil
 	}
 

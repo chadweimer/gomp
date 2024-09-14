@@ -6,15 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
+	mw "github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/hlog"
-	"github.com/rs/zerolog/log"
 )
 
 // ---- Begin Standard Errors ----
@@ -78,12 +77,17 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 	return r
 }
 
+func logger(ctx context.Context) *slog.Logger {
+	return mw.GetLoggerFromContext(ctx)
+}
+
 func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
 	buf := new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(v); err != nil {
-		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.AnErr("encode-error", err).Int("original-status", status)
-		})
+		logger(r.Context()).
+			With("error", err).
+			With("original-status", status).
+			Error("Failed to encode response")
 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -96,14 +100,8 @@ func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v int
 	}
 }
 
-func logErrorToContext(ctx context.Context, err error) {
-	log.Ctx(ctx).UpdateContext(func(c zerolog.Context) zerolog.Context {
-		return c.Err(err)
-	})
-}
-
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
-	logErrorToContext(r.Context(), err)
+	logger(r.Context()).With("error", err).Error("failure on request")
 	status = getStatusFromError(err, status)
 	writeJSONResponse(w, r, status, http.StatusText(status))
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,27 +15,32 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/metadata"
+	mw "github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/hlog"
-	"github.com/rs/zerolog/log"
 )
 
 func main() {
-	// Write logs to Stdout instead of Stderr
-	zerolog.TimeFieldFormat = time.RFC3339Nano
-	log.Logger = log.Output(zerolog.NewConsoleWriter(func(w *zerolog.ConsoleWriter) {
-		w.TimeFormat = zerolog.TimeFieldFormat
-	}))
+	// Start with a logger that defaults to the debug level, until we load configuration
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	})))
 
 	// Write the app metadata to logs
-	log.Info().Str("version", metadata.BuildVersion).Msg("Starting application")
+	slog.
+		With("version", metadata.BuildVersion).
+		Info("Starting application")
 
-	cfg := conf.Load()
+	cfg := conf.Load(func(level slog.Level) *slog.Logger {
+		return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: level,
+		}))
+	})
 	if err := cfg.Validate(); err != nil {
-		log.Fatal().Err(err).Msg("Configuration validation failed")
+		slog.
+			With("error", err).
+			Error("Configuration validation failed")
 		return
 	}
 
@@ -42,7 +48,9 @@ func main() {
 
 	uplDriver, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Establishing upload driver failed")
+		slog.
+			With("error", err).
+			Error("Establishing upload driver failed")
 		return
 	}
 	uploader := upload.CreateImageUploader(uplDriver, cfg.ToImageConfiguration())
@@ -50,7 +58,9 @@ func main() {
 	dbDriver, err := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Establishing database driver failed")
+		slog.
+			With("error", err).
+			Error("Establishing database driver failed")
 		return
 	}
 	defer dbDriver.Close()
@@ -62,26 +72,7 @@ func main() {
 
 	// Add logging of all requests
 	r.Use(middleware.RequestID)
-	r.Use(hlog.NewHandler(log.Logger))
-	r.Use(hlog.RequestIDHandler("request-id", http.CanonicalHeaderKey("x-request-id")))
-	r.Use(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
-		level := zerolog.DebugLevel
-		switch {
-		case status >= 500:
-			level = zerolog.ErrorLevel
-		case status >= 400:
-			level = zerolog.WarnLevel
-		}
-		hlog.FromRequest(r).WithLevel(level).
-			Int("bytes-written", size).
-			Dur("duration", duration).
-			Str("from", r.RemoteAddr).
-			Str("method", r.Method).
-			Str("referer", r.Referer()).
-			Int("status", status).
-			Str("url", r.URL.String()).
-			Msg("")
-	}))
+	r.Use(mw.LogRequests(slog.Default()))
 
 	// Don't let a panic bring the server down
 	r.Use(middleware.Recoverer)
@@ -107,7 +98,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	log.Info().Int("port", cfg.Port).Msg("Starting server")
+	slog.With("port", cfg.Port).Info("Starting server")
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
@@ -117,7 +108,7 @@ func main() {
 
 	// Wait for a stop signal
 	<-stopChan
-	log.Info().Msg("Shutting down server...")
+	slog.Info("Shutting down server...")
 
 	// Shutdown the http server
 	if err := srv.Shutdown(ctx); err != nil {

@@ -2,11 +2,10 @@ package upload
 
 import (
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/rs/zerolog/log"
 )
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
@@ -36,7 +35,10 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			if err != nil {
-				log.Warn().Err(closeErr).Str("file", filePath).Msg("Failed to close file after a previous error")
+				slog.
+					With("error", closeErr).
+					With("file", filePath).
+					Warn("Failed to close file after a previous error")
 			} else {
 				err = closeErr
 			}

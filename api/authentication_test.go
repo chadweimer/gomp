@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"testing"
 	"time"
@@ -332,7 +333,7 @@ func Test_getUserIdFromClaims(t *testing.T) {
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			// Act
-			actualId, err := getUserIdFromClaims(test.claims)
+			actualId, err := getUserIdFromClaims(test.claims, slog.Default())
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -377,7 +378,7 @@ func checkToken(tokenStr string, key string, expectedUserId int64, expectedScope
 		return errors.New("token expires before validity date")
 	}
 
-	userId, err := getUserIdFromClaims(claims.RegisteredClaims)
+	userId, err := getUserIdFromClaims(claims.RegisteredClaims, slog.Default())
 	if err != nil {
 		return fmt.Errorf("couldn't get user id from token: %s", tokenStr)
 	}
