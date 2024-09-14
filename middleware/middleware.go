@@ -51,6 +51,26 @@ func (rw *responseWriter) WriteHeader(code int) {
 	return
 }
 
+// Recover provides a middleware that traps and recovers from panics.
+func Recover(msg string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if err := recover(); err != nil {
+					GetLoggerFromRequest(r).
+						With("error", err).
+						Error(msg)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				}
+			}()
+
+			next.ServeHTTP(w, r)
+		}
+
+		return http.HandlerFunc(fn)
+	}
+}
+
 // GetLoggerFromContext gets the logger from the supplied context
 func GetLoggerFromContext(ctx context.Context) *slog.Logger {
 	logger, ok := ctx.Value(logCtxKey).(*slog.Logger)

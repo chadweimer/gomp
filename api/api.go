@@ -12,10 +12,10 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	mw "github.com/chadweimer/gomp/middleware"
+	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 // ---- Begin Standard Errors ----
@@ -54,7 +54,7 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 	}
 
 	r := chi.NewRouter()
-	r.Use(middleware.SetHeader("Content-Type", "application/json"))
+	r.Use(chimiddleware.SetHeader("Content-Type", "application/json"))
 	r.Mount("/v1", HandlerWithOptions(NewStrictHandlerWithOptions(
 		h,
 		[]StrictMiddlewareFunc{},
@@ -80,7 +80,7 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 }
 
 func logger(ctx context.Context) *slog.Logger {
-	return mw.GetLoggerFromContext(ctx)
+	return middleware.GetLoggerFromContext(ctx)
 }
 
 func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v interface{}) {

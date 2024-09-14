@@ -15,10 +15,10 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/metadata"
-	mw "github.com/chadweimer/gomp/middleware"
+	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -67,18 +67,14 @@ func main() {
 
 	r := chi.NewRouter()
 
-	// Intentionally register this before the logging middleware
-	r.Use(middleware.Heartbeat("/ping"))
-
 	// Add logging of all requests
-	r.Use(middleware.RequestID)
-	r.Use(mw.LogRequests(slog.Default()))
+	r.Use(middleware.LogRequests(slog.Default()))
 
 	// Don't let a panic bring the server down
-	r.Use(middleware.Recoverer)
+	r.Use(middleware.Recover("Recovered from panic"))
 
 	// Don't let the extra slash cause problems
-	r.Use(middleware.StripSlashes)
+	r.Use(chimiddleware.StripSlashes)
 
 	r.Mount("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
