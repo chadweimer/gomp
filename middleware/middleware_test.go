@@ -59,9 +59,11 @@ func TestLogRequests(t *testing.T) {
 			args: args{
 				msg: "Hello, from handler!",
 			},
-			want: regexp.MustCompile("^time=.* level=DEBUG msg=Rx request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/\\s+" +
-				"time=.* level=DEBUG msg=\"Hello, from handler!\" request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/\\s+" +
-				"time=.* level=DEBUG msg=Tx request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/ duration=.* bytes-written=20 status=200$"),
+			want: regexp.MustCompile(
+				"^time=.* level=DEBUG msg=Rx request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/\\s+" +
+					"time=.* level=DEBUG msg=\"Hello, from handler!\" request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/\\s+" +
+					"time=.* level=DEBUG msg=Tx request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/ duration=.* bytes-written=20 status=200$",
+			),
 		},
 	}
 	for _, tt := range tests {
@@ -71,9 +73,6 @@ func TestLogRequests(t *testing.T) {
 			logger := slog.New(slog.NewTextHandler(buff, &slog.HandlerOptions{
 				Level: slog.LevelDebug,
 			}))
-			r := httptest.NewRequest("GET", "/", nil)
-			//r = r.WithContext(logger.WithContext(r.Context()))
-			w := httptest.NewRecorder()
 			sut := LogRequests(logger)
 			handler := sut(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				GetLoggerFromRequest(r).Debug(tt.args.msg)
@@ -81,7 +80,7 @@ func TestLogRequests(t *testing.T) {
 			}))
 
 			// Act
-			handler.ServeHTTP(w, r)
+			handler.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/", nil))
 			got := strings.TrimSpace(buff.String())
 
 			// Assert
@@ -131,12 +130,11 @@ func TestChain(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange
-			r := httptest.NewRequest("GET", "/some/path", nil)
 			w := httptest.NewRecorder()
 			sut := Chain(tt.args.middleware, tt.args.h)
 
 			// Act
-			sut.ServeHTTP(w, r)
+			sut.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
 
 			// Assert
 			buff := bytes.NewBufferString("")
