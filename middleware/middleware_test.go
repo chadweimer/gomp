@@ -91,7 +91,7 @@ func TestLogRequests(t *testing.T) {
 	}
 }
 
-func TestChain(t *testing.T) {
+func TestWrap(t *testing.T) {
 	type args struct {
 		middleware []func(http.Handler) http.Handler
 		h          http.Handler
@@ -131,7 +131,7 @@ func TestChain(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange
 			w := httptest.NewRecorder()
-			sut := Chain(tt.args.middleware, tt.args.h)
+			sut := Wrap(tt.args.h, tt.args.middleware...)
 
 			// Act
 			sut.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))

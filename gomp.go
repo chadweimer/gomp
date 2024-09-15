@@ -67,12 +67,10 @@ func main() {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
 
-	r := middleware.Chain(
-		[]func(http.Handler) http.Handler{
-			middleware.LogRequests(slog.Default()),
-			middleware.Recover("Recovered from panic"),
-		},
+	r := middleware.Wrap(
 		mux,
+		middleware.LogRequests(slog.Default()),
+		middleware.Recover("Recovered from panic"),
 	)
 
 	// subscribe to SIGINT signals
