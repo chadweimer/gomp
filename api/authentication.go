@@ -191,7 +191,7 @@ func parseToken(tokenStr, key string) (*jwt.Token, error) {
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
+		return nil, errors.New("invalid token")
 	}
 
 	return token, nil
