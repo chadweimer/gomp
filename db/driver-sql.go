@@ -87,7 +87,7 @@ func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
 	defer func() {
 		if recv := recover(); recv != nil {
 			// Make sure to rollback after a panic...
-			tx.Rollback()
+			_ = tx.Rollback()
 
 			// ... but let the panicing continue
 			panic(recv)
@@ -95,7 +95,7 @@ func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
 	}()
 
 	if err = op(tx); err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return mapSQLErrors(err)
 	}
 
