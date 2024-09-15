@@ -346,6 +346,10 @@ func checkToken(tokenStr string, key string, expectedUserId int64, expectedScope
 		return fmt.Errorf("failed to parse token in respose: %w", err)
 	}
 
+	if !token.Valid {
+		return fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
+	}
+
 	claims, ok := token.Claims.(*gompClaims)
 
 	if !ok {
