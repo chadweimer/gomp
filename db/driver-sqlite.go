@@ -44,12 +44,12 @@ func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchFie
 
 func openSQLite(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// Attempt to create the base path, if necessary
-	fileUrl, err := url.Parse(connectionString)
+	fileURL, err := url.Parse(connectionString)
 	if err != nil {
 		return nil, err
 	}
-	if fileUrl.Scheme == "file" {
-		fullPath, err := filepath.Abs(fileUrl.RequestURI())
+	if fileURL.Scheme == "file" {
+		fullPath, err := filepath.Abs(fileURL.RequestURI())
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +71,7 @@ func openSQLite(connectionString string, migrationsTableName string, migrationsF
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSqlDriver(db, sqliteRecipeDriverAdapter{})
+	drv := newSQLDriver(db, sqliteRecipeDriverAdapter{})
 	return drv, nil
 }
 

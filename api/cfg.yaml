@@ -7,4 +7,6 @@ import-mapping:
   ./models.yaml: github.com/chadweimer/gomp/models
 compatibility:
   old-merge-schemas: true
+output-options:
+  name-normalizer: "ToCamelCaseWithInitialisms"
 output: routes.gen.go

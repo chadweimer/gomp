@@ -5,7 +5,7 @@ import (
 )
 
 func (h apiHandler) GetLinks(_ context.Context, request GetLinksRequestObject) (GetLinksResponseObject, error) {
-	recipes, err := h.db.Links().List(request.RecipeId)
+	recipes, err := h.db.Links().List(request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -14,7 +14,7 @@ func (h apiHandler) GetLinks(_ context.Context, request GetLinksRequestObject) (
 }
 
 func (h apiHandler) AddLink(_ context.Context, request AddLinkRequestObject) (AddLinkResponseObject, error) {
-	if err := h.db.Links().Create(request.RecipeId, request.DestRecipeId); err != nil {
+	if err := h.db.Links().Create(request.RecipeID, request.DestRecipeID); err != nil {
 		return nil, err
 	}
 
@@ -22,7 +22,7 @@ func (h apiHandler) AddLink(_ context.Context, request AddLinkRequestObject) (Ad
 }
 
 func (h apiHandler) DeleteLink(_ context.Context, request DeleteLinkRequestObject) (DeleteLinkResponseObject, error) {
-	if err := h.db.Links().Delete(request.RecipeId, request.DestRecipeId); err != nil {
+	if err := h.db.Links().Delete(request.RecipeID, request.DestRecipeID); err != nil {
 		return nil, err
 	}
 

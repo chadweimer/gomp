@@ -18,7 +18,7 @@ import (
 
 // ---- Begin Standard Errors ----
 
-var errMismatchedId = errors.New("id in the path does not match the one specified in the request body")
+var errMismatchedID = errors.New("id in the path does not match the one specified in the request body")
 
 // ---- End Standard Errors ----
 
@@ -30,7 +30,7 @@ func (k contextKey) String() string {
 	return "gomp context key: " + string(k)
 }
 
-const currentUserIdCtxKey = contextKey("current-user-id")
+const currentUserIDCtxKey = contextKey("current-user-id")
 
 // ---- End Context Keys ----
 
@@ -97,7 +97,7 @@ func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err 
 	writeJSONResponse(w, r, status, http.StatusText(status))
 }
 
-func getResourceIdFromCtx(ctx context.Context, idKey contextKey) (int64, error) {
+func getResourceIDFromCtx(ctx context.Context, idKey contextKey) (int64, error) {
 	idVal := ctx.Value(idKey)
 
 	id, ok := idVal.(int64)
@@ -116,7 +116,7 @@ func getResourceIdFromCtx(ctx context.Context, idKey contextKey) (int64, error) 
 func getStatusFromError(err error, fallback int) int {
 	if errors.Is(err, db.ErrNotFound) {
 		return http.StatusNotFound
-	} else if errors.Is(err, errMismatchedId) {
+	} else if errors.Is(err, errMismatchedID) {
 		return http.StatusBadRequest
 	}
 

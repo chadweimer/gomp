@@ -37,13 +37,13 @@ func (d *sqlRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Ext) error {
 		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
 
 	err := sqlx.Get(db, recipe, stmt,
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl, recipe.Time)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.Time)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %w", err)
 	}
 
 	for _, tag := range recipe.Tags {
-		if err := d.createTagImpl(*recipe.Id, tag, db); err != nil {
+		if err := d.createTagImpl(*recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("adding tags to new recipe: %w", err)
 		}
 	}
@@ -77,25 +77,25 @@ func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
 }
 
 func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) error {
-	if recipe.Id == nil {
-		return ErrMissingId
+	if recipe.ID == nil {
+		return ErrMissingID
 	}
 
 	_, err := db.Exec(
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7, recipe_time = $8 "+
 			"WHERE id = $9",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceUrl, recipe.Time, recipe.Id)
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.Time, recipe.ID)
 	if err != nil {
 		return fmt.Errorf("updating recipe: %w", err)
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if err = d.deleteAllTagsImpl(*recipe.Id, db); err != nil {
+	if err = d.deleteAllTagsImpl(*recipe.ID, db); err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %w", err)
 	}
 	for _, tag := range recipe.Tags {
-		if err = d.createTagImpl(*recipe.Id, tag, db); err != nil {
+		if err = d.createTagImpl(*recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("updating tags on recipe: %w", err)
 		}
 	}
@@ -221,7 +221,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 
 	orderStmt := " ORDER BY "
 	switch filter.SortBy {
-	case models.SortById:
+	case models.SortByID:
 		orderStmt += "r.id"
 	case models.SortByCreated:
 		orderStmt += "r.created_at"
@@ -269,36 +269,36 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 	return &recipes, total, nil
 }
 
-func (d *sqlRecipeDriver) CreateTag(recipeId int64, tag string) error {
+func (d *sqlRecipeDriver) CreateTag(recipeID int64, tag string) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.createTagImpl(recipeId, tag, db)
+		return d.createTagImpl(recipeID, tag, db)
 	})
 }
 
-func (*sqlRecipeDriver) createTagImpl(recipeId int64, tag string, db sqlx.Execer) error {
+func (*sqlRecipeDriver) createTagImpl(recipeID int64, tag string, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
-		recipeId, tag)
+		recipeID, tag)
 	return err
 }
 
-func (d *sqlRecipeDriver) DeleteAllTags(recipeId int64) error {
+func (d *sqlRecipeDriver) DeleteAllTags(recipeID int64) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.deleteAllTagsImpl(recipeId, db)
+		return d.deleteAllTagsImpl(recipeID, db)
 	})
 }
 
-func (*sqlRecipeDriver) deleteAllTagsImpl(recipeId int64, db sqlx.Execer) error {
+func (*sqlRecipeDriver) deleteAllTagsImpl(recipeID int64, db sqlx.Execer) error {
 	_, err := db.Exec(
 		"DELETE FROM recipe_tag WHERE recipe_id = $1",
-		recipeId)
+		recipeID)
 	return err
 }
 
-func (d *sqlRecipeDriver) ListTags(recipeId int64) (*[]string, error) {
+func (d *sqlRecipeDriver) ListTags(recipeID int64) (*[]string, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]string, error) {
 		tags := make([]string, 0)
-		if err := sqlx.Select(db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeId); err != nil {
+		if err := sqlx.Select(db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
 			return nil, err
 		}
 

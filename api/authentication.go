@@ -40,8 +40,8 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 }
 
 func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
-	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
-		user, err := h.db.Users().Read(userId)
+	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userID int64) (RefreshTokenResponseObject, error) {
+		user, err := h.db.Users().Read(userID)
 		if err != nil {
 			logger(ctx).Error("failure refreshing token", "error", err)
 			return RefreshToken401Response{}, nil
@@ -61,7 +61,7 @@ func (h apiHandler) createToken(user *models.User) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(0, 0, 14)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Subject:   strconv.FormatInt(*user.Id, 10),
+			Subject:   strconv.FormatInt(*user.ID, 10),
 		},
 		Scopes: jwt.ClaimStrings(getScopes(user.AccessLevel)),
 	})
@@ -87,7 +87,7 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 			}
 
 			// Add the user's ID to the list of params
-			ctx = context.WithValue(ctx, currentUserIdCtxKey, user.Id)
+			ctx = context.WithValue(ctx, currentUserIDCtxKey, user.ID)
 			r = r.WithContext(ctx)
 
 			if err := checkScopes(routeScopes, user, claims); err != nil {
@@ -113,12 +113,12 @@ func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*m
 		return nil, nil, errors.New("token had no scopes")
 	}
 
-	userId, err := getUserIdFromClaims(claims.RegisteredClaims, logger)
+	userID, err := getUserIDFromClaims(claims.RegisteredClaims, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	user, err := h.verifyUserExists(userId, logger)
+	user, err := h.verifyUserExists(userID, logger)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			err = errors.New("invalid user")
@@ -163,9 +163,9 @@ func (h apiHandler) getAuthTokenFromRequest(header http.Header, logger *slog.Log
 	return nil, errors.New("invalid token")
 }
 
-func (h apiHandler) verifyUserExists(userId int64, logger *slog.Logger) (*models.User, error) {
+func (h apiHandler) verifyUserExists(userID int64, logger *slog.Logger) (*models.User, error) {
 	// Verify this is a valid user in the DB
-	user, err := h.db.Users().Read(userId)
+	user, err := h.db.Users().Read(userID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, err
@@ -235,22 +235,22 @@ func checkScopes(routeScopes []string, user *models.User, claims *gompClaims) er
 	return nil
 }
 
-func getUserIdFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int64, error) {
-	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
+func getUserIDFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int64, error) {
+	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
 		logger.Error("Invalid claims", "error", err)
 		return -1, errors.New("invalid claims")
 	}
 
-	return userId, nil
+	return userID, nil
 }
 
-func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
-	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
+func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TResponse, do func(userID int64) (TResponse, error)) (TResponse, error) {
+	userID, err := getResourceIDFromCtx(ctx, currentUserIDCtxKey)
 	if err != nil {
 		logger(ctx).Error("failed to get current user from request context", "error", err)
 		return invalidUserResponse, nil
 	}
 
-	return do(userId)
+	return do(userID)
 }

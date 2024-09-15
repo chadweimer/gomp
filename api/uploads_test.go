@@ -32,7 +32,7 @@ func Test_Upload(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, uplDriver := getMockUploadsApi(ctrl)
+			api, uplDriver := getMockUploadsAPI(ctrl)
 			if test.expectedError != nil {
 				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
@@ -60,7 +60,7 @@ func Test_Upload(t *testing.T) {
 	}
 }
 
-func getMockUploadsApi(ctrl *gomock.Controller) (apiHandler, *uploadmock.MockDriver) {
+func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *uploadmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	uplDriver := uploadmock.NewMockDriver(ctrl)
 	imgCfg := models.ImageConfiguration{

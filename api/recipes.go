@@ -55,7 +55,7 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 }
 
 func (h apiHandler) GetRecipe(_ context.Context, request GetRecipeRequestObject) (GetRecipeResponseObject, error) {
-	recipe, err := h.db.Recipes().Read(request.RecipeId)
+	recipe, err := h.db.Recipes().Read(request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +74,10 @@ func (h apiHandler) AddRecipe(_ context.Context, request AddRecipeRequestObject)
 
 func (h apiHandler) SaveRecipe(_ context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
 	recipe := request.Body
-	if recipe.Id == nil {
-		recipe.Id = &request.RecipeId
-	} else if *recipe.Id != request.RecipeId {
-		return nil, errMismatchedId
+	if recipe.ID == nil {
+		recipe.ID = &request.RecipeID
+	} else if *recipe.ID != request.RecipeID {
+		return nil, errMismatchedID
 	}
 
 	if err := h.db.Recipes().Update(recipe); err != nil {
@@ -88,12 +88,12 @@ func (h apiHandler) SaveRecipe(_ context.Context, request SaveRecipeRequestObjec
 }
 
 func (h apiHandler) DeleteRecipe(_ context.Context, request DeleteRecipeRequestObject) (DeleteRecipeResponseObject, error) {
-	if err := h.db.Recipes().Delete(request.RecipeId); err != nil {
+	if err := h.db.Recipes().Delete(request.RecipeID); err != nil {
 		return nil, err
 	}
 
 	// Delete all the uploaded image files associated with the recipe also
-	if err := h.upl.DeleteAll(request.RecipeId); err != nil {
+	if err := h.upl.DeleteAll(request.RecipeID); err != nil {
 		return nil, err
 	}
 
@@ -101,7 +101,7 @@ func (h apiHandler) DeleteRecipe(_ context.Context, request DeleteRecipeRequestO
 }
 
 func (h apiHandler) SetState(_ context.Context, request SetStateRequestObject) (SetStateResponseObject, error) {
-	if err := h.db.Recipes().SetState(request.RecipeId, *request.Body); err != nil {
+	if err := h.db.Recipes().SetState(request.RecipeID, *request.Body); err != nil {
 		return nil, err
 	}
 
@@ -109,7 +109,7 @@ func (h apiHandler) SetState(_ context.Context, request SetStateRequestObject) (
 }
 
 func (h apiHandler) GetRating(_ context.Context, request GetRatingRequestObject) (GetRatingResponseObject, error) {
-	rating, err := h.db.Recipes().GetRating(request.RecipeId)
+	rating, err := h.db.Recipes().GetRating(request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (h apiHandler) GetRating(_ context.Context, request GetRatingRequestObject)
 }
 
 func (h apiHandler) SetRating(_ context.Context, request SetRatingRequestObject) (SetRatingResponseObject, error) {
-	if err := h.db.Recipes().SetRating(request.RecipeId, *request.Body); err != nil {
+	if err := h.db.Recipes().SetRating(request.RecipeID, *request.Body); err != nil {
 		return nil, err
 	}
 

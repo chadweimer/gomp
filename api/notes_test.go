@@ -15,7 +15,7 @@ import (
 
 func Test_GetNotes(t *testing.T) {
 	type getNotesTest struct {
-		recipeId    int64
+		recipeID    int64
 		notes       []models.Note
 		expectError bool
 	}
@@ -37,15 +37,15 @@ func Test_GetNotes(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, notesDriver := getMockNotesApi(ctrl)
+			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
-				notesDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
+				notesDriver.EXPECT().List(test.recipeID).Return(nil, db.ErrNotFound)
 			} else {
-				notesDriver.EXPECT().List(test.recipeId).Return(&test.notes, nil)
+				notesDriver.EXPECT().List(test.recipeID).Return(&test.notes, nil)
 			}
 
 			// Act
-			resp, err := api.GetNotes(context.Background(), GetNotesRequestObject{RecipeId: test.recipeId})
+			resp, err := api.GetNotes(context.Background(), GetNotesRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -65,7 +65,7 @@ func Test_GetNotes(t *testing.T) {
 
 func Test_AddNote(t *testing.T) {
 	type addNoteTest struct {
-		recipeId    int64
+		recipeID    int64
 		note        models.Note
 		expectError bool
 	}
@@ -81,7 +81,7 @@ func Test_AddNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, notesDriver := getMockNotesApi(ctrl)
+			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
 				notesDriver.EXPECT().Create(gomock.Any()).Return(db.ErrNotFound)
 			} else {
@@ -89,7 +89,7 @@ func Test_AddNote(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeId: test.recipeId, Body: &test.note})
+			resp, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -104,14 +104,14 @@ func Test_AddNote(t *testing.T) {
 	}
 }
 
-func Test_AddNote_MismatchedId(t *testing.T) {
+func Test_AddNote_MismatchedID(t *testing.T) {
 	type addNoteTest struct {
-		recipeId int64
+		recipeID int64
 		note     models.Note
 	}
 
 	tests := []addNoteTest{
-		{1, models.Note{RecipeId: new(int64), Text: "some note"}},
+		{1, models.Note{RecipeID: new(int64), Text: "some note"}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -119,17 +119,17 @@ func Test_AddNote_MismatchedId(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, notesDriver := getMockNotesApi(ctrl)
+			api, notesDriver := getMockNotesAPI(ctrl)
 			notesDriver.EXPECT().Create(test.note).Times(0).Return(nil)
 
 			// Act
-			_, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeId: test.recipeId, Body: &test.note})
+			_, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
 
 			// Assert
 			if err == nil {
 				t.Error("expected error")
-			} else if err != errMismatchedId {
-				t.Errorf("expected error: %v, received error: %v", errMismatchedId, err)
+			} else if err != errMismatchedID {
+				t.Errorf("expected error: %v, received error: %v", errMismatchedID, err)
 			}
 		})
 	}
@@ -137,8 +137,8 @@ func Test_AddNote_MismatchedId(t *testing.T) {
 
 func Test_SaveNote(t *testing.T) {
 	type addNoteTest struct {
-		recipeId    int64
-		noteId      int64
+		recipeID    int64
+		noteID      int64
 		note        models.Note
 		expectError bool
 	}
@@ -154,7 +154,7 @@ func Test_SaveNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, notesDriver := getMockNotesApi(ctrl)
+			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
 				notesDriver.EXPECT().Update(gomock.Any()).Return(db.ErrNotFound)
 			} else {
@@ -162,7 +162,7 @@ func Test_SaveNote(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeId: test.recipeId, NoteId: test.noteId, Body: &test.note})
+			resp, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -177,16 +177,16 @@ func Test_SaveNote(t *testing.T) {
 	}
 }
 
-func Test_SaveNote_MismatchedId(t *testing.T) {
+func Test_SaveNote_MismatchedID(t *testing.T) {
 	type addNoteTest struct {
-		recipeId int64
-		noteId   int64
+		recipeID int64
+		noteID   int64
 		note     models.Note
 	}
 
 	tests := []addNoteTest{
-		{1, 1, models.Note{RecipeId: new(int64), Text: "some note"}},
-		{1, 1, models.Note{Id: new(int64), Text: "some other note"}},
+		{1, 1, models.Note{RecipeID: new(int64), Text: "some note"}},
+		{1, 1, models.Note{ID: new(int64), Text: "some other note"}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -194,17 +194,17 @@ func Test_SaveNote_MismatchedId(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, notesDriver := getMockNotesApi(ctrl)
+			api, notesDriver := getMockNotesAPI(ctrl)
 			notesDriver.EXPECT().Update(test.note).Times(0).Return(nil)
 
 			// Act
-			_, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeId: test.recipeId, NoteId: test.noteId, Body: &test.note})
+			_, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
 
 			// Assert
 			if err == nil {
 				t.Error("expected error")
-			} else if err != errMismatchedId {
-				t.Errorf("expected error: %v, received error: %v", errMismatchedId, err)
+			} else if err != errMismatchedID {
+				t.Errorf("expected error: %v, received error: %v", errMismatchedID, err)
 			}
 		})
 	}
@@ -212,8 +212,8 @@ func Test_SaveNote_MismatchedId(t *testing.T) {
 
 func Test_DeleteNote(t *testing.T) {
 	type deleteLinkTest struct {
-		recipeId    int64
-		noteId      int64
+		recipeID    int64
+		noteID      int64
 		expectError bool
 	}
 
@@ -230,15 +230,15 @@ func Test_DeleteNote(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, notesDriver := getMockNotesApi(ctrl)
+			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
 				notesDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				notesDriver.EXPECT().Delete(test.recipeId, test.noteId).Return(nil)
+				notesDriver.EXPECT().Delete(test.recipeID, test.noteID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteNote(context.Background(), DeleteNoteRequestObject{RecipeId: test.recipeId, NoteId: test.noteId})
+			resp, err := api.DeleteNote(context.Background(), DeleteNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -253,7 +253,7 @@ func Test_DeleteNote(t *testing.T) {
 	}
 }
 
-func getMockNotesApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockNoteDriver) {
+func getMockNotesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockNoteDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	notesDriver := dbmock.NewMockNoteDriver(ctrl)
 	dbDriver.EXPECT().Notes().AnyTimes().Return(notesDriver)

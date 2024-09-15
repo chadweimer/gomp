@@ -28,12 +28,12 @@ func Test_getStatusFromError(t *testing.T) {
 		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusNotFound, http.StatusNotFound},
 		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusForbidden, http.StatusNotFound},
 		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusConflict, http.StatusNotFound},
-		{errMismatchedId, http.StatusBadRequest, http.StatusBadRequest},
-		{errMismatchedId, http.StatusForbidden, http.StatusBadRequest},
-		{errMismatchedId, http.StatusConflict, http.StatusBadRequest},
-		{fmt.Errorf("some error: %w", errMismatchedId), http.StatusBadRequest, http.StatusBadRequest},
-		{fmt.Errorf("some error: %w", errMismatchedId), http.StatusForbidden, http.StatusBadRequest},
-		{fmt.Errorf("some error: %w", errMismatchedId), http.StatusConflict, http.StatusBadRequest},
+		{errMismatchedID, http.StatusBadRequest, http.StatusBadRequest},
+		{errMismatchedID, http.StatusForbidden, http.StatusBadRequest},
+		{errMismatchedID, http.StatusConflict, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", errMismatchedID), http.StatusBadRequest, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", errMismatchedID), http.StatusForbidden, http.StatusBadRequest},
+		{fmt.Errorf("some error: %w", errMismatchedID), http.StatusConflict, http.StatusBadRequest},
 		{errors.New("some error"), http.StatusForbidden, http.StatusForbidden},
 		{errors.New("some error"), http.StatusBadRequest, http.StatusBadRequest},
 		{errors.New("some error"), http.StatusInternalServerError, http.StatusInternalServerError},
@@ -54,15 +54,15 @@ func Test_getStatusFromError(t *testing.T) {
 	}
 }
 
-func Test_getResourceIdFromCtx(t *testing.T) {
-	type getResourceIdFromCtxTest struct {
+func Test_getResourceIDFromCtx(t *testing.T) {
+	type getResourceIDFromCtxTest struct {
 		key    contextKey
 		val    int64
 		usePtr bool
 	}
 
 	// Arrange
-	tests := []getResourceIdFromCtxTest{
+	tests := []getResourceIDFromCtxTest{
 		{contextKey("the-item"), 10, false},
 		{contextKey("the-item"), 10, true},
 		{contextKey("the-item"), -1, false},
@@ -81,7 +81,7 @@ func Test_getResourceIdFromCtx(t *testing.T) {
 			}
 
 			// Act
-			id, err := getResourceIdFromCtx(ctx, test.key)
+			id, err := getResourceIDFromCtx(ctx, test.key)
 
 			// Assert
 			if err != nil && test.val > 0 {
@@ -106,7 +106,7 @@ func Test_writeErrorResponse(t *testing.T) {
 		{http.StatusConflict, errors.New("A conflict error")},
 		{http.StatusBadGateway, errors.New("A bad gateway error")},
 		{http.StatusInternalServerError, db.ErrNotFound},
-		{http.StatusInternalServerError, errMismatchedId},
+		{http.StatusInternalServerError, errMismatchedID},
 	}
 
 	for i, test := range tests {
