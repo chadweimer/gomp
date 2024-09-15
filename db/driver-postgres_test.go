@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/models"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	"github.com/samber/lo"
 )
 

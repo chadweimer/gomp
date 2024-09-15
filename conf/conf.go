@@ -77,7 +77,7 @@ const (
 )
 
 // Load reads the configuration file from the specified path
-func Load(logInitializer func(level slog.Level) *slog.Logger) *Config {
+func Load(logInitializer func(*Config)) *Config {
 	c := Config{
 		Port:                   5000,
 		UploadDriver:           "fs",
@@ -112,24 +112,16 @@ func Load(logInitializer func(level slog.Level) *slog.Logger) *Config {
 	loadEnv("THUMBNAIL_SIZE", &c.ThumbnailSize)
 
 	// Now that we've loaded configuration, we can finish setting up logging
-	level := slog.LevelInfo
-	if c.IsDevelopment {
-		level = slog.LevelDebug
-	}
-	slog.SetDefault(logInitializer(level))
+	logInitializer(&c)
 
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
 		slog.Debug("DATABASE_DRIVER is empty. Will attempt to infer...")
 		if strings.HasPrefix(c.DatabaseUrl, "file:") {
-			slog.
-				With("value", db.SQLiteDriverName).
-				Debug("Setting DATABASE_DRIVER")
+			slog.Debug("Setting DATABASE_DRIVER", "value", db.SQLiteDriverName)
 			c.DatabaseDriver = db.SQLiteDriverName
 		} else if strings.HasPrefix(c.DatabaseUrl, "postgres:") {
-			slog.
-				With("value", db.PostgresDriverName).
-				Debug("Setting DATABASE_DRIVER")
+			slog.Debug("Setting DATABASE_DRIVER", "value", db.PostgresDriverName)
 			c.DatabaseDriver = db.PostgresDriverName
 		} else {
 			slog.Warn("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
@@ -142,24 +134,24 @@ func Load(logInitializer func(level slog.Level) *slog.Logger) *Config {
 	}
 
 	logger := slog.
-		With("port", c.Port).
-		With("upload-driver", c.UploadDriver).
-		With("upload-path", c.UploadPath).
-		With("is-development", c.IsDevelopment).
-		With("base-assets-path", c.BaseAssetsPath).
-		With("database-driver", c.DatabaseDriver).
-		With("migrations-table-name", c.MigrationsTableName).
-		With("migrations-force-version", c.MigrationsForceVersion).
-		With("image-quality", c.ImageQuality).
-		With("image-size", c.ImageSize).
-		With("thumbnail-quality", c.ThumbnailQuality).
-		With("thumbnail-size", c.ThumbnailSize)
+		With("port", c.Port,
+			"upload-driver", c.UploadDriver,
+			"upload-path", c.UploadPath,
+			"is-development", c.IsDevelopment,
+			"base-assets-path", c.BaseAssetsPath,
+			"database-driver", c.DatabaseDriver,
+			"migrations-table-name", c.MigrationsTableName,
+			"migrations-force-version", c.MigrationsForceVersion,
+			"image-quality", c.ImageQuality,
+			"image-size", c.ImageSize,
+			"thumbnail-quality", c.ThumbnailQuality,
+			"thumbnail-size", c.ThumbnailSize)
 
 	// Only print sensitive info in development mode
 	if c.IsDevelopment {
 		logger = logger.
-			With("database-url", c.DatabaseUrl). // This may contain auth information
-			With("secure-keys", c.SecureKeys)
+			With("database-url", c.DatabaseUrl,
+				"secure-keys", c.SecureKeys)
 	}
 
 	logger.Info("Loaded configuration")
@@ -232,7 +224,7 @@ func (c Config) ToImageConfiguration() models.ImageConfiguration {
 	}
 }
 
-func loadEnv(name string, dest interface{}) {
+func loadEnv(name string, dest any) {
 	fullName := "GOMP_" + name
 	// Try the application specific name (prefixed with GOMP_)...
 	envStr, ok := os.LookupEnv(fullName)
@@ -254,11 +246,10 @@ func loadEnv(name string, dest interface{}) {
 		case *int:
 			val, err := strconv.Atoi(envStr)
 			if err != nil {
-				slog.
-					With("env", name).
-					With("val", envStr).
-					With("error", err).
-					Error("Failed to convert environment variable to an integer")
+				slog.Error("Failed to convert environment variable to an integer",
+					"env", name,
+					"val", envStr,
+					"error", err)
 			} else {
 				*dest = val
 			}

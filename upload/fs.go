@@ -28,17 +28,16 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 		return err
 	}
 
-	file, err := os.Create(filePath) //#nosec G304 -- Path already cleaned
+	file, err := os.Create(filePath) // #nosec G304 -- Path already cleaned
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			if err != nil {
-				slog.
-					With("error", closeErr).
-					With("file", filePath).
-					Warn("Failed to close file after a previous error")
+				slog.Warn("Failed to close file after a previous error",
+					"error", closeErr,
+					"file", filePath)
 			} else {
 				err = closeErr
 			}
@@ -68,8 +67,8 @@ type justFilesFileSystem struct {
 }
 
 // OnlyFiles constucts a fs.FS that returns fs.ErrPermission for directories.
-func OnlyFiles(fs fs.FS) fs.FS {
-	return &justFilesFileSystem{fs}
+func OnlyFiles(f fs.FS) fs.FS {
+	return &justFilesFileSystem{f}
 }
 
 func (f *justFilesFileSystem) Open(name string) (fs.File, error) {

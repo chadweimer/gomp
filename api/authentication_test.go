@@ -64,7 +64,6 @@ func Test_Authenticate(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 			} else {
-
 				typedResp, ok := resp.(Authenticate200JSONResponse)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
@@ -190,7 +189,7 @@ func Test_isAuthentication(t *testing.T) {
 			}
 
 			// Act
-			_, _, ctx, err := api.isAuthenticated(ctx, header)
+			_, _, err := api.isAuthenticated(ctx, header)
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -199,11 +198,6 @@ func Test_isAuthentication(t *testing.T) {
 				ctxUser := ctx.Value(currentUserIdCtxKey)
 				if ctxUser == nil {
 					t.Errorf("user id missing crom context")
-				}
-
-				ctxToken := ctx.Value(currentUserTokenCtxKey)
-				if ctxToken == nil {
-					t.Errorf("token missing crom context")
 				}
 			}
 		})
@@ -349,15 +343,14 @@ func Test_getUserIdFromClaims(t *testing.T) {
 func checkToken(tokenStr string, key string, expectedUserId int64, expectedScopes []string, accessLevel models.AccessLevel) error {
 	token, err := parseToken(tokenStr, key)
 	if err != nil {
-		return fmt.Errorf("failed to parse token in respose: %v", err)
+		return fmt.Errorf("failed to parse token in respose: %w", err)
 	}
 
-	if !token.Valid {
-		return fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
+	claims, ok := token.Claims.(*gompClaims)
+
+	if !ok {
+		return errors.New("invalid claims")
 	}
-
-	claims := token.Claims.(*gompClaims)
-
 	if claims.IssuedAt == nil {
 		return errors.New("token is missing issue date")
 	}

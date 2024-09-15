@@ -20,25 +20,25 @@ import (
 )
 
 func main() {
-	// Start with a logger that defaults to the debug level, until we load configuration
+	// Start with a logger that defaults to the info level, until we load configuration
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: slog.LevelInfo,
 	})))
 
 	// Write the app metadata to logs
-	slog.
-		With("version", metadata.BuildVersion).
-		Info("Starting application")
+	slog.Info("Starting application", "version", metadata.BuildVersion)
 
-	cfg := conf.Load(func(level slog.Level) *slog.Logger {
-		return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	cfg := conf.Load(func(cfg *conf.Config) {
+		level := slog.LevelInfo
+		if cfg.IsDevelopment {
+			level = slog.LevelDebug
+		}
+		slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: level,
-		}))
+		})))
 	})
 	if err := cfg.Validate(); err != nil {
-		slog.
-			With("error", err).
-			Error("Configuration validation failed")
+		slog.Error("Configuration validation failed", "error", err)
 		return
 	}
 
@@ -46,9 +46,7 @@ func main() {
 
 	uplDriver, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	if err != nil {
-		slog.
-			With("error", err).
-			Error("Establishing upload driver failed")
+		slog.Error("Establishing upload driver failed", "error", err)
 		return
 	}
 	uploader := upload.CreateImageUploader(uplDriver, cfg.ToImageConfiguration())
@@ -56,9 +54,7 @@ func main() {
 	dbDriver, err := db.CreateDriver(
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
-		slog.
-			With("error", err).
-			Error("Establishing database driver failed")
+		slog.Error("Establishing database driver failed", "error", err)
 		return
 	}
 	defer dbDriver.Close()
@@ -90,7 +86,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	slog.With("port", cfg.Port).Info("Starting server")
+	slog.Info("Starting server", "port", cfg.Port)
 	srv := &http.Server{
 		ReadHeaderTimeout: 10 * time.Second,
 		Addr:              fmt.Sprintf(":%d", cfg.Port),

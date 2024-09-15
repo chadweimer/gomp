@@ -25,8 +25,8 @@ func newS3Driver(bucket string) (Driver, error) {
 	}
 
 	svc := s3.New(sess)
-	s3fs := s3fs.New(svc, bucket)
-	return &s3Driver{OnlyFiles(s3fs), svc, bucket}, nil
+	f := s3fs.New(svc, bucket)
+	return &s3Driver{OnlyFiles(f), svc, bucket}, nil
 }
 
 func (u *s3Driver) Save(filePath string, data []byte) error {

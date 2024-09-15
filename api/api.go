@@ -30,10 +30,7 @@ func (k contextKey) String() string {
 	return "gomp context key: " + string(k)
 }
 
-const (
-	currentUserIdCtxKey    = contextKey("current-user-id")
-	currentUserTokenCtxKey = contextKey("current-user-token")
-)
+const currentUserIdCtxKey = contextKey("current-user-id")
 
 // ---- End Context Keys ----
 
@@ -44,11 +41,11 @@ type apiHandler struct {
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *upload.ImageUploader, drDriver db.Driver) http.Handler {
 	h := apiHandler{
 		secureKeys: secureKeys,
 		upl:        upl,
-		db:         db,
+		db:         drDriver,
 	}
 
 	return HandlerWithOptions(NewStrictHandlerWithOptions(
@@ -75,13 +72,13 @@ func logger(ctx context.Context) *slog.Logger {
 	return middleware.GetLoggerFromContext(ctx)
 }
 
-func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v any) {
 	buf := new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(v); err != nil {
 		logger(r.Context()).
-			With("error", err).
-			With("original-status", status).
-			Error("Failed to encode response")
+			Error("Failed to encode response",
+				"error", err,
+				"original-status", status)
 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -95,7 +92,7 @@ func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v int
 }
 
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
-	logger(r.Context()).With("error", err).Error("failure on request")
+	logger(r.Context()).Error("failure on request", "error", err)
 	status = getStatusFromError(err, status)
 	writeJSONResponse(w, r, status, http.StatusText(status))
 }

@@ -47,8 +47,6 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.Status = code
 	rw.ResponseWriter.WriteHeader(code)
 	rw.wroteHeader = true
-
-	return
 }
 
 // Recover provides a middleware that traps and recovers from panics.
@@ -57,9 +55,7 @@ func Recover(msg string) func(http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				if err := recover(); err != nil {
-					GetLoggerFromRequest(r).
-						With("error", err).
-						Error(msg)
+					GetLoggerFromRequest(r).Error(msg, "error", err)
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				}
 			}()
@@ -103,12 +99,13 @@ func LogRequests(logger *slog.Logger) func(http.Handler) http.Handler {
 			}
 			ctx = context.WithValue(ctx, requestIDCtxKey, requestID)
 
-			requestLogger := logger.
-				With("request-id", requestID).
-				With("from", r.RemoteAddr).
-				With("method", r.Method).
-				With("referrer", r.Referer()).
-				With("url", r.URL.String())
+			requestLogger := logger.With(
+				slog.String("request-id", requestID),
+				slog.Group("req",
+					"from", r.RemoteAddr,
+					"method", r.Method,
+					"referrer", r.Referer(),
+					"url", r.URL.String()))
 			ctx = context.WithValue(ctx, logCtxKey, requestLogger)
 
 			requestLogger.Debug("Rx")
@@ -116,11 +113,11 @@ func LogRequests(logger *slog.Logger) func(http.Handler) http.Handler {
 			start := time.Now()
 			wrapped := wrapWriter(w)
 			defer func() {
-				requestLogger.
-					With("duration", time.Since(start)).
-					With("bytes-written", wrapped.BytesWritten).
-					With("status", wrapped.Status).
-					Debug("Tx")
+				requestLogger.Debug("Tx",
+					slog.Group("resp",
+						"bytes-written", wrapped.BytesWritten,
+						"status", wrapped.Status),
+					"duration", time.Since(start))
 			}()
 
 			next.ServeHTTP(wrapped, r.WithContext(ctx))

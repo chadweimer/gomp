@@ -27,7 +27,7 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 	credentials := request.Body
 	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
 	if err != nil {
-		logger(ctx).With("error", err).Error("failure authenticating")
+		logger(ctx).Error("failure authenticating", "error", err)
 		return Authenticate401Response{}, nil
 	}
 
@@ -43,7 +43,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userId int64) (RefreshTokenResponseObject, error) {
 		user, err := h.db.Users().Read(userId)
 		if err != nil {
-			logger(ctx).With("error", err).Error("failure refreshing token")
+			logger(ctx).Error("failure refreshing token", "error", err)
 			return RefreshToken401Response{}, nil
 		}
 
@@ -78,12 +78,17 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		routeScopes, ok := r.Context().Value(BearerScopes).([]string)
 		if ok {
-			user, claims, ctx, err := h.isAuthenticated(r.Context(), r.Header)
+			ctx := r.Context()
+
+			user, claims, err := h.isAuthenticated(ctx, r.Header)
 			if err != nil {
 				writeErrorResponse(w, r, http.StatusUnauthorized, err)
 				return
 			}
-			*r = *r.WithContext(ctx)
+
+			// Add the user's ID to the list of params
+			ctx = context.WithValue(ctx, currentUserIdCtxKey, user.Id)
+			r = r.WithContext(ctx)
 
 			if err := checkScopes(routeScopes, user, claims); err != nil {
 				writeErrorResponse(w, r, http.StatusForbidden, fmt.Errorf("%w, endpoint '%s'", err, r.URL.Path))
@@ -95,38 +100,34 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 	})
 }
 
-func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*models.User, *gompClaims, context.Context, error) {
+func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*models.User, *gompClaims, error) {
 	logger := logger(ctx)
 
 	token, err := h.getAuthTokenFromRequest(header, logger)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
-	claims := token.Claims.(*gompClaims)
-	if len(claims.Scopes) == 0 {
-		return nil, nil, nil, errors.New("token had no scopes")
+	claims, ok := token.Claims.(*gompClaims)
+	if !ok || len(claims.Scopes) == 0 {
+		return nil, nil, errors.New("token had no scopes")
 	}
 
 	userId, err := getUserIdFromClaims(claims.RegisteredClaims, logger)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	user, err := h.verifyUserExists(userId, logger)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
-			return nil, nil, nil, errors.New("invalid user")
+			err = errors.New("invalid user")
 		}
 
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
-	// Add the user's ID and token to the list of params
-	ctx = context.WithValue(ctx, currentUserIdCtxKey, user.Id)
-	ctx = context.WithValue(ctx, currentUserTokenCtxKey, token)
-
-	return user, claims, ctx, nil
+	return user, claims, nil
 }
 
 func (h apiHandler) getAuthTokenFromRequest(header http.Header, logger *slog.Logger) (*jwt.Token, error) {
@@ -143,18 +144,19 @@ func (h apiHandler) getAuthTokenFromRequest(header http.Header, logger *slog.Log
 	tokenStr := authHeaderParts[1]
 
 	// Try each key when validating the token
+	var token *jwt.Token
+	var err error
 	for i, key := range h.secureKeys {
-		token, err := parseToken(tokenStr, key)
-		if err != nil {
-			logger.
-				With("error", err).
-				With("key-index", i).
-				Error("Failed parsing JWT token")
-			if i < (len(h.secureKeys) + 1) {
-				logger.Debug("Will try again with next key")
-			}
-		} else if token.Valid {
+		token, err = parseToken(tokenStr, key)
+		if err == nil {
 			return token, nil
+		}
+
+		logger.Error("Failed parsing JWT token",
+			"error", err,
+			"key-index", i)
+		if i < (len(h.secureKeys) + 1) {
+			logger.Debug("Will try again with next key")
 		}
 	}
 
@@ -169,9 +171,7 @@ func (h apiHandler) verifyUserExists(userId int64, logger *slog.Logger) (*models
 			return nil, err
 		}
 
-		logger.
-			With("error", err).
-			Error("Error retrieving user info")
+		logger.Error("Error retrieving user info", "error", err)
 		return nil, errors.New("error retrieving user info")
 	}
 
@@ -179,7 +179,7 @@ func (h apiHandler) verifyUserExists(userId int64, logger *slog.Logger) (*models
 }
 
 func parseToken(tokenStr, key string) (*jwt.Token, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &gompClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &gompClaims{}, func(token *jwt.Token) (any, error) {
 		if token.Method != jwt.SigningMethodHS256 {
 			return nil, errors.New("incorrect signing method")
 		}
@@ -188,11 +188,13 @@ func parseToken(tokenStr, key string) (*jwt.Token, error) {
 	})
 	if err != nil {
 		return nil, err
-	} else if token.Valid {
-		return token, nil
 	}
 
-	return nil, errors.New("invalid token")
+	if !token.Valid {
+		return nil, fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
+	}
+
+	return token, nil
 }
 
 func getScopes(accessLevel models.AccessLevel) []string {
@@ -236,21 +238,17 @@ func checkScopes(routeScopes []string, user *models.User, claims *gompClaims) er
 func getUserIdFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int64, error) {
 	userId, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
-		logger.
-			With("error", err).
-			Error("Invalid claims")
+		logger.Error("Invalid claims", "error", err)
 		return -1, errors.New("invalid claims")
 	}
 
 	return userId, nil
 }
 
-func withCurrentUser[TResponse interface{}](ctx context.Context, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
+func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TResponse, do func(userId int64) (TResponse, error)) (TResponse, error) {
 	userId, err := getResourceIdFromCtx(ctx, currentUserIdCtxKey)
 	if err != nil {
-		logger(ctx).
-			With("error", err).
-			Error("failed to get current user from request context")
+		logger(ctx).Error("failed to get current user from request context", "error", err)
 		return invalidUserResponse, nil
 	}
 

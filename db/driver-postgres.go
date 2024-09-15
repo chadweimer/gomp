@@ -55,15 +55,14 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 			break
 		}
 
-		if i < maxAttempts {
-			slog.
-				With("error", err).
-				With("attempt", i).
-				Error("Failed to open database. Will try again...")
-			time.Sleep(500 * time.Millisecond)
-		} else {
+		if i == maxAttempts {
 			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%w'", i, err)
 		}
+
+		slog.Error("Failed to open database. Will try again...",
+			"error", err,
+			"attempt", i)
+		time.Sleep(500 * time.Millisecond)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)

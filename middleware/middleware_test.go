@@ -60,9 +60,9 @@ func TestLogRequests(t *testing.T) {
 				msg: "Hello, from handler!",
 			},
 			want: regexp.MustCompile(
-				"^time=.* level=DEBUG msg=Rx request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/\\s+" +
-					"time=.* level=DEBUG msg=\"Hello, from handler!\" request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/\\s+" +
-					"time=.* level=DEBUG msg=Tx request-id=\\d+ from=.* method=GET referrer=\"\" url=\\/ duration=.* bytes-written=20 status=200$",
+				"^time=.* level=DEBUG msg=Rx request-id=\\d+ req.from=.* req.method=GET req.referrer=\"\" req.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=\"Hello, from handler!\" request-id=\\d+ req.from=.* req.method=GET req.referrer=\"\" req.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=Tx request-id=\\d+ req.from=.* req.method=GET req.referrer=\"\" req.url=\\/ resp.bytes-written=20 resp.status=200 duration=.*$",
 			),
 		},
 	}
