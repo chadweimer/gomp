@@ -28,7 +28,7 @@ type sqlDriver struct {
 	users   *sqlUserDriver
 }
 
-func newSqlDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
@@ -76,7 +76,7 @@ func (d *sqlDriver) Close() error {
 
 func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
 	t, err := op(db)
-	return t, mapSqlErrors(err)
+	return t, mapSQLErrors(err)
 }
 
 func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
@@ -96,13 +96,13 @@ func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
 
 	if err = op(tx); err != nil {
 		tx.Rollback()
-		return mapSqlErrors(err)
+		return mapSQLErrors(err)
 	}
 
 	return tx.Commit()
 }
 
-func mapSqlErrors(err error) error {
+func mapSQLErrors(err error) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrNotFound
 	}

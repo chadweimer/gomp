@@ -41,9 +41,9 @@ type Config struct {
 	// Supported drivers: postgres, sqlite3
 	DatabaseDriver string
 
-	// DatabaseUrl gets the url (or path, connection string, etc) to use with the associated
+	// DatabaseURL gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
-	DatabaseUrl string
+	DatabaseURL string
 
 	// MigrationsTableName gets the name of the database migrations table to use.
 	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
@@ -85,7 +85,7 @@ func Load(logInitializer func(*Config)) *Config {
 		IsDevelopment:          false,
 		SecureKeys:             []string{defaultSecureKey},
 		DatabaseDriver:         "",
-		DatabaseUrl:            "file:" + filepath.Join("data", "data.db") + "?_pragma=foreign_keys(1)",
+		DatabaseURL:            "file:" + filepath.Join("data", "data.db") + "?_pragma=foreign_keys(1)",
 		MigrationsTableName:    "",
 		MigrationsForceVersion: -1,
 		BaseAssetsPath:         "static",
@@ -103,7 +103,7 @@ func Load(logInitializer func(*Config)) *Config {
 	loadEnv("UPLOAD_DRIVER", &c.UploadDriver)
 	loadEnv("UPLOAD_PATH", &c.UploadPath)
 	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
-	loadEnv("DATABASE_URL", &c.DatabaseUrl)
+	loadEnv("DATABASE_URL", &c.DatabaseURL)
 	loadEnv("PORT", &c.Port)
 	loadEnv("SECURE_KEY", &c.SecureKeys)
 	loadEnv("IMAGE_QUALITY", &c.ImageQuality)
@@ -117,10 +117,10 @@ func Load(logInitializer func(*Config)) *Config {
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
 		slog.Debug("DATABASE_DRIVER is empty. Will attempt to infer...")
-		if strings.HasPrefix(c.DatabaseUrl, "file:") {
+		if strings.HasPrefix(c.DatabaseURL, "file:") {
 			slog.Debug("Setting DATABASE_DRIVER", "value", db.SQLiteDriverName)
 			c.DatabaseDriver = db.SQLiteDriverName
-		} else if strings.HasPrefix(c.DatabaseUrl, "postgres:") {
+		} else if strings.HasPrefix(c.DatabaseURL, "postgres:") {
 			slog.Debug("Setting DATABASE_DRIVER", "value", db.PostgresDriverName)
 			c.DatabaseDriver = db.PostgresDriverName
 		} else {
@@ -150,7 +150,7 @@ func Load(logInitializer func(*Config)) *Config {
 	// Only print sensitive info in development mode
 	if c.IsDevelopment {
 		logger = logger.
-			With("database-url", c.DatabaseUrl,
+			With("database-url", c.DatabaseURL,
 				"secure-keys", c.SecureKeys)
 	}
 
@@ -189,11 +189,11 @@ func (c *Config) Validate() []error {
 		errs = append(errs, fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName))
 	}
 
-	if c.DatabaseUrl == "" {
+	if c.DatabaseURL == "" {
 		errs = append(errs, errors.New("DATABASE_URL must be specified"))
 	}
 
-	if _, err := url.Parse(c.DatabaseUrl); err != nil {
+	if _, err := url.Parse(c.DatabaseURL); err != nil {
 		errs = append(errs, errors.New("DATABASE_URL is invalid"))
 	}
 

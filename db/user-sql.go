@@ -72,7 +72,7 @@ func (d *sqlUserDriver) Update(user *models.User) error {
 
 func (*sqlUserDriver) updateImpl(user *models.User, db sqlx.Execer) error {
 	_, err := db.Exec("UPDATE app_user SET username = $1, access_level = $2 WHERE ID = $3",
-		user.Username, user.AccessLevel, user.Id)
+		user.Username, user.AccessLevel, user.ID)
 	return err
 }
 
@@ -98,7 +98,7 @@ func (d *sqlUserDriver) updatePasswordImpl(id int64, password, newPassword strin
 	}
 
 	_, err = db.Exec("UPDATE app_user SET password_hash = $1 WHERE ID = $2",
-		newPasswordHash, user.Id)
+		newPasswordHash, user.ID)
 	return err
 }
 
@@ -134,7 +134,7 @@ func (*sqlUserDriver) updateSettingsImpl(settings *models.UserSettings, db sqlx.
 	_, err := db.Exec(
 		"UPDATE app_user_settings "+
 			"SET home_title = $1, home_image_url = $2 WHERE user_id = $3",
-		settings.HomeTitle, settings.HomeImageUrl, settings.UserId)
+		settings.HomeTitle, settings.HomeImageURL, settings.UserID)
 	if err != nil {
 		return err
 	}
@@ -142,14 +142,14 @@ func (*sqlUserDriver) updateSettingsImpl(settings *models.UserSettings, db sqlx.
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
 	_, err = db.Exec(
 		"DELETE FROM app_user_favorite_tag WHERE user_id = $1",
-		settings.UserId)
+		settings.UserID)
 	if err != nil {
 		return fmt.Errorf("deleting favorite tags before updating on user: %w", err)
 	}
 	for _, tag := range settings.FavoriteTags {
 		_, err = db.Exec(
 			"INSERT INTO app_user_favorite_tag (user_id, tag) VALUES ($1, $2)",
-			settings.UserId, tag)
+			settings.UserID, tag)
 		if err != nil {
 			return fmt.Errorf("updating favorite tags on user: %w", err)
 		}
@@ -192,40 +192,40 @@ func (d *sqlUserDriver) CreateSearchFilter(filter *models.SavedSearchFilter) err
 }
 
 func (d *sqlUserDriver) createSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
-	if filter.UserId == nil {
-		return ErrMissingId
+	if filter.UserID == nil {
+		return ErrMissingID
 	}
 
 	stmt := "INSERT INTO search_filter (user_id, name, query, with_pictures, sort_by, sort_dir) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id"
 
 	err := sqlx.Get(db, filter,
-		stmt, filter.UserId, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
+		stmt, filter.UserID, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir)
 	if err != nil {
 		return err
 	}
 
-	if err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db); err != nil {
+	if err = d.setSearchFilterFieldsImpl(*filter.ID, filter.Fields, db); err != nil {
 		return err
 	}
 
-	if err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db); err != nil {
+	if err = d.setSearchFilterStatesImpl(*filter.ID, filter.States, db); err != nil {
 		return err
 	}
 
-	return d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
+	return d.setSearchFilterTagsImpl(*filter.ID, filter.Tags, db)
 }
 
-func (*sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []models.SearchField, db sqlx.Execer) error {
+func (*sqlUserDriver) setSearchFilterFieldsImpl(filterID int64, fields []models.SearchField, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if _, err := db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterId); err != nil {
+	if _, err := db.Exec("DELETE FROM search_filter_field WHERE search_filter_id = $1", filterID); err != nil {
 		return err
 	}
 
 	for _, field := range fields {
 		_, err := db.Exec(
 			"INSERT INTO search_filter_field (search_filter_id, field_name) VALUES ($1, $2)",
-			filterId, field)
+			filterID, field)
 		if err != nil {
 			return err
 		}
@@ -234,16 +234,16 @@ func (*sqlUserDriver) setSearchFilterFieldsImpl(filterId int64, fields []models.
 	return nil
 }
 
-func (*sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []models.RecipeState, db sqlx.Execer) error {
+func (*sqlUserDriver) setSearchFilterStatesImpl(filterID int64, states []models.RecipeState, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if _, err := db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterId); err != nil {
+	if _, err := db.Exec("DELETE FROM search_filter_state WHERE search_filter_id = $1", filterID); err != nil {
 		return err
 	}
 
 	for _, state := range states {
 		_, err := db.Exec(
 			"INSERT INTO search_filter_state (search_filter_id, state) VALUES ($1, $2)",
-			filterId, state)
+			filterID, state)
 		if err != nil {
 			return err
 		}
@@ -252,16 +252,16 @@ func (*sqlUserDriver) setSearchFilterStatesImpl(filterId int64, states []models.
 	return nil
 }
 
-func (*sqlUserDriver) setSearchFilterTagsImpl(filterId int64, tags []string, db sqlx.Execer) error {
+func (*sqlUserDriver) setSearchFilterTagsImpl(filterID int64, tags []string, db sqlx.Execer) error {
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if _, err := db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterId); err != nil {
+	if _, err := db.Exec("DELETE FROM search_filter_tag WHERE search_filter_id = $1", filterID); err != nil {
 		return err
 	}
 
 	for _, tag := range tags {
 		_, err := db.Exec(
 			"INSERT INTO search_filter_tag (search_filter_id, tag) VALUES ($1, $2)",
-			filterId, tag)
+			filterID, tag)
 		if err != nil {
 			return err
 		}
@@ -270,16 +270,16 @@ func (*sqlUserDriver) setSearchFilterTagsImpl(filterId int64, tags []string, db 
 	return nil
 }
 
-func (d *sqlUserDriver) ReadSearchFilter(userId int64, filterId int64) (*models.SavedSearchFilter, error) {
+func (d *sqlUserDriver) ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*models.SavedSearchFilter, error) {
-		return d.readSearchFilterImpl(userId, filterId, db)
+		return d.readSearchFilterImpl(userID, filterID, db)
 	})
 }
 
-func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx.Queryer) (*models.SavedSearchFilter, error) {
+func (*sqlUserDriver) readSearchFilterImpl(userID int64, filterID int64, db sqlx.Queryer) (*models.SavedSearchFilter, error) {
 	filter := new(models.SavedSearchFilter)
 
-	if err := sqlx.Get(db, filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId); err != nil {
+	if err := sqlx.Get(db, filter, "SELECT * FROM search_filter WHERE id = $1 AND user_id = $2", filterID, userID); err != nil {
 		return nil, err
 	}
 
@@ -288,7 +288,7 @@ func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx
 		db,
 		&fields,
 		"SELECT field_name FROM search_filter_field WHERE search_filter_id = $1",
-		filterId); err != nil && err != sql.ErrNoRows {
+		filterID); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.Fields = fields
@@ -298,7 +298,7 @@ func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx
 		db,
 		&states,
 		"SELECT state FROM search_filter_state WHERE search_filter_id = $1",
-		filterId); err != nil && err != sql.ErrNoRows {
+		filterID); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.States = states
@@ -308,7 +308,7 @@ func (*sqlUserDriver) readSearchFilterImpl(userId int64, filterId int64, db sqlx
 		db,
 		&tags,
 		"SELECT tag FROM search_filter_tag WHERE search_filter_id = $1",
-		filterId); err != nil && err != sql.ErrNoRows {
+		filterID); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.Tags = tags
@@ -323,16 +323,16 @@ func (d *sqlUserDriver) UpdateSearchFilter(filter *models.SavedSearchFilter) err
 }
 
 func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter, db sqlx.Ext) error {
-	if filter.Id == nil {
-		return ErrMissingId
+	if filter.ID == nil {
+		return ErrMissingID
 	}
-	if filter.UserId == nil {
-		return ErrMissingId
+	if filter.UserID == nil {
+		return ErrMissingID
 	}
 
 	// Make sure the filter exists, which is important to confirm the filter is owned by the specified user
 	var id int64
-	if err := sqlx.Get(db, &id, "SELECT id FROM search_filter WHERE id = $1 AND user_id = $2", filter.Id, filter.UserId); err != nil {
+	if err := sqlx.Get(db, &id, "SELECT id FROM search_filter WHERE id = $1 AND user_id = $2", filter.ID, filter.UserID); err != nil {
 		return err
 	}
 
@@ -340,35 +340,35 @@ func (d *sqlUserDriver) updateSearchFilterImpl(filter *models.SavedSearchFilter,
 		"WHERE id = $6 AND user_id = $7"
 
 	_, err := db.Exec(
-		stmt, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir, filter.Id, filter.UserId)
+		stmt, filter.Name, filter.Query, filter.WithPictures, filter.SortBy, filter.SortDir, filter.ID, filter.UserID)
 	if err != nil {
 		return err
 	}
 
-	if err = d.setSearchFilterFieldsImpl(*filter.Id, filter.Fields, db); err != nil {
+	if err = d.setSearchFilterFieldsImpl(*filter.ID, filter.Fields, db); err != nil {
 		return err
 	}
 
-	if err = d.setSearchFilterStatesImpl(*filter.Id, filter.States, db); err != nil {
+	if err = d.setSearchFilterStatesImpl(*filter.ID, filter.States, db); err != nil {
 		return err
 	}
 
-	return d.setSearchFilterTagsImpl(*filter.Id, filter.Tags, db)
+	return d.setSearchFilterTagsImpl(*filter.ID, filter.Tags, db)
 }
 
-func (d *sqlUserDriver) DeleteSearchFilter(userId int64, filterId int64) error {
+func (d *sqlUserDriver) DeleteSearchFilter(userID int64, filterID int64) error {
 	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.deleteSearchFilterImpl(userId, filterId, db)
+		return d.deleteSearchFilterImpl(userID, filterID, db)
 	})
 }
 
-func (*sqlUserDriver) deleteSearchFilterImpl(userId int64, filterId int64, db sqlx.Execer) error {
-	_, err := db.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterId, userId)
+func (*sqlUserDriver) deleteSearchFilterImpl(userID int64, filterID int64, db sqlx.Execer) error {
+	_, err := db.Exec("DELETE FROM search_filter WHERE id = $1 AND user_id = $2", filterID, userID)
 	return err
 }
 
 // List retrieves all user's saved search filters.
-func (d *sqlUserDriver) ListSearchFilters(userId int64) (*[]models.SavedSearchFilterCompact, error) {
+func (d *sqlUserDriver) ListSearchFilters(userID int64) (*[]models.SavedSearchFilterCompact, error) {
 	return get(d.Db, func(db sqlx.Queryer) (*[]models.SavedSearchFilterCompact, error) {
 		filters := make([]models.SavedSearchFilterCompact, 0)
 
@@ -376,7 +376,7 @@ func (d *sqlUserDriver) ListSearchFilters(userId int64) (*[]models.SavedSearchFi
 			db,
 			&filters,
 			"SELECT id, user_id, name FROM search_filter WHERE user_id = $1 ORDER BY name ASC",
-			userId)
+			userID)
 		if err != nil {
 			return nil, err
 		}

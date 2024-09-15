@@ -54,7 +54,7 @@ func main() {
 	uploader := upload.CreateImageUploader(uplDriver, cfg.ToImageConfiguration())
 
 	dbDriver, err := db.CreateDriver(
-		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
+		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
 		slog.Error("Establishing database driver failed", "error", err)
 		os.Exit(1)

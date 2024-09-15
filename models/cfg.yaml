@@ -3,4 +3,5 @@ generate:
   models: true
 output-options:
   skip-prune: true
+  name-normalizer: "ToCamelCaseWithInitialisms"
 output: models.gen.go

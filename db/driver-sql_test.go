@@ -15,7 +15,7 @@ func getMockDb(t *testing.T) (*sqlDriver, sqlmock.Sqlmock) {
 	}
 
 	dbx := sqlx.NewDb(db, "sqlmock")
-	return newSqlDriver(dbx, mockRecipeDriverAdapter{}), mock
+	return newSQLDriver(dbx, mockRecipeDriverAdapter{}), mock
 }
 
 type mockRecipeDriverAdapter struct{}
