@@ -17,8 +17,6 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/go-chi/chi/v5"
-	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -65,23 +63,21 @@ func main() {
 	}
 	defer dbDriver.Close()
 
-	r := chi.NewRouter()
-
-	// Add logging of all requests
-	r.Use(middleware.LogRequests(slog.Default()))
-
-	// Don't let a panic bring the server down
-	r.Use(middleware.Recover("Recovered from panic"))
-
-	// Don't let the extra slash cause problems
-	r.Use(chimiddleware.StripSlashes)
-
-	r.Mount("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver))
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
-	r.NotFound(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.Handle("/api/*", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver)))
+	mux.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
+	mux.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
+	mux.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
+
+	r := middleware.Chain(
+		[]func(http.Handler) http.Handler{
+			middleware.LogRequests(slog.Default()),
+			middleware.Recover("Recovered from panic"),
+		},
+		mux,
+	)
 
 	// subscribe to SIGINT signals
 	stopChan := make(chan os.Signal, 1)

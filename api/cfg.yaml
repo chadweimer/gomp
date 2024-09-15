@@ -1,6 +1,6 @@
 package: api
 generate:
-  chi-server: true
+  std-http-server: true
   strict-server: true
   models: true
 import-mapping:

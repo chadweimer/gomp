@@ -14,8 +14,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/go-chi/chi/v5"
-	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 // ---- Begin Standard Errors ----
@@ -53,9 +51,7 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 		db:         db,
 	}
 
-	r := chi.NewRouter()
-	r.Use(chimiddleware.SetHeader("Content-Type", "application/json"))
-	r.Mount("/v1", HandlerWithOptions(NewStrictHandlerWithOptions(
+	return HandlerWithOptions(NewStrictHandlerWithOptions(
 		h,
 		[]StrictMiddlewareFunc{},
 		StrictHTTPServerOptions{
@@ -66,17 +62,13 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 				writeErrorResponse(w, r, http.StatusInternalServerError, err)
 			},
 		}),
-		ChiServerOptions{
+		StdHTTPServerOptions{
+			BaseURL:     "/v1",
 			Middlewares: []MiddlewareFunc{h.checkScopes},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
-		}))
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		writeErrorResponse(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
-	})
-
-	return r
+		})
 }
 
 func logger(ctx context.Context) *slog.Logger {
