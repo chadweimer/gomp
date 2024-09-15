@@ -127,3 +127,12 @@ func LogRequests(logger *slog.Logger) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+// Chain wraps an http.Handler with a collection of provided middleware
+func Chain(middleware []func(http.Handler) http.Handler, h http.Handler) http.Handler {
+	for i := len(middleware) - 1; i >= 0; i-- {
+		h = middleware[i](h)
+	}
+
+	return h
+}
