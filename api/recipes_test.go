@@ -34,7 +34,7 @@ func Test_GetRecipe(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesApi(ctrl)
 			expectedRecipe := models.Recipe{
-				Id:   &test.recipeId,
+				Id:   &(test.recipeId),
 				Name: test.recipeName,
 			}
 			if test.expectedError != nil {
@@ -233,7 +233,6 @@ func Test_DeleteRecipe(t *testing.T) {
 			} else {
 				recipesDriver.EXPECT().Delete(test.recipeId).Return(nil)
 				uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(nil)
-
 			}
 
 			// Act
@@ -275,7 +274,6 @@ func Test_SetState(t *testing.T) {
 				recipesDriver.EXPECT().SetState(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
 				recipesDriver.EXPECT().SetState(test.recipeId, test.state).Return(nil)
-
 			}
 
 			// Act
@@ -317,7 +315,6 @@ func Test_GetRating(t *testing.T) {
 				recipesDriver.EXPECT().GetRating(gomock.Any()).Return(nil, test.expectedError)
 			} else {
 				recipesDriver.EXPECT().GetRating(test.recipeId).Return(&test.rating, nil)
-
 			}
 
 			// Act
@@ -362,7 +359,6 @@ func Test_SetRating(t *testing.T) {
 				recipesDriver.EXPECT().SetRating(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
 				recipesDriver.EXPECT().SetRating(test.recipeId, test.rating).Return(nil)
-
 			}
 
 			// Act

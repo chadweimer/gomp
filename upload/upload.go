@@ -27,7 +27,7 @@ func CreateImageUploader(driver Driver, imgCfg models.ImageConfiguration) *Image
 
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func (u ImageUploader) Save(recipeId int64, imageName string, data []byte) (string, string, error) {
+func (u ImageUploader) Save(recipeId int64, imageName string, data []byte) (originalUrl, thumbnailUrl string, err error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
 		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)

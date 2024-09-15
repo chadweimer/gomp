@@ -1,5 +1,7 @@
 package models
 
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config cfg.yaml ../models.yaml
+
 // ImageQualityLevel represents supported quality levels for uploaded recipe images
 type ImageQualityLevel string
 

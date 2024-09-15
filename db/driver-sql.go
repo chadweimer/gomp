@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 )
 
 // UserWithPasswordHash reprents a user including the password hash in the database
@@ -66,7 +66,7 @@ func (d *sqlDriver) Users() UserDriver {
 }
 
 func (d *sqlDriver) Close() error {
-	log.Debug().Msg("Closing database connection...")
+	slog.Debug("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
 		return fmt.Errorf("failed to close the connection to the database: '%w'", err)
 	}

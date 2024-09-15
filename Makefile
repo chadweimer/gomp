@@ -17,13 +17,14 @@ API_CODEGEN_FILE=api/routes.gen.go
 MOCKS_CODEGEN_DIR=mocks
 CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)
 
+REPO_NAME ?= chadweimer/gomp
+GO_MODULE_NAME ?= github.com/$(REPO_NAME)
 GOOS := linux
 GOARCH := amd64
 GO_ENV=GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
-GO_LD_FLAGS=-ldflags "-X 'github.com/chadweimer/gomp/metadata.BuildVersion=$(BUILD_VERSION)'"
+GO_LD_FLAGS=-ldflags "-X '$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)'"
 
 CONTAINER_REGISTRY ?= ghcr.io
-CONTAINER_IMAGE_NAME ?= chadweimer/gomp
 
 GO_FILES := $(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES := $(shell find db/migrations -type f -name "*.*")
@@ -35,10 +36,7 @@ CLIENT_FILES := $(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLI
 
 .PHONY: install
 install: $(CLIENT_INSTALL_DIR)
-	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.1.0
-	go install github.com/securego/gosec/v2/cmd/gosec@v2.19.0
-	go install github.com/mgechev/revive@v1.3.7
-	go install github.com/golang/mock/mockgen@v1.6.0
+	go get ./...
 
 $(CLIENT_INSTALL_DIR): static/package.json
 	cd static && npm install --silent
@@ -52,14 +50,14 @@ uninstall:
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
 
-$(API_CODEGEN_FILE): openapi.yaml api/cfg.yaml
-	oapi-codegen --config api/cfg.yaml openapi.yaml > $@
+$(API_CODEGEN_FILE): $(MODELS_CODEGEN_FILE) openapi.yaml api/cfg.yaml
+	go generate $(GO_MODULE_NAME)/api
 
 $(MODELS_CODEGEN_FILE): models.yaml models/cfg.yaml
-	oapi-codegen --config models/cfg.yaml models.yaml > $@
+	go generate $(GO_MODULE_NAME)/models
 
-$(MOCKS_CODEGEN_DIR): $(GO_FILES)
-	go generate ./...
+$(MOCKS_CODEGEN_DIR): $(GO_FILES) $(MODELS_CODEGEN_FILE)
+	go generate $(GO_MODULE_NAME)/db $(GO_MODULE_NAME)/upload
 
 # ---- LINT ----
 
@@ -73,8 +71,8 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)
 	go vet ./...
-	revive -config=revive.toml ./...
-	gosec -severity medium ./...
+	go run github.com/mgechev/revive -config=revive.toml ./...
+	go run github.com/securego/gosec/v2/cmd/gosec -severity medium ./...
 
 
 # ---- BUILD ----
@@ -178,9 +176,9 @@ $(BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 .PHONY: docker
 docker: build
 ifndef CONTAINER_TAG
-	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(CONTAINER_IMAGE_NAME):local .
+	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(REPO_NAME):local .
 else
-	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(CONTAINER_IMAGE_NAME):$(CONTAINER_TAG) .
+	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(REPO_NAME):$(CONTAINER_TAG) .
 endif
 
 

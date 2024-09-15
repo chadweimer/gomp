@@ -1,20 +1,19 @@
 package api
 
+//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config cfg.yaml ../openapi.yaml
+
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/hlog"
-	"github.com/rs/zerolog/log"
 )
 
 // ---- Begin Standard Errors ----
@@ -31,10 +30,7 @@ func (k contextKey) String() string {
 	return "gomp context key: " + string(k)
 }
 
-const (
-	currentUserIdCtxKey    = contextKey("current-user-id")
-	currentUserTokenCtxKey = contextKey("current-user-token")
-)
+const currentUserIdCtxKey = contextKey("current-user-id")
 
 // ---- End Context Keys ----
 
@@ -45,16 +41,14 @@ type apiHandler struct {
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *upload.ImageUploader, drDriver db.Driver) http.Handler {
 	h := apiHandler{
 		secureKeys: secureKeys,
 		upl:        upl,
-		db:         db,
+		db:         drDriver,
 	}
 
-	r := chi.NewRouter()
-	r.Use(middleware.SetHeader("Content-Type", "application/json"))
-	r.Mount("/v1", HandlerWithOptions(NewStrictHandlerWithOptions(
+	return HandlerWithOptions(NewStrictHandlerWithOptions(
 		h,
 		[]StrictMiddlewareFunc{},
 		StrictHTTPServerOptions{
@@ -65,25 +59,26 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, db db.Driver) ht
 				writeErrorResponse(w, r, http.StatusInternalServerError, err)
 			},
 		}),
-		ChiServerOptions{
+		StdHTTPServerOptions{
+			BaseURL:     "/v1",
 			Middlewares: []MiddlewareFunc{h.checkScopes},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
-		}))
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		writeErrorResponse(w, r, http.StatusNotFound, fmt.Errorf("%s is not a valid API endpoint", r.URL.Path))
-	})
-
-	return r
+		})
 }
 
-func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v interface{}) {
+func logger(ctx context.Context) *slog.Logger {
+	return middleware.GetLoggerFromContext(ctx)
+}
+
+func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v any) {
 	buf := new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(v); err != nil {
-		hlog.FromRequest(r).UpdateContext(func(c zerolog.Context) zerolog.Context {
-			return c.AnErr("encode-error", err).Int("original-status", status)
-		})
+		logger(r.Context()).
+			Error("Failed to encode response",
+				"error", err,
+				"original-status", status)
 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -96,14 +91,8 @@ func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v int
 	}
 }
 
-func logErrorToContext(ctx context.Context, err error) {
-	log.Ctx(ctx).UpdateContext(func(c zerolog.Context) zerolog.Context {
-		return c.Err(err)
-	})
-}
-
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
-	logErrorToContext(r.Context(), err)
+	logger(r.Context()).Error("failure on request", "error", err)
 	status = getStatusFromError(err, status)
 	writeJSONResponse(w, r, status, http.StatusText(status))
 }

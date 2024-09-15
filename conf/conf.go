@@ -3,6 +3,7 @@ package conf
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -12,8 +13,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 // Config contains the application configuration settings
@@ -78,7 +77,7 @@ const (
 )
 
 // Load reads the configuration file from the specified path
-func Load() *Config {
+func Load(logInitializer func(*Config)) *Config {
 	c := Config{
 		Port:                   5000,
 		UploadDriver:           "fs",
@@ -113,113 +112,108 @@ func Load() *Config {
 	loadEnv("THUMBNAIL_SIZE", &c.ThumbnailSize)
 
 	// Now that we've loaded configuration, we can finish setting up logging
-	if !c.IsDevelopment {
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-		log.Logger = log.Level(zerolog.InfoLevel)
-	}
+	logInitializer(&c)
 
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
-		log.Debug().Msg("DATABASE_DRIVER is empty. Will attempt to infer...")
+		slog.Debug("DATABASE_DRIVER is empty. Will attempt to infer...")
 		if strings.HasPrefix(c.DatabaseUrl, "file:") {
-			log.Debug().Msgf("Setting DATABASE_DRIVER to '%s'", db.SQLiteDriverName)
+			slog.Debug("Setting DATABASE_DRIVER", "value", db.SQLiteDriverName)
 			c.DatabaseDriver = db.SQLiteDriverName
 		} else if strings.HasPrefix(c.DatabaseUrl, "postgres:") {
-			log.Debug().Msgf("Setting DATABASE_DRIVER to '%s'", db.PostgresDriverName)
+			slog.Debug("Setting DATABASE_DRIVER", "value", db.PostgresDriverName)
 			c.DatabaseDriver = db.PostgresDriverName
 		} else {
-			log.Warn().Msg("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
+			slog.Warn("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
 		}
 	} else if c.DatabaseDriver == sqliteLegacyDriverName {
 		// If the old driver name for sqlite is being used,
 		// we'll allow it and map it to the new one
-		log.Debug().Msgf("Detected DATABASE_DRIVER legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, db.SQLiteDriverName)
+		slog.Debug("Detected DATABASE_DRIVER legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, db.SQLiteDriverName)
 		c.DatabaseDriver = db.SQLiteDriverName
 	}
 
-	logCtx := log.Info().
-		Int("port", c.Port).
-		Str("upload-driver", c.UploadDriver).
-		Str("upload-path", c.UploadPath).
-		Bool("is-development", c.IsDevelopment).
-		Str("base-assets-path", c.BaseAssetsPath).
-		Str("database-driver", c.DatabaseDriver).
-		Str("migrations-table-name", c.MigrationsTableName).
-		Int("migrations-force-version", c.MigrationsForceVersion).
-		Str("image-quality", string(c.ImageQuality)).
-		Int("image-size", c.ImageSize).
-		Str("thumbnail-quality", string(c.ThumbnailQuality)).
-		Int("thumbnail-size", c.ThumbnailSize)
+	logger := slog.
+		With("port", c.Port,
+			"upload-driver", c.UploadDriver,
+			"upload-path", c.UploadPath,
+			"is-development", c.IsDevelopment,
+			"base-assets-path", c.BaseAssetsPath,
+			"database-driver", c.DatabaseDriver,
+			"migrations-table-name", c.MigrationsTableName,
+			"migrations-force-version", c.MigrationsForceVersion,
+			"image-quality", c.ImageQuality,
+			"image-size", c.ImageSize,
+			"thumbnail-quality", c.ThumbnailQuality,
+			"thumbnail-size", c.ThumbnailSize)
 
 	// Only print sensitive info in development mode
 	if c.IsDevelopment {
-		keyArr := zerolog.Arr()
-		for _, key := range c.SecureKeys {
-			keyArr.Str(key)
-		}
-		logCtx = logCtx.
-			Str("database-url", c.DatabaseUrl). // This may contain auth information
-			Array("secure-keys", keyArr)
+		logger = logger.
+			With("database-url", c.DatabaseUrl,
+				"secure-keys", c.SecureKeys)
 	}
 
-	logCtx.Msg("")
+	logger.Info("Loaded configuration")
 
 	return &c
 }
 
 // Validate checks whether the current configuration settings are valid.
-func (c *Config) Validate() error {
+func (c *Config) Validate() []error {
+	errs := make([]error, 0)
+
 	if c.Port <= 0 {
-		return errors.New("PORT must be a positive integer")
+		errs = append(errs, errors.New("PORT must be a positive integer"))
 	}
 
 	if c.UploadDriver != upload.FileSystemDriver && c.UploadDriver != upload.S3Driver {
-		return fmt.Errorf("UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver)
+		errs = append(errs, fmt.Errorf("UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver))
 	}
 
 	if c.UploadPath == "" {
-		return errors.New("UPLOAD_PATH must be specified")
+		errs = append(errs, errors.New("UPLOAD_PATH must be specified"))
 	}
 
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
-		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
+		errs = append(errs, errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma"))
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
-		log.Warn().Msgf("SECURE_KEY is set to the default value '%s'. It is highly recommended that this be changed to something unique.", defaultSecureKey)
+		slog.Warn("SECURE_KEY is set to the default value. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
 	}
 
 	if c.BaseAssetsPath == "" {
-		return errors.New("BASE_ASSETS_PATH must be specified")
+		errs = append(errs, errors.New("BASE_ASSETS_PATH must be specified"))
 	}
 
 	if c.DatabaseDriver != db.PostgresDriverName && c.DatabaseDriver != db.SQLiteDriverName {
-		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName)
+		errs = append(errs, fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName))
 	}
 
 	if c.DatabaseUrl == "" {
-		return errors.New("DATABASE_URL must be specified")
+		errs = append(errs, errors.New("DATABASE_URL must be specified"))
 	}
 
 	if _, err := url.Parse(c.DatabaseUrl); err != nil {
-		return errors.New("DATABASE_URL is invalid")
+		errs = append(errs, errors.New("DATABASE_URL is invalid"))
 	}
 
 	if !c.ImageQuality.IsValid() {
-		return errors.New("IMAGE_QUALITY is invalid")
+		errs = append(errs, errors.New("IMAGE_QUALITY is invalid"))
 	}
 
 	if c.ImageSize <= 0 {
-		return errors.New("IMAGE_SIZE must be positive")
+		errs = append(errs, errors.New("IMAGE_SIZE must be positive"))
 	}
 
 	if !c.ThumbnailQuality.IsValid() || c.ThumbnailQuality == models.ImageQualityOriginal {
-		return errors.New("THUMBNAIL_QUALITY is invalid")
+		errs = append(errs, errors.New("THUMBNAIL_QUALITY is invalid"))
 	}
 
 	if c.ThumbnailSize <= 0 {
-		return errors.New("THUMBNAIL_SIZE must be positive")
+		errs = append(errs, errors.New("THUMBNAIL_SIZE must be positive"))
 	}
 
-	return nil
+	return errs
 }
 
 // ToImageConfiguration converts the configuration to a models.ImageConfiguration
@@ -232,7 +226,7 @@ func (c Config) ToImageConfiguration() models.ImageConfiguration {
 	}
 }
 
-func loadEnv(name string, dest interface{}) {
+func loadEnv(name string, dest any) {
 	fullName := "GOMP_" + name
 	// Try the application specific name (prefixed with GOMP_)...
 	envStr, ok := os.LookupEnv(fullName)
@@ -254,10 +248,10 @@ func loadEnv(name string, dest interface{}) {
 		case *int:
 			val, err := strconv.Atoi(envStr)
 			if err != nil {
-				log.Err(err).
-					Str("env", name).
-					Str("val", envStr).
-					Msg("Failed to convert environment variable to an integer")
+				slog.Error("Failed to convert environment variable to an integer",
+					"env", name,
+					"val", envStr,
+					"error", err)
 			} else {
 				*dest = val
 			}

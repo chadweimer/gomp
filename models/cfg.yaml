@@ -3,3 +3,4 @@ generate:
   models: true
 output-options:
   skip-prune: true
+output: models.gen.go
