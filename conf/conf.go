@@ -160,58 +160,60 @@ func Load(logInitializer func(*Config)) *Config {
 }
 
 // Validate checks whether the current configuration settings are valid.
-func (c *Config) Validate() error {
+func (c *Config) Validate() []error {
+	errs := make([]error, 0)
+
 	if c.Port <= 0 {
-		return errors.New("PORT must be a positive integer")
+		errs = append(errs, errors.New("PORT must be a positive integer"))
 	}
 
 	if c.UploadDriver != upload.FileSystemDriver && c.UploadDriver != upload.S3Driver {
-		return fmt.Errorf("UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver)
+		errs = append(errs, fmt.Errorf("UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver))
 	}
 
 	if c.UploadPath == "" {
-		return errors.New("UPLOAD_PATH must be specified")
+		errs = append(errs, errors.New("UPLOAD_PATH must be specified"))
 	}
 
 	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
-		return errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma")
+		errs = append(errs, errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma"))
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
 		slog.Warn("SECURE_KEY is set to the default value. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
 	}
 
 	if c.BaseAssetsPath == "" {
-		return errors.New("BASE_ASSETS_PATH must be specified")
+		errs = append(errs, errors.New("BASE_ASSETS_PATH must be specified"))
 	}
 
 	if c.DatabaseDriver != db.PostgresDriverName && c.DatabaseDriver != db.SQLiteDriverName {
-		return fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName)
+		errs = append(errs, fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName))
 	}
 
 	if c.DatabaseUrl == "" {
-		return errors.New("DATABASE_URL must be specified")
+		errs = append(errs, errors.New("DATABASE_URL must be specified"))
 	}
 
 	if _, err := url.Parse(c.DatabaseUrl); err != nil {
-		return errors.New("DATABASE_URL is invalid")
+		errs = append(errs, errors.New("DATABASE_URL is invalid"))
 	}
 
 	if !c.ImageQuality.IsValid() {
-		return errors.New("IMAGE_QUALITY is invalid")
+		errs = append(errs, errors.New("IMAGE_QUALITY is invalid"))
 	}
 
 	if c.ImageSize <= 0 {
-		return errors.New("IMAGE_SIZE must be positive")
+		errs = append(errs, errors.New("IMAGE_SIZE must be positive"))
 	}
 
 	if !c.ThumbnailQuality.IsValid() || c.ThumbnailQuality == models.ImageQualityOriginal {
-		return errors.New("THUMBNAIL_QUALITY is invalid")
+		errs = append(errs, errors.New("THUMBNAIL_QUALITY is invalid"))
 	}
 
 	if c.ThumbnailSize <= 0 {
-		return errors.New("THUMBNAIL_SIZE must be positive")
+		errs = append(errs, errors.New("THUMBNAIL_SIZE must be positive"))
 	}
 
-	return nil
+	return errs
 }
 
 // ToImageConfiguration converts the configuration to a models.ImageConfiguration

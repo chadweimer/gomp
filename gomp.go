@@ -33,13 +33,15 @@ func main() {
 		if cfg.IsDevelopment {
 			level = slog.LevelDebug
 		}
-		slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			Level: level,
 		})))
 	})
-	if err := cfg.Validate(); err != nil {
-		slog.Error("Configuration validation failed", "error", err)
-		return
+	if errs := cfg.Validate(); len(errs) > 0 {
+		for _, err := range errs {
+			slog.Error("Configuration validation failed", "error", err)
+		}
+		os.Exit(1)
 	}
 
 	fs := upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))
@@ -47,7 +49,7 @@ func main() {
 	uplDriver, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
 	if err != nil {
 		slog.Error("Establishing upload driver failed", "error", err)
-		return
+		os.Exit(1)
 	}
 	uploader := upload.CreateImageUploader(uplDriver, cfg.ToImageConfiguration())
 
@@ -55,7 +57,7 @@ func main() {
 		cfg.DatabaseDriver, cfg.DatabaseUrl, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
 	if err != nil {
 		slog.Error("Establishing database driver failed", "error", err)
-		return
+		os.Exit(1)
 	}
 	defer dbDriver.Close()
 
