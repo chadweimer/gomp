@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -185,7 +184,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 
 	if fieldsStmt, fieldsArgs := getFieldsStmt(filter.Query, filter.Fields, d.adapter); fieldsStmt != "" {
 		whereStmt += fmt.Sprintf(appendFmtStr, fieldsStmt)
-		whereArgs = append(whereArgs, fieldsArgs)
+		whereArgs = append(whereArgs, fieldsArgs...)
 	}
 
 	tagsStmt, tagsArgs, err := getTagsStmt(filter.Tags)
@@ -194,7 +193,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 	}
 	if tagsStmt != "" {
 		whereStmt += fmt.Sprintf(appendFmtStr, tagsStmt)
-		whereArgs = append(whereArgs, tagsArgs)
+		whereArgs = append(whereArgs, tagsArgs...)
 	}
 
 	if picturesStmt := getPicturesStmt(filter.WithPictures); picturesStmt != "" {
@@ -217,15 +216,15 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		limitArgs = append(limitArgs, count, count*(page-1))
 	}
 
-	combinedStr := fmt.Sprintf(
-		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url "+
-			"FROM recipe AS r "+
-			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id "+
-			"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id %s %s %s",
-		whereStmt, orderStmt, limitStmt)
+	combinedStr :=
+		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
+			"FROM recipe AS r " +
+			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+			"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
+			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
 
-	selectArgs := append(whereArgs, limitArgs)
-	selectStmt := d.Db.Rebind(strings.TrimSpace(combinedStr))
+	selectArgs := append(whereArgs, limitArgs...)
+	selectStmt := d.Db.Rebind(combinedStr)
 
 	recipes := make([]models.RecipeCompact, 0)
 	if err = sqlx.Select(d.Db, &recipes, selectStmt, selectArgs...); err != nil {
