@@ -72,7 +72,7 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 lint-server: $(CODEGEN_FILES)
 	mkdir -p $(BUILD_DIR)
 	go vet ./...
-	go run github.com/mgechev/revive -config=revive.toml -formatter sarif ./... > $(BUILD_DIR)/revive.sarif
+	go run github.com/mgechev/revive -config=revive.toml ./... > $(BUILD_DIR)/revive.golint
 	go run github.com/securego/gosec/v2/cmd/gosec -no-fail -fmt=sonarqube -out=$(BUILD_DIR)/gosec.json -stdout ./...
 
 
