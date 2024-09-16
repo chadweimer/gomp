@@ -681,7 +681,7 @@ func Test_getFieldsStmt(t *testing.T) {
 				adapter: new(simpleSQLRecipeDriverAdapter),
 			},
 			wantStmt: "",
-			wantArgs: []any{},
+			wantArgs: nil,
 		},
 		{
 			name: "Name",
@@ -783,7 +783,7 @@ func Test_getTagsStmt(t *testing.T) {
 				tags: []string{},
 			},
 			wantStmt: "",
-			wantArgs: []any{},
+			wantArgs: nil,
 		},
 		{
 			name: "Non-empty",
@@ -801,10 +801,10 @@ func Test_getTagsStmt(t *testing.T) {
 				t.Error(err)
 			}
 			if gotStmt != tt.wantStmt {
-				t.Errorf("getTagssStmt() gotStmt = %v, wantStmt %v", gotStmt, tt.wantStmt)
+				t.Errorf("getTagsStmt() gotStmt = %v, wantStmt %v", gotStmt, tt.wantStmt)
 			}
 			if !reflect.DeepEqual(gotArgs, tt.wantArgs) {
-				t.Errorf("getTagssStmt() gotArgs = %v, wantArgs %v", gotArgs, tt.wantArgs)
+				t.Errorf("getTagsStmt() gotArgs = %v, wantArgs %v", gotArgs, tt.wantArgs)
 			}
 		})
 	}
