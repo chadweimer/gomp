@@ -234,44 +234,37 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 }
 
 func getFieldsStmt(query string, fields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
-	stmt := ""
-	args := make([]any, 0)
-	if query != "" {
-		// If the filter didn't specify the fields to search on, use all of them
-		filterFields := fields
-		if len(filterFields) == 0 {
-			filterFields = supportedSearchFields[:]
-		}
-
-		fieldStr, fieldArgs := adapter.GetSearchFields(filterFields, query)
-
-		stmt = fieldStr
-		args = fieldArgs
+	if query == "" {
+		return "", nil
 	}
-	return stmt, args
+	
+	// If the filter didn't specify the fields to search on, use all of them
+	filterFields := fields
+	if len(filterFields) == 0 {
+		filterFields = supportedSearchFields[:]
+	}
+
+	return adapter.GetSearchFields(filterFields, query)
 }
 
 func getTagsStmt(tags []string) (string, []any, error) {
-	stmt := ""
-	args := make([]any, 0)
-	if len(tags) > 0 {
-		var err error
-		stmt, args, err = sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", tags)
-		if err != nil {
-			return "", nil, err
-		}
+	if len(tags) == 0 {
+		return "", nil, nil
 	}
-	return stmt, args, nil
+	
+	return sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", tags)
 }
 
 func getPicturesStmt(withPictures *bool) string {
-	if withPictures != nil {
-		if *withPictures {
-			return "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
-		}
-		return "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
+	if withPictures == nil {
+		return ""
 	}
-	return ""
+
+	prefix := ""
+	if !*withPictures {
+		prefix = "NOT "
+	}
+	return prefix + "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
 }
 
 func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
