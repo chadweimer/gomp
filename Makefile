@@ -154,16 +154,14 @@ clean-windows-amd64: clean-$(BUILD_WIN_AMD64_DIR)/gomp.exe clean-$(BUILD_WIN_AMD
 
 # ---- TEST ----
 .PHONY: test
-test: $(BUILD_DIR)/coverage/server.html $(BUILD_DIR)/coverage/client
+test: $(BUILD_DIR)/coverage/server $(BUILD_DIR)/coverage/client
 
-$(BUILD_DIR)/coverage/server.out: go.mod $(CODEGEN_FILES) $(GO_FILES)
-	mkdir -p $(BUILD_DIR)/coverage
-	go test -coverprofile=$@ -coverpkg=./... ./...
-	sed -i '/^.\+\.gen\.go.\+$$/d' $@
-	go tool cover -func=$@
-
-$(BUILD_DIR)/coverage/server.html: $(BUILD_DIR)/coverage/server.out
-	go tool cover -html=$< -o $@
+$(BUILD_DIR)/coverage/server: go.mod $(CODEGEN_FILES) $(GO_FILES)
+	rm -rf $@
+	mkdir -p $@
+	go test -coverprofile=$@/coverage.out -coverpkg=./... -json > $@/results.json ./...
+	sed -i '/^.\+\.gen\.go.\+$$/d' $@/coverage.out
+	go tool cover -html=$< -o $@/coverage.html
 
 $(BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	rm -rf $@
