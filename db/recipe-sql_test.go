@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"testing"
 	"time"
 
@@ -14,6 +15,19 @@ import (
 	"github.com/chadweimer/gomp/utils"
 	"github.com/golang/mock/gomock"
 )
+
+type simpleSQLRecipeDriverAdapter struct{}
+
+func (simpleSQLRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+	stmt := ""
+	args := make([]any, 0)
+	for _, field := range filterFields {
+		stmt += fmt.Sprintf("%s = ? ", field)
+		args = append(args, query)
+	}
+
+	return stmt, args
+}
 
 func Test_Recipe_Create(t *testing.T) {
 	type testArgs struct {
@@ -642,6 +656,312 @@ func Test_Recipe_ListTags(t *testing.T) {
 						}
 					}
 				}
+			}
+		})
+	}
+}
+
+func Test_getFieldsStmt(t *testing.T) {
+	type args struct {
+		query   string
+		fields  []models.SearchField
+		adapter sqlRecipeDriverAdapter
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantStmt string
+		wantArgs []any
+	}{
+		{
+			name: "Empty",
+			args: args{
+				query:   "",
+				fields:  []models.SearchField{},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "",
+			wantArgs: nil,
+		},
+		{
+			name: "Name",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{models.SearchFieldName},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "name = ? ",
+			wantArgs: []any{"foo"},
+		},
+		{
+			name: "Directions",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{models.SearchFieldDirections},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "directions = ? ",
+			wantArgs: []any{"foo"},
+		},
+		{
+			name: "Ingredients",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{models.SearchFieldIngredients},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "ingredients = ? ",
+			wantArgs: []any{"foo"},
+		},
+		{
+			name: "Nutrition",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{models.SearchFieldNutrition},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "nutrition_info = ? ",
+			wantArgs: []any{"foo"},
+		},
+		{
+			name: "Storage Instructions",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{models.SearchFieldStorageInstructions},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "storage_instructions = ? ",
+			wantArgs: []any{"foo"},
+		},
+		{
+			name: "Mutliple Fields",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{models.SearchFieldName, models.SearchFieldDirections, models.SearchFieldIngredients},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "name = ? directions = ? ingredients = ? ",
+			wantArgs: []any{"foo", "foo", "foo"},
+		},
+		{
+			name: "Default",
+			args: args{
+				query:   "foo",
+				fields:  []models.SearchField{},
+				adapter: new(simpleSQLRecipeDriverAdapter),
+			},
+			wantStmt: "name = ? ingredients = ? directions = ? storage_instructions = ? nutrition_info = ? ",
+			wantArgs: []any{"foo", "foo", "foo", "foo", "foo"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotStmt, gotArgs := getFieldsStmt(tt.args.query, tt.args.fields, tt.args.adapter)
+			if gotStmt != tt.wantStmt {
+				t.Errorf("getFieldsStmt() gotStmt = %v, wantStmt %v", gotStmt, tt.wantStmt)
+			}
+			if !reflect.DeepEqual(gotArgs, tt.wantArgs) {
+				t.Errorf("getFieldsStmt() gotArgs = %v, wantArgs %v", gotArgs, tt.wantArgs)
+			}
+		})
+	}
+}
+
+func Test_getTagsStmt(t *testing.T) {
+	type args struct {
+		tags []string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantStmt string
+		wantArgs []any
+	}{
+		{
+			name: "Empty",
+			args: args{
+				tags: []string{},
+			},
+			wantStmt: "",
+			wantArgs: nil,
+		},
+		{
+			name: "Non-empty",
+			args: args{
+				tags: []string{"foo", "bar"},
+			},
+			wantStmt: "EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?, ?))",
+			wantArgs: []any{"foo", "bar"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotStmt, gotArgs, err := getTagsStmt(tt.args.tags)
+			if err != nil {
+				t.Error(err)
+			}
+			if gotStmt != tt.wantStmt {
+				t.Errorf("getTagsStmt() gotStmt = %v, wantStmt %v", gotStmt, tt.wantStmt)
+			}
+			if !reflect.DeepEqual(gotArgs, tt.wantArgs) {
+				t.Errorf("getTagsStmt() gotArgs = %v, wantArgs %v", gotArgs, tt.wantArgs)
+			}
+		})
+	}
+}
+
+func Test_getPicturesStmt(t *testing.T) {
+	type args struct {
+		withPictures *bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "None",
+			args: args{
+				withPictures: nil,
+			},
+			want: "",
+		},
+		{
+			name: "Yes",
+			args: args{
+				withPictures: utils.GetPtr[bool](true),
+			},
+			want: "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)",
+		},
+		{
+			name: "No",
+			args: args{
+				withPictures: utils.GetPtr[bool](false),
+			},
+			want: "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getPicturesStmt(tt.args.withPictures)
+			if got != tt.want {
+				t.Errorf("getPicturesStmt() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getOrderStmt(t *testing.T) {
+	type args struct {
+		sortBy  models.SortBy
+		sortDir models.SortDir
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "ID, ASC",
+			args: args{
+				sortBy:  models.SortByID,
+				sortDir: models.Asc,
+			},
+			want: "ORDER BY r.id",
+		},
+		{
+			name: "ID, DESC",
+			args: args{
+				sortBy:  models.SortByID,
+				sortDir: models.Desc,
+			},
+			want: "ORDER BY r.id DESC",
+		},
+		{
+			name: "Name, ASC",
+			args: args{
+				sortBy:  models.SortByName,
+				sortDir: models.Asc,
+			},
+			want: "ORDER BY r.name",
+		},
+		{
+			name: "Name, DESC",
+			args: args{
+				sortBy:  models.SortByName,
+				sortDir: models.Desc,
+			},
+			want: "ORDER BY r.name DESC",
+		},
+		{
+			name: "Created, ASC",
+			args: args{
+				sortBy:  models.SortByCreated,
+				sortDir: models.Asc,
+			},
+			want: "ORDER BY r.created_at",
+		},
+		{
+			name: "Created, DESC",
+			args: args{
+				sortBy:  models.SortByCreated,
+				sortDir: models.Desc,
+			},
+			want: "ORDER BY r.created_at DESC",
+		},
+		{
+			name: "Modified, ASC",
+			args: args{
+				sortBy:  models.SortByModified,
+				sortDir: models.Asc,
+			},
+			want: "ORDER BY r.modified_at",
+		},
+		{
+			name: "Modified, DESC",
+			args: args{
+				sortBy:  models.SortByModified,
+				sortDir: models.Desc,
+			},
+			want: "ORDER BY r.modified_at DESC",
+		},
+		{
+			name: "Rating, ASC",
+			args: args{
+				sortBy:  models.SortByRating,
+				sortDir: models.Asc,
+			},
+			want: "ORDER BY avg_rating, r.modified_at DESC",
+		},
+		{
+			name: "Rating, DESC",
+			args: args{
+				sortBy:  models.SortByRating,
+				sortDir: models.Desc,
+			},
+			want: "ORDER BY avg_rating DESC, r.modified_at DESC",
+		},
+		{
+			name: "Random, ASC",
+			args: args{
+				sortBy:  models.SortByRandom,
+				sortDir: models.Asc,
+			},
+			want: "ORDER BY RANDOM()",
+		},
+		{
+			name: "Random, DESC",
+			args: args{
+				sortBy:  models.SortByRandom,
+				sortDir: models.Desc,
+			},
+			want: "ORDER BY RANDOM() DESC",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getOrderStmt(tt.args.sortBy, tt.args.sortDir); got != tt.want {
+				t.Errorf("getOrderStmt() = %v, want %v", got, tt.want)
 			}
 		})
 	}

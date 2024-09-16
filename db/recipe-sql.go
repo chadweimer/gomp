@@ -169,48 +169,34 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 }
 
 func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
-	whereStmt := "WHERE r.current_state = 'active'"
-	whereArgs := make([]any, 0)
-	var err error
-
-	if len(filter.States) > 0 {
-		whereStmt, whereArgs, err = sqlx.In("WHERE r.current_state IN (?)", filter.States)
-		if err != nil {
-			return nil, 0, err
-		}
+	states := filter.States
+	if len(states) == 0 {
+		states = append(states, "active")
 	}
 
-	if filter.Query != "" {
-		// If the filter didn't specify the fields to search on, use all of them
-		filterFields := filter.Fields
-		if len(filterFields) == 0 {
-			filterFields = supportedSearchFields[:]
-		}
-
-		fieldStr, fieldArgs := d.adapter.GetSearchFields(filterFields, filter.Query)
-
-		whereStmt += " AND (" + fieldStr + ")"
-		whereArgs = append(whereArgs, fieldArgs...)
+	whereStmt, whereArgs, err := sqlx.In("WHERE r.current_state IN (?)", states)
+	if err != nil {
+		return nil, 0, err
 	}
 
-	if len(filter.Tags) > 0 {
-		tagsStmt, tagsArgs, err := sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", filter.Tags)
-		if err != nil {
-			return nil, 0, err
-		}
+	const appendFmtStr = " AND (%s)"
 
-		whereStmt += " AND " + tagsStmt
+	if fieldsStmt, fieldsArgs := getFieldsStmt(filter.Query, filter.Fields, d.adapter); fieldsStmt != "" {
+		whereStmt += fmt.Sprintf(appendFmtStr, fieldsStmt)
+		whereArgs = append(whereArgs, fieldsArgs...)
+	}
+
+	tagsStmt, tagsArgs, err := getTagsStmt(filter.Tags)
+	if err != nil {
+		return nil, 0, err
+	}
+	if tagsStmt != "" {
+		whereStmt += fmt.Sprintf(appendFmtStr, tagsStmt)
 		whereArgs = append(whereArgs, tagsArgs...)
 	}
 
-	if filter.WithPictures != nil {
-		picsStmt := ""
-		if *filter.WithPictures {
-			picsStmt = "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
-		} else {
-			picsStmt = "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
-		}
-		whereStmt += " AND " + picsStmt
+	if picturesStmt := getPicturesStmt(filter.WithPictures); picturesStmt != "" {
+		whereStmt += fmt.Sprintf(appendFmtStr, picturesStmt)
 	}
 
 	var total int64
@@ -219,47 +205,25 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		return nil, 0, err
 	}
 
-	orderStmt := " ORDER BY "
-	switch filter.SortBy {
-	case models.SortByID:
-		orderStmt += "r.id"
-	case models.SortByCreated:
-		orderStmt += "r.created_at"
-	case models.SortByModified:
-		orderStmt += "r.modified_at"
-	case models.SortByRating:
-		orderStmt += "avg_rating"
-	case models.SortByRandom:
-		orderStmt += "RANDOM()"
-	case models.SortByName:
-		fallthrough
-	default:
-		orderStmt += "r.name"
-	}
-	if filter.SortDir == models.Desc {
-		orderStmt += " DESC"
-	}
-	// Need a special case for rating, since the way the execution plan works can
-	// cause uncertain results due to many recipes having the same rating (ties).
-	// By adding an additional sort to show recently modified recipes first,
-	// this ensures a consistent result.
-	if filter.SortBy == models.SortByRating {
-		orderStmt += ", r.modified_at DESC"
-	}
+	orderStmt := getOrderStmt(filter.SortBy, filter.SortDir)
 
 	// Build the offset and limit
-	selectArgs := whereArgs
+	limitStmt := ""
+	limitArgs := make([]any, 0)
 	if count > 0 {
-		orderStmt += " LIMIT ? OFFSET ?"
-		selectArgs = append(selectArgs, count, count*(page-1))
+		limitStmt = "LIMIT ? OFFSET ?"
+		limitArgs = append(limitArgs, count, count*(page-1))
 	}
 
-	selectStmt := d.Db.Rebind("SELECT " +
-		"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
-		"FROM recipe AS r " +
-		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
-		"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
-		whereStmt + orderStmt)
+	combinedStr :=
+		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
+			"FROM recipe AS r " +
+			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+			"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
+			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
+
+	selectArgs := append(whereArgs, limitArgs...)
+	selectStmt := d.Db.Rebind(combinedStr)
 
 	recipes := make([]models.RecipeCompact, 0)
 	if err = sqlx.Select(d.Db, &recipes, selectStmt, selectArgs...); err != nil {
@@ -267,6 +231,73 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 	}
 
 	return &recipes, total, nil
+}
+
+func getFieldsStmt(query string, fields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
+	if query == "" {
+		return "", nil
+	}
+	
+	// If the filter didn't specify the fields to search on, use all of them
+	filterFields := fields
+	if len(filterFields) == 0 {
+		filterFields = supportedSearchFields[:]
+	}
+
+	return adapter.GetSearchFields(filterFields, query)
+}
+
+func getTagsStmt(tags []string) (string, []any, error) {
+	if len(tags) == 0 {
+		return "", nil, nil
+	}
+	
+	return sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", tags)
+}
+
+func getPicturesStmt(withPictures *bool) string {
+	if withPictures == nil {
+		return ""
+	}
+
+	prefix := ""
+	if !*withPictures {
+		prefix = "NOT "
+	}
+	return prefix + "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
+}
+
+func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
+	stmt := "ORDER BY "
+	switch sortBy {
+	case models.SortByID:
+		stmt += "r.id"
+	case models.SortByCreated:
+		stmt += "r.created_at"
+	case models.SortByModified:
+		stmt += "r.modified_at"
+	case models.SortByRating:
+		stmt += "avg_rating"
+	case models.SortByRandom:
+		stmt += "RANDOM()"
+	case models.SortByName:
+		fallthrough
+	default:
+		stmt += "r.name"
+	}
+	if sortDir == models.Desc {
+		stmt += " DESC"
+	}
+
+	// Need a special case for rating, since the way the execution plan works can
+	// cause uncertain results due to many recipes having the same rating (ties).
+	// By adding an additional sort to show recently modified recipes first,
+	// this ensures a consistent result.
+	if sortBy == models.SortByRating {
+		stmt += ", r.modified_at DESC"
+	}
+
+	return stmt
 }
 
 func (d *sqlRecipeDriver) CreateTag(recipeID int64, tag string) error {
