@@ -25,7 +25,7 @@ import (
 
 func Test_GetImages(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		images        []models.RecipeImage
 		expectedError error
 	}
@@ -44,11 +44,11 @@ func Test_GetImages(t *testing.T) {
 			if test.expectedError != nil {
 				imagesDriver.EXPECT().List(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				imagesDriver.EXPECT().List(test.recipeId).Return(&test.images, nil)
+				imagesDriver.EXPECT().List(test.recipeID).Return(&test.images, nil)
 			}
 
 			// Act
-			resp, err := api.GetImages(context.Background(), GetImagesRequestObject{RecipeID: test.recipeId})
+			resp, err := api.GetImages(context.Background(), GetImagesRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
