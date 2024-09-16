@@ -161,7 +161,7 @@ $(BUILD_DIR)/coverage/server: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	mkdir -p $@
 	go test -coverprofile=$@/coverage.out -coverpkg=./... -json > $@/results.json ./...
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@/coverage.out
-	go tool cover -html=$< -o $@/coverage.html
+	go tool cover -html=$@/coverage.out -o $@/coverage.html
 
 $(BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	rm -rf $@
