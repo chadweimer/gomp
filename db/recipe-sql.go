@@ -169,15 +169,14 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 }
 
 func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
-	whereStmt := "WHERE r.current_state = 'active'"
-	whereArgs := make([]any, 0)
-	var err error
+	states := filter.States
+	if len(states) == 0 {
+		states = append(states, "active")
+	}
 
-	if len(filter.States) > 0 {
-		whereStmt, whereArgs, err = sqlx.In("WHERE r.current_state IN (?)", filter.States)
-		if err != nil {
-			return nil, 0, err
-		}
+	whereStmt, whereArgs, err := sqlx.In("WHERE r.current_state IN (?)", states)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	const appendFmtStr = " AND (%s)"
