@@ -181,8 +181,10 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		}
 	}
 
+	const appendFmtStr = " AND (%s)"
+
 	if fieldsStmt, fieldsArgs := getFieldsStmt(filter.Query, filter.Fields, d.adapter); fieldsStmt != "" {
-		whereStmt += " AND (" + fieldsStmt + ")"
+		whereStmt += fmt.Sprintf(appendFmtStr, fieldsStmt)
 		whereArgs = append(whereArgs, fieldsArgs)
 	}
 
@@ -191,12 +193,12 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 		return nil, 0, err
 	}
 	if tagsStmt != "" {
-		whereStmt += " AND (" + tagsStmt + ")"
+		whereStmt += fmt.Sprintf(appendFmtStr, tagsStmt)
 		whereArgs = append(whereArgs, tagsArgs)
 	}
 
 	if picturesStmt := getPicturesStmt(filter.WithPictures); picturesStmt != "" {
-		whereStmt += " AND (" + picturesStmt + ")"
+		whereStmt += fmt.Sprintf(appendFmtStr, picturesStmt)
 	}
 
 	var total int64
@@ -268,9 +270,8 @@ func getPicturesStmt(withPictures *bool) string {
 	if withPictures != nil {
 		if *withPictures {
 			return "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
-		} else {
-			return "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
 		}
+		return "NOT EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
 	}
 	return ""
 }
