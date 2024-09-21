@@ -175,7 +175,7 @@ func (c *Config) Validate() []error {
 		errs = append(errs, errors.New("UPLOAD_PATH must be specified"))
 	}
 
-	if c.SecureKeys == nil || len(c.SecureKeys) < 1 {
+	if len(c.SecureKeys) == 0 {
 		errs = append(errs, errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma"))
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
 		slog.Warn("SECURE_KEY is set to the default value. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
@@ -205,8 +205,12 @@ func (c *Config) Validate() []error {
 		errs = append(errs, errors.New("IMAGE_SIZE must be positive"))
 	}
 
-	if !c.ThumbnailQuality.IsValid() || c.ThumbnailQuality == models.ImageQualityOriginal {
+	if !c.ThumbnailQuality.IsValid() {
 		errs = append(errs, errors.New("THUMBNAIL_QUALITY is invalid"))
+	}
+
+	if c.ThumbnailQuality == models.ImageQualityOriginal {
+		errs = append(errs, fmt.Errorf("THUMBNAIL_QUALITY cannot be %s", models.ImageQualityOriginal))
 	}
 
 	if c.ThumbnailSize <= 0 {
