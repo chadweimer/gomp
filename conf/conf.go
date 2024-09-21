@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -18,55 +19,55 @@ import (
 // Config contains the application configuration settings
 type Config struct {
 	// Port gets the port number under which the site is being hosted.
-	Port int
+	Port int `env:"PORT"`
 
 	// UploadDriver is used to select which backend data store is used for file uploads.
 	// Supported drivers: fs, s3
-	UploadDriver string
+	UploadDriver string `env:"UPLOAD_DRIVER"`
 
 	// UploadPath gets the path (full or relative) under which to store uploads.
 	// When using Amazon S3, this should be set to the bucket name.
-	UploadPath string
+	UploadPath string `env:"UPLOAD_PATH"`
 
 	// IsDevelopment defines whether to run the application in "development mode".
 	// Development mode turns on additional features, such as logging, that may
 	// not be desirable in a production environment.
-	IsDevelopment bool
+	IsDevelopment bool `env:"IS_DEVELOPMENT"`
 
 	// SecureKeys is used for session authentication. Recommended to be 32 or 64 ASCII characters.
 	// Multiple keys can be separated by commas.
-	SecureKeys []string
+	SecureKeys []string `env:"SECURE_KEY"`
 
 	// DatabaseDriver gets which database/sql driver to use.
 	// Supported drivers: postgres, sqlite3
-	DatabaseDriver string
+	DatabaseDriver string `env:"DATABASE_DRIVER"`
 
 	// DatabaseURL gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
-	DatabaseURL string
+	DatabaseURL string `env:"DATABASE_URL"`
 
 	// MigrationsTableName gets the name of the database migrations table to use.
 	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
-	MigrationsTableName string
+	MigrationsTableName string `env:"MIGRATIONS_TABLE_NAME"`
 
 	// MigrationsForceVersion gets a version to force the migrations to on startup.
 	// Set to a negative number to skip forcing a version.
-	MigrationsForceVersion int
+	MigrationsForceVersion int `env:"MIGRATIONS_FORCE_VERSION"`
 
 	// BaseAssetsPath gets the base path to the client assets.
-	BaseAssetsPath string
+	BaseAssetsPath string `env:"BASE_ASSETS_PATH"`
 
 	// ImageQuality gets the quality level for recipe images.
-	ImageQuality models.ImageQualityLevel
+	ImageQuality models.ImageQualityLevel `env:"IMAGE_QUALITY"`
 
 	// ImageSize gets the size of the bounding box to fit recipe images to. Ignored if ImageQuality == original.
-	ImageSize int
+	ImageSize int `env:"IMAGE_SIZE"`
 
 	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
-	ThumbnailQuality models.ImageQualityLevel
+	ThumbnailQuality models.ImageQualityLevel `env:"THUMBNAIL_QUALITY"`
 
 	// ThumbnailSize gets the size of the bounding box to fit the thumbnails recipe images to.
-	ThumbnailSize int
+	ThumbnailSize int `env:"THUMBNAIL_SIZE"`
 }
 
 const (
@@ -78,7 +79,7 @@ const (
 
 // Load reads the configuration file from the specified path
 func Load(logInitializer func(*Config)) *Config {
-	c := Config{
+	c := &Config{
 		Port:                   5000,
 		UploadDriver:           "fs",
 		UploadPath:             filepath.Join("data", "uploads"),
@@ -95,24 +96,10 @@ func Load(logInitializer func(*Config)) *Config {
 		ThumbnailSize:          500,
 	}
 
-	// If environment variables are set, use them.
-	loadEnv("BASE_ASSETS_PATH", &c.BaseAssetsPath)
-	loadEnv("IS_DEVELOPMENT", &c.IsDevelopment)
-	loadEnv("MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
-	loadEnv("MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
-	loadEnv("UPLOAD_DRIVER", &c.UploadDriver)
-	loadEnv("UPLOAD_PATH", &c.UploadPath)
-	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
-	loadEnv("DATABASE_URL", &c.DatabaseURL)
-	loadEnv("PORT", &c.Port)
-	loadEnv("SECURE_KEY", &c.SecureKeys)
-	loadEnv("IMAGE_QUALITY", &c.ImageQuality)
-	loadEnv("IMAGE_SIZE", &c.ImageSize)
-	loadEnv("THUMBNAIL_QUALITY", &c.ThumbnailQuality)
-	loadEnv("THUMBNAIL_SIZE", &c.ThumbnailSize)
+	loadFromEnv(c)
 
 	// Now that we've loaded configuration, we can finish setting up logging
-	logInitializer(&c)
+	logInitializer(c)
 
 	// Special case for backward compatibility
 	if c.DatabaseDriver == "" {
@@ -156,7 +143,7 @@ func Load(logInitializer func(*Config)) *Config {
 
 	logger.Info("Loaded configuration")
 
-	return &c
+	return c
 }
 
 // Validate checks whether the current configuration settings are valid.
@@ -230,37 +217,47 @@ func (c Config) ToImageConfiguration() models.ImageConfiguration {
 	}
 }
 
-func loadEnv(name string, dest any) {
-	fullName := "GOMP_" + name
+func loadFromEnv(c *Config) {
+	cVal := reflect.ValueOf(c).Elem()
+	for i := 0; i < cVal.NumField(); i++ {
+		field := cVal.Type().Field(i)
+		val := cVal.Field(i)
+		loadFieldFromEnv(field, val)
+	}
+}
+
+func loadFieldFromEnv(field reflect.StructField, dest reflect.Value) {
+	env := field.Tag.Get("env")
+	fullEnv := "GOMP_" + env
 	// Try the application specific name (prefixed with GOMP_)...
-	envStr, ok := os.LookupEnv(fullName)
+	envStr, ok := os.LookupEnv(fullEnv)
 	// ... and only if not found, try the base name
 	if ok {
-		name = fullName
+		env = fullEnv
 	} else {
-		envStr, ok = os.LookupEnv(name)
+		envStr, ok = os.LookupEnv(env)
 	}
 
 	if ok {
-		switch dest := dest.(type) {
-		case *string:
-			*dest = envStr
-		case *models.ImageQualityLevel:
-			*dest = models.ImageQualityLevel(envStr)
-		case *[]string:
-			*dest = strings.Split(envStr, ",")
-		case *int:
+		switch dType := dest.Type(); {
+		case dType == reflect.TypeFor[models.ImageQualityLevel]():
+			dest.Set(reflect.ValueOf(models.ImageQualityLevel(envStr)))
+		case dType == reflect.TypeFor[[]string]():
+			dest.Set(reflect.ValueOf(strings.Split(envStr, ",")))
+		case dType.Kind() == reflect.String:
+			dest.Set(reflect.ValueOf(envStr))
+		case dType.Kind() == reflect.Int:
 			val, err := strconv.Atoi(envStr)
 			if err != nil {
 				slog.Error("Failed to convert environment variable to an integer",
-					"env", name,
+					"env", env,
 					"val", envStr,
 					"error", err)
 			} else {
-				*dest = val
+				dest.SetInt(int64(val))
 			}
-		case *bool:
-			*dest = envStr != "0"
+		case dType.Kind() == reflect.Bool:
+			dest.Set(reflect.ValueOf(envStr != "0"))
 		}
 	}
 }
