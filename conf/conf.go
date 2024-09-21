@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/url"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -19,24 +18,24 @@ import (
 // Config contains the application configuration settings
 type Config struct {
 	// Port gets the port number under which the site is being hosted.
-	Port int `env:"PORT"`
+	Port int `env:"PORT" default:"5000"`
 
 	// UploadDriver is used to select which backend data store is used for file uploads.
 	// Supported drivers: fs, s3
-	UploadDriver string `env:"UPLOAD_DRIVER"`
+	UploadDriver string `env:"UPLOAD_DRIVER" default:"fs"`
 
 	// UploadPath gets the path (full or relative) under which to store uploads.
 	// When using Amazon S3, this should be set to the bucket name.
-	UploadPath string `env:"UPLOAD_PATH"`
+	UploadPath string `env:"UPLOAD_PATH" default:"data/uploads"`
 
 	// IsDevelopment defines whether to run the application in "development mode".
 	// Development mode turns on additional features, such as logging, that may
 	// not be desirable in a production environment.
-	IsDevelopment bool `env:"IS_DEVELOPMENT"`
+	IsDevelopment bool `env:"IS_DEVELOPMENT" default:"false"`
 
 	// SecureKeys is used for session authentication. Recommended to be 32 or 64 ASCII characters.
 	// Multiple keys can be separated by commas.
-	SecureKeys []string `env:"SECURE_KEY"`
+	SecureKeys []string `env:"SECURE_KEY" default:"ChangeMe"`
 
 	// DatabaseDriver gets which database/sql driver to use.
 	// Supported drivers: postgres, sqlite3
@@ -44,30 +43,30 @@ type Config struct {
 
 	// DatabaseURL gets the url (or path, connection string, etc) to use with the associated
 	// database driver when opening the database connection.
-	DatabaseURL string `env:"DATABASE_URL"`
+	DatabaseURL string `env:"DATABASE_URL" default:"file:data/data.db?_pragma=foreign_keys(1)"`
 
 	// MigrationsTableName gets the name of the database migrations table to use.
 	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
 	MigrationsTableName string `env:"MIGRATIONS_TABLE_NAME"`
 
 	// MigrationsForceVersion gets a version to force the migrations to on startup.
-	// Set to a negative number to skip forcing a version.
+	// Set to a non-positive number to skip forcing a version.
 	MigrationsForceVersion int `env:"MIGRATIONS_FORCE_VERSION"`
 
 	// BaseAssetsPath gets the base path to the client assets.
-	BaseAssetsPath string `env:"BASE_ASSETS_PATH"`
+	BaseAssetsPath string `env:"BASE_ASSETS_PATH" default:"static"`
 
 	// ImageQuality gets the quality level for recipe images.
-	ImageQuality models.ImageQualityLevel `env:"IMAGE_QUALITY"`
+	ImageQuality models.ImageQualityLevel `env:"IMAGE_QUALITY" default:"original"`
 
 	// ImageSize gets the size of the bounding box to fit recipe images to. Ignored if ImageQuality == original.
-	ImageSize int `env:"IMAGE_SIZE"`
+	ImageSize int `env:"IMAGE_SIZE" default:"2000"`
 
 	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
-	ThumbnailQuality models.ImageQualityLevel `env:"THUMBNAIL_QUALITY"`
+	ThumbnailQuality models.ImageQualityLevel `env:"THUMBNAIL_QUALITY" default:"medium"`
 
 	// ThumbnailSize gets the size of the bounding box to fit the thumbnails recipe images to.
-	ThumbnailSize int `env:"THUMBNAIL_SIZE"`
+	ThumbnailSize int `env:"THUMBNAIL_SIZE" default:"500"`
 }
 
 const (
@@ -79,24 +78,8 @@ const (
 
 // Load reads the configuration file from the specified path
 func Load(logInitializer func(*Config)) *Config {
-	c := &Config{
-		Port:                   5000,
-		UploadDriver:           "fs",
-		UploadPath:             filepath.Join("data", "uploads"),
-		IsDevelopment:          false,
-		SecureKeys:             []string{defaultSecureKey},
-		DatabaseDriver:         "",
-		DatabaseURL:            "file:" + filepath.Join("data", "data.db") + "?_pragma=foreign_keys(1)",
-		MigrationsTableName:    "",
-		MigrationsForceVersion: -1,
-		BaseAssetsPath:         "static",
-		ImageQuality:           models.ImageQualityOriginal,
-		ImageSize:              2000,
-		ThumbnailQuality:       models.ImageQualityMedium,
-		ThumbnailSize:          500,
-	}
-
-	loadFromEnv(c)
+	c := &Config{}
+	c.loadFromEnv()
 
 	// Now that we've loaded configuration, we can finish setting up logging
 	logInitializer(c)
@@ -217,7 +200,7 @@ func (c Config) ToImageConfiguration() models.ImageConfiguration {
 	}
 }
 
-func loadFromEnv(c *Config) {
+func (c *Config) loadFromEnv() {
 	cVal := reflect.ValueOf(c).Elem()
 	for i := 0; i < cVal.NumField(); i++ {
 		field := cVal.Type().Field(i)
@@ -227,37 +210,67 @@ func loadFromEnv(c *Config) {
 }
 
 func loadFieldFromEnv(field reflect.StructField, dest reflect.Value) {
-	env := field.Tag.Get("env")
-	fullEnv := "GOMP_" + env
-	// Try the application specific name (prefixed with GOMP_)...
-	envStr, ok := os.LookupEnv(fullEnv)
-	// ... and only if not found, try the base name
-	if ok {
-		env = fullEnv
-	} else {
-		envStr, ok = os.LookupEnv(env)
+	defaultStr := field.Tag.Get("default")
+
+	envName, envOK := field.Tag.Lookup("env")
+	if !envOK {
+		panic(fmt.Errorf("missing environment variable name on configuration field %s", field.Name))
 	}
 
+	fullEnvName := "GOMP_" + envName
+	// Try the application specific name (prefixed with GOMP_)...
+	envStr, ok := os.LookupEnv(fullEnvName)
+	// ... and only if not found, try the base name
 	if ok {
-		switch dType := dest.Type(); {
-		case dType == reflect.TypeFor[models.ImageQualityLevel]():
-			dest.Set(reflect.ValueOf(models.ImageQualityLevel(envStr)))
-		case dType == reflect.TypeFor[[]string]():
-			dest.Set(reflect.ValueOf(strings.Split(envStr, ",")))
-		case dType.Kind() == reflect.String:
-			dest.Set(reflect.ValueOf(envStr))
-		case dType.Kind() == reflect.Int:
-			val, err := strconv.Atoi(envStr)
+		envName = fullEnvName
+	} else {
+		envStr, ok = os.LookupEnv(envName)
+	}
+
+	if !ok {
+		if defaultStr == "" {
+			return
+		}
+
+		envStr = defaultStr
+	}
+
+	switch dType := dest.Type(); {
+	case dType == reflect.TypeFor[models.ImageQualityLevel]():
+		val := getValue(field, envName, envStr, defaultStr, func(str string) (models.ImageQualityLevel, error) {
+			return models.ImageQualityLevel(str), nil
+		})
+		dest.Set(reflect.ValueOf(val))
+	case dType == reflect.TypeFor[[]string]():
+		val := getValue(field, envName, envStr, defaultStr, func(str string) ([]string, error) {
+			return strings.Split(str, ","), nil
+		})
+		dest.Set(reflect.ValueOf(val))
+	case dType.Kind() == reflect.String:
+		dest.SetString(envStr)
+	case dType.Kind() == reflect.Int:
+		val := getValue(field, envName, envStr, defaultStr, strconv.Atoi)
+		dest.SetInt(int64(val))
+	case dType.Kind() == reflect.Bool:
+		val := getValue(field, envName, envStr, defaultStr, strconv.ParseBool)
+		dest.SetBool(val)
+	}
+}
+
+func getValue[T any](field reflect.StructField, envName, envStr, defaultStr string, convert func(string) (T, error)) T {
+	val, err := convert(envStr)
+	if err != nil {
+		slog.Error("Failed to convert environment variable",
+			"env", envName,
+			"type", reflect.TypeFor[T](),
+			"val", envStr,
+			"error", err)
+		if defaultStr != "" {
+			val, err = convert(defaultStr)
 			if err != nil {
-				slog.Error("Failed to convert environment variable to an integer",
-					"env", env,
-					"val", envStr,
-					"error", err)
-			} else {
-				dest.SetInt(int64(val))
+				panic(fmt.Errorf("improperly defined default on configuration field %s", field.Name))
 			}
-		case dType.Kind() == reflect.Bool:
-			dest.Set(reflect.ValueOf(envStr != "0"))
 		}
 	}
+	return val
 }

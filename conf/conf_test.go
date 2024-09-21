@@ -30,7 +30,7 @@ func Test_Load(t *testing.T) {
 				DatabaseDriver:         db.SQLiteDriverName,
 				DatabaseURL:            "file:data/data.db?_pragma=foreign_keys(1)",
 				MigrationsTableName:    "",
-				MigrationsForceVersion: -1,
+				MigrationsForceVersion: 0,
 				BaseAssetsPath:         "static",
 				ImageQuality:           models.ImageQualityOriginal,
 				ImageSize:              2000,
@@ -107,6 +107,10 @@ func Test_Load(t *testing.T) {
 			val.envs["IS_DEVELOPMENT"] = "1"
 			val.want.IsDevelopment = true
 		}),
+		init("Invalid IS_DEVELOPMENT", func(val *test) {
+			val.envs["IS_DEVELOPMENT"] = "junk"
+			// Left val.want.IsDefault as default
+		}),
 		init("SECURE_KEY", func(val *test) {
 			val.envs["SECURE_KEY"] = "key1,key2,key3"
 			val.want.SecureKeys = []string{"key1", "key2", "key3"}
@@ -118,6 +122,10 @@ func Test_Load(t *testing.T) {
 		init("MIGRATIONS_FORCE_VERSION", func(val *test) {
 			val.envs["MIGRATIONS_FORCE_VERSION"] = "123"
 			val.want.MigrationsForceVersion = 123
+		}),
+		init("Invalid MIGRATIONS_FORCE_VERSION", func(val *test) {
+			val.envs["MIGRATIONS_FORCE_VERSION"] = "junk"
+			// Left val.want.IsDefault as default
 		}),
 		init("BASE_ASSETS_PATH", func(val *test) {
 			val.envs["BASE_ASSETS_PATH"] = "/base/assets/path"
