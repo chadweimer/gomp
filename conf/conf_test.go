@@ -12,221 +12,125 @@ import (
 )
 
 func Test_Load(t *testing.T) {
+	type test struct {
+		name string
+		envs map[string]string
+		want *Config
+	}
+	init := func(name string, opts ...func(val *test)) test {
+		val := test{
+			name: name,
+			envs: map[string]string{},
+			want: &Config{
+				Port:                   5000,
+				UploadDriver:           "fs",
+				UploadPath:             "data/uploads",
+				IsDevelopment:          false,
+				SecureKeys:             []string{"ChangeMe"},
+				DatabaseDriver:         db.SQLiteDriverName,
+				DatabaseURL:            "file:data/data.db?_pragma=foreign_keys(1)",
+				MigrationsTableName:    "",
+				MigrationsForceVersion: -1,
+				BaseAssetsPath:         "static",
+				ImageQuality:           models.ImageQualityOriginal,
+				ImageSize:              2000,
+				ThumbnailQuality:       models.ImageQualityMedium,
+				ThumbnailSize:          500,
+			},
+		}
+		for _, opt := range opts {
+			opt(&val)
+		}
+		return val
+	}
 	tests := []struct {
 		name string
 		envs map[string]string
 		want *Config
 	}{
-		{
-			name: "Infer SQLite",
-			envs: map[string]string{
-				"BASE_ASSETS_PATH":         "/path/to/assets",
-				"DATABASE_DRIVER":          "",
-				"DATABASE_URL":             "file:/path/to/db",
-				"IS_DEVELOPMENT":           "0",
-				"MIGRATIONS_TABLE_NAME":    "migration table name",
-				"MIGRATIONS_FORCE_VERSION": "1",
-				"IMAGE_QUALITY":            "high",
-				"IMAGE_SIZE":               "2",
-				"PORT":                     "3",
-				"SECURE_KEY":               "secure key",
-				"THUMBNAIL_QUALITY":        "high",
-				"THUMBNAIL_SIZE":           "4",
-				"UPLOAD_DRIVER":            "fs",
-				"UPLOAD_PATH":              "/path/to/uploads",
-			},
-			want: &Config{
-				BaseAssetsPath:         "/path/to/assets",
-				IsDevelopment:          false,
-				DatabaseDriver:         db.SQLiteDriverName,
-				DatabaseURL:            "file:/path/to/db",
-				MigrationsTableName:    "migration table name",
-				MigrationsForceVersion: 1,
-				ImageQuality:           models.ImageQualityHigh,
-				ImageSize:              2,
-				Port:                   3,
-				SecureKeys:             []string{"secure key"},
-				ThumbnailQuality:       models.ImageQualityHigh,
-				ThumbnailSize:          4,
-				UploadDriver:           upload.FileSystemDriver,
-				UploadPath:             "/path/to/uploads",
-			},
-		},
-		{
-			name: "Explicit SQLite",
-			envs: map[string]string{
-				"BASE_ASSETS_PATH":         "/path/to/assets",
-				"DATABASE_DRIVER":          "sqlite",
-				"DATABASE_URL":             "file:/path/to/db",
-				"IS_DEVELOPMENT":           "1",
-				"MIGRATIONS_TABLE_NAME":    "migration table name",
-				"MIGRATIONS_FORCE_VERSION": "1",
-				"IMAGE_QUALITY":            "high",
-				"IMAGE_SIZE":               "2",
-				"PORT":                     "3",
-				"SECURE_KEY":               "secure key",
-				"THUMBNAIL_QUALITY":        "high",
-				"THUMBNAIL_SIZE":           "4",
-				"UPLOAD_DRIVER":            "fs",
-				"UPLOAD_PATH":              "/path/to/uploads",
-			},
-			want: &Config{
-				BaseAssetsPath:         "/path/to/assets",
-				IsDevelopment:          true,
-				DatabaseDriver:         db.SQLiteDriverName,
-				DatabaseURL:            "file:/path/to/db",
-				MigrationsTableName:    "migration table name",
-				MigrationsForceVersion: 1,
-				ImageQuality:           models.ImageQualityHigh,
-				ImageSize:              2,
-				Port:                   3,
-				SecureKeys:             []string{"secure key"},
-				ThumbnailQuality:       models.ImageQualityHigh,
-				ThumbnailSize:          4,
-				UploadDriver:           upload.FileSystemDriver,
-				UploadPath:             "/path/to/uploads",
-			},
-		},
-		{
-			name: "Explicit SQLite (Legacy)",
-			envs: map[string]string{
-				"BASE_ASSETS_PATH":         "/path/to/assets",
-				"DATABASE_DRIVER":          "sqlite3",
-				"DATABASE_URL":             "file:/path/to/db",
-				"IS_DEVELOPMENT":           "1",
-				"MIGRATIONS_TABLE_NAME":    "migration table name",
-				"MIGRATIONS_FORCE_VERSION": "1",
-				"IMAGE_QUALITY":            "high",
-				"IMAGE_SIZE":               "2",
-				"PORT":                     "3",
-				"SECURE_KEY":               "secure key",
-				"THUMBNAIL_QUALITY":        "high",
-				"THUMBNAIL_SIZE":           "4",
-				"UPLOAD_DRIVER":            "fs",
-				"UPLOAD_PATH":              "/path/to/uploads",
-			},
-			want: &Config{
-				BaseAssetsPath:         "/path/to/assets",
-				IsDevelopment:          true,
-				DatabaseDriver:         db.SQLiteDriverName,
-				DatabaseURL:            "file:/path/to/db",
-				MigrationsTableName:    "migration table name",
-				MigrationsForceVersion: 1,
-				ImageQuality:           models.ImageQualityHigh,
-				ImageSize:              2,
-				Port:                   3,
-				SecureKeys:             []string{"secure key"},
-				ThumbnailQuality:       models.ImageQualityHigh,
-				ThumbnailSize:          4,
-				UploadDriver:           upload.FileSystemDriver,
-				UploadPath:             "/path/to/uploads",
-			},
-		},
-		{
-			name: "Infer PostgreSQL",
-			envs: map[string]string{
-				"BASE_ASSETS_PATH":         "/path/to/assets",
-				"DATABASE_DRIVER":          "",
-				"DATABASE_URL":             "postgres://user:password@db/name",
-				"IS_DEVELOPMENT":           "0",
-				"MIGRATIONS_TABLE_NAME":    "migration table name",
-				"MIGRATIONS_FORCE_VERSION": "1",
-				"IMAGE_QUALITY":            "high",
-				"IMAGE_SIZE":               "2",
-				"PORT":                     "3",
-				"SECURE_KEY":               "secure key",
-				"THUMBNAIL_QUALITY":        "high",
-				"THUMBNAIL_SIZE":           "4",
-				"UPLOAD_DRIVER":            "fs",
-				"UPLOAD_PATH":              "/path/to/uploads",
-			},
-			want: &Config{
-				BaseAssetsPath:         "/path/to/assets",
-				IsDevelopment:          false,
-				DatabaseDriver:         db.PostgresDriverName,
-				DatabaseURL:            "postgres://user:password@db/name",
-				MigrationsTableName:    "migration table name",
-				MigrationsForceVersion: 1,
-				ImageQuality:           models.ImageQualityHigh,
-				ImageSize:              2,
-				Port:                   3,
-				SecureKeys:             []string{"secure key"},
-				ThumbnailQuality:       models.ImageQualityHigh,
-				ThumbnailSize:          4,
-				UploadDriver:           upload.FileSystemDriver,
-				UploadPath:             "/path/to/uploads",
-			},
-		},
-		{
-			name: "Explicit PostgreSQL",
-			envs: map[string]string{
-				"BASE_ASSETS_PATH":         "/path/to/assets",
-				"DATABASE_DRIVER":          "postgres",
-				"DATABASE_URL":             "postgres://user:password@db/name",
-				"IS_DEVELOPMENT":           "1",
-				"MIGRATIONS_TABLE_NAME":    "migration table name",
-				"MIGRATIONS_FORCE_VERSION": "1",
-				"IMAGE_QUALITY":            "high",
-				"IMAGE_SIZE":               "2",
-				"PORT":                     "3",
-				"SECURE_KEY":               "secure key",
-				"THUMBNAIL_QUALITY":        "high",
-				"THUMBNAIL_SIZE":           "4",
-				"UPLOAD_DRIVER":            "fs",
-				"UPLOAD_PATH":              "/path/to/uploads",
-			},
-			want: &Config{
-				BaseAssetsPath:         "/path/to/assets",
-				IsDevelopment:          true,
-				DatabaseDriver:         db.PostgresDriverName,
-				DatabaseURL:            "postgres://user:password@db/name",
-				MigrationsTableName:    "migration table name",
-				MigrationsForceVersion: 1,
-				ImageQuality:           models.ImageQualityHigh,
-				ImageSize:              2,
-				Port:                   3,
-				SecureKeys:             []string{"secure key"},
-				ThumbnailQuality:       models.ImageQualityHigh,
-				ThumbnailSize:          4,
-				UploadDriver:           upload.FileSystemDriver,
-				UploadPath:             "/path/to/uploads",
-			},
-		},
-		{
-			name: "Unable to infer DATABASE_DRIVER",
-			envs: map[string]string{
-				"BASE_ASSETS_PATH":         "/path/to/assets",
-				"DATABASE_DRIVER":          "",
-				"DATABASE_URL":             "bogus",
-				"IS_DEVELOPMENT":           "1",
-				"MIGRATIONS_TABLE_NAME":    "migration table name",
-				"MIGRATIONS_FORCE_VERSION": "1",
-				"IMAGE_QUALITY":            "high",
-				"IMAGE_SIZE":               "2",
-				"PORT":                     "3",
-				"SECURE_KEY":               "secure key",
-				"THUMBNAIL_QUALITY":        "high",
-				"THUMBNAIL_SIZE":           "4",
-				"UPLOAD_DRIVER":            "fs",
-				"UPLOAD_PATH":              "/path/to/uploads",
-			},
-			want: &Config{
-				BaseAssetsPath:         "/path/to/assets",
-				IsDevelopment:          true,
-				DatabaseDriver:         "",
-				DatabaseURL:            "bogus",
-				MigrationsTableName:    "migration table name",
-				MigrationsForceVersion: 1,
-				ImageQuality:           models.ImageQualityHigh,
-				ImageSize:              2,
-				Port:                   3,
-				SecureKeys:             []string{"secure key"},
-				ThumbnailQuality:       models.ImageQualityHigh,
-				ThumbnailSize:          4,
-				UploadDriver:           upload.FileSystemDriver,
-				UploadPath:             "/path/to/uploads",
-			},
-		},
+		init("Defaults"),
+		init("Infer SQLite", func(val *test) {
+			val.envs["DATABASE_DRIVER"] = ""
+			val.want.DatabaseDriver = db.SQLiteDriverName
+		}),
+		init("Explicit SQLite", func(val *test) {
+			val.envs["DATABASE_DRIVER"] = "sqlite"
+			val.envs["DATABASE_URL"] = ""
+			val.want.DatabaseDriver = db.SQLiteDriverName
+			val.want.DatabaseURL = ""
+		}),
+		init("Explicit SQLite (Legacy)", func(val *test) {
+			val.envs["DATABASE_DRIVER"] = "sqlite3"
+			val.envs["DATABASE_URL"] = ""
+			val.want.DatabaseDriver = db.SQLiteDriverName
+			val.want.DatabaseURL = ""
+		}),
+		init("Infer PostgreSQL", func(val *test) {
+			val.envs["DATABASE_DRIVER"] = ""
+			val.envs["DATABASE_URL"] = "postgres://user:password@db/name"
+			val.want.DatabaseDriver = db.PostgresDriverName
+			val.want.DatabaseURL = "postgres://user:password@db/name"
+		}),
+		init("Explicit PostgreSQL", func(val *test) {
+			val.envs["DATABASE_DRIVER"] = "postgres"
+			val.envs["DATABASE_URL"] = ""
+			val.want.DatabaseDriver = db.PostgresDriverName
+			val.want.DatabaseURL = ""
+		}),
+		init("Unknown Database Driver", func(val *test) {
+			val.envs["DATABASE_DRIVER"] = ""
+			val.envs["DATABASE_URL"] = "bogus://db"
+			val.want.DatabaseDriver = ""
+			val.want.DatabaseURL = "bogus://db"
+		}),
+		init("PORT", func(val *test) {
+			val.envs["PORT"] = "32145"
+			val.want.Port = 32145
+		}),
+		init("UPLOAD_DRIVER", func(val *test) {
+			val.envs["UPLOAD_DRIVER"] = "s3"
+			val.want.UploadDriver = upload.S3Driver
+		}),
+		init("UPLOAD_PATH", func(val *test) {
+			val.envs["UPLOAD_PATH"] = "/upload/path"
+			val.want.UploadPath = "/upload/path"
+		}),
+		init("IS_DEVELOPMENT", func(val *test) {
+			val.envs["IS_DEVELOPMENT"] = "1"
+			val.want.IsDevelopment = true
+		}),
+		init("SECURE_KEY", func(val *test) {
+			val.envs["SECURE_KEY"] = "key1,key2,key3"
+			val.want.SecureKeys = []string{"key1", "key2", "key3"}
+		}),
+		init("MIGRATIONS_TABLE_NAME", func(val *test) {
+			val.envs["MIGRATIONS_TABLE_NAME"] = "sometable"
+			val.want.MigrationsTableName = "sometable"
+		}),
+		init("MIGRATIONS_FORCE_VERSION", func(val *test) {
+			val.envs["MIGRATIONS_FORCE_VERSION"] = "123"
+			val.want.MigrationsForceVersion = 123
+		}),
+		init("BASE_ASSETS_PATH", func(val *test) {
+			val.envs["BASE_ASSETS_PATH"] = "/base/assets/path"
+			val.want.BaseAssetsPath = "/base/assets/path"
+		}),
+		init("IMAGE_QUALITY", func(val *test) {
+			val.envs["IMAGE_QUALITY"] = "low"
+			val.want.ImageQuality = models.ImageQualityLow
+		}),
+		init("IMAGE_SIZE", func(val *test) {
+			val.envs["IMAGE_SIZE"] = "42"
+			val.want.ImageSize = 42
+		}),
+		init("THUMBNAIL_QUALITY", func(val *test) {
+			val.envs["THUMBNAIL_QUALITY"] = "low"
+			val.want.ThumbnailQuality = models.ImageQualityLow
+		}),
+		init("THUMBNAIL_SIZE", func(val *test) {
+			val.envs["THUMBNAIL_SIZE"] = "42"
+			val.want.ThumbnailSize = 42
+		}),
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
