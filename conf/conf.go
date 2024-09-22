@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -19,38 +20,52 @@ func (e errUnsupportedType) Error() string {
 
 // MustBind initializes the supplied object based on assoiciated struct tags
 func MustBind(ptr any) {
+	if err := bind(ptr); err != nil {
+		panic(err)
+	}
+}
+
+func bind(ptr any) error {
 	val := reflect.ValueOf(ptr)
 	if val.Kind() != reflect.Pointer {
-		panic("bind requires pointer types")
+		return errors.New("bind requires pointer types")
 	}
 
 	val = val.Elem()
 	if val.Kind() != reflect.Struct {
-		panic("bind requires struct types")
+		return errors.New("bind requires struct types")
 	}
 
-	initAndBind(val)
+	return bindValue(val)
 }
 
-func initAndBind(objVal reflect.Value) {
+func bindValue(objVal reflect.Value) error {
 	for i := 0; i < objVal.NumField(); i++ {
 		fieldVal := objVal.Field(i)
 		if fieldVal.Kind() == reflect.Struct {
-			initAndBind(fieldVal)
+			if err := bindValue(fieldVal); err != nil {
+				return err
+			}
 		} else {
 			field := objVal.Type().Field(i)
-			setToDefault(field, fieldVal)
+			if err := setToDefault(field, fieldVal); err != nil {
+				return err
+			}
 			setFromEnv(field, fieldVal)
 		}
 	}
+
+	return nil
 }
 
-func setToDefault(field reflect.StructField, val reflect.Value) {
+func setToDefault(field reflect.StructField, val reflect.Value) error {
 	if defaultStr, ok := field.Tag.Lookup("default"); ok {
 		if err := set(val, defaultStr); err != nil {
-			panic(fmt.Errorf("improperly defined default on configuration field %s", field.Name))
+			return fmt.Errorf("improperly defined default on configuration field %s: %w", field.Name, err)
 		}
 	}
+
+	return nil
 }
 
 func setFromEnv(field reflect.StructField, val reflect.Value) {
