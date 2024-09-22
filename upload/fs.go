@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"errors"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -15,6 +16,10 @@ type fileSystemDriver struct {
 }
 
 func newFileSystemDriver(rootPath string) (Driver, error) {
+	if rootPath == "" {
+		return nil, errors.New("root path is empty")
+	}
+
 	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
 }
 

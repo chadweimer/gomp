@@ -4,263 +4,199 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net/url"
 	"os"
-	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
 )
 
-// Config contains the application configuration settings
-type Config struct {
-	// Port gets the port number under which the site is being hosted.
-	Port int
-
-	// UploadDriver is used to select which backend data store is used for file uploads.
-	// Supported drivers: fs, s3
-	UploadDriver string
-
-	// UploadPath gets the path (full or relative) under which to store uploads.
-	// When using Amazon S3, this should be set to the bucket name.
-	UploadPath string
-
-	// IsDevelopment defines whether to run the application in "development mode".
-	// Development mode turns on additional features, such as logging, that may
-	// not be desirable in a production environment.
-	IsDevelopment bool
-
-	// SecureKeys is used for session authentication. Recommended to be 32 or 64 ASCII characters.
-	// Multiple keys can be separated by commas.
-	SecureKeys []string
-
-	// DatabaseDriver gets which database/sql driver to use.
-	// Supported drivers: postgres, sqlite3
-	DatabaseDriver string
-
-	// DatabaseURL gets the url (or path, connection string, etc) to use with the associated
-	// database driver when opening the database connection.
-	DatabaseURL string
-
-	// MigrationsTableName gets the name of the database migrations table to use.
-	// Leave blank to use the default from https://github.com/golang-migrate/migrate.
-	MigrationsTableName string
-
-	// MigrationsForceVersion gets a version to force the migrations to on startup.
-	// Set to a negative number to skip forcing a version.
-	MigrationsForceVersion int
-
-	// BaseAssetsPath gets the base path to the client assets.
-	BaseAssetsPath string
-
-	// ImageQuality gets the quality level for recipe images.
-	ImageQuality models.ImageQualityLevel
-
-	// ImageSize gets the size of the bounding box to fit recipe images to. Ignored if ImageQuality == original.
-	ImageSize int
-
-	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
-	ThumbnailQuality models.ImageQualityLevel
-
-	// ThumbnailSize gets the size of the bounding box to fit the thumbnails recipe images to.
-	ThumbnailSize int
+type errUnsupportedType struct {
+	fieldType reflect.Type
 }
 
-const (
-	defaultSecureKey = "ChangeMe"
+func (e errUnsupportedType) Error() string {
+	return fmt.Sprintf("unsupported field type: %s", e.fieldType)
+}
 
-	// Needed for backward compatibility
-	sqliteLegacyDriverName = "sqlite3"
-)
-
-// Load reads the configuration file from the specified path
-func Load(logInitializer func(*Config)) *Config {
-	c := Config{
-		Port:                   5000,
-		UploadDriver:           "fs",
-		UploadPath:             filepath.Join("data", "uploads"),
-		IsDevelopment:          false,
-		SecureKeys:             []string{defaultSecureKey},
-		DatabaseDriver:         "",
-		DatabaseURL:            "file:" + filepath.Join("data", "data.db") + "?_pragma=foreign_keys(1)",
-		MigrationsTableName:    "",
-		MigrationsForceVersion: -1,
-		BaseAssetsPath:         "static",
-		ImageQuality:           models.ImageQualityOriginal,
-		ImageSize:              2000,
-		ThumbnailQuality:       models.ImageQualityMedium,
-		ThumbnailSize:          500,
+// Bind initializes the supplied object based on assoiciated struct tags
+func Bind(ptr any) error {
+	val := reflect.ValueOf(ptr)
+	if val.Kind() != reflect.Pointer {
+		return errors.New("bind requires pointer types")
 	}
 
-	// If environment variables are set, use them.
-	loadEnv("BASE_ASSETS_PATH", &c.BaseAssetsPath)
-	loadEnv("IS_DEVELOPMENT", &c.IsDevelopment)
-	loadEnv("MIGRATIONS_TABLE_NAME", &c.MigrationsTableName)
-	loadEnv("MIGRATIONS_FORCE_VERSION", &c.MigrationsForceVersion)
-	loadEnv("UPLOAD_DRIVER", &c.UploadDriver)
-	loadEnv("UPLOAD_PATH", &c.UploadPath)
-	loadEnv("DATABASE_DRIVER", &c.DatabaseDriver)
-	loadEnv("DATABASE_URL", &c.DatabaseURL)
-	loadEnv("PORT", &c.Port)
-	loadEnv("SECURE_KEY", &c.SecureKeys)
-	loadEnv("IMAGE_QUALITY", &c.ImageQuality)
-	loadEnv("IMAGE_SIZE", &c.ImageSize)
-	loadEnv("THUMBNAIL_QUALITY", &c.ThumbnailQuality)
-	loadEnv("THUMBNAIL_SIZE", &c.ThumbnailSize)
+	val = val.Elem()
+	if val.Kind() != reflect.Struct {
+		return errors.New("bind requires struct types")
+	}
 
-	// Now that we've loaded configuration, we can finish setting up logging
-	logInitializer(&c)
+	return bindValue(val)
+}
 
-	// Special case for backward compatibility
-	if c.DatabaseDriver == "" {
-		slog.Debug("DATABASE_DRIVER is empty. Will attempt to infer...")
-		if strings.HasPrefix(c.DatabaseURL, "file:") {
-			slog.Debug("Setting DATABASE_DRIVER", "value", db.SQLiteDriverName)
-			c.DatabaseDriver = db.SQLiteDriverName
-		} else if strings.HasPrefix(c.DatabaseURL, "postgres:") {
-			slog.Debug("Setting DATABASE_DRIVER", "value", db.PostgresDriverName)
-			c.DatabaseDriver = db.PostgresDriverName
+func bindValue(objVal reflect.Value) error {
+	for i := 0; i < objVal.NumField(); i++ {
+		fieldVal := objVal.Field(i)
+		if fieldVal.Kind() == reflect.Struct {
+			if err := bindValue(fieldVal); err != nil {
+				return err
+			}
 		} else {
-			slog.Warn("Unable to infer a value for DATABASE_DRIVER; an error will likely follow")
+			field := objVal.Type().Field(i)
+			if err := setToDefault(field, fieldVal); err != nil {
+				return err
+			}
+			setFromEnv(field, fieldVal)
 		}
-	} else if c.DatabaseDriver == sqliteLegacyDriverName {
-		// If the old driver name for sqlite is being used,
-		// we'll allow it and map it to the new one
-		slog.Debug("Detected DATABASE_DRIVER legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, db.SQLiteDriverName)
-		c.DatabaseDriver = db.SQLiteDriverName
 	}
 
-	logger := slog.
-		With("port", c.Port,
-			"upload-driver", c.UploadDriver,
-			"upload-path", c.UploadPath,
-			"is-development", c.IsDevelopment,
-			"base-assets-path", c.BaseAssetsPath,
-			"database-driver", c.DatabaseDriver,
-			"migrations-table-name", c.MigrationsTableName,
-			"migrations-force-version", c.MigrationsForceVersion,
-			"image-quality", c.ImageQuality,
-			"image-size", c.ImageSize,
-			"thumbnail-quality", c.ThumbnailQuality,
-			"thumbnail-size", c.ThumbnailSize)
-
-	// Only print sensitive info in development mode
-	if c.IsDevelopment {
-		logger = logger.
-			With("database-url", c.DatabaseURL,
-				"secure-keys", c.SecureKeys)
-	}
-
-	logger.Info("Loaded configuration")
-
-	return &c
+	return nil
 }
 
-// Validate checks whether the current configuration settings are valid.
-func (c *Config) Validate() []error {
-	errs := make([]error, 0)
-
-	if c.Port <= 0 {
-		errs = append(errs, errors.New("PORT must be a positive integer"))
+func setToDefault(field reflect.StructField, val reflect.Value) error {
+	if defaultStr, ok := field.Tag.Lookup("default"); ok {
+		if err := set(val, defaultStr); err != nil {
+			return fmt.Errorf("improperly defined default on configuration field %s: %w", field.Name, err)
+		}
 	}
 
-	if c.UploadDriver != upload.FileSystemDriver && c.UploadDriver != upload.S3Driver {
-		errs = append(errs, fmt.Errorf("UPLOAD_DRIVER must be one of ('%s', '%s')", upload.FileSystemDriver, upload.S3Driver))
-	}
-
-	if c.UploadPath == "" {
-		errs = append(errs, errors.New("UPLOAD_PATH must be specified"))
-	}
-
-	if len(c.SecureKeys) == 0 {
-		errs = append(errs, errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma"))
-	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
-		slog.Warn("SECURE_KEY is set to the default value. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
-	}
-
-	if c.BaseAssetsPath == "" {
-		errs = append(errs, errors.New("BASE_ASSETS_PATH must be specified"))
-	}
-
-	if c.DatabaseDriver != db.PostgresDriverName && c.DatabaseDriver != db.SQLiteDriverName {
-		errs = append(errs, fmt.Errorf("DATABASE_DRIVER must be one of ('%s', '%s')", db.PostgresDriverName, db.SQLiteDriverName))
-	}
-
-	if c.DatabaseURL == "" {
-		errs = append(errs, errors.New("DATABASE_URL must be specified"))
-	}
-
-	if _, err := url.Parse(c.DatabaseURL); err != nil {
-		errs = append(errs, errors.New("DATABASE_URL is invalid"))
-	}
-
-	if !c.ImageQuality.IsValid() {
-		errs = append(errs, errors.New("IMAGE_QUALITY is invalid"))
-	}
-
-	if c.ImageSize <= 0 {
-		errs = append(errs, errors.New("IMAGE_SIZE must be positive"))
-	}
-
-	if !c.ThumbnailQuality.IsValid() {
-		errs = append(errs, errors.New("THUMBNAIL_QUALITY is invalid"))
-	}
-
-	if c.ThumbnailQuality == models.ImageQualityOriginal {
-		errs = append(errs, fmt.Errorf("THUMBNAIL_QUALITY cannot be %s", models.ImageQualityOriginal))
-	}
-
-	if c.ThumbnailSize <= 0 {
-		errs = append(errs, errors.New("THUMBNAIL_SIZE must be positive"))
-	}
-
-	return errs
+	return nil
 }
 
-// ToImageConfiguration converts the configuration to a models.ImageConfiguration
-func (c Config) ToImageConfiguration() models.ImageConfiguration {
-	return models.ImageConfiguration{
-		ImageQuality:     c.ImageQuality,
-		ImageSize:        c.ImageSize,
-		ThumbnailQuality: c.ThumbnailQuality,
-		ThumbnailSize:    c.ThumbnailSize,
+func setFromEnv(field reflect.StructField, val reflect.Value) {
+	envName, ok := field.Tag.Lookup("env")
+	if !ok {
+		envName = strings.ToUpper(field.Name)
 	}
-}
 
-func loadEnv(name string, dest any) {
-	fullName := "GOMP_" + name
+	fullEnvName := "GOMP_" + envName
 	// Try the application specific name (prefixed with GOMP_)...
-	envStr, ok := os.LookupEnv(fullName)
+	envStr, ok := os.LookupEnv(fullEnvName)
 	// ... and only if not found, try the base name
 	if ok {
-		name = fullName
+		envName = fullEnvName
 	} else {
-		envStr, ok = os.LookupEnv(name)
+		envStr, ok = os.LookupEnv(envName)
 	}
 
 	if ok {
-		switch dest := dest.(type) {
-		case *string:
-			*dest = envStr
-		case *models.ImageQualityLevel:
-			*dest = models.ImageQualityLevel(envStr)
-		case *[]string:
-			*dest = strings.Split(envStr, ",")
-		case *int:
-			val, err := strconv.Atoi(envStr)
-			if err != nil {
-				slog.Error("Failed to convert environment variable to an integer",
-					"env", name,
-					"val", envStr,
-					"error", err)
-			} else {
-				*dest = val
-			}
-		case *bool:
-			*dest = envStr != "0"
+		if err := set(val, envStr); err != nil {
+			slog.Warn("Failed to convert environment variable. Proceeding with existing value",
+				"type", val.Type,
+				"envName", envName,
+				"envVal", envStr,
+				"error", err)
 		}
 	}
+}
+
+func set(val reflect.Value, str string) error {
+	switch val.Type().Kind() {
+	case reflect.String:
+		typed, _ := getValue(val.Type(), str)
+		val.SetString(typed.(string))
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		typed, err := getValue(val.Type(), str)
+		if err != nil {
+			return err
+		}
+		val.SetInt(typed.(int64))
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		typed, err := getValue(val.Type(), str)
+		if err != nil {
+			return err
+		}
+		val.SetUint(typed.(uint64))
+
+	case reflect.Float32, reflect.Float64:
+		typed, err := getValue(val.Type(), str)
+		if err != nil {
+			return err
+		}
+		val.SetFloat(typed.(float64))
+
+	case reflect.Complex64, reflect.Complex128:
+		typed, err := getValue(val.Type(), str)
+		if err != nil {
+			return err
+		}
+		val.SetComplex(typed.(complex128))
+
+	case reflect.Bool:
+		typed, err := getValue(val.Type(), str)
+		if err != nil {
+			return err
+		}
+		val.SetBool(typed.(bool))
+
+	case reflect.Array, reflect.Slice:
+		elementType := val.Type().Elem()
+		segments := strings.Split(str, ",")
+		newVal := reflect.MakeSlice(val.Type(), 0, len(segments))
+		for _, segment := range segments {
+			element := reflect.New(elementType).Elem()
+			if err := set(element, strings.TrimSpace(segment)); err != nil {
+				return err
+			}
+			newVal = reflect.Append(newVal, element)
+		}
+		val.Set(newVal)
+
+	case reflect.Pointer:
+		ptrType := val.Type().Elem()
+		if val.IsNil() {
+			val.Set(reflect.New(ptrType))
+		}
+		return set(val.Elem(), str)
+
+	default:
+		return errUnsupportedType{val.Type()}
+	}
+
+	return nil
+}
+
+func getValue(fieldType reflect.Type, str string) (any, error) {
+	switch fieldType.Kind() {
+	case reflect.String:
+		return str, nil
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		typed, err := strconv.ParseInt(str, 10, fieldType.Bits())
+		if err != nil {
+			return nil, err
+		}
+		return typed, nil
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		typed, err := strconv.ParseUint(str, 10, fieldType.Bits())
+		if err != nil {
+			return nil, err
+		}
+		return typed, nil
+
+	case reflect.Float32, reflect.Float64:
+		typed, err := strconv.ParseFloat(str, fieldType.Bits())
+		if err != nil {
+			return nil, err
+		}
+		return typed, nil
+
+	case reflect.Complex64, reflect.Complex128:
+		typed, err := strconv.ParseComplex(str, fieldType.Bits())
+		if err != nil {
+			return nil, err
+		}
+		return typed, nil
+
+	case reflect.Bool:
+		typed, err := strconv.ParseBool(str)
+		if err != nil {
+			return nil, err
+		}
+		return typed, nil
+	}
+
+	return nil, errUnsupportedType{fieldType}
 }

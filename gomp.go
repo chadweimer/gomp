@@ -28,42 +28,50 @@ func main() {
 	// Write the app metadata to logs
 	slog.Info("Starting application", "version", metadata.BuildVersion)
 
-	cfg := conf.Load(func(cfg *conf.Config) {
-		level := slog.LevelInfo
-		if cfg.IsDevelopment {
-			level = slog.LevelDebug
-		}
+	// Load configuration
+	cfg := &Config{}
+	if err := conf.Bind(cfg); err != nil {
+		slog.Error("Failed to load configuration. Exiting...", "error", err)
+		os.Exit(1)
+	}
+
+	// Reconfigure the logger now that we've loaded the main application configuation
+	if cfg.IsDevelopment {
 		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: level,
+			Level: slog.LevelDebug,
 		})))
-	})
-	if errs := cfg.Validate(); len(errs) > 0 {
-		for _, err := range errs {
-			slog.Error("Configuration validation failed", "error", err)
-		}
+	}
+
+	// Now it's OK to log what was loaded
+	slog.Debug("Loaded application configuration", "cfg", cfg)
+
+	if err := cfg.validate(); err != nil {
+		slog.Error("Invalid configuration. Exiting...", "error", err)
 		os.Exit(1)
 	}
 
-	fs := upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))
-
-	uplDriver, err := upload.CreateDriver(cfg.UploadDriver, cfg.UploadPath)
+	uplDriver, err := upload.CreateDriver(cfg.Upload.Driver)
 	if err != nil {
-		slog.Error("Establishing upload driver failed", "error", err)
+		slog.Error("Establishing upload driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
-	uploader := upload.CreateImageUploader(uplDriver, cfg.ToImageConfiguration())
 
-	dbDriver, err := db.CreateDriver(
-		cfg.DatabaseDriver, cfg.DatabaseURL, cfg.MigrationsTableName, cfg.MigrationsForceVersion)
+	uploader, err := upload.CreateImageUploader(uplDriver, cfg.Upload.Image)
 	if err != nil {
-		slog.Error("Establishing database driver failed", "error", err)
+		slog.Error("Establishing uploader failed. Exiting...", "error", err)
+		os.Exit(1)
+	}
+
+	dbDriver, err := db.CreateDriver(cfg.Database)
+	if err != nil {
+		slog.Error("Establishing database driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
 	defer dbDriver.Close()
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/*", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver)))
-	mux.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(fs))))
+	mux.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
 	mux.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
 	mux.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
