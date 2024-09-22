@@ -84,15 +84,16 @@ func TestBind_Defaults(t *testing.T) {
 				t.Error(err)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MustBind() = %v, want %v", got, tt.want)
+				t.Errorf("Bind() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 func TestBind_EnvVar(t *testing.T) {
 	type testStruct struct {
-		TestInt    int    `env:"TEST_INT" default:"1"`
-		TestString string `env:"TEST_STRING" default:"Default"`
+		TestInt    int     `env:"TEST_INT" default:"1"`
+		TestString string  `env:"TEST_STRING" default:"Default"`
+		TestFloat  float32 `env:"TEST_FLOAT" default:"1.1"`
 	}
 	tests := []struct {
 		name string
@@ -102,12 +103,14 @@ func TestBind_EnvVar(t *testing.T) {
 		{
 			name: "Reads envs",
 			env: map[string]string{
-				"TEST_INT":    "2",
-				"TEST_STRING": "Hello, Tests!",
+				"TEST_INT":        "2",
+				"TEST_STRING":     "Hello, Tests!",
+				"GOMP_TEST_FLOAT": "2.2",
 			},
 			want: testStruct{
 				TestInt:    2,
 				TestString: "Hello, Tests!",
+				TestFloat:  2.2,
 			},
 		},
 		{
@@ -116,16 +119,31 @@ func TestBind_EnvVar(t *testing.T) {
 			want: testStruct{
 				TestInt:    1,
 				TestString: "Default",
+				TestFloat:  1.1,
 			},
 		},
 		{
 			name: "Handles invalid env",
 			env: map[string]string{
-				"TEST_INT": "3a",
+				"TEST_INT":        "3a",
+				"GOMP_TEST_FLOAT": "2.c",
 			},
 			want: testStruct{
 				TestInt:    1,
 				TestString: "Default",
+				TestFloat:  1.1,
+			},
+		},
+		{
+			name: "App-specific Env takes precedence",
+			env: map[string]string{
+				"TEST_FLOAT":      "2.2",
+				"GOMP_TEST_FLOAT": "3.3",
+			},
+			want: testStruct{
+				TestInt:    1,
+				TestString: "Default",
+				TestFloat:  3.3,
 			},
 		},
 	}
@@ -139,7 +157,7 @@ func TestBind_EnvVar(t *testing.T) {
 				t.Error(err)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MustBind() = %v, want %v", got, tt.want)
+				t.Errorf("Bind() = %v, want %v", got, tt.want)
 			}
 		})
 	}
