@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Config contains the upload configuration settings
+// Config represents the upload configuration settings
 type Config struct {
 	// DriverConfig contains the configuration settings for upload drivers
 	Driver DriverConfig
@@ -59,23 +59,23 @@ func (cfg ImageConfig) validate() error {
 	errs := make([]error, 0)
 
 	if !cfg.ImageQuality.IsValid() {
-		errs = append(errs, errors.New("ImageQuality is invalid"))
+		errs = append(errs, errors.New("image quality is invalid"))
 	}
 
 	if cfg.ImageSize <= 0 {
-		errs = append(errs, errors.New("ImageSize must be positive"))
+		errs = append(errs, errors.New("image size must be positive"))
 	}
 
 	if !cfg.ThumbnailQuality.IsValid() {
-		errs = append(errs, errors.New("ThumbnailQuality is invalid"))
+		errs = append(errs, errors.New("thumbnail quality is invalid"))
 	}
 
 	if cfg.ThumbnailQuality == ImageQualityOriginal {
-		errs = append(errs, fmt.Errorf("ThumbnailQuality cannot be %s", ImageQualityOriginal))
+		errs = append(errs, fmt.Errorf("thumbnail quality cannot be %s", ImageQualityOriginal))
 	}
 
 	if cfg.ThumbnailSize <= 0 {
-		errs = append(errs, errors.New("ThumbnailSize must be positive"))
+		errs = append(errs, errors.New("thumbnail size must be positive"))
 	}
 
 	return errors.Join(errs...)

@@ -10,9 +10,12 @@ import (
 
 const defaultSecureKey = "ChangeMe"
 
-// Config contains the application configuration settings
+// Config represents the application configuration settings
 type Config struct {
-	Upload   upload.Config
+	// Upload contains the upload configuration settings
+	Upload upload.Config
+
+	// Database contains the database configuration settings
 	Database db.Config
 
 	// Port gets the port number under which the site is being hosted.
@@ -35,17 +38,17 @@ func (c Config) validate() error {
 	errs := make([]error, 0)
 
 	if c.Port <= 0 {
-		errs = append(errs, errors.New("PORT must be a positive integer"))
+		errs = append(errs, errors.New("port must be a positive integer"))
 	}
 
 	if c.BaseAssetsPath == "" {
-		errs = append(errs, errors.New("BASE_ASSETS_PATH must be specified"))
+		errs = append(errs, errors.New("base assets path must be specified"))
 	}
 
 	if len(c.SecureKeys) == 0 {
-		errs = append(errs, errors.New("SECURE_KEY must be specified with 1 or more keys separated by a comma"))
+		errs = append(errs, errors.New("secure keys must be specified with 1 or more keys separated by a comma"))
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
-		slog.Warn("SECURE_KEY is set to the default value. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
+		slog.Warn("Using default secure key. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
 	}
 
 	return errors.Join(errs...)

@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-// Config contains the database configuration settings
+// Config represents the database configuration settings
 type Config struct {
 	// Driver gets which database/sql driver to use.
 	// Supported drivers: postgres, sqlite3

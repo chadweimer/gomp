@@ -19,36 +19,35 @@ func (e errUnsupportedType) Error() string {
 
 // MustBind initializes the supplied object based on assoiciated struct tags
 func MustBind(ptr any) {
-	objType := reflect.TypeOf(ptr)
-	if objType.Kind() != reflect.Pointer {
+	val := reflect.ValueOf(ptr)
+	if val.Kind() != reflect.Pointer {
 		panic("bind requires pointer types")
 	}
 
-	objType = objType.Elem()
-	if objType.Kind() != reflect.Struct {
+	val = val.Elem()
+	if val.Kind() != reflect.Struct {
 		panic("bind requires struct types")
 	}
 
-	objVal := reflect.ValueOf(ptr).Elem()
-	load(objType, objVal)
+	initAndBind(val)
 }
 
-func load(objType reflect.Type, objVal reflect.Value) {
-	for i := 0; i < objType.NumField(); i++ {
-		field := objType.Field(i)
-		val := objVal.Field(i)
-		if field.Type.Kind() == reflect.Struct {
-			load(field.Type, val)
+func initAndBind(objVal reflect.Value) {
+	for i := 0; i < objVal.NumField(); i++ {
+		fieldVal := objVal.Field(i)
+		if fieldVal.Kind() == reflect.Struct {
+			initAndBind(fieldVal)
 		} else {
-			setToDefault(field, val)
-			setFromEnv(field, val)
+			field := objVal.Type().Field(i)
+			setToDefault(field, fieldVal)
+			setFromEnv(field, fieldVal)
 		}
 	}
 }
 
 func setToDefault(field reflect.StructField, val reflect.Value) {
 	if defaultStr, ok := field.Tag.Lookup("default"); ok {
-		if err := set(field.Type, val, defaultStr); err != nil {
+		if err := set(val, defaultStr); err != nil {
 			panic(fmt.Errorf("improperly defined default on configuration field %s", field.Name))
 		}
 	}
@@ -71,23 +70,21 @@ func setFromEnv(field reflect.StructField, val reflect.Value) {
 	}
 
 	if ok {
-		if err := set(field.Type, val, envStr); err != nil {
-			slog.Warn("Failed to convert environment variable. Proceeding with default value",
-				"env", envName,
+		if err := set(val, envStr); err != nil {
+			slog.Warn("Failed to convert environment variable. Proceeding with existing value",
 				"type", val.Type,
-				"val", envStr,
+				"envName", envName,
+				"envVal", envStr,
 				"error", err)
 		}
 	}
 }
 
-func set(fieldType reflect.Type, val reflect.Value, str string) error {
-	switch fieldType.Kind() {
-	// case fieldType == reflect.TypeFor[[]string]():
-	// 	val.Set(reflect.ValueOf(strings.Split(str, ",")))
-
+func set(val reflect.Value, str string) error {
+	switch val.Type().Kind() {
 	case reflect.String:
-		val.SetString(str)
+		typed, _ := getValue(val.Type(), str)
+		val.SetString(typed.(string))
 
 	case reflect.Int:
 		fallthrough
@@ -98,7 +95,7 @@ func set(fieldType reflect.Type, val reflect.Value, str string) error {
 	case reflect.Int32:
 		fallthrough
 	case reflect.Int64:
-		typed, err := getValue(fieldType, str)
+		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
@@ -113,7 +110,7 @@ func set(fieldType reflect.Type, val reflect.Value, str string) error {
 	case reflect.Uint32:
 		fallthrough
 	case reflect.Uint64:
-		typed, err := getValue(fieldType, str)
+		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
@@ -122,7 +119,7 @@ func set(fieldType reflect.Type, val reflect.Value, str string) error {
 	case reflect.Float32:
 		fallthrough
 	case reflect.Float64:
-		typed, err := getValue(fieldType, str)
+		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
@@ -131,14 +128,14 @@ func set(fieldType reflect.Type, val reflect.Value, str string) error {
 	case reflect.Complex64:
 		fallthrough
 	case reflect.Complex128:
-		typed, err := getValue(fieldType, str)
+		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
 		val.SetComplex(typed.(complex128))
 
 	case reflect.Bool:
-		typed, err := getValue(fieldType, str)
+		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
@@ -147,25 +144,27 @@ func set(fieldType reflect.Type, val reflect.Value, str string) error {
 	case reflect.Array:
 		fallthrough
 	case reflect.Slice:
-		val.Clear()
-		elementType := fieldType.Elem()
-		for _, segment := range strings.Split(str, ",") {
+		elementType := val.Type().Elem()
+		segments := strings.Split(str, ",")
+		newVal := reflect.MakeSlice(val.Type(), 0, len(segments))
+		for _, segment := range segments {
 			element := reflect.New(elementType).Elem()
-			if err := set(elementType, element, strings.TrimSpace(segment)); err != nil {
+			if err := set(element, strings.TrimSpace(segment)); err != nil {
 				return err
 			}
-			val.Set(reflect.Append(val, element))
+			newVal = reflect.Append(newVal, element)
 		}
+		val.Set(newVal)
 
 	case reflect.Pointer:
-		ptrType := fieldType.Elem()
+		ptrType := val.Type().Elem()
 		if val.IsNil() {
 			val.Set(reflect.New(ptrType))
 		}
-		return set(ptrType, val.Elem(), str)
+		return set(val.Elem(), str)
 
 	default:
-		return errUnsupportedType{fieldType}
+		return errUnsupportedType{val.Type()}
 	}
 
 	return nil
