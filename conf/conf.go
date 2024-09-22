@@ -95,48 +95,28 @@ func set(val reflect.Value, str string) error {
 		typed, _ := getValue(val.Type(), str)
 		val.SetString(typed.(string))
 
-	case reflect.Int:
-		fallthrough
-	case reflect.Int8:
-		fallthrough
-	case reflect.Int16:
-		fallthrough
-	case reflect.Int32:
-		fallthrough
-	case reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
 		val.SetInt(typed.(int64))
 
-	case reflect.Uint:
-		fallthrough
-	case reflect.Uint8:
-		fallthrough
-	case reflect.Uint16:
-		fallthrough
-	case reflect.Uint32:
-		fallthrough
-	case reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
 		val.SetUint(typed.(uint64))
 
-	case reflect.Float32:
-		fallthrough
-	case reflect.Float64:
+	case reflect.Float32, reflect.Float64:
 		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
 		}
 		val.SetFloat(typed.(float64))
 
-	case reflect.Complex64:
-		fallthrough
-	case reflect.Complex128:
+	case reflect.Complex64, reflect.Complex128:
 		typed, err := getValue(val.Type(), str)
 		if err != nil {
 			return err
@@ -150,9 +130,7 @@ func set(val reflect.Value, str string) error {
 		}
 		val.SetBool(typed.(bool))
 
-	case reflect.Array:
-		fallthrough
-	case reflect.Slice:
+	case reflect.Array, reflect.Slice:
 		elementType := val.Type().Elem()
 		segments := strings.Split(str, ",")
 		newVal := reflect.MakeSlice(val.Type(), 0, len(segments))
@@ -184,48 +162,28 @@ func getValue(fieldType reflect.Type, str string) (any, error) {
 	case reflect.String:
 		return str, nil
 
-	case reflect.Int:
-		fallthrough
-	case reflect.Int8:
-		fallthrough
-	case reflect.Int16:
-		fallthrough
-	case reflect.Int32:
-		fallthrough
-	case reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		typed, err := strconv.ParseInt(str, 10, fieldType.Bits())
 		if err != nil {
 			return nil, err
 		}
 		return typed, nil
 
-	case reflect.Uint:
-		fallthrough
-	case reflect.Uint8:
-		fallthrough
-	case reflect.Uint16:
-		fallthrough
-	case reflect.Uint32:
-		fallthrough
-	case reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		typed, err := strconv.ParseUint(str, 10, fieldType.Bits())
 		if err != nil {
 			return nil, err
 		}
 		return typed, nil
 
-	case reflect.Float32:
-		fallthrough
-	case reflect.Float64:
+	case reflect.Float32, reflect.Float64:
 		typed, err := strconv.ParseFloat(str, fieldType.Bits())
 		if err != nil {
 			return nil, err
 		}
 		return typed, nil
 
-	case reflect.Complex64:
-		fallthrough
-	case reflect.Complex128:
+	case reflect.Complex64, reflect.Complex128:
 		typed, err := strconv.ParseComplex(str, fieldType.Bits())
 		if err != nil {
 			return nil, err
