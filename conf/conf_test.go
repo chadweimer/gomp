@@ -7,7 +7,7 @@ import (
 	"github.com/chadweimer/gomp/utils"
 )
 
-func TestMustBind_Defaults(t *testing.T) {
+func TestBind_Defaults(t *testing.T) {
 	type intTypes struct {
 		TestInt      int   `default:"-1"`
 		TestInt8     int8  `default:"-2"`
@@ -80,13 +80,16 @@ func TestMustBind_Defaults(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := allSupportedTypes{}
-			if MustBind(&got); !reflect.DeepEqual(got, tt.want) {
+			if err := Bind(&got); err != nil {
+				t.Error(err)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MustBind() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
-func TestMustBind_EnvVar(t *testing.T) {
+func TestBind_EnvVar(t *testing.T) {
 	type testStruct struct {
 		TestInt    int    `env:"TEST_INT" default:"1"`
 		TestString string `env:"TEST_STRING" default:"Default"`
@@ -132,14 +135,17 @@ func TestMustBind_EnvVar(t *testing.T) {
 				t.Setenv(key, val)
 			}
 			got := testStruct{}
-			if MustBind(&got); !reflect.DeepEqual(got, tt.want) {
+			if err := Bind(&got); err != nil {
+				t.Error(err)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MustBind() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestMustBind_BadValuesPanic(t *testing.T) {
+func TestBind_BadValuesReturnError(t *testing.T) {
 	//revive:disable:struct-tag
 	type goodInt struct {
 		TestInt int `default:"1"`
@@ -202,12 +208,9 @@ func TestMustBind_BadValuesPanic(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				if r := recover(); r == nil {
-					t.Errorf("The code did not panic")
-				}
-			}()
-			MustBind(tt.arg)
+			if err := Bind(tt.arg); err == nil {
+				t.Errorf("Bind() did not error")
+			}
 		})
 	}
 }

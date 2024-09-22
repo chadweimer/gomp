@@ -30,7 +30,10 @@ func main() {
 
 	// Load configuration
 	cfg := &Config{}
-	conf.MustBind(cfg)
+	if err := conf.Bind(cfg); err != nil {
+		slog.Error("Failed to load configuration. Exiting...", "error", err)
+		os.Exit(1)
+	}
 
 	// Reconfigure the logger now that we've loaded the main application configuation
 	if cfg.IsDevelopment {
@@ -49,19 +52,19 @@ func main() {
 
 	uplDriver, err := upload.CreateDriver(cfg.Upload.Driver)
 	if err != nil {
-		slog.Error("Establishing upload driver failed", "error", err)
+		slog.Error("Establishing upload driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
 
 	uploader, err := upload.CreateImageUploader(uplDriver, cfg.Upload.Image)
 	if err != nil {
-		slog.Error("Establishing uploader failed", "error", err)
+		slog.Error("Establishing uploader failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
 
 	dbDriver, err := db.CreateDriver(cfg.Database)
 	if err != nil {
-		slog.Error("Establishing database driver failed", "error", err)
+		slog.Error("Establishing database driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
 	defer dbDriver.Close()

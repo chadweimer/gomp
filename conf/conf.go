@@ -18,14 +18,8 @@ func (e errUnsupportedType) Error() string {
 	return fmt.Sprintf("unsupported field type: %s", e.fieldType)
 }
 
-// MustBind initializes the supplied object based on assoiciated struct tags
-func MustBind(ptr any) {
-	if err := bind(ptr); err != nil {
-		panic(err)
-	}
-}
-
-func bind(ptr any) error {
+// Bind initializes the supplied object based on assoiciated struct tags
+func Bind(ptr any) error {
 	val := reflect.ValueOf(ptr)
 	if val.Kind() != reflect.Pointer {
 		return errors.New("bind requires pointer types")
