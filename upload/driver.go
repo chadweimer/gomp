@@ -30,13 +30,14 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(driver string, path string) (Driver, error) {
-	switch driver {
+func CreateDriver(cfg DriverConfig) (Driver, error) {
+	switch cfg.Driver {
 	case FileSystemDriver:
-		return newFileSystemDriver(path)
+		return newFileSystemDriver(cfg.Path)
 	case S3Driver:
-		return newS3Driver(path)
+		return newS3Driver(cfg.Path)
 	}
 
-	return nil, fmt.Errorf("invalid Driver '%s' specified", driver)
+	return nil, fmt.Errorf("invalid Driver '%s' specified; driver must be one of ('%s', '%s')",
+		cfg.Driver, FileSystemDriver, S3Driver)
 }

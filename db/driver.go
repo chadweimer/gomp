@@ -6,8 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
+)
+
+const (
+	// Needed for backward compatibility
+	sqliteLegacyDriverName = "sqlite3"
 )
 
 // ---- Begin Standard Errors ----
@@ -37,22 +44,47 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
+func CreateDriver(cfg Config) (Driver, error) {
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
+	driver := cfg.Driver
+
+	// Special case for backward compatibility
+	if driver == "" {
+		slog.Debug("Database driver is empty. Will attempt to infer...")
+		if strings.HasPrefix(cfg.ConnectionString, "file:") {
+			slog.Debug("Setting database driver", "value", SQLiteDriverName)
+			driver = SQLiteDriverName
+		} else if strings.HasPrefix(cfg.ConnectionString, "postgres:") {
+			slog.Debug("Setting database driver", "value", PostgresDriverName)
+			driver = PostgresDriverName
+		} else {
+			return nil, errors.New("unable to infer a value for database driver")
+		}
+	} else if driver == sqliteLegacyDriverName {
+		// If the old driver name for sqlite is being used,
+		// we'll allow it and map it to the new one
+		slog.Debug("Detected database driver legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, SQLiteDriverName)
+		driver = SQLiteDriverName
+	}
+
 	switch driver {
 	case PostgresDriverName:
 		drv, err := openPostgres(
-			connectionString,
-			migrationsTableName,
-			migrationsForceVersion)
+			cfg.ConnectionString,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
 		if err != nil {
 			return nil, err
 		}
 		return drv, nil
 	case SQLiteDriverName:
 		drv, err := openSQLite(
-			connectionString,
-			migrationsTableName,
-			migrationsForceVersion)
+			cfg.ConnectionString,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
 		if err != nil {
 			return nil, err
 		}

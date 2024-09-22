@@ -11,7 +11,6 @@ import (
 
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	uploadmock "github.com/chadweimer/gomp/mocks/upload"
-	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/disintegration/imaging"
 	"github.com/golang/mock/gomock"
@@ -63,16 +62,17 @@ func Test_Upload(t *testing.T) {
 func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *uploadmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := models.ImageConfiguration{
-		ImageQuality:     models.ImageQualityOriginal,
+	imgCfg := upload.ImageConfig{
+		ImageQuality:     upload.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailQuality: upload.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
+	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},
-		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
+		upl:        upl,
 		db:         dbDriver,
 	}
 	return api, uplDriver

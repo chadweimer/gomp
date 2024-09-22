@@ -10,19 +10,21 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chadweimer/gomp/models"
 	"github.com/disintegration/imaging"
 )
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
 	Driver Driver
-	imgCfg models.ImageConfiguration
+	imgCfg ImageConfig
 }
 
 // CreateImageUploader returns an ImageUploader implementation that uses the specified Driver
-func CreateImageUploader(driver Driver, imgCfg models.ImageConfiguration) *ImageUploader {
-	return &ImageUploader{driver, imgCfg}
+func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, error) {
+	if err := imgCfg.validate(); err != nil {
+		return nil, err
+	}
+	return &ImageUploader{driver, imgCfg}, nil
 }
 
 // Save saves the uploaded image, including generating a thumbnail,
@@ -43,7 +45,7 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 	// Then determine if it should be resized before saving
 	var origURL string
 	imgDir := getDirPathForImage(recipeID)
-	if u.imgCfg.ImageQuality == models.ImageQualityOriginal {
+	if u.imgCfg.ImageQuality == ImageQualityOriginal {
 		// Save the original as-is
 		origURL, err = u.saveImage(data, imgDir, imageName)
 	} else {
@@ -170,26 +172,26 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func toResampleFilter(q models.ImageQualityLevel) imaging.ResampleFilter {
+func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {
 	switch q {
-	case models.ImageQualityHigh:
+	case ImageQualityHigh:
 		return imaging.Box
-	case models.ImageQualityMedium:
+	case ImageQualityMedium:
 		return imaging.Box
-	case models.ImageQualityLow:
+	case ImageQualityLow:
 		return imaging.NearestNeighbor
 	default:
 		return imaging.Box
 	}
 }
 
-func toJPEGQuality(q models.ImageQualityLevel) int {
+func toJPEGQuality(q ImageQualityLevel) int {
 	switch q {
-	case models.ImageQualityHigh:
+	case ImageQualityHigh:
 		return 92
-	case models.ImageQualityMedium:
+	case ImageQualityMedium:
 		return 80
-	case models.ImageQualityLow:
+	case ImageQualityLow:
 		return 70
 	default:
 		return 92
