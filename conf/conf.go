@@ -35,13 +35,17 @@ func Bind(ptr any) error {
 
 func bindValue(objVal reflect.Value) error {
 	for i := 0; i < objVal.NumField(); i++ {
+		field := objVal.Type().Field(i)
+		if !field.IsExported() {
+			continue
+		}
+
 		fieldVal := objVal.Field(i)
 		if fieldVal.Kind() == reflect.Struct {
 			if err := bindValue(fieldVal); err != nil {
 				return err
 			}
 		} else {
-			field := objVal.Type().Field(i)
 			if err := setToDefault(field, fieldVal); err != nil {
 				return err
 			}
