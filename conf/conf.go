@@ -92,43 +92,42 @@ func setFromEnv(field reflect.StructField, val reflect.Value) {
 func set(val reflect.Value, str string) error {
 	switch val.Type().Kind() {
 	case reflect.String:
-		typed, _ := getValue(val.Type(), str)
-		val.SetString(typed.(string))
+		val.SetString(str)
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		typed, err := getValue(val.Type(), str)
+		typed, err := strconv.ParseInt(str, 10, val.Type().Bits())
 		if err != nil {
 			return err
 		}
-		val.SetInt(typed.(int64))
+		val.SetInt(typed)
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		typed, err := getValue(val.Type(), str)
+		typed, err := strconv.ParseUint(str, 10, val.Type().Bits())
 		if err != nil {
 			return err
 		}
-		val.SetUint(typed.(uint64))
+		val.SetUint(typed)
 
 	case reflect.Float32, reflect.Float64:
-		typed, err := getValue(val.Type(), str)
+		typed, err := strconv.ParseFloat(str, val.Type().Bits())
 		if err != nil {
 			return err
 		}
-		val.SetFloat(typed.(float64))
+		val.SetFloat(typed)
 
 	case reflect.Complex64, reflect.Complex128:
-		typed, err := getValue(val.Type(), str)
+		typed, err := strconv.ParseComplex(str, val.Type().Bits())
 		if err != nil {
 			return err
 		}
-		val.SetComplex(typed.(complex128))
+		val.SetComplex(typed)
 
 	case reflect.Bool:
-		typed, err := getValue(val.Type(), str)
+		typed, err := strconv.ParseBool(str)
 		if err != nil {
 			return err
 		}
-		val.SetBool(typed.(bool))
+		val.SetBool(typed)
 
 	case reflect.Array, reflect.Slice:
 		elementType := val.Type().Elem()
@@ -155,48 +154,4 @@ func set(val reflect.Value, str string) error {
 	}
 
 	return nil
-}
-
-func getValue(fieldType reflect.Type, str string) (any, error) {
-	switch fieldType.Kind() {
-	case reflect.String:
-		return str, nil
-
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		typed, err := strconv.ParseInt(str, 10, fieldType.Bits())
-		if err != nil {
-			return nil, err
-		}
-		return typed, nil
-
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		typed, err := strconv.ParseUint(str, 10, fieldType.Bits())
-		if err != nil {
-			return nil, err
-		}
-		return typed, nil
-
-	case reflect.Float32, reflect.Float64:
-		typed, err := strconv.ParseFloat(str, fieldType.Bits())
-		if err != nil {
-			return nil, err
-		}
-		return typed, nil
-
-	case reflect.Complex64, reflect.Complex128:
-		typed, err := strconv.ParseComplex(str, fieldType.Bits())
-		if err != nil {
-			return nil, err
-		}
-		return typed, nil
-
-	case reflect.Bool:
-		typed, err := strconv.ParseBool(str)
-		if err != nil {
-			return nil, err
-		}
-		return typed, nil
-	}
-
-	return nil, errUnsupportedType{fieldType}
 }
