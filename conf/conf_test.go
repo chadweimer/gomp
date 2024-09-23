@@ -18,6 +18,8 @@ func TestBind_Defaults(t *testing.T) {
 		TestIntPtr   *int  `default:"-1"`
 	}
 	type allSupportedTypes struct {
+		unexportedInt int `default:"5"`
+
 		TestInts intTypes
 
 		TestUint      uint   `default:"1"`
@@ -46,6 +48,8 @@ func TestBind_Defaults(t *testing.T) {
 		{
 			name: "Defaults are set",
 			want: allSupportedTypes{
+				unexportedInt: 0, // Should be ignored, not set
+
 				TestInts: intTypes{
 					TestInt:      -1,
 					TestInt8:     -2,
