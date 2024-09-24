@@ -3,6 +3,7 @@ package conf
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/chadweimer/gomp/utils"
 )
@@ -40,6 +41,8 @@ func TestBind_Defaults(t *testing.T) {
 		TestBoolArray []bool `default:"true,false"`
 
 		TestString string `default:"Hello, Tests!"`
+
+		TestTime time.Time `default:"2000-01-02T03:04:05Z"`
 	}
 	tests := []struct {
 		name string
@@ -78,6 +81,8 @@ func TestBind_Defaults(t *testing.T) {
 				TestBoolArray: []bool{true, false},
 
 				TestString: "Hello, Tests!",
+
+				TestTime: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 			},
 		},
 	}
