@@ -2,7 +2,6 @@ package conf
 
 import (
 	"encoding"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,74 +10,56 @@ import (
 	"strings"
 )
 
-type errUnsupportedType struct {
-	fieldType reflect.Type
-}
-
-func (e errUnsupportedType) Error() string {
-	return fmt.Sprintf("unsupported field type: %s", e.fieldType)
-}
+var textMarshalerType = reflect.TypeFor[encoding.TextMarshaler]()
 
 // Bind initializes the supplied object based on assoiciated struct tags
 func Bind(ptr any) error {
 	val := reflect.ValueOf(ptr)
 	if val.Kind() != reflect.Pointer {
-		return errors.New("bind requires pointer types")
+		return errPointerRequired
 	}
 
 	val = val.Elem()
 	if val.Kind() != reflect.Struct {
-		return errors.New("bind requires struct types")
+		return errStructRequired
 	}
 
 	return bindStruct(val)
 }
 
 func bindStruct(objVal reflect.Value) error {
-	setValue := func(field reflect.StructField, fieldVal reflect.Value) error {
-		if err := setToDefault(field, fieldVal); err != nil {
-			return err
-		}
-		setFromEnv(field, fieldVal)
-
-		return nil
-	}
-
 	for i := 0; i < objVal.NumField(); i++ {
 		field := objVal.Type().Field(i)
 		if !field.IsExported() {
 			continue
 		}
 
-		fieldVal := objVal.Field(i)
+		fieldVal := resolvePointers(objVal.Field(i))
 
-		// Walk through any pointer layers
-		for fieldVal.Type().Kind() == reflect.Pointer {
-			if fieldVal.IsNil() {
-				ptrType := fieldVal.Type().Elem()
-				fieldVal.Set(reflect.New(ptrType))
-			}
-			fieldVal = fieldVal.Elem()
-		}
-
-		var err error
-		// If this is a struct, we need to recurse
-		if fieldVal.Kind() == reflect.Struct {
-			// Unless this is a TextUnmarshaler
-			if _, ok := fieldVal.Addr().Interface().(encoding.TextUnmarshaler); ok {
-				err = setValue(field, fieldVal)
-			} else {
-				err = bindStruct(fieldVal)
+		// If this is a struct, we need to recurse unless it's a TextUnmarshaler
+		if fieldVal.Kind() == reflect.Struct && !fieldVal.Type().AssignableTo(textMarshalerType) {
+			if err := bindStruct(fieldVal); err != nil {
+				return err
 			}
 		} else {
-			err = setValue(field, fieldVal)
-		}
-		if err != nil {
-			return err
+			if err := setToDefault(field, fieldVal); err != nil {
+				return err
+			}
+			setFromEnv(field, fieldVal)
 		}
 	}
 
 	return nil
+}
+
+func resolvePointers(val reflect.Value) reflect.Value {
+	for val.Type().Kind() == reflect.Pointer {
+		if val.IsNil() {
+			val.Set(reflect.New(val.Type().Elem()))
+		}
+		val = val.Elem()
+	}
+	return val
 }
 
 func setToDefault(field reflect.StructField, val reflect.Value) error {
@@ -124,62 +105,60 @@ func set(val reflect.Value, str string) error {
 		if unmarshaler, ok := val.Addr().Interface().(encoding.TextUnmarshaler); ok {
 			return unmarshaler.UnmarshalText([]byte(str))
 		}
-		return errUnsupportedType{val.Type()}
+		return &errUnsupportedType{val.Type()}
 
 	case reflect.String:
 		val.SetString(str)
+		return nil
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		typed, err := strconv.ParseInt(str, 10, val.Type().Bits())
-		if err != nil {
-			return err
-		}
-		val.SetInt(typed)
+		return convertAndSet(str, func(str string) (int64, error) {
+			return strconv.ParseInt(str, 0, val.Type().Bits())
+		}, val.SetInt)
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		typed, err := strconv.ParseUint(str, 10, val.Type().Bits())
-		if err != nil {
-			return err
-		}
-		val.SetUint(typed)
+		return convertAndSet(str, func(str string) (uint64, error) {
+			return strconv.ParseUint(str, 0, val.Type().Bits())
+		}, val.SetUint)
 
 	case reflect.Float32, reflect.Float64:
-		typed, err := strconv.ParseFloat(str, val.Type().Bits())
-		if err != nil {
-			return err
-		}
-		val.SetFloat(typed)
+		return convertAndSet(str, func(str string) (float64, error) {
+			return strconv.ParseFloat(str, val.Type().Bits())
+		}, val.SetFloat)
 
 	case reflect.Complex64, reflect.Complex128:
-		typed, err := strconv.ParseComplex(str, val.Type().Bits())
-		if err != nil {
-			return err
-		}
-		val.SetComplex(typed)
+		return convertAndSet(str, func(str string) (complex128, error) {
+			return strconv.ParseComplex(str, val.Type().Bits())
+		}, val.SetComplex)
 
 	case reflect.Bool:
-		typed, err := strconv.ParseBool(str)
-		if err != nil {
-			return err
-		}
-		val.SetBool(typed)
+		return convertAndSet(str, strconv.ParseBool, val.SetBool)
 
 	case reflect.Array, reflect.Slice:
-		elementType := val.Type().Elem()
-		segments := strings.Split(str, ",")
-		newVal := reflect.MakeSlice(val.Type(), 0, len(segments))
-		for _, segment := range segments {
-			element := reflect.New(elementType).Elem()
-			if err := set(element, strings.TrimSpace(segment)); err != nil {
-				return err
+		return convertAndSet(str, func(str string) (reflect.Value, error) {
+			valType := val.Type()
+			segments := strings.Split(str, ",")
+			newVal := reflect.MakeSlice(valType, 0, len(segments))
+			for _, segment := range segments {
+				element := reflect.New(valType.Elem()).Elem()
+				if err := set(element, strings.TrimSpace(segment)); err != nil {
+					return reflect.Zero(valType), err
+				}
+				newVal = reflect.Append(newVal, element)
 			}
-			newVal = reflect.Append(newVal, element)
-		}
-		val.Set(newVal)
+			return newVal, nil
+		}, val.Set)
 
 	default:
-		return errUnsupportedType{val.Type()}
+		return &errUnsupportedType{val.Type()}
 	}
+}
 
+func convertAndSet[T any](str string, converter func(str string) (T, error), setter func(val T)) error {
+	typed, err := converter(str)
+	if err != nil {
+		return err
+	}
+	setter(typed)
 	return nil
 }

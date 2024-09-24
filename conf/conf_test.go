@@ -1,7 +1,9 @@
 package conf
 
 import (
+	"errors"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -11,9 +13,9 @@ import (
 func TestBind_Defaults(t *testing.T) {
 	type intTypes struct {
 		TestInt      int   `default:"-1"`
-		TestInt8     int8  `default:"-2"`
-		TestInt16    int16 `default:"-3"`
-		TestInt32    int32 `default:"-4"`
+		TestInt8     int8  `default:"-0b10"`
+		TestInt16    int16 `default:"-0o3"`
+		TestInt32    int32 `default:"-0x4"`
 		TestInt64    int64 `default:"-5"`
 		TestIntArray []int `default:"-1,-2"`
 		TestIntPtr   *int  `default:"-1"`
@@ -24,9 +26,9 @@ func TestBind_Defaults(t *testing.T) {
 		TestInts intTypes
 
 		TestUint      uint   `default:"1"`
-		TestUint8     uint8  `default:"2"`
-		TestUint16    uint16 `default:"3"`
-		TestUint32    uint32 `default:"4"`
+		TestUint8     uint8  `default:"0b10"`
+		TestUint16    uint16 `default:"0o3"`
+		TestUint32    uint32 `default:"0x4"`
 		TestUint64    uint64 `default:"5"`
 		TestUintArray []uint `default:"1,2"`
 
@@ -90,7 +92,7 @@ func TestBind_Defaults(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := allSupportedTypes{}
 			if err := Bind(&got); err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Bind() = %v, want %v", got, tt.want)
@@ -163,7 +165,7 @@ func TestBind_EnvVar(t *testing.T) {
 			}
 			got := testStruct{}
 			if err := Bind(&got); err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Bind() = %v, want %v", got, tt.want)
@@ -190,52 +192,142 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 		TestComplex complex64 `default:"d"`
 	}
 	type badBool struct {
-		TestBool bool `default:"c"`
+		TestBool bool `default:"e"`
+	}
+	type badSlice struct {
+		TestSlice []int `default:"1,2,f"`
 	}
 	type badMap struct {
 		TestMap map[string]string `default:"a=b"`
 	}
 	//revive:disable:enable-tag
 	tests := []struct {
-		name string
-		arg  any
+		name       string
+		arg        any
+		errChecker func(error) (error, bool)
 	}{
 		{
 			name: "Int",
 			arg:  &badInt{},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseInt",
+					Num:  "a",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
+		},
+		{
+			name: "Nested Int",
+			arg: &struct {
+				BadInt badInt
+			}{
+				BadInt: badInt{},
+			},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseInt",
+					Num:  "a",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
 		},
 		{
 			name: "Uint",
 			arg:  &badUint{},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseUint",
+					Num:  "b",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
 		},
 		{
 			name: "Float",
 			arg:  &badFloat{},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseFloat",
+					Num:  "c",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
 		},
 		{
 			name: "Complex",
 			arg:  &badComplex{},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseComplex",
+					Num:  "d",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
 		},
 		{
 			name: "Bool",
 			arg:  &badBool{},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseBool",
+					Num:  "e",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
 		},
 		{
-			name: "Map",
+			name: "Slice",
+			arg:  &badSlice{},
+			errChecker: func(got error) (error, bool) {
+				want := &strconv.NumError{
+					Func: "ParseInt",
+					Num:  "f",
+					Err:  errors.New(""),
+				}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
+		},
+		{
+			name: "Maps not supported",
 			arg:  &badMap{},
+			errChecker: func(got error) (error, bool) {
+				want := &errUnsupportedType{}
+				return want, errors.As(got, utils.GetPtr(want))
+			},
 		},
 		{
 			name: "Not a pointer",
 			arg:  goodInt{},
+			errChecker: func(got error) (error, bool) {
+				want := errPointerRequired
+				return want, errors.Is(got, want)
+			},
 		},
 		{
 			name: "Not a struct",
 			arg:  utils.GetPtr("foobar"),
+			errChecker: func(got error) (error, bool) {
+				want := errStructRequired
+				return want, errors.Is(got, want)
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := Bind(tt.arg); err == nil {
+			if err := Bind(tt.arg); err != nil {
+				if tt.errChecker != nil {
+					if want, ok := tt.errChecker(err); !ok {
+						t.Errorf("Bind() = %v, want = %v", err, want)
+					}
+				}
+			} else {
 				t.Errorf("Bind() did not error")
 			}
 		})
