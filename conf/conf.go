@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"encoding"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 )
+
+var textUnmarshalerType reflect.Type = reflect.TypeFor[encoding.TextUnmarshaler]()
 
 type errUnsupportedType struct {
 	fieldType reflect.Type
@@ -41,7 +44,7 @@ func bindValue(objVal reflect.Value) error {
 		}
 
 		fieldVal := objVal.Field(i)
-		if fieldVal.Kind() == reflect.Struct {
+		if fieldVal.Kind() == reflect.Struct && fieldVal.Type().AssignableTo(textUnmarshalerType) {
 			if err := bindValue(fieldVal); err != nil {
 				return err
 			}
@@ -94,6 +97,11 @@ func setFromEnv(field reflect.StructField, val reflect.Value) {
 }
 
 func set(val reflect.Value, str string) error {
+	if val.Type().AssignableTo(textUnmarshalerType) {
+		unmarshaler := val.Interface().(encoding.TextUnmarshaler)
+		return unmarshaler.UnmarshalText([]byte(str))
+	}
+
 	switch val.Type().Kind() {
 	case reflect.String:
 		val.SetString(str)
