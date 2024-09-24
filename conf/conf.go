@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"encoding"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -30,10 +31,19 @@ func Bind(ptr any) error {
 		return errors.New("bind requires struct types")
 	}
 
-	return bindValue(val)
+	return bindStruct(val)
 }
 
-func bindValue(objVal reflect.Value) error {
+func bindStruct(objVal reflect.Value) error {
+	setValue := func(field reflect.StructField, fieldVal reflect.Value) error {
+		if err := setToDefault(field, fieldVal); err != nil {
+			return err
+		}
+		setFromEnv(field, fieldVal)
+
+		return nil
+	}
+
 	for i := 0; i < objVal.NumField(); i++ {
 		field := objVal.Type().Field(i)
 		if !field.IsExported() {
@@ -41,15 +51,30 @@ func bindValue(objVal reflect.Value) error {
 		}
 
 		fieldVal := objVal.Field(i)
+
+		// Walk through any pointer layers
+		for fieldVal.Type().Kind() == reflect.Pointer {
+			if fieldVal.IsNil() {
+				ptrType := fieldVal.Type().Elem()
+				fieldVal.Set(reflect.New(ptrType))
+			}
+			fieldVal = fieldVal.Elem()
+		}
+
+		var err error
+		// If this is a struct, we need to recurse
 		if fieldVal.Kind() == reflect.Struct {
-			if err := bindValue(fieldVal); err != nil {
-				return err
+			// Unless this is a TextUnmarshaler
+			if _, ok := fieldVal.Addr().Interface().(encoding.TextUnmarshaler); ok {
+				err = setValue(field, fieldVal)
+			} else {
+				err = bindStruct(fieldVal)
 			}
 		} else {
-			if err := setToDefault(field, fieldVal); err != nil {
-				return err
-			}
-			setFromEnv(field, fieldVal)
+			err = setValue(field, fieldVal)
+		}
+		if err != nil {
+			return err
 		}
 	}
 
@@ -95,6 +120,12 @@ func setFromEnv(field reflect.StructField, val reflect.Value) {
 
 func set(val reflect.Value, str string) error {
 	switch val.Type().Kind() {
+	case reflect.Struct:
+		if unmarshaler, ok := val.Addr().Interface().(encoding.TextUnmarshaler); ok {
+			return unmarshaler.UnmarshalText([]byte(str))
+		}
+		return errUnsupportedType{val.Type()}
+
 	case reflect.String:
 		val.SetString(str)
 
@@ -145,13 +176,6 @@ func set(val reflect.Value, str string) error {
 			newVal = reflect.Append(newVal, element)
 		}
 		val.Set(newVal)
-
-	case reflect.Pointer:
-		ptrType := val.Type().Elem()
-		if val.IsNil() {
-			val.Set(reflect.New(ptrType))
-		}
-		return set(val.Elem(), str)
 
 	default:
 		return errUnsupportedType{val.Type()}
