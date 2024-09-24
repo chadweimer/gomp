@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-var textUnmarshalerType reflect.Type = reflect.TypeFor[encoding.TextUnmarshaler]()
-
 type errUnsupportedType struct {
 	fieldType reflect.Type
 }
