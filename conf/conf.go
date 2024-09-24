@@ -50,8 +50,18 @@ func bindStruct(objVal reflect.Value) error {
 			continue
 		}
 
-		var err error
 		fieldVal := objVal.Field(i)
+
+		// Walk through any pointer layers
+		for fieldVal.Type().Kind() == reflect.Pointer {
+			if fieldVal.IsNil() {
+				ptrType := fieldVal.Type().Elem()
+				fieldVal.Set(reflect.New(ptrType))
+			}
+			fieldVal = fieldVal.Elem()
+		}
+
+		var err error
 		// If this is a struct, we need to recurse
 		if fieldVal.Kind() == reflect.Struct {
 			// Unless this is a TextUnmarshaler
@@ -166,13 +176,6 @@ func set(val reflect.Value, str string) error {
 			newVal = reflect.Append(newVal, element)
 		}
 		val.Set(newVal)
-
-	case reflect.Pointer:
-		ptrType := val.Type().Elem()
-		if val.IsNil() {
-			val.Set(reflect.New(ptrType))
-		}
-		return set(val.Elem(), str)
 
 	default:
 		return errUnsupportedType{val.Type()}
