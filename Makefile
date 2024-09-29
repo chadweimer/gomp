@@ -1,7 +1,11 @@
 NPROCS = $(shell grep -c 'processor' /proc/cpuinfo)
 MAKEFLAGS += -j$(NPROCS)
 
-BUILD_VERSION=
+BUILD_VERSION?=
+ARCHIVE_SUFFIX:=
+ifdef BUILD_VERSION
+	ARCHIVE_SUFFIX:=-$(BUILD_VERSION)
+endif
 
 BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
@@ -184,13 +188,13 @@ endif
 # ---- ARCHIVE ----
 
 .PHONY: archive
-archive: $(BUILD_DIR)/gomp-linux-amd64.tar.gz $(BUILD_DIR)/gomp-linux-arm.tar.gz $(BUILD_DIR)/gomp-linux-arm64.tar.gz $(BUILD_DIR)/gomp-windows-amd64.zip
+archive: $(BUILD_DIR)/gomp-linux-amd64$(ARCHIVE_SUFFIX).tar.gz $(BUILD_DIR)/gomp-linux-arm$(ARCHIVE_SUFFIX).tar.gz $(BUILD_DIR)/gomp-linux-arm64$(ARCHIVE_SUFFIX).tar.gz $(BUILD_DIR)/gomp-windows-amd64$(ARCHIVE_SUFFIX).zip
 
-$(BUILD_DIR)/gomp-linux-amd64.tar.gz: $(BUILD_LIN_AMD64_DIR)
-$(BUILD_DIR)/gomp-linux-arm.tar.gz: $(BUILD_LIN_ARM_DIR)
-$(BUILD_DIR)/gomp-linux-arm64.tar.gz: $(BUILD_LIN_ARM64_DIR)
-$(BUILD_DIR)/gomp-linux-%.tar.gz:
+$(BUILD_DIR)/gomp-linux-amd64$(ARCHIVE_SUFFIX).tar.gz: $(BUILD_LIN_AMD64_DIR)
+$(BUILD_DIR)/gomp-linux-arm$(ARCHIVE_SUFFIX).tar.gz: $(BUILD_LIN_ARM_DIR)
+$(BUILD_DIR)/gomp-linux-arm64$(ARCHIVE_SUFFIX).tar.gz: $(BUILD_LIN_ARM64_DIR)
+$(BUILD_DIR)/gomp-linux-%$(ARCHIVE_SUFFIX).tar.gz:
 	tar -C $< -zcf $@ .
 
-$(BUILD_DIR)/gomp-windows-amd64.zip: $(BUILD_WIN_AMD64_DIR)
+$(BUILD_DIR)/gomp-windows-amd64$(ARCHIVE_SUFFIX).zip: $(BUILD_WIN_AMD64_DIR)
 	cd $< && zip -rq ../../../$@ *
