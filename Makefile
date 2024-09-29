@@ -28,7 +28,7 @@ GO_MODULE_NAME ?= github.com/$(REPO_NAME)
 GOOS := linux
 GOARCH := amd64
 GO_ENV=GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
-GO_LD_FLAGS=-ldflags "-X '$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)' -X '$(GO_MODULE_NAME)/metadata.Copyright=\"$(COPYRIGHT)\"'"
+GO_LD_FLAGS=-ldflags '-X "$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)" -X "$(GO_MODULE_NAME)/metadata.Copyright=$(COPYRIGHT)"'
 
 CONTAINER_REGISTRY ?= ghcr.io
 
