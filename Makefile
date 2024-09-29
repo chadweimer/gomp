@@ -7,7 +7,7 @@ ifdef BUILD_VERSION
 	ARCHIVE_SUFFIX:=-$(BUILD_VERSION)
 endif
 
-COPYRIGHT := Copyright 2016-$(shell date +%Y) Chad Weimer
+COPYRIGHT := Copyright © 2016-$(shell date +%Y) Chad Weimer
 
 BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
