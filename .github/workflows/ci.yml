@@ -63,17 +63,17 @@ jobs:
 
       - name: Set env vars (push)
         run: |
-          echo "BUILD_VERSION="0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
           echo "CONTAINER_TAG=latest" >> $GITHUB_ENV
         if: github.event_name == 'push'
       - name: Set env vars (pr)
         run: |
-          echo "BUILD_VERSION="0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
           echo "CONTAINER_TAG=dev" >> $GITHUB_ENV
         if: github.event_name == 'pull_request'
       - name: Set env vars (release)
         run: |
-          echo "BUILD_VERSION="${{ github.event.release.tag_name }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=${{ github.event.release.tag_name }}+commit.${{ github.sha }}" >> $GITHUB_ENV
           echo "CONTAINER_TAG="${{ github.event.release.tag_name }}" >> $GITHUB_ENV
         if: github.event_name == 'release'
 
