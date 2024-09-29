@@ -8,6 +8,7 @@ interface AppConfig {
 
 const { state: appConfig } = createStore<AppConfig>({
   info: {
+    copyright: 'Copyright © Chad Weimer',
     version: '<Unknown>'
   },
   config: {

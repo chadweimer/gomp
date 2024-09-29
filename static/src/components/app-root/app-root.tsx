@@ -94,7 +94,7 @@ export class AppRoot {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. Copyright © 2016-2022 Chad Weimer</div>
+            <div class="copyright">GOMP: Go Meal Plannner {appConfig.info.version}. {appConfig.info.copyright}</div>
           </ion-footer>
         </ion-menu>
 

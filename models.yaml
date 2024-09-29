@@ -59,8 +59,12 @@ components:
     appInfo:
       type: object
       required:
+        - copyright
         - version
       properties:
+        copyright:
+          type: string
+          readOnly: true
         version:
           type: string
           readOnly: true
