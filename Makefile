@@ -7,6 +7,8 @@ ifdef BUILD_VERSION
 	ARCHIVE_SUFFIX:=-$(BUILD_VERSION)
 endif
 
+COPYRIGHT := "Copyright 2016-$(shell date +%Y) Chad Weimer"
+
 BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
 BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
@@ -26,7 +28,7 @@ GO_MODULE_NAME ?= github.com/$(REPO_NAME)
 GOOS := linux
 GOARCH := amd64
 GO_ENV=GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0
-GO_LD_FLAGS=-ldflags "-X '$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)'"
+GO_LD_FLAGS=-ldflags "-X '$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)' -X '$(GO_MODULE_NAME)/metadata.Copyright=$(COPYRIGHT)'"
 
 CONTAINER_REGISTRY ?= ghcr.io
 
