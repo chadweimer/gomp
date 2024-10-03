@@ -133,13 +133,6 @@ $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	cp -r static/coverage/* $@
 
 
-# ---- DOCKER ----
-
-.PHONY: docker
-docker: | archive
-	docker buildx build --build-arg ARCHIVE_SUFFIX=$(ARCHIVE_SUFFIX) $(DOCKER_ARGS) .
-
-
 # ---- ARCHIVE ----
 
 .PHONY: archive
@@ -147,3 +140,13 @@ archive: $(ROOT_BUILD_DIR)/gomp-$(TARGETOS)-$(TARGETARCH)$(ARCHIVE_SUFFIX).tar.g
 
 $(ROOT_BUILD_DIR)/gomp-$(TARGETOS)-$(TARGETARCH)$(ARCHIVE_SUFFIX).tar.gz: $(BUILD_DIR)
 	tar -C $(BUILD_DIR) -zcf $@ .
+
+
+# ---- DOCKER ----
+
+.PHONY: docker
+# This make target does not directly require any other targets,
+# and assumes that the required archives are already present,
+# so that it can be used in an optimized way in the github actions workflow.
+docker:
+	docker buildx build --build-arg ARCHIVE_SUFFIX=$(ARCHIVE_SUFFIX) $(DOCKER_ARGS) .
