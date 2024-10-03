@@ -45,8 +45,8 @@ jobs:
         os: [linux]
         arch: [amd64,arm64,arm]
     env:
-      GOOS: ${{ matrix.os }}
-      GARCH: ${{ matrix.arch }}
+      TARGETOS: ${{ matrix.os }}
+      TARGETARCH: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -96,17 +96,17 @@ jobs:
         if: github.event_name == 'push'
         run: |
           echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
-          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:beta"
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:beta" >> $GITHUB_ENV
       - name: Set env vars (pr)
         if: github.event_name == 'pull_request'
         run: |
           echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
-          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.pull_request.number }}"
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Set env vars (release)
         if: github.event_name == 'release'
         run: |
           echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.release.tag_name }}"
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.release.tag_name }}" >> $GITHUB_ENV
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
