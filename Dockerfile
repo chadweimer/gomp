@@ -6,9 +6,9 @@ FROM scratch
 ARG TARGETOS
 ARG TARGETARCH
 ARG ARCHIVE_SUFFIX
-LABEL org.opencontainers.image.source "https://github.com/chadweimer/gomp"
-LABEL org.opencontainers.image.title "GOMP: Go Meal Planner"
-LABEL org.opencontainers.image.description "Web-based recipe book."
+LABEL org.opencontainers.image.source="https://github.com/chadweimer/gomp"
+LABEL org.opencontainers.image.title="GOMP: Go Meal Planner"
+LABEL org.opencontainers.image.description="Web-based recipe book."
 
 EXPOSE 5000
 
