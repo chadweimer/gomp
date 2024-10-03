@@ -1,5 +1,4 @@
-FROM alpine:3.19 AS alpine
-ARG TARGETPLATFORM
+FROM alpine:3.20 AS alpine
 
 RUN apk add --no-cache ca-certificates
 
