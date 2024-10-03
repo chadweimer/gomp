@@ -11,7 +11,7 @@ COPYRIGHT := Copyright © 2016-$(shell date +%Y) Chad Weimer
 
 BUILD_DIR=build
 BUILD_LIN_AMD64_DIR=$(BUILD_DIR)/linux/amd64
-BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm/v7
+BUILD_LIN_ARM_DIR=$(BUILD_DIR)/linux/arm
 BUILD_LIN_ARM64_DIR=$(BUILD_DIR)/linux/arm64
 BUILD_WIN_AMD64_DIR=$(BUILD_DIR)/windows/amd64
 CLIENT_INSTALL_DIR=static/node_modules

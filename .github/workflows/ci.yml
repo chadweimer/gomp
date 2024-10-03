@@ -9,7 +9,7 @@ on:
 
 env:
   CONTAINER_REGISTRY: ghcr.io
-  CONTAINER_IMAGE_NAME: ${{ github.repository }}
+  REPO_NAME: ${{ github.repository }}
 
 jobs:
   check:
@@ -94,6 +94,5 @@ jobs:
         with:
           files: |
             build/gomp-*
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
