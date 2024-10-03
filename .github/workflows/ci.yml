@@ -82,7 +82,7 @@ jobs:
         if: github.event_name == 'release'
 
       - name: Build
-        run: make build/gomp-${{ matrix.os }}-${{ matrix.arch }}-$(BUILD_VERSION).tar.gz
+        run: make build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
 
       # - name: Publish container image (release)
       #   run: make docker CONTAINER_TAG=${{ github.event.release.tag_name }}
@@ -90,11 +90,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: gomp-${{ matrix.os }}-${{ matrix.arch }}-$(BUILD_VERSION).tar.gz
-          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-$(BUILD_VERSION).tar.gz
+          name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
+          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
       - uses: softprops/action-gh-release@v2
         if: github.event_name == 'release'
         with:
-          files: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-$(BUILD_VERSION).tar.gz
+          files: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
