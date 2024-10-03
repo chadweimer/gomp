@@ -128,7 +128,7 @@ jobs:
       - name: Publish container image
         run: |
           docker buildx build --push \
-            --build-arg ARCHIVE_SUFFIX=${{ env.BUILD_VERSION }} \
+            --build-arg ARCHIVE_SUFFIX="-${{ env.BUILD_VERSION }}" \
             --platform linux/amd64,linux/arm,linux/arm64 \
             -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ env.CONTAINER_TAG }} .
         if: github.event_name != 'release'
@@ -136,7 +136,7 @@ jobs:
       - name: Publish container image (release)
         run: |
           docker buildx build --push \
-            --build-arg ARCHIVE_SUFFIX=${{ env.BUILD_VERSION }} \
+            --build-arg ARCHIVE_SUFFIX="-${{ env.BUILD_VERSION }}" \
             --platform linux/amd64,linux/arm,linux/arm64 \
             -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ env.CONTAINER_TAG }} \
             -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.release.tag_name }} .
