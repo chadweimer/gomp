@@ -90,8 +90,9 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
+          name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}
           path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
+          compression-level: 0
       - uses: softprops/action-gh-release@v2
         if: github.event_name == 'release'
         with:
