@@ -123,6 +123,7 @@ jobs:
         with:
           path: build
           merge-multiple: true
+      - run: ls -l && ls -l build
 
       - name: Publish container image
         run: |
