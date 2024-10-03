@@ -40,6 +40,10 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        os: [linux]
+        arch: [amd64,arm64,arm]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -78,21 +82,19 @@ jobs:
         if: github.event_name == 'release'
 
       - name: Build
-        run: make build docker archive
+        run: make build/gomp-${{ matrix.os }}-${{ matrix.arch }}-$BUILD_VERSION.tar.gz
 
-      - name: Publish container image (release)
-        run: make docker CONTAINER_TAG=${{ github.event.release.tag_name }}
-        if: github.event_name == 'release'
+      # - name: Publish container image (release)
+      #   run: make docker CONTAINER_TAG=${{ github.event.release.tag_name }}
+      #   if: github.event_name == 'release'
 
       - uses: actions/upload-artifact@v4
         with:
-          name: artifacts
-          path: |
-            build/gomp-*
+          name: gomp-${{ matrix.os }}-${{ matrix.arch }}-$BUILD_VERSION.tar.gz
+          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-$BUILD_VERSION.tar.gz
       - uses: softprops/action-gh-release@v2
         if: github.event_name == 'release'
         with:
-          files: |
-            build/gomp-*
+          files: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-$BUILD_VERSION.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
