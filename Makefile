@@ -164,9 +164,9 @@ $(BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 # ---- DOCKER ----
 
 .PHONY: docker
-docker: build
+docker: archive
 ifndef CONTAINER_TAG
-	docker buildx build --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(REPO_NAME):local .
+	docker buildx build --build-arg ARCHIVE_SUFFIX=$(ARCHIVE_SUFFIX) --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(REPO_NAME):local .
 else
 	docker buildx build --push --platform linux/amd64,linux/arm,linux/arm64 -t $(CONTAINER_REGISTRY)/$(REPO_NAME):$(CONTAINER_TAG) .
 endif
