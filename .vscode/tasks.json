@@ -1,6 +1,6 @@
 {
-	"version": "2.0.0",
-	"tasks": [
+  "version": "2.0.0",
+  "tasks": [
     {
       "label": "Build",
       "type": "shell",
@@ -19,16 +19,6 @@
       "type": "shell",
       "command": "make clean",
       "problemMatcher": [],
-      "group": "build"
-    },
-    {
-      "label": "Build linux/amd64",
-      "type": "shell",
-      "command": "make build/linux/amd64",
-      "problemMatcher": [
-        "$go",
-        "$tsc"
-      ],
       "group": "build"
     }
   ]
