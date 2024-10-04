@@ -38,6 +38,7 @@ CLIENT_FILES:=$(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIEN
 GO_ENV=GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) CGO_ENABLED=0
 GO_LD_FLAGS=-ldflags '-X "$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)" -X "$(GO_MODULE_NAME)/metadata.Copyright=$(COPYRIGHT)"'
 
+
 .DEFAULT_GOAL:=$(ROOT_BUILD_DIR)
 
 
