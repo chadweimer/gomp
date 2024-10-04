@@ -143,7 +143,7 @@ $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 archive: $(ROOT_BUILD_DIR)/gomp-$(TARGETOS)-$(TARGETARCH)$(ARCHIVE_SUFFIX).tar.gz
 
 $(ROOT_BUILD_DIR)/gomp-$(TARGETOS)-$(TARGETARCH)$(ARCHIVE_SUFFIX).tar.gz: $(BUILD_DIR)
-	tar -C $(BUILD_DIR) -zcf $@ .
+	tar -C $< -zcf $@ .
 
 
 # ---- DOCKER ----
