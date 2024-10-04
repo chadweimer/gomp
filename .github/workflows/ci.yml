@@ -101,7 +101,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
-          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:pr${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Set env vars (release)
         if: github.event_name == 'release'
         run: |
