@@ -1,39 +1,42 @@
 NPROCS = $(shell grep -c 'processor' /proc/cpuinfo)
 MAKEFLAGS += -j$(NPROCS)
 
-BUILD_VERSION?=
-ARCHIVE_SUFFIX:=
-ifdef BUILD_VERSION
-	ARCHIVE_SUFFIX:=-$(BUILD_VERSION)
-endif
-
+# Variables typically overriden
 TARGETOS?=linux
 TARGETARCH?=amd64
 REPO_NAME?=chadweimer/gomp
-CONTAINER_REGISTRY?=ghcr.io
+GO_MODULE_NAME?=github.com/$(REPO_NAME)
+DOCKER_ARGS?=--platform $(TARGETOS)/$(TARGETARCH)
+BUILD_VERSION?=
+ARCHIVE_SUFFIX?=
+ifdef BUILD_VERSION
+	ARCHIVE_SUFFIX?=-$(BUILD_VERSION)
+endif
 
+# Basic metadata
+COPYRIGHT:=Copyright © 2016-$(shell date +%Y) Chad Weimer
+
+# Output directories
 ROOT_BUILD_DIR:=build
 BUILD_DIR=$(ROOT_BUILD_DIR)/$(TARGETOS)/$(TARGETARCH)
-CLIENT_INSTALL_DIR=static/node_modules
-CLIENT_BUILD_DIR=static/www/static
+CLIENT_INSTALL_DIR:=static/node_modules
+CLIENT_BUILD_DIR:=static/www/static
 
-CLIENT_CODEGEN_DIR=static/src/generated
-MODELS_CODEGEN_FILE=models/models.gen.go
-API_CODEGEN_FILE=api/routes.gen.go
-MOCKS_CODEGEN_DIR=mocks
+# Codegen-related files and directories
+CLIENT_CODEGEN_DIR:=static/src/generated
+MODELS_CODEGEN_FILE:=models/models.gen.go
+API_CODEGEN_FILE:=api/routes.gen.go
+MOCKS_CODEGEN_DIR:=mocks
 CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)/db/mocks.gen.go $(MOCKS_CODEGEN_DIR)/upload/mocks.gen.go
 
-GO_MODULE_NAME?=github.com/$(REPO_NAME)
-GO_ENV=GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) CGO_ENABLED=0
-GO_LD_FLAGS=-ldflags '-X "$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)" -X "$(GO_MODULE_NAME)/metadata.Copyright=$(COPYRIGHT)"'
-
-GO_FILES:= $(shell find . -type f -name "*.go" ! -name "*.gen.go")
+# Source files
+GO_FILES:=$(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES:=$(shell find db/migrations -type f -name "*.*")
 CLIENT_FILES:=$(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find static -maxdepth 1 -type f -name "*") $(shell find static/src -type f -name "*"))
 
-DOCKER_ARGS?=--platform $(TARGETOS)/$(TARGETARCH)
-
-COPYRIGHT:=Copyright © 2016-$(shell date +%Y) Chad Weimer
+# Go command arguments
+GO_ENV=GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) CGO_ENABLED=0
+GO_LD_FLAGS=-ldflags '-X "$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSION)" -X "$(GO_MODULE_NAME)/metadata.Copyright=$(COPYRIGHT)"'
 
 .DEFAULT_GOAL:=$(ROOT_BUILD_DIR)
 
