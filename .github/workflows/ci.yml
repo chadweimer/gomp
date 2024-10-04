@@ -7,14 +7,17 @@ on:
   release:
     types: [published]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
-  CONTAINER_REGISTRY: ghcr.io
-  CONTAINER_IMAGE_NAME: ${{ github.repository }}
+  REPO_NAME: ${{ github.repository }}
 
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,7 +42,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   build:
     name: Build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        os: [linux]
+        arch: [amd64,arm64,arm]
+    env:
+      TARGETOS: ${{ matrix.os }}
+      TARGETARCH: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,6 +58,34 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
+
+      - name: Set env vars (push)
+        if: github.event_name == 'push'
+        run: echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
+      - name: Set env vars (pr)
+        if: github.event_name == 'pull_request'
+        run: echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+      - name: Set env vars (release)
+        if: github.event_name == 'release'
+        run: echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+
+      - name: Build
+        run: make build archive
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}
+          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
+          compression-level: 0
+  publish:
+    name: Publish
+    needs: build
+    runs-on: ubuntu-24.04
+    env:
+      CONTAINER_REGISTRY: ghcr.io
+      DOCKER_BASE_ARGS: --push --platform linux/amd64,linux/arm64,linux/arm
+    steps:
+      - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - uses: docker/setup-qemu-action@v3
         with:
@@ -58,42 +96,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install deps
-        run: make install
-
       - name: Set env vars (push)
+        if: github.event_name == 'push'
         run: |
           echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
-          echo "CONTAINER_TAG=beta" >> $GITHUB_ENV
-        if: github.event_name == 'push'
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:beta" >> $GITHUB_ENV
       - name: Set env vars (pr)
+        if: github.event_name == 'pull_request'
         run: |
           echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
-          echo "CONTAINER_TAG=pr${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-        if: github.event_name == 'pull_request'
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:pr${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Set env vars (release)
+        if: github.event_name == 'release'
         run: |
           echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-          echo "CONTAINER_TAG=latest" >> $GITHUB_ENV
-        if: github.event_name == 'release'
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.release.tag_name }}" >> $GITHUB_ENV
 
-      - name: Build
-        run: make build docker archive
-
-      - name: Publish container image (release)
-        run: make docker CONTAINER_TAG=${{ github.event.release.tag_name }}
-        if: github.event_name == 'release'
-
-      - uses: actions/upload-artifact@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: artifacts
-          path: |
-            build/gomp-*
-      - uses: softprops/action-gh-release@v2
+          path: build
+          merge-multiple: true
+
+      - name: Publish container image
+        run: make docker
+
+      - name: Publish artifacts to release
+        uses: softprops/action-gh-release@v2
         if: github.event_name == 'release'
         with:
-          files: |
-            build/gomp-*
-
+          files: build/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
