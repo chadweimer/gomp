@@ -1,7 +1,7 @@
 NPROCS = $(shell grep -c 'processor' /proc/cpuinfo)
 MAKEFLAGS += -j$(NPROCS)
 
-# Variables typically overriden
+# Variables typically overridden
 TARGETOS?=linux
 TARGETARCH?=amd64
 REPO_NAME?=chadweimer/gomp
