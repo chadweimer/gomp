@@ -18,7 +18,7 @@ func Test_GetInfo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	api, _ := getMockAppConfigurationApi(ctrl)
+	api, _ := getMockAppConfigurationAPI(ctrl)
 
 	// Act
 	resp, err := api.GetInfo(context.Background(), GetInfoRequestObject{})
@@ -44,7 +44,7 @@ func Test_GetConfiguration(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		api, appDriver := getMockAppConfigurationApi(ctrl)
+		api, appDriver := getMockAppConfigurationAPI(ctrl)
 		const expectedTitle = "The App Title"
 		if expectError {
 			appDriver.EXPECT().Read().Return(nil, errors.New("an error"))
@@ -79,7 +79,7 @@ func Test_SaveConfiguration(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		api, appDriver := getMockAppConfigurationApi(ctrl)
+		api, appDriver := getMockAppConfigurationAPI(ctrl)
 		const expectedTitle = "The App Title"
 		appCfg := &models.AppConfiguration{Title: expectedTitle}
 		if expectError {
@@ -103,21 +103,22 @@ func Test_SaveConfiguration(t *testing.T) {
 	}
 }
 
-func getMockAppConfigurationApi(ctrl *gomock.Controller) (apiHandler, *db.MockAppConfigurationDriver) {
+func getMockAppConfigurationAPI(ctrl *gomock.Controller) (apiHandler, *db.MockAppConfigurationDriver) {
 	dbDriver := db.NewMockDriver(ctrl)
 	appDriver := db.NewMockAppConfigurationDriver(ctrl)
 	dbDriver.EXPECT().AppConfiguration().AnyTimes().Return(appDriver)
 	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := models.ImageConfiguration{
-		ImageQuality:     models.ImageQualityOriginal,
+	imgCfg := upload.ImageConfig{
+		ImageQuality:     upload.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailQuality: upload.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
+	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{},
-		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
+		upl:        upl,
 		db:         dbDriver,
 	}
 	return api, appDriver

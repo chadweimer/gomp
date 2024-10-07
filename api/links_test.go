@@ -15,7 +15,7 @@ import (
 
 func Test_GetLinks(t *testing.T) {
 	type getLinksTest struct {
-		recipeId    int64
+		recipeID    int64
 		links       []models.RecipeCompact
 		expectError bool
 	}
@@ -37,15 +37,15 @@ func Test_GetLinks(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, linkDriver := getMockLinkApi(ctrl)
+			api, linkDriver := getMockLinkAPI(ctrl)
 			if test.expectError {
-				linkDriver.EXPECT().List(test.recipeId).Return(nil, db.ErrNotFound)
+				linkDriver.EXPECT().List(test.recipeID).Return(nil, db.ErrNotFound)
 			} else {
-				linkDriver.EXPECT().List(test.recipeId).Return(&test.links, nil)
+				linkDriver.EXPECT().List(test.recipeID).Return(&test.links, nil)
 			}
 
 			// Act
-			resp, err := api.GetLinks(context.Background(), GetLinksRequestObject{RecipeId: test.recipeId})
+			resp, err := api.GetLinks(context.Background(), GetLinksRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -65,8 +65,8 @@ func Test_GetLinks(t *testing.T) {
 
 func Test_AddLink(t *testing.T) {
 	type addLinkTest struct {
-		recipeId     int64
-		destRecipeId int64
+		recipeID     int64
+		destRecipeID int64
 		expectError  bool
 	}
 
@@ -83,15 +83,15 @@ func Test_AddLink(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, linkDriver := getMockLinkApi(ctrl)
+			api, linkDriver := getMockLinkAPI(ctrl)
 			if test.expectError {
 				linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				linkDriver.EXPECT().Create(test.recipeId, test.destRecipeId).Return(nil)
+				linkDriver.EXPECT().Create(test.recipeID, test.destRecipeID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
+			resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeID: test.recipeID, DestRecipeID: test.destRecipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -108,8 +108,8 @@ func Test_AddLink(t *testing.T) {
 
 func Test_DeleteLink(t *testing.T) {
 	type deleteLinkTest struct {
-		recipeId     int64
-		destRecipeId int64
+		recipeID     int64
+		destRecipeID int64
 		expectError  bool
 	}
 
@@ -126,15 +126,15 @@ func Test_DeleteLink(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, linkDriver := getMockLinkApi(ctrl)
+			api, linkDriver := getMockLinkAPI(ctrl)
 			if test.expectError {
 				linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				linkDriver.EXPECT().Delete(test.recipeId, test.destRecipeId).Return(nil)
+				linkDriver.EXPECT().Delete(test.recipeID, test.destRecipeID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeId: test.recipeId, DestRecipeId: test.destRecipeId})
+			resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeID: test.recipeID, DestRecipeID: test.destRecipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -149,21 +149,22 @@ func Test_DeleteLink(t *testing.T) {
 	}
 }
 
-func getMockLinkApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockLinkDriver) {
+func getMockLinkAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockLinkDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	linkDriver := dbmock.NewMockLinkDriver(ctrl)
 	dbDriver.EXPECT().Links().AnyTimes().Return(linkDriver)
 	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := models.ImageConfiguration{
-		ImageQuality:     models.ImageQualityOriginal,
+	imgCfg := upload.ImageConfig{
+		ImageQuality:     upload.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailQuality: upload.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
+	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{},
-		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
+		upl:        upl,
 		db:         dbDriver,
 	}
 	return api, linkDriver

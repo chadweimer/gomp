@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"testing"
 	"time"
@@ -35,15 +36,15 @@ func Test_Authenticate(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, userDriver := getMockUsersApi(ctrl)
-			expectedUserId := int64(i)
+			api, userDriver := getMockUsersAPI(ctrl)
+			expectedUserID := int64(i)
 			expectedScopes := getScopes(test.accessLevel)
 			if test.err != nil {
 				userDriver.EXPECT().Authenticate(gomock.Any(), gomock.Any()).Return(nil, test.err)
 			} else {
 				userDriver.EXPECT().Authenticate(gomock.Any(), gomock.Any()).Return(
 					&models.User{
-						Id:          &expectedUserId,
+						ID:          &expectedUserID,
 						Username:    test.username,
 						AccessLevel: test.accessLevel,
 					}, nil)
@@ -63,13 +64,12 @@ func Test_Authenticate(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 			} else {
-
 				typedResp, ok := resp.(Authenticate200JSONResponse)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Token, api.secureKeys[0], expectedUserId, expectedScopes, test.accessLevel)
+				err := checkToken(typedResp.Token, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -99,17 +99,17 @@ func Test_RefreshToken(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, userDriver := getMockUsersApi(ctrl)
-			expectedUserId := int64(i)
+			api, userDriver := getMockUsersAPI(ctrl)
+			expectedUserID := int64(i)
 			expectedScopes := getScopes(test.accessLevel)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, expectedUserId)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, expectedUserID)
 			if test.err != nil {
 				userDriver.EXPECT().Read(gomock.Any()).Return(nil, test.err)
 			} else {
 				userDriver.EXPECT().Read(gomock.Any()).Return(
 					&db.UserWithPasswordHash{
 						User: models.User{
-							Id:          &expectedUserId,
+							ID:          &expectedUserID,
 							Username:    test.username,
 							AccessLevel: test.accessLevel,
 						},
@@ -135,7 +135,7 @@ func Test_RefreshToken(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Token, api.secureKeys[0], expectedUserId, expectedScopes, test.accessLevel)
+				err := checkToken(typedResp.Token, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -168,15 +168,15 @@ func Test_isAuthentication(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			expectedUserId := int64(1)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, expectedUserId)
+			expectedUserID := int64(1)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, expectedUserID)
 			expectedUser := db.UserWithPasswordHash{
 				User: models.User{
-					Id:          &expectedUserId,
+					ID:          &expectedUserID,
 					AccessLevel: models.Admin,
 				},
 			}
-			api, userDriver := getMockUsersApi(ctrl)
+			api, userDriver := getMockUsersAPI(ctrl)
 			if test.userExists {
 				userDriver.EXPECT().Read(gomock.Any()).AnyTimes().Return(&expectedUser, nil)
 			} else {
@@ -189,20 +189,15 @@ func Test_isAuthentication(t *testing.T) {
 			}
 
 			// Act
-			_, _, ctx, err := api.isAuthenticated(ctx, header)
+			_, _, err := api.isAuthenticated(ctx, header)
 
 			// Assert
 			if (err != nil) != test.expectError {
 				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
 			} else if err == nil {
-				ctxUser := ctx.Value(currentUserIdCtxKey)
+				ctxUser := ctx.Value(currentUserIDCtxKey)
 				if ctxUser == nil {
 					t.Errorf("user id missing crom context")
-				}
-
-				ctxToken := ctx.Value(currentUserTokenCtxKey)
-				if ctxToken == nil {
-					t.Errorf("token missing crom context")
 				}
 			}
 		})
@@ -319,7 +314,7 @@ func Test_checkScopes_UserUpdated(t *testing.T) {
 func Test_getUserIdFromClaims(t *testing.T) {
 	type testArgs struct {
 		claims      jwt.RegisteredClaims
-		expectedId  int64
+		expectedID  int64
 		expectError bool
 	}
 
@@ -332,31 +327,34 @@ func Test_getUserIdFromClaims(t *testing.T) {
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			// Act
-			actualId, err := getUserIdFromClaims(test.claims)
+			actualID, err := getUserIDFromClaims(test.claims, slog.Default())
 
 			// Assert
 			if (err != nil) != test.expectError {
 				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
 			}
-			if actualId != test.expectedId {
-				t.Errorf("expected id: %d, actual id: %d", test.expectedId, actualId)
+			if actualID != test.expectedID {
+				t.Errorf("expected id: %d, actual id: %d", test.expectedID, actualID)
 			}
 		})
 	}
 }
 
-func checkToken(tokenStr string, key string, expectedUserId int64, expectedScopes []string, accessLevel models.AccessLevel) error {
+func checkToken(tokenStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
 	token, err := parseToken(tokenStr, key)
 	if err != nil {
-		return fmt.Errorf("failed to parse token in respose: %v", err)
+		return fmt.Errorf("failed to parse token in respose: %w", err)
 	}
 
 	if !token.Valid {
 		return fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
 	}
 
-	claims := token.Claims.(*gompClaims)
+	claims, ok := token.Claims.(*gompClaims)
 
+	if !ok {
+		return errors.New("invalid claims")
+	}
 	if claims.IssuedAt == nil {
 		return errors.New("token is missing issue date")
 	}
@@ -377,13 +375,13 @@ func checkToken(tokenStr string, key string, expectedUserId int64, expectedScope
 		return errors.New("token expires before validity date")
 	}
 
-	userId, err := getUserIdFromClaims(claims.RegisteredClaims)
+	userID, err := getUserIDFromClaims(claims.RegisteredClaims, slog.Default())
 	if err != nil {
 		return fmt.Errorf("couldn't get user id from token: %s", tokenStr)
 	}
 
-	if userId != expectedUserId {
-		return fmt.Errorf("user id in token (%d) does not match expected (%d)", userId, expectedUserId)
+	if userID != expectedUserID {
+		return fmt.Errorf("user id in token (%d) does not match expected (%d)", userID, expectedUserID)
 	}
 
 	missingExpected, extraActual := lo.Difference(expectedScopes, claims.Scopes)

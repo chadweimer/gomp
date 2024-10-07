@@ -2,6 +2,7 @@ package upload
 
 import (
 	"bytes"
+	"errors"
 	"io/fs"
 	"net/http"
 	"path/filepath"
@@ -19,14 +20,18 @@ type s3Driver struct {
 }
 
 func newS3Driver(bucket string) (Driver, error) {
+	if bucket == "" {
+		return nil, errors.New("bucket name is empty")
+	}
+
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, err
 	}
 
 	svc := s3.New(sess)
-	s3fs := s3fs.New(svc, bucket)
-	return &s3Driver{OnlyFiles(s3fs), svc, bucket}, nil
+	f := s3fs.New(svc, bucket)
+	return &s3Driver{OnlyFiles(f), svc, bucket}, nil
 }
 
 func (u *s3Driver) Save(filePath string, data []byte) error {

@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 )
 
 // UserWithPasswordHash reprents a user including the password hash in the database
@@ -28,7 +28,7 @@ type sqlDriver struct {
 	users   *sqlUserDriver
 }
 
-func newSqlDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
@@ -66,7 +66,7 @@ func (d *sqlDriver) Users() UserDriver {
 }
 
 func (d *sqlDriver) Close() error {
-	log.Debug().Msg("Closing database connection...")
+	slog.Debug("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
 		return fmt.Errorf("failed to close the connection to the database: '%w'", err)
 	}
@@ -76,7 +76,7 @@ func (d *sqlDriver) Close() error {
 
 func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
 	t, err := op(db)
-	return t, mapSqlErrors(err)
+	return t, mapSQLErrors(err)
 }
 
 func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
@@ -87,7 +87,7 @@ func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
 	defer func() {
 		if recv := recover(); recv != nil {
 			// Make sure to rollback after a panic...
-			tx.Rollback()
+			_ = tx.Rollback()
 
 			// ... but let the panicing continue
 			panic(recv)
@@ -95,14 +95,14 @@ func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
 	}()
 
 	if err = op(tx); err != nil {
-		tx.Rollback()
-		return mapSqlErrors(err)
+		_ = tx.Rollback()
+		return mapSQLErrors(err)
 	}
 
 	return tx.Commit()
 }
 
-func mapSqlErrors(err error) error {
+func mapSQLErrors(err error) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return ErrNotFound
 	}

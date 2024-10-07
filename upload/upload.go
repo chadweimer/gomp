@@ -10,24 +10,26 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chadweimer/gomp/models"
 	"github.com/disintegration/imaging"
 )
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
 	Driver Driver
-	imgCfg models.ImageConfiguration
+	imgCfg ImageConfig
 }
 
 // CreateImageUploader returns an ImageUploader implementation that uses the specified Driver
-func CreateImageUploader(driver Driver, imgCfg models.ImageConfiguration) *ImageUploader {
-	return &ImageUploader{driver, imgCfg}
+func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, error) {
+	if err := imgCfg.validate(); err != nil {
+		return nil, err
+	}
+	return &ImageUploader{driver, imgCfg}, nil
 }
 
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func (u ImageUploader) Save(recipeId int64, imageName string, data []byte) (string, string, error) {
+func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (originalURL, thumbnailURL string, err error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
 		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)
@@ -41,49 +43,49 @@ func (u ImageUploader) Save(recipeId int64, imageName string, data []byte) (stri
 	}
 
 	// Then determine if it should be resized before saving
-	var origUrl string
-	imgDir := getDirPathForImage(recipeId)
-	if u.imgCfg.ImageQuality == models.ImageQualityOriginal {
+	var origURL string
+	imgDir := getDirPathForImage(recipeID)
+	if u.imgCfg.ImageQuality == ImageQualityOriginal {
 		// Save the original as-is
-		origUrl, err = u.saveImage(data, imgDir, imageName)
+		origURL, err = u.saveImage(data, imgDir, imageName)
 	} else {
 		// Resize and save
-		origUrl, err = u.generateFitted(original, contentType, imgDir, imageName)
+		origURL, err = u.generateFitted(original, contentType, imgDir, imageName)
 	}
 	if err != nil {
 		return "", "", err
 	}
 
 	// And generate a thumbnail and save it
-	thumbUrl, err := u.generateThumbnail(original, contentType, getDirPathForThumbnail(recipeId), imageName)
+	thumbURL, err := u.generateThumbnail(original, contentType, getDirPathForThumbnail(recipeID), imageName)
 	if err != nil {
 		return "", "", err
 	}
 
-	return origUrl, thumbUrl, nil
+	return origURL, thumbURL, nil
 }
 
 // Delete removes the specified image files from the upload store.
-func (u ImageUploader) Delete(recipeId int64, imageName string) error {
-	origPath := filepath.Join(getDirPathForImage(recipeId), imageName)
+func (u ImageUploader) Delete(recipeID int64, imageName string) error {
+	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
 	if err := u.Driver.Delete(origPath); err != nil {
 		return err
 	}
-	thumbPath := filepath.Join(getDirPathForThumbnail(recipeId), imageName)
+	thumbPath := filepath.Join(getDirPathForThumbnail(recipeID), imageName)
 	return u.Driver.Delete(thumbPath)
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.
-func (u ImageUploader) DeleteAll(recipeId int64) error {
-	dirPath := getDirPathForRecipe(recipeId)
+func (u ImageUploader) DeleteAll(recipeID int64) error {
+	dirPath := getDirPathForRecipe(recipeID)
 	err := u.Driver.DeleteAll(dirPath)
 
 	return err
 }
 
 // Load reads the image for the given recipe, returning the bytes of the file
-func (u ImageUploader) Load(recipeId int64, imageName string) ([]byte, error) {
-	origPath := filepath.Join(getDirPathForImage(recipeId), imageName)
+func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
+	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
 
 	file, err := u.Driver.Open(origPath)
 	if err != nil {
@@ -158,38 +160,38 @@ func getImageFormat(contentType string) imaging.Format {
 	return imaging.JPEG
 }
 
-func getDirPathForRecipe(recipeId int64) string {
-	return filepath.Join("recipes", strconv.FormatInt(recipeId, 10))
+func getDirPathForRecipe(recipeID int64) string {
+	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
 }
 
-func getDirPathForImage(recipeId int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeId), "images")
+func getDirPathForImage(recipeID int64) string {
+	return filepath.Join(getDirPathForRecipe(recipeID), "images")
 }
 
-func getDirPathForThumbnail(recipeId int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeId), "thumbs")
+func getDirPathForThumbnail(recipeID int64) string {
+	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func toResampleFilter(q models.ImageQualityLevel) imaging.ResampleFilter {
+func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {
 	switch q {
-	case models.ImageQualityHigh:
+	case ImageQualityHigh:
 		return imaging.Box
-	case models.ImageQualityMedium:
+	case ImageQualityMedium:
 		return imaging.Box
-	case models.ImageQualityLow:
+	case ImageQualityLow:
 		return imaging.NearestNeighbor
 	default:
 		return imaging.Box
 	}
 }
 
-func toJPEGQuality(q models.ImageQualityLevel) int {
+func toJPEGQuality(q ImageQualityLevel) int {
 	switch q {
-	case models.ImageQualityHigh:
+	case ImageQualityHigh:
 		return 92
-	case models.ImageQualityMedium:
+	case ImageQualityMedium:
 		return 80
-	case models.ImageQualityLow:
+	case ImageQualityLow:
 		return 70
 	default:
 		return 92

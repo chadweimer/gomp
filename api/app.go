@@ -9,7 +9,8 @@ import (
 
 func (apiHandler) GetInfo(_ context.Context, _ GetInfoRequestObject) (GetInfoResponseObject, error) {
 	return GetInfo200JSONResponse{
-		Version: &metadata.BuildVersion,
+		Copyright: &metadata.Copyright,
+		Version:   &metadata.BuildVersion,
 	}, nil
 }
 

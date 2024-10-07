@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 
 	// postgres database driver
@@ -55,12 +55,14 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 			break
 		}
 
-		if i < maxAttempts {
-			log.Err(err).Int("attempt", i).Msg("Failed to open database. Will try again...")
-			time.Sleep(500 * time.Millisecond)
-		} else {
+		if i == maxAttempts {
 			return nil, fmt.Errorf("giving up after failing to open database on attempt %d: '%w'", i, err)
 		}
+
+		slog.Error("Failed to open database. Will try again...",
+			"error", err,
+			"attempt", i)
+		time.Sleep(500 * time.Millisecond)
 	}
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
@@ -69,7 +71,7 @@ func openPostgres(connectionString string, migrationsTableName string, migration
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSqlDriver(db, postgresRecipeDriverAdapter{})
+	drv := newSQLDriver(db, postgresRecipeDriverAdapter{})
 	return drv, nil
 }
 
@@ -88,7 +90,7 @@ func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrations
 	}
 	defer func() {
 		if unlockErr := unlockPostgres(conn); unlockErr != nil {
-			log.Fatal().Err(unlockErr).Msg("Failed to unlock database")
+			panic("Failed to unlock database")
 		}
 	}()
 

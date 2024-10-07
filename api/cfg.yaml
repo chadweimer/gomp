@@ -1,9 +1,12 @@
 package: api
 generate:
-  chi-server: true
+  std-http-server: true
   strict-server: true
   models: true
 import-mapping:
   ./models.yaml: github.com/chadweimer/gomp/models
 compatibility:
   old-merge-schemas: true
+output-options:
+  name-normalizer: "ToCamelCaseWithInitialisms"
+output: routes.gen.go

@@ -18,7 +18,7 @@ import (
 
 func Test_GetUser(t *testing.T) {
 	type testArgs struct {
-		userId        int64
+		userID        int64
 		username      string
 		expectedError error
 	}
@@ -34,21 +34,21 @@ func Test_GetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			expectedUser := &db.UserWithPasswordHash{
 				User: models.User{
-					Id:       &test.userId,
+					ID:       &test.userID,
 					Username: test.username,
 				},
 			}
 			if test.expectedError != nil {
 				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().Read(test.userId).Return(expectedUser, nil)
+				usersDriver.EXPECT().Read(test.userID).Return(expectedUser, nil)
 			}
 
 			// Act
-			resp, err := api.GetUser(context.Background(), GetUserRequestObject{UserId: test.userId})
+			resp, err := api.GetUser(context.Background(), GetUserRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -58,10 +58,10 @@ func Test_GetUser(t *testing.T) {
 				if !ok {
 					t.Error("invalid response")
 				}
-				if resp.Id == nil {
+				if resp.ID == nil {
 					t.Error("expected non-null id")
-				} else if *resp.Id != *expectedUser.Id {
-					t.Errorf("expected id: %d, actual id: %d", *expectedUser.Id, *resp.Id)
+				} else if *resp.ID != *expectedUser.ID {
+					t.Errorf("expected id: %d, actual id: %d", *expectedUser.ID, *resp.ID)
 				}
 				if resp.Username != expectedUser.Username {
 					t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
@@ -73,7 +73,7 @@ func Test_GetUser(t *testing.T) {
 
 func Test_GetCurrentUser(t *testing.T) {
 	type testArgs struct {
-		userId           *int64
+		userID           *int64
 		username         string
 		expectedError    error
 		expectedResponse reflect.Type
@@ -90,21 +90,21 @@ func Test_GetCurrentUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			expectedUser := &db.UserWithPasswordHash{
 				User: models.User{
-					Id:       test.userId,
+					ID:       test.userID,
 					Username: test.username,
 				},
 			}
 			ctx := context.Background()
-			if test.userId != nil {
-				ctx = context.WithValue(ctx, currentUserIdCtxKey, *test.userId)
+			if test.userID != nil {
+				ctx = context.WithValue(ctx, currentUserIDCtxKey, *test.userID)
 			}
 			if test.expectedError != nil {
 				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
-			} else if test.userId != nil {
-				usersDriver.EXPECT().Read(*test.userId).Return(expectedUser, nil)
+			} else if test.userID != nil {
+				usersDriver.EXPECT().Read(*test.userID).Return(expectedUser, nil)
 			}
 
 			// Act
@@ -122,10 +122,10 @@ func Test_GetCurrentUser(t *testing.T) {
 					if !ok {
 						t.Error("invalid response")
 					}
-					if resp.Id == nil {
+					if resp.ID == nil {
 						t.Error("expected non-null id")
-					} else if *resp.Id != *expectedUser.Id {
-						t.Errorf("expected id: %d, actual id: %d", *expectedUser.Id, *resp.Id)
+					} else if *resp.ID != *expectedUser.ID {
+						t.Errorf("expected id: %d, actual id: %d", *expectedUser.ID, *resp.ID)
 					}
 					if resp.Username != expectedUser.Username {
 						t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
@@ -157,7 +157,7 @@ func Test_GetAllUsers(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().List().Return(&test.users, test.expectedError)
 			} else {
@@ -202,7 +202,7 @@ func Test_AddUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			expectedUser := models.User{
 				Username:    test.username,
 				AccessLevel: test.accessLevel,
@@ -234,8 +234,8 @@ func Test_AddUser(t *testing.T) {
 
 func Test_SaveUser(t *testing.T) {
 	type testArgs struct {
-		currentUserId    int64
-		requestUserId    int64
+		currentUserID    int64
+		requestUserID    int64
 		user             models.User
 		expectedDbError  error
 		expectedError    error
@@ -244,26 +244,26 @@ func Test_SaveUser(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, models.User{Id: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Admin}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
-		{1, 1, models.User{Id: nil, Username: "user1", AccessLevel: models.Admin}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+		{1, 1, models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Admin}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+		{1, 1, models.User{ID: nil, Username: "user1", AccessLevel: models.Admin}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
 
-		{1, 1, models.User{Id: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser403Response{})},
-		{1, 1, models.User{Id: nil, Username: "user1", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser403Response{})},
+		{1, 1, models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser403Response{})},
+		{1, 1, models.User{ID: nil, Username: "user1", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser403Response{})},
 
-		{1, 2, models.User{Id: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
-		{1, 2, models.User{Id: nil, Username: "user2", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+		{1, 2, models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
+		{1, 2, models.User{ID: nil, Username: "user2", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
 
-		{1, 2, models.User{Id: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer}, db.ErrNotFound, db.ErrNotFound, nil},
+		{1, 2, models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer}, db.ErrNotFound, db.ErrNotFound, nil},
 
-		{1, 3, models.User{Id: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer}, nil, errMismatchedId, nil},
+		{1, 3, models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer}, nil, errMismatchedID, nil},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().Update(gomock.Any()).Return(test.expectedDbError)
 			} else {
@@ -271,7 +271,7 @@ func Test_SaveUser(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.SaveUser(ctx, SaveUserRequestObject{UserId: test.requestUserId, Body: &test.user})
+			resp, err := api.SaveUser(ctx, SaveUserRequestObject{UserID: test.requestUserID, Body: &test.user})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -287,8 +287,8 @@ func Test_SaveUser(t *testing.T) {
 
 func Test_DeleteUser(t *testing.T) {
 	type testArgs struct {
-		currentUserId    int64
-		userId           int64
+		currentUserID    int64
+		userID           int64
 		expectedDbError  error
 		expectedError    error
 		expectedResponse reflect.Type
@@ -307,16 +307,16 @@ func Test_DeleteUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().Delete(gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().Delete(test.userId).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().Delete(test.userID).MaxTimes(1).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteUser(ctx, DeleteUserRequestObject{UserId: test.userId})
+			resp, err := api.DeleteUser(ctx, DeleteUserRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -332,7 +332,7 @@ func Test_DeleteUser(t *testing.T) {
 
 func Test_ChangePassword(t *testing.T) {
 	type testArgs struct {
-		currentUserId    int64
+		currentUserID    int64
 		request          UserPasswordRequest
 		expectedDbError  error
 		expectedError    error
@@ -350,12 +350,12 @@ func Test_ChangePassword(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().UpdatePassword(gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().UpdatePassword(test.currentUserId, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
+				usersDriver.EXPECT().UpdatePassword(test.currentUserID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
 			}
 
 			// Act
@@ -375,8 +375,8 @@ func Test_ChangePassword(t *testing.T) {
 
 func Test_ChangeUserPassword(t *testing.T) {
 	type testArgs struct {
-		currentUserId    int64
-		userId           int64
+		currentUserID    int64
+		userID           int64
 		request          UserPasswordRequest
 		expectedDbError  error
 		expectedError    error
@@ -395,16 +395,16 @@ func Test_ChangeUserPassword(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().UpdatePassword(gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().UpdatePassword(test.userId, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
+				usersDriver.EXPECT().UpdatePassword(test.userID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
 			}
 
 			// Act
-			resp, err := api.ChangeUserPassword(ctx, ChangeUserPasswordRequestObject{UserId: test.userId, Body: &test.request})
+			resp, err := api.ChangeUserPassword(ctx, ChangeUserPasswordRequestObject{UserID: test.userID, Body: &test.request})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -420,7 +420,7 @@ func Test_ChangeUserPassword(t *testing.T) {
 
 func Test_GetUserSettings(t *testing.T) {
 	type testArgs struct {
-		userId        int64
+		userID        int64
 		homeTitle     string
 		expectedError error
 	}
@@ -436,19 +436,19 @@ func Test_GetUserSettings(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			expectedSettings := &models.UserSettings{
-				UserId:    &test.userId,
+				UserID:    &test.userID,
 				HomeTitle: &test.homeTitle,
 			}
 			if test.expectedError != nil {
 				usersDriver.EXPECT().ReadSettings(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSettings(test.userId).Return(expectedSettings, nil)
+				usersDriver.EXPECT().ReadSettings(test.userID).Return(expectedSettings, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSettings(context.Background(), GetUserSettingsRequestObject{UserId: test.userId})
+			resp, err := api.GetUserSettings(context.Background(), GetUserSettingsRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -458,10 +458,10 @@ func Test_GetUserSettings(t *testing.T) {
 				if !ok {
 					t.Error("nvalid response")
 				}
-				if resp.UserId == nil {
+				if resp.UserID == nil {
 					t.Error("expected non-null id")
-				} else if *resp.UserId != *expectedSettings.UserId {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserId, *resp.UserId)
+				} else if *resp.UserID != *expectedSettings.UserID {
+					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *resp.UserID)
 				}
 				if resp.HomeTitle == nil {
 					t.Error("expected non-null title")
@@ -475,7 +475,7 @@ func Test_GetUserSettings(t *testing.T) {
 
 func Test_GetSettings(t *testing.T) {
 	type testArgs struct {
-		userId        int64
+		userID        int64
 		homeTitle     string
 		expectedError error
 	}
@@ -491,16 +491,16 @@ func Test_GetSettings(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			expectedSettings := &models.UserSettings{
-				UserId:    &test.userId,
+				UserID:    &test.userID,
 				HomeTitle: &test.homeTitle,
 			}
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().ReadSettings(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSettings(test.userId).Return(expectedSettings, nil)
+				usersDriver.EXPECT().ReadSettings(test.userID).Return(expectedSettings, nil)
 			}
 
 			// Act
@@ -514,10 +514,10 @@ func Test_GetSettings(t *testing.T) {
 				if !ok {
 					t.Error("invalid response")
 				}
-				if resp.UserId == nil {
+				if resp.UserID == nil {
 					t.Error("expected non-null id")
-				} else if *resp.UserId != *expectedSettings.UserId {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserId, *resp.UserId)
+				} else if *resp.UserID != *expectedSettings.UserID {
+					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *resp.UserID)
 				}
 				if resp.HomeTitle == nil {
 					t.Error("expected non-null title")
@@ -531,7 +531,7 @@ func Test_GetSettings(t *testing.T) {
 
 func Test_SaveSettings(t *testing.T) {
 	type testArgs struct {
-		currentUserId    int64
+		currentUserID    int64
 		userSettings     models.UserSettings
 		expectedDbError  error
 		expectedError    error
@@ -540,18 +540,18 @@ func Test_SaveSettings(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, models.UserSettings{UserId: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{1, models.UserSettings{UserId: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{2, models.UserSettings{UserId: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, db.ErrNotFound, db.ErrNotFound, nil},
-		{1, models.UserSettings{UserId: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, errMismatchedId, nil},
+		{1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
+		{1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
+		{2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, db.ErrNotFound, db.ErrNotFound, nil},
+		{1, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, errMismatchedID, nil},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().UpdateSettings(gomock.Any()).Return(test.expectedDbError)
 			} else {
@@ -575,8 +575,8 @@ func Test_SaveSettings(t *testing.T) {
 
 func Test_SaveUserSettings(t *testing.T) {
 	type testArgs struct {
-		currentUserId    int64
-		requestUserId    int64
+		currentUserID    int64
+		requestUserID    int64
 		userSettings     models.UserSettings
 		expectedDbError  error
 		expectedError    error
@@ -585,23 +585,23 @@ func Test_SaveUserSettings(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, models.UserSettings{UserId: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 1, models.UserSettings{UserId: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
 
-		{1, 2, models.UserSettings{UserId: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 2, models.UserSettings{UserId: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 2, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
 
-		{1, 2, models.UserSettings{UserId: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, db.ErrNotFound, db.ErrNotFound, nil},
+		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, db.ErrNotFound, db.ErrNotFound, nil},
 
-		{1, 3, models.UserSettings{UserId: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageUrl: utils.GetPtr("My Url"), FavoriteTags: []string{"A", "B"}}, nil, errMismatchedId, nil},
+		{1, 3, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, errMismatchedID, nil},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.currentUserId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().UpdateSettings(gomock.Any()).Return(test.expectedDbError)
 			} else {
@@ -609,7 +609,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.SaveUserSettings(ctx, SaveUserSettingsRequestObject{UserId: test.requestUserId, Body: &test.userSettings})
+			resp, err := api.SaveUserSettings(ctx, SaveUserSettingsRequestObject{UserID: test.requestUserID, Body: &test.userSettings})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -625,7 +625,7 @@ func Test_SaveUserSettings(t *testing.T) {
 
 func Test_GetUserSearchFilters(t *testing.T) {
 	type testArgs struct {
-		userId        int64
+		userID        int64
 		filters       []models.SavedSearchFilterCompact
 		expectedError error
 	}
@@ -647,12 +647,12 @@ func Test_GetUserSearchFilters(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ListSearchFilters(test.userId).Return(&test.filters, nil)
+				usersDriver.EXPECT().ListSearchFilters(test.userID).Return(&test.filters, nil)
 			}
 
 			// Act
@@ -676,7 +676,7 @@ func Test_GetUserSearchFilters(t *testing.T) {
 
 func Test_GetSearchFilters(t *testing.T) {
 	type testArgs struct {
-		userId        int64
+		userID        int64
 		filters       []models.SavedSearchFilterCompact
 		expectedError error
 	}
@@ -698,15 +698,15 @@ func Test_GetSearchFilters(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ListSearchFilters(test.userId).Return(&test.filters, nil)
+				usersDriver.EXPECT().ListSearchFilters(test.userID).Return(&test.filters, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSearchFilters(context.Background(), GetUserSearchFiltersRequestObject{UserId: test.userId})
+			resp, err := api.GetUserSearchFilters(context.Background(), GetUserSearchFiltersRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -726,8 +726,8 @@ func Test_GetSearchFilters(t *testing.T) {
 
 func Test_GetUserSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId        int64
-		filterId      int64
+		userID        int64
+		filterID      int64
 		expectedError error
 	}
 
@@ -742,15 +742,15 @@ func Test_GetUserSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSearchFilter(test.userId, test.filterId).Return(&models.SavedSearchFilter{}, nil)
+				usersDriver.EXPECT().ReadSearchFilter(test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSearchFilter(context.Background(), GetUserSearchFilterRequestObject{UserId: test.userId, FilterId: test.filterId})
+			resp, err := api.GetUserSearchFilter(context.Background(), GetUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -767,8 +767,8 @@ func Test_GetUserSearchFilter(t *testing.T) {
 
 func Test_GetSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId        int64
-		filterId      int64
+		userID        int64
+		filterID      int64
 		expectedError error
 	}
 
@@ -783,16 +783,16 @@ func Test_GetSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSearchFilter(test.userId, test.filterId).Return(&models.SavedSearchFilter{}, nil)
+				usersDriver.EXPECT().ReadSearchFilter(test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
 			}
 
 			// Act
-			resp, err := api.GetSearchFilter(ctx, GetSearchFilterRequestObject{FilterId: test.filterId})
+			resp, err := api.GetSearchFilter(ctx, GetSearchFilterRequestObject{FilterID: test.filterID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -809,7 +809,7 @@ func Test_GetSearchFilter(t *testing.T) {
 
 func Test_AddUserSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId          int64
+		userID          int64
 		filter          models.SavedSearchFilter
 		expectedDbError error
 		expectedError   error
@@ -826,16 +826,16 @@ func Test_AddUserSearchFilter(t *testing.T) {
 		{
 			1,
 			models.SavedSearchFilter{},
-			db.ErrMissingId,
-			db.ErrMissingId,
+			db.ErrMissingID,
+			db.ErrMissingID,
 		},
 		{
 			1,
 			models.SavedSearchFilter{
-				UserId: utils.GetPtr(int64(2)),
+				UserID: utils.GetPtr(int64(2)),
 			},
 			nil,
-			errMismatchedId,
+			errMismatchedID,
 		},
 	}
 	for i, test := range tests {
@@ -843,7 +843,7 @@ func Test_AddUserSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().CreateSearchFilter(gomock.Any()).Return(test.expectedDbError)
 			} else {
@@ -851,7 +851,7 @@ func Test_AddUserSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.AddUserSearchFilter(context.Background(), AddUserSearchFilterRequestObject{UserId: test.userId, Body: &test.filter})
+			resp, err := api.AddUserSearchFilter(context.Background(), AddUserSearchFilterRequestObject{UserID: test.userID, Body: &test.filter})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -868,7 +868,7 @@ func Test_AddUserSearchFilter(t *testing.T) {
 
 func Test_AddSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId          int64
+		userID          int64
 		filter          models.SavedSearchFilter
 		expectedDbError error
 		expectedError   error
@@ -885,16 +885,16 @@ func Test_AddSearchFilter(t *testing.T) {
 		{
 			1,
 			models.SavedSearchFilter{},
-			db.ErrMissingId,
-			db.ErrMissingId,
+			db.ErrMissingID,
+			db.ErrMissingID,
 		},
 		{
 			1,
 			models.SavedSearchFilter{
-				UserId: utils.GetPtr(int64(2)),
+				UserID: utils.GetPtr(int64(2)),
 			},
 			nil,
-			errMismatchedId,
+			errMismatchedID,
 		},
 	}
 	for i, test := range tests {
@@ -902,8 +902,8 @@ func Test_AddSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().CreateSearchFilter(gomock.Any()).Return(test.expectedDbError)
 			} else {
@@ -928,8 +928,8 @@ func Test_AddSearchFilter(t *testing.T) {
 
 func Test_SaveUserSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId          int64
-		filterId        int64
+		userID          int64
+		filterID        int64
 		filter          models.SavedSearchFilter
 		expectedDbError error
 		expectedError   error
@@ -948,26 +948,26 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 			1,
 			1,
 			models.SavedSearchFilter{},
-			db.ErrMissingId,
-			db.ErrMissingId,
+			db.ErrMissingID,
+			db.ErrMissingID,
 		},
 		{
 			1,
 			1,
 			models.SavedSearchFilter{
-				UserId: utils.GetPtr(int64(2)),
+				UserID: utils.GetPtr(int64(2)),
 			},
 			nil,
-			errMismatchedId,
+			errMismatchedID,
 		},
 		{
 			1,
 			1,
 			models.SavedSearchFilter{
-				Id: utils.GetPtr(int64(2)),
+				ID: utils.GetPtr(int64(2)),
 			},
 			nil,
-			errMismatchedId,
+			errMismatchedID,
 		},
 	}
 	for i, test := range tests {
@@ -975,7 +975,7 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
 				usersDriver.EXPECT().UpdateSearchFilter(gomock.Any()).Times(0).Return(test.expectedDbError)
@@ -985,7 +985,7 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.SaveUserSearchFilter(context.Background(), SaveUserSearchFilterRequestObject{UserId: test.userId, FilterId: test.filterId, Body: &test.filter})
+			resp, err := api.SaveUserSearchFilter(context.Background(), SaveUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID, Body: &test.filter})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -1002,8 +1002,8 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 
 func Test_SaveSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId          int64
-		filterId        int64
+		userID          int64
+		filterID        int64
 		filter          models.SavedSearchFilter
 		expectedDbError error
 		expectedError   error
@@ -1022,26 +1022,26 @@ func Test_SaveSearchFilter(t *testing.T) {
 			1,
 			1,
 			models.SavedSearchFilter{},
-			db.ErrMissingId,
-			db.ErrMissingId,
+			db.ErrMissingID,
+			db.ErrMissingID,
 		},
 		{
 			1,
 			1,
 			models.SavedSearchFilter{
-				UserId: utils.GetPtr(int64(2)),
+				UserID: utils.GetPtr(int64(2)),
 			},
 			nil,
-			errMismatchedId,
+			errMismatchedID,
 		},
 		{
 			1,
 			1,
 			models.SavedSearchFilter{
-				Id: utils.GetPtr(int64(2)),
+				ID: utils.GetPtr(int64(2)),
 			},
 			nil,
-			errMismatchedId,
+			errMismatchedID,
 		},
 	}
 	for i, test := range tests {
@@ -1049,8 +1049,8 @@ func Test_SaveSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
 			if test.expectedDbError != nil {
 				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
 				usersDriver.EXPECT().UpdateSearchFilter(gomock.Any()).Times(0).Return(test.expectedDbError)
@@ -1077,8 +1077,8 @@ func Test_SaveSearchFilter(t *testing.T) {
 
 func Test_DeleteUserSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId        int64
-		filterId      int64
+		userID        int64
+		filterID      int64
 		expectedError error
 	}
 
@@ -1093,15 +1093,15 @@ func Test_DeleteUserSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
+			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().DeleteSearchFilter(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				usersDriver.EXPECT().DeleteSearchFilter(test.userId, test.filterId).Return(nil)
+				usersDriver.EXPECT().DeleteSearchFilter(test.userID, test.filterID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteUserSearchFilter(context.Background(), DeleteUserSearchFilterRequestObject{UserId: test.userId, FilterId: test.filterId})
+			resp, err := api.DeleteUserSearchFilter(context.Background(), DeleteUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -1118,8 +1118,8 @@ func Test_DeleteUserSearchFilter(t *testing.T) {
 
 func Test_DeleteSearchFilter(t *testing.T) {
 	type testArgs struct {
-		userId        int64
-		filterId      int64
+		userID        int64
+		filterID      int64
 		expectedError error
 	}
 
@@ -1134,16 +1134,16 @@ func Test_DeleteSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, usersDriver := getMockUsersApi(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIdCtxKey, test.userId)
+			api, usersDriver := getMockUsersAPI(ctrl)
+			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
 				usersDriver.EXPECT().DeleteSearchFilter(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				usersDriver.EXPECT().DeleteSearchFilter(test.userId, test.filterId).Return(nil)
+				usersDriver.EXPECT().DeleteSearchFilter(test.userID, test.filterID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteSearchFilter(ctx, DeleteSearchFilterRequestObject{FilterId: test.filterId})
+			resp, err := api.DeleteSearchFilter(ctx, DeleteSearchFilterRequestObject{FilterID: test.filterID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -1158,21 +1158,22 @@ func Test_DeleteSearchFilter(t *testing.T) {
 	}
 }
 
-func getMockUsersApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockUserDriver) {
+func getMockUsersAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockUserDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	userDriver := dbmock.NewMockUserDriver(ctrl)
 	dbDriver.EXPECT().Users().AnyTimes().Return(userDriver)
 	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := models.ImageConfiguration{
-		ImageQuality:     models.ImageQualityOriginal,
+	imgCfg := upload.ImageConfig{
+		ImageQuality:     upload.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailQuality: upload.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
+	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},
-		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
+		upl:        upl,
 		db:         dbDriver,
 	}
 	return api, userDriver

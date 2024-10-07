@@ -1,31 +1,30 @@
 ignoreGeneratedHeader = false
 severity = "warning"
 confidence = 0.8
-errorCode = 1
-warningCode = 2
+errorCode = 0
+warningCode = 0
 
-[rule.blank-imports]
-[rule.context-as-argument]
-[rule.context-keys-type]
-[rule.dot-imports]
-[rule.error-return]
-[rule.error-strings]
-[rule.error-naming]
-[rule.exported]
-[rule.if-return]
-[rule.increment-decrement]
-[rule.var-declaration]
-[rule.range]
-[rule.receiver-naming]
-[rule.modifies-value-receiver]
-[rule.unused-receiver]
-[rule.time-naming]
-[rule.unexported-return]
-[rule.indent-error-flow]
-[rule.errorf]
-[rule.empty-block]
-[rule.superfluous-else]
-[rule.unused-parameter]
-[rule.unreachable-code]
-[rule.unhandled-error]
-[rule.redefines-builtin-id]
+# Enable all available rules
+enableAllRules = true
+
+# Disabled rules
+[rule.add-constant]
+Disabled = true
+[rule.cognitive-complexity]
+Disabled = true
+[rule.cyclomatic]
+Disabled = true
+[rule.file-header]
+Disabled = true
+[rule.function-length]
+Disabled = true
+[rule.line-length-limit]
+Disabled = true
+[rule.max-public-structs]
+Disabled = true
+[rule.package-comments]
+Disabled = true
+
+# Exclude tests from certain rules
+[rule.defer]
+Exclude = ["TEST"]

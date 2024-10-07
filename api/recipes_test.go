@@ -17,7 +17,7 @@ import (
 
 func Test_GetRecipe(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		recipeName    string
 		expectedError error
 	}
@@ -32,19 +32,19 @@ func Test_GetRecipe(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, _ := getMockRecipesApi(ctrl)
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			expectedRecipe := models.Recipe{
-				Id:   &test.recipeId,
+				ID:   &(test.recipeID),
 				Name: test.recipeName,
 			}
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				recipesDriver.EXPECT().Read(test.recipeId).Return(&expectedRecipe, nil)
+				recipesDriver.EXPECT().Read(test.recipeID).Return(&expectedRecipe, nil)
 			}
 
 			// Act
-			resp, err := api.GetRecipe(context.Background(), GetRecipeRequestObject{RecipeId: test.recipeId})
+			resp, err := api.GetRecipe(context.Background(), GetRecipeRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -54,10 +54,10 @@ func Test_GetRecipe(t *testing.T) {
 				if !ok {
 					t.Errorf("test %v: invalid response", test)
 				}
-				if resp.Id == nil {
+				if resp.ID == nil {
 					t.Error("expected non-null id")
-				} else if *resp.Id != *expectedRecipe.Id {
-					t.Errorf("expected id: %d, actual id: %d", *expectedRecipe.Id, *resp.Id)
+				} else if *resp.ID != *expectedRecipe.ID {
+					t.Errorf("expected id: %d, actual id: %d", *expectedRecipe.ID, *resp.ID)
 				}
 				if resp.Name != expectedRecipe.Name {
 					t.Errorf("expected name: %s, actual name: %s", expectedRecipe.Name, resp.Name)
@@ -83,7 +83,7 @@ func Test_AddRecipe(t *testing.T) {
 				NutritionInfo:       "My Nutrition Info",
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
-				SourceUrl:           "My Url",
+				SourceURL:           "My Url",
 			}, nil,
 		},
 		{nil, db.ErrNotFound},
@@ -93,7 +93,7 @@ func Test_AddRecipe(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, _ := getMockRecipesApi(ctrl)
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().Create(gomock.Any()).Return(test.expectedError)
 			} else {
@@ -121,7 +121,7 @@ func Test_AddRecipe(t *testing.T) {
 
 func Test_SaveRecipe(t *testing.T) {
 	type testArgs struct {
-		recipeId        int64
+		recipeID        int64
 		recipe          *models.Recipe
 		expectedDbError error
 		expectedError   error
@@ -138,34 +138,34 @@ func Test_SaveRecipe(t *testing.T) {
 				NutritionInfo:       "My Nutrition Info",
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
-				SourceUrl:           "My Url",
+				SourceURL:           "My Url",
 			}, nil, nil,
 		},
 		{
 			1,
 			&models.Recipe{
-				Id:                  utils.GetPtr[int64](1),
+				ID:                  utils.GetPtr[int64](1),
 				Name:                "My Recipe",
 				Ingredients:         "My Ingredients",
 				Directions:          "My Directions",
 				NutritionInfo:       "My Nutrition Info",
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
-				SourceUrl:           "My Url",
+				SourceURL:           "My Url",
 			}, nil, nil,
 		},
 		{
 			1,
 			&models.Recipe{
-				Id:                  utils.GetPtr[int64](2),
+				ID:                  utils.GetPtr[int64](2),
 				Name:                "My Recipe",
 				Ingredients:         "My Ingredients",
 				Directions:          "My Directions",
 				NutritionInfo:       "My Nutrition Info",
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
-				SourceUrl:           "My Url",
-			}, nil, errMismatchedId,
+				SourceURL:           "My Url",
+			}, nil, errMismatchedID,
 		},
 		{
 			2,
@@ -176,7 +176,7 @@ func Test_SaveRecipe(t *testing.T) {
 				NutritionInfo:       "My Nutrition Info",
 				ServingSize:         "My Serving Size",
 				StorageInstructions: "My Storage Instructions",
-				SourceUrl:           "My Url",
+				SourceURL:           "My Url",
 			}, db.ErrNotFound, db.ErrNotFound,
 		},
 	}
@@ -185,7 +185,7 @@ func Test_SaveRecipe(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, _ := getMockRecipesApi(ctrl)
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedDbError != nil {
 				recipesDriver.EXPECT().Update(gomock.Any()).Return(test.expectedDbError)
 			} else {
@@ -193,7 +193,7 @@ func Test_SaveRecipe(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.SaveRecipe(context.Background(), SaveRecipeRequestObject{RecipeId: test.recipeId, Body: test.recipe})
+			resp, err := api.SaveRecipe(context.Background(), SaveRecipeRequestObject{RecipeID: test.recipeID, Body: test.recipe})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -210,7 +210,7 @@ func Test_SaveRecipe(t *testing.T) {
 
 func Test_DeleteRecipe(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		expectedError error
 	}
 
@@ -227,17 +227,16 @@ func Test_DeleteRecipe(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, uplDriver := getMockRecipesApi(ctrl)
+			api, recipesDriver, uplDriver := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().Delete(gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().Delete(test.recipeId).Return(nil)
+				recipesDriver.EXPECT().Delete(test.recipeID).Return(nil)
 				uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(nil)
-
 			}
 
 			// Act
-			resp, err := api.DeleteRecipe(context.Background(), DeleteRecipeRequestObject{RecipeId: test.recipeId})
+			resp, err := api.DeleteRecipe(context.Background(), DeleteRecipeRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -254,7 +253,7 @@ func Test_DeleteRecipe(t *testing.T) {
 
 func Test_SetState(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		state         models.RecipeState
 		expectedError error
 	}
@@ -270,16 +269,15 @@ func Test_SetState(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, _ := getMockRecipesApi(ctrl)
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().SetState(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().SetState(test.recipeId, test.state).Return(nil)
-
+				recipesDriver.EXPECT().SetState(test.recipeID, test.state).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SetState(context.Background(), SetStateRequestObject{RecipeId: test.recipeId, Body: &test.state})
+			resp, err := api.SetState(context.Background(), SetStateRequestObject{RecipeID: test.recipeID, Body: &test.state})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -296,7 +294,7 @@ func Test_SetState(t *testing.T) {
 
 func Test_GetRating(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		rating        float32
 		expectedError error
 	}
@@ -312,16 +310,15 @@ func Test_GetRating(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, _ := getMockRecipesApi(ctrl)
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().GetRating(gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				recipesDriver.EXPECT().GetRating(test.recipeId).Return(&test.rating, nil)
-
+				recipesDriver.EXPECT().GetRating(test.recipeID).Return(&test.rating, nil)
 			}
 
 			// Act
-			resp, err := api.GetRating(context.Background(), GetRatingRequestObject{RecipeId: test.recipeId})
+			resp, err := api.GetRating(context.Background(), GetRatingRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -341,7 +338,7 @@ func Test_GetRating(t *testing.T) {
 
 func Test_SetRating(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		rating        float32
 		expectedError error
 	}
@@ -357,16 +354,15 @@ func Test_SetRating(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, recipesDriver, _ := getMockRecipesApi(ctrl)
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().SetRating(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().SetRating(test.recipeId, test.rating).Return(nil)
-
+				recipesDriver.EXPECT().SetRating(test.recipeID, test.rating).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SetRating(context.Background(), SetRatingRequestObject{RecipeId: test.recipeId, Body: &test.rating})
+			resp, err := api.SetRating(context.Background(), SetRatingRequestObject{RecipeID: test.recipeID, Body: &test.rating})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -381,21 +377,22 @@ func Test_SetRating(t *testing.T) {
 	}
 }
 
-func getMockRecipesApi(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDriver, *uploadmock.MockDriver) {
+func getMockRecipesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDriver, *uploadmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	recipeDriver := dbmock.NewMockRecipeDriver(ctrl)
 	dbDriver.EXPECT().Recipes().AnyTimes().Return(recipeDriver)
 	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := models.ImageConfiguration{
-		ImageQuality:     models.ImageQualityOriginal,
+	imgCfg := upload.ImageConfig{
+		ImageQuality:     upload.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: models.ImageQualityMedium,
+		ThumbnailQuality: upload.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
+	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},
-		upl:        upload.CreateImageUploader(uplDriver, imgCfg),
+		upl:        upl,
 		db:         dbDriver,
 	}
 	return api, recipeDriver, uplDriver

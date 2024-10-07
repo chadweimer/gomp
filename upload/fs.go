@@ -1,12 +1,12 @@
 package upload
 
 import (
+	"errors"
 	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/rs/zerolog/log"
 )
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
@@ -16,6 +16,10 @@ type fileSystemDriver struct {
 }
 
 func newFileSystemDriver(rootPath string) (Driver, error) {
+	if rootPath == "" {
+		return nil, errors.New("root path is empty")
+	}
+
 	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
 }
 
@@ -24,19 +28,21 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
 
 	dir := filepath.Dir(filePath)
-	err := os.MkdirAll(dir, os.ModePerm)
+	err := os.MkdirAll(dir, fs.FileMode(0777))
 	if err != nil {
 		return err
 	}
 
-	file, err := os.Create(filePath) //#nosec G304 -- Path already cleaned
+	file, err := os.Create(filePath) // #nosec G304 -- Path already cleaned
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			if err != nil {
-				log.Warn().Err(closeErr).Str("file", filePath).Msg("Failed to close file after a previous error")
+				slog.Warn("Failed to close file after a previous error",
+					"error", closeErr,
+					"file", filePath)
 			} else {
 				err = closeErr
 			}
@@ -66,8 +72,8 @@ type justFilesFileSystem struct {
 }
 
 // OnlyFiles constucts a fs.FS that returns fs.ErrPermission for directories.
-func OnlyFiles(fs fs.FS) fs.FS {
-	return &justFilesFileSystem{fs}
+func OnlyFiles(f fs.FS) fs.FS {
+	return &justFilesFileSystem{f}
 }
 
 func (f *justFilesFileSystem) Open(name string) (fs.File, error) {

@@ -12,12 +12,12 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 )
 
 func Test_Note_Create(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		text          string
 		dbError       error
 		expectedError error
@@ -38,13 +38,13 @@ func Test_Note_Create(t *testing.T) {
 			sut, dbmock := getMockDb(t)
 			defer sut.Close()
 
-			note := &models.Note{RecipeId: &test.recipeId, Text: test.text}
-			expectedId := rand.Int63()
+			note := &models.Note{RecipeID: &test.recipeID, Text: test.text}
+			expectedID := rand.Int63()
 
 			dbmock.ExpectBegin()
-			query := dbmock.ExpectQuery("INSERT INTO recipe_note \\(recipe_id, note\\) VALUES \\(\\$1, \\$2\\) RETURNING id").WithArgs(note.RecipeId, note.Text)
+			query := dbmock.ExpectQuery("INSERT INTO recipe_note \\(recipe_id, note\\) VALUES \\(\\$1, \\$2\\) RETURNING id").WithArgs(note.RecipeID, note.Text)
 			if test.dbError == nil {
-				query.WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedId))
+				query.WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedID))
 				dbmock.ExpectCommit()
 			} else {
 				query.WillReturnError(test.dbError)
@@ -61,8 +61,8 @@ func Test_Note_Create(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if test.expectedError == nil && *note.Id != expectedId {
-				t.Errorf("expected note id %d, received %d", expectedId, *note.Id)
+			if test.expectedError == nil && *note.ID != expectedID {
+				t.Errorf("expected note id %d, received %d", expectedID, *note.ID)
 			}
 		})
 	}
@@ -70,8 +70,8 @@ func Test_Note_Create(t *testing.T) {
 
 func Test_Note_Update(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
-		noteId        int64
+		recipeID      int64
+		noteID        int64
 		text          string
 		dbError       error
 		expectedError error
@@ -92,10 +92,10 @@ func Test_Note_Update(t *testing.T) {
 			sut, dbmock := getMockDb(t)
 			defer sut.Close()
 
-			note := &models.Note{Id: &test.noteId, RecipeId: &test.recipeId, Text: test.text}
+			note := &models.Note{ID: &test.noteID, RecipeID: &test.recipeID, Text: test.text}
 
 			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("UPDATE recipe_note SET note = \\$1 WHERE ID = \\$2 AND recipe_id = \\$3").WithArgs(note.Text, note.Id, note.RecipeId)
+			exec := dbmock.ExpectExec("UPDATE recipe_note SET note = \\$1 WHERE ID = \\$2 AND recipe_id = \\$3").WithArgs(note.Text, note.ID, note.RecipeID)
 			if test.dbError == nil {
 				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
@@ -120,8 +120,8 @@ func Test_Note_Update(t *testing.T) {
 
 func Test_Note_Delete(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
-		noteId        int64
+		recipeID      int64
+		noteID        int64
 		dbError       error
 		expectedError error
 	}
@@ -142,7 +142,7 @@ func Test_Note_Delete(t *testing.T) {
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.noteId, test.recipeId)
+			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.noteID, test.recipeID)
 			if test.dbError == nil {
 				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
@@ -152,7 +152,7 @@ func Test_Note_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Notes().Delete(test.recipeId, test.noteId)
+			err := sut.Notes().Delete(test.recipeID, test.noteID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -167,7 +167,7 @@ func Test_Note_Delete(t *testing.T) {
 
 func Test_Note_DeleteAll(t *testing.T) {
 	type testArgs struct {
-		recipeId      int64
+		recipeID      int64
 		dbError       error
 		expectedError error
 	}
@@ -188,7 +188,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeId)
+			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeID)
 			if test.dbError == nil {
 				exec.WillReturnResult(driver.RowsAffected(1))
 				dbmock.ExpectCommit()
@@ -198,7 +198,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Notes().DeleteAll(test.recipeId)
+			err := sut.Notes().DeleteAll(test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -213,7 +213,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 
 func Test_Note_List(t *testing.T) {
 	type testArgs struct {
-		recipeId       int64
+		recipeID       int64
 		expectedResult []models.Note
 		dbError        error
 		expectedError  error
@@ -224,13 +224,13 @@ func Test_Note_List(t *testing.T) {
 	tests := []testArgs{
 		{1, []models.Note{
 			{
-				Id:         utils.GetPtr[int64](1),
+				ID:         utils.GetPtr[int64](1),
 				Text:       "My Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
 			},
 			{
-				Id:         utils.GetPtr[int64](2),
+				ID:         utils.GetPtr[int64](2),
 				Text:       "My Other Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
@@ -248,11 +248,11 @@ func Test_Note_List(t *testing.T) {
 			sut, dbmock := getMockDb(t)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeId)
+			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeID)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "note", "created_at", "modified_at"})
 				for _, note := range test.expectedResult {
-					rows.AddRow(note.Id, test.recipeId, note.Text, note.CreatedAt, note.ModifiedAt)
+					rows.AddRow(note.ID, test.recipeID, note.Text, note.CreatedAt, note.ModifiedAt)
 				}
 				query.WillReturnRows(rows)
 			} else {
@@ -260,7 +260,7 @@ func Test_Note_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Notes().List(test.recipeId)
+			result, err := sut.Notes().List(test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

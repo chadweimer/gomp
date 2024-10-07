@@ -1,13 +1,20 @@
 package db
 
-//go:generate mockgen -destination=../mocks/db/driver.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
+//go:generate go run github.com/golang/mock/mockgen -destination=../mocks/db/mocks.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
 
 import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
+)
+
+const (
+	// Needed for backward compatibility
+	sqliteLegacyDriverName = "sqlite3"
 )
 
 // ---- Begin Standard Errors ----
@@ -19,8 +26,8 @@ var ErrNotFound = errors.New("no record found matching supplied criteria")
 // ErrAuthenticationFailed represents the error when authenticating fails
 var ErrAuthenticationFailed = errors.New("username or password invalid")
 
-// ErrMissingId represents the error when no id is provided on an operation that requires it
-var ErrMissingId = errors.New("id is required")
+// ErrMissingID represents the error when no id is provided on an operation that requires it
+var ErrMissingID = errors.New("id is required")
 
 // ---- End Standard Errors ----
 
@@ -37,22 +44,47 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(driver string, connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
+func CreateDriver(cfg Config) (Driver, error) {
+	if err := cfg.validate(); err != nil {
+		return nil, err
+	}
+
+	driver := cfg.Driver
+
+	// Special case for backward compatibility
+	if driver == "" {
+		slog.Debug("Database driver is empty. Will attempt to infer...")
+		if strings.HasPrefix(cfg.ConnectionString, "file:") {
+			slog.Debug("Setting database driver", "value", SQLiteDriverName)
+			driver = SQLiteDriverName
+		} else if strings.HasPrefix(cfg.ConnectionString, "postgres:") {
+			slog.Debug("Setting database driver", "value", PostgresDriverName)
+			driver = PostgresDriverName
+		} else {
+			return nil, errors.New("unable to infer a value for database driver")
+		}
+	} else if driver == sqliteLegacyDriverName {
+		// If the old driver name for sqlite is being used,
+		// we'll allow it and map it to the new one
+		slog.Debug("Detected database driver legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, SQLiteDriverName)
+		driver = SQLiteDriverName
+	}
+
 	switch driver {
 	case PostgresDriverName:
 		drv, err := openPostgres(
-			connectionString,
-			migrationsTableName,
-			migrationsForceVersion)
+			cfg.ConnectionString,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
 		if err != nil {
 			return nil, err
 		}
 		return drv, nil
 	case SQLiteDriverName:
 		drv, err := openSQLite(
-			connectionString,
-			migrationsTableName,
-			migrationsForceVersion)
+			cfg.ConnectionString,
+			cfg.MigrationsTableName,
+			cfg.MigrationsForceVersion)
 		if err != nil {
 			return nil, err
 		}
@@ -76,14 +108,14 @@ type AppConfigurationDriver interface {
 type LinkDriver interface {
 	// Create stores a link between 2 recipes in the database as a new record
 	// using a dedicated transaction that is committed if there are not errors.
-	Create(recipeId, destRecipeId int64) error
+	Create(recipeID, destRecipeID int64) error
 
 	// Delete removes the linked recipe from the database using a dedicated transaction
 	// that is committed if there are not errors.
-	Delete(recipeId, destRecipeId int64) error
+	Delete(recipeID, destRecipeID int64) error
 
 	// List retrieves all recipes linked to recipe with the specified id.
-	List(recipeId int64) (*[]models.RecipeCompact, error)
+	List(recipeID int64) (*[]models.RecipeCompact, error)
 }
 
 // NoteDriver provides functionality to edit and retrieve notes attached to recipes.
@@ -98,14 +130,14 @@ type NoteDriver interface {
 
 	// Delete removes the specified note from the database using a dedicated transaction
 	// that is committed if there are not errors.
-	Delete(recipeId, noteId int64) error
+	Delete(recipeID, noteID int64) error
 
 	// DeleteAll removes all notes for the specified recipe from the database using a dedicated
 	// transaction that is committed if there are not errors.
-	DeleteAll(recipeId int64) error
+	DeleteAll(recipeID int64) error
 
 	// List retrieves all notes associated with the recipe with the specified id.
-	List(recipeId int64) (*[]models.Note, error)
+	List(recipeID int64) (*[]models.Note, error)
 }
 
 // RecipeDriver provides functionality to edit and retrieve recipes.
@@ -142,14 +174,14 @@ type RecipeDriver interface {
 
 	// Create stores the tag in the database as a new record using
 	// a dedicated transaction that is committed if there are not errors.
-	CreateTag(recipeId int64, tag string) error
+	CreateTag(recipeID int64, tag string) error
 
 	// DeleteAll removes all tags for the specified recipe from the database using a dedicated
 	// transaction that is committed if there are not errors.
-	DeleteAllTags(recipeId int64) error
+	DeleteAllTags(recipeID int64) error
 
 	// List retrieves all tags associated with the recipe with the specified id.
-	ListTags(recipeId int64) (*[]string, error)
+	ListTags(recipeID int64) (*[]string, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.
@@ -194,7 +226,7 @@ type UserDriver interface {
 
 	// ReadSearchFilter retrieves the information about the search filter from the database, if found.
 	// If no filter exists with the specified ID, a NoRecordFound error is returned.
-	ReadSearchFilter(userId int64, filterId int64) (*models.SavedSearchFilter, error)
+	ReadSearchFilter(userID int64, filterID int64) (*models.SavedSearchFilter, error)
 
 	// UpdateSearchFilter stores the filter in the database by updating the existing record with the specified
 	// id using a dedicated transaction that is committed if there are not errors.
@@ -202,10 +234,10 @@ type UserDriver interface {
 
 	// DeleteSearchFilter removes the specified filter from the database using a dedicated transaction
 	// that is committed if there are not errors.
-	DeleteSearchFilter(userId int64, filterId int64) error
+	DeleteSearchFilter(userID int64, filterID int64) error
 
 	// List retrieves all user's saved search filters.
-	ListSearchFilters(userId int64) (*[]models.SavedSearchFilterCompact, error)
+	ListSearchFilters(userID int64) (*[]models.SavedSearchFilterCompact, error)
 }
 
 // RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.
@@ -216,25 +248,25 @@ type RecipeImageDriver interface {
 
 	// Read retrieves the information about the image from the database, if found.
 	// If no image exists with the specified ID, a ErrNotFound error is returned.
-	Read(recipeId, id int64) (*models.RecipeImage, error)
+	Read(recipeID, id int64) (*models.RecipeImage, error)
 
 	// ReadMainImage retrieves the information about the main image for the specified recipe
 	// image from the database. If no main image exists, a ErrNotFound error is returned.
-	ReadMainImage(recipeId int64) (*models.RecipeImage, error)
+	ReadMainImage(recipeID int64) (*models.RecipeImage, error)
 
 	// UpdateMainImage sets the id of the main image for the specified recipe
 	// using a dedicated transaction that is committed if there are not errors.
-	UpdateMainImage(recipeId, id int64) error
+	UpdateMainImage(recipeID, id int64) error
 
 	// List returns a RecipeImage slice that contains data for all images
 	// attached to the specified recipe.
-	List(recipeId int64) (*[]models.RecipeImage, error)
+	List(recipeID int64) (*[]models.RecipeImage, error)
 
 	// Delete removes the specified image from the backing store and database
 	// using a dedicated transaction that is committed if there are not errors.
-	Delete(recipeId, id int64) error
+	Delete(recipeID, id int64) error
 
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transaction that is committed if there are not errors.
-	DeleteAll(recipeId int64) error
+	DeleteAll(recipeID int64) error
 }
