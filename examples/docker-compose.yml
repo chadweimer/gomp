@@ -1,24 +1,28 @@
-version: '2'
-
+services:
+  web:
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://dbuser:dbpassword@db/gomp?sslmode=disable
+    image: ghcr.io/chadweimer/gomp
+    ports:
+      - 5000:5000
+    volumes:
+      - data:/var/app/gomp/data
+  db:
+    environment:
+      POSTGRES_PASSWORD: dbpassword
+      POSTGRES_USER: dbuser
+      POSTGRES_DB: gomp
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "gomp"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    image: postgres:alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
 volumes:
   data:
   db-data:
-services:
-  web:
-    image: ghcr.io/chadweimer/gomp
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgres://dbuser:dbpassword@db/gomp?sslmode=disable
-    volumes:
-      - data:/var/app/gomp/data
-    ports:
-      - 5000:5000
-  db:
-    image: postgres:alpine
-    environment:
-      - POSTGRES_PASSWORD=dbpassword
-      - POSTGRES_USER=dbuser
-      - POSTGRES_DB=gomp
-    volumes:
-      - db-data:/var/lib/postgresql/data

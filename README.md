@@ -50,30 +50,35 @@ The easiest way to deploy with a PostgreSQL database is via `docker-compose`.
 An example compose file can be found at [examples/docker-compose.yml](examples/docker-compose.yml) and is shown below.
 
 ```yaml
-version: '2'
-
+services:
+  web:
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://dbuser:dbpassword@db/gomp?sslmode=disable
+    image: ghcr.io/chadweimer/gomp
+    ports:
+      - 5000:5000
+    volumes:
+      - data:/var/app/gomp/data
+  db:
+    environment:
+      POSTGRES_PASSWORD: dbpassword
+      POSTGRES_USER: dbuser
+      POSTGRES_DB: gomp
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "gomp"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+    image: postgres:alpine
+    volumes:
+      - db-data:/var/lib/postgresql/data
 volumes:
   data:
   db-data:
-services:
-  web:
-    image: ghcr.io/chadweimer/gomp
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgres://dbuser:dbpassword@db/gomp?sslmode=disable
-    volumes:
-      - data:/var/app/gomp/data
-    ports:
-      - 5000:5000
-  db:
-    image: postgres
-    environment:
-      - POSTGRES_PASSWORD=dbpassword
-      - POSTGRES_USER=dbuser
-      - POSTGRES_DB=gomp
-    volumes:
-      - db-data:/var/lib/postgresql/data
+
 ```
 
 You will obviously want to cater the values (e.g., passwords) for your deployment.
