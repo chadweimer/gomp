@@ -31,17 +31,15 @@ docker run -p 5000:5000 -v /path/on/host:/var/app/gomp/data ghcr.io/chadweimer/g
 The equivalent compose file, this time using a named volume, would look like the following.
 
 ```yaml
-version: '2'
-
-volumes:
-  data:
 services:
   web:
     image: ghcr.io/chadweimer/gomp
-    volumes:
-      - data:/var/app/gomp/data
     ports:
       - 5000:5000
+    volumes:
+      - data:/var/app/gomp/data
+volumes:
+  data:
 ```
 
 #### With PostgreSQL
