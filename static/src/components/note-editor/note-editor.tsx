@@ -35,7 +35,9 @@ export class NoteEditor {
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-            <ion-item lines="full">
+            <quill-editor format="html" content={this.note.text}
+              onEditorContentChange={e => this.note = { ...this.note, text: e.detail.html }} />
+            {/* <ion-item lines="full">
               <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
                 autocorrect="on"
                 spellcheck
@@ -43,7 +45,7 @@ export class NoteEditor {
                 autofocus
                 auto-grow
                 onIonBlur={e => this.note = { ...this.note, text: e.target.value }} />
-            </ion-item>
+            </ion-item> */}
           </form>
         </ion-content>
       </Host>
