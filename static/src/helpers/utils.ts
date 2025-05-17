@@ -1,5 +1,5 @@
 import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
-import jwtDecode, { JwtPayload } from 'jwt-decode';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { AccessLevel, YesNoAny } from '../generated';
 import { SwipeDirection } from '../models';
 
