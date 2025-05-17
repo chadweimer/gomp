@@ -10,7 +10,6 @@ export class PageNavigator {
   @Prop() page = 1;
   @Prop() numPages = 1;
   @Prop({ reflect: true }) fill: 'clear' | 'outline' | 'solid' | 'default' = 'solid';
-  // eslint-disable-next-line @stencil-community/reserved-member-names
   @Prop({ reflect: true }) color: Color = 'secondary';
 
   @Event() pageChanged: EventEmitter<number>;
