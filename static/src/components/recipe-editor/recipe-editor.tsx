@@ -37,7 +37,7 @@ export class RecipeEditor {
         <ion-header>
           <ion-toolbar>
             <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+              <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
             <ion-title>{isNull(this.recipe.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
             <ion-buttons slot="secondary">

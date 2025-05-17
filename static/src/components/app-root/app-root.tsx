@@ -108,21 +108,21 @@ export class AppRoot {
                 : ''}
 
               <ion-title slot="start">
-                <ion-router-link href="/" class="contrast">{appConfig.config.title}</ion-router-link>
+                <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
               </ion-title>
 
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="end" class="ion-hide-lg-down">
-                  <ion-button href="/">Home</ion-button>
-                  <ion-button href="/search">
+                  <ion-button color="light" href="/">Home</ion-button>
+                  <ion-button color="light" href="/search">
                     Recipes
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
-                  <ion-button href="/settings">Settings</ion-button>
+                  <ion-button color="light" href="/settings">Settings</ion-button>
                   {hasScope(state.jwtToken, AccessLevel.Admin) ?
-                    <ion-button href="/admin">Admin</ion-button>
+                    <ion-button color="light" href="/admin">Admin</ion-button>
                     : ''}
-                  <ion-button onClick={() => this.logout()}>Logout</ion-button>
+                  <ion-button color="light" onClick={() => this.logout()}>Logout</ion-button>
                 </ion-buttons>
                 : ''}
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?

@@ -28,7 +28,7 @@ export class RecipeLinkEditor {
         <ion-header>
           <ion-toolbar>
             <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+              <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
             <ion-title>Add Link</ion-title>
             <ion-buttons slot="secondary">

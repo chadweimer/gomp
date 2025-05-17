@@ -29,7 +29,7 @@ export class UserEditor {
         <ion-header>
           <ion-toolbar>
             <ion-buttons slot="primary">
-              <ion-button onClick={() => this.onSaveClicked()}>Save</ion-button>
+              <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
             <ion-title>{isNull(this.user.id) ? 'New User' : 'Edit User'}</ion-title>
             <ion-buttons slot="secondary">
