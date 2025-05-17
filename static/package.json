@@ -20,7 +20,7 @@
     "generate": "stencil generate"
   },
   "devDependencies": {
-    "@ionic/core": "^7.6.2",
+    "@ionic/core": "^8.5.7",
     "@openapitools/openapi-generator-cli": "^2.7.0",
     "@stencil-community/eslint-plugin": "^0.7.1",
     "@stencil/core": "^4.9.0",
