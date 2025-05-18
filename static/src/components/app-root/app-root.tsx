@@ -1,4 +1,4 @@
-import { actionSheetController, alertController, modalController, pickerController, popoverController } from '@ionic/core';
+import { actionSheetController, alertController, modalController, popoverController } from '@ionic/core';
 import { Component, Element, h, Listen } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, refreshSearchResults } from '../../helpers/api';
@@ -241,7 +241,6 @@ export class AppRoot {
       actionSheetController,
       alertController,
       modalController,
-      pickerController,
       popoverController
     ];
     for (const controller of controllers) {
