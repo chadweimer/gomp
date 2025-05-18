@@ -48,33 +48,28 @@ export class PageSearch {
   render() {
     return (
       <Host>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons class="ion-justify-content-center">
+              <ion-button color="secondary" onClick={e => this.onSearchStatesClicked(e)}>
+                <ion-icon slot="start" icon="filter" />
+                {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
+              </ion-button>
+              <ion-button color="secondary" onClick={e => this.onSortByClicked(e)}>
+                <ion-icon slot="start" icon="swap-vertical" />
+                {insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
+              </ion-button>
+              <ion-button color="secondary" onClick={() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}>
+                <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
+              </ion-button>
+              <ion-button color="secondary" onClick={() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}>
+                <ion-icon slot="icon-only" icon={state.searchSettings.viewMode === SearchViewMode.Card ? 'grid' : 'list'} />
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+
         <ion-content ref={el => this.content = el} scroll-events onIonScrollEnd={e => this.onContentScrolled(e)}>
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <ion-buttons class="justify-content-center-lg-down">
-                  <ion-button fill="solid" color="secondary" onClick={e => this.onSearchStatesClicked(e)}>
-                    <ion-icon slot="start" icon="filter" />
-                    {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
-                  </ion-button>
-                  <ion-button fill="solid" color="secondary" onClick={e => this.onSortByClicked(e)}>
-                    <ion-icon slot="start" icon="swap-vertical" />
-                    {insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
-                  </ion-button>
-                  <ion-button fill="solid" color="secondary" onClick={() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}>
-                    <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
-                  </ion-button>
-                  <ion-button fill="solid" color="secondary" onClick={() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}>
-                    <ion-icon slot="icon-only" icon={state.searchSettings.viewMode === SearchViewMode.Card ? 'grid' : 'list'} />
-                  </ion-button>
-                </ion-buttons>
-              </ion-col>
-              <ion-col class="ion-hide-lg-down">
-                <page-navigator class="ion-justify-content-center" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
-              </ion-col>
-              <ion-col class="ion-hide-lg-down" />
-            </ion-row>
-          </ion-grid>
           <ion-grid class="no-pad">
             <ion-row>
               {state.searchResults?.map(recipe =>
@@ -93,14 +88,13 @@ export class PageSearch {
               )}
             </ion-row>
           </ion-grid>
-          <ion-grid>
-            <ion-row>
-              <ion-col>
-                <page-navigator class="ion-justify-content-center" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
-              </ion-col>
-            </ion-row>
-          </ion-grid>
         </ion-content>
+
+        <ion-footer>
+          <ion-toolbar>
+            <page-navigator class="ion-justify-content-center" color="secondary" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
+          </ion-toolbar>
+        </ion-footer>
 
         {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">

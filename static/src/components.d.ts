@@ -43,8 +43,8 @@ export namespace Components {
     interface PageLogin {
     }
     interface PageNavigator {
-        "color": Color;
-        "fill": 'clear' | 'outline' | 'solid' | 'default';
+        "color"?: Color;
+        "fill"?: 'clear' | 'outline' | 'solid' | 'default';
         "numPages": number;
         "page": number;
     }

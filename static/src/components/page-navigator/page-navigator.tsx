@@ -9,8 +9,8 @@ import { Component, Host, Event, EventEmitter, Prop, h } from '@stencil/core';
 export class PageNavigator {
   @Prop() page = 1;
   @Prop() numPages = 1;
-  @Prop({ reflect: true }) fill: 'clear' | 'outline' | 'solid' | 'default' = 'solid';
-  @Prop({ reflect: true }) color: Color = 'secondary';
+  @Prop({ reflect: true }) fill?: 'clear' | 'outline' | 'solid' | 'default';
+  @Prop({ reflect: true }) color?: Color;
 
   @Event() pageChanged: EventEmitter<number>;
 
