@@ -70,10 +70,10 @@ func main() {
 	defer dbDriver.Close()
 
 	mux := http.NewServeMux()
-	mux.Handle("/api/*", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver)))
-	mux.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
-	mux.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
-	mux.Handle("/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver)))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
+	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
 
