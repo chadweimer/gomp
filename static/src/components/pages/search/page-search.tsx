@@ -88,6 +88,14 @@ export class PageSearch {
               )}
             </ion-row>
           </ion-grid>
+
+          {hasScope(state.jwtToken, AccessLevel.Editor) ?
+            <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+              <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
+                <ion-icon icon="add" />
+              </ion-fab-button>
+            </ion-fab>
+            : ''}
         </ion-content>
 
         <ion-footer>
@@ -95,14 +103,6 @@ export class PageSearch {
             <page-navigator class="ion-justify-content-center" color="secondary" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
           </ion-toolbar>
         </ion-footer>
-
-        {hasScope(state.jwtToken, AccessLevel.Editor) ?
-          <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-            <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
-              <ion-icon icon="add" />
-            </ion-fab-button>
-          </ion-fab>
-          : ''}
       </Host>
     );
   }
