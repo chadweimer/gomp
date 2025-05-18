@@ -27,8 +27,8 @@ export class PageLogin {
                 </ion-card-header>
                 <ion-card-content>
                   <ion-item>
-                    <ion-label>Email</ion-label>
                     <ion-input type="email"
+                      label="Email"
                       autocomplete="username"
                       onKeyDown={e => this.onInputKeyDown(e)}
                       ref={el => this.usernameInput = el}
@@ -36,8 +36,8 @@ export class PageLogin {
                   </ion-item>
                   <ion-item>
                     <ion-icon slot="end" name="eye-off" />
-                    <ion-label>Password</ion-label>
                     <ion-input type="password"
+                      label="Password"
                       autocomplete="current-password"
                       onKeyDown={e => this.onInputKeyDown(e)}
                       ref={el => this.passwordInput = el}
