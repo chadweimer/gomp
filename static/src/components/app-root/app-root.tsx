@@ -58,7 +58,7 @@ export class AppRoot {
           </ion-route>
         </ion-router>
 
-        <ion-menu side="start" content-id="main-content" ref={el => this.menu = el}>
+        <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el}>
           <ion-content>
             <ion-list>
               <ion-item href="/" lines="none">
