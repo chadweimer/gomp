@@ -14,7 +14,7 @@ import { NavigationHookResult } from '@ionic/core/dist/types/components/route/ro
 })
 export class AppRoot {
   @Element() el!: HTMLAppRootElement;
-  private tabs!: HTMLIonTabsElement;
+  private routerOutlet!: HTMLIonRouterOutletElement;
   private menu!: HTMLIonMenuElement;
 
   async componentWillLoad() {
@@ -35,32 +35,26 @@ export class AppRoot {
     return (
       <ion-app>
         <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
-          <ion-route url="/login" component="tab-login" />
+          <ion-route url="/login" component="page-login" />
 
-          <ion-route url="/" component="tab-home" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/search" component="tab-search" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/search" component="page-search" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes" component="tab-recipe" beforeEnter={() => this.requireLogin()}>
-            <ion-route url="/:recipeId" component="page-recipe" />
+          <ion-route url="/recipes/:recipeId" component="page-recipe" beforeEnter={() => this.requireLogin()} />
+
+          <ion-route url="/settings" component="page-settings" beforeEnter={() => this.requireLogin()}>
+            <ion-route component="tab-settings-preferences" />
+            <ion-route url="/preferences" component="tab-settings-preferences" />
+            <ion-route url="/searches" component="tab-settings-searches" />
+            <ion-route url="/security" component="tab-settings-security" />
           </ion-route>
 
-          <ion-route url="/settings" component="tab-settings">
-            <ion-route component="page-settings">
-              <ion-route component="tab-settings-preferences" beforeEnter={() => this.requireLogin()} />
-              <ion-route url="/preferences" component="tab-settings-preferences" />
-              <ion-route url="/searches" component="tab-settings-searches" />
-              <ion-route url="/security" component="tab-settings-security" />
-            </ion-route>
-          </ion-route>
-
-          <ion-route url="/admin" component="tab-admin">
-            <ion-route component="page-admin">
-              <ion-route component="tab-admin-configuration" beforeEnter={() => this.requireAdmin()} />
-              <ion-route url="/configuration" component="tab-admin-configuration" />
-              <ion-route url="/users" component="tab-admin-users" />
-              <ion-route url="/maintenance" component="tab-admin-maintenance" />
-            </ion-route>
+          <ion-route url="/admin" component="page-admin" beforeEnter={() => this.requireAdmin()}>
+            <ion-route component="tab-admin-configuration" />
+            <ion-route url="/configuration" component="tab-admin-configuration" />
+            <ion-route url="/users" component="tab-admin-users" />
+            <ion-route url="/maintenance" component="tab-admin-maintenance" />
           </ion-route>
         </ion-router>
 
@@ -166,20 +160,7 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-tabs ref={el => this.tabs = el}>
-              <ion-tab tab="tab-login" component="page-login" />
-              <ion-tab tab="tab-home" component="page-home" />
-              <ion-tab tab="tab-search" component="page-search" />
-              <ion-tab tab="tab-recipe">
-                <ion-nav animated={false} />
-              </ion-tab>
-              <ion-tab tab="tab-settings">
-                <ion-nav animated={false} />
-              </ion-tab>
-              <ion-tab tab="tab-admin">
-                <ion-nav animated={false} />
-              </ion-tab>
-            </ion-tabs>
+            <ion-router-outlet ref={el => this.routerOutlet = el} />
           </ion-content>
         </div>
       </ion-app>
@@ -255,7 +236,7 @@ export class AppRoot {
   private async onPageChanging() {
     this.menu.close();
     // Let the current page know it's being deactivated
-    await sendDeactivatingCallback(this.tabs);
+    await sendDeactivatingCallback(this.routerOutlet);
   }
 
   private async onPageChanged() {
@@ -267,7 +248,7 @@ export class AppRoot {
     }
 
     // Let the new page know it's been activated
-    await sendActivatedCallback(this.tabs);
+    await sendActivatedCallback(this.routerOutlet);
 
     await this.closeAllOverlays();
   }

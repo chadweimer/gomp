@@ -150,40 +150,39 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
   }
 }
 
-export async function getActiveComponent(tabs: HTMLIonTabsElement) {
-  const tabId = await tabs.getSelected();
-  if (!isNull(tabId)) {
-    const tab = await tabs.getTab(tabId);
+export async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
+  const routeId = await router.getRouteId();
+  if (isNull(routeId)) {
+    return undefined;
+  }
+
+  if ('getTab' in router) {
+    const tab = await router.getTab(routeId.id);
     if (!isNull(tab.component)) {
       if (tab.component instanceof HTMLElement) {
         return tab.component;
       } else if (typeof tab.component === 'string') {
         return tab.querySelector(tab.component);
       }
-    } else {
-      const nav = tab.querySelector('ion-nav');
-      const activePage = await nav.getActive();
-      return activePage?.element;
     }
   }
-
-  return undefined;
+  return routeId.element;
 }
 
-export async function sendActivatedCallback(tabs: HTMLIonTabsElement) {
+export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const el = await getActiveComponent(tabs) as any;
-  if (el && typeof el.activatedCallback === 'function') {
+  const el = await getActiveComponent(router) as any;
+  if (!isNull(el) && typeof el.activatedCallback === 'function') {
     el.activatedCallback();
   }
 }
 
-export async function sendDeactivatingCallback(tabs: HTMLIonTabsElement) {
+export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const el = await getActiveComponent(tabs) as any;
-  if (el && typeof el.deactivatingCallback === 'function') {
+  const el = await getActiveComponent(router) as any;
+  if (!isNull(el) && typeof el.deactivatingCallback === 'function') {
     el.deactivatingCallback();
   }
 }

@@ -37,6 +37,9 @@ export class PageRecipe {
         {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-header class="ion-hide-lg-down">
             <ion-toolbar>
+              <ion-buttons slot="start">
+                <ion-back-button defaultHref="/search" />
+              </ion-buttons>
               <ion-buttons slot="primary">
                 <ion-button onClick={() => this.onEditClicked()}>
                   <ion-icon slot="start" icon="create" />
@@ -141,6 +144,9 @@ export class PageRecipe {
         {hasScope(state.jwtToken, AccessLevel.Editor) ?
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
+              <ion-buttons slot="start">
+                <ion-back-button defaultHref="/search" />
+              </ion-buttons>
               <ion-buttons slot="primary">
                 <ion-button onClick={() => this.onEditClicked()}>
                   <ion-icon slot="start" icon="create" />
