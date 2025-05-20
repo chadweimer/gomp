@@ -120,36 +120,36 @@ export class AppRoot {
                 </ion-buttons>
                 : ''}
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
-                <ion-item slot="end" lines="none" class="search ion-hide-sm-down">
-                  <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
-                    autocorrect="on"
-                    spellcheck
-                    onKeyDown={e => this.onSearchKeyDown(e)}
-                    onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
-                    <ion-icon slot="start" icon="search" color="medium" />
-                    <ion-buttons slot="end" class="always-clickable ion-no-margin">
-                      <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
-                      <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
-                    </ion-buttons>
-                  </ion-input>
-                </ion-item>
+                <ion-searchbar
+                  slot="end"
+                  class="end ion-hide-md-down"
+                  autocorrect="on"
+                  spellcheck={true}
+                  value={state.searchFilter?.query}
+                  onKeyDown={e => this.onSearchKeyDown(e)}
+                  onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
+                  onIonClear={() => this.onSearchClearClicked()}
+                ></ion-searchbar>
+                : ''}
+              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+                <ion-buttons slot="end" class="ion-hide-md-down">
+                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
+                </ion-buttons>
                 : ''}
             </ion-toolbar>
             {hasScope(state.jwtToken, AccessLevel.Viewer) ?
-              <ion-toolbar color="primary" class="ion-hide-sm-up">
-                <ion-item lines="none" class="search">
-                  <ion-input type="search" placeholder="Search" value={state.searchFilter?.query}
-                    autocorrect="on"
-                    spellcheck
-                    onKeyDown={e => this.onSearchKeyDown(e)}
-                    onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}>
-                    <ion-icon slot="start" icon="search" color="medium" />
-                    <ion-buttons slot="end" class="always-clickable ion-no-margin">
-                      <ion-button color="medium" onClick={() => this.onSearchClearClicked()}><ion-icon icon="close" slot="icon-only" /></ion-button>
-                      <ion-button color="medium" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
-                    </ion-buttons>
-                  </ion-input>
-                </ion-item>
+              <ion-toolbar color="primary" class="ion-hide-md-up">
+                <ion-searchbar
+                  autocorrect="on"
+                  spellcheck={true}
+                  value={state.searchFilter?.query}
+                  onKeyDown={e => this.onSearchKeyDown(e)}
+                  onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
+                  onIonClear={() => this.onSearchClearClicked()}
+                ></ion-searchbar>
+                <ion-buttons slot="end">
+                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
+                </ion-buttons>
               </ion-toolbar>
               : ''}
             {state.loadingCount > 0 ?

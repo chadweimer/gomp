@@ -3,6 +3,11 @@ ion-footer {
   color: var(--ion-color-medium-contrast);
 }
 
+ion-searchbar.end {
+  text-align: initial;
+  width: unset;
+}
+
 .copyright {
   font-size: 0.8em;
   font-weight: lighter;
