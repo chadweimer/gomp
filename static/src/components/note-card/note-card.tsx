@@ -1,7 +1,6 @@
-import { Component, Event, EventEmitter, Host, Prop, Watch, h } from '@stencil/core';
-import { marked } from 'marked';
+import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
 import { Note } from '../../generated';
-import { formatDate, isNull } from '../../helpers/utils';
+import { formatDate } from '../../helpers/utils';
 
 @Component({
   tag: 'note-card',
@@ -14,15 +13,6 @@ export class NoteCard {
 
   @Event() editClicked: EventEmitter<Note>;
   @Event() deleteClicked: EventEmitter<Note>;
-
-  private contentRef!: HTMLElement;
-
-  @Watch('note')
-  async onNoteChange(newValue: Note) {
-    if (!isNull(newValue)) {
-      this.contentRef.innerHTML = await marked.parse(newValue.text);
-    }
-  }
 
   render() {
     return (
@@ -44,7 +34,9 @@ export class NoteCard {
                 : ''}
             </ion-item>
           </ion-card-header>
-          <ion-card-content ref={el => this.contentRef = el} />
+          <ion-card-content>
+            <markdown-viewer value={this.note?.text} />
+          </ion-card-content>
         </ion-card>
       </Host>
     );

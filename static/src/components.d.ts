@@ -23,6 +23,9 @@ export namespace Components {
     interface MarkdownEditor {
         "value": string;
     }
+    interface MarkdownViewer {
+        "value": string;
+    }
     interface NoteCard {
         "note": Note;
         "readonly": boolean;
@@ -186,6 +189,12 @@ declare global {
     var HTMLMarkdownEditorElement: {
         prototype: HTMLMarkdownEditorElement;
         new (): HTMLMarkdownEditorElement;
+    };
+    interface HTMLMarkdownViewerElement extends Components.MarkdownViewer, HTMLStencilElement {
+    }
+    var HTMLMarkdownViewerElement: {
+        prototype: HTMLMarkdownViewerElement;
+        new (): HTMLMarkdownViewerElement;
     };
     interface HTMLNoteCardElementEventMap {
         "editClicked": Note;
@@ -405,6 +414,7 @@ declare global {
         "five-star-rating": HTMLFiveStarRatingElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
         "markdown-editor": HTMLMarkdownEditorElement;
+        "markdown-viewer": HTMLMarkdownViewerElement;
         "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
@@ -445,6 +455,9 @@ declare namespace LocalJSX {
     }
     interface MarkdownEditor {
         "onValueChanged"?: (event: MarkdownEditorCustomEvent<string>) => void;
+        "value"?: string;
+    }
+    interface MarkdownViewer {
         "value"?: string;
     }
     interface NoteCard {
@@ -538,6 +551,7 @@ declare namespace LocalJSX {
         "five-star-rating": FiveStarRating;
         "image-upload-browser": ImageUploadBrowser;
         "markdown-editor": MarkdownEditor;
+        "markdown-viewer": MarkdownViewer;
         "note-card": NoteCard;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
@@ -572,6 +586,7 @@ declare module "@stencil/core" {
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "markdown-editor": LocalJSX.MarkdownEditor & JSXBase.HTMLAttributes<HTMLMarkdownEditorElement>;
+            "markdown-viewer": LocalJSX.MarkdownViewer & JSXBase.HTMLAttributes<HTMLMarkdownViewerElement>;
             "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;

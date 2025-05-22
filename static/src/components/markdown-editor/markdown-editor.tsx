@@ -1,4 +1,4 @@
-import { Component, h, Prop, State, Event, Watch, Host, EventEmitter } from '@stencil/core';
+import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
 import { marked } from 'marked';
 import TurndownService from 'turndown';
 import { isNull } from '../../helpers/utils';
@@ -9,6 +9,8 @@ import { isNull } from '../../helpers/utils';
   shadow: true,
 })
 export class MarkdownEditor {
+  @Element() el!: HTMLMarkdownEditorElement;
+
   @Prop() value: string = '';
 
   @Event() valueChanged: EventEmitter<string>;
@@ -22,12 +24,22 @@ export class MarkdownEditor {
   @State() activeHeading?: 'h1' | 'h2';
 
   private editorContentRef!: HTMLElement;
-  private turndownService = new TurndownService({
-    headingStyle: 'atx',
-    hr: '---',
-    bulletListMarker: '-',
-    codeBlockStyle: 'fenced',
-  });
+  private turndownService: TurndownService;
+
+  constructor() {
+    this.turndownService = new TurndownService({
+      headingStyle: 'atx',
+      hr: '---',
+      bulletListMarker: '-',
+      codeBlockStyle: 'fenced',
+    });
+    this.turndownService.addRule('underline', {
+      filter: ['u'],
+      replacement: function (content) {
+        return '<u>' + content + '</u>'
+      }
+    })
+  }
 
   @Watch('value')
   async onValueChange(newValue: string) {
@@ -54,40 +66,57 @@ export class MarkdownEditor {
   render() {
     return (
       <Host onBlur={() => this.handleInput()}>
-        <ion-toolbar>
-          <ion-buttons>
-            <ion-button onClick={() => this.executeCommand('bold')} fill={this.isBoldActive ? 'solid' : 'clear'}>
-              <b>B</b>
-            </ion-button>
-            <ion-button onClick={() => this.executeCommand('italic')} fill={this.isItalicActive ? 'solid' : 'clear'}>
-              <i>I</i>
-            </ion-button>
-            <ion-button onClick={() => this.executeCommand('underline')} fill={this.isUnderlineActive ? 'solid' : 'clear'}>
-              <u>U</u>
-            </ion-button>
-            <ion-button onClick={() => this.executeCommand('createLink')} fill={this.isLinkActive ? 'solid' : 'clear'}>
-              🔗 Link
-            </ion-button>
-            <ion-button onClick={() => this.executeCommand('insertOrderedList')} fill={this.isOrderedListActive ? 'solid' : 'clear'}>
-              OL
-            </ion-button>
-            <ion-button onClick={() => this.executeCommand('insertUnorderedList')} fill={this.isUnorderedListActive ? 'solid' : 'clear'}>
-              UL
-            </ion-button>
-            <ion-button
-              onClick={() => this.executeCommand('formatBlock', 'h1')}
-              fill={this.activeHeading === 'h1' ? 'solid' : 'clear'}
-            >
-              H1
-            </ion-button>
-            <ion-button
-              onClick={() => this.executeCommand('formatBlock', 'h2')}
-              fill={this.activeHeading === 'h2' ? 'solid' : 'clear'}
-            >
-              H2
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
+        <ion-buttons>
+          <ion-button
+            onClick={() => this.executeCommand('bold')}
+            fill={this.el.contains(document.activeElement) && this.isBoldActive ? 'solid' : 'clear'}
+          >
+            <b>B</b>
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('italic')}
+            fill={this.el.contains(document.activeElement) && this.isItalicActive ? 'solid' : 'clear'}
+          >
+            <i>I</i>
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('underline')}
+            fill={this.el.contains(document.activeElement) && this.isUnderlineActive ? 'solid' : 'clear'}
+          >
+            <u>U</u>
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('createLink')}
+            fill={this.el.contains(document.activeElement) && this.isLinkActive ? 'solid' : 'clear'}
+          >
+            <ion-icon slot="start" icon="link" />
+            Link
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('insertOrderedList')}
+            fill={this.el.contains(document.activeElement) && this.isOrderedListActive ? 'solid' : 'clear'}
+          >
+            #
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('insertUnorderedList')}
+            fill={this.el.contains(document.activeElement) && this.isUnorderedListActive ? 'solid' : 'clear'}
+          >
+            <ion-icon icon="list" />
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('formatBlock', 'h1')}
+            fill={this.el.contains(document.activeElement) && this.activeHeading === 'h1' ? 'solid' : 'clear'}
+          >
+            H1
+          </ion-button>
+          <ion-button
+            onClick={() => this.executeCommand('formatBlock', 'h2')}
+            fill={this.el.contains(document.activeElement) && this.activeHeading === 'h2' ? 'solid' : 'clear'}
+          >
+            H2
+          </ion-button>
+        </ion-buttons>
         <div
           class="editor-content"
           contentEditable="true"

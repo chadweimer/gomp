@@ -37,7 +37,8 @@ export class NoteEditor {
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item lines="full">
-              <markdown-editor value={this.note.text} onValueChanged={e => this.note = { ...this.note, text: e.detail }}></markdown-editor>
+              <ion-label position="stacked">Text</ion-label>
+              <markdown-editor class="ion-margin-top" value={this.note.text} onValueChanged={e => this.note = { ...this.note, text: e.detail }} />
             </ion-item>
           </form>
         </ion-content>
