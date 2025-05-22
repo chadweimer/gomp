@@ -6,7 +6,7 @@ import { isNull } from '../../helpers/utils';
 @Component({
   tag: 'markdown-editor',
   styleUrl: 'markdown-editor.css',
-  shadow: true,
+  scoped: true, // Shadow DOM is not supported with Selections
 })
 export class MarkdownEditor {
   @Element() el!: HTMLMarkdownEditorElement;
