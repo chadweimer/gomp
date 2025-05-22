@@ -20,6 +20,9 @@ export namespace Components {
     }
     interface ImageUploadBrowser {
     }
+    interface MarkdownEditor {
+        "value": string;
+    }
     interface NoteCard {
         "note": Note;
         "readonly": boolean;
@@ -109,6 +112,10 @@ export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
 }
+export interface MarkdownEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLMarkdownEditorElement;
+}
 export interface NoteCardCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLNoteCardElement;
@@ -162,6 +169,23 @@ declare global {
     var HTMLImageUploadBrowserElement: {
         prototype: HTMLImageUploadBrowserElement;
         new (): HTMLImageUploadBrowserElement;
+    };
+    interface HTMLMarkdownEditorElementEventMap {
+        "valueChanged": string;
+    }
+    interface HTMLMarkdownEditorElement extends Components.MarkdownEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLMarkdownEditorElementEventMap>(type: K, listener: (this: HTMLMarkdownEditorElement, ev: MarkdownEditorCustomEvent<HTMLMarkdownEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLMarkdownEditorElementEventMap>(type: K, listener: (this: HTMLMarkdownEditorElement, ev: MarkdownEditorCustomEvent<HTMLMarkdownEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLMarkdownEditorElement: {
+        prototype: HTMLMarkdownEditorElement;
+        new (): HTMLMarkdownEditorElement;
     };
     interface HTMLNoteCardElementEventMap {
         "editClicked": Note;
@@ -380,6 +404,7 @@ declare global {
         "app-root": HTMLAppRootElement;
         "five-star-rating": HTMLFiveStarRatingElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
+        "markdown-editor": HTMLMarkdownEditorElement;
         "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
@@ -417,6 +442,10 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface ImageUploadBrowser {
+    }
+    interface MarkdownEditor {
+        "onValueChanged"?: (event: MarkdownEditorCustomEvent<string>) => void;
+        "value"?: string;
     }
     interface NoteCard {
         "note"?: Note;
@@ -508,6 +537,7 @@ declare namespace LocalJSX {
         "app-root": AppRoot;
         "five-star-rating": FiveStarRating;
         "image-upload-browser": ImageUploadBrowser;
+        "markdown-editor": MarkdownEditor;
         "note-card": NoteCard;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
@@ -541,6 +571,7 @@ declare module "@stencil/core" {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
+            "markdown-editor": LocalJSX.MarkdownEditor & JSXBase.HTMLAttributes<HTMLMarkdownEditorElement>;
             "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;

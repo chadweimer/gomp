@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.editor-content {
+  min-height: 150px;
+  outline: none;
+}

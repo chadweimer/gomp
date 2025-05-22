@@ -1,6 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../generated';
 import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
+import { MarkdownEditorCustomEvent } from '../../components';
 
 @Component({
   tag: 'note-editor',
@@ -36,13 +37,7 @@ export class NoteEditor {
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item lines="full">
-              <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
-                autocorrect="on"
-                spellcheck
-                required
-                autofocus
-                auto-grow
-                onIonBlur={e => this.note = { ...this.note, text: e.target.value }} />
+              <markdown-editor value={this.note.text} onValueChanged={e => this.note = { ...this.note, text: e.detail }}></markdown-editor>
             </ion-item>
           </form>
         </ion-content>
