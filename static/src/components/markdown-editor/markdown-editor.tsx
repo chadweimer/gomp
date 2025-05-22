@@ -54,13 +54,13 @@ export class MarkdownEditor {
       this.editorContentRef.innerHTML = await marked.parse(this.value);
     }
 
-    document.addEventListener('selectionchange', () => this.handleSelectionChange());
+    this.el.ownerDocument.addEventListener('selectionchange', () => this.handleSelectionChange());
 
     this.updateButtonStates();
   }
 
   disconnectedCallback() {
-    document.removeEventListener('selectionchange', () => this.handleSelectionChange());
+    this.el.ownerDocument.removeEventListener('selectionchange', () => this.handleSelectionChange());
   }
 
   render() {
@@ -69,50 +69,50 @@ export class MarkdownEditor {
         <ion-buttons>
           <ion-button
             onClick={() => this.executeCommand('bold')}
-            fill={this.el.contains(document.activeElement) && this.isBoldActive ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isBoldActive ? 'solid' : 'clear'}
           >
-            <b>B</b>
+            <strong>B</strong>
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('italic')}
-            fill={this.el.contains(document.activeElement) && this.isItalicActive ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isItalicActive ? 'solid' : 'clear'}
           >
-            <i>I</i>
+            <em>I</em>
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('underline')}
-            fill={this.el.contains(document.activeElement) && this.isUnderlineActive ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isUnderlineActive ? 'solid' : 'clear'}
           >
             <u>U</u>
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('createLink')}
-            fill={this.el.contains(document.activeElement) && this.isLinkActive ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isLinkActive ? 'solid' : 'clear'}
           >
             <ion-icon slot="start" icon="link" />
             Link
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('insertOrderedList')}
-            fill={this.el.contains(document.activeElement) && this.isOrderedListActive ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isOrderedListActive ? 'solid' : 'clear'}
           >
             #
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('insertUnorderedList')}
-            fill={this.el.contains(document.activeElement) && this.isUnorderedListActive ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isUnorderedListActive ? 'solid' : 'clear'}
           >
             <ion-icon icon="list" />
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('formatBlock', 'h1')}
-            fill={this.el.contains(document.activeElement) && this.activeHeading === 'h1' ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.activeHeading === 'h1' ? 'solid' : 'clear'}
           >
             H1
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('formatBlock', 'h2')}
-            fill={this.el.contains(document.activeElement) && this.activeHeading === 'h2' ? 'solid' : 'clear'}
+            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.activeHeading === 'h2' ? 'solid' : 'clear'}
           >
             H2
           </ion-button>
@@ -139,21 +139,25 @@ export class MarkdownEditor {
   }
 
   private updateButtonStates() {
-    this.isBoldActive = document.queryCommandState('bold');
-    this.isItalicActive = document.queryCommandState('italic');
-    this.isUnderlineActive = document.queryCommandState('underline');
-    this.isOrderedListActive = document.queryCommandState('insertOrderedList');
-    this.isUnorderedListActive = document.queryCommandState('insertUnorderedList');
+    if (typeof this.el.ownerDocument.queryCommandState === 'function') {
+      this.isBoldActive = this.el.ownerDocument.queryCommandState('bold');
+      this.isItalicActive = this.el.ownerDocument.queryCommandState('italic');
+      this.isUnderlineActive = this.el.ownerDocument.queryCommandState('underline');
+      this.isOrderedListActive = this.el.ownerDocument.queryCommandState('insertOrderedList');
+      this.isUnorderedListActive = this.el.ownerDocument.queryCommandState('insertUnorderedList');
+    }
 
     // Check link active state (more complex)
-    const selection = window.getSelection();
-    this.isLinkActive = false;
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const commonAncestor = range.commonAncestorContainer;
-      const anchor = this.findAncestor(commonAncestor, 'A');
-      if (!isNull(anchor)) {
-        this.isLinkActive = true;
+    if (typeof this.el.ownerDocument.getSelection === 'function') {
+      const selection = this.el.ownerDocument.getSelection();
+      this.isLinkActive = false;
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const commonAncestor = range.commonAncestorContainer;
+        const anchor = this.findAncestor(commonAncestor, 'A');
+        if (!isNull(anchor)) {
+          this.isLinkActive = true;
+        }
       }
     }
 
@@ -179,17 +183,19 @@ export class MarkdownEditor {
   }
 
   private getSelectionParentBlock(): HTMLElement | null {
-    const selection = window.getSelection();
-    if (selection.rangeCount === 0) return null;
+    if (typeof this.el.ownerDocument.getSelection === 'function') {
+      const selection = this.el.ownerDocument.getSelection();
+      if (selection.rangeCount === 0) return null;
 
-    let node = selection.getRangeAt(0).commonAncestorContainer;
-    // Walk up the DOM tree until we find a block element or the editor's content div
-    while (node && node !== this.editorContentRef && !['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'li'].includes(node.nodeName.toLowerCase())) {
-      node = node.parentNode;
-    }
-    // Ensure the node is within the editor and is an actual element
-    if (node && node instanceof HTMLElement && this.editorContentRef.contains(node)) {
-      return node;
+      let node = selection.getRangeAt(0).commonAncestorContainer;
+      // Walk up the DOM tree until we find a block element or the editor's content div
+      while (node && node !== this.editorContentRef && !['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'li'].includes(node.nodeName.toLowerCase())) {
+        node = node.parentNode;
+      }
+      // Ensure the node is within the editor and is an actual element
+      if (node && node instanceof HTMLElement && this.editorContentRef.contains(node)) {
+        return node;
+      }
     }
     return null;
   }
@@ -201,10 +207,10 @@ export class MarkdownEditor {
     if (command === 'createLink') {
       const url = prompt('Enter the URL:');
       if (!isNull(url)) {
-        document.execCommand(command, false, url);
+        this.el.ownerDocument.execCommand(command, false, url);
       }
     } else {
-      document.execCommand(command, false, value);
+      this.el.ownerDocument.execCommand(command, false, value);
     }
     this.updateButtonStates();
   }

@@ -18,8 +18,8 @@ describe('note-card', () => {
       components: [NoteCard],
       template: () => (<note-card note={note}></note-card>),
     });
-    const para = page.root.querySelector('ion-card-content p');
-    expect(para).toEqualText(note.text);
+    const mv = page.root.querySelector('markdown-viewer');
+    expect(mv).toEqualAttribute('value', note.text);
   });
 
   it('readonly works', async () => {
