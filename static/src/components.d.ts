@@ -21,6 +21,8 @@ export namespace Components {
     interface ImageUploadBrowser {
     }
     interface MarkdownEditor {
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "value": string;
     }
     interface MarkdownViewer {
@@ -454,6 +456,8 @@ declare namespace LocalJSX {
     interface ImageUploadBrowser {
     }
     interface MarkdownEditor {
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "onValueChanged"?: (event: MarkdownEditorCustomEvent<string>) => void;
         "value"?: string;
     }

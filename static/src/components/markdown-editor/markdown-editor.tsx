@@ -1,7 +1,7 @@
 import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
 import { marked } from 'marked';
 import TurndownService from 'turndown';
-import { isNull } from '../../helpers/utils';
+import { isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'markdown-editor',
@@ -12,6 +12,8 @@ export class MarkdownEditor {
   @Element() el!: HTMLMarkdownEditorElement;
 
   @Prop() value: string = '';
+  @Prop() label?: string;
+  @Prop() labelPlacement?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
 
   @Event() valueChanged: EventEmitter<string>;
 
@@ -53,7 +55,7 @@ export class MarkdownEditor {
   }
 
   async componentDidLoad() {
-    if (this.value !== '') {
+    if (!isNullOrEmpty(this.value)) {
       this.editorContentRef.innerHTML = await marked.parse(this.value);
     }
 
@@ -69,34 +71,35 @@ export class MarkdownEditor {
   render() {
     return (
       <Host>
-        <ion-buttons>
+        {!isNullOrEmpty(this.label) ? <ion-label position={this.labelPlacement}>{this.label}</ion-label> : ''}
+        <ion-buttons class="ion-padding-top">
           <ion-button
             onClick={() => this.executeCommand('bold')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isBoldActive ? 'solid' : 'clear'}
+            fill={this.isBoldActive ? 'solid' : 'clear'}
           >
             <strong>B</strong>
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('italic')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isItalicActive ? 'solid' : 'clear'}
+            fill={this.isItalicActive ? 'solid' : 'clear'}
           >
             <em>I</em>
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('underline')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isUnderlineActive ? 'solid' : 'clear'}
+            fill={this.isUnderlineActive ? 'solid' : 'clear'}
           >
             <u>U</u>
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('insertOrderedList')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isOrderedListActive ? 'solid' : 'clear'}
+            fill={this.isOrderedListActive ? 'solid' : 'clear'}
           >
             #
           </ion-button>
           <ion-button
             onClick={() => this.executeCommand('insertUnorderedList')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isUnorderedListActive ? 'solid' : 'clear'}
+            fill={this.isUnorderedListActive ? 'solid' : 'clear'}
           >
             <ion-icon icon="list" />
           </ion-button>
@@ -124,6 +127,18 @@ export class MarkdownEditor {
   }
 
   private updateButtonStates() {
+    // Check if the editor is focused
+    if (!this.el.contains(this.el.ownerDocument.activeElement)) {
+      this.isBoldActive = false;
+      this.isItalicActive = false;
+      this.isUnderlineActive = false;
+      this.isOrderedListActive = false;
+      this.isUnorderedListActive = false;
+      this.isLinkActive = false;
+      this.activeHeading = null
+      return;
+    }
+
     if (typeof this.el.ownerDocument.queryCommandState === 'function') {
       this.isBoldActive = this.el.ownerDocument.queryCommandState('bold');
       this.isItalicActive = this.el.ownerDocument.queryCommandState('italic');

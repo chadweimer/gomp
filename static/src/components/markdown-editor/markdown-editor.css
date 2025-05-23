@@ -8,3 +8,7 @@
   padding-bottom: var(--ion-padding, 0);
   outline: none;
 }
+
+:host:focus-within ion-label {
+  color: var(--ion-color-primary);
+}
