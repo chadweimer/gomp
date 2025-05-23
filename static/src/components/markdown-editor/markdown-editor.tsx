@@ -107,7 +107,7 @@ export class MarkdownEditor {
         <div
           class="editor-content"
           contentEditable="true"
-          onInput={() => this.handleInput()}
+          onBlurCapture={() => this.handleInput()}
           onMouseUp={() => this.handleSelectionChange()}
           onKeyUp={() => this.handleSelectionChange()}
           ref={(el) => (this.editorContentRef = el)}
