@@ -4,6 +4,7 @@
 }
 
 .editor-content {
-  min-height: 100px;
+  min-height: 1.5em;
+  padding-bottom: var(--ion-padding, 0);
   outline: none;
 }

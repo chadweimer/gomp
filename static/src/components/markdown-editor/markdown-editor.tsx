@@ -89,13 +89,6 @@ export class MarkdownEditor {
             <u>U</u>
           </ion-button>
           <ion-button
-            onClick={() => this.executeCommand('createLink')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isLinkActive ? 'solid' : 'clear'}
-          >
-            <ion-icon slot="start" icon="link" />
-            Link
-          </ion-button>
-          <ion-button
             onClick={() => this.executeCommand('insertOrderedList')}
             fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isOrderedListActive ? 'solid' : 'clear'}
           >
@@ -106,18 +99,6 @@ export class MarkdownEditor {
             fill={this.el.contains(this.el.ownerDocument.activeElement) && this.isUnorderedListActive ? 'solid' : 'clear'}
           >
             <ion-icon icon="list" />
-          </ion-button>
-          <ion-button
-            onClick={() => this.executeCommand('formatBlock', 'h1')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.activeHeading === 'h1' ? 'solid' : 'clear'}
-          >
-            H1
-          </ion-button>
-          <ion-button
-            onClick={() => this.executeCommand('formatBlock', 'h2')}
-            fill={this.el.contains(this.el.ownerDocument.activeElement) && this.activeHeading === 'h2' ? 'solid' : 'clear'}
-          >
-            H2
           </ion-button>
         </ion-buttons>
         <div
