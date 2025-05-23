@@ -85,16 +85,18 @@ export class RecipeEditor {
               <markdown-editor class="ion-margin-top" value={this.recipe.directions} onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-input label="Storage Instructions" label-placement="stacked" value={this.recipe.storageInstructions}
+              <ion-textarea label="Storage Instructions" label-placement="stacked" value={this.recipe.storageInstructions}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.recipe = { ...this.recipe, storageInstructions: e.target.value as string }} />
+                auto-grow
+                onIonBlur={e => this.recipe = { ...this.recipe, storageInstructions: e.target.value }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-input label="Nutrition" label-placement="stacked" value={this.recipe.nutritionInfo}
+              <ion-textarea label="Nutrition" label-placement="stacked" value={this.recipe.nutritionInfo}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.recipe = { ...this.recipe, nutritionInfo: e.target.value as string }} />
+                auto-grow
+                onIonBlur={e => this.recipe = { ...this.recipe, nutritionInfo: e.target.value }} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Source" label-placement="stacked" value={this.recipe.sourceUrl}
