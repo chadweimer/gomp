@@ -101,18 +101,18 @@ describe('recipe-viewer', () => {
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    mv = items[1].querySelector('markdown-viewer');
-    expect(mv).not.toBeNull();
-    expect(mv).toEqualAttribute('value', component.recipe.nutritionInfo);
+    para = items[1].querySelector('p');
+    expect(para).not.toBeNull();
+    expect(para).toEqualText(component.recipe.nutritionInfo);
 
     // Storage Instructions
     component.recipe = { ...recipe, storageInstructions: 'storage' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    mv = items[1].querySelector('markdown-viewer');
-    expect(mv).not.toBeNull();
-    expect(mv).toEqualAttribute('value', component.recipe.storageInstructions);
+    para = items[1].querySelector('p');
+    expect(para).not.toBeNull();
+    expect(para).toEqualText(component.recipe.storageInstructions);
 
     // Source URL
     component.recipe = { ...recipe, sourceUrl: 'http://some.recipe/' };
