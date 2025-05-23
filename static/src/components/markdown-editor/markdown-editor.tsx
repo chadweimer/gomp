@@ -38,13 +38,16 @@ export class MarkdownEditor {
       replacement: function (content) {
         return '<u>' + content + '</u>'
       }
-    })
+    });
   }
 
   @Watch('value')
   async onValueChange(newValue: string) {
     if (!isNull(this.editorContentRef)) {
-      this.editorContentRef.innerHTML = await marked.parse(newValue);
+      const editorMarkdown = this.turndownService.turndown(this.editorContentRef.innerHTML);
+      if (editorMarkdown !== newValue) {
+        this.editorContentRef.innerHTML = await marked.parse(newValue);
+      }
       this.updateButtonStates();
     }
   }
@@ -65,7 +68,7 @@ export class MarkdownEditor {
 
   render() {
     return (
-      <Host onBlur={() => this.handleInput()}>
+      <Host>
         <ion-buttons>
           <ion-button
             onClick={() => this.executeCommand('bold')}
@@ -120,6 +123,7 @@ export class MarkdownEditor {
         <div
           class="editor-content"
           contentEditable="true"
+          onInput={() => this.handleInput()}
           onMouseUp={() => this.handleSelectionChange()}
           onKeyUp={() => this.handleSelectionChange()}
           ref={(el) => (this.editorContentRef = el)}
