@@ -21,7 +21,7 @@ export class MarkdownEditor {
   @State() isLinkActive: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
-  @State() activeHeading?: 'h1' | 'h2';
+  @State() activeHeading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
   private editorContentRef!: HTMLElement;
   private turndownService: TurndownService;
@@ -170,8 +170,8 @@ export class MarkdownEditor {
     this.activeHeading = null;
     if (!isNull(parentBlock)) {
       const tagName = parentBlock.tagName.toLowerCase();
-      if (tagName === 'h1' || tagName === 'h2') {
-        this.activeHeading = tagName;
+      if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
+        this.activeHeading = tagName as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
       }
     }
   }
