@@ -1,4 +1,4 @@
-import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
+import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
 import { Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../generated';
 import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
 
