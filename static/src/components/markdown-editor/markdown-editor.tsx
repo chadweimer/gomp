@@ -41,6 +41,12 @@ export class MarkdownEditor {
         return '<u>' + content + '</u>'
       }
     });
+    this.turndownService.addRule('linebreak', {
+      filter: ['br'],
+      replacement: function (content) {
+        return content + '<br>'
+      }
+    });
   }
 
   @Watch('value')
