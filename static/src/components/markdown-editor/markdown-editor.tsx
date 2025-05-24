@@ -1,6 +1,6 @@
 import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import TurndownService from 'turndown';
 import { isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -26,52 +26,20 @@ export class MarkdownEditor {
   @State() activeHeading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
   private editorContentRef!: HTMLElement;
-  private turndownService: TurndownService;
-
-  constructor() {
-    this.turndownService = new TurndownService({
-      headingStyle: 'atx',
-      hr: '---',
-      bulletListMarker: '-',
-      codeBlockStyle: 'fenced',
-    });
-    this.turndownService.addRule('underline', {
-      filter: ['u'],
-      replacement: function (content) {
-        return '<u>' + content + '</u>'
-      }
-    });
-    this.turndownService.addRule('linebreak', {
-      filter: ['br'],
-      replacement: function (content) {
-        return content + '<br>'
-      }
-    });
-  }
 
   @Watch('value')
-  async onValueChange(newValue: string) {
-    if (!isNull(this.editorContentRef)) {
-      const editorMarkdown = this.turndownService.turndown(this.editorContentRef.innerHTML);
-      if (editorMarkdown !== newValue) {
-        this.editorContentRef.innerHTML = await marked.parse(newValue);
-      }
-      this.updateButtonStates();
-    }
+  async onValueChange() {
+    this.updateButtonStates();
   }
 
   async componentDidLoad() {
-    if (!isNullOrEmpty(this.value)) {
-      this.editorContentRef.innerHTML = await marked.parse(this.value);
-    }
-
-    this.el.ownerDocument.addEventListener('selectionchange', () => this.handleSelectionChange());
+    this.el.ownerDocument.addEventListener('selectionchange', () => this.updateButtonStates());
 
     this.updateButtonStates();
   }
 
   disconnectedCallback() {
-    this.el.ownerDocument.removeEventListener('selectionchange', () => this.handleSelectionChange());
+    this.el.ownerDocument.removeEventListener('selectionchange', () => this.updateButtonStates());
   }
 
   render() {
@@ -113,23 +81,15 @@ export class MarkdownEditor {
         <div
           class="editor-content"
           contentEditable="true"
-          onBlurCapture={() => this.handleInput()}
-          onMouseUp={() => this.handleSelectionChange()}
-          onKeyUp={() => this.handleSelectionChange()}
+          onBlurCapture={() => this.valueChanged.emit(DOMPurify.sanitize(this.editorContentRef.innerHTML))}
+          onMouseUp={() => this.updateButtonStates()}
+          onKeyUp={() => this.updateButtonStates()}
           ref={(el) => (this.editorContentRef = el)}
+          innerHTML={DOMPurify.sanitize(marked.parse(this.value).toString())}
         >
         </div>
       </Host>
     );
-  }
-
-  private handleInput() {
-    const editorMarkdown = this.turndownService.turndown(this.editorContentRef.innerHTML);
-    this.valueChanged.emit(editorMarkdown);
-  }
-
-  private handleSelectionChange() {
-    this.updateButtonStates();
   }
 
   private updateButtonStates() {

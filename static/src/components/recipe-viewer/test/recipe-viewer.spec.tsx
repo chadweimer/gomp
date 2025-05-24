@@ -65,63 +65,63 @@ describe('recipe-viewer', () => {
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    let para = items[1].querySelector('p');
-    expect(para).not.toBeNull();
-    expect(para).toEqualText(component.recipe.servingSize);
+    let node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualText(component.recipe.servingSize);
 
     // Time
     component.recipe = { ...recipe, time: 'time' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    para = items[1].querySelector('p');
-    expect(para).not.toBeNull();
-    expect(para).toEqualText(component.recipe.time);
+    node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualText(component.recipe.time);
 
     // Ingredients
     component.recipe = { ...recipe, ingredients: 'ingredients' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    let mv = items[1].querySelector('markdown-viewer');
-    expect(mv).not.toBeNull();
-    expect(mv).toEqualAttribute('value', component.recipe.ingredients);
+    node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', component.recipe.ingredients);
 
     // Directions
     component.recipe = { ...recipe, directions: 'directions' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    mv = items[1].querySelector('markdown-viewer');
-    expect(mv).not.toBeNull();
-    expect(mv).toEqualAttribute('value', component.recipe.directions);
+    node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', component.recipe.directions);
 
     // Nutrition Info
     component.recipe = { ...recipe, nutritionInfo: 'nutrition' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    para = items[1].querySelector('p');
-    expect(para).not.toBeNull();
-    expect(para).toEqualText(component.recipe.nutritionInfo);
+    node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualText(component.recipe.nutritionInfo);
 
     // Storage Instructions
     component.recipe = { ...recipe, storageInstructions: 'storage' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    para = items[1].querySelector('p');
-    expect(para).not.toBeNull();
-    expect(para).toEqualText(component.recipe.storageInstructions);
+    node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualText(component.recipe.storageInstructions);
 
     // Source URL
     component.recipe = { ...recipe, sourceUrl: 'http://some.recipe/' };
     await page.waitForChanges();
     items = page.root.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    para = items[1].querySelector('p');
-    expect(para).not.toBeNull();
-    const link = para.querySelector('a');
+    node = items[1].lastElementChild;
+    expect(node).not.toBeNull();
+    const link = node.querySelector('a');
     expect(link).not.toBeNull();
     expect(link.href).toEqualText(component.recipe.sourceUrl);
     expect(link).toEqualText(component.recipe.sourceUrl);

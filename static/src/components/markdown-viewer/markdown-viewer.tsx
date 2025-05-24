@@ -1,4 +1,5 @@
-import { Component, Element, Host, Prop, Watch, h } from '@stencil/core';
+import { Component, Prop, h } from '@stencil/core';
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
 @Component({
@@ -7,24 +8,11 @@ import { marked } from 'marked';
   shadow: true,
 })
 export class MarkdownViewer {
-  @Element() el!: HTMLMarkdownViewerElement;
-
   @Prop() value: string = '';
-
-  @Watch('value')
-  async onValueChange(newValue: string) {
-    this.el.shadowRoot.innerHTML = await marked.parse(newValue);
-  }
-
-  async componentDidLoad() {
-    if (this.value !== '') {
-      this.el.shadowRoot.innerHTML = await marked.parse(this.value);
-    }
-  }
 
   render() {
     return (
-      <Host />
+      <div innerHTML={DOMPurify.sanitize(marked.parse(this.value).toString())} />
     );
   }
 }
