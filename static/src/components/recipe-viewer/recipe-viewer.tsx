@@ -1,4 +1,4 @@
-import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
+import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
 import { Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../generated';
 import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
 
@@ -35,7 +35,9 @@ export class RecipeViewer {
                 <h1>{this.recipe?.name}</h1>
                 <five-star-rating value={this.rating} disabled={this.readonly}
                   onValueSelected={e => this.ratingSelected.emit(e.detail)} />
-                <p><ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note></p>
+                <div>
+                  <ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note>
+                </div>
               </div>
               {this.recipe?.state === RecipeState.Archived
                 ? <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>
@@ -44,45 +46,45 @@ export class RecipeViewer {
             {!isNullOrEmpty(this.recipe?.servingSize) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Serving Size</ion-label>
-                <p class="plain ion-padding">{this.recipe?.servingSize}</p>
+                <div class="plain ion-padding">{this.recipe?.servingSize}</div>
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.time) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Time</ion-label>
-                <p class="plain ion-padding">{this.recipe?.time}</p>
+                <div class="plain ion-padding">{this.recipe?.time}</div>
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.ingredients) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>
-                <markdown-viewer value={this.recipe?.ingredients} />
+                <markdown-viewer class="ion-padding" value={this.recipe?.ingredients} />
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.directions) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
-                <markdown-viewer value={this.recipe?.directions} />
+                <markdown-viewer class="ion-padding" value={this.recipe?.directions} />
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.storageInstructions) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Storage Instructions</ion-label>
-                <p class="plain ion-padding">{this.recipe?.storageInstructions}</p>
+                <div class="plain ion-padding">{this.recipe?.storageInstructions}</div>
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.nutritionInfo) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Nutrition</ion-label>
-                <p class="plain ion-padding">{this.recipe?.nutritionInfo}</p>
+                <div class="plain ion-padding">{this.recipe?.nutritionInfo}</div>
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.sourceUrl) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Source</ion-label>
-                <p class="plain ion-padding">
+                <div class="plain ion-padding">
                   <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a>
-                </p>
+                </div>
               </ion-item>
               : ''}
             {this.links?.length > 0 ?

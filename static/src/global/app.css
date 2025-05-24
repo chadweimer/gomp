@@ -132,11 +132,11 @@ html:not(.hydrated) body {
   z-index: -1;
 }
 
-p.plain {
+.plain {
   white-space: pre-wrap;
 }
 
-p.single-line {
+.single-line {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
