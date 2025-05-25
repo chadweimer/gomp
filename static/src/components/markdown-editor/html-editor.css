@@ -12,3 +12,8 @@
 :host:focus-within ion-label {
   color: var(--ion-color-primary);
 }
+
+ion-buttons {
+  position: sticky;
+  top: 0;
+}
