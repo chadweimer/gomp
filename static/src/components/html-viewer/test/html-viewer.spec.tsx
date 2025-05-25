@@ -36,13 +36,13 @@ describe('html-viewer', () => {
   });
 
   it('renders whitespace', async () => {
-    const value = 'text with extra  spaces\nand\n\nnewlines';
+    const value = 'text with  extra   spaces\nand\n\nnewlines';
     const page = await newSpecPage({
       components: [HTMLViewer],
       template: () => (<html-viewer value={value}></html-viewer>),
     });
     const node = page.root.shadowRoot.querySelector('div');
-    expect(node.innerHTML).toEqualHtml('text&nbsp;with&nbsp;extra&nbsp;&nbsp;spaces<br>and<br><br>newlines');
+    expect(node.innerHTML).toEqualHtml('text with&nbsp; extra&nbsp; &nbsp;spaces<br>and<br><br>newlines');
     expect(page.rootInstance.value).toEqual(value);
   });
 });

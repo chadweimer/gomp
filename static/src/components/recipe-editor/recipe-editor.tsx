@@ -85,18 +85,12 @@ export class RecipeEditor {
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-textarea label="Storage Instructions" label-placement="stacked" value={this.recipe.storageInstructions}
-                autocorrect="on"
-                spellcheck
-                auto-grow
-                onIonBlur={e => this.recipe = { ...this.recipe, storageInstructions: e.target.value }} />
+              <html-editor label="Storage Instructions" label-placement="stacked" value={this.recipe.storageInstructions}
+                onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-textarea label="Nutrition" label-placement="stacked" value={this.recipe.nutritionInfo}
-                autocorrect="on"
-                spellcheck
-                auto-grow
-                onIonBlur={e => this.recipe = { ...this.recipe, nutritionInfo: e.target.value }} />
+              <html-editor label="Nutrition" label-placement="stacked" value={this.recipe.nutritionInfo}
+                onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail }} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Source" label-placement="stacked" value={this.recipe.sourceUrl}

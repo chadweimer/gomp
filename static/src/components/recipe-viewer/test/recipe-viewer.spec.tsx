@@ -103,7 +103,7 @@ describe('recipe-viewer', () => {
     expect(items.length).toBe(2);
     node = items[1].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toEqualText(component.recipe.nutritionInfo);
+    expect(node).toEqualAttribute('value', component.recipe.nutritionInfo);
 
     // Storage Instructions
     component.recipe = { ...recipe, storageInstructions: 'storage' };
@@ -112,7 +112,7 @@ describe('recipe-viewer', () => {
     expect(items.length).toBe(2);
     node = items[1].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toEqualText(component.recipe.storageInstructions);
+    expect(node).toEqualAttribute('value', component.recipe.storageInstructions);
 
     // Source URL
     component.recipe = { ...recipe, sourceUrl: 'http://some.recipe/' };

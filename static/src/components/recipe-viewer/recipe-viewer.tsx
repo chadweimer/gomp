@@ -70,13 +70,13 @@ export class RecipeViewer {
             {!isNullOrEmpty(this.recipe?.storageInstructions) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Storage Instructions</ion-label>
-                <div class="plain ion-padding">{this.recipe?.storageInstructions}</div>
+                <html-viewer class="ion-padding" value={this.recipe?.storageInstructions} />
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.nutritionInfo) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Nutrition</ion-label>
-                <div class="plain ion-padding">{this.recipe?.nutritionInfo}</div>
+                <html-viewer class="ion-padding" value={this.recipe?.nutritionInfo} />
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.sourceUrl) ?
