@@ -198,14 +198,18 @@ export function preProcessMultilineText(text: string) {
     return text;
   }
 
-  console.log('original', text);
-
   // Convert all newlines to <br> tags.
   text = text.replace(/(\r\n|\r|\n)/g, '<br>');
-  // Preserve all consecutive spaces.
-  text = text.replace(/\s/gm, '&nbsp;');
 
-  console.log('processed', text);
+  // Preserve all consecutive spaces.
+  text = text.replace(/\s{2,}/gm, match => {
+    // Replace multiple spaces with alternating &nbsp; and space characters.
+    // This is to ensure that the text is rendered with the same whitespace as before,
+    // while maintaining the ability for the text to be wrapped.
+    return match.split('').map((char, index) => {
+      return index % 2 === 0 ? '&nbsp;' : char;
+    }).join('');
+  });
 
   return text;
 }
