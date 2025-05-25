@@ -21,9 +21,9 @@ describe('recipe-card', () => {
     expect(component.recipe.name).toEqual('');
     const image = page.root.querySelector('img');
     expect(image).toBeNull();
-    const para = page.root.querySelector('p');
-    expect(para).not.toBeNull();
-    expect(para).toEqualText('');
+    const node = page.root.querySelector('.no-overflow > .single-line');
+    expect(node).not.toBeNull();
+    expect(node).toEqualText('');
     const rating = page.root.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
     expect(rating).toEqualAttribute('value', 0);
@@ -42,9 +42,9 @@ describe('recipe-card', () => {
     expect(component.recipe).toEqual(recipe);
     const image = page.root.querySelector('img');
     expect(image).toBeNull();
-    const para = page.root.querySelector('p');
-    expect(para).not.toBeNull();
-    expect(para).toEqualText(recipe.name);
+    const node = page.root.querySelector('.no-overflow > .single-line');
+    expect(node).not.toBeNull();
+    expect(node).toEqualText(recipe.name);
     const rating = page.root.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
     expect(rating).toEqualAttribute('value', recipe.averageRating);

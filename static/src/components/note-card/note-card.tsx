@@ -35,7 +35,7 @@ export class NoteCard {
             </ion-item>
           </ion-card-header>
           <ion-card-content>
-            <p class="plain">{this.note?.text}</p>
+            <html-viewer value={this.note?.text} />
           </ion-card-content>
         </ion-card>
       </Host>

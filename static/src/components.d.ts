@@ -18,6 +18,14 @@ export namespace Components {
         "size": string;
         "value": number;
     }
+    interface HtmlEditor {
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "value": string;
+    }
+    interface HtmlViewer {
+        "value": string;
+    }
     interface ImageUploadBrowser {
     }
     interface NoteCard {
@@ -109,6 +117,10 @@ export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
 }
+export interface HtmlEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLHtmlEditorElement;
+}
 export interface NoteCardCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLNoteCardElement;
@@ -156,6 +168,29 @@ declare global {
     var HTMLFiveStarRatingElement: {
         prototype: HTMLFiveStarRatingElement;
         new (): HTMLFiveStarRatingElement;
+    };
+    interface HTMLHtmlEditorElementEventMap {
+        "valueChanged": string;
+    }
+    interface HTMLHtmlEditorElement extends Components.HtmlEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLHtmlEditorElementEventMap>(type: K, listener: (this: HTMLHtmlEditorElement, ev: HtmlEditorCustomEvent<HTMLHtmlEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLHtmlEditorElementEventMap>(type: K, listener: (this: HTMLHtmlEditorElement, ev: HtmlEditorCustomEvent<HTMLHtmlEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLHtmlEditorElement: {
+        prototype: HTMLHtmlEditorElement;
+        new (): HTMLHtmlEditorElement;
+    };
+    interface HTMLHtmlViewerElement extends Components.HtmlViewer, HTMLStencilElement {
+    }
+    var HTMLHtmlViewerElement: {
+        prototype: HTMLHtmlViewerElement;
+        new (): HTMLHtmlViewerElement;
     };
     interface HTMLImageUploadBrowserElement extends Components.ImageUploadBrowser, HTMLStencilElement {
     }
@@ -379,6 +414,8 @@ declare global {
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
         "five-star-rating": HTMLFiveStarRatingElement;
+        "html-editor": HTMLHtmlEditorElement;
+        "html-viewer": HTMLHtmlViewerElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
         "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
@@ -415,6 +452,15 @@ declare namespace LocalJSX {
         "onValueSelected"?: (event: FiveStarRatingCustomEvent<number>) => void;
         "size"?: string;
         "value"?: number;
+    }
+    interface HtmlEditor {
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
+        "value"?: string;
+    }
+    interface HtmlViewer {
+        "value"?: string;
     }
     interface ImageUploadBrowser {
     }
@@ -507,6 +553,8 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "app-root": AppRoot;
         "five-star-rating": FiveStarRating;
+        "html-editor": HtmlEditor;
+        "html-viewer": HtmlViewer;
         "image-upload-browser": ImageUploadBrowser;
         "note-card": NoteCard;
         "note-editor": NoteEditor;
@@ -540,6 +588,8 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
+            "html-editor": LocalJSX.HtmlEditor & JSXBase.HTMLAttributes<HTMLHtmlEditorElement>;
+            "html-viewer": LocalJSX.HtmlViewer & JSXBase.HTMLAttributes<HTMLHtmlViewerElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;

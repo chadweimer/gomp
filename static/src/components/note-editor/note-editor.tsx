@@ -36,13 +36,8 @@ export class NoteEditor {
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
             <ion-item lines="full">
-              <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
-                autocorrect="on"
-                spellcheck
-                required
-                autofocus
-                auto-grow
-                onIonBlur={e => this.note = { ...this.note, text: e.target.value }} />
+              <ion-label position="stacked">Text</ion-label>
+              <html-editor class="ion-margin-top" value={this.note.text} onValueChanged={e => this.note = { ...this.note, text: e.detail }} />
             </ion-item>
           </form>
         </ion-content>
