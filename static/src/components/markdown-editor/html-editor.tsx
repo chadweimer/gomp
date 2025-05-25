@@ -79,6 +79,7 @@ export class HTMLEditor {
         <div
           class="editor-content"
           contentEditable="true"
+          role="textbox"
           onBlurCapture={() => this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML))}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
