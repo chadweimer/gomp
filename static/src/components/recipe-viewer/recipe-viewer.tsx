@@ -58,13 +58,13 @@ export class RecipeViewer {
             {!isNullOrEmpty(this.recipe?.ingredients) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>
-                <markdown-viewer class="ion-padding" value={this.recipe?.ingredients} />
+                <html-viewer class="ion-padding" value={this.recipe?.ingredients} />
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.directions) ?
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
-                <markdown-viewer class="ion-padding" value={this.recipe?.directions} />
+                <html-viewer class="ion-padding" value={this.recipe?.directions} />
               </ion-item>
               : ''}
             {!isNullOrEmpty(this.recipe?.storageInstructions) ?

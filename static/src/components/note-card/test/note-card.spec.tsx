@@ -18,7 +18,7 @@ describe('note-card', () => {
       components: [NoteCard],
       template: () => (<note-card note={note}></note-card>),
     });
-    const mv = page.root.querySelector('markdown-viewer');
+    const mv = page.root.querySelector('html-viewer');
     expect(mv).toEqualAttribute('value', note.text);
   });
 

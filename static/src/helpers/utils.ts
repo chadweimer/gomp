@@ -1,4 +1,5 @@
 import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
+import DOMPurify from 'dompurify';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { AccessLevel, YesNoAny } from '../generated';
 import { SwipeDirection } from '../models';
@@ -185,4 +186,33 @@ export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElemen
   if (!isNull(el) && typeof el.deactivatingCallback === 'function') {
     el.deactivatingCallback();
   }
+}
+
+export function preProcessMultilineText(text: string) {
+  // This function exists to handle backward compatibility with older versions.
+  // Before the introduction of the WYSIWYG edtior,
+  // all text was rendered as the original text with whitespace preserved.
+
+  // Return early if there are no newlines in the text.
+  if (!text.includes('\n') && !text.includes('\r')) {
+    return text;
+  }
+
+  console.log('original', text);
+
+  // Convert all newlines to <br> tags.
+  text = text.replace(/(\r\n|\r|\n)/g, '<br>');
+  // Preserve all consecutive spaces.
+  text = text.replace(/\s/gm, '&nbsp;');
+
+  console.log('processed', text);
+
+  return text;
+}
+
+export function sanitizeHTML(html: string) {
+  // Sanitize the HTML using DOMPurify to prevent XSS attacks.
+  // Forbid the use of style attributes and style tags.
+  // Also forbid span tags to prevent inline styles.
+  return DOMPurify.sanitize(html, { FORBID_ATTR: ['style'], FORBID_TAGS: ['style', 'span'] });
 }

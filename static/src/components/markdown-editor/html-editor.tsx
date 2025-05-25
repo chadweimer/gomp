@@ -1,15 +1,13 @@
 import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
-import DOMPurify from 'dompurify';
-import { marked } from 'marked';
-import { isNull, isNullOrEmpty } from '../../helpers/utils';
+import { isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
 
 @Component({
-  tag: 'markdown-editor',
-  styleUrl: 'markdown-editor.css',
+  tag: 'html-editor',
+  styleUrl: 'html-editor.css',
   scoped: true, // Shadow DOM is not supported with Selections
 })
-export class MarkdownEditor {
-  @Element() el!: HTMLMarkdownEditorElement;
+export class HTMLEditor {
+  @Element() el!: HTMLHtmlEditorElement;
 
   @Prop() value: string = '';
   @Prop() label?: string;
@@ -81,11 +79,11 @@ export class MarkdownEditor {
         <div
           class="editor-content"
           contentEditable="true"
-          onBlurCapture={() => this.valueChanged.emit(DOMPurify.sanitize(this.editorContentRef.innerHTML))}
+          onBlurCapture={() => this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML))}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
           ref={(el) => (this.editorContentRef = el)}
-          innerHTML={DOMPurify.sanitize(marked.parse(this.value).toString())}
+          innerHTML={sanitizeHTML(preProcessMultilineText(this.value))}
         >
         </div>
       </Host>

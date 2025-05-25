@@ -18,15 +18,15 @@ export namespace Components {
         "size": string;
         "value": number;
     }
-    interface ImageUploadBrowser {
-    }
-    interface MarkdownEditor {
+    interface HtmlEditor {
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "value": string;
     }
-    interface MarkdownViewer {
+    interface HtmlViewer {
         "value": string;
+    }
+    interface ImageUploadBrowser {
     }
     interface NoteCard {
         "note": Note;
@@ -117,9 +117,9 @@ export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
 }
-export interface MarkdownEditorCustomEvent<T> extends CustomEvent<T> {
+export interface HtmlEditorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
-    target: HTMLMarkdownEditorElement;
+    target: HTMLHtmlEditorElement;
 }
 export interface NoteCardCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -169,34 +169,34 @@ declare global {
         prototype: HTMLFiveStarRatingElement;
         new (): HTMLFiveStarRatingElement;
     };
+    interface HTMLHtmlEditorElementEventMap {
+        "valueChanged": string;
+    }
+    interface HTMLHtmlEditorElement extends Components.HtmlEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLHtmlEditorElementEventMap>(type: K, listener: (this: HTMLHtmlEditorElement, ev: HtmlEditorCustomEvent<HTMLHtmlEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLHtmlEditorElementEventMap>(type: K, listener: (this: HTMLHtmlEditorElement, ev: HtmlEditorCustomEvent<HTMLHtmlEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLHtmlEditorElement: {
+        prototype: HTMLHtmlEditorElement;
+        new (): HTMLHtmlEditorElement;
+    };
+    interface HTMLHtmlViewerElement extends Components.HtmlViewer, HTMLStencilElement {
+    }
+    var HTMLHtmlViewerElement: {
+        prototype: HTMLHtmlViewerElement;
+        new (): HTMLHtmlViewerElement;
+    };
     interface HTMLImageUploadBrowserElement extends Components.ImageUploadBrowser, HTMLStencilElement {
     }
     var HTMLImageUploadBrowserElement: {
         prototype: HTMLImageUploadBrowserElement;
         new (): HTMLImageUploadBrowserElement;
-    };
-    interface HTMLMarkdownEditorElementEventMap {
-        "valueChanged": string;
-    }
-    interface HTMLMarkdownEditorElement extends Components.MarkdownEditor, HTMLStencilElement {
-        addEventListener<K extends keyof HTMLMarkdownEditorElementEventMap>(type: K, listener: (this: HTMLMarkdownEditorElement, ev: MarkdownEditorCustomEvent<HTMLMarkdownEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLMarkdownEditorElementEventMap>(type: K, listener: (this: HTMLMarkdownEditorElement, ev: MarkdownEditorCustomEvent<HTMLMarkdownEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-    }
-    var HTMLMarkdownEditorElement: {
-        prototype: HTMLMarkdownEditorElement;
-        new (): HTMLMarkdownEditorElement;
-    };
-    interface HTMLMarkdownViewerElement extends Components.MarkdownViewer, HTMLStencilElement {
-    }
-    var HTMLMarkdownViewerElement: {
-        prototype: HTMLMarkdownViewerElement;
-        new (): HTMLMarkdownViewerElement;
     };
     interface HTMLNoteCardElementEventMap {
         "editClicked": Note;
@@ -414,9 +414,9 @@ declare global {
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
         "five-star-rating": HTMLFiveStarRatingElement;
+        "html-editor": HTMLHtmlEditorElement;
+        "html-viewer": HTMLHtmlViewerElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
-        "markdown-editor": HTMLMarkdownEditorElement;
-        "markdown-viewer": HTMLMarkdownViewerElement;
         "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
@@ -453,16 +453,16 @@ declare namespace LocalJSX {
         "size"?: string;
         "value"?: number;
     }
-    interface ImageUploadBrowser {
-    }
-    interface MarkdownEditor {
+    interface HtmlEditor {
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
-        "onValueChanged"?: (event: MarkdownEditorCustomEvent<string>) => void;
+        "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
         "value"?: string;
     }
-    interface MarkdownViewer {
+    interface HtmlViewer {
         "value"?: string;
+    }
+    interface ImageUploadBrowser {
     }
     interface NoteCard {
         "note"?: Note;
@@ -553,9 +553,9 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "app-root": AppRoot;
         "five-star-rating": FiveStarRating;
+        "html-editor": HtmlEditor;
+        "html-viewer": HtmlViewer;
         "image-upload-browser": ImageUploadBrowser;
-        "markdown-editor": MarkdownEditor;
-        "markdown-viewer": MarkdownViewer;
         "note-card": NoteCard;
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
@@ -588,9 +588,9 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
+            "html-editor": LocalJSX.HtmlEditor & JSXBase.HTMLAttributes<HTMLHtmlEditorElement>;
+            "html-viewer": LocalJSX.HtmlViewer & JSXBase.HTMLAttributes<HTMLHtmlViewerElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
-            "markdown-editor": LocalJSX.MarkdownEditor & JSXBase.HTMLAttributes<HTMLMarkdownEditorElement>;
-            "markdown-viewer": LocalJSX.MarkdownViewer & JSXBase.HTMLAttributes<HTMLMarkdownViewerElement>;
             "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;

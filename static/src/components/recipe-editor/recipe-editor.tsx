@@ -77,11 +77,11 @@ export class RecipeEditor {
                 onIonBlur={e => this.recipe = { ...this.recipe, time: e.target.value as string }} />
             </ion-item>
             <ion-item lines="full">
-              <markdown-editor label="Ingredients" label-placement="stacked" value={this.recipe.ingredients}
+              <html-editor label="Ingredients" label-placement="stacked" value={this.recipe.ingredients}
                 onValueChanged={e => this.recipe = { ...this.recipe, ingredients: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <markdown-editor label="Directions" label-placement="stacked" value={this.recipe.directions}
+              <html-editor label="Directions" label-placement="stacked" value={this.recipe.directions}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
