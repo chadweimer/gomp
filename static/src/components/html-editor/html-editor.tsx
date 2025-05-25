@@ -44,38 +44,40 @@ export class HTMLEditor {
     return (
       <Host>
         {!isNullOrEmpty(this.label) ? <ion-label position={this.labelPlacement}>{this.label}</ion-label> : ''}
-        <ion-buttons class="ion-padding-top">
-          <ion-button
-            onClick={() => this.executeCommand('bold')}
-            fill={this.isBoldActive ? 'solid' : 'clear'}
-          >
-            <strong>B</strong>
-          </ion-button>
-          <ion-button
-            onClick={() => this.executeCommand('italic')}
-            fill={this.isItalicActive ? 'solid' : 'clear'}
-          >
-            <em>I</em>
-          </ion-button>
-          <ion-button
-            onClick={() => this.executeCommand('underline')}
-            fill={this.isUnderlineActive ? 'solid' : 'clear'}
-          >
-            <u>U</u>
-          </ion-button>
-          <ion-button
-            onClick={() => this.executeCommand('insertOrderedList')}
-            fill={this.isOrderedListActive ? 'solid' : 'clear'}
-          >
-            #
-          </ion-button>
-          <ion-button
-            onClick={() => this.executeCommand('insertUnorderedList')}
-            fill={this.isUnorderedListActive ? 'solid' : 'clear'}
-          >
-            <ion-icon icon="list" />
-          </ion-button>
-        </ion-buttons>
+        <ion-toolbar class="editor-toolbar">
+          <ion-buttons>
+            <ion-button
+              onClick={() => this.executeCommand('bold')}
+              fill={this.isBoldActive ? 'solid' : 'clear'}
+            >
+              <strong>B</strong>
+            </ion-button>
+            <ion-button
+              onClick={() => this.executeCommand('italic')}
+              fill={this.isItalicActive ? 'solid' : 'clear'}
+            >
+              <em>I</em>
+            </ion-button>
+            <ion-button
+              onClick={() => this.executeCommand('underline')}
+              fill={this.isUnderlineActive ? 'solid' : 'clear'}
+            >
+              <u>U</u>
+            </ion-button>
+            <ion-button
+              onClick={() => this.executeCommand('insertOrderedList')}
+              fill={this.isOrderedListActive ? 'solid' : 'clear'}
+            >
+              #
+            </ion-button>
+            <ion-button
+              onClick={() => this.executeCommand('insertUnorderedList')}
+              fill={this.isUnorderedListActive ? 'solid' : 'clear'}
+            >
+              <ion-icon icon="list" />
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
         <div
           class="editor-content"
           contentEditable="true"

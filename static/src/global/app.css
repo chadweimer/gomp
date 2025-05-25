@@ -142,6 +142,10 @@ html:not(.hydrated) body {
   white-space: nowrap;
 }
 
+.force-overflow {
+  overflow: visible !important;
+}
+
 ion-grid.no-pad {
   --ion-grid-padding: 0px;
   --ion-grid-column-padding: 0px;

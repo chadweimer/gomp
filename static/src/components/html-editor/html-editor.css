@@ -9,11 +9,14 @@
   outline: none;
 }
 
-:host:focus-within ion-label {
-  color: var(--ion-color-primary);
-}
-
-ion-buttons {
+.editor-toolbar {
+  --min-height: 0;
   position: sticky;
   top: 0;
+  z-index: 1;
+  margin-top: var(--ion-margin, 0);
+}
+
+:host:focus-within ion-label {
+  color: var(--ion-color-primary);
 }
