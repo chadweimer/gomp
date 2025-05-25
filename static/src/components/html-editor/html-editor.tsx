@@ -48,30 +48,35 @@ export class HTMLEditor {
           <ion-buttons>
             <ion-button
               onClick={() => this.executeCommand('bold')}
+              size="default"
               fill={this.isBoldActive ? 'solid' : 'clear'}
             >
               <strong>B</strong>
             </ion-button>
             <ion-button
               onClick={() => this.executeCommand('italic')}
+              size="default"
               fill={this.isItalicActive ? 'solid' : 'clear'}
             >
               <em>I</em>
             </ion-button>
             <ion-button
               onClick={() => this.executeCommand('underline')}
+              size="default"
               fill={this.isUnderlineActive ? 'solid' : 'clear'}
             >
               <u>U</u>
             </ion-button>
             <ion-button
               onClick={() => this.executeCommand('insertOrderedList')}
+              size="default"
               fill={this.isOrderedListActive ? 'solid' : 'clear'}
             >
               #
             </ion-button>
             <ion-button
               onClick={() => this.executeCommand('insertUnorderedList')}
+              size="default"
               fill={this.isUnorderedListActive ? 'solid' : 'clear'}
             >
               <ion-icon icon="list" />
