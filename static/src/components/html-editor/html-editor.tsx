@@ -107,7 +107,7 @@ export class HTMLEditor {
   private updateButtonStates() {
     // Handle being inside a parent's shadow DOM
     let activeElement = this.el.ownerDocument.activeElement;
-    while (!isNull(activeElement.shadowRoot)) {
+    while (!isNull(activeElement?.shadowRoot)) {
       activeElement = activeElement.shadowRoot.activeElement;
     }
 
