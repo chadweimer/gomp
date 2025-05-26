@@ -93,7 +93,7 @@ export class HTMLEditor {
           contentEditable="true"
           role="textbox"
           tabindex="0"
-          onBlur={() => this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML))}
+          onBlur={(e) => this.handleBlur(e)}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
           ref={(el) => (this.editorContentRef = el)}
@@ -102,6 +102,13 @@ export class HTMLEditor {
         </div>
       </Host>
     );
+  }
+
+  private handleBlur(e: FocusEvent) {
+    // If something inside this editor is focused, do not emit the value change
+    if (!(e.relatedTarget instanceof Node) || !this.el.contains(e.relatedTarget)) {
+      this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
+    }
   }
 
   private updateButtonStates() {
