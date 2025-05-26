@@ -18,8 +18,8 @@ describe('note-card', () => {
       components: [NoteCard],
       template: () => (<note-card note={note}></note-card>),
     });
-    const mv = page.root.shadowRoot.querySelector('html-viewer');
-    expect(mv).toEqualAttribute('value', note.text);
+    const node = page.root.shadowRoot.querySelector('html-viewer');
+    expect(node).toEqualAttribute('value', note.text);
   });
 
   it('readonly works', async () => {
