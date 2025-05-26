@@ -5,9 +5,9 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, SortBy, User } from "./generated";
+import { Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User } from "./generated";
 import { Color } from "@ionic/core";
-export { Note, Recipe, RecipeCompact, RecipeImage, RecipeState, SearchFilter, SortBy, User } from "./generated";
+export { Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User } from "./generated";
 export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {
@@ -17,6 +17,14 @@ export namespace Components {
         "icon": string;
         "size": string;
         "value": number;
+    }
+    interface HtmlEditor {
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "value": string;
+    }
+    interface HtmlViewer {
+        "value": string;
     }
     interface ImageUploadBrowser {
     }
@@ -75,9 +83,6 @@ export namespace Components {
     interface RecipeLinkEditor {
         "parentRecipeId": number;
     }
-    interface RecipeStateSelector {
-        "selectedStates": RecipeState[];
-    }
     interface RecipeViewer {
         "links": RecipeCompact[];
         "mainImage": RecipeImage;
@@ -93,9 +98,6 @@ export namespace Components {
         "searchFilter": SearchFilter;
         "showSavedLoader": boolean;
     }
-    interface SortBySelector {
-        "sortBy": SortBy;
-    }
     interface TagsInput {
         "label": string;
         "suggestions": string[];
@@ -109,6 +111,10 @@ export interface FiveStarRatingCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLFiveStarRatingElement;
 }
+export interface HtmlEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLHtmlEditorElement;
+}
 export interface NoteCardCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLNoteCardElement;
@@ -117,17 +123,9 @@ export interface PageNavigatorCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLPageNavigatorElement;
 }
-export interface RecipeStateSelectorCustomEvent<T> extends CustomEvent<T> {
-    detail: T;
-    target: HTMLRecipeStateSelectorElement;
-}
 export interface RecipeViewerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLRecipeViewerElement;
-}
-export interface SortBySelectorCustomEvent<T> extends CustomEvent<T> {
-    detail: T;
-    target: HTMLSortBySelectorElement;
 }
 export interface TagsInputCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -156,6 +154,29 @@ declare global {
     var HTMLFiveStarRatingElement: {
         prototype: HTMLFiveStarRatingElement;
         new (): HTMLFiveStarRatingElement;
+    };
+    interface HTMLHtmlEditorElementEventMap {
+        "valueChanged": string;
+    }
+    interface HTMLHtmlEditorElement extends Components.HtmlEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLHtmlEditorElementEventMap>(type: K, listener: (this: HTMLHtmlEditorElement, ev: HtmlEditorCustomEvent<HTMLHtmlEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLHtmlEditorElementEventMap>(type: K, listener: (this: HTMLHtmlEditorElement, ev: HtmlEditorCustomEvent<HTMLHtmlEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLHtmlEditorElement: {
+        prototype: HTMLHtmlEditorElement;
+        new (): HTMLHtmlEditorElement;
+    };
+    interface HTMLHtmlViewerElement extends Components.HtmlViewer, HTMLStencilElement {
+    }
+    var HTMLHtmlViewerElement: {
+        prototype: HTMLHtmlViewerElement;
+        new (): HTMLHtmlViewerElement;
     };
     interface HTMLImageUploadBrowserElement extends Components.ImageUploadBrowser, HTMLStencilElement {
     }
@@ -294,23 +315,6 @@ declare global {
         prototype: HTMLRecipeLinkEditorElement;
         new (): HTMLRecipeLinkEditorElement;
     };
-    interface HTMLRecipeStateSelectorElementEventMap {
-        "selectedStatesChanged": RecipeState[];
-    }
-    interface HTMLRecipeStateSelectorElement extends Components.RecipeStateSelector, HTMLStencilElement {
-        addEventListener<K extends keyof HTMLRecipeStateSelectorElementEventMap>(type: K, listener: (this: HTMLRecipeStateSelectorElement, ev: RecipeStateSelectorCustomEvent<HTMLRecipeStateSelectorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLRecipeStateSelectorElementEventMap>(type: K, listener: (this: HTMLRecipeStateSelectorElement, ev: RecipeStateSelectorCustomEvent<HTMLRecipeStateSelectorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-    }
-    var HTMLRecipeStateSelectorElement: {
-        prototype: HTMLRecipeStateSelectorElement;
-        new (): HTMLRecipeStateSelectorElement;
-    };
     interface HTMLRecipeViewerElementEventMap {
         "ratingSelected": number;
         "deleteLinkClicked": RecipeCompact;
@@ -335,23 +339,6 @@ declare global {
     var HTMLSearchFilterEditorElement: {
         prototype: HTMLSearchFilterEditorElement;
         new (): HTMLSearchFilterEditorElement;
-    };
-    interface HTMLSortBySelectorElementEventMap {
-        "sortByChanged": SortBy;
-    }
-    interface HTMLSortBySelectorElement extends Components.SortBySelector, HTMLStencilElement {
-        addEventListener<K extends keyof HTMLSortBySelectorElementEventMap>(type: K, listener: (this: HTMLSortBySelectorElement, ev: SortBySelectorCustomEvent<HTMLSortBySelectorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLSortBySelectorElementEventMap>(type: K, listener: (this: HTMLSortBySelectorElement, ev: SortBySelectorCustomEvent<HTMLSortBySelectorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
-    }
-    var HTMLSortBySelectorElement: {
-        prototype: HTMLSortBySelectorElement;
-        new (): HTMLSortBySelectorElement;
     };
     interface HTMLTagsInputElementEventMap {
         "valueChanged": string[];
@@ -379,6 +366,8 @@ declare global {
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
         "five-star-rating": HTMLFiveStarRatingElement;
+        "html-editor": HTMLHtmlEditorElement;
+        "html-viewer": HTMLHtmlViewerElement;
         "image-upload-browser": HTMLImageUploadBrowserElement;
         "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
@@ -398,10 +387,8 @@ declare global {
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
         "recipe-link-editor": HTMLRecipeLinkEditorElement;
-        "recipe-state-selector": HTMLRecipeStateSelectorElement;
         "recipe-viewer": HTMLRecipeViewerElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
-        "sort-by-selector": HTMLSortBySelectorElement;
         "tags-input": HTMLTagsInputElement;
         "user-editor": HTMLUserEditorElement;
     }
@@ -415,6 +402,15 @@ declare namespace LocalJSX {
         "onValueSelected"?: (event: FiveStarRatingCustomEvent<number>) => void;
         "size"?: string;
         "value"?: number;
+    }
+    interface HtmlEditor {
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
+        "value"?: string;
+    }
+    interface HtmlViewer {
+        "value"?: string;
     }
     interface ImageUploadBrowser {
     }
@@ -469,10 +465,6 @@ declare namespace LocalJSX {
     interface RecipeLinkEditor {
         "parentRecipeId"?: number;
     }
-    interface RecipeStateSelector {
-        "onSelectedStatesChanged"?: (event: RecipeStateSelectorCustomEvent<RecipeState[]>) => void;
-        "selectedStates"?: RecipeState[];
-    }
     interface RecipeViewer {
         "links"?: RecipeCompact[];
         "mainImage"?: RecipeImage;
@@ -491,10 +483,6 @@ declare namespace LocalJSX {
         "searchFilter"?: SearchFilter;
         "showSavedLoader"?: boolean;
     }
-    interface SortBySelector {
-        "onSortByChanged"?: (event: SortBySelectorCustomEvent<SortBy>) => void;
-        "sortBy"?: SortBy;
-    }
     interface TagsInput {
         "label"?: string;
         "onValueChanged"?: (event: TagsInputCustomEvent<string[]>) => void;
@@ -507,6 +495,8 @@ declare namespace LocalJSX {
     interface IntrinsicElements {
         "app-root": AppRoot;
         "five-star-rating": FiveStarRating;
+        "html-editor": HtmlEditor;
+        "html-viewer": HtmlViewer;
         "image-upload-browser": ImageUploadBrowser;
         "note-card": NoteCard;
         "note-editor": NoteEditor;
@@ -526,10 +516,8 @@ declare namespace LocalJSX {
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": RecipeLinkEditor;
-        "recipe-state-selector": RecipeStateSelector;
         "recipe-viewer": RecipeViewer;
         "search-filter-editor": SearchFilterEditor;
-        "sort-by-selector": SortBySelector;
         "tags-input": TagsInput;
         "user-editor": UserEditor;
     }
@@ -540,6 +528,8 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
             "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
+            "html-editor": LocalJSX.HtmlEditor & JSXBase.HTMLAttributes<HTMLHtmlEditorElement>;
+            "html-viewer": LocalJSX.HtmlViewer & JSXBase.HTMLAttributes<HTMLHtmlViewerElement>;
             "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
@@ -559,10 +549,8 @@ declare module "@stencil/core" {
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
-            "recipe-state-selector": LocalJSX.RecipeStateSelector & JSXBase.HTMLAttributes<HTMLRecipeStateSelectorElement>;
             "recipe-viewer": LocalJSX.RecipeViewer & JSXBase.HTMLAttributes<HTMLRecipeViewerElement>;
             "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
-            "sort-by-selector": LocalJSX.SortBySelector & JSXBase.HTMLAttributes<HTMLSortBySelectorElement>;
             "tags-input": LocalJSX.TagsInput & JSXBase.HTMLAttributes<HTMLTagsInputElement>;
             "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }

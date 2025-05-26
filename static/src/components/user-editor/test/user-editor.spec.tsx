@@ -21,10 +21,10 @@ describe('user-editor', () => {
     expect(component.user.id).toBeUndefined();
     expect(component.user.username).toEqual('');
     expect(component.user.accessLevel).toEqual(AccessLevel.Editor);
-    const usernameInput = page.root.querySelector('ion-input[type=\'email\']');
+    const usernameInput = page.root.shadowRoot.querySelector('ion-input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput).toEqualAttribute('value', '');
-    const accessLevelSelect = page.root.querySelector('ion-select');
+    const accessLevelSelect = page.root.shadowRoot.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
     expect(accessLevelSelect).toEqualAttribute('value', AccessLevel.Editor);
   });
@@ -41,10 +41,10 @@ describe('user-editor', () => {
     });
     const component = page.rootInstance as UserEditor;
     expect(component.user).toEqual(user);
-    const usernameInput = page.root.querySelector('ion-input[type=\'email\']');
+    const usernameInput = page.root.shadowRoot.querySelector('ion-input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput).toEqualAttribute('value', user.username);
-    const accessLevelSelect = page.root.querySelector('ion-select');
+    const accessLevelSelect = page.root.shadowRoot.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
     expect(accessLevelSelect).toEqualAttribute('value', user.accessLevel);
   });
@@ -61,7 +61,7 @@ describe('user-editor', () => {
     });
     const component = page.rootInstance as UserEditor;
     expect(component.user).toEqual(user);
-    const passwordInput = page.root.querySelector('ion-input[type=\'password\']');
+    const passwordInput = page.root.shadowRoot.querySelector('ion-input[type=\'password\']');
     expect(passwordInput).not.toBeNull();
   });
 
@@ -77,7 +77,7 @@ describe('user-editor', () => {
     });
     const component = page.rootInstance as UserEditor;
     expect(component.user).toEqual(user);
-    const passwordInput = page.root.querySelector('ion-input[type=\'password\']');
+    const passwordInput = page.root.shadowRoot.querySelector('ion-input[type=\'password\']');
     expect(passwordInput).toBeNull();
   });
 });

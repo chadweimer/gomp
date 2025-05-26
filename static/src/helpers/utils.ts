@@ -1,4 +1,5 @@
 import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
+import DOMPurify from 'dompurify';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { AccessLevel, YesNoAny } from '../generated';
 import { SwipeDirection } from '../models';
@@ -120,11 +121,29 @@ export function getContainingModal(el: HTMLElement) {
 export function configureModalAutofocus(el: HTMLElement) {
   getContainingModal(el)?.addEventListener('focus', performAutofocus);
 }
+
 function performAutofocus(this: HTMLIonModalElement) {
-  const focusEl = this.querySelector('[autofocus]');
+  // Get the component displayed on the modal.
+  let component: Element | null = null;
+  if (typeof this.component === 'string') {
+    component = this.querySelector(this.component);
+  } else if (this.component instanceof HTMLElement) {
+    component = this.component;
+  }
+
+  // Check the shadow DOM first, then the light DOM, and finally the component itself.
+  let focusEl = component?.shadowRoot?.querySelector('[autofocus]') || component?.querySelector('[autofocus]') || component;
+
+  // WORKAROUND: If the component is an HTML-EDITOR,
+  // focus on the editor content instead of the editor itself.
+  if (focusEl.tagName === 'HTML-EDITOR') {
+    focusEl = focusEl.querySelector('.editor-content');
+  }
+
   if (focusEl instanceof HTMLElement) {
     focusEl.focus();
   }
+
   this.removeEventListener('focus', performAutofocus);
 }
 
@@ -150,7 +169,7 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
   }
 }
 
-export async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
+async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   const routeId = await router.getRouteId();
   if (isNull(routeId)) {
     return undefined;
@@ -185,4 +204,37 @@ export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElemen
   if (!isNull(el) && typeof el.deactivatingCallback === 'function') {
     el.deactivatingCallback();
   }
+}
+
+export function preProcessMultilineText(text: string) {
+  // This function exists to handle backward compatibility with older versions.
+  // Before the introduction of the WYSIWYG edtior,
+  // all text was rendered as the original text with whitespace preserved.
+
+  // Return early if there are no newlines in the text.
+  if (!text.includes('\n') && !text.includes('\r')) {
+    return text;
+  }
+
+  // Convert all newlines to <br> tags.
+  text = text.replace(/(\r\n|\r|\n)/g, '<br>');
+
+  // Preserve all consecutive spaces.
+  text = text.replace(/\s{2,}/gm, match => {
+    // Replace multiple spaces with alternating &nbsp; and space characters.
+    // This is to ensure that the text is rendered with the same whitespace as before,
+    // while maintaining the ability for the text to be wrapped.
+    return match.split('').map((char, index) => {
+      return index % 2 === 0 ? '&nbsp;' : char;
+    }).join('');
+  });
+
+  return text;
+}
+
+export function sanitizeHTML(html: string) {
+  // Sanitize the HTML using DOMPurify to prevent XSS attacks.
+  // Forbid the use of style attributes and style tags.
+  // Also forbid span tags to prevent inline styles.
+  return DOMPurify.sanitize(html, { FORBID_ATTR: ['style'], FORBID_TAGS: ['style', 'span'] });
 }

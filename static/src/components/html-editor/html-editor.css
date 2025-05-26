@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.editor-content {
+  min-height: 1.5em;
+  padding-bottom: var(--ion-padding, 0);
+  outline: none;
+}
+
+.editor-toolbar {
+  --min-height: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-top: var(--ion-margin, 0);
+}
+
+:host:focus-within ion-label {
+  color: var(--ion-color-primary);
+}

@@ -5,6 +5,7 @@ import { configureModalAutofocus, dismissContainingModal, isNull } from '../../h
 @Component({
   tag: 'note-editor',
   styleUrl: 'note-editor.css',
+  shadow: true,
 })
 export class NoteEditor {
   @Prop() note: Note = {
@@ -35,14 +36,10 @@ export class NoteEditor {
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-            <ion-item lines="full">
-              <ion-textarea label="Text" label-placement="stacked" value={this.note.text}
-                autocorrect="on"
-                spellcheck
-                required
+            <ion-item class="force-overflow" lines="full">
+              <html-editor label="Text" label-placement="stacked" value={this.note.text}
                 autofocus
-                auto-grow
-                onIonBlur={e => this.note = { ...this.note, text: e.target.value }} />
+                onValueChanged={e => this.note = { ...this.note, text: e.detail }} />
             </ion-item>
           </form>
         </ion-content>

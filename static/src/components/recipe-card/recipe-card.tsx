@@ -5,7 +5,7 @@ import { isNull, isNullOrEmpty } from '../../helpers/utils';
 @Component({
   tag: 'recipe-card',
   styleUrl: 'recipe-card.css',
-  scoped: true,
+  shadow: true,
 })
 export class RecipeCard {
   @Prop() recipe: RecipeCompact = {
@@ -24,7 +24,7 @@ export class RecipeCard {
             : <div class={{ ['image']: true, [this.size]: true }} />}
           <ion-card-content>
             <div class="no-overflow">
-              <p class="single-line">{this.recipe.name}</p>
+              <div class="single-line">{this.recipe.name}</div>
               <five-star-rating value={this.recipe.averageRating} disabled />
             </div>
           </ion-card-content>

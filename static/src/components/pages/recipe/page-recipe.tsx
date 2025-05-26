@@ -450,15 +450,13 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'recipe-editor',
+        componentProps: {
+          recipe: this.recipe
+        },
         animated: false,
         backdropDismiss: false,
       });
       await modal.present();
-
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('recipe-editor').recipe = this.recipe;
 
       const { data } = await modal.onDidDismiss<{ recipe: Recipe }>();
       if (!isNull(data)) {
@@ -631,15 +629,13 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'note-editor',
+        componentProps: {
+          note: note
+        },
         animated: false,
         backdropDismiss: false,
       });
       await modal.present();
-
-      // Workaround for auto-grow textboxes in a dialog.
-      // Set this only after the dialog has presented,
-      // instead of using component props
-      modal.querySelector('note-editor').note = note;
 
       const { data } = await modal.onDidDismiss<{ note: Note }>();
       if (!isNull(data)) {

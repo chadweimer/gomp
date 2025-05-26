@@ -1,4 +1,4 @@
-import { Gesture, modalController, popoverController, ScrollBaseDetail } from '@ionic/core';
+import { alertController, Gesture, modalController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
@@ -51,11 +51,11 @@ export class PageSearch {
         <ion-header>
           <ion-toolbar>
             <ion-buttons class="ion-justify-content-center">
-              <ion-button color="secondary" onClick={e => this.onSearchStatesClicked(e)}>
+              <ion-button color="secondary" onClick={() => this.onSearchStatesClicked()}>
                 <ion-icon slot="start" icon="filter" />
                 {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
               </ion-button>
-              <ion-button color="secondary" onClick={e => this.onSortByClicked(e)}>
+              <ion-button color="secondary" onClick={() => this.onSortByClicked()}>
                 <ion-icon slot="start" icon="swap-vertical" />
                 {insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
               </ion-button>
@@ -198,40 +198,50 @@ export class PageSearch {
     });
   }
 
-  private async onSearchStatesClicked(e: MouseEvent) {
-    const menu = await popoverController.create({
-      component: 'recipe-state-selector',
-      componentProps: {
-        selectedStates: state.searchFilter.states
-      },
-      event: e
+  private async onSearchStatesClicked() {
+    const menu = await alertController.create({
+      header: 'States',
+      inputs: Object.keys(RecipeState).map(item => ({
+        type: 'checkbox',
+        label: insertSpacesBetweenWords(item),
+        value: RecipeState[item],
+        checked: state.searchFilter.states.includes(RecipeState[item])
+      })),
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'OK',
+          handler: (selectedStates: RecipeState[]) => this.setRecipeStates(selectedStates)
+        }
+      ]
     });
     await menu.present();
-
-    const selector = menu.querySelector('recipe-state-selector');
-    selector.addEventListener('selectedStatesChanged', (e: CustomEvent<RecipeState[]>) => this.setRecipeStates(e.detail));
-
-    await menu.onDidDismiss();
-
-    selector.removeEventListener('selectedStatesChanged', (e: CustomEvent<RecipeState[]>) => this.setRecipeStates(e.detail));
   }
 
-  private async onSortByClicked(e: MouseEvent) {
-    const menu = await popoverController.create({
-      component: 'sort-by-selector',
-      componentProps: {
-        sortBy: state.searchFilter.sortBy
-      },
-      event: e
+  private async onSortByClicked() {
+    const menu = await alertController.create({
+      header: 'Sort By',
+      inputs: Object.keys(SortBy).map(item => ({
+        type: 'radio',
+        label: insertSpacesBetweenWords(item),
+        value: SortBy[item],
+        checked: state.searchFilter.sortBy === SortBy[item]
+      })),
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'OK',
+          handler: (sortBy: SortBy) => this.setSortBy(sortBy)
+        }
+      ]
     });
     await menu.present();
-
-    const selector = menu.querySelector('sort-by-selector');
-    selector.addEventListener('sortByChanged', (e: CustomEvent<SortBy>) => this.setSortBy(e.detail));
-
-    await menu.onDidDismiss();
-
-    selector.removeEventListener('sortByChanged', (e: CustomEvent<SortBy>) => this.setSortBy(e.detail));
   }
 
 }

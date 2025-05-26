@@ -5,7 +5,7 @@ import { formatDate } from '../../helpers/utils';
 @Component({
   tag: 'note-card',
   styleUrl: 'note-card.css',
-  scoped: true,
+  shadow: true,
 })
 export class NoteCard {
   @Prop() note: Note = null;
@@ -35,7 +35,7 @@ export class NoteCard {
             </ion-item>
           </ion-card-header>
           <ion-card-content>
-            <p class="plain">{this.note?.text}</p>
+            <html-viewer value={this.note?.text} />
           </ion-card-content>
         </ion-card>
       </Host>

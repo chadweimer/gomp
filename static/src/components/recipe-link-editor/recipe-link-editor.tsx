@@ -6,6 +6,7 @@ import { configureModalAutofocus, dismissContainingModal, isNull, isNullOrEmpty 
 @Component({
   tag: 'recipe-link-editor',
   styleUrl: 'recipe-link-editor.css',
+  shadow: true,
 })
 export class RecipeLinkEditor {
   @Prop() parentRecipeId = 0;

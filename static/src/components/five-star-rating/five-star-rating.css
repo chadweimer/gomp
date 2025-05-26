@@ -1,3 +1,5 @@
+@import '../../global/app.css';
+
 :host {
   display: inline-block;
 }
@@ -7,12 +9,13 @@
   color: var(--five-star-rating-text-color, #c0c0c0);
   cursor: pointer;
 }
+
 .icon:not(.disabled) {
   cursor: pointer;
 }
 
 .icon:hover:not(.disabled),
-.icon:hover:not(.disabled) ~ .icon {
+.icon:hover:not(.disabled)~.icon {
   color: var(--five-star-rating-text-hover-color, #ffeb3b) !important;
 }
 
@@ -22,10 +25,12 @@
   left: calc(1em * -1);
   margin-right: calc(1em * -1);
 }
+
 .icon.half {
   clip-path: inset(0 50% 0 0);
   position: relative;
 }
+
 .icon.selected {
   color: var(--five-star-rating-text-selected-color, #fdd835);
 }
