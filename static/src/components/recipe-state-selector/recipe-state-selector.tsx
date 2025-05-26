@@ -6,6 +6,7 @@ import { insertSpacesBetweenWords } from '../../helpers/utils';
 @Component({
   tag: 'recipe-state-selector',
   styleUrl: 'recipe-state-selector.css',
+  shadow: true,
 })
 export class RecipeStateSelector {
   @Prop() selectedStates: RecipeState[] = [RecipeState.Active];

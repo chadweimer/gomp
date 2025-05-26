@@ -5,7 +5,7 @@ import { formatDate } from '../../helpers/utils';
 @Component({
   tag: 'note-card',
   styleUrl: 'note-card.css',
-  scoped: true,
+  shadow: true,
 })
 export class NoteCard {
   @Prop() note: Note = null;

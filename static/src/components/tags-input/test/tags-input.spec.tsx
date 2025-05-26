@@ -19,7 +19,7 @@ describe('tags-input', () => {
     const expectedLabel = 'Tags';
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
-    const input = page.root.querySelector('ion-input');
+    const input = page.root.shadowRoot.querySelector('ion-input');
     expect(input).not.toBeNull();
     expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
@@ -32,7 +32,7 @@ describe('tags-input', () => {
     });
     const component = page.rootInstance as TagsInput;
     expect(component.label).toEqual(expectedLabel);
-    const input = page.root.querySelector('ion-input');
+    const input = page.root.shadowRoot.querySelector('ion-input');
     expect(input).not.toBeNull();
     expect(input.getAttribute('label')).toEqualText(expectedLabel);
   });
@@ -45,7 +45,7 @@ describe('tags-input', () => {
     });
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual(expectedTags);
-    const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const chips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(expectedTags.length);
   });
 
@@ -58,7 +58,7 @@ describe('tags-input', () => {
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual([]);
     expect(component.suggestions).toEqual(expectedTags);
-    const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    const chips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
     expect(chips).toHaveLength(expectedTags.length);
   });
 
@@ -69,13 +69,13 @@ describe('tags-input', () => {
       components: [TagsInput],
       template: () => (<tags-input value={initialTags} onValueChanged={handleValueChanged}></tags-input>),
     });
-    let chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    let chips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(initialTags.length);
     chips.forEach(chip => chip.click());
     await page.waitForChanges();
     const component = page.rootInstance as TagsInput;
     expect(component.internalValue).toEqual([]);
-    chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    chips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(0);
     expect(handleValueChanged).toHaveBeenCalledTimes(initialTags.length);
   });
@@ -89,7 +89,7 @@ describe('tags-input', () => {
     });
     const component = page.rootInstance as TagsInput;
     expect(component.value).toEqual([]);
-    const input = page.root.querySelector('ion-input');
+    const input = page.root.shadowRoot.querySelector('ion-input');
     expect(input).not.toBeNull();
     for (const tag of expectedTags) {
       input.value = tag;
@@ -97,7 +97,7 @@ describe('tags-input', () => {
       await page.waitForChanges();
       expect(input.value).toEqualText('');
     }
-    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const addedChips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
     expect(addedChips).toHaveLength(expectedTags.length);
     expect(handleValueChanged).toHaveBeenCalledTimes(expectedTags.length);
     expect(component.internalValue).toEqual(expectedTags);
@@ -110,15 +110,15 @@ describe('tags-input', () => {
       components: [TagsInput],
       template: () => (<tags-input suggestions={initialSuggestions} onValueChanged={handleValueChanged}></tags-input>),
     });
-    let suggestedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    let suggestedChips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
     expect(suggestedChips).toHaveLength(initialSuggestions.length);
     suggestedChips.forEach(chip => chip.click());
     await page.waitForChanges();
     const component = page.rootInstance as TagsInput;
     expect(component.internalValue).toEqual(initialSuggestions);
-    suggestedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    suggestedChips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
     expect(suggestedChips).toHaveLength(0);
-    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const addedChips = page.root.shadowRoot.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
     expect(addedChips).toHaveLength(initialSuggestions.length);
     expect(handleValueChanged).toHaveBeenCalledTimes(initialSuggestions.length);
   });

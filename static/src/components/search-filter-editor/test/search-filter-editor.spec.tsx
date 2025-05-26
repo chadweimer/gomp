@@ -8,7 +8,7 @@ describe('search-filter-editor', () => {
       html: '<search-filter-editor></search-filter-editor>',
     });
     expect(page.rootInstance).toBeInstanceOf(SearchFilterEditor);
-    const savedSearchLoader = page.root.querySelector('#savedSearchLoader');
+    const savedSearchLoader = page.root.shadowRoot.querySelector('#savedSearchLoader');
     expect(savedSearchLoader).toBeNull();
   });
 });
@@ -22,7 +22,7 @@ describe('shows saved filter loader', () => {
     expect(page.rootInstance).toBeInstanceOf(SearchFilterEditor);
     const component = page.rootInstance as SearchFilterEditor;
     expect(component.showSavedLoader).toEqual(true);
-    const savedSearchLoader = page.root.querySelector('#savedSearchLoader');
+    const savedSearchLoader = page.root.shadowRoot.querySelector('#savedSearchLoader');
     expect(savedSearchLoader).not.toBeNull();
   });
 });

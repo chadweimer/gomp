@@ -4,7 +4,7 @@ import { Component, Host, Event, EventEmitter, Prop, h } from '@stencil/core';
 @Component({
   tag: 'page-navigator',
   styleUrl: 'page-navigator.css',
-  scoped: true,
+  shadow: true,
 })
 export class PageNavigator {
   @Prop() page = 1;

@@ -4,6 +4,7 @@ import { configureModalAutofocus, dismissContainingModal } from '../../helpers/u
 @Component({
   tag: 'image-upload-browser',
   styleUrl: 'image-upload-browser.css',
+  shadow: true,
 })
 export class ImageUploadBrowser {
   @Element() el!: HTMLImageUploadBrowserElement;

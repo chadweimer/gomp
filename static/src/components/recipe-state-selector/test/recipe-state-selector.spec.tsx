@@ -19,7 +19,7 @@ describe('recipe-state-selector', () => {
     });
     const component = page.rootInstance as RecipeStateSelector;
     expect(component.selectedStates).toEqual([RecipeState.Active]);
-    const checkboxes = page.root.querySelectorAll('ion-checkbox');
+    const checkboxes = page.root.shadowRoot.querySelectorAll('ion-checkbox');
     let numChecked = 0;
     checkboxes.forEach(e => {
       if (e.hasAttribute('checked')) {
@@ -35,7 +35,7 @@ describe('recipe-state-selector', () => {
       components: [RecipeStateSelector],
       template: () => (<recipe-state-selector selectedStates={[RecipeState.Archived]}></recipe-state-selector>),
     });
-    const checkboxes = page.root.querySelectorAll('ion-checkbox');
+    const checkboxes = page.root.shadowRoot.querySelectorAll('ion-checkbox');
     let numChecked = 0;
     checkboxes.forEach(e => {
       if (e.hasAttribute('checked')) {

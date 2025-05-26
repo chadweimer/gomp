@@ -5,6 +5,7 @@ import { configureModalAutofocus, dismissContainingModal, isNull } from '../../h
 @Component({
   tag: 'note-editor',
   styleUrl: 'note-editor.css',
+  shadow: true,
 })
 export class NoteEditor {
   @Prop() note: Note = {

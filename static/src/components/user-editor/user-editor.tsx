@@ -4,7 +4,8 @@ import { configureModalAutofocus, dismissContainingModal, insertSpacesBetweenWor
 
 @Component({
   tag: 'user-editor',
-  styleUrl: 'user-editor.css'
+  styleUrl: 'user-editor.css',
+  shadow: true,
 })
 export class UserEditor {
   @Prop() user: User = {

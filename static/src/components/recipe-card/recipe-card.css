@@ -1,3 +1,5 @@
+@import '../../global/app.css';
+
 :host {
   display: block;
   contain: content;

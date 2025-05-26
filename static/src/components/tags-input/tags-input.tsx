@@ -4,6 +4,7 @@ import { isNullOrEmpty } from '../../helpers/utils';
 @Component({
   tag: 'tags-input',
   styleUrl: 'tags-input.css',
+  shadow: true,
 })
 export class TagsInput {
   @Prop() label = 'Tags';

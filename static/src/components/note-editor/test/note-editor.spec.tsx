@@ -17,7 +17,7 @@ describe('note-editor', () => {
       components: [NoteEditor],
       html: '<note-editor></note-editor>',
     });
-    const textArea = page.root.querySelector('html-editor');
+    const textArea = page.root.shadowRoot.querySelector('html-editor');
     expect(textArea).not.toBeNull();
     expect(textArea).toEqualAttribute('value', '');
   });
@@ -28,7 +28,7 @@ describe('note-editor', () => {
       components: [NoteEditor],
       template: () => (<note-editor note={note}></note-editor>),
     });
-    const textArea = page.root.querySelector('html-editor');
+    const textArea = page.root.shadowRoot.querySelector('html-editor');
     expect(textArea).toEqualAttribute('value', note.text);
   });
 });

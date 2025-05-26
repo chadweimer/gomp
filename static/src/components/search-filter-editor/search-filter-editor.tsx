@@ -7,6 +7,7 @@ import { getDefaultSearchFilter } from '../../models';
 @Component({
   tag: 'search-filter-editor',
   styleUrl: 'search-filter-editor.css',
+  shadow: true,
 })
 export class SearchFilterEditor {
   @Prop() name = '';

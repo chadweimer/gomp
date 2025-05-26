@@ -18,7 +18,7 @@ describe('note-card', () => {
       components: [NoteCard],
       template: () => (<note-card note={note}></note-card>),
     });
-    const mv = page.root.querySelector('html-viewer');
+    const mv = page.root.shadowRoot.querySelector('html-viewer');
     expect(mv).toEqualAttribute('value', note.text);
   });
 
@@ -29,7 +29,7 @@ describe('note-card', () => {
         components: [NoteCard],
         template: () => (<note-card readonly={readonly}></note-card>),
       });
-      const para = page.root.querySelector('ion-buttons');
+      const para = page.root.shadowRoot.querySelector('ion-buttons');
       if (readonly) {
         expect(para).toBeNull();
       } else {
@@ -51,7 +51,7 @@ describe('note-card', () => {
         components: [NoteCard],
         template: () => (<note-card note={note}></note-card>),
       });
-      const label = page.root.querySelector('ion-card-header ion-label');
+      const label = page.root.shadowRoot.querySelector('ion-card-header ion-label');
       expect(label).not.toBeNull();
       expect(label.textContent.includes('edited')).toBe(modified);
     }

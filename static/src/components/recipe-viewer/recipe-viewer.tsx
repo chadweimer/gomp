@@ -5,7 +5,7 @@ import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
 @Component({
   tag: 'recipe-viewer',
   styleUrl: 'recipe-viewer.css',
-  scoped: true,
+  shadow: true,
 })
 export class RecipeViewer {
   @Prop() recipe: Recipe = null;

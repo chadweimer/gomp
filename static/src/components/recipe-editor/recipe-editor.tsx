@@ -5,7 +5,8 @@ import { configureModalAutofocus, dismissContainingModal, isNull } from '../../h
 
 @Component({
   tag: 'recipe-editor',
-  styleUrl: 'recipe-editor.css'
+  styleUrl: 'recipe-editor.css',
+  shadow: true,
 })
 export class RecipeEditor {
   @Prop() recipe: Recipe = {

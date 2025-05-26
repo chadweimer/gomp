@@ -5,7 +5,7 @@ import { isNull, isNullOrEmpty } from '../../helpers/utils';
 @Component({
   tag: 'recipe-card',
   styleUrl: 'recipe-card.css',
-  scoped: true,
+  shadow: true,
 })
 export class RecipeCard {
   @Prop() recipe: RecipeCompact = {
