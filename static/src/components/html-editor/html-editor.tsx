@@ -18,7 +18,6 @@ export class HTMLEditor {
   @State() isBoldActive: boolean = false;
   @State() isItalicActive: boolean = false;
   @State() isUnderlineActive: boolean = false;
-  @State() isLinkActive: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
   @State() activeHeading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
@@ -122,7 +121,6 @@ export class HTMLEditor {
     this.isUnderlineActive = false;
     this.isOrderedListActive = false;
     this.isUnorderedListActive = false;
-    this.isLinkActive = false;
     this.activeHeading = null;
 
     // Handle being inside a parent's shadow DOM
@@ -145,48 +143,20 @@ export class HTMLEditor {
 
       // Check if a heading is active
       const headingValue = this.el.ownerDocument.queryCommandValue('formatBlock');
-      if (headingValue && headingValue.startsWith('h')) {
+      if (!isNull(headingValue) && headingValue.startsWith('h')) {
         const headingLevel = headingValue.slice(1);
         if (['1', '2', '3', '4', '5', '6'].includes(headingLevel)) {
           this.activeHeading = `h${headingLevel}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
         }
       }
     }
-
-    // Check link active state (more complex)
-    if (typeof this.el.ownerDocument.getSelection === 'function') {
-      const selection = this.el.ownerDocument.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const commonAncestor = range.commonAncestorContainer;
-        const anchor = this.findAncestor(commonAncestor, 'A');
-        if (!isNull(anchor)) {
-          this.isLinkActive = true;
-        }
-      }
-    }
-  }
-
-  private findAncestor(el: Node, tagName: string): HTMLElement | null {
-    while (!isNull(el) && !isNull(el.parentNode)) {
-      if (el instanceof HTMLElement && el.tagName === tagName) {
-        return el;
-      }
-      el = el.parentNode;
-    }
-    return null;
   }
 
   private executeCommand(command: string, value?: string) {
     // Focus the editor content before executing command
     this.editorContentRef.focus();
 
-    if (command === 'createLink') {
-      const url = prompt('Enter the URL:');
-      if (!isNull(url)) {
-        this.el.ownerDocument.execCommand(command, false, url);
-      }
-    } else {
+    if (typeof this.el.ownerDocument.execCommand === 'function') {
       this.el.ownerDocument.execCommand(command, false, value);
     }
     this.updateButtonStates();
