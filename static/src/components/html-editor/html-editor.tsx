@@ -114,7 +114,7 @@ export class HTMLEditor {
   }
 
   // It's important for this to be a property so that it can be used in the event listeners
-  private updateButtonStates = () => {
+  private readonly updateButtonStates = () => {
     // Reset all states
     this.isBoldActive = false;
     this.isItalicActive = false;
