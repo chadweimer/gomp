@@ -121,11 +121,29 @@ export function getContainingModal(el: HTMLElement) {
 export function configureModalAutofocus(el: HTMLElement) {
   getContainingModal(el)?.addEventListener('focus', performAutofocus);
 }
+
 function performAutofocus(this: HTMLIonModalElement) {
-  const focusEl = this.querySelector('[autofocus]');
+  // Get the component displayed on the modal.
+  let component: Element | null = null;
+  if (typeof this.component === 'string') {
+    component = this.querySelector(this.component);
+  } else if (this.component instanceof HTMLElement) {
+    component = this.component;
+  }
+
+  // Check the shadow DOM first, then the light DOM, and finally the component itself.
+  let focusEl = component?.shadowRoot?.querySelector('[autofocus]') || component?.querySelector('[autofocus]') || component;
+
+  // WORKAROUND: If the component is an HTML-EDITOR,
+  // focus on the editor content instead of the editor itself.
+  if (focusEl.tagName === 'HTML-EDITOR') {
+    focusEl = focusEl.querySelector('.editor-content');
+  }
+
   if (focusEl instanceof HTMLElement) {
     focusEl.focus();
   }
+
   this.removeEventListener('focus', performAutofocus);
 }
 
@@ -151,7 +169,7 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
   }
 }
 
-export async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
+async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   const routeId = await router.getRouteId();
   if (isNull(routeId)) {
     return undefined;
