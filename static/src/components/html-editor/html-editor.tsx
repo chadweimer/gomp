@@ -4,7 +4,7 @@ import { isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '..
 @Component({
   tag: 'html-editor',
   styleUrl: 'html-editor.css',
-  scoped: true, // Shadow DOM is not supported with Selections
+  scoped: true,
 })
 export class HTMLEditor {
   @Element() el!: HTMLHtmlEditorElement;
@@ -30,14 +30,14 @@ export class HTMLEditor {
     this.updateButtonStates();
   }
 
-  async componentDidLoad() {
-    this.el.ownerDocument.addEventListener('selectionchange', () => this.updateButtonStates());
+  componentDidLoad() {
+    this.el.ownerDocument.addEventListener('selectionchange', this.updateButtonStates);
 
     this.updateButtonStates();
   }
 
   disconnectedCallback() {
-    this.el.ownerDocument.removeEventListener('selectionchange', () => this.updateButtonStates());
+    this.el.ownerDocument.removeEventListener('selectionchange', this.updateButtonStates);
   }
 
   render() {
@@ -89,14 +89,14 @@ export class HTMLEditor {
           </ion-buttons>
         </ion-toolbar>
         <div
+          ref={el => (this.editorContentRef = el)}
           class="editor-content"
           contentEditable="true"
           role="textbox"
           tabindex="0"
-          onBlur={(e) => this.handleBlur(e)}
+          onBlur={e => this.handleBlur(e)}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
-          ref={(el) => (this.editorContentRef = el)}
           innerHTML={sanitizeHTML(preProcessMultilineText(this.value))}
         >
         </div>
@@ -105,13 +105,26 @@ export class HTMLEditor {
   }
 
   private handleBlur(e: FocusEvent) {
-    // If something inside this editor is focused, do not emit the value change
-    if (!(e.relatedTarget instanceof Node) || !this.el.contains(e.relatedTarget)) {
-      this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
+    // If something inside this editor is focused, do not emit the value change.
+    // This is important to prevent emitting changes when the user is still editing.
+    if (this.el.contains(e.relatedTarget as Node)) {
+      return;
     }
+
+    this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
   }
 
-  private updateButtonStates() {
+  // It's important for this to be a property so that it can be used in the event listeners
+  private updateButtonStates = () => {
+    // Reset all states
+    this.isBoldActive = false;
+    this.isItalicActive = false;
+    this.isUnderlineActive = false;
+    this.isOrderedListActive = false;
+    this.isUnorderedListActive = false;
+    this.isLinkActive = false;
+    this.activeHeading = null;
+
     // Handle being inside a parent's shadow DOM
     let activeElement = this.el.ownerDocument.activeElement;
     while (!isNull(activeElement?.shadowRoot)) {
@@ -120,13 +133,6 @@ export class HTMLEditor {
 
     // Check if the editor is focused
     if (!this.el.contains(activeElement)) {
-      this.isBoldActive = false;
-      this.isItalicActive = false;
-      this.isUnderlineActive = false;
-      this.isOrderedListActive = false;
-      this.isUnorderedListActive = false;
-      this.isLinkActive = false;
-      this.activeHeading = null
       return;
     }
 
@@ -136,12 +142,20 @@ export class HTMLEditor {
       this.isUnderlineActive = this.el.ownerDocument.queryCommandState('underline');
       this.isOrderedListActive = this.el.ownerDocument.queryCommandState('insertOrderedList');
       this.isUnorderedListActive = this.el.ownerDocument.queryCommandState('insertUnorderedList');
+
+      // Check if a heading is active
+      const headingValue = this.el.ownerDocument.queryCommandValue('formatBlock');
+      if (headingValue && headingValue.startsWith('h')) {
+        const headingLevel = headingValue.slice(1);
+        if (['1', '2', '3', '4', '5', '6'].includes(headingLevel)) {
+          this.activeHeading = `h${headingLevel}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+        }
+      }
     }
 
     // Check link active state (more complex)
     if (typeof this.el.ownerDocument.getSelection === 'function') {
       const selection = this.el.ownerDocument.getSelection();
-      this.isLinkActive = false;
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const commonAncestor = range.commonAncestorContainer;
@@ -149,16 +163,6 @@ export class HTMLEditor {
         if (!isNull(anchor)) {
           this.isLinkActive = true;
         }
-      }
-    }
-
-    // Check active heading/blockquote
-    const parentBlock = this.getSelectionParentBlock();
-    this.activeHeading = null;
-    if (!isNull(parentBlock)) {
-      const tagName = parentBlock.tagName.toLowerCase();
-      if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName)) {
-        this.activeHeading = tagName as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
       }
     }
   }
@@ -169,24 +173,6 @@ export class HTMLEditor {
         return el;
       }
       el = el.parentNode;
-    }
-    return null;
-  }
-
-  private getSelectionParentBlock(): HTMLElement | null {
-    if (typeof this.el.ownerDocument.getSelection === 'function') {
-      const selection = this.el.ownerDocument.getSelection();
-      if (selection.rangeCount === 0) return null;
-
-      let node = selection.getRangeAt(0).commonAncestorContainer;
-      // Walk up the DOM tree until we find a block element or the editor's content div
-      while (node && node !== this.editorContentRef && !['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'li'].includes(node.nodeName.toLowerCase())) {
-        node = node.parentNode;
-      }
-      // Ensure the node is within the editor and is an actual element
-      if (node && node instanceof HTMLElement && this.editorContentRef.contains(node)) {
-        return node;
-      }
     }
     return null;
   }
