@@ -50,6 +50,7 @@ export class HTMLEditor {
               onClick={() => this.executeCommand('bold')}
               size="default"
               fill={this.isBoldActive ? 'solid' : 'clear'}
+              tabindex="-1"
             >
               <strong>B</strong>
             </ion-button>
@@ -57,6 +58,7 @@ export class HTMLEditor {
               onClick={() => this.executeCommand('italic')}
               size="default"
               fill={this.isItalicActive ? 'solid' : 'clear'}
+              tabindex="-1"
             >
               <em>I</em>
             </ion-button>
@@ -64,6 +66,7 @@ export class HTMLEditor {
               onClick={() => this.executeCommand('underline')}
               size="default"
               fill={this.isUnderlineActive ? 'solid' : 'clear'}
+              tabindex="-1"
             >
               <u>U</u>
             </ion-button>
@@ -71,6 +74,7 @@ export class HTMLEditor {
               onClick={() => this.executeCommand('insertOrderedList')}
               size="default"
               fill={this.isOrderedListActive ? 'solid' : 'clear'}
+              tabindex="-1"
             >
               #
             </ion-button>
@@ -78,6 +82,7 @@ export class HTMLEditor {
               onClick={() => this.executeCommand('insertUnorderedList')}
               size="default"
               fill={this.isUnorderedListActive ? 'solid' : 'clear'}
+              tabindex="-1"
             >
               <ion-icon icon="list" />
             </ion-button>
@@ -87,7 +92,8 @@ export class HTMLEditor {
           class="editor-content"
           contentEditable="true"
           role="textbox"
-          onBlurCapture={() => this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML))}
+          tabindex="0"
+          onBlur={() => this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML))}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
           ref={(el) => (this.editorContentRef = el)}
@@ -99,8 +105,14 @@ export class HTMLEditor {
   }
 
   private updateButtonStates() {
+    // Handle being inside a parent's shadow DOM
+    let activeElement = this.el.ownerDocument.activeElement;
+    while (!isNull(activeElement.shadowRoot)) {
+      activeElement = activeElement.shadowRoot.activeElement;
+    }
+
     // Check if the editor is focused
-    if (!this.el.contains(this.el.ownerDocument.activeElement)) {
+    if (!this.el.contains(activeElement)) {
       this.isBoldActive = false;
       this.isItalicActive = false;
       this.isUnderlineActive = false;
