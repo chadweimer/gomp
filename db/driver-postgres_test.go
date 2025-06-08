@@ -24,6 +24,7 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 	tests := []testArgs{
 		{[]models.SearchField{models.SearchFieldName}, "query"},
 		{[]models.SearchField{models.SearchFieldName, models.SearchFieldDirections}, "query"},
+		{[]models.SearchField{models.SearchFieldName, models.SearchFieldDirections}, "milti-word query"},
 		{supportedSearchFields[:], "query"},
 		{[]models.SearchField{models.SearchFieldName, "invalid"}, "query"},
 		{[]models.SearchField{"invalid"}, "query"},
@@ -36,27 +37,37 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 			stmt, args := sut.GetSearchFields(test.fields, test.query)
 
 			// Assert
-			expectedFields := lo.Intersect(test.fields, supportedSearchFields[:])
-			if len(args) != len(expectedFields) {
-				t.Errorf("expected %d args, received %d", len(expectedFields), len(args))
+			expectedNumArgs := 2 * len(lo.Intersect(test.fields, supportedSearchFields[:]))
+			if len(args) != expectedNumArgs {
+				t.Errorf("expected %d args, received %d", expectedNumArgs, len(args))
 			}
 			for index, arg := range args {
 				strArg, ok := arg.(string)
 				if !ok {
 					t.Errorf("invalid argument type: %v", arg)
 				}
-				if strArg != test.query {
-					t.Errorf("arg at index %d, expected %v, received %v", index, test.query, arg)
+				if index%2 == 0 {
+					if strArg != test.query {
+						t.Errorf("arg at index %d, expected %v, received %v", index, test.query, arg)
+					}
+				} else {
+					terms := strings.Join(lo.Map(strings.Fields(test.query), func(term string, _ int) string {
+						return strings.Trim(term+":*", `'"`)
+					}), " & ")
+					if strArg != terms {
+						t.Errorf("arg at index %d, expected %v, received %v", index, test.query, arg)
+					}
 				}
 			}
 			if stmt == "" {
-				if len(expectedFields) > 0 {
+				if expectedNumArgs > 0 {
 					t.Error("filter should not be empty")
 				}
 			} else {
+				// This is a very basic check to ensure the statement is formatted correctly
 				segments := strings.Split(stmt, " OR ")
-				if len(segments) != len(expectedFields) {
-					t.Errorf("expected %d segments, received %d", len(expectedFields), len(segments))
+				if len(segments) != expectedNumArgs {
+					t.Errorf("expected %d segments, received %d", expectedNumArgs, len(segments))
 				}
 			}
 		})
