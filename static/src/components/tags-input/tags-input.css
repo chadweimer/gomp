@@ -1,5 +1,8 @@
-@import '../../global/app.css';
-
 :host {
   display: block;
+  width: 100%;
+}
+
+:host:focus-within ion-label {
+  color: var(--ion-color-primary);
 }

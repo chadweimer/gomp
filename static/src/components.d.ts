@@ -99,7 +99,8 @@ export namespace Components {
         "showSavedLoader": boolean;
     }
     interface TagsInput {
-        "label": string;
+        "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "suggestions": string[];
         "value": string[];
     }
@@ -485,6 +486,7 @@ declare namespace LocalJSX {
     }
     interface TagsInput {
         "label"?: string;
+        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "onValueChanged"?: (event: TagsInputCustomEvent<string[]>) => void;
         "suggestions"?: string[];
         "value"?: string[];

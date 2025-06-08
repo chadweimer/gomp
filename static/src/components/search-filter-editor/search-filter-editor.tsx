@@ -78,8 +78,11 @@ export class SearchFilterEditor {
                 spellcheck
                 onIonBlur={e => this.searchFilter = { ...this.searchFilter, query: e.target.value as string }} />
             </ion-item>
-            <tags-input value={this.searchFilter.tags} suggestions={this.currentUserSettings?.favoriteTags ?? []}
-              onValueChanged={e => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />
+            <ion-item lines="full">
+              <tags-input label="Tags" label-placement="stacked" value={this.searchFilter.tags}
+                suggestions={this.currentUserSettings?.favoriteTags ?? []}
+                onValueChanged={e => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />
+            </ion-item>
             <ion-item lines="full">
               <ion-select label="Sort By" label-placement="stacked" value={this.searchFilter.sortBy} onIonChange={e => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}>
                 {Object.keys(SortBy).map(item =>
