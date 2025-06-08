@@ -18,4 +18,4 @@ RETURNS tsquery AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-END;
+COMMIT;

@@ -31,8 +31,7 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
 
-	for _, field := range lo.Intersect(filterFields, supportedSearchFields[:]) {
-		// Add the current field string and arguments to the overall string and args
+	for _, field := range lo.Intersect(filterFields, supportedSearchFields[:])
 		if fieldStr != "" {
 			fieldStr += " OR "
 		}
