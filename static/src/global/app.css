@@ -173,16 +173,38 @@ ion-content::part(scroll) {
   }
 }
 
-@media only screen and (min-width: 992px) and (min-height: 768px) {
+@media only screen and (min-width: 768px) and (min-height: 576px) {
   ion-modal {
     --width: 700px;
+  }
+}
+
+@media only screen and (min-width: 992px) and (min-height: 576px) {
+  ion-modal {
+    --width: 900px;
+  }
+}
+
+@media only screen and (min-width: 1200px) and (min-height: 576px) {
+  ion-modal {
+    --width: 1000px;
+  }
+}
+
+@media only screen and (min-width: 576px) and (min-height: 768px) {
+  ion-modal {
     --height: 700px;
   }
 }
 
-@media only screen and (min-width: 1200px) and (min-height: 992px) {
+@media only screen and (min-width: 576px) and (min-height: 992px) {
   ion-modal {
-    --width: 900px;
     --height: 900px;
+  }
+}
+
+@media only screen and (min-width: 576px) and (min-height: 1200px) {
+  ion-modal {
+    --height: 1000px;
   }
 }
