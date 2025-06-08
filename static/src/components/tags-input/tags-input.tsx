@@ -4,10 +4,11 @@ import { isNullOrEmpty } from '../../helpers/utils';
 @Component({
   tag: 'tags-input',
   styleUrl: 'tags-input.css',
-  shadow: true,
+  scoped: true,
 })
 export class TagsInput {
-  @Prop() label = 'Tags';
+  @Prop() label?: string;
+  @Prop() labelPlacement?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
   @Prop() value: string[] = [];
   @Prop() suggestions: string[] = [];
 
@@ -36,28 +37,27 @@ export class TagsInput {
   render() {
     return (
       <Host>
-        <ion-item lines="full">
-          {this.internalValue.length > 0 ?
-            <div class="ion-padding-top">
-              {this.internalValue.map(tag =>
-                <ion-chip key={tag} onClick={() => this.removeTag(tag)}>
-                  {tag}
-                  <ion-icon icon="close-circle" />
-                </ion-chip>
-              )}
-            </div>
-            : ''}
-          <ion-input label={this.label} label-placement="stacked" enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
-          <div class="ion-padding">
-            {this.filteredSuggestions.map(tag =>
-              <ion-chip key={tag} class="suggested" color="success" onClick={() => this.addTag(tag)}>
+        {!isNullOrEmpty(this.label) ? <ion-label position={this.labelPlacement}>{this.label}</ion-label> : ''}
+        {this.internalValue.length > 0 ?
+          <div class="ion-padding-top">
+            {this.internalValue.map(tag =>
+              <ion-chip key={tag} onClick={() => this.removeTag(tag)}>
                 {tag}
-                <ion-icon icon="add-circle" />
+                <ion-icon icon="close-circle" />
               </ion-chip>
             )}
           </div>
-        </ion-item>
-      </Host>
+          : ''}
+        <ion-input enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
+        <div class="ion-padding-bottom">
+          {this.filteredSuggestions.map(tag =>
+            <ion-chip key={tag} class="suggested" color="success" onClick={() => this.addTag(tag)}>
+              {tag}
+              <ion-icon icon="add-circle" />
+            </ion-chip>
+          )}
+        </div>
+      </Host >
     );
   }
 

@@ -45,8 +45,10 @@ export class PageSettingsPreferences {
                           <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
                         </ion-thumbnail>
                       </ion-item>
-                      <tags-input label="Favorite Tags" value={this.settings?.favoriteTags ?? []}
-                        onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
+                      <ion-item lines="full">
+                        <tags-input label="Favorite Tags" label-placement="stacked" value={this.settings?.favoriteTags ?? []}
+                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
+                      </ion-item>
                     </ion-card-content>
                     <ion-footer>
                       <ion-toolbar>
