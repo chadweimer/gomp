@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/chadweimer/gomp/models"
@@ -32,29 +31,13 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
 
-	// Split each term in the query, and append :* to each term to allow for partial matches
-	terms := strings.Join(lo.Map(strings.Fields(query), func(term string, _ int) string {
-		if !strings.HasSuffix(term, ":*") {
-			term += ":*"
+	for _, field := range lo.Intersect(filterFields, supportedSearchFields[:]) {
+		// Add the current field string and arguments to the overall string and args
+		if fieldStr != "" {
+			fieldStr += " OR "
 		}
-		// Remove any surrounding quotes
-		return strings.Trim(term, `'"`)
-	}), " & ")
-
-	for _, field := range supportedSearchFields {
-		if lo.Contains(filterFields, field) {
-			// Standard full text search
-			currStr := fmt.Sprintf("to_tsvector('english', r.%s) @@ plainto_tsquery('english', ?)", field)
-			// Full text search with terms that allow for partial matches
-			currStr += fmt.Sprintf(" OR to_tsvector('english', r.%s) @@ to_tsquery('english', ?)", field)
-
-			// Add the current field string and arguments to the overall string and args
-			if fieldStr != "" {
-				fieldStr += " OR "
-			}
-			fieldStr += fmt.Sprintf("(%s)", currStr)
-			fieldArgs = append(fieldArgs, query, terms)
-		}
+		fieldStr += fmt.Sprintf("to_tsvector('english', r.%s) @@ websearch_to_wildcard_tsquery('english', ?)", field)
+		fieldArgs = append(fieldArgs, query)
 	}
 
 	return fieldStr, fieldArgs
