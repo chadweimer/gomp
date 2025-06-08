@@ -30,14 +30,13 @@ type postgresRecipeDriverAdapter struct{}
 func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
-	for _, field := range supportedSearchFields {
-		if lo.Contains(filterFields, field) {
-			if fieldStr != "" {
-				fieldStr += " OR "
-			}
-			fieldStr += fmt.Sprintf("to_tsvector('english', r.%s) @@ plainto_tsquery('english', ?)", field)
-			fieldArgs = append(fieldArgs, query)
+
+	for _, field := range lo.Intersect(filterFields, supportedSearchFields[:]) {
+		if fieldStr != "" {
+			fieldStr += " OR "
 		}
+		fieldStr += fmt.Sprintf("to_tsvector('english', r.%s) @@ websearch_to_wildcard_tsquery('english', ?)", field)
+		fieldArgs = append(fieldArgs, query)
 	}
 
 	return fieldStr, fieldArgs

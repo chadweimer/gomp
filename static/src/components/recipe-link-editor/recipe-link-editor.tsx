@@ -45,7 +45,8 @@ export class RecipeLinkEditor {
                 autocorrect="on"
                 spellcheck
                 autofocus
-                onIonBlur={e => this.query = e.target.value as string}
+                debounce={500}
+                onIonInput={e => this.query = e.target.value as string}
                 ref={el => this.searchInput = el} />
             </ion-item>
             <ion-content>
@@ -78,6 +79,13 @@ export class RecipeLinkEditor {
   @Watch('query')
   @Watch('includeArchived')
   async onSearchInputChanged() {
+    // Require at least 2 characters to search
+    if (isNullOrEmpty(this.query) || this.query.length < 2) {
+      this.matchingRecipes = [];
+      this.selectedRecipeId = null;
+      return;
+    }
+
     let states: RecipeState[] = [RecipeState.Active];
     if (this.includeArchived) {
       states = [...states, RecipeState.Archived];
