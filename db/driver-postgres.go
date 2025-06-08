@@ -45,18 +45,15 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 		if lo.Contains(filterFields, field) {
 			// Standard full text search
 			currStr := fmt.Sprintf("to_tsvector('english', r.%s) @@ plainto_tsquery('english', ?)", field)
-			currArgs := []any{query}
-
 			// Full text search with terms that allow for partial matches
 			currStr += fmt.Sprintf(" OR to_tsvector('english', r.%s) @@ to_tsquery('english', ?)", field)
-			currArgs = append(fieldArgs, terms)
 
 			// Add the current field string and arguments to the overall string and args
 			if fieldStr != "" {
 				fieldStr += " OR "
 			}
 			fieldStr += fmt.Sprintf("(%s)", currStr)
-			fieldArgs = append(fieldArgs, currArgs...)
+			fieldArgs = append(fieldArgs, query, terms)
 		}
 	}
 
