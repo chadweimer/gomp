@@ -26,6 +26,7 @@ type sqlDriver struct {
 	notes   *sqlNoteDriver
 	links   *sqlLinkDriver
 	users   *sqlUserDriver
+	backups *sqlBackupDriver
 }
 
 func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
@@ -38,6 +39,7 @@ func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
+		backups: &sqlBackupDriver{db},
 	}
 }
 
@@ -63,6 +65,10 @@ func (d *sqlDriver) Links() LinkDriver {
 
 func (d *sqlDriver) Users() UserDriver {
 	return d.users
+}
+
+func (d *sqlDriver) Backups() BackupDriver {
+	return d.backups
 }
 
 func (d *sqlDriver) Close() error {

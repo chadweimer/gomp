@@ -82,6 +82,50 @@ paths:
           description: Unauthorized
       security:
         - Bearer: []
+  /backups:
+    get:
+      tags: [backups]
+      description: get list of backups
+      operationId: getAllBackups
+      responses:
+        200:
+          description: OK
+      security:
+        - Bearer: [admin]
+    post:
+      tags: [backups]
+      description: create a backup of the application
+      operationId: createBackup
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+      security:
+        - Bearer: [admin]
+  /backups/{backupId}:
+    parameters:
+      - name: backupId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [backups]
+      description: get a single backup
+      operationId: getBackup
+      responses:
+        200:
+          description: Gzip-compressed backup file
+          content:
+            application/gzip:
+              schema:
+                type: string
+                format: binary
+      security:
+        - Bearer: [admin]
   /recipes:
     get:
       tags: [recipes]
