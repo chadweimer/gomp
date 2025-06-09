@@ -182,6 +182,11 @@ type RecipeDriver interface {
 
 	// List retrieves all tags associated with the recipe with the specified id.
 	ListTags(recipeID int64) (*[]string, error)
+
+	// ListAllTags retrieves all tags across all recipes in the database.
+	// The returned map contains the tag as the key and the number of recipes
+	// associated with that tag as the value.
+	ListAllTags() (*map[string]int, error)
 }
 
 // UserDriver provides functionality to edit and authenticate users.

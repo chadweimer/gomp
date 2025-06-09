@@ -237,7 +237,7 @@ func getFieldsStmt(query string, fields []models.SearchField, adapter sqlRecipeD
 	if query == "" {
 		return "", nil
 	}
-	
+
 	// If the filter didn't specify the fields to search on, use all of them
 	filterFields := fields
 	if len(filterFields) == 0 {
@@ -251,7 +251,7 @@ func getTagsStmt(tags []string) (string, []any, error) {
 	if len(tags) == 0 {
 		return "", nil, nil
 	}
-	
+
 	return sqlx.In("EXISTS (SELECT 1 FROM recipe_tag AS t WHERE t.recipe_id = r.id AND t.tag IN (?))", tags)
 }
 
@@ -331,6 +331,28 @@ func (d *sqlRecipeDriver) ListTags(recipeID int64) (*[]string, error) {
 		tags := make([]string, 0)
 		if err := sqlx.Select(db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
 			return nil, err
+		}
+
+		return &tags, nil
+	})
+}
+
+func (d *sqlRecipeDriver) ListAllTags() (*map[string]int, error) {
+	return get(d.Db, func(db sqlx.Queryer) (*map[string]int, error) {
+		rows, err := db.Query("SELECT tag, count(tag) as num FROM recipe_tag GROUP BY tag")
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
+		tags := make(map[string]int)
+		for rows.Next() {
+			var tag string
+			var count int
+			if err := rows.Scan(&tag, &count); err != nil {
+				return nil, fmt.Errorf("scanning tag row: %w", err)
+			}
+			tags[tag] = count
 		}
 
 		return &tags, nil
