@@ -39,9 +39,12 @@ export class AppRoot {
 
           <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/search" component="page-search" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/recipes" component="ion-nav" beforeEnter={() => this.requireLogin()}>
+            <ion-route component="page-search" />
+            <ion-route url="/:recipeId" component="page-recipe" />
+          </ion-route>
 
-          <ion-route url="/recipes/:recipeId" component="page-recipe" beforeEnter={() => this.requireLogin()} />
+          <ion-route url="/tags" component="page-tags" beforeEnter={() => this.requireLogin()} />
 
           <ion-route url="/settings" component="page-settings" beforeEnter={() => this.requireLogin()}>
             <ion-route component="tab-settings-preferences" />
@@ -65,10 +68,14 @@ export class AppRoot {
                 <ion-icon name="home" slot="start" />
                 <ion-label>Home</ion-label>
               </ion-item>
-              <ion-item href="/search" lines="full">
+              <ion-item href="/recipes" lines="none">
                 <ion-icon name="restaurant" slot="start" />
                 <ion-label>Recipes</ion-label>
                 <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
+              </ion-item>
+              <ion-item href="/tags" lines="full">
+                <ion-icon name="bookmark" slot="start" />
+                <ion-label>Tags</ion-label>
               </ion-item>
               <ion-item href="/settings" lines="full">
                 <ion-icon name="settings" slot="start" />
@@ -97,7 +104,7 @@ export class AppRoot {
             <ion-toolbar color="primary">
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="start">
-                  <ion-menu-button class="ion-hide-lg-up" />
+                  <ion-menu-button class="ion-hide-xl-up" />
                 </ion-buttons>
                 : ''}
 
@@ -106,12 +113,13 @@ export class AppRoot {
               </ion-title>
 
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
-                <ion-buttons slot="end" class="ion-hide-lg-down">
+                <ion-buttons slot="end" class="ion-hide-xl-down">
                   <ion-button color="light" href="/">Home</ion-button>
-                  <ion-button color="light" href="/search">
+                  <ion-button color="light" href="/recipes">
                     Recipes
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
+                  <ion-button color="light" href="/tags">Tags</ion-button>
                   <ion-button color="light" href="/settings">Settings</ion-button>
                   {hasScope(state.jwtToken, AccessLevel.Admin) ?
                     <ion-button color="light" href="/admin">Admin</ion-button>
@@ -260,13 +268,13 @@ export class AppRoot {
         ...state.searchFilter,
         query: searchBar.value?.toString()
       };
-      await redirect('/search');
+      await redirect('/recipes');
     }
   }
 
   private async onSearchClearClicked() {
     state.searchFilter = getDefaultSearchFilter();
-    await redirect('/search');
+    await redirect('/recipes');
   }
 
   private async onSearchFilterClicked() {
@@ -288,7 +296,7 @@ export class AppRoot {
       const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
       if (!isNull(data)) {
         state.searchFilter = data.searchFilter;
-        await redirect('/search');
+        await redirect('/recipes');
       }
     });
   }

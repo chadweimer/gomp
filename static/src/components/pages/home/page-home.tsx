@@ -176,7 +176,7 @@ export class PageHome {
     state.searchFilter = {
       ...filter
     };
-    await redirect('/search');
+    await redirect('/recipes');
   }
 
 }
