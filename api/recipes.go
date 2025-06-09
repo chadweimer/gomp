@@ -124,3 +124,12 @@ func (h apiHandler) SetRating(_ context.Context, request SetRatingRequestObject)
 
 	return SetRating204Response{}, nil
 }
+
+func (h apiHandler) GetAllTags(_ context.Context, _ GetAllTagsRequestObject) (GetAllTagsResponseObject, error) {
+	tags, err := h.db.Recipes().ListAllTags()
+	if err != nil {
+		return nil, err
+	}
+
+	return GetAllTags200JSONResponse(*tags), nil
+}
