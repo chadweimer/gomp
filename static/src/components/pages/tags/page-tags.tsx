@@ -30,7 +30,7 @@ export class PageTags {
                 Object.entries(this.tags).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href="#" lines="none"
-                      onClick={e => e.preventDefault(); this.onTagClicked(key)}>
+                      onClick={() => this.onTagClicked(key)}>
                       <ion-label>{key} ({val})</ion-label>
                     </ion-item>
                   </ion-col>
