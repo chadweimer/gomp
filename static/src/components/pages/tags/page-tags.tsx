@@ -25,7 +25,7 @@ export class PageTags {
       <Host>
         {!isNull(this.tags) ?
           Object.entries(this.tags).map(([key, val]) =>
-        	<div>{key}</div>
+            <div>{key}</div>
           )
           : ''}
       </Host>
