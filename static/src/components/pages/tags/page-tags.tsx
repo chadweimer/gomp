@@ -34,7 +34,7 @@ export class PageTags {
                       <ion-label>{key} ({val})</ion-label>
                     </ion-item>
                   </ion-col>
-                )}
+                )
                 : ''}
             </ion-row>
           </ion-grid>
