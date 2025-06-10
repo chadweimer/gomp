@@ -23,11 +23,22 @@ export class PageTags {
   render() {
     return (
       <Host>
-        {!isNull(this.tags) ?
-          Object.entries(this.tags).map(([key, val]) =>
-            <div>{key}</div>
-          )
-          : ''}
+        <ion-content>
+          <ion-grid class="no-pad">
+            <ion-row>
+              {!isNull(this.tags) ?
+                Object.entries(this.tags).map(([key, val]) =>
+                  <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
+                    <ion-item href="#" lines="none"
+                      onClick={e => e.preventDefault(); this.onTagClicked(key)}>
+                      <ion-label>{key} ({val})</ion-label>
+                    </ion-item>
+                  </ion-col>
+                )}
+                : ''}
+            </ion-row>
+          </ion-grid>
+        </ion-content>
       </Host>
     );
   }
