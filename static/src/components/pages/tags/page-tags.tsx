@@ -29,9 +29,9 @@ export class PageTags {
               {!isNull(this.tags) ?
                 Object.entries(this.tags).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
-                    <ion-item href="/recipes" lines="none"
-                      onClick={() => this.onTagClicked(key)}>
-                      <ion-label>{key} ({val})</ion-label>
+                    <ion-item href="/recipes" onClick={() => this.onTagClicked(key)}>
+                      <ion-label>{key}</ion-label>
+                      <ion-note slot="end">{val}</ion-note>
                     </ion-item>
                   </ion-col>
                 )
