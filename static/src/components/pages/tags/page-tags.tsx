@@ -29,7 +29,7 @@ export class PageTags {
               {!isNull(this.tags) ?
                 Object.entries(this.tags).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
-                    <ion-item href="#" lines="none"
+                    <ion-item href="/recipes" lines="none"
                       onClick={() => this.onTagClicked(key)}>
                       <ion-label>{key} ({val})</ion-label>
                     </ion-item>
@@ -58,6 +58,6 @@ export class PageTags {
       ...filter,
       tags: [tag]
     };
-    await redirect('/recipes');
+    // await redirect('/recipes');
   }
 }
