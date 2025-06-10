@@ -39,7 +39,7 @@ export class AppRoot {
 
           <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
 
-          <ion-route url="/recipes" component="ion-nav" beforeEnter={() => this.requireLogin()}>
+          <ion-route url="/recipes" component="ion-router-outlet" beforeEnter={() => this.requireLogin()}>
             <ion-route component="page-search" />
             <ion-route url="/:recipeId" component="page-recipe" />
           </ion-route>
