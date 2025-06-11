@@ -144,7 +144,7 @@ export class AppRoot {
                 : ''}
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="end" class="ion-hide-md-down">
-                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
+                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="filter" slot="icon-only" /></ion-button>
                 </ion-buttons>
                 : ''}
             </ion-toolbar>
@@ -159,7 +159,7 @@ export class AppRoot {
                   onIonClear={() => this.onSearchClearClicked()}
                 ></ion-searchbar>
                 <ion-buttons slot="end">
-                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="options" slot="icon-only" /></ion-button>
+                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="filter" slot="icon-only" /></ion-button>
                 </ion-buttons>
               </ion-toolbar>
               : ''}
