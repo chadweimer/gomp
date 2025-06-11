@@ -1,5 +1,5 @@
-import { actionSheetController, alertController, modalController, popoverController } from '@ionic/core';
-import { Component, Element, h, Listen } from '@stencil/core';
+import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
+import { Component, Element, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
@@ -16,6 +16,8 @@ export class AppRoot {
   @Element() el!: HTMLAppRootElement;
   private routerOutlet!: HTMLIonRouterOutletElement;
   private menu!: HTMLIonMenuElement;
+
+  @State() pageTitle: string = '';
 
   async componentWillLoad() {
     // Automatically trigger a logout if an API returns a 401
@@ -34,7 +36,7 @@ export class AppRoot {
   render() {
     return (
       <ion-app>
-        <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={() => this.onPageChanged()}>
+        <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={(e) => this.onPageChanged(e)}>
           <ion-route url="/login" component="page-login" />
 
           <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
@@ -64,25 +66,25 @@ export class AppRoot {
         <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el}>
           <ion-content>
             <ion-list>
-              <ion-item href="/" lines="none">
+              <ion-item class={{ active: this.pageTitle === 'Home' }} href="/" lines="none">
                 <ion-icon name="home" slot="start" />
                 <ion-label>Home</ion-label>
               </ion-item>
-              <ion-item href="/recipes" lines="none">
+              <ion-item class={{ active: this.pageTitle === 'Recipes' }} href="/recipes" lines="none">
                 <ion-icon name="restaurant" slot="start" />
                 <ion-label>Recipes</ion-label>
                 <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
               </ion-item>
-              <ion-item href="/tags" lines="full">
+              <ion-item class={{ active: this.pageTitle === 'Tags' }} href="/tags" lines="full">
                 <ion-icon name="bookmark" slot="start" />
                 <ion-label>Tags</ion-label>
               </ion-item>
-              <ion-item href="/settings" lines="full">
+              <ion-item class={{ active: this.pageTitle === 'Settings' }} href="/settings" lines="full">
                 <ion-icon name="settings" slot="start" />
                 <ion-label>Settings</ion-label>
               </ion-item>
               {hasScope(state.jwtToken, AccessLevel.Admin) ?
-                <ion-item href="/admin" lines="full">
+                <ion-item class={{ active: this.pageTitle === 'Admin' }} href="/admin" lines="full">
                   <ion-icon name="shield-checkmark" slot="start" />
                   <ion-label>Admin</ion-label>
                 </ion-item>
@@ -110,19 +112,20 @@ export class AppRoot {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
+                {!isNullOrEmpty(this.pageTitle) ? <ion-label color="light"> | {this.pageTitle}</ion-label> : ''}
               </ion-title>
 
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="end" class="ion-hide-xl-down">
-                  <ion-button color="light" href="/">Home</ion-button>
-                  <ion-button color="light" href="/recipes">
+                  <ion-button class={{ active: this.pageTitle === 'Home' }} color="light" href="/">Home</ion-button>
+                  <ion-button class={{ active: this.pageTitle === 'Recipes' }} color="light" href="/recipes">
                     Recipes
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
-                  <ion-button color="light" href="/tags">Tags</ion-button>
-                  <ion-button color="light" href="/settings">Settings</ion-button>
+                  <ion-button class={{ active: this.pageTitle === 'Tags' }} color="light" href="/tags">Tags</ion-button>
+                  <ion-button class={{ active: this.pageTitle === 'Settings' }} color="light" href="/settings">Settings</ion-button>
                   {hasScope(state.jwtToken, AccessLevel.Admin) ?
-                    <ion-button color="light" href="/admin">Admin</ion-button>
+                    <ion-button class={{ active: this.pageTitle === 'Admin' }} color="light" href="/admin">Admin</ion-button>
                     : ''}
                   <ion-button color="light" onClick={() => this.logout()}>Logout</ion-button>
                 </ion-buttons>
@@ -247,12 +250,27 @@ export class AppRoot {
     await sendDeactivatingCallback(this.routerOutlet);
   }
 
-  private async onPageChanged() {
+  private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
       if (isNull(state.searchResults)) {
         await refreshSearchResults();
       }
+    }
+
+    // Set the page title
+    if (e.detail.to === '/') {
+      this.pageTitle = 'Home';
+    } else if (e.detail.to.startsWith('/recipes')) {
+      this.pageTitle = 'Recipes';
+    } else if (e.detail.to.startsWith('/tags')) {
+      this.pageTitle = 'Tags';
+    } else if (e.detail.to.startsWith('/settings')) {
+      this.pageTitle = 'Settings';
+    } else if (e.detail.to.startsWith('/admin')) {
+      this.pageTitle = 'Admin';
+    } else {
+      this.pageTitle = '';
     }
 
     // Let the new page know it's been activated

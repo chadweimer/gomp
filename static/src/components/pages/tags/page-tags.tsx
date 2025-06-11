@@ -40,7 +40,7 @@ export class PageTags {
           <ion-grid class="no-pad">
             <ion-row>
               {!isNull(this.tags) ?
-                Object.entries(this.tags).toSorted(([keyA, valA], [keyB, valB]) => this.compare(valA, valB)).map(([key, val]) =>
+                Object.entries(this.tags).sort(([, valA], [, valB]) => this.compare(valA, valB)).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href="/recipes" onClick={() => this.onTagClicked(key)}>
                       <ion-label>{key}</ion-label>
@@ -76,11 +76,11 @@ export class PageTags {
   }
 
   private compare(a: number, b: number) {
-    if( a < b ){
+    if (a < b) {
       return this.sortDir === SortDir.Asc ? -1 : 1;
-    } else if( a > b ){
+    } else if (a > b) {
       return this.sortDir === SortDir.Asc ? 1 : -1;
-    } 
+    }
     return 0;
   }
 }

@@ -20,3 +20,7 @@ ion-searchbar.end {
 .always-clickable {
   pointer-events: auto;
 }
+
+.active {
+  font-weight: bold;
+}
