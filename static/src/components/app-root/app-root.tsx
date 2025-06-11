@@ -246,13 +246,6 @@ export class AppRoot {
   }
 
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
-    if (this.isLoggedIn()) {
-      // Make sure there are search results on initial load
-      if (isNull(state.searchResults)) {
-        await refreshSearchResults();
-      }
-    }
-
     // Set the page title
     if (e.detail.to === '/') {
       this.pageTitle = 'Home';
@@ -266,6 +259,13 @@ export class AppRoot {
       this.pageTitle = 'Admin';
     } else {
       this.pageTitle = '';
+    }
+
+    if (this.isLoggedIn()) {
+      // Make sure there are search results on initial load
+      if (isNull(state.searchResults)) {
+        await refreshSearchResults();
+      }
     }
 
     // Let the new page know it's been activated
