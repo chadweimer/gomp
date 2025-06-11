@@ -29,7 +29,8 @@ export class PageTags {
           <ion-toolbar>
             <ion-buttons class="ion-justify-content-center">
               <ion-button color="secondary" onClick={() => this.sortDir = this.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc}>
-                <ion-icon slot="icon-only" icon={this.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
+                <ion-icon slot="start" icon={this.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
+                {this.sortDir}
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
@@ -42,8 +43,8 @@ export class PageTags {
                 Object.entries(this.tags).toSorted(([keyA, valA], [keyB, valB]) => this.compare(valA, valB)).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href="/recipes" onClick={() => this.onTagClicked(key)}>
-                      <ion-icon slot="start" name="bookmark" size="small" />
                       <ion-label>{key}</ion-label>
+                      <ion-icon slot="end" name="bookmark" size="small" />
                       <ion-note slot="end">{val}</ion-note>
                     </ion-item>
                   </ion-col>
