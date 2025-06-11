@@ -112,7 +112,7 @@ export class AppRoot {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
-                {!isNullOrEmpty(this.pageTitle) ? <ion-label color="light"> | {this.pageTitle}</ion-label> : ''}
+                {!isNullOrEmpty(this.pageTitle) ? <ion-text color="light"> | {this.pageTitle}</ion-text> : ''}
               </ion-title>
 
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
