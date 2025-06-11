@@ -106,7 +106,7 @@ export class AppRoot {
             <ion-toolbar color="primary">
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="start">
-                  <ion-menu-button class="ion-hide-xl-up" />
+                  <ion-menu-button />
                 </ion-buttons>
                 : ''}
 
@@ -116,18 +116,13 @@ export class AppRoot {
               </ion-title>
 
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
-                <ion-buttons slot="end" class="ion-hide-xl-down">
+                <ion-buttons slot="end" class="ion-hide-md-down">
                   <ion-button class={{ active: this.pageTitle === 'Home' }} color="light" href="/">Home</ion-button>
                   <ion-button class={{ active: this.pageTitle === 'Recipes' }} color="light" href="/recipes">
                     Recipes
                     <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
                   <ion-button class={{ active: this.pageTitle === 'Tags' }} color="light" href="/tags">Tags</ion-button>
-                  <ion-button class={{ active: this.pageTitle === 'Settings' }} color="light" href="/settings">Settings</ion-button>
-                  {hasScope(state.jwtToken, AccessLevel.Admin) ?
-                    <ion-button class={{ active: this.pageTitle === 'Admin' }} color="light" href="/admin">Admin</ion-button>
-                    : ''}
-                  <ion-button color="light" onClick={() => this.logout()}>Logout</ion-button>
                 </ion-buttons>
                 : ''}
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
