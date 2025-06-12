@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
-import { Component, Element, h, Listen, State } from '@stencil/core';
+import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
@@ -16,6 +16,35 @@ export class AppRoot {
   @Element() el!: HTMLAppRootElement;
   private routerOutlet!: HTMLIonRouterOutletElement;
   private menu!: HTMLIonMenuElement;
+
+  private appLinks = [
+    { url: '/', title: 'Home', icon: 'home', toolbar: true },
+    { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.searchResultCount },
+    { url: '/tags', title: 'Tags', icon: 'bookmark', toolbar: true },
+    {
+      url: '/settings',
+      title: 'Settings',
+      icon: 'settings',
+      toolbar: false,
+      children: [
+        { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
+        { url: '/settings/searches', title: 'Saved Searches', icon: 'search' },
+        { url: '/settings/security', title: 'Security', icon: 'lock-closed' }
+      ]
+    },
+    {
+      url: '/admin',
+      title: 'Admin',
+      icon: 'shield-checkmark',
+      toolbar: false,
+      access: AccessLevel.Admin,
+      children: [
+        { url: '/admin/configuration', title: 'Configuration', icon: 'settings' },
+        { url: '/admin/users', title: 'Users', icon: 'people' },
+        { url: '/admin/maintenance', title: 'Maintenance', icon: 'build' }
+      ]
+    }
+  ];
 
   @State() pageTitle: string = '';
 
@@ -65,31 +94,37 @@ export class AppRoot {
 
         <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el}>
           <ion-content>
-            <ion-list>
-              <ion-item class={{ active: this.pageTitle === 'Home' }} href="/" lines="none">
-                <ion-icon name="home" slot="start" />
-                <ion-label>Home</ion-label>
-              </ion-item>
-              <ion-item class={{ active: this.pageTitle === 'Recipes' }} href="/recipes" lines="none">
-                <ion-icon name="restaurant" slot="start" />
-                <ion-label>Recipes</ion-label>
-                <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
-              </ion-item>
-              <ion-item class={{ active: this.pageTitle === 'Tags' }} href="/tags" lines="full">
-                <ion-icon name="bookmark" slot="start" />
-                <ion-label>Tags</ion-label>
-              </ion-item>
-              <ion-item class={{ active: this.pageTitle === 'Settings' }} href="/settings" lines="full">
-                <ion-icon name="settings" slot="start" />
-                <ion-label>Settings</ion-label>
-              </ion-item>
-              {hasScope(state.jwtToken, AccessLevel.Admin) ?
-                <ion-item class={{ active: this.pageTitle === 'Admin' }} href="/admin" lines="full">
-                  <ion-icon name="shield-checkmark" slot="start" />
-                  <ion-label>Admin</ion-label>
-                </ion-item>
-                : ''}
-              <ion-item lines="none" button onClick={() => this.logout()}>
+            <ion-list class="ion-no-padding">
+              {this.appLinks
+                .filter(link => isNull(link.access) || hasScope(state.jwtToken, link.access))
+                .map(link =>
+                  <Fragment>
+                    <ion-item
+                      href={link.url}
+                      color={this.pageTitle === link.title ? 'dark' : ''}
+                      detail={this.pageTitle === link.title}
+                    >
+                      <ion-icon name={link.icon} slot="start" />
+                      <ion-label>{link.title}</ion-label>
+                      {!isNull(link.detail) && <ion-label slot="end">{link.detail()}</ion-label>}
+                    </ion-item>
+                    {link.children?.length > 0 &&
+                      <ion-list class="ion-no-padding child-links">
+                        {link.children.map(child =>
+                          <ion-item
+                            href={child.url}
+                            color={this.pageTitle === child.title ? 'dark' : ''}
+                            detail={this.pageTitle === child.title}
+                          >
+                            <ion-icon name={child.icon} slot="start" />
+                            <ion-label>{child.title}</ion-label>
+                          </ion-item>
+                        )}
+                      </ion-list>
+                    }
+                  </Fragment>
+                )}
+              <ion-item button onClick={() => this.logout()}>
                 <ion-icon name="log-out" slot="start" />
                 <ion-label>Logout</ion-label>
               </ion-item>
@@ -117,12 +152,18 @@ export class AppRoot {
 
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="end" class="ion-hide-md-down">
-                  <ion-button class={{ active: this.pageTitle === 'Home' }} color="light" href="/">Home</ion-button>
-                  <ion-button class={{ active: this.pageTitle === 'Recipes' }} color="light" href="/recipes">
-                    Recipes
-                    <ion-badge slot="end" color="secondary">{state.searchResultCount}</ion-badge>
-                  </ion-button>
-                  <ion-button class={{ active: this.pageTitle === 'Tags' }} color="light" href="/tags">Tags</ion-button>
+                  {this.appLinks
+                    .filter(link => link.toolbar && (isNull(link.access) || hasScope(state.jwtToken, link.access)))
+                    .map(link => (
+                      <ion-button
+                        class={{ active: this.pageTitle === link.title }}
+                        href={link.url}
+                      >
+                        {link.title}
+                        {!isNull(link.detail) && <ion-badge slot="end" color="secondary">{link.detail()}</ion-badge>}
+                      </ion-button>
+                    ))
+                  }
                 </ion-buttons>
                 : ''}
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
@@ -246,20 +287,22 @@ export class AppRoot {
   }
 
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
-    // Set the page title
-    if (e.detail.to === '/') {
-      this.pageTitle = 'Home';
-    } else if (e.detail.to.startsWith('/recipes')) {
-      this.pageTitle = 'Recipes';
-    } else if (e.detail.to.startsWith('/tags')) {
-      this.pageTitle = 'Tags';
-    } else if (e.detail.to.startsWith('/settings')) {
-      this.pageTitle = 'Settings';
-    } else if (e.detail.to.startsWith('/admin')) {
-      this.pageTitle = 'Admin';
-    } else {
-      this.pageTitle = '';
+    // Set the page title based on the active page
+    let activeTitle = '';
+    for (const link of this.appLinks) {
+      if (link.url === e.detail.to) {
+        activeTitle = link.title;
+        break;
+      }
+      if (link.children?.length > 0) {
+        const child = link.children.find(child => child.url === e.detail.to);
+        if (!isNull(child)) {
+          activeTitle = child.title;
+          break;
+        }
+      }
     }
+    this.pageTitle = activeTitle;
 
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
