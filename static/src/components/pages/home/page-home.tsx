@@ -48,7 +48,7 @@ export class PageHome {
                   <ion-col>
                     <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
                       <ion-label>{search.title}</ion-label>
-                      <ion-badge slot="end" color="secondary">{search.count}</ion-badge>
+                      <ion-label slot="end">{search.count}</ion-label>
                     </ion-item>
                   </ion-col>
                 </ion-row>
