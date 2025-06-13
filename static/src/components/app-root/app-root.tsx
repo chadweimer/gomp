@@ -28,7 +28,7 @@ export class AppRoot {
       toolbar: false,
       children: [
         { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
-        { url: '/settings/searches', title: 'Saved Searches', icon: 'search' },
+        { url: '/settings/searches', title: 'Searches', icon: 'search' },
         { url: '/settings/security', title: 'Security', icon: 'lock-closed' }
       ]
     },
