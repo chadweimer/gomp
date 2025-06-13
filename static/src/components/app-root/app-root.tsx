@@ -29,7 +29,7 @@ export class AppRoot {
       children: [
         { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
         { url: '/settings/searches', title: 'Searches', icon: 'search' },
-        { url: '/settings/security', title: 'Security', icon: 'lock-closed' }
+        { url: '/settings/security', title: 'Security', icon: 'finger-print' }
       ]
     },
     {
@@ -39,7 +39,7 @@ export class AppRoot {
       toolbar: false,
       access: AccessLevel.Admin,
       children: [
-        { url: '/admin/configuration', title: 'Configuration', icon: 'settings' },
+        { url: '/admin/configuration', title: 'Configuration', icon: 'document-text' },
         { url: '/admin/users', title: 'Users', icon: 'people' },
         { url: '/admin/maintenance', title: 'Maintenance', icon: 'build' }
       ]
