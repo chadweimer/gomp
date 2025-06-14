@@ -20,7 +20,7 @@ export class AppRoot {
   private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
     { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.searchResultCount },
-    { url: '/tags', title: 'Tags', icon: 'bookmark', toolbar: true },
+    { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true },
     {
       url: '/settings',
       title: 'Settings',
