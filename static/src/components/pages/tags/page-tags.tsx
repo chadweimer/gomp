@@ -1,7 +1,7 @@
 import { Component, h, Host, Method, State } from '@stencil/core';
 import { SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { isNull, redirect } from '../../../helpers/utils';
+import { isNull } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -11,6 +11,7 @@ import { getDefaultSearchFilter } from '../../../models';
 })
 export class PageTags {
   @State() tags: { [tag: string]: number } | null;
+  @State() sortBy: 'tag' | 'count' = 'count';
   @State() sortDir: SortDir = SortDir.Desc;
 
   async connectedCallback() {
@@ -28,6 +29,10 @@ export class PageTags {
         <ion-header>
           <ion-toolbar>
             <ion-buttons class="ion-justify-content-center">
+              <ion-button color="secondary" onClick={() => this.sortBy = this.sortBy === 'tag' ? 'count' : 'tag'}>
+                <ion-icon slot="start" icon='swap-vertical' />
+                {this.sortBy}
+              </ion-button>
               <ion-button color="secondary" onClick={() => this.sortDir = this.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc}>
                 <ion-icon slot="start" icon={this.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
                 {this.sortDir}
@@ -40,7 +45,7 @@ export class PageTags {
           <ion-grid class="no-pad">
             <ion-row>
               {!isNull(this.tags) ?
-                Object.entries(this.tags).sort(([, valA], [, valB]) => this.compare(valA, valB)).map(([key, val]) =>
+                Object.entries(this.tags).sort(([keyA, valA], [keyB, valB]) => this.compare(keyA, valA, keyB, valB)).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href="/recipes" onClick={() => this.onTagClicked(key)}>
                       <ion-label>{key}</ion-label>
@@ -72,14 +77,26 @@ export class PageTags {
       ...filter,
       tags: [tag]
     };
-    // await redirect('/recipes');
   }
 
-  private compare(a: number, b: number) {
-    if (a < b) {
-      return this.sortDir === SortDir.Asc ? -1 : 1;
-    } else if (a > b) {
-      return this.sortDir === SortDir.Asc ? 1 : -1;
+  private compare(keyA: string, valA: number, keyB: string, valB: number): number {
+    switch (this.sortBy) {
+      case 'tag':
+        if (keyA < keyB) {
+          return this.sortDir === SortDir.Asc ? -1 : 1;
+        } else if (keyA > keyB) {
+          return this.sortDir === SortDir.Asc ? 1 : -1;
+        }
+        break;
+      case 'count':
+        if (valA < valB) {
+          return this.sortDir === SortDir.Asc ? -1 : 1;
+        } else if (valA > valB) {
+          return this.sortDir === SortDir.Asc ? 1 : -1;
+        }
+        break;
+      default:
+        throw new Error(`Unknown sort by: ${this.sortBy}`);
     }
     return 0;
   }
