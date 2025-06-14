@@ -80,19 +80,21 @@ export class PageTags {
   }
 
   private compare(keyA: string, valA: number, keyB: string, valB: number): number {
+    const lessthan = this.sortDir === SortDir.Asc ? -1 : 1;
+    const greaterthan = this.sortDir === SortDir.Asc ? 1 : -1;
     switch (this.sortBy) {
       case 'tag':
         if (keyA < keyB) {
-          return this.sortDir === SortDir.Asc ? -1 : 1;
+          return lessthan;
         } else if (keyA > keyB) {
-          return this.sortDir === SortDir.Asc ? 1 : -1;
+          return greaterthan;
         }
         break;
       case 'count':
         if (valA < valB) {
-          return this.sortDir === SortDir.Asc ? -1 : 1;
+          return lessthan;
         } else if (valA > valB) {
-          return this.sortDir === SortDir.Asc ? 1 : -1;
+          return greaterthan;
         }
         break;
       default:

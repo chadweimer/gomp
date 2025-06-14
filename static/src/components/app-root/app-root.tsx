@@ -17,7 +17,7 @@ export class AppRoot {
   private routerOutlet!: HTMLIonRouterOutletElement;
   private menu!: HTMLIonMenuElement;
 
-  private appLinks = [
+  private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
     { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.searchResultCount },
     { url: '/tags', title: 'Tags', icon: 'bookmark', toolbar: true },
