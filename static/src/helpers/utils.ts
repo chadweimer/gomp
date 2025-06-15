@@ -20,7 +20,7 @@ export function formatDate(date: Date | null) {
   return date?.toLocaleDateString() ?? '';
 }
 
-export function hasScope(token: string | null | undefined, accessLevel: AccessLevel) {
+export function hasScope(token: string | null, accessLevel: AccessLevel) {
   if (isNullOrEmpty(token)) {
     return false;
   }
@@ -34,7 +34,7 @@ export async function redirect(route: string) {
 }
 
 export function insertSpacesBetweenWords(val: string) {
-  if (val == undefined) {
+  if (isNull(val)) {
     return '';
   }
 
@@ -42,7 +42,7 @@ export function insertSpacesBetweenWords(val: string) {
 }
 
 export function enumKeyFromValue(keys: object, val: string) {
-  if (val == undefined) {
+  if (isNull(val)) {
     return '';
   }
 
