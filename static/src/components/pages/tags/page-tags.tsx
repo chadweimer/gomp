@@ -97,8 +97,6 @@ export class PageTags {
           return greaterthan;
         }
         break;
-      default:
-        throw new Error(`Unknown sort by: ${this.sortBy}`);
     }
     return 0;
   }
