@@ -173,7 +173,7 @@ export class AppRoot {
                   spellcheck={true}
                   show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
                   cancel-button-text="Reset"
-                  cancel-button-icon="trash-outline"
+                  cancel-button-icon="remove-circle-outline"
                   value={state.searchFilter?.query}
                   onKeyDown={e => this.onSearchKeyDown(e)}
                   onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
@@ -197,7 +197,7 @@ export class AppRoot {
                   spellcheck={true}
                   show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
                   cancel-button-text="Reset"
-                  cancel-button-icon="trash-outline"
+                  cancel-button-icon="remove-circle-outline"
                   value={state.searchFilter?.query}
                   onKeyDown={e => this.onSearchKeyDown(e)}
                   onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
