@@ -420,6 +420,161 @@ func Test_GetAllTags(t *testing.T) {
 		})
 	}
 }
+func Test_Find(t *testing.T) {
+	type testArgs struct {
+		params               FindParams
+		expectedQuery        string
+		expectedFields       []models.SearchField
+		expectedTags         []string
+		expectedStates       []models.RecipeState
+		expectedWithPictures *bool
+		expectedSortBy       models.SortBy
+		expectedSortDir      models.SortDir
+		expectedPage         int64
+		expectedCount        int64
+		recipes              *[]models.RecipeCompact
+		total                int64
+		expectedError        error
+	}
+
+	trueVal := true
+	falseVal := false
+	yesVal := Yes
+	noVal := No
+	countVal := int64(10)
+	pageVal := int64(2)
+	qVal := "chicken"
+	fieldsVal := []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients}
+	tagsVal := []string{"easy", "dinner"}
+	statesVal := []models.RecipeState{models.Active, models.Archived}
+	sortByVal := models.SortByName
+	sortDirVal := models.Desc
+
+	tests := []testArgs{
+		{
+			params:               FindParams{},
+			expectedQuery:        "",
+			expectedFields:       []models.SearchField{},
+			expectedTags:         []string{},
+			expectedStates:       []models.RecipeState{},
+			expectedWithPictures: nil,
+			expectedSortBy:       models.SortByID,
+			expectedSortDir:      models.Asc,
+			expectedPage:         1,
+			expectedCount:        0,
+			recipes:              &[]models.RecipeCompact{{Name: "Recipe1"}},
+			total:                1,
+			expectedError:        nil,
+		},
+		{
+			params: FindParams{
+				Q:        &qVal,
+				Fields:   &fieldsVal,
+				Tags:     &tagsVal,
+				States:   &statesVal,
+				Pictures: &yesVal,
+				Sort:     &sortByVal,
+				Dir:      &sortDirVal,
+				Page:     &pageVal,
+				Count:    countVal,
+			},
+			expectedQuery:        qVal,
+			expectedFields:       fieldsVal,
+			expectedTags:         tagsVal,
+			expectedStates:       statesVal,
+			expectedWithPictures: &trueVal,
+			expectedSortBy:       sortByVal,
+			expectedSortDir:      sortDirVal,
+			expectedPage:         pageVal,
+			expectedCount:        countVal,
+			recipes:              &[]models.RecipeCompact{{Name: "Recipe2"}},
+			total:                5,
+			expectedError:        nil,
+		},
+		{
+			params: FindParams{
+				Pictures: &noVal,
+			},
+			expectedQuery:        "",
+			expectedFields:       []models.SearchField{},
+			expectedTags:         []string{},
+			expectedStates:       []models.RecipeState{},
+			expectedWithPictures: &falseVal,
+			expectedSortBy:       models.SortByID,
+			expectedSortDir:      models.Asc,
+			expectedPage:         1,
+			expectedCount:        0,
+			recipes:              &[]models.RecipeCompact{},
+			total:                0,
+			expectedError:        nil,
+		},
+		{
+			params:               FindParams{},
+			expectedQuery:        "",
+			expectedFields:       []models.SearchField{},
+			expectedTags:         []string{},
+			expectedStates:       []models.RecipeState{},
+			expectedWithPictures: nil,
+			expectedSortBy:       models.SortByID,
+			expectedSortDir:      models.Asc,
+			expectedPage:         1,
+			expectedCount:        0,
+			recipes:              nil,
+			total:                0,
+			expectedError:        errors.New("db error"),
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
+
+			expectedFilter := models.SearchFilter{
+				Query:        test.expectedQuery,
+				Fields:       test.expectedFields,
+				Tags:         test.expectedTags,
+				WithPictures: test.expectedWithPictures,
+				States:       test.expectedStates,
+				SortBy:       test.expectedSortBy,
+				SortDir:      test.expectedSortDir,
+			}
+
+			if test.expectedError != nil {
+				recipesDriver.EXPECT().
+					Find(&expectedFilter, test.expectedPage, test.expectedCount).
+					Return(nil, int64(0), test.expectedError)
+			} else {
+				recipesDriver.EXPECT().
+					Find(&expectedFilter, test.expectedPage, test.expectedCount).
+					Return(test.recipes, test.total, nil)
+			}
+
+			resp, err := api.Find(context.Background(), FindRequestObject{Params: test.params})
+
+			if test.expectedError != nil {
+				if err == nil || err.Error() != test.expectedError.Error() {
+					t.Errorf("expected error: %v, got: %v", test.expectedError, err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				got, ok := resp.(Find200JSONResponse)
+				if !ok {
+					t.Errorf("invalid response type")
+				}
+				if !reflect.DeepEqual(got.Recipes, test.recipes) {
+					t.Errorf("expected recipes: %v, got: %v", test.recipes, got.Recipes)
+				}
+				if got.Total != test.total {
+					t.Errorf("expected total: %d, got: %d", test.total, got.Total)
+				}
+			}
+		})
+	}
+}
 
 func getMockRecipesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDriver, *uploadmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
