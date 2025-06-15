@@ -57,7 +57,7 @@ export class PageAdmin {
 
           <ion-tab-bar slot="top">
             <ion-tab-button tab="tab-admin-configuration" href="/admin/configuration">
-              <ion-icon name="settings" />
+              <ion-icon name="document-text" />
               <ion-label>Configuration</ion-label>
             </ion-tab-button>
             <ion-tab-button tab="tab-admin-users" href="/admin/users">

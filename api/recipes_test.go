@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -217,9 +218,7 @@ func Test_DeleteRecipe(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{1, nil},
-
 		{1, nil},
-
 		{1, db.ErrNotFound},
 	}
 	for i, test := range tests {
@@ -371,6 +370,51 @@ func Test_SetRating(t *testing.T) {
 				_, ok := resp.(SetRating204Response)
 				if !ok {
 					t.Errorf("test %v: invalid response", test)
+				}
+			}
+		})
+	}
+}
+
+func Test_GetAllTags(t *testing.T) {
+	type testArgs struct {
+		expectedTags  map[string]int
+		expectedError error
+	}
+
+	tests := []testArgs{
+		{
+			map[string]int{"tag1": 2, "tag2": 3},
+			nil,
+		},
+		{map[string]int{}, db.ErrNotFound},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
+			if test.expectedError != nil {
+				recipesDriver.EXPECT().ListAllTags().Return(nil, test.expectedError)
+			} else {
+				recipesDriver.EXPECT().ListAllTags().Return(&test.expectedTags, nil)
+			}
+
+			// Act
+			resp, err := api.GetAllTags(context.Background(), GetAllTagsRequestObject{})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("test %v: expected error: %v, received error '%v'", test, test.expectedError, err)
+			} else if err == nil {
+				got, ok := resp.(GetAllTags200JSONResponse)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+				if !reflect.DeepEqual(got, GetAllTags200JSONResponse(test.expectedTags)) {
+					t.Errorf("test %v: got = %v, want %v", test, got, test.expectedTags)
 				}
 			}
 		})

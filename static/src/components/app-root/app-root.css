@@ -8,6 +8,18 @@ ion-searchbar.end {
   width: unset;
 }
 
+.active {
+  font-weight: bold;
+}
+
+.always-clickable {
+  pointer-events: auto;
+}
+
+.child-links {
+  margin-left: 16px;
+}
+
 .copyright {
   font-size: 0.8em;
   font-weight: lighter;
@@ -15,8 +27,4 @@ ion-searchbar.end {
 
 .search {
   text-align: start;
-}
-
-.always-clickable {
-  pointer-events: auto;
 }

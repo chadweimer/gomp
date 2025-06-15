@@ -38,7 +38,7 @@ export class PageRecipe {
           <ion-header class="ion-hide-lg-down">
             <ion-toolbar>
               <ion-buttons slot="start">
-                <ion-back-button defaultHref="/search" />
+                <ion-back-button defaultHref="/recipes" />
               </ion-buttons>
               <ion-buttons slot="primary">
                 <ion-button onClick={() => this.onEditClicked()}>
@@ -145,7 +145,7 @@ export class PageRecipe {
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
               <ion-buttons slot="start">
-                <ion-back-button defaultHref="/search" />
+                <ion-back-button defaultHref="/recipes" />
               </ion-buttons>
               <ion-buttons slot="primary">
                 <ion-button onClick={() => this.onEditClicked()}>
@@ -487,7 +487,7 @@ export class PageRecipe {
 
               // Update the search results since the modified recipe may be in them
               await refreshSearchResults();
-              await redirect('/search');
+              await redirect('/recipes');
 
               return true;
             }
@@ -769,6 +769,6 @@ export class PageRecipe {
       ...filter,
       tags: [tag]
     };
-    await redirect('/search');
+    await redirect('/recipes');
   }
 }

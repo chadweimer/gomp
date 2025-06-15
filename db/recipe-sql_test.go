@@ -661,6 +661,64 @@ func Test_Recipe_ListTags(t *testing.T) {
 	}
 }
 
+func Test_Recipe_ListAllTags(t *testing.T) {
+	type testArgs struct {
+		expectedResult map[string]int
+		dbError        error
+		expectedError  error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{map[string]int{"tag1": 2, "tag2": 3}, nil, nil},
+		{nil, sql.ErrNoRows, ErrNotFound},
+		{nil, sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			query := dbmock.ExpectQuery("SELECT tag, count\\(tag\\) as num FROM recipe_tag GROUP BY tag")
+			if test.dbError == nil {
+				rows := sqlmock.NewRows([]string{"tag", "count"})
+				for tag, count := range test.expectedResult {
+					rows.AddRow(tag, count)
+				}
+				query.WillReturnRows(rows)
+			} else {
+				query.WillReturnError(test.dbError)
+			}
+
+			// Act
+			result, err := sut.Recipes().ListAllTags()
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+			if test.expectedResult == nil {
+				if result != nil {
+					t.Errorf("did not expect results, but received %v", result)
+				}
+			} else {
+				if result == nil {
+					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
+				} else if !reflect.DeepEqual(*result, test.expectedResult) {
+					t.Errorf("got = %v, want %v", result, test.expectedResult)
+				}
+			}
+		})
+	}
+}
+
 func Test_getFieldsStmt(t *testing.T) {
 	type args struct {
 		query   string
