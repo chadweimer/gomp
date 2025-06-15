@@ -13,6 +13,7 @@ interface AppState {
   searchResultCount?: number;
   searchScrollPosition?: number;
   loadingCount: number;
+  totalRecipeCount?: number;
 }
 
 // Start with an empty state

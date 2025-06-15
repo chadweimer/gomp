@@ -19,7 +19,7 @@ export class AppRoot {
 
   private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
-    { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.searchResultCount },
+    { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 },
     { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true },
     {
       url: '/settings',
@@ -160,7 +160,6 @@ export class AppRoot {
                         href={link.url}
                       >
                         {link.title}
-                        {!isNull(link.detail) && <ion-badge slot="end" color="secondary">{link.detail()}</ion-badge>}
                       </ion-button>
                     ))
                   }

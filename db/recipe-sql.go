@@ -169,14 +169,16 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 }
 
 func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
-	states := filter.States
-	if len(states) == 0 {
-		states = append(states, "active")
-	}
+	whereStmt := "WHERE r.current_state IS NOT NULL"
+	whereArgs := make([]any, 0)
+	var err error
 
-	whereStmt, whereArgs, err := sqlx.In("WHERE r.current_state IN (?)", states)
-	if err != nil {
-		return nil, 0, err
+	states := filter.States
+	if len(states) > 0 {
+		whereStmt, whereArgs, err = sqlx.In("WHERE r.current_state IN (?)", states)
+		if err != nil {
+			return nil, 0, err
+		}
 	}
 
 	const appendFmtStr = " AND (%s)"
@@ -210,7 +212,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 	// Build the offset and limit
 	limitStmt := ""
 	limitArgs := make([]any, 0)
-	if count > 0 {
+	if count >= 0 {
 		limitStmt = "LIMIT ? OFFSET ?"
 		limitArgs = append(limitArgs, count, count*(page-1))
 	}

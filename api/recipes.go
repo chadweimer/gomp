@@ -36,17 +36,30 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 		}
 	}
 
+	sortBy := models.SortByID
+	if params.Sort != nil {
+		sortBy = *params.Sort
+	}
+	sortDir := models.Asc
+	if params.Sort != nil {
+		sortDir = *params.Dir
+	}
+	page := int64(1)
+	if params.Page != nil {
+		page = *params.Page
+	}
+
 	filter := models.SearchFilter{
 		Query:        query,
 		Fields:       fields,
 		Tags:         tags,
 		WithPictures: withPictures,
 		States:       states,
-		SortBy:       params.Sort,
-		SortDir:      params.Dir,
+		SortBy:       sortBy,
+		SortDir:      sortDir,
 	}
 
-	recipes, total, err := h.db.Recipes().Find(&filter, params.Page, params.Count)
+	recipes, total, err := h.db.Recipes().Find(&filter, page, params.Count)
 	if err != nil {
 		return nil, err
 	}
