@@ -70,6 +70,8 @@ export class AppRoot {
 
           <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
 
+          {/* Redirect legacy search URL for backward compatibility in case users have bookmarks */}
+          <ion-route-redirect from="/search" to="/recipes" />
           <ion-route url="/recipes" component="ion-router-outlet" beforeEnter={() => this.requireLogin()}>
             <ion-route component="page-search" />
             <ion-route url="/:recipeId" component="page-recipe" />
@@ -77,15 +79,15 @@ export class AppRoot {
 
           <ion-route url="/tags" component="page-tags" beforeEnter={() => this.requireLogin()} />
 
+          <ion-route-redirect from="/settings" to="/settings/preferences" />
           <ion-route url="/settings" component="page-settings" beforeEnter={() => this.requireLogin()}>
-            <ion-route component="tab-settings-preferences" />
             <ion-route url="/preferences" component="tab-settings-preferences" />
             <ion-route url="/searches" component="tab-settings-searches" />
             <ion-route url="/security" component="tab-settings-security" />
           </ion-route>
 
+          <ion-route-redirect from="/admin" to="/admin/configuration" />
           <ion-route url="/admin" component="page-admin" beforeEnter={() => this.requireAdmin()}>
-            <ion-route component="tab-admin-configuration" />
             <ion-route url="/configuration" component="tab-admin-configuration" />
             <ion-route url="/users" component="tab-admin-users" />
             <ion-route url="/maintenance" component="tab-admin-maintenance" />
@@ -303,16 +305,11 @@ export class AppRoot {
     // Set the page title based on the active page
     let activeTitle = '';
     for (const link of this.appLinks) {
-      if (link.url === e.detail.to) {
+      // Intentionally not trying to match the children links here.
+      // If we are on a child link, the parent link will be the one that matches.
+      if (link.url === e.detail.to || (link.url != '/' && e.detail.to.startsWith(link.url))) {
         activeTitle = link.title;
         break;
-      }
-      if (link.children?.length > 0) {
-        const child = link.children.find(child => child.url === e.detail.to);
-        if (!isNull(child)) {
-          activeTitle = child.title;
-          break;
-        }
       }
     }
     this.pageTitle = activeTitle;
