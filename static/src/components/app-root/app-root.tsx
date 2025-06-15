@@ -19,7 +19,7 @@ export class AppRoot {
 
   private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
-    { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.searchResultCount },
+    { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 },
     { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true },
     {
       url: '/settings',
@@ -160,7 +160,6 @@ export class AppRoot {
                         href={link.url}
                       >
                         {link.title}
-                        {!isNull(link.detail) && <ion-badge slot="end" color="secondary">{link.detail()}</ion-badge>}
                       </ion-button>
                     ))
                   }
@@ -172,15 +171,22 @@ export class AppRoot {
                   class="end ion-hide-md-down"
                   autocorrect="on"
                   spellcheck={true}
+                  show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
+                  cancel-button-text="Reset"
+                  cancel-button-icon="remove-circle-outline"
                   value={state.searchFilter?.query}
                   onKeyDown={e => this.onSearchKeyDown(e)}
                   onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
                   onIonClear={() => this.onSearchClearClicked()}
+                  onIonCancel={() => this.onSearchCancelClicked()}
                 ></ion-searchbar>
                 : ''}
               {hasScope(state.jwtToken, AccessLevel.Viewer) ?
                 <ion-buttons slot="end" class="ion-hide-md-down">
-                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="filter" slot="icon-only" /></ion-button>
+                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
+                    <ion-icon icon="filter" slot="start" />
+                    <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
+                  </ion-button>
                 </ion-buttons>
                 : ''}
             </ion-toolbar>
@@ -189,13 +195,20 @@ export class AppRoot {
                 <ion-searchbar
                   autocorrect="on"
                   spellcheck={true}
+                  show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
+                  cancel-button-text="Reset"
+                  cancel-button-icon="remove-circle-outline"
                   value={state.searchFilter?.query}
                   onKeyDown={e => this.onSearchKeyDown(e)}
                   onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
                   onIonClear={() => this.onSearchClearClicked()}
+                  onIonCancel={() => this.onSearchCancelClicked()}
                 ></ion-searchbar>
                 <ion-buttons slot="end">
-                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}><ion-icon icon="filter" slot="icon-only" /></ion-button>
+                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
+                    <ion-icon icon="filter" slot="start" />
+                    <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
+                  </ion-button>
                 </ion-buttons>
               </ion-toolbar>
               : ''}
@@ -329,6 +342,14 @@ export class AppRoot {
   }
 
   private async onSearchClearClicked() {
+    state.searchFilter = {
+      ...state.searchFilter,
+      query: ''
+    };
+    await redirect('/recipes');
+  }
+
+  private async onSearchCancelClicked() {
     state.searchFilter = getDefaultSearchFilter();
     await redirect('/recipes');
   }
@@ -355,5 +376,14 @@ export class AppRoot {
         await redirect('/recipes');
       }
     });
+  }
+
+  private isDefaultSearch() {
+    const defaultFilter = getDefaultSearchFilter();
+    const currentFilter = {
+      ...defaultFilter,
+      ...state.searchFilter
+    };
+    return JSON.stringify(defaultFilter) === JSON.stringify(currentFilter);
   }
 }

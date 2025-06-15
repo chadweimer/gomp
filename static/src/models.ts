@@ -15,7 +15,7 @@ export type SwipeDirection = typeof SwipeDirection[keyof typeof SwipeDirection];
 export function getDefaultSearchFilter(): SearchFilter {
   return {
     query: '',
-    withPictures: undefined,
+    withPictures: null,
     fields: [SearchField.Name, SearchField.Ingredients, SearchField.Directions],
     states: [RecipeState.Active],
     tags: [],

@@ -94,7 +94,7 @@ export class RecipeLinkEditor {
       sortBy: SortBy.Modified,
       sortDir: SortDir.Desc,
       query: this.query,
-      withPictures: undefined,
+      withPictures: null,
       fields: [SearchField.Name],
       states: states,
       tags: []
