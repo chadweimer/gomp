@@ -51,7 +51,7 @@ describe('user-editor', () => {
 
   it('shows passwords', async () => {
     const user: User = {
-      id: undefined,
+      id: null,
       username: 'someone@example.com',
       accessLevel: AccessLevel.Editor,
     };

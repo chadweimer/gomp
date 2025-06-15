@@ -127,4 +127,13 @@ export async function refreshSearchResults() {
       state.searchPage = state.searchNumPages;
     }
   }
+
+  // Also populate total recipe count
+  try {
+    const { total } = await recipesApi.find({ count: 0 });
+    state.totalRecipeCount = total;
+  } catch (ex) {
+    console.error(ex);
+    state.totalRecipeCount = null;
+  }
 }

@@ -75,6 +75,7 @@ export class PageTags {
     const filter = getDefaultSearchFilter();
     state.searchFilter = {
       ...filter,
+      states: [],
       tags: [tag]
     };
   }

@@ -119,7 +119,7 @@ export class PageSearch {
       return enumKeyFromValue(RecipeState, RecipeState.Archived);
     }
 
-    return enumKeyFromValue(RecipeState, RecipeState.Active);
+    return 'All';
   }
 
   private setRecipeStates(states: RecipeState[]) {

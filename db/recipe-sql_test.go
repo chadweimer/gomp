@@ -1024,3 +1024,195 @@ func Test_getOrderStmt(t *testing.T) {
 		})
 	}
 }
+func Test_sqlRecipeDriver_Find(t *testing.T) {
+	type args struct {
+		filter *models.SearchFilter
+		page   int64
+		count  int64
+	}
+	type testCase struct {
+		name           string
+		args           args
+		setupMock      func(sqlmock.Sqlmock)
+		expectedErr    error
+		expectedResult *[]models.RecipeCompact
+		expectedTotal  int64
+	}
+
+	tests := []testCase{
+		{
+			name: "Basic Find with no filters",
+			args: args{
+				filter: &models.SearchFilter{},
+				page:   1,
+				count:  2,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				// Count query
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
+				// Select query
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, COALESCE\\(i\\.thumbnail_url, ''\\) AS thumbnail_url FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id LEFT OUTER JOIN recipe_image as i ON r\\.image_id = i\\.id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+					WithArgs(2, 0).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"}).
+						AddRow(1, "Recipe1", models.Active, time.Now(), time.Now(), 4.5, "url1").
+						AddRow(2, "Recipe2", models.Active, time.Now(), time.Now(), 3.0, "url2"))
+			},
+			expectedErr: nil,
+			expectedResult: &[]models.RecipeCompact{
+				{ID: utils.GetPtr[int64](1), Name: "Recipe1", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](4.5), ThumbnailURL: utils.GetPtr("url1")},
+				{ID: utils.GetPtr[int64](2), Name: "Recipe2", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](3.0), ThumbnailURL: utils.GetPtr("url2")},
+			},
+			expectedTotal: 2,
+		},
+		{
+			name: "Find with states filter",
+			args: args{
+				filter: &models.SearchFilter{States: []models.RecipeState{models.Active, models.Archived}},
+				page:   1,
+				count:  1,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				// sqlx.In expands the IN clause
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IN \\(\\?, \\?\\)").
+					WithArgs(models.Active, models.Archived).
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, COALESCE\\(i\\.thumbnail_url, ''\\) AS thumbnail_url FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id LEFT OUTER JOIN recipe_image as i ON r\\.image_id = i\\.id WHERE r\\.current_state IN \\(\\?, \\?\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+					WithArgs(models.Active, models.Archived, 1, 0).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"}).
+						AddRow(3, "Recipe3", models.Archived, time.Now(), time.Now(), 2.0, "url3"))
+			},
+			expectedErr: nil,
+			expectedResult: &[]models.RecipeCompact{
+				{ID: utils.GetPtr[int64](3), Name: "Recipe3", State: utils.GetPtr(models.Archived), AverageRating: utils.GetPtr[float32](2.0), ThumbnailURL: utils.GetPtr("url3")},
+			},
+			expectedTotal: 1,
+		},
+		{
+			name: "Find with tags filter",
+			args: args{
+				filter: &models.SearchFilter{Tags: []string{"tag1", "tag2"}},
+				page:   1,
+				count:  1,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				// sqlx.In expands the IN clause
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_tag AS t WHERE t\\.recipe_id = r\\.id AND t.tag IN \\(\\?, \\?\\)\\)\\)").
+					WithArgs("tag1", "tag2").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, COALESCE\\(i\\.thumbnail_url, ''\\) AS thumbnail_url FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id LEFT OUTER JOIN recipe_image as i ON r\\.image_id = i\\.id WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_tag AS t WHERE t\\.recipe_id = r\\.id AND t\\.tag IN \\(\\?, \\?\\)\\)\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+					WithArgs("tag1", "tag2", 1, 0).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"}).
+						AddRow(4, "Recipe4", models.Active, time.Now(), time.Now(), 5.0, "url4"))
+			},
+			expectedErr: nil,
+			expectedResult: &[]models.RecipeCompact{
+				{ID: utils.GetPtr[int64](4), Name: "Recipe4", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](5.0), ThumbnailURL: utils.GetPtr("url4")},
+			},
+			expectedTotal: 1,
+		},
+		{
+			name: "Find with withPictures true",
+			args: args{
+				filter: &models.SearchFilter{WithPictures: utils.GetPtr(true)},
+				page:   1,
+				count:  1,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_image AS t WHERE t\\.recipe_id = r\\.id\\)\\)").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, COALESCE\\(i\\.thumbnail_url, ''\\) AS thumbnail_url FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id LEFT OUTER JOIN recipe_image as i ON r\\.image_id = i\\.id WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_image AS t WHERE t\\.recipe_id = r\\.id\\)\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+					WithArgs(1, 0).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"}).
+						AddRow(5, "Recipe5", models.Active, time.Now(), time.Now(), 1.0, "url5"))
+			},
+			expectedErr: nil,
+			expectedResult: &[]models.RecipeCompact{
+				{ID: utils.GetPtr[int64](5), Name: "Recipe5", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](1.0), ThumbnailURL: utils.GetPtr("url5")},
+			},
+			expectedTotal: 1,
+		},
+		{
+			name: "Find returns error on count",
+			args: args{
+				filter: &models.SearchFilter{},
+				page:   1,
+				count:  1,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL").
+					WillReturnError(sql.ErrConnDone)
+			},
+			expectedErr:    sql.ErrConnDone,
+			expectedResult: nil,
+			expectedTotal:  0,
+		},
+		{
+			name: "Find returns error on select",
+			args: args{
+				filter: &models.SearchFilter{},
+				page:   1,
+				count:  1,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, COALESCE\\(i\\.thumbnail_url, ''\\) AS thumbnail_url FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id LEFT OUTER JOIN recipe_image as i ON r\\.image_id = i\\.id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+					WithArgs(1, 0).
+					WillReturnError(sql.ErrConnDone)
+			},
+			expectedErr:    sql.ErrConnDone,
+			expectedResult: nil,
+			expectedTotal:  0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+			if tt.setupMock != nil {
+				tt.setupMock(dbmock)
+			}
+			got, total, err := sut.Recipes().Find(tt.args.filter, tt.args.page, tt.args.count)
+			if !errors.Is(err, tt.expectedErr) {
+				t.Errorf("expected error: %v, got: %v", tt.expectedErr, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("unfulfilled expectations: %v", err)
+			}
+			if tt.expectedResult != nil && got != nil {
+				if len(*got) != len(*tt.expectedResult) {
+					t.Errorf("expected %d results, got %d", len(*tt.expectedResult), len(*got))
+				}
+				for i := range *tt.expectedResult {
+					gotItem := (*got)[i]
+					wantItem := (*tt.expectedResult)[i]
+					if (gotItem.ID == nil && wantItem.ID != nil) || (gotItem.ID != nil && wantItem.ID == nil) || (gotItem.ID != nil && wantItem.ID != nil && *gotItem.ID != *wantItem.ID) {
+						t.Errorf("result at index %d: ID mismatch: got %v, want %v", i, gotItem.ID, wantItem.ID)
+					}
+					if gotItem.Name != wantItem.Name {
+						t.Errorf("result at index %d: Name mismatch: got %v, want %v", i, gotItem.Name, wantItem.Name)
+					}
+					if (gotItem.State == nil && wantItem.State != nil) || (gotItem.State != nil && wantItem.State == nil) || (gotItem.State != nil && wantItem.State != nil && *gotItem.State != *wantItem.State) {
+						t.Errorf("result at index %d: State mismatch: got %v, want %v", i, gotItem.State, wantItem.State)
+					}
+					if (gotItem.AverageRating == nil && wantItem.AverageRating != nil) || (gotItem.AverageRating != nil && wantItem.AverageRating == nil) || (gotItem.AverageRating != nil && wantItem.AverageRating != nil && *gotItem.AverageRating != *wantItem.AverageRating) {
+						t.Errorf("result at index %d: AverageRating mismatch: got %v, want %v", i, gotItem.AverageRating, wantItem.AverageRating)
+					}
+					if (gotItem.ThumbnailURL == nil && wantItem.ThumbnailURL != nil) || (gotItem.ThumbnailURL != nil && wantItem.ThumbnailURL == nil) || (gotItem.ThumbnailURL != nil && wantItem.ThumbnailURL != nil && *gotItem.ThumbnailURL != *wantItem.ThumbnailURL) {
+						t.Errorf("result at index %d: ThumbnailURL mismatch: got %v, want %v", i, gotItem.ThumbnailURL, wantItem.ThumbnailURL)
+					}
+				}
+			}
+			if total != tt.expectedTotal {
+				t.Errorf("expected total %d, got %d", tt.expectedTotal, total)
+			}
+			if tt.expectedResult == nil && got != nil {
+				t.Errorf("expected nil result, got %v", got)
+			}
+		})
+	}
+}

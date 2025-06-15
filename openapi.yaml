@@ -168,23 +168,22 @@ paths:
           in: query
           schema:
             $ref: "./models.yaml#/components/schemas/sortBy"
-          required: true
         - name: dir
           in: query
           schema:
             $ref: "./models.yaml#/components/schemas/sortDir"
-          required: true
         - name: page
           in: query
           schema:
             type: integer
             format: int64
-          required: true
+            minimum: 1
         - name: count
           in: query
           schema:
             type: integer
             format: int64
+            minimum: 0
           required: true
       responses:
         200:
@@ -1061,6 +1060,7 @@ components:
         total:
           type: integer
           format: int64
+          minimum: 0
         recipes:
           type: array
           items:
