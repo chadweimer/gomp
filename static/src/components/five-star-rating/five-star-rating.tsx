@@ -13,7 +13,7 @@ export class FiveStarRating {
 
   @Event() valueSelected: EventEmitter<number>;
 
-  private ratings = [
+  private readonly ratings = [
     { value: 5.0, class: 'whole' },
     { value: 4.5, class: 'half' },
     { value: 4.0, class: 'whole' },
