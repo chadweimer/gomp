@@ -71,7 +71,7 @@ export class PageTags {
     }
   }
 
-  private async onTagClicked(tag: string) {
+  private onTagClicked(tag: string) {
     const filter = getDefaultSearchFilter();
     state.searchFilter = {
       ...filter,
