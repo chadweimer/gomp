@@ -381,7 +381,7 @@ export class AppRoot {
   private isDefaultSearch() {
     const defaultFilter = getDefaultSearchFilter();
     const currentFilter = {
-      ...getDefaultSearchFilter(),
+      ...defaultFilter,
       ...state.searchFilter
     };
     return JSON.stringify(defaultFilter) === JSON.stringify(currentFilter);
