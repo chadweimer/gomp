@@ -73,6 +73,9 @@ export namespace Components {
     interface PageSettingsSecurity {
         "activatedCallback": () => Promise<void>;
     }
+    interface PageTags {
+        "activatedCallback": () => Promise<void>;
+    }
     interface RecipeCard {
         "recipe": RecipeCompact;
         "size": 'large' | 'small';
@@ -298,6 +301,12 @@ declare global {
         prototype: HTMLPageSettingsSecurityElement;
         new (): HTMLPageSettingsSecurityElement;
     };
+    interface HTMLPageTagsElement extends Components.PageTags, HTMLStencilElement {
+    }
+    var HTMLPageTagsElement: {
+        prototype: HTMLPageTagsElement;
+        new (): HTMLPageTagsElement;
+    };
     interface HTMLRecipeCardElement extends Components.RecipeCard, HTMLStencilElement {
     }
     var HTMLRecipeCardElement: {
@@ -385,6 +394,7 @@ declare global {
         "page-settings-preferences": HTMLPageSettingsPreferencesElement;
         "page-settings-searches": HTMLPageSettingsSearchesElement;
         "page-settings-security": HTMLPageSettingsSecurityElement;
+        "page-tags": HTMLPageTagsElement;
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
         "recipe-link-editor": HTMLRecipeLinkEditorElement;
@@ -456,6 +466,8 @@ declare namespace LocalJSX {
     }
     interface PageSettingsSecurity {
     }
+    interface PageTags {
+    }
     interface RecipeCard {
         "recipe"?: RecipeCompact;
         "size"?: 'large' | 'small';
@@ -515,6 +527,7 @@ declare namespace LocalJSX {
         "page-settings-preferences": PageSettingsPreferences;
         "page-settings-searches": PageSettingsSearches;
         "page-settings-security": PageSettingsSecurity;
+        "page-tags": PageTags;
         "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": RecipeLinkEditor;
@@ -548,6 +561,7 @@ declare module "@stencil/core" {
             "page-settings-preferences": LocalJSX.PageSettingsPreferences & JSXBase.HTMLAttributes<HTMLPageSettingsPreferencesElement>;
             "page-settings-searches": LocalJSX.PageSettingsSearches & JSXBase.HTMLAttributes<HTMLPageSettingsSearchesElement>;
             "page-settings-security": LocalJSX.PageSettingsSecurity & JSXBase.HTMLAttributes<HTMLPageSettingsSecurityElement>;
+            "page-tags": LocalJSX.PageTags & JSXBase.HTMLAttributes<HTMLPageTagsElement>;
             "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;

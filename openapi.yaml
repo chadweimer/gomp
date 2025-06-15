@@ -534,6 +534,22 @@ paths:
       security:
         - Bearer: [editor]
       x-codegen-request-body-name: state
+  /tags:
+    get:
+      tags: [recipes]
+      description: get list of tags
+      operationId: getAllTags
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+      security:
+        - Bearer: [viewer]
   /uploads:
     post:
       tags: [app]

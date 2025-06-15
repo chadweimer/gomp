@@ -177,7 +177,7 @@ export class PageSettingsSearches {
 
     try {
       state.searchFilter = await usersApi.getSearchFilter({ filterId: id });
-      await redirect('/search');
+      await redirect('/recipes');
     } catch (ex) {
       console.error(ex);
     }
