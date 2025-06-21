@@ -73,18 +73,19 @@ export class PageSearch {
           <ion-grid class="no-pad">
             <ion-row>
               {state.searchResults?.map(recipe =>
-                <ion-col key={recipe.id} size="12" size-md="6" size-lg="4" size-xl="3">
-                  {state.searchSettings?.viewMode === SearchViewMode.Card ?
-                    <recipe-card recipe={recipe} />
-                    :
+                state.searchSettings?.viewMode === SearchViewMode.Card ?
+                  <ion-col key={recipe.id} size="6" size-md="4" size-lg="3" size-xl="2">
+                    <recipe-card recipe={recipe} size="small" />
+                  </ion-col>
+                  :
+                  <ion-col key={recipe.id} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href={`/recipes/${recipe.id}`} lines="none">
                       <ion-avatar slot="start">
                         {!isNullOrEmpty(recipe.thumbnailUrl) ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
                       </ion-avatar>
                       <ion-label>{recipe.name}</ion-label>
                     </ion-item>
-                  }
-                </ion-col>
+                  </ion-col>
               )}
             </ion-row>
           </ion-grid>
