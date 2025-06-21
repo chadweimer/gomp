@@ -104,7 +104,7 @@ export class PageSearch {
             <page-navigator class="ion-justify-content-center" color="secondary" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
           </ion-toolbar>
         </ion-footer>
-      </Host >
+      </Host>
     );
   }
 
