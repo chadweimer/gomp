@@ -9,6 +9,7 @@ interface AppState {
   searchSettings: SearchSettings;
   searchPage: number;
   searchNumPages: number;
+  searchResultsPerPage: 24 | 36 | 60 | 96 | 120;
   searchResults?: RecipeCompact[];
   searchResultCount?: number;
   searchScrollPosition?: number;
@@ -22,6 +23,7 @@ const { state, set, onChange, reset } = createStore<AppState>({
   searchSettings: getDefaultSearchSettings(),
   searchPage: 1,
   searchNumPages: 1,
+  searchResultsPerPage: 36,
   loadingCount: 0
 });
 
@@ -30,7 +32,8 @@ const propsToSync: { storage: Storage, key: keyof AppState, isObject: boolean }[
   { storage: localStorage, key: 'jwtToken', isObject: false },
   { storage: sessionStorage, key: 'searchFilter', isObject: true },
   { storage: sessionStorage, key: 'searchSettings', isObject: true },
-  { storage: sessionStorage, key: 'searchPage', isObject: true }
+  { storage: sessionStorage, key: 'searchPage', isObject: true },
+  { storage: sessionStorage, key: 'searchResultsPerPage', isObject: true }
 ];
 for (const prop of propsToSync) {
   const val = prop.storage.getItem(prop.key);
