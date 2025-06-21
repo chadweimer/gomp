@@ -110,7 +110,7 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
 export async function refreshSearchResults() {
   if (isNullOrEmpty(state.jwtToken)) return;
 
-  const count = state.searchSettings.viewMode === SearchViewMode.Card ? 24 : 60;
+  const count = state.searchSettings.viewMode === SearchViewMode.Card ? 36 : 60;
 
   try {
     const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, count);
