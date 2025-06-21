@@ -65,7 +65,7 @@ export class PageSearch {
                 <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}>
-                <ion-icon slot="icon-only" icon={state.searchSettings.viewMode === SearchViewMode.Card ? 'list' : 'grid'} />
+                <ion-icon slot="icon-only" icon={state.searchSettings.viewMode === SearchViewMode.Card ? 'grid' : 'list'} />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.onResultsPerPage()}>
                 {state.searchResultsPerPage}
