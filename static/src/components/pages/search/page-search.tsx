@@ -54,12 +54,12 @@ export class PageSearch {
               <ion-button color="secondary" class="ion-hide-md-down" onClick={() => this.onSearchStatesClicked()}>
                 <ion-icon slot="start" icon="filter" />
                 {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
-                <ion-icon slot="end" icon="chevron-down" />
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.onSortByClicked()}>
                 <ion-icon slot="start" icon="swap-vertical" />
                 {insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
-                <ion-icon slot="end" icon="chevron-down" />
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}>
                 <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
@@ -69,7 +69,7 @@ export class PageSearch {
               </ion-button>
               <ion-button color="secondary" onClick={() => this.onResultsPerPage()}>
                 {state.searchResultsPerPage}
-                <ion-icon slot="end" icon="chevron-down" />
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
