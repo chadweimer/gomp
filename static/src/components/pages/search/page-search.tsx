@@ -51,19 +51,25 @@ export class PageSearch {
         <ion-header>
           <ion-toolbar>
             <ion-buttons class="ion-justify-content-center">
-              <ion-button color="secondary" onClick={() => this.onSearchStatesClicked()}>
+              <ion-button color="secondary" class="ion-hide-md-down" onClick={() => this.onSearchStatesClicked()}>
                 <ion-icon slot="start" icon="filter" />
                 {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.onSortByClicked()}>
                 <ion-icon slot="start" icon="swap-vertical" />
                 {insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}>
                 <ion-icon slot="icon-only" icon={state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
               </ion-button>
               <ion-button color="secondary" onClick={() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}>
                 <ion-icon slot="icon-only" icon={state.searchSettings.viewMode === SearchViewMode.Card ? 'grid' : 'list'} />
+              </ion-button>
+              <ion-button color="secondary" onClick={() => this.onResultsPerPage()}>
+                {state.searchResultsPerPage}
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
@@ -245,4 +251,26 @@ export class PageSearch {
     await menu.present();
   }
 
+  private async onResultsPerPage() {
+    const menu = await alertController.create({
+      header: 'Results Per Page',
+      inputs: [24, 36, 60, 96, 120].map(item => ({
+        type: 'radio',
+        label: item.toLocaleString(),
+        value: item,
+        checked: state.searchResultsPerPage === item
+      })),
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'OK',
+          handler: (count: 24 | 36 | 60 | 96 | 120) => { state.searchResultsPerPage = count }
+        }
+      ]
+    });
+    await menu.present();
+  }
 }

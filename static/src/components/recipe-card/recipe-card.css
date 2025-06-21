@@ -5,16 +5,16 @@
   contain: content;
 }
 
-.image {
+img {
   object-fit: cover;
   width: 100%;
 }
 
-.large .image {
+.large img {
   height: 200px;
 }
 
-.small .image {
+.small img {
   height: 110px;
 }
 

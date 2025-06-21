@@ -112,6 +112,10 @@ html:not(.hydrated) body {
   width: 100%;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 .top-right {
   position: absolute;
   top: 0;

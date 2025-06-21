@@ -1,10 +1,10 @@
 import { AppApi, Configuration, FetchAPI, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
-import { SearchViewMode, getDefaultSearchFilter } from '../models';
+import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNullOrEmpty, toYesNoAny } from './utils';
 
 // Retrieve search results when search filters change
-const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage'];
+const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
 for (const prop of propsToSearch) {
   onStateChange(prop, async () => {
     if (prop !== 'searchPage') {
@@ -110,13 +110,11 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
 export async function refreshSearchResults() {
   if (isNullOrEmpty(state.jwtToken)) return;
 
-  const count = state.searchSettings.viewMode === SearchViewMode.Card ? 36 : 72;
-
   try {
-    const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, count);
+    const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
     state.searchResults = recipes ?? [];
     state.searchResultCount = total;
-    state.searchNumPages = Math.max(Math.ceil(total / count), 1);
+    state.searchNumPages = Math.max(Math.ceil(total / state.searchResultsPerPage), 1);
   } catch (ex) {
     console.error(ex);
     state.searchResults = [];
