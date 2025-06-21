@@ -7,16 +7,19 @@
 
 .image {
   object-fit: cover;
+  width: 100%;
 }
 
-.image.large {
+.large .image {
   height: 200px;
-  width: 100%;
 }
 
-.image.small {
-  height: 120px;
-  width: 100%;
+.small .image {
+  height: 110px;
+}
+
+.small ion-card-content {
+  padding: var(--ion-padding, 8px);
 }
 
 .no-overflow {
