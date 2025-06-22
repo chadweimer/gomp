@@ -29,13 +29,8 @@ describe('note-card', () => {
         components: [NoteCard],
         template: () => (<note-card readonly={readonly}></note-card>),
       });
-      const para = page.root.shadowRoot.querySelector('ion-buttons');
-      if (readonly) {
-        expect(para).toBeNull();
-      } else {
-        expect(para).not.toBeNull();
-        expect(para.childNodes.length).toBe(2);
-      }
+      const buttons = page.root.shadowRoot.querySelectorAll('ion-button');
+      expect(buttons.length).toBe(readonly ? 0 : 2);
     }
   });
 
@@ -51,9 +46,13 @@ describe('note-card', () => {
         components: [NoteCard],
         template: () => (<note-card note={note}></note-card>),
       });
-      const label = page.root.shadowRoot.querySelector('ion-card-header ion-label');
-      expect(label).not.toBeNull();
-      expect(label.textContent.includes('edited')).toBe(modified);
+      const label = page.root.shadowRoot.querySelector('ion-card-header ion-card-subtitle');
+      if (modified) {
+        expect(label).not.toBeNull();
+        expect(label.textContent.includes('edited')).toBe(true);
+      } else {
+        expect(label).toBeNull();
+      }
     }
   });
 });
