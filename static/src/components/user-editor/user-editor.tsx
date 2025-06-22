@@ -54,22 +54,22 @@ export class UserEditor {
                 )}
               </ion-select>
             </ion-item>
-            {isNull(this.user.id) ?
+            {isNull(this.user.id) &&
               <ion-item lines="full">
                 <ion-input label="Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
                   onIonBlur={e => this.password = e.target.value as string}
                   required />
               </ion-item>
-              : ''}
-            {isNull(this.user.id) ?
+            }
+            {isNull(this.user.id) &&
               <ion-item lines="full">
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
                   onIonBlur={e => this.repeatPassword = e.target.value as string} ref={el => this.repeatPasswordInput = el}
                   required />
               </ion-item>
-              : ''}
+            }
           </form>
         </ion-content>
       </Host>

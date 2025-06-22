@@ -124,8 +124,8 @@ html:not(.hydrated) body {
 
 .top-right-padded {
   position: absolute;
-  top: var(--ion-padding, 0);
-  right: var(--ion-padding, 0);
+  top: var(--ion-padding, 8px);
+  right: var(--ion-padding, 8px);
 }
 
 .opacity-75 {
@@ -148,6 +148,16 @@ html:not(.hydrated) body {
 
 .force-overflow {
   overflow: visible !important;
+}
+
+.zoom {
+  transition: transform .2s;
+}
+
+.zoom.ion-activated,
+.zoom:hover {
+  transform: scale(1.05);
+  z-index: 1;
 }
 
 ion-grid.no-pad {

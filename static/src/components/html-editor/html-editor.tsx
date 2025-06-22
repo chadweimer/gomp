@@ -42,7 +42,7 @@ export class HTMLEditor {
   render() {
     return (
       <Host>
-        {!isNullOrEmpty(this.label) ? <ion-label position={this.labelPlacement}>{this.label}</ion-label> : ''}
+        {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <ion-toolbar class="editor-toolbar">
           <ion-buttons>
             <ion-button

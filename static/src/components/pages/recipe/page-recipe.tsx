@@ -34,7 +34,7 @@ export class PageRecipe {
   render() {
     return (
       <Host>
-        {hasScope(state.jwtToken, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-header class="ion-hide-lg-down">
             <ion-toolbar>
               <ion-buttons slot="start">
@@ -57,12 +57,6 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
-              </ion-buttons>
-              <ion-buttons slot="secondary">
-                <ion-button onClick={() => this.onDeleteClicked()}>
-                  <ion-icon slot="start" icon="trash" />
-                  Delete
-                </ion-button>
                 {this.recipe?.state === RecipeState.Archived ?
                   <ion-button onClick={() => this.onUnarchiveClicked()}>
                     <ion-icon slot="start" icon="archive" />
@@ -74,10 +68,14 @@ export class PageRecipe {
                     Archive
                   </ion-button>
                 }
+                <ion-button onClick={() => this.onDeleteClicked()}>
+                  <ion-icon slot="start" icon="trash" />
+                  Delete
+                </ion-button>
               </ion-buttons>
             </ion-toolbar>
           </ion-header>
-          : ''}
+        }
 
         <ion-content>
           <ion-grid class="no-pad" fixed>
@@ -101,9 +99,11 @@ export class PageRecipe {
                   <ion-row class="ion-justify-content-center">
                     {this.images?.map(image =>
                       <ion-col key={image.id} size="auto">
-                        <ion-card>
-                          <a href={image.url} target="_blank" rel="noopener noreferrer"><img alt={image.url} class="thumb" src={image.thumbnailUrl} /></a>
-                          {hasScope(state.jwtToken, AccessLevel.Editor) ?
+                        <ion-card class="zoom">
+                          <a href={image.url} target="_blank" rel="noopener noreferrer">
+                            <img alt={image.url} class="thumb" src={image.thumbnailUrl} />
+                          </a>
+                          {hasScope(state.jwtToken, AccessLevel.Editor) &&
                             <ion-card-content class="ion-no-padding">
                               <ion-buttons>
                                 <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
@@ -114,7 +114,7 @@ export class PageRecipe {
                                 </ion-button>
                               </ion-buttons>
                             </ion-card-content>
-                            : ''}
+                          }
                         </ion-card>
                       </ion-col>
                     )}
@@ -141,7 +141,7 @@ export class PageRecipe {
           </ion-grid>
         </ion-content>
 
-        {hasScope(state.jwtToken, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
               <ion-buttons slot="start">
@@ -170,7 +170,7 @@ export class PageRecipe {
               </ion-buttons>
             </ion-toolbar>
           </ion-footer>
-          : ''}
+        }
       </Host>
     );
   }
@@ -402,48 +402,45 @@ export class PageRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        { text: 'Delete', icon: 'trash', role: 'destructive' },
+        {
+          text: 'Delete',
+          icon: 'trash',
+          role: 'destructive',
+          handler: () => this.onDeleteClicked(),
+        },
         {
           text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
           icon: 'archive',
-          role: 'archive'
+          handler: () => this.recipe?.state === RecipeState.Archived
+            ? this.onUnarchiveClicked()
+            : this.onArchiveClicked()
         },
-        { text: 'Add Link', icon: 'link', role: 'link' },
-        { text: 'Upload Picture', icon: 'camera', role: 'image' },
-        { text: 'Add Note', icon: 'chatbox', role: 'note' },
-        { text: 'Edit', icon: 'create', role: 'edit' },
+        {
+          text: 'Add Link',
+          icon: 'link',
+          handler: () => this.onAddLinkClicked()
+        },
+        {
+          text: 'Upload Picture',
+          icon: 'camera',
+          handler: () => this.onUploadImageClicked()
+        },
+        {
+          text: 'Add Note',
+          icon: 'chatbox',
+          handler: () => this.onAddNoteClicked()
+        },
+        {
+          text: 'Edit',
+          icon: 'create',
+          handler: () => this.onEditClicked()
+        },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
-      animated: false,
     });
     await menu.present();
 
-    const { role } = await menu.onDidDismiss();
-
-    switch (role) {
-      case 'destructive':
-        await this.onDeleteClicked();
-        break;
-      case 'archive':
-        if (this.recipe.state === RecipeState.Archived) {
-          await this.onUnarchiveClicked();
-        } else {
-          await this.onArchiveClicked();
-        }
-        break;
-      case 'link':
-        await this.onAddLinkClicked();
-        break;
-      case 'image':
-        await this.onUploadImageClicked();
-        break;
-      case 'note':
-        await this.onAddNoteClicked();
-        break;
-      case 'edit':
-        await this.onEditClicked();
-        break;
-    }
+    await menu.onDidDismiss();
   }
 
   private async onEditClicked() {
@@ -453,7 +450,6 @@ export class PageRecipe {
         componentProps: {
           recipe: this.recipe
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -493,7 +489,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -523,7 +518,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -553,7 +547,6 @@ export class PageRecipe {
             }
           },
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -569,7 +562,6 @@ export class PageRecipe {
         componentProps: {
           parentRecipeId: this.recipeId
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -599,7 +591,6 @@ export class PageRecipe {
             }
           },
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -612,7 +603,6 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'note-editor',
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -632,7 +622,6 @@ export class PageRecipe {
         componentProps: {
           note: note
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -664,7 +653,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -677,7 +665,6 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'image-upload-browser',
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -723,7 +710,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -754,7 +740,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();

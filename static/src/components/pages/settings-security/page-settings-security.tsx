@@ -58,13 +58,10 @@ export class PageSettingsSecurity {
                           required />
                       </ion-item>
                     </ion-card-content>
-                    <ion-footer>
-                      <ion-toolbar>
-                        <ion-buttons slot="primary">
-                          <ion-button color="primary" onClick={() => this.onUpdatePasswordClicked()}>Update Password</ion-button>
-                        </ion-buttons>
-                      </ion-toolbar>
-                    </ion-footer>
+                    <ion-button fill="clear" color="primary" onClick={() => this.onUpdatePasswordClicked()}>
+                      <ion-icon slot="start" name="save" />
+                      Update Password
+                    </ion-button>
                   </ion-card>
                 </form>
               </ion-col>

@@ -21,7 +21,7 @@ describe('recipe-card', () => {
     expect(component.recipe.name).toEqual('');
     const image = page.root.shadowRoot.querySelector('img.hidden');
     expect(image).not.toBeNull();
-    const node = page.root.shadowRoot.querySelector('.no-overflow > .single-line');
+    const node = page.root.shadowRoot.querySelector('ion-card-title');
     expect(node).not.toBeNull();
     expect(node).toEqualText('');
     const rating = page.root.shadowRoot.querySelector('five-star-rating');
@@ -42,7 +42,7 @@ describe('recipe-card', () => {
     expect(component.recipe).toEqual(recipe);
     const image = page.root.shadowRoot.querySelector('img.hidden');
     expect(image).not.toBeNull();
-    const node = page.root.shadowRoot.querySelector('.no-overflow > .single-line');
+    const node = page.root.shadowRoot.querySelector('ion-card-title');
     expect(node).not.toBeNull();
     expect(node).toEqualText(recipe.name);
     const rating = page.root.shadowRoot.querySelector('five-star-rating');

@@ -1,4 +1,4 @@
-import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
+import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
 import { Note } from '../../generated';
 import { formatDate } from '../../helpers/utils';
 
@@ -17,41 +17,31 @@ export class NoteCard {
   render() {
     return (
       <Host>
-        <ion-card>
+        <ion-card class="zoom">
           <ion-card-header>
-            <ion-item lines="full">
-              <ion-icon slot="start" icon="chatbox" />
-              <ion-label>{this.getNoteDatesText(this.note?.createdAt, this.note?.modifiedAt)}</ion-label>
-              {!this.readonly ?
-                <ion-buttons slot="end">
-                  <ion-button size="small" color="warning" onClick={() => this.editClicked.emit(this.note)}>
-                    <ion-icon slot="icon-only" icon="create" size="small" />
-                  </ion-button>
-                  <ion-button size="small" color="danger" onClick={() => this.deleteClicked.emit(this.note)}>
-                    <ion-icon slot="icon-only" icon="trash" size="small" />
-                  </ion-button>
-                </ion-buttons>
-                : ''}
-            </ion-item>
+            <ion-card-title>
+              <ion-icon icon="chatbox" />&nbsp;{formatDate(this.note?.createdAt)}
+            </ion-card-title>
+            {this.note?.createdAt?.getTime() !== this.note?.modifiedAt?.getTime() &&
+              <ion-card-subtitle>Last Modified: {formatDate(this.note?.modifiedAt)}</ion-card-subtitle>}
           </ion-card-header>
           <ion-card-content>
             <html-viewer value={this.note?.text} />
           </ion-card-content>
+          {!this.readonly &&
+            <Fragment>
+              <ion-button size="small" fill="clear" onClick={() => this.editClicked.emit(this.note)}>
+                <ion-icon slot="start" icon="create" />
+                Edit
+              </ion-button>
+              <ion-button size="small" fill="clear" color="danger" onClick={() => this.deleteClicked.emit(this.note)}>
+                <ion-icon slot="start" icon="trash" />
+                Delete
+              </ion-button>
+            </Fragment>
+          }
         </ion-card>
       </Host>
-    );
-  }
-
-  private getNoteDatesText(createdAt: Date, modifiedAt: Date) {
-    if (createdAt !== modifiedAt) {
-      return (
-        <span>
-          <span class="ion-text-nowrap">{formatDate(createdAt)}</span> <span class="ion-text-nowrap">(edited: {formatDate(modifiedAt)})</span>
-        </span>
-      );
-    }
-    return (
-      <span class="ion-text-nowrap">{formatDate(createdAt)}</span>
     );
   }
 }

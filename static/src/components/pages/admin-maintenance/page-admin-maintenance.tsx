@@ -81,7 +81,6 @@ export class PageAdminMaintenance {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();

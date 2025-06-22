@@ -39,16 +39,14 @@ export class PageAdminConfiguration {
                           onIonBlur={e => this.appConfig = { ...this.appConfig, title: e.target.value as string }} />
                       </ion-item>
                     </ion-card-content>
-                    <ion-footer>
-                      <ion-toolbar>
-                        <ion-buttons slot="primary">
-                          <ion-button color="primary" onClick={() => this.onSaveConfigurationClicked()}>Save</ion-button>
-                        </ion-buttons>
-                        <ion-buttons slot="secondary">
-                          <ion-button color="danger" onClick={() => this.loadAppConfiguration()}>Reset</ion-button>
-                        </ion-buttons>
-                      </ion-toolbar>
-                    </ion-footer>
+                    <ion-button fill="clear" color="primary" onClick={() => this.onSaveConfigurationClicked()}>
+                      <ion-icon slot="start" name="save" />
+                      Save
+                    </ion-button>
+                    <ion-button fill="clear" color="danger" onClick={() => this.loadAppConfiguration()}>
+                      <ion-icon slot="start" name="arrow-undo" />
+                      Reset
+                    </ion-button>
                   </ion-card>
                 </form>
               </ion-col>
