@@ -150,6 +150,16 @@ html:not(.hydrated) body {
   overflow: visible !important;
 }
 
+.zoom {
+  transition: transform .2s;
+}
+
+.zoom.ion-activated,
+.zoom:hover {
+  transform: scale(1.05);
+  z-index: 1;
+}
+
 ion-grid.no-pad {
   --ion-grid-padding: 0px;
   --ion-grid-column-padding: 0px;

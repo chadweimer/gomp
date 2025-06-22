@@ -5,16 +5,6 @@
   overflow: visible;
 }
 
-ion-card {
-  transition: transform .2s;
-}
-
-ion-card.ion-activated,
-ion-card:hover {
-  transform: scale(1.05);
-  z-index: 1;
-}
-
 img {
   object-fit: cover;
   width: 100%;
