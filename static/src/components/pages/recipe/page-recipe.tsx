@@ -409,13 +409,9 @@ export class PageRecipe {
         {
           text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
           icon: 'archive',
-          handler: () => {
-            if (this.recipe?.state === RecipeState.Archived) {
-              this.onUnarchiveClicked();
-            } else {
-              this.onArchiveClicked();
-            }
-          }
+          handler: () => this.recipe?.state === RecipeState.Archived
+            ? this.onUnarchiveClicked()
+            : this.onArchiveClicked()
         },
         {
           text: 'Add Link',
