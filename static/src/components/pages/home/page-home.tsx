@@ -54,7 +54,7 @@ export class PageHome {
                 </ion-row>
                 <ion-row>
                   {search.results.map(recipe =>
-                    <ion-col key={recipe.id} size="6" size-md="4" size-lg="3" size-xl="2">
+                    <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
                       <recipe-card recipe={recipe} size="small" />
                     </ion-col>
                   )}
