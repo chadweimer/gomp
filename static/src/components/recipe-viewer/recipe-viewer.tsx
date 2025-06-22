@@ -125,7 +125,7 @@ export class RecipeViewer {
     if (createdAt?.getTime() !== modifiedAt?.getTime()) {
       return (
         <span>
-          <span class="ion-text-nowrap">Created: {formatDate(createdAt)}</span>, <span class="ion-text-nowrap">Last Modified: {formatDate(modifiedAt)}</span>
+          <span class="ion-text-nowrap">Created: {formatDate(createdAt)}</span>; <span class="ion-text-nowrap">Last Modified: {formatDate(modifiedAt)}</span>
         </span>
       );
     }

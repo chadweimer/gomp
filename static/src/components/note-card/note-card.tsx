@@ -23,7 +23,7 @@ export class NoteCard {
               <ion-icon icon="chatbox" />&nbsp;{formatDate(this.note?.createdAt)}
             </ion-card-title>
             {this.note?.createdAt?.getTime() !== this.note?.modifiedAt?.getTime() &&
-              <ion-card-subtitle>edited: {formatDate(this.note?.modifiedAt)}</ion-card-subtitle>}
+              <ion-card-subtitle>Last Modified: {formatDate(this.note?.modifiedAt)}</ion-card-subtitle>}
           </ion-card-header>
           <ion-card-content>
             <html-viewer value={this.note?.text} />

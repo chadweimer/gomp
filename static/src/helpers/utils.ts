@@ -20,7 +20,16 @@ export function formatDate(date: Date | null) {
   if (isNull(date)) {
     return '';
   }
-  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+  const userLocale = navigator.languages?.length > 0
+    ? navigator.languages[0]
+    : navigator.language;
+  return date.toLocaleString(userLocale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 export function hasScope(token: string | null, accessLevel: AccessLevel) {

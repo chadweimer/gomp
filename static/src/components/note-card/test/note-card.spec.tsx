@@ -49,7 +49,7 @@ describe('note-card', () => {
       const label = page.root.shadowRoot.querySelector('ion-card-header ion-card-subtitle');
       if (modified) {
         expect(label).not.toBeNull();
-        expect(label.textContent.includes('edited')).toBe(true);
+        expect(label.textContent.includes('Last Modified')).toBe(true);
       } else {
         expect(label).toBeNull();
       }
