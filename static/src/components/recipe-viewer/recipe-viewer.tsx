@@ -28,7 +28,7 @@ export class RecipeViewer {
             </a>
           }
           <ion-card-header>
-            <ion-card-title>{this.recipe?.name</ion-card-title>
+            <ion-card-title>{this.recipe?.name}</ion-card-title>
             <ion-card-subtitle>
               <five-star-rating value={this.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
               <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
