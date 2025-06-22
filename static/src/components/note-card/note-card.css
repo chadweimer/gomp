@@ -2,5 +2,5 @@
 
 :host {
   display: block;
-  contain: content;
+  overflow: visible;
 }

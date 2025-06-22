@@ -64,13 +64,13 @@ export class PageHome {
           )}
         </ion-content>
 
-        {hasScope(state.jwtToken, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
             <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
               <ion-icon icon="add" />
             </ion-fab-button>
           </ion-fab>
-          : ''}
+        }
       </Host>
     );
   }

@@ -87,7 +87,7 @@ export class PageSearch {
                   <ion-col key={recipe.id} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href={`/recipes/${recipe.id}`} lines="none">
                       <ion-avatar slot="start">
-                        {!isNullOrEmpty(recipe.thumbnailUrl) ? <img alt="" src={recipe.thumbnailUrl} /> : ''}
+                        {!isNullOrEmpty(recipe.thumbnailUrl) && <img alt="" src={recipe.thumbnailUrl} />}
                       </ion-avatar>
                       <ion-label>{recipe.name}</ion-label>
                     </ion-item>
@@ -96,13 +96,13 @@ export class PageSearch {
             </ion-row>
           </ion-grid>
 
-          {hasScope(state.jwtToken, AccessLevel.Editor) ?
+          {hasScope(state.jwtToken, AccessLevel.Editor) &&
             <ion-fab horizontal="end" vertical="bottom" slot="fixed">
               <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
                 <ion-icon icon="add" />
               </ion-fab-button>
             </ion-fab>
-            : ''}
+          }
         </ion-content>
 
         <ion-footer>

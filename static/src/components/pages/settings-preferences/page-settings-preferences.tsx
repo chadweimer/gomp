@@ -50,16 +50,14 @@ export class PageSettingsPreferences {
                           onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
                       </ion-item>
                     </ion-card-content>
-                    <ion-footer>
-                      <ion-toolbar>
-                        <ion-buttons slot="primary">
-                          <ion-button color="primary" onClick={() => this.onSaveSettingsClicked()}>Save</ion-button>
-                        </ion-buttons>
-                        <ion-buttons slot="secondary">
-                          <ion-button color="danger" onClick={async () => this.settings = await loadUserSettings()}>Reset</ion-button>
-                        </ion-buttons>
-                      </ion-toolbar>
-                    </ion-footer>
+                    <ion-button fill="clear" color="primary" onClick={() => this.onSaveSettingsClicked()}>
+                      <ion-icon slot="start" name="save" />
+                      Save
+                      </ion-button>
+                    <ion-button fill="clear" color="danger" onClick={async () => this.settings = await loadUserSettings()}>
+                      <ion-icon slot="start" name="arrow-undo" />
+                      Reset
+                      </ion-button>
                   </ion-card>
                 </form>
               </ion-col>

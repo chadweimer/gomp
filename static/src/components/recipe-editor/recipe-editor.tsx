@@ -57,14 +57,14 @@ export class RecipeEditor {
                 autofocus
                 onIonBlur={e => this.recipe = { ...this.recipe, name: e.target.value as string }} />
             </ion-item>
-            {isNull(this.recipe.id) ?
+            {isNull(this.recipe.id) &&
               <ion-item lines="full">
                 <form enctype="multipart/form-data">
                   <ion-label position="stacked">Picture</ion-label>
                   <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
                 </form>
               </ion-item>
-              : ''}
+            }
             <ion-item lines="full">
               <ion-input label="Serving Size" label-placement="stacked" value={this.recipe.servingSize}
                 autocorrect="on"

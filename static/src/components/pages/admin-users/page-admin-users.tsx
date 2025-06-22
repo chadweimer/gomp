@@ -26,19 +26,19 @@ export class PageAdminUsers {
             <ion-row>
               {this.users?.map(user =>
                 <ion-col key={user.id} size="12" size-md="6" size-lg="4" size-xl="3">
-                  <ion-card>
-                    <ion-card-content>
-                      <ion-item lines="none">
-                        <ion-label>
-                          <h2>{user.username}</h2>
-                          <p>{user.accessLevel}</p>
-                        </ion-label>
-                        <ion-buttons>
-                          <ion-button slot="end" fill="clear" color="warning" onClick={() => this.onEditUserClicked(user)}><ion-icon name="create" /></ion-button>
-                          <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteUserClicked(user)}><ion-icon name="trash" /></ion-button>
-                        </ion-buttons>
-                      </ion-item>
-                    </ion-card-content>
+                  <ion-card class="zoom">
+                    <ion-card-header>
+                      <ion-card-title>{user.username}</ion-card-title>
+                      <ion-card-subtitle>{user.accessLevel}</ion-card-subtitle>
+                    </ion-card-header>
+                    <ion-button size="small" fill="clear" onClick={() => this.onEditUserClicked(user)}>
+                      <ion-icon slot="start" name="create" />
+                      Edit
+                    </ion-button>
+                    <ion-button size="small" fill="clear" color="danger" onClick={() => this.onDeleteUserClicked(user)}>
+                      <ion-icon slot="start" name="trash" />
+                      Delete
+                    </ion-button>
                   </ion-card>
                 </ion-col>
               )}

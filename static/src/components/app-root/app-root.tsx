@@ -141,18 +141,18 @@ export class AppRoot {
         <div class="ion-page" id="main-content">
           <ion-header mode="md">
             <ion-toolbar color="primary">
-              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
                 <ion-buttons slot="start">
                   <ion-menu-button />
                 </ion-buttons>
-                : ''}
+              }
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
-                {!isNullOrEmpty(this.pageTitle) ? <ion-text color="light"> | {this.pageTitle}</ion-text> : ''}
+                {!isNullOrEmpty(this.pageTitle) && <ion-text color="light"> | {this.pageTitle}</ion-text>}
               </ion-title>
 
-              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
                 <ion-buttons slot="end" class="ion-hide-md-down">
                   {this.appLinks
                     .filter(link => link.toolbar && (isNull(link.access) || hasScope(state.jwtToken, link.access)))
@@ -166,8 +166,8 @@ export class AppRoot {
                     ))
                   }
                 </ion-buttons>
-                : ''}
-              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+              }
+              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
                 <ion-searchbar
                   slot="end"
                   class="end ion-hide-md-down"
@@ -175,31 +175,31 @@ export class AppRoot {
                   spellcheck={true}
                   show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
                   cancel-button-text="Reset"
-                  cancel-button-icon="remove-circle-outline"
+                  cancel-button-icon="arrow-undo-outline"
                   value={state.searchFilter?.query}
                   onKeyDown={e => this.onSearchKeyDown(e)}
                   onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
                   onIonClear={() => this.onSearchClearClicked()}
                   onIonCancel={() => this.onSearchCancelClicked()}
                 ></ion-searchbar>
-                : ''}
-              {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+              }
+              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
                 <ion-buttons slot="end" class="ion-hide-md-down">
                   <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
                     <ion-icon icon="filter" slot="start" />
                     <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
                   </ion-button>
                 </ion-buttons>
-                : ''}
+              }
             </ion-toolbar>
-            {hasScope(state.jwtToken, AccessLevel.Viewer) ?
+            {hasScope(state.jwtToken, AccessLevel.Viewer) &&
               <ion-toolbar color="primary" class="ion-hide-md-up">
                 <ion-searchbar
                   autocorrect="on"
                   spellcheck={true}
                   show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
                   cancel-button-text="Reset"
-                  cancel-button-icon="remove-circle-outline"
+                  cancel-button-icon="arrow-undo-outline"
                   value={state.searchFilter?.query}
                   onKeyDown={e => this.onSearchKeyDown(e)}
                   onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
@@ -213,7 +213,7 @@ export class AppRoot {
                   </ion-button>
                 </ion-buttons>
               </ion-toolbar>
-              : ''}
+            }
             {state.loadingCount > 0 ?
               <ion-progress-bar type="indeterminate" color="secondary" />
               :

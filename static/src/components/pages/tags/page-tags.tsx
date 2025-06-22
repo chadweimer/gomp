@@ -44,7 +44,7 @@ export class PageTags {
         <ion-content>
           <ion-grid class="no-pad">
             <ion-row>
-              {!isNull(this.tags) ?
+              {!isNull(this.tags) &&
                 Object.entries(this.tags).sort(([keyA, valA], [keyB, valB]) => this.compare(keyA, valA, keyB, valB)).map(([key, val]) =>
                   <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href="/recipes" onClick={() => this.onTagClicked(key)}>
@@ -54,7 +54,7 @@ export class PageTags {
                     </ion-item>
                   </ion-col>
                 )
-                : ''}
+              }
             </ion-row>
           </ion-grid>
         </ion-content>

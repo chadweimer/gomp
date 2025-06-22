@@ -17,7 +17,10 @@ export function isNullOrEmpty(val: string | null) {
 }
 
 export function formatDate(date: Date | null) {
-  return date?.toLocaleDateString() ?? '';
+  if (isNull(date)) {
+    return '';
+  }
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 }
 
 export function hasScope(token: string | null, accessLevel: AccessLevel) {

@@ -24,13 +24,13 @@ export class RecipeViewer {
         <ion-card>
           <ion-card-content>
             <ion-item lines="none">
-              {!isNull(this.mainImage) ?
+              {!isNull(this.mainImage) &&
                 <a class="ion-margin-end" href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
                   <ion-avatar slot="start" class="large">
                     <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
                   </ion-avatar>
                 </a>
-                : ''}
+              }
               <div>
                 <h1>{this.recipe?.name}</h1>
                 <five-star-rating value={this.rating} disabled={this.readonly}
@@ -39,78 +39,77 @@ export class RecipeViewer {
                   <ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note>
                 </div>
               </div>
-              {this.recipe?.state === RecipeState.Archived
-                ? <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>
-                : ''}
+              {this.recipe?.state === RecipeState.Archived &&
+                <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>}
             </ion-item>
-            {!isNullOrEmpty(this.recipe?.servingSize) ?
+            {!isNullOrEmpty(this.recipe?.servingSize) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Serving Size</ion-label>
                 <div class="plain ion-padding">{this.recipe?.servingSize}</div>
               </ion-item>
-              : ''}
-            {!isNullOrEmpty(this.recipe?.time) ?
+            }
+            {!isNullOrEmpty(this.recipe?.time) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Time</ion-label>
                 <div class="plain ion-padding">{this.recipe?.time}</div>
               </ion-item>
-              : ''}
-            {!isNullOrEmpty(this.recipe?.ingredients) ?
+            }
+            {!isNullOrEmpty(this.recipe?.ingredients) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>
                 <html-viewer class="ion-padding" value={this.recipe?.ingredients} />
               </ion-item>
-              : ''}
-            {!isNullOrEmpty(this.recipe?.directions) ?
+            }
+            {!isNullOrEmpty(this.recipe?.directions) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
                 <html-viewer class="ion-padding" value={this.recipe?.directions} />
               </ion-item>
-              : ''}
-            {!isNullOrEmpty(this.recipe?.storageInstructions) ?
+            }
+            {!isNullOrEmpty(this.recipe?.storageInstructions) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Storage Instructions</ion-label>
                 <html-viewer class="ion-padding" value={this.recipe?.storageInstructions} />
               </ion-item>
-              : ''}
-            {!isNullOrEmpty(this.recipe?.nutritionInfo) ?
+            }
+            {!isNullOrEmpty(this.recipe?.nutritionInfo) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Nutrition</ion-label>
                 <html-viewer class="ion-padding" value={this.recipe?.nutritionInfo} />
               </ion-item>
-              : ''}
-            {!isNullOrEmpty(this.recipe?.sourceUrl) ?
+            }
+            {!isNullOrEmpty(this.recipe?.sourceUrl) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Source</ion-label>
                 <div class="plain ion-padding">
                   <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a>
                 </div>
               </ion-item>
-              : ''}
-            {this.links?.length > 0 ?
+            }
+            {this.links?.length > 0 &&
               <ion-item lines="full">
                 <ion-label position="stacked">Related Recipes</ion-label>
                 <div class="ion-padding-top fill">
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
                       <ion-avatar slot="start">
-                        {!isNullOrEmpty(link.thumbnailUrl) ? <img alt="" src={link.thumbnailUrl} /> : ''}
+                        {!isNullOrEmpty(link.thumbnailUrl) && <img alt="" src={link.thumbnailUrl} />}
                       </ion-avatar>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">
                           {link.name}
                         </ion-router-link>
                       </ion-label>
-                      {!this.readonly ?
+                      {!this.readonly &&
                         <ion-button slot="end" fill="clear" color="danger" onClick={() => this.deleteLinkClicked.emit(link)}>
                           <ion-icon slot="icon-only" icon="close-circle" />
                         </ion-button>
-                        : ''}
+                      }
                     </ion-item>
                   )}
                 </div>
               </ion-item>
-              : ''}
+            }
             <div class="ion-margin-top">
               {this.recipe?.tags?.map(tag =>
                 <ion-chip key={tag} onClick={() => this.tagClicked.emit(tag)}>{tag}</ion-chip>
@@ -122,8 +121,8 @@ export class RecipeViewer {
     );
   }
 
-  private getRecipeDatesText(createdAt: Date, modifiedAt: Date) {
-    if (createdAt !== modifiedAt) {
+  private getRecipeDatesText(createdAt: Date | null, modifiedAt: Date | null) {
+    if (createdAt?.getTime() !== modifiedAt?.getTime()) {
       return (
         <span>
           <span class="ion-text-nowrap">Created: {formatDate(createdAt)}</span>, <span class="ion-text-nowrap">Last Modified: {formatDate(modifiedAt)}</span>

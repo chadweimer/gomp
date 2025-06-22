@@ -28,9 +28,8 @@ export class RecipeCard {
           <ion-card-content class="no-overflow">
             <five-star-rating value={this.recipe.averageRating} disabled />
           </ion-card-content>
-          {this.recipe?.state === RecipeState.Archived
-            ? <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>
-            : ''}
+          {this.recipe?.state === RecipeState.Archived &&
+            <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>}
         </ion-card>
       </Host>
     );
