@@ -22,26 +22,21 @@ export class RecipeViewer {
     return (
       <Host>
         <ion-card>
+          {!isNull(this.mainImage) &&
+            <a href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
+              <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
+            </a>
+          }
+          <ion-card-header>
+            <ion-card-title>{this.recipe?.name</ion-card-title>
+            <ion-card-subtitle>
+              <five-star-rating value={this.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
+              <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
+            </ion-card-subtitle>
+          </ion-card-header>
           <ion-card-content>
-            <ion-item lines="none">
-              {!isNull(this.mainImage) &&
-                <a class="ion-margin-end" href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
-                  <ion-avatar slot="start" class="large">
-                    <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
-                  </ion-avatar>
-                </a>
-              }
-              <div>
-                <h1>{this.recipe?.name}</h1>
-                <five-star-rating value={this.rating} disabled={this.readonly}
-                  onValueSelected={e => this.ratingSelected.emit(e.detail)} />
-                <div>
-                  <ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note>
-                </div>
-              </div>
-              {this.recipe?.state === RecipeState.Archived &&
-                <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>}
-            </ion-item>
+            {this.recipe?.state === RecipeState.Archived &&
+              <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>}
             {!isNullOrEmpty(this.recipe?.servingSize) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Serving Size</ion-label>
