@@ -32,8 +32,6 @@ export class RecipeViewer {
             </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            {this.recipe?.state === RecipeState.Archived &&
-              <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>}
             {!isNullOrEmpty(this.recipe?.servingSize) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Serving Size</ion-label>
@@ -108,6 +106,8 @@ export class RecipeViewer {
               )}
             </div>
           </ion-card-content>
+          {this.recipe?.state === RecipeState.Archived &&
+            <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>}
         </ion-card>
       </Host>
     );
