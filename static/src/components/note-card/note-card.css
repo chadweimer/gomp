@@ -2,5 +2,9 @@
 
 :host {
   display: block;
-  contain: content;
+  overflow: visible;
+}
+
+ion-card-title {
+  font-size: 1.25rem;
 }

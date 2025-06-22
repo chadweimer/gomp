@@ -27,19 +27,22 @@ export class PageSettingsSearches {
             <ion-row>
               {this.filters?.map(filter =>
                 <ion-col key={filter.id} size="12" size-md="6" size-lg="4" size-xl="3">
-                  <ion-card>
-                    <ion-card-content>
-                      <ion-item lines="none">
-                        <ion-label>
-                          <h2>{filter.name}</h2>
-                        </ion-label>
-                        <ion-buttons>
-                          <ion-button slot="end" fill="clear" color="primary" onClick={() => this.onLoadSearchClicked(filter.id)}><ion-icon name="open-outline" /></ion-button>
-                          <ion-button slot="end" fill="clear" color="warning" onClick={() => this.onEditFilterClicked(filter.id)}><ion-icon name="create" /></ion-button>
-                          <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteFilterClicked(filter)}><ion-icon name="trash" /></ion-button>
-                        </ion-buttons>
-                      </ion-item>
-                    </ion-card-content>
+                  <ion-card class="zoom">
+                    <ion-card-header>
+                      <ion-card-title>{filter.name}</ion-card-title>
+                    </ion-card-header>
+                    <ion-button size="small" fill="clear" onClick={() => this.onLoadSearchClicked(filter.id)}>
+                      <ion-icon slot="start" name="open-outline" />
+                      Load
+                    </ion-button>
+                    <ion-button size="small" fill="clear" onClick={() => this.onEditFilterClicked(filter.id)}>
+                      <ion-icon slot="start" name="create" />
+                      Edit
+                    </ion-button>
+                    <ion-button size="small" fill="clear" color="danger" onClick={() => this.onDeleteFilterClicked(filter)}>
+                      <ion-icon slot="start" name="trash" />
+                      Delete
+                    </ion-button>
                   </ion-card>
                 </ion-col>
               )}
@@ -97,7 +100,6 @@ export class PageSettingsSearches {
         componentProps: {
           prompt: 'New Search'
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -128,7 +130,6 @@ export class PageSettingsSearches {
           name: searchFilter.name,
           searchFilter: searchFilter
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -161,7 +162,6 @@ export class PageSettingsSearches {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();

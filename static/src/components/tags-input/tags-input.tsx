@@ -37,8 +37,8 @@ export class TagsInput {
   render() {
     return (
       <Host>
-        {!isNullOrEmpty(this.label) ? <ion-label position={this.labelPlacement}>{this.label}</ion-label> : ''}
-        {this.internalValue.length > 0 ?
+        {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
+        {this.internalValue.length > 0 &&
           <div class="ion-padding-top">
             {this.internalValue.map(tag =>
               <ion-chip key={tag} onClick={() => this.removeTag(tag)}>
@@ -47,7 +47,7 @@ export class TagsInput {
               </ion-chip>
             )}
           </div>
-          : ''}
+        }
         <ion-input enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
         <div class="ion-padding-bottom">
           {this.filteredSuggestions.map(tag =>

@@ -50,7 +50,7 @@ export class SearchFilterEditor {
 
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
-            {this.showSavedLoader ?
+            {this.showSavedLoader &&
               <ion-item id="savedSearchLoader" lines="full">
                 <ion-select label="Load From Saved" value={this.selectedFilterId} onIonChange={e => this.selectedFilterId = e.detail.value}>
                   {this.filters?.map(item =>
@@ -61,8 +61,8 @@ export class SearchFilterEditor {
                   <ion-icon slot="icon-only" name="open-outline" />
                 </ion-button>
               </ion-item>
-              : ''}
-            {!this.hideName ?
+            }
+            {!this.hideName &&
               <ion-item lines="full">
                 <ion-input label="Name" label-placement="stacked" value={this.name}
                   autocorrect="on"
@@ -71,7 +71,7 @@ export class SearchFilterEditor {
                   autofocus
                   onIonBlur={e => this.name = e.target.value as string} />
               </ion-item>
-              : ''}
+            }
             <ion-item lines="full">
               <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter.query}
                 autocorrect="on"

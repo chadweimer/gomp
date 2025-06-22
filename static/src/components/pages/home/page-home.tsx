@@ -54,7 +54,7 @@ export class PageHome {
                 </ion-row>
                 <ion-row>
                   {search.results.map(recipe =>
-                    <ion-col key={recipe.id} size="6" size-md="4" size-lg="3" size-xl="2">
+                    <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
                       <recipe-card recipe={recipe} size="small" />
                     </ion-col>
                   )}
@@ -64,13 +64,13 @@ export class PageHome {
           )}
         </ion-content>
 
-        {hasScope(state.jwtToken, AccessLevel.Editor) ?
+        {hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
             <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
               <ion-icon icon="add" />
             </ion-fab-button>
           </ion-fab>
-          : ''}
+        }
       </Host>
     );
   }
@@ -159,7 +159,6 @@ export class PageHome {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'recipe-editor',
-        animated: false,
         backdropDismiss: false,
       });
 

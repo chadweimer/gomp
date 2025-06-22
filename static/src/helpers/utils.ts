@@ -17,7 +17,19 @@ export function isNullOrEmpty(val: string | null) {
 }
 
 export function formatDate(date: Date | null) {
-  return date?.toLocaleDateString() ?? '';
+  if (isNull(date)) {
+    return '';
+  }
+  const userLocale = navigator.languages?.length > 0
+    ? navigator.languages[0]
+    : navigator.language;
+  return date.toLocaleString(userLocale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 export function hasScope(token: string | null, accessLevel: AccessLevel) {
@@ -159,7 +171,6 @@ export async function showToast(message: string, duration = 2000) {
 export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
   const loading = await loadingController.create({
     message: message,
-    animated: false,
   });
   await loading.present();
   try {
