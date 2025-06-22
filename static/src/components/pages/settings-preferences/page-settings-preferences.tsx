@@ -53,11 +53,11 @@ export class PageSettingsPreferences {
                     <ion-button fill="clear" color="primary" onClick={() => this.onSaveSettingsClicked()}>
                       <ion-icon slot="start" name="save" />
                       Save
-                      </ion-button>
+                    </ion-button>
                     <ion-button fill="clear" color="danger" onClick={async () => this.settings = await loadUserSettings()}>
                       <ion-icon slot="start" name="arrow-undo" />
                       Reset
-                      </ion-button>
+                    </ion-button>
                   </ion-card>
                 </form>
               </ion-col>
