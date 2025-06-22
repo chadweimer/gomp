@@ -57,12 +57,6 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
-              </ion-buttons>
-              <ion-buttons slot="secondary">
-                <ion-button onClick={() => this.onDeleteClicked()}>
-                  <ion-icon slot="start" icon="trash" />
-                  Delete
-                </ion-button>
                 {this.recipe?.state === RecipeState.Archived ?
                   <ion-button onClick={() => this.onUnarchiveClicked()}>
                     <ion-icon slot="start" icon="archive" />
@@ -74,6 +68,10 @@ export class PageRecipe {
                     Archive
                   </ion-button>
                 }
+                <ion-button onClick={() => this.onDeleteClicked()}>
+                  <ion-icon slot="start" icon="trash" />
+                  Delete
+                </ion-button>
               </ion-buttons>
             </ion-toolbar>
           </ion-header>
@@ -402,48 +400,51 @@ export class PageRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        { text: 'Delete', icon: 'trash', role: 'destructive' },
+        {
+          text: 'Delete',
+          icon: 'trash',
+          role: 'destructive',
+          handler: () => this.onDeleteClicked(),
+        },
         {
           text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
           icon: 'archive',
-          role: 'archive'
+          handler: () => {
+            if (this.recipe?.state === RecipeState.Archived) {
+              this.onUnarchiveClicked();
+            } else {
+              this.onArchiveClicked();
+            }
+          }
         },
-        { text: 'Add Link', icon: 'link', role: 'link' },
-        { text: 'Upload Picture', icon: 'camera', role: 'image' },
-        { text: 'Add Note', icon: 'chatbox', role: 'note' },
-        { text: 'Edit', icon: 'create', role: 'edit' },
+        {
+          text: 'Add Link',
+          icon: 'link',
+          handler: () => this.onAddLinkClicked()
+        },
+        {
+
+          text: 'Upload Picture',
+          icon: 'camera',
+          handler: () => this.onUploadImageClicked()
+        },
+        {
+          text: 'Add Note',
+          icon: 'chatbox',
+          handler: () => this.onAddNoteClicked()
+        },
+        {
+          text: 'Edit',
+          icon: 'create',
+          handler: () => this.onEditClicked()
+        },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
       animated: false,
     });
     await menu.present();
 
-    const { role } = await menu.onDidDismiss();
-
-    switch (role) {
-      case 'destructive':
-        await this.onDeleteClicked();
-        break;
-      case 'archive':
-        if (this.recipe.state === RecipeState.Archived) {
-          await this.onUnarchiveClicked();
-        } else {
-          await this.onArchiveClicked();
-        }
-        break;
-      case 'link':
-        await this.onAddLinkClicked();
-        break;
-      case 'image':
-        await this.onUploadImageClicked();
-        break;
-      case 'note':
-        await this.onAddNoteClicked();
-        break;
-      case 'edit':
-        await this.onEditClicked();
-        break;
-    }
+    await menu.onDidDismiss();
   }
 
   private async onEditClicked() {
