@@ -2,7 +2,17 @@
 
 :host {
   display: block;
-  contain: content;
+  overflow: visible;
+}
+
+ion-card {
+  transition: transform .2s;
+}
+
+ion-card.ion-activated,
+ion-card:hover {
+  transform: scale(1.05);
+  z-index: 1;
 }
 
 img {
@@ -18,8 +28,18 @@ img {
   height: 110px;
 }
 
-.small ion-card-content {
-  padding: var(--ion-padding, 8px);
+ion-card-header {
+  padding: var(--ion-padding, 8px) !important;
+  padding-bottom: 2px !important;
+}
+
+ion-card-title {
+  font-size: 1.1em !important;
+}
+
+ion-card-content {
+  padding: var(--ion-padding, 8px) !important;
+  padding-top: 2px !important;
 }
 
 .no-overflow {

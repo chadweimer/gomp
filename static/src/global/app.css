@@ -124,8 +124,8 @@ html:not(.hydrated) body {
 
 .top-right-padded {
   position: absolute;
-  top: var(--ion-padding, 0);
-  right: var(--ion-padding, 0);
+  top: var(--ion-padding, 8px);
+  right: var(--ion-padding, 8px);
 }
 
 .opacity-75 {
