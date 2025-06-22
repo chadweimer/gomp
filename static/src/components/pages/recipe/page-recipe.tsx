@@ -419,7 +419,6 @@ export class PageRecipe {
           handler: () => this.onAddLinkClicked()
         },
         {
-
           text: 'Upload Picture',
           icon: 'camera',
           handler: () => this.onUploadImageClicked()
@@ -436,7 +435,6 @@ export class PageRecipe {
         },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
-      animated: false,
     });
     await menu.present();
 
@@ -450,7 +448,6 @@ export class PageRecipe {
         componentProps: {
           recipe: this.recipe
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -490,7 +487,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -520,7 +516,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -550,7 +545,6 @@ export class PageRecipe {
             }
           },
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -566,7 +560,6 @@ export class PageRecipe {
         componentProps: {
           parentRecipeId: this.recipeId
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -596,7 +589,6 @@ export class PageRecipe {
             }
           },
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -609,7 +601,6 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'note-editor',
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -629,7 +620,6 @@ export class PageRecipe {
         componentProps: {
           note: note
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -661,7 +651,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -674,7 +663,6 @@ export class PageRecipe {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'image-upload-browser',
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -720,7 +708,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
@@ -751,7 +738,6 @@ export class PageRecipe {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();

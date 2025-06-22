@@ -159,7 +159,6 @@ export class PageHome {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'recipe-editor',
-        animated: false,
         backdropDismiss: false,
       });
 

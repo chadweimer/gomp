@@ -159,7 +159,6 @@ export async function showToast(message: string, duration = 2000) {
 export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
   const loading = await loadingController.create({
     message: message,
-    animated: false,
   });
   await loading.present();
   try {

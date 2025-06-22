@@ -97,7 +97,6 @@ export class PageSettingsSearches {
         componentProps: {
           prompt: 'New Search'
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -128,7 +127,6 @@ export class PageSettingsSearches {
           name: searchFilter.name,
           searchFilter: searchFilter
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -161,7 +159,6 @@ export class PageSettingsSearches {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();

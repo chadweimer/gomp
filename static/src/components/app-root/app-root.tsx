@@ -362,7 +362,6 @@ export class AppRoot {
           showSavedLoader: true,
           searchFilter: state.searchFilter
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();

@@ -97,7 +97,6 @@ export class PageAdminUsers {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'user-editor',
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -117,7 +116,6 @@ export class PageAdminUsers {
         componentProps: {
           user: user
         },
-        animated: false,
         backdropDismiss: false,
       });
       await modal.present();
@@ -149,7 +147,6 @@ export class PageAdminUsers {
             }
           }
         ],
-        animated: false,
       });
 
       await confirmation.present();
