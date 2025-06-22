@@ -23,10 +23,7 @@ export class RecipeViewer {
       <Host>
         <ion-card>
           {!isNull(this.mainImage) &&
-            <a href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
-              <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
-            </a>
-          }
+            <img class="main" alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />}
           <ion-card-header>
             <ion-card-title>{this.recipe?.name}</ion-card-title>
             <ion-card-subtitle>
