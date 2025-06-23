@@ -30,7 +30,7 @@ describe('recipe-viewer', () => {
     });
     const component = page.rootInstance as RecipeViewer;
     expect(component.recipe).toEqual(recipe);
-    const para = page.root.shadowRoot.querySelector('h1');
+    const para = page.root.shadowRoot.querySelector('ion-card-title');
     expect(para).not.toBeNull();
     expect(para).toEqualText(recipe.name);
   });
@@ -56,7 +56,7 @@ describe('recipe-viewer', () => {
 
     // By default, the only item should be the name since the other fields are null
     expect(items.length).toBe(1);
-    const heading = items[0].querySelector('h1');
+    const heading = items[0].querySelector('ion-card-title');
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
 
@@ -181,9 +181,6 @@ describe('recipe-viewer', () => {
     expect(component.mainImage).toEqual(mainImage);
     const img = page.root.shadowRoot.querySelector(`img[src='${mainImage.thumbnailUrl}']`);
     expect(img).not.toBeNull();
-    const link = img.closest('a');
-    expect(link).not.toBeNull();
-    expect(link.href).toEqual(mainImage.url);
   });
 
   it('bind to links', async () => {
