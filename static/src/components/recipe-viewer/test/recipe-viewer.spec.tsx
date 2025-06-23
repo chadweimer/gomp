@@ -54,9 +54,9 @@ describe('recipe-viewer', () => {
     const component = page.rootInstance as RecipeViewer;
     let items = page.root.shadowRoot.querySelectorAll('ion-item');
 
-    // By default, the only item should be the name since the other fields are null
+    // By default, there should be no items since the fields except name are null
     expect(items.length).toBe(0);
-    const heading = items[0].querySelector('ion-card-title');
+    const heading = page.root.shadowRoot.querySelector('ion-card-title');
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
     let subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
@@ -205,7 +205,7 @@ describe('recipe-viewer', () => {
 
     // Each link should be present
     for (const link of links) {
-      const linkElement = items[1].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
+      const linkElement = items[0].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
       expect(linkElement).not.toBeNull();
       expect(linkElement).toEqualText(link.name);
     }
