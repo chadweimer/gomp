@@ -28,16 +28,11 @@ export class RecipeViewer {
             <ion-card-title>{this.recipe?.name}</ion-card-title>
             <ion-card-subtitle>
               <five-star-rating value={this.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
+              {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
               <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
             </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            {!isNullOrEmpty(this.recipe?.servingSize) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Serving Size</ion-label>
-                <div class="plain ion-padding">{this.recipe?.servingSize}</div>
-              </ion-item>
-            }
             {!isNullOrEmpty(this.recipe?.time) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Time</ion-label>
