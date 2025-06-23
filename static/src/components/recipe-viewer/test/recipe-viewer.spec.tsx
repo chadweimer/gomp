@@ -59,28 +59,28 @@ describe('recipe-viewer', () => {
     const heading = items[0].querySelector('ion-card-title');
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
-    const header = page.root.shadowRoot.querySelector('ion-card-subtitle');
-    expect(header.textContent.includes('Servings:')).toBe(false);
-    expect(header.textContent.includes('Time:')).toBe(false);
+    let subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
+    expect(subtitle.textContent.includes('Servings:')).toBe(false);
+    expect(subtitle.textContent.includes('Time:')).toBe(false);
 
     // Serving Size
     component.recipe = { ...recipe, servingSize: 'serving size' };
     await page.waitForChanges();
-    header = page.root.shadowRoot.querySelector('ion-card-subtitle');
-    expect(header.textContent.includes('Servings: serving size')).toBe(true);
+    subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
+    expect(subtitle.textContent.includes('Servings: serving size')).toBe(true);
 
     // Time
     component.recipe = { ...recipe, time: 'time' };
     await page.waitForChanges();
-    header = page.root.shadowRoot.querySelector('ion-card-subtitle');
-    expect(header.textContent.includes('Time: time')).toBe(true);
+    subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
+    expect(subtitle.textContent.includes('Time: time')).toBe(true);
 
     // Ingredients
     component.recipe = { ...recipe, ingredients: 'ingredients' };
     await page.waitForChanges();
     items = page.root.shadowRoot.querySelectorAll('ion-item');
     expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
+    let node = items[1].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', component.recipe.ingredients);
 
