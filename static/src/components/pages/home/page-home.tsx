@@ -1,4 +1,4 @@
-import { Component, Element, h, Host, Method, State } from '@stencil/core';
+import { Component, Element, Fragment, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
 import { loadUserSettings, performRecipeSearch, recipesApi, refreshSearchResults, usersApi } from '../../../helpers/api';
@@ -31,7 +31,7 @@ export class PageHome {
     return (
       <Host>
         <ion-content>
-          <ion-grid fixed>
+          <ion-grid class="no-pad">
             <ion-row>
               <ion-col>
                 <header class="ion-text-center">
@@ -40,11 +40,9 @@ export class PageHome {
                 </header>
               </ion-col>
             </ion-row>
-          </ion-grid>
-          {this.searches.map(search =>
-            <div key={search.title}>
-              <ion-grid class="no-pad">
-                <ion-row>
+            {this.searches.map(search =>
+              <Fragment>
+                <ion-row key={search.title}>
                   <ion-col>
                     <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
                       <ion-label>{search.title}</ion-label>
@@ -52,16 +50,16 @@ export class PageHome {
                     </ion-item>
                   </ion-col>
                 </ion-row>
-                <ion-row>
+                <ion-row key={`${search.title}-list`}>
                   {search.results.map(recipe =>
                     <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
                       <recipe-card recipe={recipe} size="small" />
                     </ion-col>
                   )}
                 </ion-row>
-              </ion-grid>
-            </div>
-          )}
+              </Fragment>
+            )}
+          </ion-grid>
         </ion-content>
 
         {hasScope(state.jwtToken, AccessLevel.Editor) &&
