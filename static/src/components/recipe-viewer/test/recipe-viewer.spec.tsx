@@ -30,7 +30,7 @@ describe('recipe-viewer', () => {
     });
     const component = page.rootInstance as RecipeViewer;
     expect(component.recipe).toEqual(recipe);
-    const para = page.root.shadowRoot.querySelector('h1');
+    const para = page.root.shadowRoot.querySelector('ion-card-title');
     expect(para).not.toBeNull();
     expect(para).toEqualText(recipe.name);
   });
@@ -54,36 +54,33 @@ describe('recipe-viewer', () => {
     const component = page.rootInstance as RecipeViewer;
     let items = page.root.shadowRoot.querySelectorAll('ion-item');
 
-    // By default, the only item should be the name since the other fields are null
-    expect(items.length).toBe(1);
-    const heading = items[0].querySelector('h1');
+    // By default, there should be no items since the fields except name are null
+    expect(items.length).toBe(0);
+    const heading = page.root.shadowRoot.querySelector('ion-card-title');
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
+    let subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
+    expect(subtitle.textContent.includes('Servings:')).toBe(false);
+    expect(subtitle.textContent.includes('Time:')).toBe(false);
 
     // Serving Size
     component.recipe = { ...recipe, servingSize: 'serving size' };
     await page.waitForChanges();
-    items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    let node = items[1].lastElementChild;
-    expect(node).not.toBeNull();
-    expect(node).toEqualText(component.recipe.servingSize);
+    subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
+    expect(subtitle.textContent.includes('Servings: serving size')).toBe(true);
 
     // Time
     component.recipe = { ...recipe, time: 'time' };
     await page.waitForChanges();
-    items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
-    expect(node).not.toBeNull();
-    expect(node).toEqualText(component.recipe.time);
+    subtitle = page.root.shadowRoot.querySelector('ion-card-subtitle');
+    expect(subtitle.textContent.includes('Time: time')).toBe(true);
 
     // Ingredients
     component.recipe = { ...recipe, ingredients: 'ingredients' };
     await page.waitForChanges();
     items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
+    expect(items.length).toBe(1);
+    let node = items[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', component.recipe.ingredients);
 
@@ -91,8 +88,8 @@ describe('recipe-viewer', () => {
     component.recipe = { ...recipe, directions: 'directions' };
     await page.waitForChanges();
     items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
+    expect(items.length).toBe(1);
+    node = items[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', component.recipe.directions);
 
@@ -100,8 +97,8 @@ describe('recipe-viewer', () => {
     component.recipe = { ...recipe, nutritionInfo: 'nutrition' };
     await page.waitForChanges();
     items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
+    expect(items.length).toBe(1);
+    node = items[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', component.recipe.nutritionInfo);
 
@@ -109,8 +106,8 @@ describe('recipe-viewer', () => {
     component.recipe = { ...recipe, storageInstructions: 'storage' };
     await page.waitForChanges();
     items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
+    expect(items.length).toBe(1);
+    node = items[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', component.recipe.storageInstructions);
 
@@ -118,8 +115,8 @@ describe('recipe-viewer', () => {
     component.recipe = { ...recipe, sourceUrl: 'http://some.recipe/' };
     await page.waitForChanges();
     items = page.root.shadowRoot.querySelectorAll('ion-item');
-    expect(items.length).toBe(2);
-    node = items[1].lastElementChild;
+    expect(items.length).toBe(1);
+    node = items[0].lastElementChild;
     expect(node).not.toBeNull();
     const link = node.querySelector('a');
     expect(link).not.toBeNull();
@@ -159,8 +156,7 @@ describe('recipe-viewer', () => {
         components: [RecipeViewer],
         template: () => (<recipe-viewer recipe={recipe}></recipe-viewer>),
       });
-      const heading = page.root.shadowRoot.querySelector('h1');
-      const label = heading.parentElement.querySelector('ion-note')
+      const label = page.root.shadowRoot.querySelector('ion-card-subtitle')
       expect(label).not.toBeNull();
       expect(label.textContent.includes('Last Modified')).toBe(modified);
     }
@@ -181,9 +177,6 @@ describe('recipe-viewer', () => {
     expect(component.mainImage).toEqual(mainImage);
     const img = page.root.shadowRoot.querySelector(`img[src='${mainImage.thumbnailUrl}']`);
     expect(img).not.toBeNull();
-    const link = img.closest('a');
-    expect(link).not.toBeNull();
-    expect(link.href).toEqual(mainImage.url);
   });
 
   it('bind to links', async () => {
@@ -202,17 +195,17 @@ describe('recipe-viewer', () => {
       template: () => (<recipe-viewer links={links}></recipe-viewer>),
     });
 
-    // Having links should result in a second ion-item, 1 in addition to the name
+    // Having links should result in an ion-item
     const items = page.root.shadowRoot.querySelectorAll('ion-card-content > ion-item');
-    expect(items.length).toBe(2);
+    expect(items.length).toBe(1);
 
     // There should be elements for each link
-    const linkItems = items[1].querySelectorAll('ion-item');
+    const linkItems = items[0].querySelectorAll('ion-item');
     expect(linkItems.length).toBe(links.length);
 
     // Each link should be present
     for (const link of links) {
-      const linkElement = items[1].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
+      const linkElement = items[0].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
       expect(linkElement).not.toBeNull();
       expect(linkElement).toEqualText(link.name);
     }

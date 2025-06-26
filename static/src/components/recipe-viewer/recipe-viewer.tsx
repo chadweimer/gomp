@@ -22,38 +22,18 @@ export class RecipeViewer {
     return (
       <Host>
         <ion-card>
+          {!isNull(this.mainImage) &&
+            <img class="main" alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />}
+          <ion-card-header>
+            <ion-card-title>{this.recipe?.name}</ion-card-title>
+            <ion-card-subtitle>
+              <five-star-rating value={this.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
+              {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
+              {!isNullOrEmpty(this.recipe?.time) && <div>Time: {this.recipe?.time}</div>}
+              <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
+            </ion-card-subtitle>
+          </ion-card-header>
           <ion-card-content>
-            <ion-item lines="none">
-              {!isNull(this.mainImage) &&
-                <a class="ion-margin-end" href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
-                  <ion-avatar slot="start" class="large">
-                    <img alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />
-                  </ion-avatar>
-                </a>
-              }
-              <div>
-                <h1>{this.recipe?.name}</h1>
-                <five-star-rating value={this.rating} disabled={this.readonly}
-                  onValueSelected={e => this.ratingSelected.emit(e.detail)} />
-                <div>
-                  <ion-note>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</ion-note>
-                </div>
-              </div>
-              {this.recipe?.state === RecipeState.Archived &&
-                <ion-badge class="top-right opacity-75 send-to-back" color="medium">Archived</ion-badge>}
-            </ion-item>
-            {!isNullOrEmpty(this.recipe?.servingSize) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Serving Size</ion-label>
-                <div class="plain ion-padding">{this.recipe?.servingSize}</div>
-              </ion-item>
-            }
-            {!isNullOrEmpty(this.recipe?.time) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Time</ion-label>
-                <div class="plain ion-padding">{this.recipe?.time}</div>
-              </ion-item>
-            }
             {!isNullOrEmpty(this.recipe?.ingredients) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>
@@ -116,6 +96,8 @@ export class RecipeViewer {
               )}
             </div>
           </ion-card-content>
+          {this.recipe?.state === RecipeState.Archived &&
+            <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>}
         </ion-card>
       </Host>
     );
