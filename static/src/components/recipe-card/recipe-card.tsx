@@ -20,12 +20,12 @@ export class RecipeCard {
       <Host>
         <ion-card href={!isNull(this.recipe.id) ? `/recipes/${this.recipe.id}` : ''} class={{ zoom: true, [this.size]: true }}>
           <img class={{ hidden: isNullOrEmpty(this.recipe.thumbnailUrl) }} alt="" src={this.recipe.thumbnailUrl} />
-          <ion-card-header>
-            <ion-card-title class="single-line">
+          <ion-card-header class="header">
+            <ion-card-title class="single-line title">
               {this.recipe.name}
             </ion-card-title>
           </ion-card-header>
-          <ion-card-content class="no-overflow">
+          <ion-card-content class="no-overflow content">
             <five-star-rating value={this.recipe.averageRating} disabled />
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived &&

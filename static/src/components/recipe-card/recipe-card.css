@@ -5,33 +5,33 @@
   overflow: visible;
 }
 
-img {
-  object-fit: cover;
-  width: 100%;
-}
-
 .large img {
   height: 200px;
+}
+
+.no-overflow {
+  overflow: hidden;
 }
 
 .small img {
   height: 110px;
 }
 
-ion-card-header {
-  padding: var(--ion-padding, 8px) !important;
-  padding-bottom: 2px !important;
+img {
+  object-fit: cover;
+  width: 100%;
 }
 
-ion-card-title {
-  font-size: 1.1em !important;
+ion-card-content.content {
+  padding: var(--ion-padding, 8px);
+  padding-top: 2px;
 }
 
-ion-card-content {
-  padding: var(--ion-padding, 8px) !important;
-  padding-top: 2px !important;
+ion-card-header.header {
+  padding: var(--ion-padding, 8px);
+  padding-bottom: 2px;
 }
 
-.no-overflow {
-  overflow: hidden;
+ion-card-title.title {
+  font-size: 1.1rem;
 }
