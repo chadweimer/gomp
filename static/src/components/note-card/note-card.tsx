@@ -19,7 +19,7 @@ export class NoteCard {
       <Host>
         <ion-card class="zoom">
           <ion-card-header>
-            <ion-card-title>
+            <ion-card-title class="title">
               <ion-icon icon="chatbox" />&nbsp;{formatDate(this.note?.createdAt)}
             </ion-card-title>
             {this.note?.createdAt?.getTime() !== this.note?.modifiedAt?.getTime() &&

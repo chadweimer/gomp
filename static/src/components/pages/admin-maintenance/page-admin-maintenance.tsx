@@ -18,15 +18,13 @@ export class PageAdminMaintenance {
               <ion-col>
                 <ion-card>
                   <ion-card-content>
-                    <ion-item lines="full">
-                      <ion-buttons>
-                        <ion-button color="danger" fill="solid" onClick={() => this.optimizeImagesClicked()}>Optimize All Images</ion-button>
-                      </ion-buttons>
-                      <ion-note slot="helper">
+                    <ion-button color="danger" fill="solid" onClick={() => this.optimizeImagesClicked()}>Optimize All Images</ion-button>
+                    <p>
+                      <ion-note>
                         Optimizing images will load and re-save all uploaded recipe images using the latest configured settings,
                         including regenerating thumbnails. If this was already run and the settings have not changed, it will have no effect.
                       </ion-note>
-                    </ion-item>
+                    </p>
                   </ion-card-content>
                 </ion-card>
               </ion-col>

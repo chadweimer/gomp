@@ -160,13 +160,17 @@ html:not(.hydrated) body {
   z-index: 1;
 }
 
-ion-grid.no-pad {
-  --ion-grid-padding: 0px;
-  --ion-grid-column-padding: 0px;
+ion-card-title.ios {
+  font-size: 1.4rem;
 }
 
 ion-content::part(scroll) {
   touch-action: pan-y pinch-zoom;
+}
+
+ion-grid.no-pad {
+  --ion-grid-padding: 0px;
+  --ion-grid-column-padding: 0px;
 }
 
 @media only screen and (max-width: 575.98px) and (max-height: 575.98px) {
