@@ -22,8 +22,23 @@ export class RecipeViewer {
     return (
       <Host>
         <ion-card>
-          {!isNull(this.mainImage) &&
-            <img class="main" alt={this.mainImage.url} src={this.mainImage.url} />}
+          {!isNull(this.mainImage) && (
+            <img
+              class="main"
+              alt={this.mainImage.url}
+              src={this.mainImage.thumbnailUrl || this.mainImage.url}
+              onLoad={e => {
+                const img = e.currentTarget as HTMLImageElement;
+                if (img.src.endsWith(this.mainImage.thumbnailUrl)) {
+                  const fullImg = new window.Image();
+                  fullImg.src = this.mainImage.url;
+                  fullImg.onload = () => {
+                    img.src = this.mainImage.url;
+                  };
+                }
+              }}
+            />
+          )}
           <ion-card-header>
             <ion-card-title>{this.recipe?.name}</ion-card-title>
             <ion-card-subtitle>
