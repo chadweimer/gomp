@@ -26,15 +26,13 @@ export class RecipeViewer {
             <img
               class="main"
               alt={this.mainImage.url}
-              src={this.mainImage.thumbnailUrl || this.mainImage.url}
+              src={this.mainImage.thumbnailUrl}
               onLoad={e => {
                 const img = e.currentTarget as HTMLImageElement;
                 if (img.src.endsWith(this.mainImage.thumbnailUrl)) {
-                  const fullImg = new window.Image();
+                  const fullImg = new Image();
                   fullImg.src = this.mainImage.url;
-                  fullImg.onload = () => {
-                    img.src = this.mainImage.url;
-                  };
+                  fullImg.onload = () => img.src = this.mainImage.url;
                 }
               }}
             />
