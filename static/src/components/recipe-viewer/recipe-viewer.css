@@ -24,6 +24,6 @@ img.main {
 
 @media only screen and (min-width: 1200px) {
   img.main {
-    max-height: 33vh;
+    max-height: 35vh;
   }
 }
