@@ -2,6 +2,11 @@
   display: block;
 }
 
+.side-menu {
+  position: sticky;
+  top: 0;
+}
+
 .tab {
   border-bottom: 2px solid var(--ion-color-primary);
 }

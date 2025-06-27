@@ -34,53 +34,10 @@ export class PageRecipe {
   render() {
     return (
       <Host>
-        {hasScope(state.jwtToken, AccessLevel.Editor) &&
-          <ion-header class="ion-hide-lg-down">
-            <ion-toolbar>
-              <ion-buttons slot="start">
-                <ion-back-button defaultHref="/recipes" />
-              </ion-buttons>
-              <ion-buttons slot="primary">
-                <ion-button onClick={() => this.onEditClicked()}>
-                  <ion-icon slot="start" icon="create" />
-                  Edit
-                </ion-button>
-                <ion-button onClick={() => this.onAddNoteClicked()}>
-                  <ion-icon slot="start" icon="chatbox" />
-                  Add Note
-                </ion-button>
-                <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-                  <ion-icon slot="start" icon="camera" />
-                  Upload Picture
-                </ion-button>
-                <ion-button onClick={() => this.onAddLinkClicked()}>
-                  <ion-icon slot="start" icon="link" />
-                  Add Link
-                </ion-button>
-                {this.recipe?.state === RecipeState.Archived ?
-                  <ion-button onClick={() => this.onUnarchiveClicked()}>
-                    <ion-icon slot="start" icon="archive" />
-                    Unarchive
-                  </ion-button>
-                  :
-                  <ion-button onClick={() => this.onArchiveClicked()}>
-                    <ion-icon slot="start" icon="archive" />
-                    Archive
-                  </ion-button>
-                }
-                <ion-button onClick={() => this.onDeleteClicked()}>
-                  <ion-icon slot="start" icon="trash" />
-                  Delete
-                </ion-button>
-              </ion-buttons>
-            </ion-toolbar>
-          </ion-header>
-        }
-
         <ion-content>
-          <ion-grid class="no-pad" fixed>
+          <ion-grid class="no-pad">
             <ion-row>
-              <ion-col>
+              <ion-col size="12" size-lg="9" size-xl="8" offset-xl="2">
                 <recipe-viewer
                   recipe={this.recipe}
                   rating={this.recipeRating}
@@ -91,9 +48,44 @@ export class PageRecipe {
                   onDeleteLinkClicked={e => this.onDeleteLinkClicked(e.detail)}
                   onTagClicked={e => this.onTagClicked(e.detail)} />
               </ion-col>
+              <ion-col size="0" size-lg="3" size-xl="2">
+                <ion-list class="side-menu">
+                  <ion-item button onClick={() => this.onEditClicked()}>
+                    <ion-icon slot="start" icon="create" />
+                    Edit
+                  </ion-item>
+                  <ion-item button onClick={() => this.onAddNoteClicked()}>
+                    <ion-icon slot="start" icon="chatbox" />
+                    Add Note
+                  </ion-item>
+                  <ion-item button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                    <ion-icon slot="start" icon="camera" />
+                    Upload Picture
+                  </ion-item>
+                  <ion-item button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
+                    <ion-icon slot="start" icon="link" />
+                    Add Link
+                  </ion-item>
+                  {this.recipe?.state === RecipeState.Archived ?
+                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
+                      <ion-icon slot="start" icon="archive" />
+                      Unarchive
+                    </ion-item>
+                    :
+                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
+                      <ion-icon slot="start" icon="archive" />
+                      Archive
+                    </ion-item>
+                  }
+                  <ion-item button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
+                    <ion-icon slot="start" icon="trash" />
+                    Delete
+                  </ion-item>
+                </ion-list>
+              </ion-col>
             </ion-row>
             <ion-row>
-              <ion-col size="12" size-md>
+              <ion-col size="12" size-md="6" size-lg="4" size-xl="4" offset-xl="2">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
                 <ion-grid class="no-pad">
                   <ion-row class="ion-justify-content-center">
@@ -123,7 +115,7 @@ export class PageRecipe {
                   </ion-row>
                 </ion-grid>
               </ion-col>
-              <ion-col size="12" size-md>
+              <ion-col size="12" size-md="6" size-lg="5" size-xl="4">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
                 <ion-grid>
                   {this.notes?.map(note =>
@@ -142,8 +134,8 @@ export class PageRecipe {
             </ion-row>
           </ion-grid>
         </ion-content>
-
-        {hasScope(state.jwtToken, AccessLevel.Editor) &&
+        {
+          hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
               <ion-buttons slot="start">
@@ -166,14 +158,29 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
-                <ion-button onClick={() => this.onRecipeMenuClicked()}>
+                {this.recipe?.state === RecipeState.Archived ?
+                  <ion-button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
+                    <ion-icon slot="start" icon="archive" />
+                    Unarchive
+                  </ion-button>
+                  :
+                  <ion-button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
+                    <ion-icon slot="start" icon="archive" />
+                    Archive
+                  </ion-button>
+                }
+                <ion-button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
+                  <ion-icon slot="start" icon="trash" />
+                  Delete
+                </ion-button>
+                <ion-button class="ion-hide-lg-up" onClick={() => this.onRecipeMenuClicked()}>
                   <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
           </ion-footer>
         }
-      </Host>
+      </Host >
     );
   }
 
