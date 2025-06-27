@@ -19,7 +19,7 @@ describe('recipe-card', () => {
     });
     const component = page.rootInstance as RecipeCard;
     expect(component.recipe.name).toEqual('');
-    const image = page.root.shadowRoot.querySelector('img.hidden');
+    const image = page.root.shadowRoot.querySelector('ion-img.hidden');
     expect(image).not.toBeNull();
     const node = page.root.shadowRoot.querySelector('ion-card-title');
     expect(node).not.toBeNull();
@@ -40,7 +40,7 @@ describe('recipe-card', () => {
     });
     const component = page.rootInstance as RecipeCard;
     expect(component.recipe).toEqual(recipe);
-    const image = page.root.shadowRoot.querySelector('img.hidden');
+    const image = page.root.shadowRoot.querySelector('ion-img.hidden');
     expect(image).not.toBeNull();
     const node = page.root.shadowRoot.querySelector('ion-card-title');
     expect(node).not.toBeNull();
