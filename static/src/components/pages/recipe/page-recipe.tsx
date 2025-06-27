@@ -164,7 +164,7 @@ export class PageRecipe {
             </ion-toolbar>
           </ion-footer>
         }
-      </Host >
+      </Host>
     );
   }
 
