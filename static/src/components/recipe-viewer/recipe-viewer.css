@@ -8,5 +8,22 @@
 img.main {
   object-fit: cover;
   width: 100%;
-  max-height: 17vh;
+}
+
+@media only screen and (max-width: 767.98px) {
+  img.main {
+    max-height: 20vh;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1199.98px) {
+  img.main {
+    max-height: 25vh;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  img.main {
+    max-height: 35vh;
+  }
 }

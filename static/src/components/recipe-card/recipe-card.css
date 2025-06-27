@@ -5,7 +5,12 @@
   overflow: visible;
 }
 
-.large img {
+.image {
+  object-fit: cover;
+  width: 100%;
+}
+
+.large .image {
   height: 200px;
 }
 
@@ -13,17 +18,12 @@
   overflow: hidden;
 }
 
-.small img {
+.small .image {
   height: 110px;
 }
 
 .small ion-card-title.title {
   font-size: 0.9rem;
-}
-
-img {
-  object-fit: cover;
-  width: 100%;
 }
 
 ion-card-content.content {
