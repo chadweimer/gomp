@@ -85,7 +85,7 @@ export class PageRecipe {
               </ion-col>
             </ion-row>
             <ion-row>
-              <ion-col size="12" size-md="6" size-lg="4" size-xl="4" offset-xl="2">
+              <ion-col size="12" size-md="6" size-xl="4" offset-xl="2">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
                 <ion-grid class="no-pad">
                   <ion-row class="ion-justify-content-center">
@@ -115,7 +115,7 @@ export class PageRecipe {
                   </ion-row>
                 </ion-grid>
               </ion-col>
-              <ion-col size="12" size-md="6" size-lg="5" size-xl="4">
+              <ion-col size="12" size-md="6" size-xl="4">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
                 <ion-grid>
                   {this.notes?.map(note =>
