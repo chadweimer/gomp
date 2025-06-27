@@ -134,8 +134,7 @@ export class PageRecipe {
             </ion-row>
           </ion-grid>
         </ion-content>
-        {
-          hasScope(state.jwtToken, AccessLevel.Editor) &&
+        {hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
               <ion-buttons slot="start">
@@ -157,21 +156,6 @@ export class PageRecipe {
                 <ion-button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
                   <ion-icon slot="start" icon="link" />
                   Add Link
-                </ion-button>
-                {this.recipe?.state === RecipeState.Archived ?
-                  <ion-button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
-                    <ion-icon slot="start" icon="archive" />
-                    Unarchive
-                  </ion-button>
-                  :
-                  <ion-button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
-                    <ion-icon slot="start" icon="archive" />
-                    Archive
-                  </ion-button>
-                }
-                <ion-button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
-                  <ion-icon slot="start" icon="trash" />
-                  Delete
                 </ion-button>
                 <ion-button class="ion-hide-lg-up" onClick={() => this.onRecipeMenuClicked()}>
                   <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
