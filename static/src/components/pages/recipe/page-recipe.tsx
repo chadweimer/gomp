@@ -157,7 +157,7 @@ export class PageRecipe {
                   <ion-icon slot="start" icon="link" />
                   Add Link
                 </ion-button>
-                <ion-button class="ion-hide-lg-up" onClick={() => this.onRecipeMenuClicked()}>
+                <ion-button onClick={() => this.onRecipeMenuClicked()}>
                   <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
                 </ion-button>
               </ion-buttons>
