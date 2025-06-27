@@ -23,7 +23,7 @@ export class RecipeViewer {
       <Host>
         <ion-card>
           {!isNull(this.mainImage) &&
-            <img class="main" alt={this.mainImage.url} src={this.mainImage.thumbnailUrl} />}
+            <img class="main" alt={this.mainImage.url} src={this.mainImage.url} />}
           <ion-card-header>
             <ion-card-title>{this.recipe?.name}</ion-card-title>
             <ion-card-subtitle>
@@ -72,9 +72,9 @@ export class RecipeViewer {
                 <div class="ion-padding-top fill">
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
-                      <ion-avatar slot="start">
-                        {!isNullOrEmpty(link.thumbnailUrl) && <img alt="" src={link.thumbnailUrl} />}
-                      </ion-avatar>
+                      <ion-thumbnail slot="start" class="preview">
+                        {!isNullOrEmpty(link.thumbnailUrl) && <ion-img alt="" src={link.thumbnailUrl} />}
+                      </ion-thumbnail>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">
                           {link.name}

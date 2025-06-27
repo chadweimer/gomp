@@ -6,11 +6,6 @@
   border-bottom: 2px solid var(--ion-color-primary);
 }
 
-.thumb {
-  width: 150px;
-}
-
-ion-avatar.large {
-  height: 64px !important;
-  width: 64px !important;
+ion-thumbnail.upload {
+  --size: 150px;
 }

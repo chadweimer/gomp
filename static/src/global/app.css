@@ -173,6 +173,11 @@ ion-grid.no-pad {
   --ion-grid-column-padding: 0px;
 }
 
+ion-thumbnail.preview {
+  --size: 35px;
+  --border-radius: 5px;
+}
+
 @media only screen and (max-width: 575.98px) and (max-height: 575.98px) {
   ion-model {
     --width: 100%;

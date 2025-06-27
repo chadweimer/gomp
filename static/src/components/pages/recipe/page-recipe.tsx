@@ -101,7 +101,9 @@ export class PageRecipe {
                       <ion-col key={image.id} size="auto">
                         <ion-card class="zoom">
                           <a href={image.url} target="_blank" rel="noopener noreferrer">
-                            <img alt={image.url} class="thumb" src={image.thumbnailUrl} />
+                            <ion-thumbnail class="upload">
+                              <ion-img alt={image.url} class="thumb" src={image.thumbnailUrl} />
+                            </ion-thumbnail>
                           </a>
                           {hasScope(state.jwtToken, AccessLevel.Editor) &&
                             <ion-card-content class="ion-no-padding">
