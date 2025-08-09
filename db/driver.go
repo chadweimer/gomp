@@ -280,5 +280,5 @@ type RecipeImageDriver interface {
 // BackupDriver provides functionality to backup and restore all data and files.
 type BackupDriver interface {
 	// Create creates a backup of the current application state,
-	Create() (models.BackupData, error)
+	Create() (*models.BackupData, error)
 }
