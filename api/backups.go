@@ -2,9 +2,35 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"path/filepath"
+	"time"
 )
 
-func (apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
+func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
+	exportedRecipes, err := h.db.Backups().ExportRecipes()
+	if err != nil {
+		return nil, err
+	}
+
+	// Generate a directory name based on the current timestamp in UTC
+	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
+	dirPath := filepath.Join("backups", timestamp)
+
+	// Marshal the exported recipes to JSON
+	buf, err := json.MarshalIndent(exportedRecipes, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	// Write the backup to a file
+	exportedRecipesFile := filepath.Join(dirPath, "recipes.json")
+	if err := h.upl.Driver.Save(exportedRecipesFile, buf); err != nil {
+		return nil, err
+	}
+
+	// TODO: Implement the logic to backup images
+
 	return CreateBackup201Response{}, nil
 }
 

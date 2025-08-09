@@ -11,57 +11,58 @@ type sqlBackupDriver struct {
 	db *sqlx.DB
 }
 
-func (b *sqlBackupDriver) Create() (*models.BackupData, error) {
-	return getTx(b.db, func(db sqlx.Queryer) (*models.BackupData, error) {
-		// Query application configuration
-		appConfig := models.AppConfiguration{}
-		if err := sqlx.Get(db, &appConfig, "SELECT * FROM app_configuration"); err != nil {
-			return nil, fmt.Errorf("querying app configuration: %w", err)
+func (b *sqlBackupDriver) ExportRecipes() (*models.RecipesBackup, error) {
+	exportedRecipes := &models.RecipesBackup{}
+	err := tx(b.db, func(db sqlx.Ext) error {
+		recipes, err := getRows(db, "recipe")
+		if err != nil {
+			return fmt.Errorf("querying recipes: %w", err)
 		}
-		// Query all recipes
-		recipes := make([]models.Recipe, 0)
-		if err := sqlx.Select(db, &recipes, "SELECT * FROM recipe"); err != nil {
-			return nil, fmt.Errorf("querying recipes: %w", err)
+		exportedRecipes.Recipes = recipes
+
+		notes, err := getRows(db, "recipe_note")
+		if err != nil {
+			return fmt.Errorf("querying recipe notes: %w", err)
 		}
-		// Query all recipe links
-		recipeLinks := make([]models.RecipeLink, 0)
-		if err := sqlx.Select(db, &recipeLinks, "SELECT * FROM recipe_link"); err != nil {
-			return nil, fmt.Errorf("querying recipe links: %w", err)
+		exportedRecipes.Notes = notes
+
+		links, err := getRows(db, "recipe_link")
+		if err != nil {
+			return fmt.Errorf("querying recipe links: %w", err)
 		}
-		// Query all recipe notes
-		recipeNotes := make([]models.Note, 0)
-		if err := sqlx.Select(db, &recipeNotes, "SELECT * FROM recipe_note"); err != nil {
-			return nil, fmt.Errorf("querying recipe notes: %w", err)
+		exportedRecipes.Links = links
+
+		images, err := getRows(db, "recipe_image")
+		if err != nil {
+			return fmt.Errorf("querying recipe images: %w", err)
 		}
-		// Query all recipe images
-		recipeImages := make([]models.RecipeImage, 0)
-		if err := sqlx.Select(db, &recipeImages, "SELECT * FROM recipe_image"); err != nil {
-			return nil, fmt.Errorf("querying recipe images: %w", err)
-		}
-		// Query all users
-		users := make([]models.User, 0)
-		if err := sqlx.Select(db, &users, "SELECT * FROM app_user"); err != nil {
-			return nil, fmt.Errorf("querying users: %w", err)
-		}
-		// Query all user settings
-		userSettings := make([]models.UserSettings, 0)
-		if err := sqlx.Select(db, &userSettings, "SELECT * FROM user_settings"); err != nil {
-			return nil, fmt.Errorf("querying user settings: %w", err)
-		}
-		// Query all search filters
-		userSearchFilters := make([]models.SavedSearchFilter, 0)
-		if err := sqlx.Select(db, &userSearchFilters, "SELECT * FROM search_filter"); err != nil {
-			return nil, fmt.Errorf("querying search filters: %w", err)
-		}
-		return &models.BackupData{
-			Recipes:          recipes,
-			RecipeLinks:      recipeLinks,
-			RecipeNotes:      recipeNotes,
-			RecipeImages:     recipeImages,
-			Users:            users,
-			UserSettings:     userSettings,
-			SearchFilters:    userSearchFilters,
-			AppConfiguration: appConfig,
-		}, nil
+		exportedRecipes.Images = images
+
+		return nil
 	})
+	if err != nil {
+		return nil, fmt.Errorf("exporting recipes: %w", err)
+	}
+	return exportedRecipes, nil
+}
+
+func getRows(db sqlx.Queryer, tableName string) ([]models.RowData, error) {
+	rows, err := db.Queryx(fmt.Sprintf("SELECT * FROM %s", tableName))
+	if err != nil {
+		return nil, fmt.Errorf("querying %s: %w", tableName, err)
+	}
+	defer rows.Close()
+
+	data := make([]models.RowData, 0)
+	for rows.Next() {
+		row := models.RowData{}
+		if err := rows.MapScan(row); err != nil {
+			return nil, fmt.Errorf("scanning row: %w", err)
+		}
+		data = append(data, row)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterating over rows: %w", err)
+	}
+	return data, nil
 }
