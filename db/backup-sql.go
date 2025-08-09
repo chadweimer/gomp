@@ -58,6 +58,59 @@ func (b *sqlBackupDriver) ExportRecipes() (*models.RecipesBackup, error) {
 	return exportedRecipes, nil
 }
 
+func (b *sqlBackupDriver) ExportUsers() (*models.UsersBackup, error) {
+	exportedUsers := &models.UsersBackup{}
+	err := tx(b.db, func(db sqlx.Ext) error {
+		users, err := getRows(db, "app_user")
+		if err != nil {
+			return fmt.Errorf("querying users: %w", err)
+		}
+		exportedUsers.Users = users
+
+		favoriteTags, err := getRows(db, "app_user_favorite_tag")
+		if err != nil {
+			return fmt.Errorf("querying user favorite tags: %w", err)
+		}
+		exportedUsers.FavoriteTags = favoriteTags
+
+		settings, err := getRows(db, "app_user_settings")
+		if err != nil {
+			return fmt.Errorf("querying user settings: %w", err)
+		}
+		exportedUsers.Settings = settings
+
+		searchFilters, err := getRows(db, "search_filter")
+		if err != nil {
+			return fmt.Errorf("querying user search filters: %w", err)
+		}
+		exportedUsers.SearchFilters = searchFilters
+
+		searchFilterFields, err := getRows(db, "search_filter_field")
+		if err != nil {
+			return fmt.Errorf("querying user search filter fields: %w", err)
+		}
+		exportedUsers.SearchFilterFields = searchFilterFields
+
+		searchFilterStates, err := getRows(db, "search_filter_state")
+		if err != nil {
+			return fmt.Errorf("querying user search filter states: %w", err)
+		}
+		exportedUsers.SearchFilterStates = searchFilterStates
+
+		searchFilterTags, err := getRows(db, "search_filter_tag")
+		if err != nil {
+			return fmt.Errorf("querying user search filter tags: %w", err)
+		}
+		exportedUsers.SearchFilterTags = searchFilterTags
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("exporting users: %w", err)
+	}
+	return exportedUsers, nil
+}
+
 func getRows(db sqlx.Queryer, tableName string) ([]models.RowData, error) {
 	rows, err := db.Queryx(fmt.Sprintf("SELECT * FROM %s", tableName))
 	if err != nil {

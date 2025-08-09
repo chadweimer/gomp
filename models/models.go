@@ -15,6 +15,17 @@ type RecipesBackup struct {
 	Ratings []RowData `json:"ratings"`
 }
 
+// UsersBackup represents the data structure used for backing up user-related data
+type UsersBackup struct {
+	Users              []RowData `json:"users"`
+	FavoriteTags       []RowData `json:"favoriteTags"`
+	Settings           []RowData `json:"settings"`
+	SearchFilters      []RowData `json:"searcheFilters"`
+	SearchFilterFields []RowData `json:"searchFilterFields"`
+	SearchFilterStates []RowData `json:"searchFilterStates"`
+	SearchFilterTags   []RowData `json:"searchFilterTags"`
+}
+
 // RecipeLink represents the links between recipes, allowing for connections such as "related recipes" or "similar recipes"
 type RecipeLink struct {
 	RecipeID     int64 `json:"recipe_id"`

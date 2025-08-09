@@ -8,14 +8,15 @@ import (
 )
 
 func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
+	// Generate a directory name based on the current timestamp in UTC
+	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
+	dirPath := filepath.Join("backups", timestamp)
+
+	// Export recipes
 	exportedRecipes, err := h.db.Backups().ExportRecipes()
 	if err != nil {
 		return nil, err
 	}
-
-	// Generate a directory name based on the current timestamp in UTC
-	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
-	dirPath := filepath.Join("backups", timestamp)
 
 	// Marshal the exported recipes to JSON
 	buf, err := json.MarshalIndent(exportedRecipes, "", "  ")
@@ -23,9 +24,27 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 		return nil, err
 	}
 
-	// Write the backup to a file
+	// Write the recipe backup to a file
 	exportedRecipesFile := filepath.Join(dirPath, "recipes.json")
 	if err := h.upl.Driver.Save(exportedRecipesFile, buf); err != nil {
+		return nil, err
+	}
+
+	// Export users
+	exportedUsers, err := h.db.Backups().ExportUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	// Marshal the exported recipes to JSON
+	buf, err = json.MarshalIndent(exportedUsers, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	// Write the users backup to a file
+	exportedUsersFile := filepath.Join(dirPath, "users.json")
+	if err := h.upl.Driver.Save(exportedUsersFile, buf); err != nil {
 		return nil, err
 	}
 
