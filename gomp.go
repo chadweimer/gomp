@@ -14,9 +14,9 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
-	"github.com/chadweimer/gomp/upload"
 )
 
 func main() {
@@ -50,13 +50,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	uplDriver, err := upload.CreateDriver(cfg.Upload.Driver)
+	fsDriver, err := fileaccess.CreateDriver(cfg.FileAccess.Files)
 	if err != nil {
-		slog.Error("Establishing upload driver failed. Exiting...", "error", err)
+		slog.Error("Establishing file access driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
 
-	uploader, err := upload.CreateImageUploader(uplDriver, cfg.Upload.Image)
+	uploader, err := fileaccess.CreateImageUploader(fsDriver, cfg.FileAccess.Image)
 	if err != nil {
 		slog.Error("Establishing uploader failed. Exiting...", "error", err)
 		os.Exit(1)
@@ -71,8 +71,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver)))
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
-	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(fileaccess.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
+	mux.Handle("/uploads/", http.FileServer(http.FS(fsDriver)))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))

@@ -1,4 +1,4 @@
-package upload
+package fileaccess
 
 // ImageQualityLevel represents supported quality levels for uploaded recipe images
 type ImageQualityLevel string

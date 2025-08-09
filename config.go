@@ -5,15 +5,15 @@ import (
 	"log/slog"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/upload"
+	"github.com/chadweimer/gomp/fileaccess"
 )
 
 const defaultSecureKey = "ChangeMe"
 
 // Config represents the application configuration settings
 type Config struct {
-	// Upload contains the upload configuration settings
-	Upload upload.Config
+	// FileAccess contains the file access configuration settings
+	FileAccess fileaccess.Config
 
 	// Database contains the database configuration settings
 	Database db.Config

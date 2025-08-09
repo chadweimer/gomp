@@ -1,6 +1,6 @@
-package upload
+package fileaccess
 
-//go:generate go run github.com/golang/mock/mockgen -destination=../mocks/upload/mocks.gen.go -package=upload . Driver
+//go:generate go run github.com/golang/mock/mockgen -destination=../mocks/fileaccess/mocks.gen.go -package=fileaccess . Driver
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(cfg DriverConfig) (Driver, error) {
+func CreateDriver(cfg FilesConfig) (Driver, error) {
 	switch cfg.Driver {
 	case FileSystemDriver:
 		return newFileSystemDriver(cfg.Path)

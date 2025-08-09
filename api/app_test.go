@@ -5,11 +5,11 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/mocks/db"
-	uploadmock "github.com/chadweimer/gomp/mocks/upload"
+	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
 	"github.com/golang/mock/gomock"
 )
 
@@ -107,14 +107,14 @@ func getMockAppConfigurationAPI(ctrl *gomock.Controller) (apiHandler, *db.MockAp
 	dbDriver := db.NewMockDriver(ctrl)
 	appDriver := db.NewMockAppConfigurationDriver(ctrl)
 	dbDriver.EXPECT().AppConfiguration().AnyTimes().Return(appDriver)
-	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := upload.ImageConfig{
-		ImageQuality:     upload.ImageQualityOriginal,
+	uplDriver := fileaccessmock.NewMockDriver(ctrl)
+	imgCfg := fileaccess.ImageConfig{
+		ImageQuality:     fileaccess.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: upload.ImageQualityMedium,
+		ThumbnailQuality: fileaccess.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
-	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
+	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{},

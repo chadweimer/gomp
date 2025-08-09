@@ -9,9 +9,9 @@ import (
 	"mime/multipart"
 	"testing"
 
+	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	uploadmock "github.com/chadweimer/gomp/mocks/upload"
-	"github.com/chadweimer/gomp/upload"
+	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/disintegration/imaging"
 	"github.com/golang/mock/gomock"
 )
@@ -59,16 +59,16 @@ func Test_Upload(t *testing.T) {
 	}
 }
 
-func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *uploadmock.MockDriver) {
+func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *fileaccessmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
-	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := upload.ImageConfig{
-		ImageQuality:     upload.ImageQualityOriginal,
+	uplDriver := fileaccessmock.NewMockDriver(ctrl)
+	imgCfg := fileaccess.ImageConfig{
+		ImageQuality:     fileaccess.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: upload.ImageQualityMedium,
+		ThumbnailQuality: fileaccess.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
-	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
+	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},

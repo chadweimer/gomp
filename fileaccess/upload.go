@@ -1,4 +1,4 @@
-package upload
+package fileaccess
 
 import (
 	"bytes"
@@ -12,6 +12,8 @@ import (
 
 	"github.com/disintegration/imaging"
 )
+
+const uploadsPath = "uploads"
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
@@ -165,11 +167,11 @@ func getDirPathForRecipe(recipeID int64) string {
 }
 
 func getDirPathForImage(recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeID), "images")
+	return filepath.Join(uploadsPath, getDirPathForRecipe(recipeID), "images")
 }
 
 func getDirPathForThumbnail(recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
+	return filepath.Join(uploadsPath, getDirPathForRecipe(recipeID), "thumbs")
 }
 
 func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {
