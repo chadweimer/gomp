@@ -84,7 +84,7 @@ paths:
         - Bearer: []
   /backups:
     get:
-      tags: [backups]
+      tags: [app]
       description: get list of backups
       operationId: getAllBackups
       responses:
@@ -93,7 +93,7 @@ paths:
       security:
         - Bearer: [admin]
     post:
-      tags: [backups]
+      tags: [app]
       description: create a backup of the application
       operationId: createBackup
       responses:
@@ -113,7 +113,7 @@ paths:
         schema:
           type: string
     get:
-      tags: [backups]
+      tags: [app]
       description: get a single backup
       operationId: getBackup
       responses:
