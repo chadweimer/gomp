@@ -11,6 +11,8 @@ type RecipesBackup struct {
 	Notes   []RowData `json:"notes"`
 	Links   []RowData `json:"links"`
 	Images  []RowData `json:"images"`
+	Tags    []RowData `json:"tags"`
+	Ratings []RowData `json:"ratings"`
 }
 
 // RecipeLink represents the links between recipes, allowing for connections such as "related recipes" or "similar recipes"

@@ -29,8 +29,10 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 		return nil, err
 	}
 
-	// TODO: Implement the logic to backup images
+	// Copy all uploads to the backup directory
+	h.fs.CopyAll("uploads", filepath.Join(dirPath, "uploads"))
 
+	// TODO: Give back the location of the backup
 	return CreateBackup201Response{}, nil
 }
 

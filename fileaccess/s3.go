@@ -3,6 +3,7 @@ package fileaccess
 import (
 	"bytes"
 	"errors"
+	"io"
 	"io/fs"
 	"net/http"
 	"path/filepath"
@@ -32,6 +33,51 @@ func newS3Driver(bucket string) (Driver, error) {
 	svc := s3.New(sess)
 	f := s3fs.New(svc, bucket)
 	return &s3Driver{OnlyFiles(f), svc, bucket}, nil
+}
+
+func (u *s3Driver) CopyAll(srcPath, destPath string) error {
+	srcKeyPrefix := filepath.ToSlash(srcPath)
+
+	// List all the objects in the source path
+	listOutput, err := u.s3.ListObjectsV2(&s3.ListObjectsV2Input{
+		Bucket: &u.bucket,
+		Prefix: &srcKeyPrefix,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Copy all objects to the destination path
+	for _, object := range listOutput.Contents {
+		err = u.copyFile(object, srcPath, destPath)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (u *s3Driver) copyFile(object *s3.Object, srcPath, destPath string) error {
+	srcFilePath := filepath.FromSlash(*object.Key)
+	relFilePath, err := filepath.Rel(srcPath, srcFilePath)
+	if err != nil {
+		return err
+	}
+	destFilePath := filepath.Join(destPath, relFilePath)
+	srcFile, err := u.Open(srcFilePath)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	// Read the content of the source file
+	data, err := io.ReadAll(srcFile)
+	if err != nil {
+		return err
+	}
+
+	return u.Save(destFilePath, data)
 }
 
 func (u *s3Driver) Save(filePath string, data []byte) error {

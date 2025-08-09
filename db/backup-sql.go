@@ -38,6 +38,18 @@ func (b *sqlBackupDriver) ExportRecipes() (*models.RecipesBackup, error) {
 		}
 		exportedRecipes.Images = images
 
+		tags, err := getRows(db, "recipe_tag")
+		if err != nil {
+			return fmt.Errorf("querying recipe tags: %w", err)
+		}
+		exportedRecipes.Tags = tags
+
+		ratings, err := getRows(db, "recipe_rating")
+		if err != nil {
+			return fmt.Errorf("querying recipe ratings: %w", err)
+		}
+		exportedRecipes.Ratings = ratings
+
 		return nil
 	})
 	if err != nil {
