@@ -36,7 +36,7 @@ export class PageAdminMaintenance {
                     <ion-button color="danger" fill="solid" onClick={() => this.createBackupClicked()}>Create Backup</ion-button>
                     <p>
                       <ion-note>
-                        Creating a backup will save all current data to a backup file. This operation cannot be undone.
+                        Creating a backup will save all current data to a backup file. This operation may take a while depending on the amount of data.
                       </ion-note>
                     </p>
                   </ion-card-content>
@@ -115,7 +115,7 @@ export class PageAdminMaintenance {
     await enableBackForOverlay(async () => {
       const confirmation = await alertController.create({
         header: 'Create Backup?',
-        message: 'Are you sure you want to create a backup? This operation cannot be undone.',
+        message: 'Are you sure you want to create a backup? This operation may take a while depending on the amount of data.',
         buttons: [
           'No',
           {
@@ -133,5 +133,4 @@ export class PageAdminMaintenance {
       await confirmation.onDidDismiss();
     });
   }
-
 }

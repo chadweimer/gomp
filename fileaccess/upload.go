@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"io"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -89,13 +89,7 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 // Load reads the image for the given recipe, returning the bytes of the file
 func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
-
-	file, err := u.driver.Open(origPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return io.ReadAll(file)
+	return fs.ReadFile(u.driver, origPath)
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
