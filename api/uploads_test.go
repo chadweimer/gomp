@@ -31,11 +31,11 @@ func Test_Upload(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, uplDriver := getMockUploadsAPI(ctrl)
+			api, fsDriver := getMockUploadsAPI(ctrl)
 			if test.expectedError != nil {
-				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				fsDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				fsDriver.EXPECT().Save(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 			}
 			buf := bytes.NewBuffer([]byte{})
 			writer := multipart.NewWriter(buf)
@@ -61,19 +61,20 @@ func Test_Upload(t *testing.T) {
 
 func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *fileaccessmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
-	uplDriver := fileaccessmock.NewMockDriver(ctrl)
+	fsDriver := fileaccessmock.NewMockDriver(ctrl)
 	imgCfg := fileaccess.ImageConfig{
 		ImageQuality:     fileaccess.ImageQualityOriginal,
 		ImageSize:        2000,
 		ThumbnailQuality: fileaccess.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
-	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
+	upl, _ := fileaccess.CreateImageUploader(fsDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},
+		fs:         fsDriver,
 		upl:        upl,
 		db:         dbDriver,
 	}
-	return api, uplDriver
+	return api, fsDriver
 }
