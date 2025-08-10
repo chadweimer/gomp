@@ -19,12 +19,6 @@ const (
 type Driver interface {
 	fs.FS
 
-	// CopyAll copies all files from the source path to the destination path.
-	// If the destination path does not exist, it will be created.
-	// If the source path does not exist, an error will be returned.
-	// If the source path is a file, it will be copied directly to the destination path.
-	CopyAll(srcPath, destPath string) error
-
 	// Save creates or overrites a file with the provided binary data.
 	Save(filePath string, data []byte) error
 

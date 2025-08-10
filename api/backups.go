@@ -1,16 +1,23 @@
 package api
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
+	"io/fs"
 	"path/filepath"
 	"time"
 )
 
 func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
-	// Generate a directory name based on the current timestamp in UTC
+	// Generate a name based on the current timestamp in UTC
 	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
-	dirPath := filepath.Join("backups", timestamp)
+	backupFilePath := filepath.Join("backups", timestamp+".zip")
+	backupFileBuffer := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(backupFileBuffer)
+	defer zipWriter.Close()
 
 	// Export recipes
 	exportedRecipes, err := h.db.Backups().ExportRecipes()
@@ -25,8 +32,12 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 	}
 
 	// Write the recipe backup to a file
-	exportedRecipesFile := filepath.Join(dirPath, "recipes.json")
-	if err := h.upl.Driver.Save(exportedRecipesFile, buf); err != nil {
+	recipesFile, err := zipWriter.Create("recipes.json")
+	if err != nil {
+		return nil, err
+	}
+	_, err = recipesFile.Write(buf)
+	if err != nil {
 		return nil, err
 	}
 
@@ -41,15 +52,28 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 	if err != nil {
 		return nil, err
 	}
-
 	// Write the users backup to a file
-	exportedUsersFile := filepath.Join(dirPath, "users.json")
-	if err := h.upl.Driver.Save(exportedUsersFile, buf); err != nil {
+	usersFile, err := zipWriter.Create("users.json")
+	if err != nil {
+		return nil, err
+	}
+	_, err = usersFile.Write(buf)
+	if err != nil {
 		return nil, err
 	}
 
 	// Copy all uploads to the backup directory
-	h.fs.CopyAll("uploads", filepath.Join(dirPath, "uploads"))
+	if err = h.copyTo("uploads", zipWriter); err != nil {
+		return nil, err
+	}
+
+	// Save the backup file
+	if err = zipWriter.Close(); err != nil {
+		return nil, err
+	}
+	if err = h.fs.Save(backupFilePath, backupFileBuffer.Bytes()); err != nil {
+		return nil, err
+	}
 
 	// TODO: Give back the location of the backup
 	return CreateBackup201Response{}, nil
@@ -61,4 +85,40 @@ func (apiHandler) GetAllBackups(_ context.Context, _ GetAllBackupsRequestObject)
 
 func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBackupResponseObject, error) {
 	return GetBackup200ApplicationGzipResponse{}, nil
+}
+
+func (h apiHandler) copyTo(srcPath string, writer *zip.Writer) error {
+	return fs.WalkDir(h.fs, srcPath, func(currentSrcPath string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip the root directory itself
+		if currentSrcPath == srcPath {
+			return nil
+		}
+
+		// Recurse into directories
+		if d.IsDir() {
+			return h.copyTo(currentSrcPath, writer)
+		}
+
+		// Read the content of the file
+		srcFile, err := h.fs.Open(currentSrcPath)
+		if err != nil {
+			return err
+		}
+		data, err := io.ReadAll(srcFile)
+		if err != nil {
+			return err
+		}
+
+		// Write the content to the destination writer
+		destFile, err := writer.Create(currentSrcPath)
+		if err != nil {
+			return err
+		}
+		_, err = destFile.Write(data)
+		return err
+	})
 }

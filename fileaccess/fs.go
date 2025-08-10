@@ -20,47 +20,7 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 		return nil, errors.New("root path is empty")
 	}
 
-	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
-}
-
-func (u *fileSystemDriver) CopyAll(srcPath, destPath string) error {
-	srcPath = filepath.Join(u.rootPath, filepath.Clean(srcPath))
-	return u.copyRecursively(srcPath, destPath)
-}
-
-func (u *fileSystemDriver) copyRecursively(srcPath, destPath string) error {
-	return filepath.WalkDir(srcPath, func(currentSrcPath string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip the root directory itself
-		if currentSrcPath == srcPath {
-			return nil
-		}
-
-		// Get the relative path from srcPath to the current path
-		relPath, err := filepath.Rel(srcPath, currentSrcPath)
-		if err != nil {
-			return err
-		}
-		// Construct the destination path
-		currentDestPath := filepath.Join(destPath, relPath)
-
-		// Recurse into directories
-		if d.IsDir() {
-			// Recursively copy
-			return u.copyRecursively(currentSrcPath, currentDestPath)
-		}
-
-		// Read the content of the file
-		data, err := os.ReadFile(currentSrcPath) // #nosec G304 -- Path already cleaned
-		if err != nil {
-			return err
-		}
-
-		return u.Save(currentDestPath, data)
-	})
+	return &fileSystemDriver{os.DirFS(rootPath), rootPath}, nil
 }
 
 func (u *fileSystemDriver) Save(filePath string, data []byte) error {
