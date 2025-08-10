@@ -13,7 +13,8 @@ import (
 	"github.com/disintegration/imaging"
 )
 
-const uploadsPath = "uploads"
+// RootUploadPath is the root directory for uploads
+const RootUploadPath = "uploads"
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
@@ -167,11 +168,11 @@ func getDirPathForRecipe(recipeID int64) string {
 }
 
 func getDirPathForImage(recipeID int64) string {
-	return filepath.Join(uploadsPath, getDirPathForRecipe(recipeID), "images")
+	return filepath.Join(RootUploadPath, getDirPathForRecipe(recipeID), "images")
 }
 
 func getDirPathForThumbnail(recipeID int64) string {
-	return filepath.Join(uploadsPath, getDirPathForRecipe(recipeID), "thumbs")
+	return filepath.Join(RootUploadPath, getDirPathForRecipe(recipeID), "thumbs")
 }
 
 func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {

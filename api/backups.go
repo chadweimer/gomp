@@ -9,6 +9,8 @@ import (
 	"io/fs"
 	"path/filepath"
 	"time"
+
+	"github.com/chadweimer/gomp/fileaccess"
 )
 
 func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
@@ -63,7 +65,7 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 	}
 
 	// Copy all uploads to the backup directory
-	if err = h.copyTo("uploads", zipWriter); err != nil {
+	if err = h.copyTo(fileaccess.RootUploadPath, zipWriter); err != nil {
 		return nil, err
 	}
 
