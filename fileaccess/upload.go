@@ -18,7 +18,7 @@ const RootUploadPath = "uploads"
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
-	Driver Driver
+	driver Driver
 	imgCfg ImageConfig
 }
 
@@ -71,17 +71,17 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 // Delete removes the specified image files from the upload store.
 func (u ImageUploader) Delete(recipeID int64, imageName string) error {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
-	if err := u.Driver.Delete(origPath); err != nil {
+	if err := u.driver.Delete(origPath); err != nil {
 		return err
 	}
 	thumbPath := filepath.Join(getDirPathForThumbnail(recipeID), imageName)
-	return u.Driver.Delete(thumbPath)
+	return u.driver.Delete(thumbPath)
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.
 func (u ImageUploader) DeleteAll(recipeID int64) error {
 	dirPath := getDirPathForRecipe(recipeID)
-	err := u.Driver.DeleteAll(dirPath)
+	err := u.driver.DeleteAll(dirPath)
 
 	return err
 }
@@ -90,7 +90,7 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
 
-	file, err := u.Driver.Open(origPath)
+	file, err := u.driver.Open(origPath)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +131,8 @@ func (u ImageUploader) generateFitted(original image.Image, contentType string, 
 
 func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) (string, error) {
 	fullPath := filepath.Join(baseDir, imageName)
-	url := filepath.ToSlash(filepath.Join("/uploads/", fullPath))
-	err := u.Driver.Save(fullPath, data)
+	url := filepath.ToSlash(filepath.Join("/", RootUploadPath, fullPath))
+	err := u.driver.Save(fullPath, data)
 	if err != nil {
 		return "", fmt.Errorf("failed to save image to '%s' using configured upload driver: %w", fullPath, err)
 	}

@@ -55,6 +55,7 @@ func main() {
 		slog.Error("Establishing file access driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
+	fileServer := http.FileServer(http.FS(fileaccess.OnlyFiles(fsDriver)))
 
 	uploader, err := fileaccess.CreateImageUploader(fsDriver, cfg.FileAccess.Image)
 	if err != nil {
@@ -72,7 +73,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver, fsDriver)))
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(fileaccess.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
-	mux.Handle("/uploads/", http.FileServer(http.FS(fileaccess.OnlyFiles(fsDriver))))
+	mux.Handle("/uploads/", fileServer)
+	mux.Handle("/backups/", fileServer)
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
