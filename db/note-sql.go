@@ -10,7 +10,7 @@ type sqlNoteDriver struct {
 }
 
 func (d *sqlNoteDriver) Create(note *models.Note) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(note, db)
 	})
 }
@@ -23,7 +23,7 @@ func (*sqlNoteDriver) createImpl(note *models.Note, db sqlx.Queryer) error {
 }
 
 func (d *sqlNoteDriver) Update(note *models.Note) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(note, db)
 	})
 }
@@ -35,7 +35,7 @@ func (*sqlNoteDriver) updateImpl(note *models.Note, db sqlx.Execer) error {
 }
 
 func (d *sqlNoteDriver) Delete(recipeID, noteID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(recipeID, noteID, db)
 	})
 }
@@ -46,7 +46,7 @@ func (*sqlNoteDriver) deleteImpl(recipeID, noteID int64, db sqlx.Execer) error {
 }
 
 func (d *sqlNoteDriver) DeleteAll(recipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteAllImpl(recipeID, db)
 	})
 }

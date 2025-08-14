@@ -3,28 +3,16 @@ package models
 //go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config cfg.yaml ../models.yaml
 
 // RowData represents a generic row of data, typically used for database rows
-type RowData map[string]interface{}
+type RowData map[string]any
 
-// RecipesBackup represents the data structure used for backing up the recipes
-type RecipesBackup struct {
-	Recipes []RowData `json:"recipes"`
-	Notes   []RowData `json:"notes"`
-	Links   []RowData `json:"links"`
-	Images  []RowData `json:"images"`
-	Tags    []RowData `json:"tags"`
-	Ratings []RowData `json:"ratings"`
+// TableData represents a table's data, including its name and the rows it contains
+type TableData struct {
+	TableName string    `json:"tableName"`
+	Data      []RowData `json:"data"`
 }
 
-// UsersBackup represents the data structure used for backing up user-related data
-type UsersBackup struct {
-	Users              []RowData `json:"users"`
-	FavoriteTags       []RowData `json:"favoriteTags"`
-	Settings           []RowData `json:"settings"`
-	SearchFilters      []RowData `json:"searcheFilters"`
-	SearchFilterFields []RowData `json:"searchFilterFields"`
-	SearchFilterStates []RowData `json:"searchFilterStates"`
-	SearchFilterTags   []RowData `json:"searchFilterTags"`
-}
+// Backup represents the data structure used for backing up the entire database
+type Backup []TableData
 
 // RecipeLink represents the links between recipes, allowing for connections such as "related recipes" or "similar recipes"
 type RecipeLink struct {

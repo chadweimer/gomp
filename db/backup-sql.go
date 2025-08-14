@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -11,104 +13,60 @@ type sqlBackupDriver struct {
 	db *sqlx.DB
 }
 
-func (b *sqlBackupDriver) ExportRecipes() (*models.RecipesBackup, error) {
-	exportedRecipes := &models.RecipesBackup{}
-	err := tx(b.db, func(db sqlx.Ext) error {
-		recipes, err := getRows(db, "recipe")
-		if err != nil {
-			return fmt.Errorf("querying recipes: %w", err)
+func (b *sqlBackupDriver) Export() (*models.Backup, error) {
+	backup := models.Backup(make([]models.TableData, 0))
+	err := tx(b.db, func(db *sqlx.Tx) error {
+		// Get all table names
+		tables := make([]string, 0)
+		if err := sqlx.Select(db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
+			return err
 		}
-		exportedRecipes.Recipes = recipes
 
-		notes, err := getRows(db, "recipe_note")
-		if err != nil {
-			return fmt.Errorf("querying recipe notes: %w", err)
-		}
-		exportedRecipes.Notes = notes
+		// Process each table
+		for _, tableName := range tables {
+			rowData, err := getRows(db, tableName)
+			if err != nil {
+				return err
+			}
 
-		links, err := getRows(db, "recipe_link")
-		if err != nil {
-			return fmt.Errorf("querying recipe links: %w", err)
+			backup = append(backup, models.TableData{
+				TableName: tableName,
+				Data:      rowData,
+			})
 		}
-		exportedRecipes.Links = links
-
-		images, err := getRows(db, "recipe_image")
-		if err != nil {
-			return fmt.Errorf("querying recipe images: %w", err)
-		}
-		exportedRecipes.Images = images
-
-		tags, err := getRows(db, "recipe_tag")
-		if err != nil {
-			return fmt.Errorf("querying recipe tags: %w", err)
-		}
-		exportedRecipes.Tags = tags
-
-		ratings, err := getRows(db, "recipe_rating")
-		if err != nil {
-			return fmt.Errorf("querying recipe ratings: %w", err)
-		}
-		exportedRecipes.Ratings = ratings
 
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("exporting recipes: %w", err)
+		return nil, fmt.Errorf("exporting database: %w", err)
 	}
-	return exportedRecipes, nil
+
+	return &backup, nil
 }
 
-func (b *sqlBackupDriver) ExportUsers() (*models.UsersBackup, error) {
-	exportedUsers := &models.UsersBackup{}
-	err := tx(b.db, func(db sqlx.Ext) error {
-		users, err := getRows(db, "app_user")
-		if err != nil {
-			return fmt.Errorf("querying users: %w", err)
-		}
-		exportedUsers.Users = users
+func (b *sqlBackupDriver) Import(backup *models.Backup) error {
+	// Import data from all tables in the backup
+	err := tx(b.db, func(db *sqlx.Tx) error {
+		for _, tableData := range *backup {
+			sanitizedTableName, err := sanitizeIdentifier(tableData.TableName)
+			if err != nil {
+				return fmt.Errorf("sanitizing table name %s: %w", tableData.TableName, err)
+			}
 
-		favoriteTags, err := getRows(db, "app_user_favorite_tag")
-		if err != nil {
-			return fmt.Errorf("querying user favorite tags: %w", err)
-		}
-		exportedUsers.FavoriteTags = favoriteTags
+			if _, err := db.Exec(fmt.Sprintf("DELETE FROM %s", sanitizedTableName)); err != nil {
+				return fmt.Errorf("deleting from table %s: %w", sanitizedTableName, err)
+			}
 
-		settings, err := getRows(db, "app_user_settings")
-		if err != nil {
-			return fmt.Errorf("querying user settings: %w", err)
+			if err := insertRows(db, sanitizedTableName, tableData.Data); err != nil {
+				return fmt.Errorf("importing table %s: %w", sanitizedTableName, err)
+			}
 		}
-		exportedUsers.Settings = settings
-
-		searchFilters, err := getRows(db, "search_filter")
-		if err != nil {
-			return fmt.Errorf("querying user search filters: %w", err)
-		}
-		exportedUsers.SearchFilters = searchFilters
-
-		searchFilterFields, err := getRows(db, "search_filter_field")
-		if err != nil {
-			return fmt.Errorf("querying user search filter fields: %w", err)
-		}
-		exportedUsers.SearchFilterFields = searchFilterFields
-
-		searchFilterStates, err := getRows(db, "search_filter_state")
-		if err != nil {
-			return fmt.Errorf("querying user search filter states: %w", err)
-		}
-		exportedUsers.SearchFilterStates = searchFilterStates
-
-		searchFilterTags, err := getRows(db, "search_filter_tag")
-		if err != nil {
-			return fmt.Errorf("querying user search filter tags: %w", err)
-		}
-		exportedUsers.SearchFilterTags = searchFilterTags
-
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("exporting users: %w", err)
+		return fmt.Errorf("importing database: %w", err)
 	}
-	return exportedUsers, nil
+	return nil
 }
 
 func getRows(db sqlx.Queryer, tableName string) ([]models.RowData, error) {
@@ -130,4 +88,53 @@ func getRows(db sqlx.Queryer, tableName string) ([]models.RowData, error) {
 		return nil, fmt.Errorf("iterating over rows: %w", err)
 	}
 	return data, nil
+}
+
+func insertRows(db *sqlx.Tx, tableName string, rowData []models.RowData) error {
+	// Check if there is anything to insert
+	if len(rowData) == 0 {
+		return nil
+	}
+
+	// Get column names from the first row
+	columns := make([]string, 0, len(rowData[0]))
+	placeholders := make([]string, 0, len(columns))
+	for key := range rowData[0] {
+		sanitizedColumnName, err := sanitizeIdentifier(key)
+		if err != nil {
+			return fmt.Errorf("sanitizing column name %s for table %s: %w", key, tableName, err)
+		}
+		columns = append(columns, sanitizedColumnName)
+		placeholders = append(placeholders, ":"+sanitizedColumnName)
+	}
+
+	insertQuery := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+		tableName,
+		strings.Join(columns, ","),
+		strings.Join(placeholders, ","))
+
+	// Prepare the statement
+	stmt, err := db.PrepareNamed(insertQuery)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, row := range rowData {
+		_, err := stmt.Exec(row)
+		if err != nil {
+			return fmt.Errorf("inserting row into %s: %w", tableName, err)
+		}
+	}
+	return nil
+}
+
+func sanitizeIdentifier(name string) (string, error) {
+	// Regular expression to match valid SQL identifiers
+	// (letters, numbers, underscores, hyphens, and dots)
+	re := regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$`)
+	if !re.MatchString(name) {
+		return "", fmt.Errorf("invalid identifier: %s", name)
+	}
+	return name, nil
 }

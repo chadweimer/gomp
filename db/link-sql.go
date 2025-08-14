@@ -10,7 +10,7 @@ type sqlLinkDriver struct {
 }
 
 func (d *sqlLinkDriver) Create(recipeID, destRecipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(recipeID, destRecipeID, db)
 	})
 }
@@ -23,7 +23,7 @@ func (*sqlLinkDriver) createImpl(recipeID, destRecipeID int64, db sqlx.Execer) e
 }
 
 func (d *sqlLinkDriver) Delete(recipeID, destRecipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(recipeID, destRecipeID, db)
 	})
 }

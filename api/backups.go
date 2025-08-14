@@ -12,35 +12,20 @@ import (
 )
 
 func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
-	// Export recipes
-	exportedRecipes, err := h.db.Backups().ExportRecipes()
-	if err != nil {
-		return nil, err
-	}
-
-	// Export users
-	exportedUsers, err := h.db.Backups().ExportUsers()
+	// Export all data from the database
+	exportedData, err := h.db.Backups().Export()
 	if err != nil {
 		return nil, err
 	}
 
 	zipData := new(bytes.Buffer)
 	err = fileaccess.CreateZip(zipData, func(writer *zip.Writer) error {
-		// Write the recipes backup to JSON
-		buf, err := json.MarshalIndent(exportedRecipes, "", "  ")
+		// // Write the backup to JSON
+		buf, err := json.MarshalIndent(exportedData, "", "  ")
 		if err != nil {
 			return err
 		}
-		if err := fileaccess.WriteFileToZip("recipes.json", bytes.NewBuffer(buf), writer); err != nil {
-			return err
-		}
-
-		// Write the users backup to JSON
-		buf, err = json.MarshalIndent(exportedUsers, "", "  ")
-		if err != nil {
-			return err
-		}
-		if err := fileaccess.WriteFileToZip("users.json", bytes.NewBuffer(buf), writer); err != nil {
+		if err := fileaccess.WriteFileToZip("data.json", bytes.NewBuffer(buf), writer); err != nil {
 			return err
 		}
 

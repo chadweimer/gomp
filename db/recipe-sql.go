@@ -27,7 +27,7 @@ var supportedSearchFields = [...]models.SearchField{
 }
 
 func (d *sqlRecipeDriver) Create(recipe *models.Recipe) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(recipe, db)
 	})
 }
@@ -71,7 +71,7 @@ func (d *sqlRecipeDriver) Read(id int64) (*models.Recipe, error) {
 }
 
 func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(recipe, db)
 	})
 }
@@ -104,7 +104,7 @@ func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) erro
 }
 
 func (d *sqlRecipeDriver) Delete(id int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(id, db)
 	})
 }
@@ -133,7 +133,7 @@ func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
 }
 
 func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		count := -1
 		err := sqlx.Get(db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
@@ -157,7 +157,7 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 }
 
 func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		_, err := db.Exec(
 			"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
 		if err != nil {
@@ -303,7 +303,7 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 }
 
 func (d *sqlRecipeDriver) CreateTag(recipeID int64, tag string) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.createTagImpl(recipeID, tag, db)
 	})
 }
@@ -316,7 +316,7 @@ func (*sqlRecipeDriver) createTagImpl(recipeID int64, tag string, db sqlx.Execer
 }
 
 func (d *sqlRecipeDriver) DeleteAllTags(recipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteAllTagsImpl(recipeID, db)
 	})
 }

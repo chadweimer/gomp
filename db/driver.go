@@ -279,9 +279,9 @@ type RecipeImageDriver interface {
 
 // BackupDriver provides functionality to backup and restore all data and files.
 type BackupDriver interface {
-	// ExportRecipes retrieves all recipes from the database
-	ExportRecipes() (*models.RecipesBackup, error)
+	// Export retrieves all data from the database
+	Export() (*models.Backup, error)
 
-	// ExportUsers retrieves all users from the database
-	ExportUsers() (*models.UsersBackup, error)
+	// Import restores all data from the backup, deleting any existing data first
+	Import(*models.Backup) error
 }

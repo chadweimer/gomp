@@ -22,7 +22,7 @@ func (d *sqlAppConfigurationDriver) Read() (*models.AppConfiguration, error) {
 }
 
 func (d *sqlAppConfigurationDriver) Update(cfg *models.AppConfiguration) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(cfg, db)
 	})
 }

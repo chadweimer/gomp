@@ -85,7 +85,7 @@ func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
 	return t, mapSQLErrors(err)
 }
 
-func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
+func tx(db *sqlx.DB, op func(*sqlx.Tx) error) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err
