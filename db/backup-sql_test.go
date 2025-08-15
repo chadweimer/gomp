@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -64,10 +65,23 @@ func Test_Backup_Export(t *testing.T) {
 				tableRows.AddRow(table.TableName)
 
 				if len(table.Data) > 0 {
-					valueRows := sqlmock.NewRows(lo.Keys(table.Data[0]))
+					columns := slices.Sorted(slices.Values(lo.Keys(table.Data[0])))
+					valueRows := sqlmock.NewRows(columns)
 					for _, row := range table.Data {
-						values := lo.Map(lo.Values(row), func(v any, _ int) driver.Value {
-							return driver.Value(v)
+						// Sort for consistent order
+						sortedRows := slices.SortedFunc(slices.Values(lo.Entries(row)), func(a, b lo.Entry[string, any]) int {
+							switch {
+							case a.Key < b.Key:
+								return -1
+							case a.Key > b.Key:
+								return 1
+							default:
+								return 0
+							}
+						})
+
+						values := lo.Map(sortedRows, func(v lo.Entry[string, any], _ int) driver.Value {
+							return driver.Value(v.Value)
 						})
 						valueRows.AddRow(values...)
 					}
