@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -18,8 +19,14 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 		return nil, err
 	}
 
-	zipData := new(bytes.Buffer)
-	err = fileaccess.CreateZip(zipData, func(writer *zip.Writer) error {
+	tempFile, err := os.CreateTemp("", "backup-*.zip")
+	if err != nil {
+		return nil, err
+	}
+	defer tempFile.Close()
+	defer os.RemoveAll(tempFile.Name())
+
+	err = fileaccess.CreateZip(tempFile, func(writer *zip.Writer) error {
 		// // Write the backup to JSON
 		buf, err := json.MarshalIndent(exportedData, "", "  ")
 		if err != nil {
@@ -37,7 +44,7 @@ func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject)
 	// Generate a name based on the current timestamp in UTC
 	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
 	backupFilePath := filepath.Join("backups", timestamp+".zip")
-	if err = h.fs.Save(backupFilePath, zipData.Bytes()); err != nil {
+	if err = h.fs.Save(backupFilePath, tempFile); err != nil {
 		return nil, err
 	}
 

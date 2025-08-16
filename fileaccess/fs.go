@@ -2,6 +2,7 @@ package fileaccess
 
 import (
 	"errors"
+	"io"
 	"io/fs"
 	"log/slog"
 	"os"
@@ -23,12 +24,18 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 	return &fileSystemDriver{os.DirFS(rootPath), rootPath}, nil
 }
 
-func (u *fileSystemDriver) Save(filePath string, data []byte) error {
+func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
+	// Make sure we're at the beginning of the content
+	_, err := reader.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+
 	// First prepend the base UploadPath
 	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
 
 	dir := filepath.Dir(filePath)
-	err := os.MkdirAll(dir, fs.FileMode(0777))
+	err = os.MkdirAll(dir, fs.FileMode(0777))
 	if err != nil {
 		return err
 	}
@@ -49,7 +56,7 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 		}
 	}()
 
-	_, err = file.Write(data)
+	_, err = io.Copy(file, reader)
 	return err
 }
 

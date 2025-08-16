@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"mime/multipart"
@@ -17,7 +18,7 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 	}
 
 	fileURL := filepath.ToSlash(filepath.Join("/", fileaccess.RootUploadPath, imageName))
-	if err := h.fs.Save(imageName, uploadedFileData); err != nil {
+	if err := h.fs.Save(imageName, bytes.NewReader(uploadedFileData)); err != nil {
 		return nil, err
 	}
 

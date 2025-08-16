@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"io"
 	"io/fs"
 	"net/http"
 	"path/filepath"
@@ -50,7 +51,7 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 	imgDir := getDirPathForImage(recipeID)
 	if u.imgCfg.ImageQuality == ImageQualityOriginal {
 		// Save the original as-is
-		origURL, err = u.saveImage(data, imgDir, imageName)
+		origURL, err = u.saveImage(dataReader, imgDir, imageName)
 	} else {
 		// Resize and save
 		origURL, err = u.generateFitted(original, contentType, imgDir, imageName)
@@ -101,7 +102,7 @@ func (u ImageUploader) generateThumbnail(original image.Image, contentType strin
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
 
-	return u.saveImage(thumbBuf.Bytes(), saveDir, imageName)
+	return u.saveImage(bytes.NewReader(thumbBuf.Bytes()), saveDir, imageName)
 }
 
 func (u ImageUploader) generateFitted(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
@@ -120,13 +121,13 @@ func (u ImageUploader) generateFitted(original image.Image, contentType string, 
 		return "", fmt.Errorf("failed to encode fitted image: %w", err)
 	}
 
-	return u.saveImage(fittedBuf.Bytes(), saveDir, imageName)
+	return u.saveImage(bytes.NewReader(fittedBuf.Bytes()), saveDir, imageName)
 }
 
-func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) (string, error) {
+func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName string) (string, error) {
 	fullPath := filepath.Join(baseDir, imageName)
 	url := filepath.ToSlash(filepath.Join("/", RootUploadPath, fullPath))
-	err := u.driver.Save(fullPath, data)
+	err := u.driver.Save(fullPath, reader)
 	if err != nil {
 		return "", fmt.Errorf("failed to save image to '%s' using configured upload driver: %w", fullPath, err)
 	}
