@@ -154,3 +154,92 @@ func Test_Backup_Export(t *testing.T) {
 		})
 	}
 }
+
+func Test_Backup_Import(t *testing.T) {
+	type testArgs struct {
+		input         models.Backup
+		dbError       error
+		expectedError error
+	}
+
+	tests := []testArgs{
+		{
+			input: models.Backup{
+				{
+					TableName: "table1",
+					Data: []models.RowData{
+						{"column1": "value1", "column2": "value2"},
+						{"column1": "value3", "column2": "value4"},
+					},
+				},
+				{
+					TableName: "table2",
+					Data: []models.RowData{
+						{"column3": "value5", "column4": "value6"},
+						{"column3": "value7", "column4": "value8"},
+					},
+				},
+			},
+			dbError:       nil,
+			expectedError: nil,
+		},
+		{
+			input:         models.Backup{},
+			dbError:       nil,
+			expectedError: nil,
+		},
+		{
+			input: models.Backup{
+				{
+					TableName: "table1",
+					Data: []models.RowData{
+						{"column1": "value1", "column2": "value2"},
+						{"column1": "value3", "column2": "value4"},
+					},
+				},
+			},
+			dbError:       sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+
+			if test.dbError == nil {
+				for _, table := range test.input {
+					dbmock.ExpectExec(fmt.Sprintf("DELETE FROM %s", table.TableName)).
+						WillReturnResult(sqlmock.NewResult(1, 1))
+					stmt := dbmock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s \\(.*\\) VALUES \\(.*\\)", table.TableName)).
+						WillBeClosed()
+					for range table.Data {
+						stmt.ExpectExec().WillReturnResult(sqlmock.NewResult(1, 1))
+					}
+				}
+				dbmock.ExpectCommit()
+			} else {
+				dbmock.ExpectExec(fmt.Sprintf("DELETE FROM %s", test.input[0].TableName)).
+					WillReturnError(test.dbError)
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Backups().Import(&test.input)
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
