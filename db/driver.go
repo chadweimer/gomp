@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"strings"
 
 	"github.com/chadweimer/gomp/models"
 )
@@ -54,10 +53,10 @@ func CreateDriver(cfg Config) (Driver, error) {
 	// Special case for backward compatibility
 	if driver == "" {
 		slog.Debug("Database driver is empty. Will attempt to infer...")
-		if strings.HasPrefix(cfg.ConnectionString, "file:") {
+		if cfg.URL.Scheme == "file" {
 			slog.Debug("Setting database driver", "value", SQLiteDriverName)
 			driver = SQLiteDriverName
-		} else if strings.HasPrefix(cfg.ConnectionString, "postgres:") {
+		} else if cfg.URL.Scheme == "postgres" {
 			slog.Debug("Setting database driver", "value", PostgresDriverName)
 			driver = PostgresDriverName
 		} else {
@@ -73,7 +72,7 @@ func CreateDriver(cfg Config) (Driver, error) {
 	switch driver {
 	case PostgresDriverName:
 		drv, err := openPostgres(
-			cfg.ConnectionString,
+			cfg.URL,
 			cfg.MigrationsTableName,
 			cfg.MigrationsForceVersion)
 		if err != nil {
@@ -82,7 +81,7 @@ func CreateDriver(cfg Config) (Driver, error) {
 		return drv, nil
 	case SQLiteDriverName:
 		drv, err := openSQLite(
-			cfg.ConnectionString,
+			cfg.URL,
 			cfg.MigrationsTableName,
 			cfg.MigrationsForceVersion)
 		if err != nil {

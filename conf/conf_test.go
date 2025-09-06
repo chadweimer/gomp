@@ -2,6 +2,7 @@ package conf
 
 import (
 	"errors"
+	"net/url"
 	"reflect"
 	"strconv"
 	"testing"
@@ -45,6 +46,8 @@ func TestBind_Defaults(t *testing.T) {
 		TestString string `default:"Hello, Tests!"`
 
 		TestTime time.Time `default:"2000-01-02T03:04:05Z"`
+
+		TestURL url.URL `default:"https://example.com"`
 	}
 	tests := []struct {
 		name string
@@ -85,6 +88,8 @@ func TestBind_Defaults(t *testing.T) {
 				TestString: "Hello, Tests!",
 
 				TestTime: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+
+				TestURL: url.URL{Scheme: "https", Host: "example.com"},
 			},
 		},
 	}
