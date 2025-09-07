@@ -1,10 +1,11 @@
-package upload
+package fileaccess
 
 import (
 	"bytes"
 	"fmt"
 	"image"
 	"io"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -13,9 +14,12 @@ import (
 	"github.com/disintegration/imaging"
 )
 
+// RootUploadPath is the root directory for uploads
+const RootUploadPath = "uploads"
+
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
-	Driver Driver
+	driver Driver
 	imgCfg ImageConfig
 }
 
@@ -47,7 +51,7 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 	imgDir := getDirPathForImage(recipeID)
 	if u.imgCfg.ImageQuality == ImageQualityOriginal {
 		// Save the original as-is
-		origURL, err = u.saveImage(data, imgDir, imageName)
+		origURL, err = u.saveImage(dataReader, imgDir, imageName)
 	} else {
 		// Resize and save
 		origURL, err = u.generateFitted(original, contentType, imgDir, imageName)
@@ -68,17 +72,17 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 // Delete removes the specified image files from the upload store.
 func (u ImageUploader) Delete(recipeID int64, imageName string) error {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
-	if err := u.Driver.Delete(origPath); err != nil {
+	if err := u.driver.Delete(origPath); err != nil {
 		return err
 	}
 	thumbPath := filepath.Join(getDirPathForThumbnail(recipeID), imageName)
-	return u.Driver.Delete(thumbPath)
+	return u.driver.Delete(thumbPath)
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.
 func (u ImageUploader) DeleteAll(recipeID int64) error {
 	dirPath := getDirPathForRecipe(recipeID)
-	err := u.Driver.DeleteAll(dirPath)
+	err := u.driver.DeleteAll(dirPath)
 
 	return err
 }
@@ -86,13 +90,7 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 // Load reads the image for the given recipe, returning the bytes of the file
 func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
-
-	file, err := u.Driver.Open(origPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return io.ReadAll(file)
+	return fs.ReadFile(u.driver, origPath)
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
@@ -104,7 +102,7 @@ func (u ImageUploader) generateThumbnail(original image.Image, contentType strin
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
 
-	return u.saveImage(thumbBuf.Bytes(), saveDir, imageName)
+	return u.saveImage(bytes.NewReader(thumbBuf.Bytes()), saveDir, imageName)
 }
 
 func (u ImageUploader) generateFitted(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
@@ -123,13 +121,13 @@ func (u ImageUploader) generateFitted(original image.Image, contentType string, 
 		return "", fmt.Errorf("failed to encode fitted image: %w", err)
 	}
 
-	return u.saveImage(fittedBuf.Bytes(), saveDir, imageName)
+	return u.saveImage(bytes.NewReader(fittedBuf.Bytes()), saveDir, imageName)
 }
 
-func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) (string, error) {
+func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName string) (string, error) {
 	fullPath := filepath.Join(baseDir, imageName)
-	url := filepath.ToSlash(filepath.Join("/uploads/", fullPath))
-	err := u.Driver.Save(fullPath, data)
+	url := filepath.ToSlash(filepath.Join("/", RootUploadPath, fullPath))
+	err := u.driver.Save(fullPath, reader)
 	if err != nil {
 		return "", fmt.Errorf("failed to save image to '%s' using configured upload driver: %w", fullPath, err)
 	}
@@ -165,11 +163,11 @@ func getDirPathForRecipe(recipeID int64) string {
 }
 
 func getDirPathForImage(recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeID), "images")
+	return filepath.Join(RootUploadPath, getDirPathForRecipe(recipeID), "images")
 }
 
 func getDirPathForThumbnail(recipeID int64) string {
-	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
+	return filepath.Join(RootUploadPath, getDirPathForRecipe(recipeID), "thumbs")
 }
 
 func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {

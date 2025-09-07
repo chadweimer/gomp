@@ -12,8 +12,8 @@ import (
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/middleware"
-	"github.com/chadweimer/gomp/upload"
 )
 
 // ---- Begin Standard Errors ----
@@ -36,14 +36,16 @@ const currentUserIDCtxKey = contextKey("current-user-id")
 
 type apiHandler struct {
 	secureKeys []string
-	upl        *upload.ImageUploader
+	fs         fileaccess.Driver
+	upl        *fileaccess.ImageUploader
 	db         db.Driver
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *upload.ImageUploader, drDriver db.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) http.Handler {
 	h := apiHandler{
 		secureKeys: secureKeys,
+		fs:         fs,
 		upl:        upl,
 		db:         drDriver,
 	}

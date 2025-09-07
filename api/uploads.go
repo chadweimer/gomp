@@ -1,11 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"io"
 	"mime/multipart"
 	"path/filepath"
 
+	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/google/uuid"
 )
 
@@ -15,8 +17,8 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 		return nil, err
 	}
 
-	fileURL := filepath.ToSlash(filepath.Join("/uploads/", imageName))
-	if err := h.upl.Driver.Save(imageName, uploadedFileData); err != nil {
+	fileURL := filepath.ToSlash(filepath.Join("/", fileaccess.RootUploadPath, imageName))
+	if err := h.fs.Save(imageName, bytes.NewReader(uploadedFileData)); err != nil {
 		return nil, err
 	}
 

@@ -40,6 +40,7 @@ type Driver interface {
 	Images() RecipeImageDriver
 	Links() LinkDriver
 	Users() UserDriver
+	Backups() BackupDriver
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
@@ -273,4 +274,13 @@ type RecipeImageDriver interface {
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transaction that is committed if there are not errors.
 	DeleteAll(recipeID int64) error
+}
+
+// BackupDriver provides functionality to backup and restore all data and files.
+type BackupDriver interface {
+	// Export retrieves all data from the database
+	Export() (*models.Backup, error)
+
+	// Import restores all data from the backup, deleting any existing data first
+	Import(*models.Backup) error
 }

@@ -26,6 +26,7 @@ type sqlDriver struct {
 	notes   *sqlNoteDriver
 	links   *sqlLinkDriver
 	users   *sqlUserDriver
+	backups *sqlBackupDriver
 }
 
 func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
@@ -38,6 +39,7 @@ func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
+		backups: &sqlBackupDriver{db},
 	}
 }
 
@@ -65,6 +67,10 @@ func (d *sqlDriver) Users() UserDriver {
 	return d.users
 }
 
+func (d *sqlDriver) Backups() BackupDriver {
+	return d.backups
+}
+
 func (d *sqlDriver) Close() error {
 	slog.Debug("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
@@ -79,7 +85,7 @@ func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
 	return t, mapSQLErrors(err)
 }
 
-func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
+func tx(db *sqlx.DB, op func(*sqlx.Tx) error) error {
 	tx, err := db.Beginx()
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package upload
+package fileaccess
 
 import (
 	"errors"
@@ -7,25 +7,25 @@ import (
 
 // Config represents the upload configuration settings
 type Config struct {
-	// DriverConfig contains the configuration settings for upload drivers
-	Driver DriverConfig
+	// FilesConfig contains the set of configuration supported for file storage
+	Files FilesConfig
 
 	// ImageConfig contains the set of configuration supported for recipe images
 	Image ImageConfig
 }
 
-// DriverConfig represents the configuration settings for upload drivers
-type DriverConfig struct {
-	// Driver is used to select which backend data store is used for file uploads.
+// FilesConfig represents the configuration settings for file storage
+type FilesConfig struct {
+	// Driver is used to select which backend data store is used for files.
 	// Supported drivers: fs, s3
-	Driver string `env:"UPLOAD_DRIVER" default:"fs"`
+	Driver string `env:"FILES_DRIVER" default:"fs"`
 
-	// Path gets the path (full or relative) under which to store uploads.
+	// Path gets the path (full or relative) under which to store files (e.g., uploads and backups).
 	// When using Amazon S3, this should be set to the bucket name.
-	Path string `env:"UPLOAD_PATH" default:"data/uploads"`
+	Path string `env:"FILES_PATH" default:"data"`
 }
 
-func (c DriverConfig) validate() error {
+func (c FilesConfig) validate() error {
 	errs := make([]error, 0)
 
 	if c.Driver != FileSystemDriver && c.Driver != S3Driver {

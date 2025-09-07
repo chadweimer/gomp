@@ -9,9 +9,9 @@ import (
 	"mime/multipart"
 	"testing"
 
+	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	uploadmock "github.com/chadweimer/gomp/mocks/upload"
-	"github.com/chadweimer/gomp/upload"
+	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/disintegration/imaging"
 	"github.com/golang/mock/gomock"
 )
@@ -31,11 +31,11 @@ func Test_Upload(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, uplDriver := getMockUploadsAPI(ctrl)
+			api, fsDriver := getMockUploadsAPI(ctrl)
 			if test.expectedError != nil {
-				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				fsDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
+				fsDriver.EXPECT().Save(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 			}
 			buf := bytes.NewBuffer([]byte{})
 			writer := multipart.NewWriter(buf)
@@ -59,21 +59,22 @@ func Test_Upload(t *testing.T) {
 	}
 }
 
-func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *uploadmock.MockDriver) {
+func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *fileaccessmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
-	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := upload.ImageConfig{
-		ImageQuality:     upload.ImageQualityOriginal,
+	fsDriver := fileaccessmock.NewMockDriver(ctrl)
+	imgCfg := fileaccess.ImageConfig{
+		ImageQuality:     fileaccess.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: upload.ImageQualityMedium,
+		ThumbnailQuality: fileaccess.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
-	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
+	upl, _ := fileaccess.CreateImageUploader(fsDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},
+		fs:         fsDriver,
 		upl:        upl,
 		db:         dbDriver,
 	}
-	return api, uplDriver
+	return api, fsDriver
 }

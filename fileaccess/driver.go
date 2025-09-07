@@ -1,9 +1,10 @@
-package upload
+package fileaccess
 
-//go:generate go run github.com/golang/mock/mockgen -destination=../mocks/upload/mocks.gen.go -package=upload . Driver
+//go:generate go run github.com/golang/mock/mockgen -destination=../mocks/fileaccess/mocks.gen.go -package=fileaccess . Driver
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 )
 
@@ -19,8 +20,9 @@ const (
 type Driver interface {
 	fs.FS
 
-	// Save creates or overrites a file with the provided binary data.
-	Save(filePath string, data []byte) error
+	// Save creates or overrites a file with the content from the provider reader.
+	// This will seek to the beginning of the content.
+	Save(filePath string, reader io.ReadSeeker) error
 
 	// Delete deletes the file at the specified path, if it exists.
 	Delete(filePath string) error
@@ -30,7 +32,7 @@ type Driver interface {
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
-func CreateDriver(cfg DriverConfig) (Driver, error) {
+func CreateDriver(cfg FilesConfig) (Driver, error) {
 	switch cfg.Driver {
 	case FileSystemDriver:
 		return newFileSystemDriver(cfg.Path)

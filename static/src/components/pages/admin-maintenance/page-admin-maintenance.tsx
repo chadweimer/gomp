@@ -1,7 +1,7 @@
 import { alertController } from '@ionic/core';
 import { Component, Host, h } from '@stencil/core';
 import { RecipeState, SortBy, SortDir } from '../../../generated';
-import { performRecipeSearch, recipesApi } from '../../../helpers/api';
+import { performRecipeSearch, appApi, recipesApi } from '../../../helpers/api';
 import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -23,6 +23,20 @@ export class PageAdminMaintenance {
                       <ion-note>
                         Optimizing images will load and re-save all uploaded recipe images using the latest configured settings,
                         including regenerating thumbnails. If this was already run and the settings have not changed, it will have no effect.
+                      </ion-note>
+                    </p>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-card>
+                  <ion-card-content>
+                    <ion-button color="danger" fill="solid" onClick={() => this.createBackupClicked()}>Create Backup</ion-button>
+                    <p>
+                      <ion-note>
+                        Creating a backup will save all current data to a backup file. This operation may take a while depending on the amount of data.
                       </ion-note>
                     </p>
                   </ion-card-content>
@@ -87,4 +101,36 @@ export class PageAdminMaintenance {
     });
   }
 
+  private async createBackup() {
+    try {
+      await showLoading(
+        async () => appApi.createBackup(), 'Creating backup...');
+    } catch (ex) {
+      console.error(ex);
+      showToast('Failed to create backup.');
+    }
+  }
+
+  private async createBackupClicked() {
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Create Backup?',
+        message: 'Are you sure you want to create a backup? This operation may take a while depending on the amount of data.',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.createBackup();
+              return true;
+            }
+          }
+        ],
+      });
+
+      await confirmation.present();
+
+      await confirmation.onDidDismiss();
+    });
+  }
 }

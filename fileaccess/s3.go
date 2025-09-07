@@ -1,8 +1,8 @@
-package upload
+package fileaccess
 
 import (
-	"bytes"
 	"errors"
+	"io"
 	"io/fs"
 	"net/http"
 	"path/filepath"
@@ -31,14 +31,31 @@ func newS3Driver(bucket string) (Driver, error) {
 
 	svc := s3.New(sess)
 	f := s3fs.New(svc, bucket)
-	return &s3Driver{OnlyFiles(f), svc, bucket}, nil
+	return &s3Driver{f, svc, bucket}, nil
 }
 
-func (u *s3Driver) Save(filePath string, data []byte) error {
+func (u *s3Driver) Save(filePath string, reader io.ReadSeeker) error {
+	// Make sure we're at the beginning of the content
+	_, err := reader.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+
+	// Read the first 512 bytes in order to determine the content type
+	contentTypeData := make([]byte, 512)
+	if _, err = reader.Read(contentTypeData); err != nil {
+		return err
+	}
+	contentType := http.DetectContentType(contentTypeData)
+
+	// Return to the beginning
+	if _, err := reader.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+
 	key := filepath.ToSlash(filePath)
-	contentType := http.DetectContentType(data)
-	_, err := u.s3.PutObject(&s3.PutObjectInput{
-		Body:        bytes.NewReader(data),
+	_, err = u.s3.PutObject(&s3.PutObjectInput{
+		Body:        reader,
 		ContentType: &contentType,
 		Bucket:      &u.bucket,
 		Key:         &key,

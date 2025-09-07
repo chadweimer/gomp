@@ -12,7 +12,7 @@ type sqlRecipeImageDriver struct {
 }
 
 func (d *sqlRecipeImageDriver) Create(imageInfo *models.RecipeImage) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(imageInfo, db)
 	})
 }
@@ -56,7 +56,7 @@ func (d *sqlRecipeImageDriver) ReadMainImage(recipeID int64) (*models.RecipeImag
 }
 
 func (d *sqlRecipeImageDriver) UpdateMainImage(recipeID, id int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.updateMainImageImpl(recipeID, id, db)
 	})
 }
@@ -82,7 +82,7 @@ func (d *sqlRecipeImageDriver) List(recipeID int64) (*[]models.RecipeImage, erro
 }
 
 func (d *sqlRecipeImageDriver) Delete(recipeID, id int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(recipeID, id, db)
 	})
 }
@@ -106,7 +106,7 @@ func (*sqlRecipeImageDriver) setMainImageIfNecessary(recipeID int64, db sqlx.Exe
 }
 
 func (d *sqlRecipeImageDriver) DeleteAll(recipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+	return tx(d.Db, func(db *sqlx.Tx) error {
 		return d.deleteAllImpl(recipeID, db)
 	})
 }

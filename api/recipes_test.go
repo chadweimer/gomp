@@ -8,10 +8,10 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	uploadmock "github.com/chadweimer/gomp/mocks/upload"
+	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/upload"
 	"github.com/chadweimer/gomp/utils"
 	"github.com/golang/mock/gomock"
 )
@@ -576,18 +576,18 @@ func Test_Find(t *testing.T) {
 	}
 }
 
-func getMockRecipesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDriver, *uploadmock.MockDriver) {
+func getMockRecipesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDriver, *fileaccessmock.MockDriver) {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	recipeDriver := dbmock.NewMockRecipeDriver(ctrl)
 	dbDriver.EXPECT().Recipes().AnyTimes().Return(recipeDriver)
-	uplDriver := uploadmock.NewMockDriver(ctrl)
-	imgCfg := upload.ImageConfig{
-		ImageQuality:     upload.ImageQualityOriginal,
+	uplDriver := fileaccessmock.NewMockDriver(ctrl)
+	imgCfg := fileaccess.ImageConfig{
+		ImageQuality:     fileaccess.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: upload.ImageQualityMedium,
+		ThumbnailQuality: fileaccess.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
-	upl, _ := upload.CreateImageUploader(uplDriver, imgCfg)
+	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
 		secureKeys: []string{"secure-key"},

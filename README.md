@@ -142,8 +142,8 @@ MIGRATIONS_FORCE_VERSION|int             |-1                                    
 MIGRATIONS_TABLE_NAME   |string          |&lt;empty&gt;                            |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
 PORT                    |uint            |5000                                     |The port number under which the site is being hosted.
 SECURE_KEY              |[]string        |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas.
-UPLOAD_DRIVER           |fs, s3          |fs                                       |Used to select which backend data store is used for file uploads.
-UPLOAD_PATH             |string          |data/uploads                             |The path (full or relative) under which to store uploads. When using Amazon S3, this should be set to the bucket name.
+FILES_DRIVER            |fs, s3          |fs                                       |Used to select which backend data store is used for file access (e.g., uploads, backups).
+FILES_PATH              |string          |data                                     |The path (full or relative) under which to store file data. When using Amazon S3, this should be set to the bucket name.
 IMAGE_QUALITY           |original, high, medium, low|original                      |The quality level for recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighber instead of the Box resizing algorithm.
 IMAGE_SIZE              |uint            |2000                                     |The size of the bounding box to fit recipe images to. Ignored if IMAGE_QUALITY == original.
 THUMBNAIL_QUALITY       |high, medium, low|medium                                  |The quality level for the thumbnails of recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighber instead of the Box resizing algorithm.
@@ -152,7 +152,7 @@ THUMBNAIL_SIZE          |uint            |500                                   
 All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.
 The name with "GOMP_" is prefered if both are present.
 
-For values that allow releative paths (e.g., BASE_ASSETS_PATH, DATABASE_URL for SQLite, and UPLOAD_PATH for the fs driver), they are always relative to the application working directory.
+For values that allow releative paths (e.g., BASE_ASSETS_PATH, DATABASE_URL for SQLite, and FILES_PATH for the fs driver), they are always relative to the application working directory.
 When using docker, this is "/var/app/gomp", so anything at or below the "data/" relative path is in the exposed "/var/app/gomp/data" volume.
 
 ## Database Support
