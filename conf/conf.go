@@ -154,11 +154,12 @@ func convertSlice(str string, val reflect.Value) error {
 		segments := strings.Split(str, ",")
 		newVal := reflect.MakeSlice(valType, 0, len(segments))
 		for _, segment := range segments {
-			element := reflect.New(valType.Elem()).Elem()
+			elementPtr := reflect.New(valType.Elem())
+			element := resolvePointers(elementPtr)
 			if err := set(element, strings.TrimSpace(segment)); err != nil {
 				return reflect.Zero(valType), err
 			}
-			newVal = reflect.Append(newVal, element)
+			newVal = reflect.Append(newVal, elementPtr.Elem())
 		}
 		return newVal, nil
 	}, val.Set)
