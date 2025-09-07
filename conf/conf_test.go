@@ -2,6 +2,7 @@ package conf
 
 import (
 	"errors"
+	"net/url"
 	"reflect"
 	"strconv"
 	"testing"
@@ -11,19 +12,19 @@ import (
 )
 
 func TestBind_Defaults(t *testing.T) {
-	type intTypes struct {
-		TestInt      int   `default:"-1"`
-		TestInt8     int8  `default:"-0b10"`
-		TestInt16    int16 `default:"-0o3"`
-		TestInt32    int32 `default:"-0x4"`
-		TestInt64    int64 `default:"-5"`
-		TestIntArray []int `default:"-1,-2"`
-		TestIntPtr   *int  `default:"-1"`
-	}
 	type allSupportedTypes struct {
 		unexportedInt int `default:"5"`
 
-		TestInts intTypes
+		TestInt            int     `default:"-1"`
+		TestInt8           int8    `default:"-0b10"`
+		TestInt16          int16   `default:"-0o3"`
+		TestInt32          int32   `default:"-0x4"`
+		TestInt64          int64   `default:"-5"`
+		TestIntArray       []int   `default:"-1,-2"`
+		TestIntPtrArray    []*int  `default:"-1,-2"`
+		TestIntPtrPtrArray []**int `default:"-1,-2"`
+		TestIntPtr         *int    `default:"-1"`
+		TestIntPtrPtr      **int   `default:"-1"`
 
 		TestUint      uint   `default:"1"`
 		TestUint8     uint8  `default:"0b10"`
@@ -44,7 +45,11 @@ func TestBind_Defaults(t *testing.T) {
 
 		TestString string `default:"Hello, Tests!"`
 
-		TestTime time.Time `default:"2000-01-02T03:04:05Z"`
+		TestTime    time.Time  `default:"2000-01-02T03:04:05Z"`
+		TestTimePtr *time.Time `default:"2000-01-02T03:04:05Z"`
+
+		TestURL      url.URL   `default:"https://example.com"`
+		TestURLArray []url.URL `default:"https://example.com,https://example.org"`
 	}
 	tests := []struct {
 		name string
@@ -55,15 +60,16 @@ func TestBind_Defaults(t *testing.T) {
 			want: allSupportedTypes{
 				unexportedInt: 0, // Should be ignored, not set
 
-				TestInts: intTypes{
-					TestInt:      -1,
-					TestInt8:     -2,
-					TestInt16:    -3,
-					TestInt32:    -4,
-					TestInt64:    -5,
-					TestIntArray: []int{-1, -2},
-					TestIntPtr:   utils.GetPtr(-1),
-				},
+				TestInt:            -1,
+				TestInt8:           -2,
+				TestInt16:          -3,
+				TestInt32:          -4,
+				TestInt64:          -5,
+				TestIntArray:       []int{-1, -2},
+				TestIntPtrArray:    []*int{utils.GetPtr(-1), utils.GetPtr(-2)},
+				TestIntPtrPtrArray: []**int{utils.GetPtr(utils.GetPtr(-1)), utils.GetPtr(utils.GetPtr(-2))},
+				TestIntPtr:         utils.GetPtr(-1),
+				TestIntPtrPtr:      utils.GetPtr(utils.GetPtr(-1)),
 
 				TestUint:      1,
 				TestUint8:     2,
@@ -84,7 +90,14 @@ func TestBind_Defaults(t *testing.T) {
 
 				TestString: "Hello, Tests!",
 
-				TestTime: time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+				TestTime:    time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
+				TestTimePtr: utils.GetPtr(time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)),
+
+				TestURL: url.URL{Scheme: "https", Host: "example.com"},
+				TestURLArray: []url.URL{
+					{Scheme: "https", Host: "example.com"},
+					{Scheme: "https", Host: "example.org"},
+				},
 			},
 		},
 	}
