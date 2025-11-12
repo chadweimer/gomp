@@ -11,12 +11,8 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/jszwec/s3fs v1.0.0
 	github.com/lib/pq v1.10.9
-	github.com/mgechev/revive v1.9.0
-	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.1.1
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/samber/lo v1.50.0
-	github.com/securego/gosec/v2 v2.22.4
 	golang.org/x/crypto v0.38.0
 	modernc.org/sqlite v1.37.0
 )
@@ -57,13 +53,17 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mgechev/dots v0.0.0-20210922191527-e955255bf517 // indirect
+	github.com/mgechev/revive v1.9.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
+	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1 // indirect
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/securego/gosec/v2 v2.22.4 // indirect
 	github.com/speakeasy-api/jsonpath v0.6.2 // indirect
 	github.com/speakeasy-api/openapi-overlay v0.10.2 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
@@ -99,3 +99,10 @@ require (
 )
 
 go 1.24.0
+
+tool (
+	github.com/golang/mock/mockgen
+	github.com/mgechev/revive
+	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
+	github.com/securego/gosec/v2/cmd/gosec
+)
