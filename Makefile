@@ -84,8 +84,8 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 lint-server: $(CODEGEN_FILES)
 	mkdir -p $(ROOT_BUILD_DIR)
 	go vet ./...
-	go run github.com/mgechev/revive -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
-	go run github.com/securego/gosec/v2/cmd/gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
+	go tool revive -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
+	go tool gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
 
 
 # ---- CLEAN ----

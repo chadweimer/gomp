@@ -25,14 +25,14 @@
         "editorconfig.editorconfig",
         "formulahendry.auto-rename-tag",
         "GitHub.vscode-github-actions",
+        "GitHub.vscode-pull-request-github",
         "golang.go",
         "ms-azuretools.vscode-docker",
+        "ms-vscode.makefile-tools",
         "redhat.vscode-yaml",
         "SonarSource.sonarlint-vscode",
-        "spmeesseman.vscode-taskexplorer",
         "tamasfe.even-better-toml",
-        "visualstudioexptteam.vscodeintellicode",
-        "GitHub.vscode-pull-request-github"
+        "visualstudioexptteam.vscodeintellicode"
       ]
     }
   },
