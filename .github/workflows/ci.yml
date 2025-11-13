@@ -21,10 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
       - uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: 'lts/*'
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -36,7 +36,7 @@ jobs:
           path: |
             build/coverage/*
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -46,16 +46,16 @@ jobs:
     strategy:
       matrix:
         os: [linux]
-        arch: [amd64,arm64,arm]
+        arch: [amd64, arm64, arm]
     env:
       TARGETOS: ${{ matrix.os }}
       TARGETARCH: ${{ matrix.arch }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: "lts/*"
-      - uses: actions/setup-go@v5
+          node-version: 'lts/*'
+      - uses: actions/setup-go@v6
         with:
           go-version-file: 'go.mod'
 
@@ -85,7 +85,7 @@ jobs:
       CONTAINER_REGISTRY: ghcr.io
       DOCKER_BASE_ARGS: --push --platform linux/amd64,linux/arm64,linux/arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
       - uses: docker/setup-qemu-action@v3
         with:
@@ -113,7 +113,7 @@ jobs:
           echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.release.tag_name }}" >> $GITHUB_ENV
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: build
           merge-multiple: true
