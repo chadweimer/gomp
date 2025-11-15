@@ -21,8 +21,8 @@ export const config: Config = {
       '<rootDir>/node_modules/',
       '<rootDir>/www/',
       '<rootDir>/src/generated/',
-      'stencil.*.js',
-      'stencil.*.ts'
+      '<rootDir>/stencil.*.js',
+      '<rootDir>/stencil.*.ts'
     ],
   },
 };
