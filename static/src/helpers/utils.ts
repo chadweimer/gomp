@@ -88,14 +88,14 @@ export function fromYesNoAny(value: YesNoAny) {
 }
 
 export async function enableBackForOverlay(presenter: () => Promise<void>) {
-  if (!window.history.state?.modal) {
-    window.history.pushState({ modal: true }, '');
+  if (!globalThis.history.state?.modal) {
+    globalThis.history.pushState({ modal: true }, '');
   }
   try {
     await presenter();
   } finally {
-    if (window.history.state?.modal) {
-      window.history.back();
+    if (globalThis.history.state?.modal) {
+      globalThis.history.back();
     }
   }
 }

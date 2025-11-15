@@ -50,8 +50,8 @@ export class AppRoot {
 
   async componentWillLoad() {
     // Automatically trigger a logout if an API returns a 401
-    const { fetch: originalFetch } = window;
-    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const { fetch: originalFetch } = globalThis;
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const response = await originalFetch(input, init);
       if (response.status === 401) {
         await this.logout();
