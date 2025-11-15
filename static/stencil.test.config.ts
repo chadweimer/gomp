@@ -15,6 +15,7 @@ export const config: Config = {
     ]
   }],
   testing: {
+    setupFilesAfterEnv: ['<rootDir>/src/setup-adopted-style-sheets.js'],
     browserHeadless: 'shell',
     coveragePathIgnorePatterns: [
       '<rootDir>/node_modules/',
