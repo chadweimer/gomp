@@ -53,4 +53,4 @@ module.exports = defineConfig([{
       "varsIgnorePattern": "^h$",
     }],
   },
-}, globalIgnores(["**/node_modules", "src/generated", "**/build", "stencil.polyfills.js"])]);
+}, globalIgnores(["**/node_modules", "src/generated", "**/build"])]);
