@@ -15,7 +15,7 @@ export const config: Config = {
     ]
   }],
   testing: {
-    browserHeadless: 'new',
+    browserHeadless: 'shell',
     coveragePathIgnorePatterns: [
       '<rootDir>/node_modules/',
       '<rootDir>/www/',
