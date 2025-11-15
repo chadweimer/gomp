@@ -49,7 +49,7 @@ install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
 $(CLIENT_INSTALL_DIR): static/package.json
-	cd static && npm install --silent
+	cd static && npm ci --silent
 
 .PHONY: uninstall
 uninstall:
