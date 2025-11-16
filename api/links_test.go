@@ -10,7 +10,7 @@ import (
 	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_GetLinks(t *testing.T) {

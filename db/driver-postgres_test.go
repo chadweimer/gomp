@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang/mock/gomock"
 	"github.com/samber/lo"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_postgres_GetSearchFields(t *testing.T) {

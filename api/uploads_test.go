@@ -13,7 +13,7 @@ import (
 	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/disintegration/imaging"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Upload(t *testing.T) {

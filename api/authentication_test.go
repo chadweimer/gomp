@@ -12,8 +12,8 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/golang/mock/gomock"
 	"github.com/samber/lo"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Authenticate(t *testing.T) {
