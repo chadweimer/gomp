@@ -14,8 +14,8 @@ func (apiHandler) GetInfo(_ context.Context, _ GetInfoRequestObject) (GetInfoRes
 	}, nil
 }
 
-func (h apiHandler) GetConfiguration(_ context.Context, _ GetConfigurationRequestObject) (GetConfigurationResponseObject, error) {
-	cfg, err := h.db.AppConfiguration().Read()
+func (h apiHandler) GetConfiguration(ctx context.Context, _ GetConfigurationRequestObject) (GetConfigurationResponseObject, error) {
+	cfg, err := h.db.AppConfiguration().Read(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("reading application configuration: %w", err)
 	}
@@ -23,8 +23,8 @@ func (h apiHandler) GetConfiguration(_ context.Context, _ GetConfigurationReques
 	return GetConfiguration200JSONResponse(*cfg), nil
 }
 
-func (h apiHandler) SaveConfiguration(_ context.Context, request SaveConfigurationRequestObject) (SaveConfigurationResponseObject, error) {
-	if err := h.db.AppConfiguration().Update(request.Body); err != nil {
+func (h apiHandler) SaveConfiguration(ctx context.Context, request SaveConfigurationRequestObject) (SaveConfigurationResponseObject, error) {
+	if err := h.db.AppConfiguration().Update(ctx, request.Body); err != nil {
 		return nil, err
 	}
 

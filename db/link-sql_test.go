@@ -48,7 +48,7 @@ func Test_Link_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Links().Create(test.srcID, test.dstID)
+			err := sut.Links().Create(t.Context(), test.srcID, test.dstID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -95,7 +95,7 @@ func Test_Link_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Links().Delete(test.srcID, test.dstID)
+			err := sut.Links().Delete(t.Context(), test.srcID, test.dstID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -163,7 +163,7 @@ func Test_Link_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Links().List(test.recipeID)
+			result, err := sut.Links().List(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

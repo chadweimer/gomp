@@ -7,8 +7,8 @@ import (
 	"github.com/chadweimer/gomp/models"
 )
 
-func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
-	images, err := h.db.Images().List(request.RecipeID)
+func (h apiHandler) GetImages(ctx context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
+	images, err := h.db.Images().List(ctx, request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -16,8 +16,8 @@ func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject)
 	return GetImages200JSONResponse(*images), nil
 }
 
-func (h apiHandler) GetMainImage(_ context.Context, request GetMainImageRequestObject) (GetMainImageResponseObject, error) {
-	image, err := h.db.Images().ReadMainImage(request.RecipeID)
+func (h apiHandler) GetMainImage(ctx context.Context, request GetMainImageRequestObject) (GetMainImageResponseObject, error) {
+	image, err := h.db.Images().ReadMainImage(ctx, request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -25,15 +25,15 @@ func (h apiHandler) GetMainImage(_ context.Context, request GetMainImageRequestO
 	return GetMainImage200JSONResponse(*image), nil
 }
 
-func (h apiHandler) SetMainImage(_ context.Context, request SetMainImageRequestObject) (SetMainImageResponseObject, error) {
+func (h apiHandler) SetMainImage(ctx context.Context, request SetMainImageRequestObject) (SetMainImageResponseObject, error) {
 	image := models.RecipeImage{ID: request.Body, RecipeID: &request.RecipeID}
-	if err := h.db.Images().UpdateMainImage(*image.RecipeID, *image.ID); err != nil {
+	if err := h.db.Images().UpdateMainImage(ctx, *image.RecipeID, *image.ID); err != nil {
 		return nil, err
 	}
 
 	return SetMainImage204Response{}, nil
 }
-func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
+func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
 	uploadedFileData, imageName, err := readFile(request.Body)
 	if err != nil {
 		return nil, err
@@ -53,22 +53,22 @@ func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObj
 	}
 
 	// Now insert the record in the database
-	if err = h.db.Images().Create(&imageInfo); err != nil {
+	if err = h.db.Images().Create(ctx, &imageInfo); err != nil {
 		return nil, fmt.Errorf("failed to insert image database record: %w", err)
 	}
 
 	return UploadImage201JSONResponse(imageInfo), nil
 }
 
-func (h apiHandler) DeleteImage(_ context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
+func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
 	// We need to read the info about the image for later
-	image, err := h.db.Images().Read(request.RecipeID, request.ImageID)
+	image, err := h.db.Images().Read(ctx, request.RecipeID, request.ImageID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get image database record: %w", err)
 	}
 
 	// Now delete the record from the database
-	if err := h.db.Images().Delete(request.RecipeID, request.ImageID); err != nil {
+	if err := h.db.Images().Delete(ctx, request.RecipeID, request.ImageID); err != nil {
 		return nil, fmt.Errorf("failed to delete image database record: %w", err)
 	}
 
@@ -80,9 +80,9 @@ func (h apiHandler) DeleteImage(_ context.Context, request DeleteImageRequestObj
 	return DeleteImage204Response{}, nil
 }
 
-func (h apiHandler) OptimizeImage(_ context.Context, request OptimizeImageRequestObject) (OptimizeImageResponseObject, error) {
+func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequestObject) (OptimizeImageResponseObject, error) {
 	// We need to read the info about the image for later
-	image, err := h.db.Images().Read(request.RecipeID, request.ImageID)
+	image, err := h.db.Images().Read(ctx, request.RecipeID, request.ImageID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get image database record: %w", err)
 	}
