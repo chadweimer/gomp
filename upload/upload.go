@@ -99,12 +99,9 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	thumbImage := image.NewRGBA(image.Rect(0, 0, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize))
-	transformer := toResampleFilter(u.imgCfg.ThumbnailQuality)
-	transformer.Scale(thumbImage, thumbImage.Bounds(), original, original.Bounds(), draw.Over, nil)
-
+	thumbImage := scaleImage(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailQuality)
 	thumbBuf := new(bytes.Buffer)
-	err := jpeg.Encode(thumbBuf, thumbImage, &jpeg.Options{Quality: toJPEGQuality(u.imgCfg.ThumbnailQuality)})
+	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
@@ -117,17 +114,14 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 
 	bounds := original.Bounds()
 	if u.imgCfg.ImageQuality == ImageQualityOriginal ||
-		bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize {
+		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		newImage := image.NewRGBA(image.Rect(0, 0, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize))
-		transformer := toResampleFilter(u.imgCfg.ThumbnailQuality)
-		transformer.Scale(newImage, newImage.Bounds(), original, original.Bounds(), draw.Over, nil)
-		fittedImage = newImage
+		fittedImage = scaleImage(original, u.imgCfg.ImageSize, u.imgCfg.ImageQuality)
 	}
 
 	fittedBuf := new(bytes.Buffer)
-	err := jpeg.Encode(fittedBuf, fittedImage, &jpeg.Options{Quality: toJPEGQuality(u.imgCfg.ImageQuality)})
+	err := jpeg.Encode(fittedBuf, fittedImage, getJPEGOptions(u.imgCfg.ImageQuality))
 	if err != nil {
 		return "", fmt.Errorf("failed to encode fitted image: %w", err)
 	}
@@ -165,7 +159,14 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func toResampleFilter(q ImageQualityLevel) draw.Interpolator {
+func scaleImage(img image.Image, maxSize int, quality ImageQualityLevel) image.Image {
+	scaledImg := image.NewRGBA(image.Rect(0, 0, maxSize, maxSize))
+	interpolator := getInterpolator(quality)
+	interpolator.Scale(scaledImg, scaledImg.Bounds(), img, img.Bounds(), draw.Over, nil)
+	return scaledImg
+}
+
+func getInterpolator(q ImageQualityLevel) draw.Interpolator {
 	switch q {
 	case ImageQualityMedium:
 		return draw.BiLinear
@@ -176,13 +177,13 @@ func toResampleFilter(q ImageQualityLevel) draw.Interpolator {
 	}
 }
 
-func toJPEGQuality(q ImageQualityLevel) int {
+func getJPEGOptions(q ImageQualityLevel) *jpeg.Options {
 	switch q {
 	case ImageQualityMedium:
-		return 80
+		return &jpeg.Options{Quality: 80}
 	case ImageQualityLow:
-		return 70
+		return &jpeg.Options{Quality: 70}
 	default:
-		return 92
+		return &jpeg.Options{Quality: 92}
 	}
 }
