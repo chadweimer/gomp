@@ -1,6 +1,8 @@
 package db
 
 import (
+	"context"
+
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -9,35 +11,35 @@ type sqlLinkDriver struct {
 	Db *sqlx.DB
 }
 
-func (d *sqlLinkDriver) Create(recipeID, destRecipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.createImpl(recipeID, destRecipeID, db)
+func (d *sqlLinkDriver) Create(ctx context.Context, recipeID, destRecipeID int64) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.createImpl(ctx, recipeID, destRecipeID, db)
 	})
 }
 
-func (*sqlLinkDriver) createImpl(recipeID, destRecipeID int64, db sqlx.Execer) error {
+func (*sqlLinkDriver) createImpl(ctx context.Context, recipeID, destRecipeID int64, db sqlx.ExecerContext) error {
 	stmt := "INSERT INTO recipe_link (recipe_id, dest_recipe_id) VALUES ($1, $2)"
 
-	_, err := db.Exec(stmt, recipeID, destRecipeID)
+	_, err := db.ExecContext(ctx, stmt, recipeID, destRecipeID)
 	return err
 }
 
-func (d *sqlLinkDriver) Delete(recipeID, destRecipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.deleteImpl(recipeID, destRecipeID, db)
+func (d *sqlLinkDriver) Delete(ctx context.Context, recipeID, destRecipeID int64) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.deleteImpl(ctx, recipeID, destRecipeID, db)
 	})
 }
 
-func (*sqlLinkDriver) deleteImpl(recipeID, destRecipeID int64, db sqlx.Execer) error {
-	_, err := db.Exec(
+func (*sqlLinkDriver) deleteImpl(ctx context.Context, recipeID, destRecipeID int64, db sqlx.ExecerContext) error {
+	_, err := db.ExecContext(ctx,
 		"DELETE FROM recipe_link WHERE (recipe_id = $1 AND dest_recipe_id = $2) OR (recipe_id = $2 AND dest_recipe_id = $1)",
 		recipeID,
 		destRecipeID)
 	return err
 }
 
-func (d *sqlLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
-	return get(d.Db, func(db sqlx.Queryer) (*[]models.RecipeCompact, error) {
+func (d *sqlLinkDriver) List(ctx context.Context, recipeID int64) (*[]models.RecipeCompact, error) {
+	return get(d.Db, func(db sqlx.QueryerContext) (*[]models.RecipeCompact, error) {
 		recipes := make([]models.RecipeCompact, 0)
 
 		selectStmt := "SELECT " +
@@ -49,7 +51,7 @@ func (d *sqlLinkDriver) List(recipeID int64) (*[]models.RecipeCompact, error) {
 			"r.id IN (SELECT dest_recipe_id FROM recipe_link WHERE recipe_id = $1) OR " +
 			"r.id IN (SELECT recipe_id FROM recipe_link WHERE dest_recipe_id = $1) " +
 			"ORDER BY r.name ASC"
-		if err := sqlx.Select(db, &recipes, selectStmt, recipeID); err != nil {
+		if err := sqlx.SelectContext(ctx, db, &recipes, selectStmt, recipeID); err != nil {
 			return nil, err
 		}
 

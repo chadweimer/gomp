@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"image/color"
@@ -44,7 +43,7 @@ func Test_Upload(t *testing.T) {
 			writer.Close()
 
 			// Act
-			resp, err := api.Upload(context.Background(), UploadRequestObject{Body: multipart.NewReader(buf, writer.Boundary())})
+			resp, err := api.Upload(t.Context(), UploadRequestObject{Body: multipart.NewReader(buf, writer.Boundary())})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

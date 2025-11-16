@@ -42,7 +42,7 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			}
 
 			// Act
-			cfg, err := sut.AppConfiguration().Read()
+			cfg, err := sut.AppConfiguration().Read(t.Context())
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -91,7 +91,7 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.AppConfiguration().Update(&models.AppConfiguration{Title: test.title})
+			err := sut.AppConfiguration().Update(t.Context(), &models.AppConfiguration{Title: test.title})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

@@ -40,9 +40,9 @@ func Test_Authenticate(t *testing.T) {
 			expectedUserID := int64(i)
 			expectedScopes := getScopes(test.accessLevel)
 			if test.err != nil {
-				userDriver.EXPECT().Authenticate(gomock.Any(), gomock.Any()).Return(nil, test.err)
+				userDriver.EXPECT().Authenticate(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.err)
 			} else {
-				userDriver.EXPECT().Authenticate(gomock.Any(), gomock.Any()).Return(
+				userDriver.EXPECT().Authenticate(t.Context(), gomock.Any(), gomock.Any()).Return(
 					&models.User{
 						ID:          &expectedUserID,
 						Username:    test.username,
@@ -51,7 +51,7 @@ func Test_Authenticate(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.Authenticate(context.Background(), AuthenticateRequestObject{Body: &Credentials{Username: test.username, Password: "password"}})
+			resp, err := api.Authenticate(t.Context(), AuthenticateRequestObject{Body: &Credentials{Username: test.username, Password: "password"}})
 
 			// Assert
 			if err != nil {
@@ -102,11 +102,11 @@ func Test_RefreshToken(t *testing.T) {
 			api, userDriver := getMockUsersAPI(ctrl)
 			expectedUserID := int64(i)
 			expectedScopes := getScopes(test.accessLevel)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, expectedUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, expectedUserID)
 			if test.err != nil {
-				userDriver.EXPECT().Read(gomock.Any()).Return(nil, test.err)
+				userDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.err)
 			} else {
-				userDriver.EXPECT().Read(gomock.Any()).Return(
+				userDriver.EXPECT().Read(ctx, gomock.Any()).Return(
 					&db.UserWithPasswordHash{
 						User: models.User{
 							ID:          &expectedUserID,
@@ -169,7 +169,7 @@ func Test_isAuthentication(t *testing.T) {
 			defer ctrl.Finish()
 
 			expectedUserID := int64(1)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, expectedUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, expectedUserID)
 			expectedUser := db.UserWithPasswordHash{
 				User: models.User{
 					ID:          &expectedUserID,
@@ -178,9 +178,9 @@ func Test_isAuthentication(t *testing.T) {
 			}
 			api, userDriver := getMockUsersAPI(ctrl)
 			if test.userExists {
-				userDriver.EXPECT().Read(gomock.Any()).AnyTimes().Return(&expectedUser, nil)
+				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(&expectedUser, nil)
 			} else {
-				userDriver.EXPECT().Read(gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
+				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
 			}
 			header := http.Header{}
 			if test.includeAuthHeader {
@@ -197,7 +197,7 @@ func Test_isAuthentication(t *testing.T) {
 			} else if err == nil {
 				ctxUser := ctx.Value(currentUserIDCtxKey)
 				if ctxUser == nil {
-					t.Errorf("user id missing crom context")
+					t.Error("user id missing from context")
 				}
 			}
 		})
