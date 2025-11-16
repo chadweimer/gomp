@@ -17,7 +17,6 @@ type Config struct {
 // DriverConfig represents the configuration settings for upload drivers
 type DriverConfig struct {
 	// Path gets the path (full or relative) under which to store uploads.
-	// When using Amazon S3, this should be set to the bucket name.
 	Path string `env:"UPLOAD_PATH" default:"data/uploads"`
 }
 
