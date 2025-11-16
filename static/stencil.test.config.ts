@@ -15,12 +15,14 @@ export const config: Config = {
     ]
   }],
   testing: {
-    browserHeadless: 'new',
+    setupFilesAfterEnv: ['<rootDir>/stencil.polyfills.js'],
+    browserHeadless: 'shell',
     coveragePathIgnorePatterns: [
       '<rootDir>/node_modules/',
       '<rootDir>/www/',
       '<rootDir>/src/generated/',
-      'stencil.*.ts'
+      '<rootDir>/stencil.*.js',
+      '<rootDir>/stencil.*.ts'
     ],
   },
 };

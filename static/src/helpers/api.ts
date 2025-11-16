@@ -35,14 +35,14 @@ class LoadingMiddleware implements Middleware {
 }
 
 const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestInit) => {
-  let response = await window.fetch(input, init);
+  let response = await globalThis.fetch(input, init);
   if (response.status === 403) {
     // Try refreshing the token and repeating the request
     // This can fix the situation where the access level of
     // the user has been changed and requires a new token
     try {
       const localAppApi = new AppApi(new Configuration({
-        basePath: `${window.location.origin}/api/v1`,
+        basePath: `${globalThis.location.origin}/api/v1`,
         accessToken: () => state.jwtToken
       }));
       const { token } = await localAppApi.refreshToken();
@@ -51,7 +51,7 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
         ...init.headers,
         'Authorization': `Bearer ${state.jwtToken}`
       };
-      response = await window.fetch(input, init);
+      response = await globalThis.fetch(input, init);
     } catch (retryError) {
       // Just log this; let the original error propogate
       console.error(retryError);
@@ -61,7 +61,7 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
 };
 
 const configuration = new Configuration({
-  basePath: `${window.location.origin}/api/v1`,
+  basePath: `${globalThis.location.origin}/api/v1`,
   accessToken: () => state.jwtToken,
   fetchApi: customFetch,
   middleware: [new LoadingMiddleware()]

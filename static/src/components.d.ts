@@ -13,26 +13,53 @@ export namespace Components {
     interface AppRoot {
     }
     interface FiveStarRating {
+        /**
+          * @default false
+         */
         "disabled": boolean;
+        /**
+          * @default 'star'
+         */
         "icon": string;
+        /**
+          * @default 'small'
+         */
         "size": string;
+        /**
+          * @default 0
+         */
         "value": number;
     }
     interface HtmlEditor {
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        /**
+          * @default ''
+         */
         "value": string;
     }
     interface HtmlViewer {
+        /**
+          * @default ''
+         */
         "value": string;
     }
     interface ImageUploadBrowser {
     }
     interface NoteCard {
+        /**
+          * @default null
+         */
         "note": Note;
+        /**
+          * @default false
+         */
         "readonly": boolean;
     }
     interface NoteEditor {
+        /**
+          * @default {     text: ''   }
+         */
         "note": Note;
     }
     interface PageAdmin {
@@ -53,7 +80,13 @@ export namespace Components {
     interface PageNavigator {
         "color"?: Color;
         "fill"?: 'clear' | 'outline' | 'solid' | 'default';
+        /**
+          * @default 1
+         */
         "numPages": number;
+        /**
+          * @default 1
+         */
         "page": number;
     }
     interface PageRecipe {
@@ -77,37 +110,91 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface RecipeCard {
+        /**
+          * @default {     name: '',     thumbnailUrl: '',     averageRating: 0,   }
+         */
         "recipe": RecipeCompact;
+        /**
+          * @default 'large'
+         */
         "size": 'large' | 'small';
     }
     interface RecipeEditor {
+        /**
+          * @default {     name: '',     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     tags: []   }
+         */
         "recipe": Recipe;
     }
     interface RecipeLinkEditor {
+        /**
+          * @default 0
+         */
         "parentRecipeId": number;
     }
     interface RecipeViewer {
+        /**
+          * @default []
+         */
         "links": RecipeCompact[];
+        /**
+          * @default null
+         */
         "mainImage": RecipeImage;
+        /**
+          * @default 0
+         */
         "rating": number;
+        /**
+          * @default false
+         */
         "readonly": boolean;
+        /**
+          * @default null
+         */
         "recipe": Recipe;
     }
     interface SearchFilterEditor {
+        /**
+          * @default false
+         */
         "hideName": boolean;
+        /**
+          * @default ''
+         */
         "name": string;
+        /**
+          * @default 'New Search'
+         */
         "prompt": string;
+        /**
+          * @default 'Save'
+         */
         "saveLabel": string;
+        /**
+          * @default getDefaultSearchFilter()
+         */
         "searchFilter": SearchFilter;
+        /**
+          * @default false
+         */
         "showSavedLoader": boolean;
     }
     interface TagsInput {
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        /**
+          * @default []
+         */
         "suggestions": string[];
+        /**
+          * @default []
+         */
         "value": string[];
     }
     interface UserEditor {
+        /**
+          * @default {     username: '',     accessLevel: AccessLevel.Editor   }
+         */
         "user": User;
     }
 }
@@ -408,30 +495,57 @@ declare namespace LocalJSX {
     interface AppRoot {
     }
     interface FiveStarRating {
+        /**
+          * @default false
+         */
         "disabled"?: boolean;
+        /**
+          * @default 'star'
+         */
         "icon"?: string;
         "onValueSelected"?: (event: FiveStarRatingCustomEvent<number>) => void;
+        /**
+          * @default 'small'
+         */
         "size"?: string;
+        /**
+          * @default 0
+         */
         "value"?: number;
     }
     interface HtmlEditor {
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
+        /**
+          * @default ''
+         */
         "value"?: string;
     }
     interface HtmlViewer {
+        /**
+          * @default ''
+         */
         "value"?: string;
     }
     interface ImageUploadBrowser {
     }
     interface NoteCard {
+        /**
+          * @default null
+         */
         "note"?: Note;
         "onDeleteClicked"?: (event: NoteCardCustomEvent<Note>) => void;
         "onEditClicked"?: (event: NoteCardCustomEvent<Note>) => void;
+        /**
+          * @default false
+         */
         "readonly"?: boolean;
     }
     interface NoteEditor {
+        /**
+          * @default {     text: ''   }
+         */
         "note"?: Note;
     }
     interface PageAdmin {
@@ -449,8 +563,14 @@ declare namespace LocalJSX {
     interface PageNavigator {
         "color"?: Color;
         "fill"?: 'clear' | 'outline' | 'solid' | 'default';
+        /**
+          * @default 1
+         */
         "numPages"?: number;
         "onPageChanged"?: (event: PageNavigatorCustomEvent<number>) => void;
+        /**
+          * @default 1
+         */
         "page"?: number;
     }
     interface PageRecipe {
@@ -469,41 +589,95 @@ declare namespace LocalJSX {
     interface PageTags {
     }
     interface RecipeCard {
+        /**
+          * @default {     name: '',     thumbnailUrl: '',     averageRating: 0,   }
+         */
         "recipe"?: RecipeCompact;
+        /**
+          * @default 'large'
+         */
         "size"?: 'large' | 'small';
     }
     interface RecipeEditor {
+        /**
+          * @default {     name: '',     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     tags: []   }
+         */
         "recipe"?: Recipe;
     }
     interface RecipeLinkEditor {
+        /**
+          * @default 0
+         */
         "parentRecipeId"?: number;
     }
     interface RecipeViewer {
+        /**
+          * @default []
+         */
         "links"?: RecipeCompact[];
+        /**
+          * @default null
+         */
         "mainImage"?: RecipeImage;
         "onDeleteLinkClicked"?: (event: RecipeViewerCustomEvent<RecipeCompact>) => void;
         "onRatingSelected"?: (event: RecipeViewerCustomEvent<number>) => void;
         "onTagClicked"?: (event: RecipeViewerCustomEvent<string>) => void;
+        /**
+          * @default 0
+         */
         "rating"?: number;
+        /**
+          * @default false
+         */
         "readonly"?: boolean;
+        /**
+          * @default null
+         */
         "recipe"?: Recipe;
     }
     interface SearchFilterEditor {
+        /**
+          * @default false
+         */
         "hideName"?: boolean;
+        /**
+          * @default ''
+         */
         "name"?: string;
+        /**
+          * @default 'New Search'
+         */
         "prompt"?: string;
+        /**
+          * @default 'Save'
+         */
         "saveLabel"?: string;
+        /**
+          * @default getDefaultSearchFilter()
+         */
         "searchFilter"?: SearchFilter;
+        /**
+          * @default false
+         */
         "showSavedLoader"?: boolean;
     }
     interface TagsInput {
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         "onValueChanged"?: (event: TagsInputCustomEvent<string[]>) => void;
+        /**
+          * @default []
+         */
         "suggestions"?: string[];
+        /**
+          * @default []
+         */
         "value"?: string[];
     }
     interface UserEditor {
+        /**
+          * @default {     username: '',     accessLevel: AccessLevel.Editor   }
+         */
         "user"?: User;
     }
     interface IntrinsicElements {

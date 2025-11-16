@@ -49,7 +49,7 @@ install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
 $(CLIENT_INSTALL_DIR): static/package.json
-	cd static && npm install --silent
+	cd static && npm ci --silent
 
 .PHONY: uninstall
 uninstall:
@@ -119,6 +119,15 @@ $(BUILD_DIR)/static: $(CLIENT_BUILD_DIR)
 
 $(BUILD_DIR)/gomp: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
+
+
+# ---- RUN ----
+
+.PHONY: run
+run: IS_DEVELOPMENT?=1
+run: PORT?=5678
+run: go.mod $(CODEGEN_FILES) $(GO_FILES) $(CLIENT_BUILD_DIR)
+	IS_DEVELOPMENT=$(IS_DEVELOPMENT) PORT=$(PORT) BASE_ASSETS_PATH=$(CLIENT_BUILD_DIR) go run .
 
 
 # ---- TEST ----
