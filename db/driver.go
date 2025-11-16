@@ -12,11 +12,6 @@ import (
 	"github.com/chadweimer/gomp/models"
 )
 
-const (
-	// Needed for backward compatibility
-	sqliteLegacyDriverName = "sqlite3"
-)
-
 // ---- Begin Standard Errors ----
 
 // ErrNotFound represents the error when a database record cannot be
@@ -50,25 +45,18 @@ func CreateDriver(cfg Config) (Driver, error) {
 	}
 
 	driver := cfg.Driver
-
-	// Special case for backward compatibility
 	if driver == "" {
 		slog.Debug("Database driver is empty. Will attempt to infer...")
-		if cfg.URL.Scheme == "file" {
-			slog.Debug("Setting database driver", "value", SQLiteDriverName)
+		switch cfg.URL.Scheme {
+		case "file":
 			driver = SQLiteDriverName
-		} else if cfg.URL.Scheme == "postgres" {
-			slog.Debug("Setting database driver", "value", PostgresDriverName)
+		case "postgres":
 			driver = PostgresDriverName
-		} else {
+		default:
 			return nil, errors.New("unable to infer a value for database driver")
 		}
-	} else if driver == sqliteLegacyDriverName {
-		// If the old driver name for sqlite is being used,
-		// we'll allow it and map it to the new one
-		slog.Debug("Detected database driver legacy value '%s'. Setting to '%s'", sqliteLegacyDriverName, SQLiteDriverName)
-		driver = SQLiteDriverName
 	}
+	slog.Debug("Using database driver", "value", driver)
 
 	switch driver {
 	case PostgresDriverName:
@@ -89,9 +77,9 @@ func CreateDriver(cfg Config) (Driver, error) {
 			return nil, err
 		}
 		return drv, nil
+	default:
+		return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 	}
-
-	return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.
