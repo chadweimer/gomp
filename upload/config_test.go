@@ -6,13 +6,11 @@ import (
 
 func TestDriverConfig_validate(t *testing.T) {
 	type fields struct {
-		Driver string
-		Path   string
+		Path string
 	}
 	init := func(opts ...func(f *fields)) fields {
 		f := fields{
-			Driver: "fs",
-			Path:   "/path/to/uploads",
+			Path: "/path/to/uploads",
 		}
 		for _, opt := range opts {
 			opt(&f)
@@ -30,13 +28,6 @@ func TestDriverConfig_validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Bad Driver",
-			fields: init(func(f *fields) {
-				f.Driver = "bogus"
-			}),
-			wantErr: true,
-		},
-		{
 			name: "Empty Path",
 			fields: init(func(f *fields) {
 				f.Path = ""
@@ -47,8 +38,7 @@ func TestDriverConfig_validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &DriverConfig{
-				Driver: tt.fields.Driver,
-				Path:   tt.fields.Path,
+				Path: tt.fields.Path,
 			}
 			if got := c.validate(); tt.wantErr != (got != nil) {
 				t.Errorf("DriverConfig.validate() = %v, want error? %v", got, tt.wantErr)

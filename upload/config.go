@@ -16,10 +16,6 @@ type Config struct {
 
 // DriverConfig represents the configuration settings for upload drivers
 type DriverConfig struct {
-	// Driver is used to select which backend data store is used for file uploads.
-	// Supported drivers: fs, s3
-	Driver string `env:"UPLOAD_DRIVER" default:"fs"`
-
 	// Path gets the path (full or relative) under which to store uploads.
 	// When using Amazon S3, this should be set to the bucket name.
 	Path string `env:"UPLOAD_PATH" default:"data/uploads"`
@@ -27,10 +23,6 @@ type DriverConfig struct {
 
 func (c DriverConfig) validate() error {
 	errs := make([]error, 0)
-
-	if c.Driver != FileSystemDriver && c.Driver != S3Driver {
-		errs = append(errs, fmt.Errorf("driver must be one of ('%s', '%s')", FileSystemDriver, S3Driver))
-	}
 
 	if c.Path == "" {
 		errs = append(errs, errors.New("path must be specified"))
