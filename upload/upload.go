@@ -4,13 +4,21 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"io"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 
-	"github.com/disintegration/imaging"
+	"golang.org/x/image/draw"
+
+	_ "image/gif" // Register GIF format
+	_ "image/png" // Register PNG format
+
+	_ "golang.org/x/image/bmp"  // Register BMP format
+	_ "golang.org/x/image/tiff" // Register TIFF format
+	_ "golang.org/x/image/webp" // Register WEBP format
 )
 
 // ImageUploader represents an object to handle image uploads
@@ -37,7 +45,8 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 
 	// First decode the image
 	dataReader := bytes.NewReader(data)
-	original, err := imaging.Decode(dataReader, imaging.AutoOrientation(true))
+	original, _, err := image.Decode(dataReader)
+	// TODO: Do we need to auto-detect EXIF orientation and rotate the image accordingly?
 	if err != nil {
 		return "", "", fmt.Errorf("failed to decode image: %w", err)
 	}
@@ -45,19 +54,13 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (orig
 	// Then determine if it should be resized before saving
 	var origURL string
 	imgDir := getDirPathForImage(recipeID)
-	if u.imgCfg.ImageQuality == ImageQualityOriginal {
-		// Save the original as-is
-		origURL, err = u.saveImage(data, imgDir, imageName)
-	} else {
-		// Resize and save
-		origURL, err = u.generateFitted(original, contentType, imgDir, imageName)
-	}
+	origURL, err = u.generateFitted(original, imgDir, imageName)
 	if err != nil {
 		return "", "", err
 	}
 
 	// And generate a thumbnail and save it
-	thumbURL, err := u.generateThumbnail(original, contentType, getDirPathForThumbnail(recipeID), imageName)
+	thumbURL, err := u.generateThumbnail(original, getDirPathForThumbnail(recipeID), imageName)
 	if err != nil {
 		return "", "", err
 	}
@@ -95,11 +98,13 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	return io.ReadAll(file)
 }
 
-func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
-	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize, toResampleFilter(u.imgCfg.ThumbnailQuality))
+func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
+	thumbImage := image.NewRGBA(image.Rect(0, 0, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize))
+	transformer := toResampleFilter(u.imgCfg.ThumbnailQuality)
+	transformer.Scale(thumbImage, thumbImage.Bounds(), original, original.Bounds(), draw.Over, nil)
 
 	thumbBuf := new(bytes.Buffer)
-	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ThumbnailQuality)))
+	err := jpeg.Encode(thumbBuf, thumbImage, &jpeg.Options{Quality: toJPEGQuality(u.imgCfg.ThumbnailQuality)})
 	if err != nil {
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
@@ -107,18 +112,22 @@ func (u ImageUploader) generateThumbnail(original image.Image, contentType strin
 	return u.saveImage(thumbBuf.Bytes(), saveDir, imageName)
 }
 
-func (u ImageUploader) generateFitted(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
+func (u ImageUploader) generateFitted(original image.Image, saveDir string, imageName string) (string, error) {
 	var fittedImage image.Image
 
 	bounds := original.Bounds()
-	if bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize {
+	if u.imgCfg.ImageQuality == ImageQualityOriginal ||
+		bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize {
 		fittedImage = original
 	} else {
-		fittedImage = imaging.Fit(original, u.imgCfg.ImageSize, u.imgCfg.ImageSize, toResampleFilter(u.imgCfg.ImageQuality))
+		newImage := image.NewRGBA(image.Rect(0, 0, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize))
+		transformer := toResampleFilter(u.imgCfg.ThumbnailQuality)
+		transformer.Scale(newImage, newImage.Bounds(), original, original.Bounds(), draw.Over, nil)
+		fittedImage = newImage
 	}
 
 	fittedBuf := new(bytes.Buffer)
-	err := imaging.Encode(fittedBuf, fittedImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ImageQuality)))
+	err := jpeg.Encode(fittedBuf, fittedImage, &jpeg.Options{Quality: toJPEGQuality(u.imgCfg.ImageQuality)})
 	if err != nil {
 		return "", fmt.Errorf("failed to encode fitted image: %w", err)
 	}
@@ -144,22 +153,6 @@ func isImageFile(data []byte) (bool, string) {
 	return false, contentType
 }
 
-func getImageFormat(contentType string) imaging.Format {
-	switch contentType {
-	case "image/jpeg":
-		return imaging.JPEG
-	case "image/png":
-		return imaging.PNG
-	case "image/gif":
-		return imaging.GIF
-	case "image/bmp":
-		return imaging.BMP
-	case "image/tiff":
-		return imaging.TIFF
-	}
-	return imaging.JPEG
-}
-
 func getDirPathForRecipe(recipeID int64) string {
 	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
 }
@@ -172,23 +165,19 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {
+func toResampleFilter(q ImageQualityLevel) draw.Interpolator {
 	switch q {
-	case ImageQualityHigh:
-		return imaging.Box
 	case ImageQualityMedium:
-		return imaging.Box
+		return draw.BiLinear
 	case ImageQualityLow:
-		return imaging.NearestNeighbor
+		return draw.NearestNeighbor
 	default:
-		return imaging.Box
+		return draw.CatmullRom
 	}
 }
 
 func toJPEGQuality(q ImageQualityLevel) int {
 	switch q {
-	case ImageQualityHigh:
-		return 92
 	case ImageQualityMedium:
 		return 80
 	case ImageQualityLow:

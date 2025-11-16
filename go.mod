@@ -2,7 +2,6 @@ module github.com/chadweimer/gomp
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/disintegration/imaging v1.6.2
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/google/uuid v1.6.0
@@ -12,6 +11,7 @@ require (
 	github.com/samber/lo v1.52.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.44.0
+	golang.org/x/image v0.33.0
 	modernc.org/sqlite v1.40.0
 )
 
@@ -73,7 +73,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
 	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 // indirect
-	golang.org/x/image v0.33.0 // indirect
 	golang.org/x/mod v0.30.0 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect

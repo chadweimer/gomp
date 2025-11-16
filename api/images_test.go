@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"image/color"
+	"image"
+	"image/jpeg"
 	"io"
 	"io/fs"
 	"mime/multipart"
@@ -18,7 +19,6 @@ import (
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/upload"
 	"github.com/chadweimer/gomp/utils"
-	"github.com/disintegration/imaging"
 	"go.uber.org/mock/gomock"
 )
 
@@ -174,7 +174,7 @@ func Test_UploadImage(t *testing.T) {
 			buf := bytes.NewBuffer([]byte{})
 			writer := multipart.NewWriter(buf)
 			part, err := writer.CreateFormFile("fileupload", "img.jpeg")
-			imaging.Encode(part, imaging.New(1, 1, color.Black), imaging.JPEG)
+			jpeg.Encode(part, image.NewGray(image.Rect(0, 0, 1, 1)), nil)
 			writer.Close()
 
 			// Act
@@ -285,7 +285,7 @@ func Test_OptimizeImage(t *testing.T) {
 					uplDriver.EXPECT().Open(gomock.Any()).Return(nil, test.expectedLoadError)
 				} else {
 					buf := bytes.NewBuffer([]byte{})
-					imaging.Encode(buf, imaging.New(1, 1, color.Black), imaging.JPEG)
+					jpeg.Encode(buf, image.NewGray(image.Rect(0, 0, 1, 1)), nil)
 					fs := fstest.MapFS{
 						test.imageName: &fstest.MapFile{
 							Data:    buf.Bytes(),
