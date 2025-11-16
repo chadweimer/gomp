@@ -20,7 +20,7 @@ import (
 	"github.com/chadweimer/gomp/upload"
 	"github.com/chadweimer/gomp/utils"
 	"github.com/disintegration/imaging"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_GetImages(t *testing.T) {
