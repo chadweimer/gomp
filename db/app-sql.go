@@ -1,6 +1,8 @@
 package db
 
 import (
+	"context"
+
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -9,11 +11,11 @@ type sqlAppConfigurationDriver struct {
 	Db *sqlx.DB
 }
 
-func (d *sqlAppConfigurationDriver) Read() (*models.AppConfiguration, error) {
-	return get(d.Db, func(db sqlx.Queryer) (*models.AppConfiguration, error) {
+func (d *sqlAppConfigurationDriver) Read(ctx context.Context) (*models.AppConfiguration, error) {
+	return get(d.Db, func(db sqlx.QueryerContext) (*models.AppConfiguration, error) {
 		cfg := new(models.AppConfiguration)
 
-		if err := sqlx.Get(db, cfg, "SELECT * FROM app_configuration"); err != nil {
+		if err := sqlx.GetContext(ctx, db, cfg, "SELECT * FROM app_configuration"); err != nil {
 			return nil, err
 		}
 
@@ -21,13 +23,13 @@ func (d *sqlAppConfigurationDriver) Read() (*models.AppConfiguration, error) {
 	})
 }
 
-func (d *sqlAppConfigurationDriver) Update(cfg *models.AppConfiguration) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.updateImpl(cfg, db)
+func (d *sqlAppConfigurationDriver) Update(ctx context.Context, cfg *models.AppConfiguration) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.updateImpl(ctx, cfg, db)
 	})
 }
 
-func (*sqlAppConfigurationDriver) updateImpl(cfg *models.AppConfiguration, db sqlx.Execer) error {
-	_, err := db.Exec("UPDATE app_configuration SET title = $1", cfg.Title)
+func (*sqlAppConfigurationDriver) updateImpl(ctx context.Context, cfg *models.AppConfiguration, db sqlx.ExecerContext) error {
+	_, err := db.ExecContext(ctx, "UPDATE app_configuration SET title = $1", cfg.Title)
 	return err
 }

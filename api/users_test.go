@@ -42,13 +42,13 @@ func Test_GetUser(t *testing.T) {
 				},
 			}
 			if test.expectedError != nil {
-				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().Read(test.userID).Return(expectedUser, nil)
+				usersDriver.EXPECT().Read(t.Context(), test.userID).Return(expectedUser, nil)
 			}
 
 			// Act
-			resp, err := api.GetUser(context.Background(), GetUserRequestObject{UserID: test.userID})
+			resp, err := api.GetUser(t.Context(), GetUserRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -97,14 +97,14 @@ func Test_GetCurrentUser(t *testing.T) {
 					Username: test.username,
 				},
 			}
-			ctx := context.Background()
+			ctx := t.Context()
 			if test.userID != nil {
 				ctx = context.WithValue(ctx, currentUserIDCtxKey, *test.userID)
 			}
 			if test.expectedError != nil {
-				usersDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.expectedError)
 			} else if test.userID != nil {
-				usersDriver.EXPECT().Read(*test.userID).Return(expectedUser, nil)
+				usersDriver.EXPECT().Read(ctx, *test.userID).Return(expectedUser, nil)
 			}
 
 			// Act
@@ -159,13 +159,13 @@ func Test_GetAllUsers(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().List().Return(&test.users, test.expectedError)
+				usersDriver.EXPECT().List(t.Context()).Return(&test.users, test.expectedError)
 			} else {
-				usersDriver.EXPECT().List().Return(&test.users, nil)
+				usersDriver.EXPECT().List(t.Context()).Return(&test.users, nil)
 			}
 
 			// Act
-			resp, err := api.GetAllUsers(context.Background(), GetAllUsersRequestObject{})
+			resp, err := api.GetAllUsers(t.Context(), GetAllUsersRequestObject{})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -208,13 +208,13 @@ func Test_AddUser(t *testing.T) {
 				AccessLevel: test.accessLevel,
 			}
 			if test.expectedError != nil {
-				usersDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				usersDriver.EXPECT().Create(t.Context(), gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				usersDriver.EXPECT().Create(&expectedUser, test.password).Return(nil)
+				usersDriver.EXPECT().Create(t.Context(), &expectedUser, test.password).Return(nil)
 			}
 
 			// Act
-			resp, err := api.AddUser(context.Background(), AddUserRequestObject{Body: &UserWithPassword{User: expectedUser, Password: test.password}})
+			resp, err := api.AddUser(t.Context(), AddUserRequestObject{Body: &UserWithPassword{User: expectedUser, Password: test.password}})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -263,11 +263,11 @@ func Test_SaveUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().Update(gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().Update(&test.user).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().Update(ctx, &test.user).MaxTimes(1).Return(nil)
 			}
 
 			// Act
@@ -308,11 +308,11 @@ func Test_DeleteUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().Delete(gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().Delete(ctx, gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().Delete(test.userID).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().Delete(ctx, test.userID).MaxTimes(1).Return(nil)
 			}
 
 			// Act
@@ -351,11 +351,11 @@ func Test_ChangePassword(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdatePassword(gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().UpdatePassword(test.currentUserID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
+				usersDriver.EXPECT().UpdatePassword(ctx, test.currentUserID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
 			}
 
 			// Act
@@ -396,11 +396,11 @@ func Test_ChangeUserPassword(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdatePassword(gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().UpdatePassword(test.userID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
+				usersDriver.EXPECT().UpdatePassword(ctx, test.userID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
 			}
 
 			// Act
@@ -442,13 +442,13 @@ func Test_GetUserSettings(t *testing.T) {
 				HomeTitle: &test.homeTitle,
 			}
 			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSettings(gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().ReadSettings(t.Context(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSettings(test.userID).Return(expectedSettings, nil)
+				usersDriver.EXPECT().ReadSettings(t.Context(), test.userID).Return(expectedSettings, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSettings(context.Background(), GetUserSettingsRequestObject{UserID: test.userID})
+			resp, err := api.GetUserSettings(t.Context(), GetUserSettingsRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -496,11 +496,11 @@ func Test_GetSettings(t *testing.T) {
 				UserID:    &test.userID,
 				HomeTitle: &test.homeTitle,
 			}
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSettings(gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().ReadSettings(ctx, gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSettings(test.userID).Return(expectedSettings, nil)
+				usersDriver.EXPECT().ReadSettings(ctx, test.userID).Return(expectedSettings, nil)
 			}
 
 			// Act
@@ -551,11 +551,11 @@ func Test_SaveSettings(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdateSettings(gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().UpdateSettings(ctx, gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().UpdateSettings(&test.userSettings).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().UpdateSettings(ctx, &test.userSettings).MaxTimes(1).Return(nil)
 			}
 
 			// Act
@@ -601,11 +601,11 @@ func Test_SaveUserSettings(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.currentUserID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdateSettings(gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().UpdateSettings(ctx, gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().UpdateSettings(&test.userSettings).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().UpdateSettings(ctx, &test.userSettings).MaxTimes(1).Return(nil)
 			}
 
 			// Act
@@ -648,11 +648,11 @@ func Test_GetUserSearchFilters(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().ListSearchFilters(ctx, gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ListSearchFilters(test.userID).Return(&test.filters, nil)
+				usersDriver.EXPECT().ListSearchFilters(ctx, test.userID).Return(&test.filters, nil)
 			}
 
 			// Act
@@ -700,13 +700,13 @@ func Test_GetSearchFilters(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().ListSearchFilters(gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().ListSearchFilters(t.Context(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ListSearchFilters(test.userID).Return(&test.filters, nil)
+				usersDriver.EXPECT().ListSearchFilters(t.Context(), test.userID).Return(&test.filters, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSearchFilters(context.Background(), GetUserSearchFiltersRequestObject{UserID: test.userID})
+			resp, err := api.GetUserSearchFilters(t.Context(), GetUserSearchFiltersRequestObject{UserID: test.userID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -744,13 +744,13 @@ func Test_GetUserSearchFilter(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().ReadSearchFilter(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSearchFilter(test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
+				usersDriver.EXPECT().ReadSearchFilter(t.Context(), test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSearchFilter(context.Background(), GetUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
+			resp, err := api.GetUserSearchFilter(t.Context(), GetUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -784,11 +784,11 @@ func Test_GetSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
+				usersDriver.EXPECT().ReadSearchFilter(ctx, gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				usersDriver.EXPECT().ReadSearchFilter(test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
+				usersDriver.EXPECT().ReadSearchFilter(ctx, test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
 			}
 
 			// Act
@@ -845,13 +845,13 @@ func Test_AddUserSearchFilter(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().CreateSearchFilter(gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().CreateSearchFilter(t.Context(), gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().CreateSearchFilter(&test.filter).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().CreateSearchFilter(t.Context(), &test.filter).MaxTimes(1).Return(nil)
 			}
 
 			// Act
-			resp, err := api.AddUserSearchFilter(context.Background(), AddUserSearchFilterRequestObject{UserID: test.userID, Body: &test.filter})
+			resp, err := api.AddUserSearchFilter(t.Context(), AddUserSearchFilterRequestObject{UserID: test.userID, Body: &test.filter})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -903,11 +903,11 @@ func Test_AddSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().CreateSearchFilter(gomock.Any()).Return(test.expectedDbError)
+				usersDriver.EXPECT().CreateSearchFilter(ctx, gomock.Any()).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().CreateSearchFilter(&test.filter).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().CreateSearchFilter(ctx, &test.filter).MaxTimes(1).Return(nil)
 			}
 
 			// Act
@@ -977,15 +977,15 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
-				usersDriver.EXPECT().UpdateSearchFilter(gomock.Any()).Times(0).Return(test.expectedDbError)
+				usersDriver.EXPECT().ReadSearchFilter(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
+				usersDriver.EXPECT().UpdateSearchFilter(t.Context(), gomock.Any()).Times(0).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).MaxTimes(1).Return(&models.SavedSearchFilter{}, nil)
-				usersDriver.EXPECT().UpdateSearchFilter(&test.filter).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().ReadSearchFilter(t.Context(), gomock.Any(), gomock.Any()).MaxTimes(1).Return(&models.SavedSearchFilter{}, nil)
+				usersDriver.EXPECT().UpdateSearchFilter(t.Context(), &test.filter).MaxTimes(1).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SaveUserSearchFilter(context.Background(), SaveUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID, Body: &test.filter})
+			resp, err := api.SaveUserSearchFilter(t.Context(), SaveUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID, Body: &test.filter})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -1050,13 +1050,13 @@ func Test_SaveSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
 			if test.expectedDbError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
-				usersDriver.EXPECT().UpdateSearchFilter(gomock.Any()).Times(0).Return(test.expectedDbError)
+				usersDriver.EXPECT().ReadSearchFilter(ctx, gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
+				usersDriver.EXPECT().UpdateSearchFilter(ctx, gomock.Any()).Times(0).Return(test.expectedDbError)
 			} else {
-				usersDriver.EXPECT().ReadSearchFilter(gomock.Any(), gomock.Any()).MaxTimes(1).Return(&models.SavedSearchFilter{}, nil)
-				usersDriver.EXPECT().UpdateSearchFilter(&test.filter).MaxTimes(1).Return(nil)
+				usersDriver.EXPECT().ReadSearchFilter(ctx, gomock.Any(), gomock.Any()).MaxTimes(1).Return(&models.SavedSearchFilter{}, nil)
+				usersDriver.EXPECT().UpdateSearchFilter(ctx, &test.filter).MaxTimes(1).Return(nil)
 			}
 
 			// Act
@@ -1095,13 +1095,13 @@ func Test_DeleteUserSearchFilter(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().DeleteSearchFilter(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				usersDriver.EXPECT().DeleteSearchFilter(t.Context(), gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				usersDriver.EXPECT().DeleteSearchFilter(test.userID, test.filterID).Return(nil)
+				usersDriver.EXPECT().DeleteSearchFilter(t.Context(), test.userID, test.filterID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteUserSearchFilter(context.Background(), DeleteUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
+			resp, err := api.DeleteUserSearchFilter(t.Context(), DeleteUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -1135,11 +1135,11 @@ func Test_DeleteSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(context.Background(), currentUserIDCtxKey, test.userID)
+			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().DeleteSearchFilter(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				usersDriver.EXPECT().DeleteSearchFilter(ctx, gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				usersDriver.EXPECT().DeleteSearchFilter(test.userID, test.filterID).Return(nil)
+				usersDriver.EXPECT().DeleteSearchFilter(ctx, test.userID, test.filterID).Return(nil)
 			}
 
 			// Act

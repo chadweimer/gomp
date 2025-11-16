@@ -62,7 +62,7 @@ func Test_Image_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().Create(image)
+			err := sut.Images().Create(t.Context(), image)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -111,7 +111,7 @@ func Test_Image_Read(t *testing.T) {
 			}
 
 			// Act
-			image, err := sut.Images().Read(test.recipeID, test.imageID)
+			image, err := sut.Images().Read(t.Context(), test.recipeID, test.imageID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -160,7 +160,7 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			}
 
 			// Act
-			image, err := sut.Images().ReadMainImage(test.recipeID)
+			image, err := sut.Images().ReadMainImage(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -210,7 +210,7 @@ func Test_Image_UpdateMainImage(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().UpdateMainImage(test.recipeID, test.imageID)
+			err := sut.Images().UpdateMainImage(t.Context(), test.recipeID, test.imageID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -259,7 +259,7 @@ func Test_Image_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().Delete(test.recipeID, test.imageID)
+			err := sut.Images().Delete(t.Context(), test.recipeID, test.imageID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -305,7 +305,7 @@ func Test_Image_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().DeleteAll(test.recipeID)
+			err := sut.Images().DeleteAll(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -371,7 +371,7 @@ func Test_Image_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Images().List(test.recipeID)
+			result, err := sut.Images().List(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

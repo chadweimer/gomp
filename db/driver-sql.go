@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -74,13 +75,13 @@ func (d *sqlDriver) Close() error {
 	return nil
 }
 
-func get[T any](db sqlx.Queryer, op func(sqlx.Queryer) (T, error)) (T, error) {
+func get[T any](db sqlx.QueryerContext, op func(sqlx.QueryerContext) (T, error)) (T, error) {
 	t, err := op(db)
 	return t, mapSQLErrors(err)
 }
 
-func tx(db *sqlx.DB, op func(sqlx.Ext) error) error {
-	tx, err := db.Beginx()
+func tx(ctx context.Context, db *sqlx.DB, op func(sqlx.ExtContext) error) error {
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}

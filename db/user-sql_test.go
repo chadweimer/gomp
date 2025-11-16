@@ -59,7 +59,7 @@ func Test_User_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().Create(user, test.password)
+			err := sut.Users().Create(t.Context(), user, test.password)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -107,7 +107,7 @@ func Test_User_Read(t *testing.T) {
 			}
 
 			// Act
-			user, err := sut.Users().Read(test.userID)
+			user, err := sut.Users().Read(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -162,7 +162,7 @@ func Test_User_Authenticate(t *testing.T) {
 			}
 
 			// Act
-			user, err := sut.Users().Authenticate(test.username, test.attemptedPassword)
+			user, err := sut.Users().Authenticate(t.Context(), test.username, test.attemptedPassword)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -220,7 +220,7 @@ func Test_User_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().Update(user)
+			err := sut.Users().Update(t.Context(), user)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -282,7 +282,7 @@ func Test_User_UpdatePassword(t *testing.T) {
 			}
 
 			// Act
-			err = sut.Users().UpdatePassword(test.userID, test.attemptedPassword, test.newPassword)
+			err = sut.Users().UpdatePassword(t.Context(), test.userID, test.attemptedPassword, test.newPassword)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -331,7 +331,7 @@ func Test_User_ReadSettings(t *testing.T) {
 			}
 
 			// Act
-			userSettings, err := sut.Users().ReadSettings(test.userID)
+			userSettings, err := sut.Users().ReadSettings(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -402,7 +402,7 @@ func Test_User_UpdateSettings(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().UpdateSettings(userSettings)
+			err := sut.Users().UpdateSettings(t.Context(), userSettings)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -448,7 +448,7 @@ func Test_User_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().Delete(test.userID)
+			err := sut.Users().Delete(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -511,7 +511,7 @@ func Test_User_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Users().List()
+			result, err := sut.Users().List(t.Context())
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -652,7 +652,7 @@ func Test_User_CreateSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().CreateSearchFilter(test.searchFilter)
+			err := sut.Users().CreateSearchFilter(t.Context(), test.searchFilter)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -714,7 +714,7 @@ func Test_User_ReadSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			_, err := sut.Users().ReadSearchFilter(test.userID, test.filterID)
+			_, err := sut.Users().ReadSearchFilter(t.Context(), test.userID, test.filterID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -854,7 +854,7 @@ func Test_User_UpdateSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().UpdateSearchFilter(test.searchFilter)
+			err := sut.Users().UpdateSearchFilter(t.Context(), test.searchFilter)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -902,7 +902,7 @@ func Test_User_DeleteSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().DeleteSearchFilter(test.userID, test.filterID)
+			err := sut.Users().DeleteSearchFilter(t.Context(), test.userID, test.filterID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -961,7 +961,7 @@ func Test_User_ListSearchFilters(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Users().ListSearchFilters(test.userID)
+			result, err := sut.Users().ListSearchFilters(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

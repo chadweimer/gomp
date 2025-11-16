@@ -114,7 +114,7 @@ func Test_Recipe_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().Create(&test.recipe)
+			err := sut.Recipes().Create(t.Context(), &test.recipe)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -164,7 +164,7 @@ func Test_Recipe_Read(t *testing.T) {
 			}
 
 			// Act
-			recipe, err := sut.Recipes().Read(test.recipeID)
+			recipe, err := sut.Recipes().Read(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -286,7 +286,7 @@ func Test_Recipe_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().Update(&test.recipe)
+			err := sut.Recipes().Update(t.Context(), &test.recipe)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -332,7 +332,7 @@ func Test_Recipe_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().Delete(test.recipeID)
+			err := sut.Recipes().Delete(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -378,7 +378,7 @@ func Test_Recipe_GetRating(t *testing.T) {
 			}
 
 			// Act
-			rating, err := sut.Recipes().GetRating(test.recipeID)
+			rating, err := sut.Recipes().GetRating(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -440,7 +440,7 @@ func Test_Recipe_SetRating(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().SetRating(test.recipeID, test.expectedRating)
+			err := sut.Recipes().SetRating(t.Context(), test.recipeID, test.expectedRating)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -489,7 +489,7 @@ func Test_Recipe_SetState(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().SetState(test.recipeID, test.expectedState)
+			err := sut.Recipes().SetState(t.Context(), test.recipeID, test.expectedState)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -537,7 +537,7 @@ func Test_Recipe_CreateTag(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().CreateTag(test.recipeID, test.tag)
+			err := sut.Recipes().CreateTag(t.Context(), test.recipeID, test.tag)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -583,7 +583,7 @@ func Test_Recipe_DeleteAllTags(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().DeleteAllTags(test.recipeID)
+			err := sut.Recipes().DeleteAllTags(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -631,7 +631,7 @@ func Test_Recipe_ListTags(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Recipes().ListTags(test.recipeID)
+			result, err := sut.Recipes().ListTags(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -695,7 +695,7 @@ func Test_Recipe_ListAllTags(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Recipes().ListAllTags()
+			result, err := sut.Recipes().ListAllTags(t.Context())
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -1176,7 +1176,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			if tt.setupMock != nil {
 				tt.setupMock(dbmock)
 			}
-			got, total, err := sut.Recipes().Find(tt.args.filter, tt.args.page, tt.args.count)
+			got, total, err := sut.Recipes().Find(t.Context(), tt.args.filter, tt.args.page, tt.args.count)
 			if !errors.Is(err, tt.expectedErr) {
 				t.Errorf("expected error: %v, got: %v", tt.expectedErr, err)
 			}

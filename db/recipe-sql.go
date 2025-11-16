@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -26,24 +27,24 @@ var supportedSearchFields = [...]models.SearchField{
 	models.SearchFieldNutrition,
 }
 
-func (d *sqlRecipeDriver) Create(recipe *models.Recipe) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.createImpl(recipe, db)
+func (d *sqlRecipeDriver) Create(ctx context.Context, recipe *models.Recipe) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.createImpl(ctx, recipe, db)
 	})
 }
 
-func (d *sqlRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Ext) error {
+func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExtContext) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time) " +
 		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
 
-	err := sqlx.Get(db, recipe, stmt,
+	err := sqlx.GetContext(ctx, db, recipe, stmt,
 		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.Time)
 	if err != nil {
 		return fmt.Errorf("creating recipe: %w", err)
 	}
 
 	for _, tag := range recipe.Tags {
-		if err := d.createTagImpl(*recipe.ID, tag, db); err != nil {
+		if err := d.createTagImpl(ctx, *recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("adding tags to new recipe: %w", err)
 		}
 	}
@@ -51,16 +52,16 @@ func (d *sqlRecipeDriver) createImpl(recipe *models.Recipe, db sqlx.Ext) error {
 	return nil
 }
 
-func (d *sqlRecipeDriver) Read(id int64) (*models.Recipe, error) {
-	return get(d.Db, func(q sqlx.Queryer) (*models.Recipe, error) {
+func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, error) {
+	return get(d.Db, func(q sqlx.QueryerContext) (*models.Recipe, error) {
 		stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, created_at, modified_at " +
 			"FROM recipe WHERE id = $1"
 		recipe := new(models.Recipe)
-		if err := sqlx.Get(q, recipe, stmt, id); err != nil {
+		if err := sqlx.GetContext(ctx, q, recipe, stmt, id); err != nil {
 			return nil, err
 		}
 
-		tags, err := d.ListTags(id)
+		tags, err := d.ListTags(ctx, id)
 		if err != nil {
 			return nil, fmt.Errorf("reading tags for recipe: %w", err)
 		}
@@ -70,18 +71,18 @@ func (d *sqlRecipeDriver) Read(id int64) (*models.Recipe, error) {
 	})
 }
 
-func (d *sqlRecipeDriver) Update(recipe *models.Recipe) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.updateImpl(recipe, db)
+func (d *sqlRecipeDriver) Update(ctx context.Context, recipe *models.Recipe) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.updateImpl(ctx, recipe, db)
 	})
 }
 
-func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) error {
+func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExecerContext) error {
 	if recipe.ID == nil {
 		return ErrMissingID
 	}
 
-	_, err := db.Exec(
+	_, err := db.ExecContext(ctx,
 		"UPDATE recipe "+
 			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7, recipe_time = $8 "+
 			"WHERE id = $9",
@@ -91,11 +92,11 @@ func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) erro
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if err = d.deleteAllTagsImpl(*recipe.ID, db); err != nil {
+	if err = d.deleteAllTagsImpl(ctx, *recipe.ID, db); err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %w", err)
 	}
 	for _, tag := range recipe.Tags {
-		if err = d.createTagImpl(*recipe.ID, tag, db); err != nil {
+		if err = d.createTagImpl(ctx, *recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("updating tags on recipe: %w", err)
 		}
 	}
@@ -103,24 +104,24 @@ func (d *sqlRecipeDriver) updateImpl(recipe *models.Recipe, db sqlx.Execer) erro
 	return nil
 }
 
-func (d *sqlRecipeDriver) Delete(id int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.deleteImpl(id, db)
+func (d *sqlRecipeDriver) Delete(ctx context.Context, id int64) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.deleteImpl(ctx, id, db)
 	})
 }
 
-func (*sqlRecipeDriver) deleteImpl(id int64, db sqlx.Execer) error {
-	if _, err := db.Exec("DELETE FROM recipe WHERE id = $1", id); err != nil {
+func (*sqlRecipeDriver) deleteImpl(ctx context.Context, id int64, db sqlx.ExecerContext) error {
+	if _, err := db.ExecContext(ctx, "DELETE FROM recipe WHERE id = $1", id); err != nil {
 		return fmt.Errorf("deleting recipe: %w", err)
 	}
 
 	return nil
 }
 
-func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
-	return get(d.Db, func(db sqlx.Queryer) (*float32, error) {
+func (d *sqlRecipeDriver) GetRating(ctx context.Context, id int64) (*float32, error) {
+	return get(d.Db, func(db sqlx.QueryerContext) (*float32, error) {
 		var rating float32
-		err := sqlx.Get(db, &rating,
+		err := sqlx.GetContext(ctx, db, &rating,
 			"SELECT COALESCE(g.rating, 0) AS avg_rating FROM recipe AS r "+
 				"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id "+
 				"WHERE r.id = $1", id)
@@ -132,19 +133,19 @@ func (d *sqlRecipeDriver) GetRating(id int64) (*float32, error) {
 	})
 }
 
-func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
+func (d *sqlRecipeDriver) SetRating(ctx context.Context, id int64, rating float32) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
 		count := -1
-		err := sqlx.Get(db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
+		err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
 		if errors.Is(err, sql.ErrNoRows) || count == 0 {
-			_, err = db.Exec(
+			_, err = db.ExecContext(ctx,
 				"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
 			if err != nil {
 				return fmt.Errorf("creating recipe rating: %w", err)
 			}
 		} else if err == nil {
-			_, err = db.Exec(
+			_, err = db.ExecContext(ctx,
 				"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
 		}
 
@@ -156,9 +157,9 @@ func (d *sqlRecipeDriver) SetRating(id int64, rating float32) error {
 	})
 }
 
-func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		_, err := db.Exec(
+func (d *sqlRecipeDriver) SetState(ctx context.Context, id int64, state models.RecipeState) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		_, err := db.ExecContext(ctx,
 			"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
 		if err != nil {
 			return fmt.Errorf("updating recipe state: %w", err)
@@ -168,7 +169,7 @@ func (d *sqlRecipeDriver) SetState(id int64, state models.RecipeState) error {
 	})
 }
 
-func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
+func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
 	whereStmt := "WHERE r.current_state IS NOT NULL"
 	whereArgs := make([]any, 0)
 	var err error
@@ -228,7 +229,7 @@ func (d *sqlRecipeDriver) Find(filter *models.SearchFilter, page int64, count in
 	selectStmt := d.Db.Rebind(combinedStr)
 
 	recipes := make([]models.RecipeCompact, 0)
-	if err = sqlx.Select(d.Db, &recipes, selectStmt, selectArgs...); err != nil {
+	if err = sqlx.SelectContext(ctx, d.Db, &recipes, selectStmt, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 
@@ -302,36 +303,36 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 	return stmt
 }
 
-func (d *sqlRecipeDriver) CreateTag(recipeID int64, tag string) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.createTagImpl(recipeID, tag, db)
+func (d *sqlRecipeDriver) CreateTag(ctx context.Context, recipeID int64, tag string) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.createTagImpl(ctx, recipeID, tag, db)
 	})
 }
 
-func (*sqlRecipeDriver) createTagImpl(recipeID int64, tag string, db sqlx.Execer) error {
-	_, err := db.Exec(
+func (*sqlRecipeDriver) createTagImpl(ctx context.Context, recipeID int64, tag string, db sqlx.ExecerContext) error {
+	_, err := db.ExecContext(ctx,
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeID, tag)
 	return err
 }
 
-func (d *sqlRecipeDriver) DeleteAllTags(recipeID int64) error {
-	return tx(d.Db, func(db sqlx.Ext) error {
-		return d.deleteAllTagsImpl(recipeID, db)
+func (d *sqlRecipeDriver) DeleteAllTags(ctx context.Context, recipeID int64) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.deleteAllTagsImpl(ctx, recipeID, db)
 	})
 }
 
-func (*sqlRecipeDriver) deleteAllTagsImpl(recipeID int64, db sqlx.Execer) error {
-	_, err := db.Exec(
+func (*sqlRecipeDriver) deleteAllTagsImpl(ctx context.Context, recipeID int64, db sqlx.ExecerContext) error {
+	_, err := db.ExecContext(ctx,
 		"DELETE FROM recipe_tag WHERE recipe_id = $1",
 		recipeID)
 	return err
 }
 
-func (d *sqlRecipeDriver) ListTags(recipeID int64) (*[]string, error) {
-	return get(d.Db, func(db sqlx.Queryer) (*[]string, error) {
+func (d *sqlRecipeDriver) ListTags(ctx context.Context, recipeID int64) (*[]string, error) {
+	return get(d.Db, func(db sqlx.QueryerContext) (*[]string, error) {
 		tags := make([]string, 0)
-		if err := sqlx.Select(db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
+		if err := sqlx.SelectContext(ctx, db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
 			return nil, err
 		}
 
@@ -339,9 +340,9 @@ func (d *sqlRecipeDriver) ListTags(recipeID int64) (*[]string, error) {
 	})
 }
 
-func (d *sqlRecipeDriver) ListAllTags() (*map[string]int, error) {
-	return get(d.Db, func(db sqlx.Queryer) (*map[string]int, error) {
-		rows, err := db.Query("SELECT tag, count(tag) as num FROM recipe_tag GROUP BY tag")
+func (d *sqlRecipeDriver) ListAllTags(ctx context.Context) (*map[string]int, error) {
+	return get(d.Db, func(db sqlx.QueryerContext) (*map[string]int, error) {
+		rows, err := db.QueryContext(ctx, "SELECT tag, count(tag) as num FROM recipe_tag GROUP BY tag")
 		if err != nil {
 			return nil, err
 		}

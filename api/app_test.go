@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -21,7 +20,7 @@ func Test_GetInfo(t *testing.T) {
 	api, _ := getMockAppConfigurationAPI(ctrl)
 
 	// Act
-	resp, err := api.GetInfo(context.Background(), GetInfoRequestObject{})
+	resp, err := api.GetInfo(t.Context(), GetInfoRequestObject{})
 
 	// Assert
 	if err != nil {
@@ -47,15 +46,15 @@ func Test_GetConfiguration(t *testing.T) {
 		api, appDriver := getMockAppConfigurationAPI(ctrl)
 		const expectedTitle = "The App Title"
 		if expectError {
-			appDriver.EXPECT().Read().Return(nil, errors.New("an error"))
+			appDriver.EXPECT().Read(t.Context()).Return(nil, errors.New("an error"))
 		} else {
-			appDriver.EXPECT().Read().Return(&models.AppConfiguration{
+			appDriver.EXPECT().Read(t.Context()).Return(&models.AppConfiguration{
 				Title: expectedTitle,
 			}, nil)
 		}
 
 		// Act
-		resp, err := api.GetConfiguration(context.Background(), GetConfigurationRequestObject{})
+		resp, err := api.GetConfiguration(t.Context(), GetConfigurationRequestObject{})
 
 		// Assert
 		if (err != nil) != expectError {
@@ -83,13 +82,13 @@ func Test_SaveConfiguration(t *testing.T) {
 		const expectedTitle = "The App Title"
 		appCfg := &models.AppConfiguration{Title: expectedTitle}
 		if expectError {
-			appDriver.EXPECT().Update(appCfg).Return(errors.New("an error"))
+			appDriver.EXPECT().Update(t.Context(), appCfg).Return(errors.New("an error"))
 		} else {
-			appDriver.EXPECT().Update(appCfg)
+			appDriver.EXPECT().Update(t.Context(), appCfg)
 		}
 
 		// Act
-		resp, err := api.SaveConfiguration(context.Background(), SaveConfigurationRequestObject{Body: appCfg})
+		resp, err := api.SaveConfiguration(t.Context(), SaveConfigurationRequestObject{Body: appCfg})
 
 		// Assert
 		if (err != nil) != expectError {

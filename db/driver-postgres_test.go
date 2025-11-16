@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"database/sql/driver"
 	"errors"
@@ -85,7 +84,7 @@ func Test_lockPostgres(t *testing.T) {
 
 			sut, dbmock := getMockDb(t)
 			defer sut.Close()
-			conn, err := sut.Db.Conn(context.Background())
+			conn, err := sut.Db.Conn(t.Context())
 			if err != nil {
 				t.Fatalf("failed to open connection, error: %v", err)
 			}

@@ -52,7 +52,7 @@ func Test_Note_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Notes().Create(note)
+			err := sut.Notes().Create(t.Context(), note)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -105,7 +105,7 @@ func Test_Note_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Notes().Update(note)
+			err := sut.Notes().Update(t.Context(), note)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -152,7 +152,7 @@ func Test_Note_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Notes().Delete(test.recipeID, test.noteID)
+			err := sut.Notes().Delete(t.Context(), test.recipeID, test.noteID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -198,7 +198,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Notes().DeleteAll(test.recipeID)
+			err := sut.Notes().DeleteAll(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -260,7 +260,7 @@ func Test_Note_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Notes().List(test.recipeID)
+			result, err := sut.Notes().List(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -39,13 +38,13 @@ func Test_GetNotes(t *testing.T) {
 
 			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
-				notesDriver.EXPECT().List(test.recipeID).Return(nil, db.ErrNotFound)
+				notesDriver.EXPECT().List(t.Context(), test.recipeID).Return(nil, db.ErrNotFound)
 			} else {
-				notesDriver.EXPECT().List(test.recipeID).Return(&test.notes, nil)
+				notesDriver.EXPECT().List(t.Context(), test.recipeID).Return(&test.notes, nil)
 			}
 
 			// Act
-			resp, err := api.GetNotes(context.Background(), GetNotesRequestObject{RecipeID: test.recipeID})
+			resp, err := api.GetNotes(t.Context(), GetNotesRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -83,13 +82,13 @@ func Test_AddNote(t *testing.T) {
 
 			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
-				notesDriver.EXPECT().Create(gomock.Any()).Return(db.ErrNotFound)
+				notesDriver.EXPECT().Create(t.Context(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				notesDriver.EXPECT().Create(&test.note).Return(nil)
+				notesDriver.EXPECT().Create(t.Context(), &test.note).Return(nil)
 			}
 
 			// Act
-			resp, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
+			resp, err := api.AddNote(t.Context(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -120,10 +119,10 @@ func Test_AddNote_MismatchedID(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesAPI(ctrl)
-			notesDriver.EXPECT().Create(test.note).Times(0).Return(nil)
+			notesDriver.EXPECT().Create(t.Context(), test.note).Times(0).Return(nil)
 
 			// Act
-			_, err := api.AddNote(context.Background(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
+			_, err := api.AddNote(t.Context(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
 
 			// Assert
 			if err == nil {
@@ -156,13 +155,13 @@ func Test_SaveNote(t *testing.T) {
 
 			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
-				notesDriver.EXPECT().Update(gomock.Any()).Return(db.ErrNotFound)
+				notesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				notesDriver.EXPECT().Update(&test.note).Return(nil)
+				notesDriver.EXPECT().Update(t.Context(), &test.note).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
+			resp, err := api.SaveNote(t.Context(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -195,10 +194,10 @@ func Test_SaveNote_MismatchedID(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesAPI(ctrl)
-			notesDriver.EXPECT().Update(test.note).Times(0).Return(nil)
+			notesDriver.EXPECT().Update(t.Context(), test.note).Times(0).Return(nil)
 
 			// Act
-			_, err := api.SaveNote(context.Background(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
+			_, err := api.SaveNote(t.Context(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
 
 			// Assert
 			if err == nil {
@@ -232,13 +231,13 @@ func Test_DeleteNote(t *testing.T) {
 
 			api, notesDriver := getMockNotesAPI(ctrl)
 			if test.expectError {
-				notesDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+				notesDriver.EXPECT().Delete(t.Context(), gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				notesDriver.EXPECT().Delete(test.recipeID, test.noteID).Return(nil)
+				notesDriver.EXPECT().Delete(t.Context(), test.recipeID, test.noteID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteNote(context.Background(), DeleteNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID})
+			resp, err := api.DeleteNote(t.Context(), DeleteNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID})
 
 			// Assert
 			if (err != nil) != test.expectError {

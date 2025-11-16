@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -39,13 +38,13 @@ func Test_GetLinks(t *testing.T) {
 
 			api, linkDriver := getMockLinkAPI(ctrl)
 			if test.expectError {
-				linkDriver.EXPECT().List(test.recipeID).Return(nil, db.ErrNotFound)
+				linkDriver.EXPECT().List(t.Context(), test.recipeID).Return(nil, db.ErrNotFound)
 			} else {
-				linkDriver.EXPECT().List(test.recipeID).Return(&test.links, nil)
+				linkDriver.EXPECT().List(t.Context(), test.recipeID).Return(&test.links, nil)
 			}
 
 			// Act
-			resp, err := api.GetLinks(context.Background(), GetLinksRequestObject{RecipeID: test.recipeID})
+			resp, err := api.GetLinks(t.Context(), GetLinksRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -85,13 +84,13 @@ func Test_AddLink(t *testing.T) {
 
 			api, linkDriver := getMockLinkAPI(ctrl)
 			if test.expectError {
-				linkDriver.EXPECT().Create(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+				linkDriver.EXPECT().Create(t.Context(), gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				linkDriver.EXPECT().Create(test.recipeID, test.destRecipeID).Return(nil)
+				linkDriver.EXPECT().Create(t.Context(), test.recipeID, test.destRecipeID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.AddLink(context.Background(), AddLinkRequestObject{RecipeID: test.recipeID, DestRecipeID: test.destRecipeID})
+			resp, err := api.AddLink(t.Context(), AddLinkRequestObject{RecipeID: test.recipeID, DestRecipeID: test.destRecipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -128,13 +127,13 @@ func Test_DeleteLink(t *testing.T) {
 
 			api, linkDriver := getMockLinkAPI(ctrl)
 			if test.expectError {
-				linkDriver.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+				linkDriver.EXPECT().Delete(t.Context(), gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
 			} else {
-				linkDriver.EXPECT().Delete(test.recipeID, test.destRecipeID).Return(nil)
+				linkDriver.EXPECT().Delete(t.Context(), test.recipeID, test.destRecipeID).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteLink(context.Background(), DeleteLinkRequestObject{RecipeID: test.recipeID, DestRecipeID: test.destRecipeID})
+			resp, err := api.DeleteLink(t.Context(), DeleteLinkRequestObject{RecipeID: test.recipeID, DestRecipeID: test.destRecipeID})
 
 			// Assert
 			if (err != nil) != test.expectError {

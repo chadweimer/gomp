@@ -6,7 +6,7 @@ import (
 	"github.com/chadweimer/gomp/models"
 )
 
-func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResponseObject, error) {
+func (h apiHandler) Find(ctx context.Context, request FindRequestObject) (FindResponseObject, error) {
 	params := request.Params
 	query := ""
 	if params.Q != nil {
@@ -33,6 +33,8 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 		case No:
 			val := false
 			withPictures = &val
+		default:
+			// No action needed for other values
 		}
 	}
 
@@ -59,7 +61,7 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 		SortDir:      sortDir,
 	}
 
-	recipes, total, err := h.db.Recipes().Find(&filter, page, params.Count)
+	recipes, total, err := h.db.Recipes().Find(ctx, &filter, page, params.Count)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +69,8 @@ func (h apiHandler) Find(_ context.Context, request FindRequestObject) (FindResp
 	return Find200JSONResponse{Recipes: recipes, Total: total}, nil
 }
 
-func (h apiHandler) GetRecipe(_ context.Context, request GetRecipeRequestObject) (GetRecipeResponseObject, error) {
-	recipe, err := h.db.Recipes().Read(request.RecipeID)
+func (h apiHandler) GetRecipe(ctx context.Context, request GetRecipeRequestObject) (GetRecipeResponseObject, error) {
+	recipe, err := h.db.Recipes().Read(ctx, request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,16 +78,16 @@ func (h apiHandler) GetRecipe(_ context.Context, request GetRecipeRequestObject)
 	return GetRecipe200JSONResponse(*recipe), nil
 }
 
-func (h apiHandler) AddRecipe(_ context.Context, request AddRecipeRequestObject) (AddRecipeResponseObject, error) {
+func (h apiHandler) AddRecipe(ctx context.Context, request AddRecipeRequestObject) (AddRecipeResponseObject, error) {
 	recipe := request.Body
-	if err := h.db.Recipes().Create(recipe); err != nil {
+	if err := h.db.Recipes().Create(ctx, recipe); err != nil {
 		return nil, err
 	}
 
 	return AddRecipe201JSONResponse(*recipe), nil
 }
 
-func (h apiHandler) SaveRecipe(_ context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
+func (h apiHandler) SaveRecipe(ctx context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
 	recipe := request.Body
 	if recipe.ID == nil {
 		recipe.ID = &request.RecipeID
@@ -93,15 +95,15 @@ func (h apiHandler) SaveRecipe(_ context.Context, request SaveRecipeRequestObjec
 		return nil, errMismatchedID
 	}
 
-	if err := h.db.Recipes().Update(recipe); err != nil {
+	if err := h.db.Recipes().Update(ctx, recipe); err != nil {
 		return nil, err
 	}
 
 	return SaveRecipe204Response{}, nil
 }
 
-func (h apiHandler) DeleteRecipe(_ context.Context, request DeleteRecipeRequestObject) (DeleteRecipeResponseObject, error) {
-	if err := h.db.Recipes().Delete(request.RecipeID); err != nil {
+func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeRequestObject) (DeleteRecipeResponseObject, error) {
+	if err := h.db.Recipes().Delete(ctx, request.RecipeID); err != nil {
 		return nil, err
 	}
 
@@ -113,16 +115,16 @@ func (h apiHandler) DeleteRecipe(_ context.Context, request DeleteRecipeRequestO
 	return DeleteRecipe204Response{}, nil
 }
 
-func (h apiHandler) SetState(_ context.Context, request SetStateRequestObject) (SetStateResponseObject, error) {
-	if err := h.db.Recipes().SetState(request.RecipeID, *request.Body); err != nil {
+func (h apiHandler) SetState(ctx context.Context, request SetStateRequestObject) (SetStateResponseObject, error) {
+	if err := h.db.Recipes().SetState(ctx, request.RecipeID, *request.Body); err != nil {
 		return nil, err
 	}
 
 	return SetState204Response{}, nil
 }
 
-func (h apiHandler) GetRating(_ context.Context, request GetRatingRequestObject) (GetRatingResponseObject, error) {
-	rating, err := h.db.Recipes().GetRating(request.RecipeID)
+func (h apiHandler) GetRating(ctx context.Context, request GetRatingRequestObject) (GetRatingResponseObject, error) {
+	rating, err := h.db.Recipes().GetRating(ctx, request.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -130,16 +132,16 @@ func (h apiHandler) GetRating(_ context.Context, request GetRatingRequestObject)
 	return GetRating200JSONResponse(*rating), nil
 }
 
-func (h apiHandler) SetRating(_ context.Context, request SetRatingRequestObject) (SetRatingResponseObject, error) {
-	if err := h.db.Recipes().SetRating(request.RecipeID, *request.Body); err != nil {
+func (h apiHandler) SetRating(ctx context.Context, request SetRatingRequestObject) (SetRatingResponseObject, error) {
+	if err := h.db.Recipes().SetRating(ctx, request.RecipeID, *request.Body); err != nil {
 		return nil, err
 	}
 
 	return SetRating204Response{}, nil
 }
 
-func (h apiHandler) GetAllTags(_ context.Context, _ GetAllTagsRequestObject) (GetAllTagsResponseObject, error) {
-	tags, err := h.db.Recipes().ListAllTags()
+func (h apiHandler) GetAllTags(ctx context.Context, _ GetAllTagsRequestObject) (GetAllTagsResponseObject, error) {
+	tags, err := h.db.Recipes().ListAllTags(ctx)
 	if err != nil {
 		return nil, err
 	}
