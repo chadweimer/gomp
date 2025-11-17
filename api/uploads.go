@@ -34,12 +34,14 @@ func readFile(reader *multipart.Reader) ([]byte, string, error) {
 	}
 	defer part.Close()
 
+	fileName := part.FileName()
 	uploadedFileData, err := io.ReadAll(part)
 	if err != nil {
 		return nil, "", err
 	}
 
 	// Generate a unique name for the image
-	imageName := uuid.New().String() + ".jpeg"
+	imageExt := filepath.Ext(fileName)
+	imageName := uuid.New().String() + imageExt
 	return uploadedFileData, imageName, nil
 }

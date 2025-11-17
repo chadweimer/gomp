@@ -40,16 +40,16 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 	}
 
 	// Save the image itself
-	url, thumbURL, err := h.upl.Save(request.RecipeID, imageName, uploadedFileData)
+	saveResult, err := h.upl.Save(request.RecipeID, imageName, uploadedFileData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save image file: %w", err)
 	}
 
 	imageInfo := models.RecipeImage{
 		RecipeID:     &request.RecipeID,
-		Name:         &imageName,
-		URL:          &url,
-		ThumbnailURL: &thumbURL,
+		Name:         &saveResult.Name,
+		URL:          &saveResult.URL,
+		ThumbnailURL: &saveResult.ThumbnailURL,
 	}
 
 	// Now insert the record in the database
@@ -95,7 +95,7 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 
 	// Resave it, which will downscale if larger than the threshold,
 	// as well as regenerate the thumbnail
-	if _, _, err = h.upl.Save(request.RecipeID, *image.Name, data); err != nil {
+	if _, err = h.upl.Save(request.RecipeID, *image.Name, data); err != nil {
 		return nil, fmt.Errorf("failed to re-save image data: %w", err)
 	}
 

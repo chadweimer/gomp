@@ -27,6 +27,16 @@ type ImageUploader struct {
 	imgCfg ImageConfig
 }
 
+// SaveResult represents the result of saving an uploaded image
+type SaveResult struct {
+	// Name is the filename of the saved image
+	Name string
+	// URL is the URL to access the image
+	URL string
+	// ThumbnailURL is the URL to access the thumbnail image
+	ThumbnailURL string
+}
+
 // CreateImageUploader returns an ImageUploader implementation that uses the specified Driver
 func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, error) {
 	if err := imgCfg.validate(); err != nil {
@@ -37,35 +47,48 @@ func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, err
 
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (originalURL, thumbnailURL string, err error) {
+func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (result *SaveResult, err error) {
 	ok, contentType := isImageFile(data)
 	if !ok {
-		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)
+		return nil, fmt.Errorf("attachment must be an image; content type: %s ", contentType)
 	}
+
+	// Make sure the file extension is .jpeg
+	imageExt := filepath.Ext(imageName)
+	imageName = imageName[0:len(imageName)-len(imageExt)] + ".jpeg"
 
 	// First decode the image
 	dataReader := bytes.NewReader(data)
-	original, _, err := image.Decode(dataReader)
-	// TODO: Do we need to auto-detect EXIF orientation and rotate the image accordingly?
+	original, format, err := image.Decode(dataReader)
+	// QUESTION: Do we need to auto-detect EXIF orientation and rotate the image accordingly?
 	if err != nil {
-		return "", "", fmt.Errorf("failed to decode image: %w", err)
+		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// Then determine if it should be resized before saving
-	var origURL string
+	var imageURL string
 	imgDir := getDirPathForImage(recipeID)
-	origURL, err = u.generateFitted(original, imgDir, imageName)
-	if err != nil {
-		return "", "", err
+	if format == "jpeg" && u.imgCfg.ImageQuality == ImageQualityOriginal {
+		// Save the original as-is
+		imageURL, err = u.saveImage(data, imgDir, imageName)
+	} else {
+		// Resize and save as jpeg
+		imageURL, err = u.generateFitted(original, imgDir, imageName)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// And generate a thumbnail and save it
 	thumbURL, err := u.generateThumbnail(original, getDirPathForThumbnail(recipeID), imageName)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return origURL, thumbURL, nil
+	return &SaveResult{
+		Name:         imageName,
+		URL:          imageURL,
+		ThumbnailURL: thumbURL,
+	}, nil
 }
 
 // Delete removes the specified image files from the upload store.
@@ -166,8 +189,8 @@ func scaleImage(img image.Image, maxSize int, quality ImageQualityLevel) image.I
 	return scaledImg
 }
 
-func getInterpolator(q ImageQualityLevel) draw.Interpolator {
-	switch q {
+func getInterpolator(quality ImageQualityLevel) draw.Interpolator {
+	switch quality {
 	case ImageQualityMedium:
 		return draw.BiLinear
 	case ImageQualityLow:
@@ -177,8 +200,8 @@ func getInterpolator(q ImageQualityLevel) draw.Interpolator {
 	}
 }
 
-func getJPEGOptions(q ImageQualityLevel) *jpeg.Options {
-	switch q {
+func getJPEGOptions(quality ImageQualityLevel) *jpeg.Options {
+	switch quality {
 	case ImageQualityMedium:
 		return &jpeg.Options{Quality: 80}
 	case ImageQualityLow:
