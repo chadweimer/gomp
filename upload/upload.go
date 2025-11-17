@@ -123,7 +123,7 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	cover := cover(original, float64(u.imgCfg.ThumbnailSize))
+	cover := cover(original.Bounds(), float64(u.imgCfg.ThumbnailSize))
 	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getInterpolator(u.imgCfg.ThumbnailQuality))
 	thumbImage := crop(resizedImage, cover)
 	thumbBuf := new(bytes.Buffer)
@@ -143,7 +143,7 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		fit := fit(original, float64(u.imgCfg.ImageSize))
+		fit := fit(original.Bounds(), float64(u.imgCfg.ImageSize))
 		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getInterpolator(u.imgCfg.ImageQuality))
 	}
 
