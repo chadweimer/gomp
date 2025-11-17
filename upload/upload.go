@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"math"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -122,7 +123,9 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	thumbImage := scaleImage(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailQuality)
+	cover := cover(original, float64(u.imgCfg.ThumbnailSize))
+	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getInterpolator(u.imgCfg.ThumbnailQuality))
+	thumbImage := crop(resizedImage, cover)
 	thumbBuf := new(bytes.Buffer)
 	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
@@ -140,7 +143,8 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		fittedImage = scaleImage(original, u.imgCfg.ImageSize, u.imgCfg.ImageQuality)
+		fit := fit(original, float64(u.imgCfg.ImageSize))
+		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getInterpolator(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
@@ -182,11 +186,51 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func scaleImage(img image.Image, maxSize int, quality ImageQualityLevel) image.Image {
-	scaledImg := image.NewRGBA(image.Rect(0, 0, maxSize, maxSize))
-	interpolator := getInterpolator(quality)
-	interpolator.Scale(scaledImg, scaledImg.Bounds(), img, img.Bounds(), draw.Over, nil)
-	return scaledImg
+func fit(src image.Rectangle, size float64) image.Rectangle {
+	// Compute the two possible scale factors.
+	scaleW := size / float64(src.Dx())
+	scaleH := size / float64(src.Dy())
+
+	// Pick the *smaller* factor so the whole image stays visible.
+	scale := math.Min(scaleW, scaleH)
+
+	newW := int(math.Round(float64(src.Dx()) * scale))
+	newH := int(math.Round(float64(src.Dy()) * scale))
+	return image.Rect(0, 0, newW, newH)
+}
+
+func cover(src image.Rectangle, size float64) image.Rectangle {
+	// Compute the two possible scale factors.
+	scaleW := size / float64(src.Dx())
+	scaleH := size / float64(src.Dy())
+
+	// Pick the *larger* factor so the image fills the box.
+	scale := math.Max(scaleW, scaleH)
+
+	newW := int(math.Round(float64(src.Dx()) * scale))
+	newH := int(math.Round(float64(src.Dy()) * scale))
+
+	// Offsets for a centred crop.
+	offsetX := (newW - size) * 0.5
+	offsetY := (newH - size) * 0.5
+
+	return image.Rect(
+		offsetX,
+		offsetY,
+		newW + offsetX,
+		newH + offsetY)
+}
+
+func resizeImage(src image.Image, dstW, dstH int, scaler draw.Scaler) *image.RGBA {
+	dst := image.NewRGBA(image.Rect(0, 0, dstW, dstH))
+	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
+	return dst
+}
+
+func crop(src *image.RGBA, r image.Rectangle) *image.RGBA {
+	// Ensure the rectangle lies inside src.Bounds().
+	r = r.Intersect(src.Bounds())
+	return src.SubImage(r).(*image.RGBA)
 }
 
 func getInterpolator(quality ImageQualityLevel) draw.Interpolator {
