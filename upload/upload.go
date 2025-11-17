@@ -73,9 +73,9 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (resu
 	} else {
 		// Resize and save as jpeg
 		imageURL, err = u.generateFitted(original, imgDir, imageName)
-		if err != nil {
-			return nil, err
-		}
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	// And generate a thumbnail and save it
