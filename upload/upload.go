@@ -123,7 +123,7 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	cover := cover(original.Bounds(), float64(u.imgCfg.ThumbnailSize))
+	cover := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
 	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getInterpolator(u.imgCfg.ThumbnailQuality))
 	thumbImage := crop(resizedImage, cover)
 	thumbBuf := new(bytes.Buffer)
@@ -143,7 +143,7 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		fit := fit(original.Bounds(), float64(u.imgCfg.ImageSize))
+		fit := fit(original.Bounds(), u.imgCfg.ImageSize)
 		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getInterpolator(u.imgCfg.ImageQuality))
 	}
 
@@ -186,10 +186,10 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func fit(src image.Rectangle, size float64) image.Rectangle {
+func fit(src image.Rectangle, size int) image.Rectangle {
 	// Compute the two possible scale factors.
-	scaleW := size / float64(src.Dx())
-	scaleH := size / float64(src.Dy())
+	scaleW := float64(size) / float64(src.Dx())
+	scaleH := float64(size) / float64(src.Dy())
 
 	// Pick the *smaller* factor so the whole image stays visible.
 	scale := math.Min(scaleW, scaleH)
@@ -199,10 +199,10 @@ func fit(src image.Rectangle, size float64) image.Rectangle {
 	return image.Rect(0, 0, newW, newH)
 }
 
-func cover(src image.Rectangle, size float64) image.Rectangle {
+func cover(src image.Rectangle, size int) image.Rectangle {
 	// Compute the two possible scale factors.
-	scaleW := size / float64(src.Dx())
-	scaleH := size / float64(src.Dy())
+	scaleW := float64(size) / float64(src.Dx())
+	scaleH := float64(size) / float64(src.Dy())
 
 	// Pick the *larger* factor so the image fills the box.
 	scale := math.Max(scaleW, scaleH)
@@ -211,8 +211,8 @@ func cover(src image.Rectangle, size float64) image.Rectangle {
 	newH := int(math.Round(float64(src.Dy()) * scale))
 
 	// Offsets for a centred crop.
-	offsetX := (newW - size) * 0.5
-	offsetY := (newH - size) * 0.5
+	offsetX := (newW - size) / 2
+	offsetY := (newH - size) / 2
 
 	return image.Rect(
 		offsetX,
