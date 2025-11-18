@@ -271,24 +271,81 @@ func Test_DeleteAll(t *testing.T) {
 }
 
 func Test_fit(t *testing.T) {
-	// src 400x200, size 100 -> fit should be 100x50
-	src := image.Rect(0, 0, 400, 200)
-	f := fit(src, 100)
-	if f.Dx() != 100 || f.Dy() != 50 {
-		t.Fatalf("fit returned wrong size: %v", f)
+	type testArgs struct {
+		caseName string
+		src      image.Rectangle
+		size     int
+		expected image.Rectangle
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{
+			caseName: "400x200 to 100",
+			src:      image.Rect(0, 0, 400, 200),
+			size:     100,
+			expected: image.Rect(0, 0, 100, 50),
+		},
+		{
+			caseName: "200x400 to 100",
+			src:      image.Rect(0, 0, 200, 400),
+			size:     100,
+			expected: image.Rect(0, 0, 50, 100),
+		},
+		{
+			caseName: "75x50 to 100",
+			src:      image.Rect(0, 0, 75, 50),
+			size:     100,
+			expected: image.Rect(0, 0, 100, 67),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.caseName, func(t *testing.T) {
+			// Arrange
+			actual := fit(test.src, test.size)
+			if actual != test.expected {
+				t.Errorf("expected: %s, actual: %s", test.expected, actual)
+			}
+		})
 	}
 }
 
 func Test_cover(t *testing.T) {
-	// src 400x200, size 100
-	src := image.Rect(0, 0, 400, 200)
-	// cover should scale to fill 100x100 box -> scale = 0.5 -> newW=200 newH=100, offsetX=(200-100)/2=50
-	c := cover(src, 100)
-	if c.Dx() != 200 || c.Dy() != 100 {
-		t.Fatalf("cover did not return box size: %v", c)
+	type testArgs struct {
+		caseName string
+		src      image.Rectangle
+		size     int
+		expected image.Rectangle
 	}
-	// The crop rectangle's origin should be offset
-	if c.Min.X != 50 {
-		t.Fatalf("cover returned unexpected Min.X: %d", c.Min.X)
+
+	// Arrange
+	tests := []testArgs{
+		{
+			caseName: "400x200 to 100",
+			src:      image.Rect(0, 0, 400, 200),
+			size:     100,
+			expected: image.Rect(50, 0, 250, 100),
+		},
+		{
+			caseName: "200x400 to 100",
+			src:      image.Rect(0, 0, 200, 400),
+			size:     100,
+			expected: image.Rect(0, 50, 100, 250),
+		},
+		{
+			caseName: "75x50 to 100",
+			src:      image.Rect(0, 0, 75, 50),
+			size:     100,
+			expected: image.Rect(25, 0, 175, 100),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.caseName, func(t *testing.T) {
+			// Arrange
+			actual := cover(test.src, test.size)
+			if actual != test.expected {
+				t.Errorf("expected: %s, actual: %s", test.expected, actual)
+			}
+		})
 	}
 }
