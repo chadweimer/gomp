@@ -2,15 +2,14 @@ package upload
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
 	"io"
 	"math"
-	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"golang.org/x/image/draw"
 
@@ -21,6 +20,13 @@ import (
 	_ "golang.org/x/image/tiff" // Register TIFF format
 	_ "golang.org/x/image/webp" // Register WEBP format
 )
+
+// ---- Begin Standard Errors ----
+
+// ErrInvalidContentType indicates that the uploaded file is not an image
+var ErrInvalidContentType = errors.New("attachment must be an image")
+
+// ---- End Standard Errors ----
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
@@ -49,11 +55,6 @@ func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, err
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
 func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (result *SaveResult, err error) {
-	ok, contentType := isImageFile(data)
-	if !ok {
-		return nil, fmt.Errorf("attachment must be an image; content type: %s ", contentType)
-	}
-
 	// Make sure the file extension is .jpeg
 	imageExt := filepath.Ext(imageName)
 	imageName = imageName[0:len(imageName)-len(imageExt)] + ".jpeg"
@@ -63,6 +64,9 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (resu
 	original, format, err := image.Decode(dataReader)
 	// QUESTION: Do we need to auto-detect EXIF orientation and rotate the image accordingly?
 	if err != nil {
+		if errors.Is(err, image.ErrFormat) {
+			return nil, ErrInvalidContentType
+		}
 		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 
@@ -166,14 +170,6 @@ func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) 
 	return url, nil
 }
 
-func isImageFile(data []byte) (bool, string) {
-	contentType := http.DetectContentType(data)
-	if strings.Contains(contentType, "image/") {
-		return true, contentType
-	}
-	return false, contentType
-}
-
 func getDirPathForRecipe(recipeID int64) string {
 	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
 }
@@ -187,28 +183,34 @@ func getDirPathForThumbnail(recipeID int64) string {
 }
 
 func fit(src image.Rectangle, size int) image.Rectangle {
+	srcW := src.Dx()
+	srcH := src.Dy()
+
 	// Compute the two possible scale factors.
-	scaleW := float64(size) / float64(src.Dx())
-	scaleH := float64(size) / float64(src.Dy())
+	scaleW := float64(size) / float64(srcW)
+	scaleH := float64(size) / float64(srcH)
 
 	// Pick the *smaller* factor so the whole image stays visible.
 	scale := math.Min(scaleW, scaleH)
 
-	newW := int(math.Round(float64(src.Dx()) * scale))
-	newH := int(math.Round(float64(src.Dy()) * scale))
+	newW := int(math.Round(float64(srcW) * scale))
+	newH := int(math.Round(float64(srcH) * scale))
 	return image.Rect(0, 0, newW, newH)
 }
 
 func cover(src image.Rectangle, size int) image.Rectangle {
+	srcW := src.Dx()
+	srcH := src.Dy()
+
 	// Compute the two possible scale factors.
-	scaleW := float64(size) / float64(src.Dx())
-	scaleH := float64(size) / float64(src.Dy())
+	scaleW := float64(size) / float64(srcW)
+	scaleH := float64(size) / float64(srcH)
 
 	// Pick the *larger* factor so the image fills the box.
 	scale := math.Max(scaleW, scaleH)
 
-	newW := int(math.Round(float64(src.Dx()) * scale))
-	newH := int(math.Round(float64(src.Dy()) * scale))
+	newW := int(math.Round(float64(srcW) * scale))
+	newH := int(math.Round(float64(srcH) * scale))
 
 	// Offsets for a centred crop.
 	offsetX := (newW - size) / 2
@@ -217,20 +219,19 @@ func cover(src image.Rectangle, size int) image.Rectangle {
 	return image.Rect(
 		offsetX,
 		offsetY,
-		newW + offsetX,
-		newH + offsetY)
+		newW+offsetX,
+		newH+offsetY)
 }
 
 func resizeImage(src image.Image, dstW, dstH int, scaler draw.Scaler) *image.RGBA {
 	dst := image.NewRGBA(image.Rect(0, 0, dstW, dstH))
-	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Over, nil)
+	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Src, nil)
 	return dst
 }
 
-func crop(src *image.RGBA, r image.Rectangle) *image.RGBA {
+func crop(src *image.RGBA, r image.Rectangle) image.Image {
 	// Ensure the rectangle lies inside src.Bounds().
-	r = r.Intersect(src.Bounds())
-	return src.SubImage(r).(*image.RGBA)
+	return src.SubImage(r.Intersect(src.Bounds()))
 }
 
 func getScaler(quality ImageQualityLevel) draw.Scaler {
