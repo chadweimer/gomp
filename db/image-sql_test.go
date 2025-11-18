@@ -176,6 +176,63 @@ func Test_Image_ReadMainImage(t *testing.T) {
 	}
 }
 
+func Test_Image_Update(t *testing.T) {
+	type testArgs struct {
+		recipeID      int64
+		imageID       int64
+		name          string
+		url           string
+		thumbnailURL  string
+		dbError       error
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, 2, "My image", "url", "thumbnailURL", nil, nil},
+		{0, 0, "", "", "", sql.ErrNoRows, ErrNotFound},
+		{0, 0, "", "", "", sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("UPDATE recipe_image SET recipe_id = \\$1, name = \\$2, url = \\$3, thumbnail_url = \\$4 WHERE id = \\$5").
+				WithArgs(test.recipeID, test.name, test.url, test.thumbnailURL, test.imageID)
+			if test.dbError == nil {
+				exec.WillReturnResult(driver.RowsAffected(1))
+				dbmock.ExpectCommit()
+			} else {
+				exec.WillReturnError(test.dbError)
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Images().Update(t.Context(), &models.RecipeImage{
+				ID:           &test.imageID,
+				RecipeID:     &test.recipeID,
+				Name:         &test.name,
+				URL:          &test.url,
+				ThumbnailURL: &test.thumbnailURL,
+			})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func Test_Image_UpdateMainImage(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
