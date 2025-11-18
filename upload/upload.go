@@ -143,7 +143,7 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		fit := fit(original.Bounds(), u.imgCfg.ImageSize)
+		fit := fit(bounds, u.imgCfg.ImageSize)
 		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getScaler(u.imgCfg.ImageQuality))
 	}
 
