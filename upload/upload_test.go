@@ -117,17 +117,16 @@ func Test_Save(t *testing.T) {
 
 			var data []byte
 			if test.srcImage != nil {
-				// Create a simple JPEG image in memory
+				// Create a simple image in memory
 				buf := new(bytes.Buffer)
 				switch filepath.Ext(test.originalName) {
 				case ".png":
-					if err := png.Encode(buf, test.srcImage); err != nil {
-						t.Fatalf("failed to encode png: %v", err)
-					}
+					err = png.Encode(buf, test.srcImage)
 				default:
-					if err := jpeg.Encode(buf, test.srcImage, &jpeg.Options{Quality: 85}); err != nil {
-						t.Fatalf("failed to encode jpeg: %v", err)
-					}
+					err = jpeg.Encode(buf, test.srcImage, &jpeg.Options{Quality: 85})
+				}
+				if err != nil {
+					t.Fatalf("failed to encode image: %v", err)
 				}
 				data = buf.Bytes()
 			} else {
