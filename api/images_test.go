@@ -254,9 +254,11 @@ func Test_DeleteImage(t *testing.T) {
 
 func Test_OptimizeImage(t *testing.T) {
 	type testArgs struct {
+		caseName          string
 		recipeID          int64
 		imageID           int64
-		imageName         string
+		originalName      string
+		expectedName      string
 		expectedReadError error
 		expectedLoadError error
 		expectedSaveError error
@@ -264,13 +266,75 @@ func Test_OptimizeImage(t *testing.T) {
 	}
 
 	tests := []testArgs{
-		{1, 1, "img.jpeg", nil, nil, nil, nil},
-		{2, 1, "img.jpeg", db.ErrNotFound, nil, nil, db.ErrNotFound},
-		{1, 1, "img.jpeg", nil, io.ErrUnexpectedEOF, nil, io.ErrUnexpectedEOF},
-		{1, 1, "img.jpeg", nil, nil, io.ErrClosedPipe, io.ErrClosedPipe},
+		{
+			caseName:          "Nominal",
+			recipeID:          1,
+			imageID:           1,
+			originalName:      "img.jpeg",
+			expectedName:      "img.jpeg",
+			expectedReadError: nil,
+			expectedLoadError: nil,
+			expectedSaveError: nil,
+			expectedError:     nil,
+		},
+		{
+			caseName:          "JPG Extension",
+			recipeID:          1,
+			imageID:           1,
+			originalName:      "img.jpg",
+			expectedName:      "img.jpg",
+			expectedReadError: nil,
+			expectedLoadError: nil,
+			expectedSaveError: nil,
+			expectedError:     nil,
+		},
+		{
+			caseName:          "PNG Format",
+			recipeID:          1,
+			imageID:           1,
+			originalName:      "img.png",
+			expectedName:      "img.jpeg",
+			expectedReadError: nil,
+			expectedLoadError: nil,
+			expectedSaveError: nil,
+			expectedError:     nil,
+		},
+		{
+			caseName:          "Not Found",
+			recipeID:          2,
+			imageID:           1,
+			originalName:      "img.jpeg",
+			expectedName:      "img.jpeg",
+			expectedReadError: db.ErrNotFound,
+			expectedLoadError: nil,
+			expectedSaveError: nil,
+			expectedError:     db.ErrNotFound,
+		},
+		{
+			caseName:          "EOF",
+			recipeID:          1,
+			imageID:           1,
+			originalName:      "img.jpeg",
+			expectedName:      "img.jpeg",
+			expectedReadError: nil,
+			expectedLoadError: io.ErrUnexpectedEOF,
+			expectedSaveError: nil,
+			expectedError:     io.ErrUnexpectedEOF,
+		},
+		{
+			caseName:          "Closed Pipe",
+			recipeID:          1,
+			imageID:           1,
+			originalName:      "img.jpeg",
+			expectedName:      "img.jpeg",
+			expectedReadError: nil,
+			expectedLoadError: nil,
+			expectedSaveError: io.ErrClosedPipe,
+			expectedError:     io.ErrClosedPipe,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.caseName, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -279,7 +343,7 @@ func Test_OptimizeImage(t *testing.T) {
 			if test.expectedReadError != nil {
 				imagesDriver.EXPECT().Read(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.expectedReadError)
 			} else {
-				imagesDriver.EXPECT().Read(t.Context(), test.recipeID, test.imageID).Return(&models.RecipeImage{ID: &test.imageID, RecipeID: &test.recipeID, Name: &test.imageName}, nil)
+				imagesDriver.EXPECT().Read(t.Context(), test.recipeID, test.imageID).Return(&models.RecipeImage{ID: &test.imageID, RecipeID: &test.recipeID, Name: &test.originalName}, nil)
 
 				if test.expectedLoadError != nil {
 					uplDriver.EXPECT().Open(gomock.Any()).Return(nil, test.expectedLoadError)
@@ -287,13 +351,18 @@ func Test_OptimizeImage(t *testing.T) {
 					buf := bytes.NewBuffer([]byte{})
 					jpeg.Encode(buf, image.NewGray(image.Rect(0, 0, 1, 1)), nil)
 					fs := fstest.MapFS{
-						test.imageName: &fstest.MapFile{
+						test.originalName: &fstest.MapFile{
 							Data:    buf.Bytes(),
 							Mode:    fs.ModeAppend,
 							ModTime: time.Now(),
 						},
 					}
-					uplDriver.EXPECT().Open(gomock.Any()).Return(fs.Open(test.imageName))
+					uplDriver.EXPECT().Open(gomock.Any()).Return(fs.Open(test.originalName))
+
+					if test.originalName != test.expectedName {
+						imagesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(nil)
+						uplDriver.EXPECT().Delete(gomock.Any()).Return(nil).Times(2)
+					}
 
 					if test.expectedSaveError != nil {
 						uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedSaveError)
