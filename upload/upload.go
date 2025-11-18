@@ -24,7 +24,7 @@ import (
 // ---- Begin Standard Errors ----
 
 // ErrInvalidContentType indicates that the uploaded file is not an image
-var ErrInvalidContentType = errors.New("attachment must be an image")
+var ErrInvalidContentType = errors.New("image is not in a supported format")
 
 // ---- End Standard Errors ----
 
