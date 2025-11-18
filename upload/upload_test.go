@@ -129,9 +129,6 @@ func Test_Save(t *testing.T) {
 						t.Fatalf("failed to encode jpeg: %v", err)
 					}
 				}
-				if err := jpeg.Encode(buf, test.srcImage, &jpeg.Options{Quality: 85}); err != nil {
-					t.Fatalf("failed to encode jpeg: %v", err)
-				}
 				data = buf.Bytes()
 			} else {
 				data = []byte("this is not an image")
