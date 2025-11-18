@@ -124,7 +124,7 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
 	cover := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
-	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getInterpolator(u.imgCfg.ThumbnailQuality))
+	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getScaler(u.imgCfg.ThumbnailQuality))
 	thumbImage := crop(resizedImage, cover)
 	thumbBuf := new(bytes.Buffer)
 	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
@@ -144,7 +144,7 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		fittedImage = original
 	} else {
 		fit := fit(original.Bounds(), u.imgCfg.ImageSize)
-		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getInterpolator(u.imgCfg.ImageQuality))
+		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getScaler(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
@@ -233,7 +233,7 @@ func crop(src *image.RGBA, r image.Rectangle) *image.RGBA {
 	return src.SubImage(r).(*image.RGBA)
 }
 
-func getInterpolator(quality ImageQualityLevel) draw.Interpolator {
+func getScaler(quality ImageQualityLevel) draw.Scaler {
 	switch quality {
 	case ImageQualityMedium:
 		return draw.BiLinear
