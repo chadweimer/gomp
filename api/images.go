@@ -102,17 +102,19 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 
 	// The name may have changed if the original was not in the current optimized format
 	if *image.Name != res.Name {
-		// Delete the original image
-		if err := h.upl.Delete(request.RecipeID, *image.Name); err != nil {
-			return nil, fmt.Errorf("failed to delete original image file: %w", err)
-		}
+		originalName := *image.Name
 
-		// Update the database record
+		// Update the database record first, then delete the original image file only if that succeeds
 		image.Name = &res.Name
 		image.URL = &res.URL
 		image.ThumbnailURL = &res.ThumbnailURL
 		if err = h.db.Images().Update(ctx, image); err != nil {
 			return nil, fmt.Errorf("failed to update image database record: %w", err)
+		}
+
+		// Delete the original image
+		if err := h.upl.Delete(request.RecipeID, originalName); err != nil {
+			return nil, fmt.Errorf("failed to delete original image file: %w", err)
 		}
 	}
 
