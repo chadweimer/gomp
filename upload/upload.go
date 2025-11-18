@@ -55,9 +55,14 @@ func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, err
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
 func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (result *SaveResult, err error) {
-	// Make sure the file extension is .jpeg
+	// Make sure the file extension is for a JPEG
 	imageExt := filepath.Ext(imageName)
-	imageName = imageName[0:len(imageName)-len(imageExt)] + ".jpeg"
+	switch imageExt {
+	case ".jpeg", ".jpg":
+		// Nothing to do; leave it as-is
+	default:
+		imageName = imageName[0:len(imageName)-len(imageExt)] + ".jpeg"
+	}
 
 	// First decode the image
 	dataReader := bytes.NewReader(data)
