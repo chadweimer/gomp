@@ -132,12 +132,10 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	size := u.imgCfg.ThumbnailSize
-
-	r, c := cover(original.Bounds(), size)
+	r, c := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
 	resizedImage := resizeImage(original, r, getScaler(u.imgCfg.ThumbnailQuality))
-
 	thumbImage := crop(resizedImage, c)
+
 	thumbBuf := new(bytes.Buffer)
 	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
