@@ -132,12 +132,12 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	r, c := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
-	resizedImage := resizeImage(original, r, getScaler(u.imgCfg.ThumbnailQuality))
-	thumbImage := crop(resizedImage, c)
+	resize, crop := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
+	resizedImage := resizeImage(original, resize, getScaler(u.imgCfg.ThumbnailQuality))
+	croppedImage := resizedImage.SubImage(crop)
 
 	thumbBuf := new(bytes.Buffer)
-	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
+	err := jpeg.Encode(thumbBuf, croppedImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
@@ -153,8 +153,8 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		r := fit(bounds, u.imgCfg.ImageSize)
-		fittedImage = resizeImage(original, r, getScaler(u.imgCfg.ImageQuality))
+		resize := fit(bounds, u.imgCfg.ImageSize)
+		fittedImage = resizeImage(original, resize, getScaler(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
@@ -231,11 +231,6 @@ func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *imag
 	dst := image.NewRGBA(box)
 	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Src, nil)
 	return dst
-}
-
-func crop(src *image.RGBA, r image.Rectangle) image.Image {
-	// Ensure the rectangle lies inside src.Bounds().
-	return src.SubImage(r)
 }
 
 func getScaler(quality ImageQualityLevel) draw.Scaler {
