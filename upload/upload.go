@@ -132,9 +132,13 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	cover := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
+	size := u.imgCfg.ThumbnailSize
+
+	cover := cover(original.Bounds(), size)
 	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getScaler(u.imgCfg.ThumbnailQuality))
-	thumbImage := crop(resizedImage, cover)
+
+	cropRect := image.Rect(cover.Min.X, cover.Min.Y, size, size)
+	thumbImage := crop(resizedImage, cropRect)
 	thumbBuf := new(bytes.Buffer)
 	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
@@ -236,7 +240,7 @@ func resizeImage(src image.Image, dstW, dstH int, scaler draw.Scaler) *image.RGB
 
 func crop(src *image.RGBA, r image.Rectangle) image.Image {
 	// Ensure the rectangle lies inside src.Bounds().
-	return src.SubImage(r.Intersect(src.Bounds()))
+	return src.SubImage(r)
 }
 
 func getScaler(quality ImageQualityLevel) draw.Scaler {
