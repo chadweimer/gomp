@@ -134,11 +134,10 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
 	size := u.imgCfg.ThumbnailSize
 
-	cover := cover(original.Bounds(), size)
-	resizedImage := resizeImage(original, cover.Dx(), cover.Dy(), getScaler(u.imgCfg.ThumbnailQuality))
+	r, c := cover(original.Bounds(), size)
+	resizedImage := resizeImage(original, r, getScaler(u.imgCfg.ThumbnailQuality))
 
-	cropRect := image.Rect(cover.Min.X, cover.Min.Y, size, size)
-	thumbImage := crop(resizedImage, cropRect)
+	thumbImage := crop(resizedImage, c)
 	thumbBuf := new(bytes.Buffer)
 	err := jpeg.Encode(thumbBuf, thumbImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
@@ -156,8 +155,8 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		fit := fit(bounds, u.imgCfg.ImageSize)
-		fittedImage = resizeImage(original, fit.Dx(), fit.Dy(), getScaler(u.imgCfg.ImageQuality))
+		r := fit(bounds, u.imgCfg.ImageSize)
+		fittedImage = resizeImage(original, r, getScaler(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
@@ -191,7 +190,7 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func fit(src image.Rectangle, size int) image.Rectangle {
+func fit(src image.Rectangle, size int) (resize image.Rectangle) {
 	srcW := src.Dx()
 	srcH := src.Dy()
 
@@ -207,7 +206,7 @@ func fit(src image.Rectangle, size int) image.Rectangle {
 	return image.Rect(0, 0, newW, newH)
 }
 
-func cover(src image.Rectangle, size int) image.Rectangle {
+func cover(src image.Rectangle, size int) (resize image.Rectangle, crop image.Rectangle) {
 	srcW := src.Dx()
 	srcH := src.Dy()
 
@@ -225,15 +224,13 @@ func cover(src image.Rectangle, size int) image.Rectangle {
 	offsetX := (newW - size) / 2
 	offsetY := (newH - size) / 2
 
-	return image.Rect(
-		offsetX,
-		offsetY,
-		newW+offsetX,
-		newH+offsetY)
+	resize = image.Rect(0, 0, newW, newH)
+	crop = image.Rect(offsetX, offsetY, size+offsetX, size+offsetY)
+	return resize, crop
 }
 
-func resizeImage(src image.Image, dstW, dstH int, scaler draw.Scaler) *image.RGBA {
-	dst := image.NewRGBA(image.Rect(0, 0, dstW, dstH))
+func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *image.RGBA {
+	dst := image.NewRGBA(box)
 	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Src, nil)
 	return dst
 }
