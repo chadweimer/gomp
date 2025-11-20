@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"image/color"
+	"image"
+	"image/jpeg"
 	"mime/multipart"
 	"testing"
 
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	uploadmock "github.com/chadweimer/gomp/mocks/upload"
 	"github.com/chadweimer/gomp/upload"
-	"github.com/disintegration/imaging"
 	"go.uber.org/mock/gomock"
 )
 
@@ -39,7 +39,7 @@ func Test_Upload(t *testing.T) {
 			buf := bytes.NewBuffer([]byte{})
 			writer := multipart.NewWriter(buf)
 			part, err := writer.CreateFormFile("fileupload", "img.jpeg")
-			imaging.Encode(part, imaging.New(1, 1, color.Black), imaging.JPEG)
+			jpeg.Encode(part, image.NewGray(image.Rect(0, 0, 1, 1)), nil)
 			writer.Close()
 
 			// Act

@@ -56,6 +56,22 @@ func (d *sqlRecipeImageDriver) ReadMainImage(ctx context.Context, recipeID int64
 	})
 }
 
+func (d *sqlRecipeImageDriver) Update(ctx context.Context, imageInfo *models.RecipeImage) error {
+	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+		return d.updateImpl(ctx, imageInfo, db)
+	})
+}
+
+func (*sqlRecipeImageDriver) updateImpl(ctx context.Context, image *models.RecipeImage, db sqlx.ExtContext) error {
+	stmt := "UPDATE recipe_image SET recipe_id = $1, name = $2, url = $3, thumbnail_url = $4 WHERE id = $5"
+
+	_, err := db.ExecContext(ctx,
+		stmt,
+		image.RecipeID, image.Name, image.URL, image.ThumbnailURL, image.ID)
+
+	return err
+}
+
 func (d *sqlRecipeImageDriver) UpdateMainImage(ctx context.Context, recipeID, id int64) error {
 	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
 		return d.updateMainImageImpl(ctx, recipeID, id, db)

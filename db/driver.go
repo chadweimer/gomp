@@ -247,6 +247,10 @@ type RecipeImageDriver interface {
 	// image from the database. If no main image exists, a ErrNotFound error is returned.
 	ReadMainImage(ctx context.Context, recipeID int64) (*models.RecipeImage, error)
 
+	// Update stores the specified image information in the database by updating the existing record
+	// with the specified id using a dedicated transaction that is committed if there are not errors.
+	Update(ctx context.Context, imageInfo *models.RecipeImage) error
+
 	// UpdateMainImage sets the id of the main image for the specified recipe
 	// using a dedicated transaction that is committed if there are not errors.
 	UpdateMainImage(ctx context.Context, recipeID, id int64) error

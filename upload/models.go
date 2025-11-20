@@ -4,7 +4,8 @@ package upload
 type ImageQualityLevel string
 
 const (
-	// ImageQualityOriginal saves the original file as uploaded
+	// ImageQualityOriginal saves the original file as uploaded.
+	// However, re-encoding will be performed if the image is not already a JPEG.
 	ImageQualityOriginal ImageQualityLevel = "original"
 
 	// ImageQualityHigh saves the file with high JPEG quality

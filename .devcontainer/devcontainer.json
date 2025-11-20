@@ -30,8 +30,7 @@
         "ms-azuretools.vscode-docker",
         "redhat.vscode-yaml",
         "SonarSource.sonarlint-vscode",
-        "tamasfe.even-better-toml",
-        "visualstudioexptteam.vscodeintellicode"
+        "tamasfe.even-better-toml"
       ]
     }
   },

@@ -40,24 +40,24 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 	}
 
 	// Save the image itself
-	url, thumbURL, err := h.upl.Save(request.RecipeID, imageName, uploadedFileData)
+	res, err := h.upl.Save(request.RecipeID, imageName, uploadedFileData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save image file: %w", err)
 	}
 
-	imageInfo := models.RecipeImage{
+	image := models.RecipeImage{
 		RecipeID:     &request.RecipeID,
-		Name:         &imageName,
-		URL:          &url,
-		ThumbnailURL: &thumbURL,
+		Name:         &res.Name,
+		URL:          &res.URL,
+		ThumbnailURL: &res.ThumbnailURL,
 	}
 
 	// Now insert the record in the database
-	if err = h.db.Images().Create(ctx, &imageInfo); err != nil {
+	if err = h.db.Images().Create(ctx, &image); err != nil {
 		return nil, fmt.Errorf("failed to insert image database record: %w", err)
 	}
 
-	return UploadImage201JSONResponse(imageInfo), nil
+	return UploadImage201JSONResponse(image), nil
 }
 
 func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
@@ -95,8 +95,27 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 
 	// Resave it, which will downscale if larger than the threshold,
 	// as well as regenerate the thumbnail
-	if _, _, err = h.upl.Save(request.RecipeID, *image.Name, data); err != nil {
+	res, err := h.upl.Save(request.RecipeID, *image.Name, data)
+	if err != nil {
 		return nil, fmt.Errorf("failed to re-save image data: %w", err)
+	}
+
+	// The name may have changed if the original was not in the current optimized format
+	if *image.Name != res.Name {
+		originalName := *image.Name
+
+		// Update the database record first, then delete the original image file only if that succeeds
+		image.Name = &res.Name
+		image.URL = &res.URL
+		image.ThumbnailURL = &res.ThumbnailURL
+		if err = h.db.Images().Update(ctx, image); err != nil {
+			return nil, fmt.Errorf("failed to update image database record: %w", err)
+		}
+
+		// Delete the original image
+		if err := h.upl.Delete(request.RecipeID, originalName); err != nil {
+			return nil, fmt.Errorf("failed to delete original image file: %w", err)
+		}
 	}
 
 	return OptimizeImage204Response{}, nil

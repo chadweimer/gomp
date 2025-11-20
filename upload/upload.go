@@ -2,21 +2,46 @@ package upload
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"io"
-	"net/http"
+	"math"
 	"path/filepath"
 	"strconv"
-	"strings"
 
-	"github.com/disintegration/imaging"
+	"golang.org/x/image/draw"
+
+	_ "image/gif" // Register GIF format
+	_ "image/png" // Register PNG format
+
+	_ "golang.org/x/image/bmp"  // Register BMP format
+	_ "golang.org/x/image/tiff" // Register TIFF format
+	_ "golang.org/x/image/webp" // Register WEBP format
 )
+
+// ---- Begin Standard Errors ----
+
+// ErrInvalidContentType indicates that the uploaded file is not an image
+var ErrInvalidContentType = errors.New("image is not in a supported format")
+
+// ---- End Standard Errors ----
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
 	Driver Driver
 	imgCfg ImageConfig
+}
+
+// SaveResult represents the result of saving an uploaded image
+type SaveResult struct {
+	// Name is the filename of the saved image
+	Name string
+	// URL is the URL to access the image
+	URL string
+	// ThumbnailURL is the URL to access the thumbnail image
+	ThumbnailURL string
 }
 
 // CreateImageUploader returns an ImageUploader implementation that uses the specified Driver
@@ -29,40 +54,51 @@ func CreateImageUploader(driver Driver, imgCfg ImageConfig) (*ImageUploader, err
 
 // Save saves the uploaded image, including generating a thumbnail,
 // to the upload store.
-func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (originalURL, thumbnailURL string, err error) {
-	ok, contentType := isImageFile(data)
-	if !ok {
-		return "", "", fmt.Errorf("attachment must be an image; content type: %s ", contentType)
+func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (result *SaveResult, err error) {
+	// Make sure the file extension is for a JPEG
+	imageExt := filepath.Ext(imageName)
+	switch imageExt {
+	case ".jpeg", ".jpg":
+		// Nothing to do; leave it as-is
+	default:
+		imageName = imageName[0:len(imageName)-len(imageExt)] + ".jpeg"
 	}
 
 	// First decode the image
 	dataReader := bytes.NewReader(data)
-	original, err := imaging.Decode(dataReader, imaging.AutoOrientation(true))
+	original, format, err := image.Decode(dataReader)
+	// QUESTION: Do we need to auto-detect EXIF orientation and rotate the image accordingly?
 	if err != nil {
-		return "", "", fmt.Errorf("failed to decode image: %w", err)
+		if errors.Is(err, image.ErrFormat) {
+			return nil, ErrInvalidContentType
+		}
+		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// Then determine if it should be resized before saving
-	var origURL string
+	var imageURL string
 	imgDir := getDirPathForImage(recipeID)
-	if u.imgCfg.ImageQuality == ImageQualityOriginal {
+	if format == "jpeg" && u.imgCfg.ImageQuality == ImageQualityOriginal {
 		// Save the original as-is
-		origURL, err = u.saveImage(data, imgDir, imageName)
+		imageURL, err = u.saveImage(data, imgDir, imageName)
 	} else {
-		// Resize and save
-		origURL, err = u.generateFitted(original, contentType, imgDir, imageName)
+		// Resize and save as jpeg
+		imageURL, err = u.generateFitted(original, imgDir, imageName)
 	}
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	// And generate a thumbnail and save it
-	thumbURL, err := u.generateThumbnail(original, contentType, getDirPathForThumbnail(recipeID), imageName)
+	thumbURL, err := u.generateThumbnail(original, getDirPathForThumbnail(recipeID), imageName)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	return origURL, thumbURL, nil
+	return &SaveResult{
+		Name:         imageName,
+		URL:          imageURL,
+		ThumbnailURL: thumbURL,
+	}, nil
 }
 
 // Delete removes the specified image files from the upload store.
@@ -95,11 +131,13 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	return io.ReadAll(file)
 }
 
-func (u ImageUploader) generateThumbnail(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
-	thumbImage := imaging.Thumbnail(original, u.imgCfg.ThumbnailSize, u.imgCfg.ThumbnailSize, toResampleFilter(u.imgCfg.ThumbnailQuality))
+func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
+	resize, crop := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
+	resizedImage := resizeImage(original, resize, getScaler(u.imgCfg.ThumbnailQuality))
+	croppedImage := resizedImage.SubImage(crop)
 
 	thumbBuf := new(bytes.Buffer)
-	err := imaging.Encode(thumbBuf, thumbImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ThumbnailQuality)))
+	err := jpeg.Encode(thumbBuf, croppedImage, getJPEGOptions(u.imgCfg.ThumbnailQuality))
 	if err != nil {
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
@@ -107,18 +145,20 @@ func (u ImageUploader) generateThumbnail(original image.Image, contentType strin
 	return u.saveImage(thumbBuf.Bytes(), saveDir, imageName)
 }
 
-func (u ImageUploader) generateFitted(original image.Image, contentType string, saveDir string, imageName string) (string, error) {
+func (u ImageUploader) generateFitted(original image.Image, saveDir string, imageName string) (string, error) {
 	var fittedImage image.Image
 
 	bounds := original.Bounds()
-	if bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize {
+	if u.imgCfg.ImageQuality == ImageQualityOriginal ||
+		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		fittedImage = imaging.Fit(original, u.imgCfg.ImageSize, u.imgCfg.ImageSize, toResampleFilter(u.imgCfg.ImageQuality))
+		resize := fit(bounds, u.imgCfg.ImageSize)
+		fittedImage = resizeImage(original, resize, getScaler(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
-	err := imaging.Encode(fittedBuf, fittedImage, getImageFormat(contentType), imaging.JPEGQuality(toJPEGQuality(u.imgCfg.ImageQuality)))
+	err := jpeg.Encode(fittedBuf, fittedImage, getJPEGOptions(u.imgCfg.ImageQuality))
 	if err != nil {
 		return "", fmt.Errorf("failed to encode fitted image: %w", err)
 	}
@@ -136,30 +176,6 @@ func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) 
 	return url, nil
 }
 
-func isImageFile(data []byte) (bool, string) {
-	contentType := http.DetectContentType(data)
-	if strings.Contains(contentType, "image/") {
-		return true, contentType
-	}
-	return false, contentType
-}
-
-func getImageFormat(contentType string) imaging.Format {
-	switch contentType {
-	case "image/jpeg":
-		return imaging.JPEG
-	case "image/png":
-		return imaging.PNG
-	case "image/gif":
-		return imaging.GIF
-	case "image/bmp":
-		return imaging.BMP
-	case "image/tiff":
-		return imaging.TIFF
-	}
-	return imaging.JPEG
-}
-
 func getDirPathForRecipe(recipeID int64) string {
 	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
 }
@@ -172,28 +188,69 @@ func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
-func toResampleFilter(q ImageQualityLevel) imaging.ResampleFilter {
-	switch q {
-	case ImageQualityHigh:
-		return imaging.Box
+func fit(src image.Rectangle, size int) (resize image.Rectangle) {
+	srcW := src.Dx()
+	srcH := src.Dy()
+
+	// Compute the two possible scale factors.
+	scaleW := float64(size) / float64(srcW)
+	scaleH := float64(size) / float64(srcH)
+
+	// Pick the *smaller* factor so the whole image stays visible.
+	scale := math.Min(scaleW, scaleH)
+
+	newW := int(math.Round(float64(srcW) * scale))
+	newH := int(math.Round(float64(srcH) * scale))
+	return image.Rect(0, 0, newW, newH)
+}
+
+func cover(src image.Rectangle, size int) (resize image.Rectangle, crop image.Rectangle) {
+	srcW := src.Dx()
+	srcH := src.Dy()
+
+	// Compute the two possible scale factors.
+	scaleW := float64(size) / float64(srcW)
+	scaleH := float64(size) / float64(srcH)
+
+	// Pick the *larger* factor so the image fills the box.
+	scale := math.Max(scaleW, scaleH)
+
+	newW := int(math.Round(float64(srcW) * scale))
+	newH := int(math.Round(float64(srcH) * scale))
+
+	// Offsets for a centred crop.
+	offsetX := (newW - size) / 2
+	offsetY := (newH - size) / 2
+
+	resize = image.Rect(0, 0, newW, newH)
+	crop = image.Rect(offsetX, offsetY, size+offsetX, size+offsetY)
+	return resize, crop
+}
+
+func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *image.RGBA {
+	dst := image.NewRGBA(box)
+	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Src, nil)
+	return dst
+}
+
+func getScaler(quality ImageQualityLevel) draw.Scaler {
+	switch quality {
 	case ImageQualityMedium:
-		return imaging.Box
+		return draw.BiLinear
 	case ImageQualityLow:
-		return imaging.NearestNeighbor
+		return draw.NearestNeighbor
 	default:
-		return imaging.Box
+		return draw.CatmullRom
 	}
 }
 
-func toJPEGQuality(q ImageQualityLevel) int {
-	switch q {
-	case ImageQualityHigh:
-		return 92
+func getJPEGOptions(quality ImageQualityLevel) *jpeg.Options {
+	switch quality {
 	case ImageQualityMedium:
-		return 80
+		return &jpeg.Options{Quality: 80}
 	case ImageQualityLow:
-		return 70
+		return &jpeg.Options{Quality: 70}
 	default:
-		return 92
+		return &jpeg.Options{Quality: 92}
 	}
 }
