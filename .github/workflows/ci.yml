@@ -107,13 +107,13 @@ jobs:
           echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
           echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:pr${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Set env vars (release)
-        # if: github.event_name == 'release'
+        if: github.event_name == 'release'
         run: |
-          echo "BUILD_VERSION_TEST=3.45.5" >> $GITHUB_ENV
-          TAG="3.45.5"
+          echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          TAG="${{ github.event.release.tag_name }}"
           MAJOR_TAG="${TAG%%.*}"
           MINOR_TAG="$(echo "$TAG" | cut -d. -f1-2)"
-          echo "DOCKER_ARGS_TEST=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MAJOR_TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MINOR_TAG}" >> $GITHUB_ENV
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MAJOR_TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MINOR_TAG}" >> $GITHUB_ENV
 
       - name: Download artifacts
         uses: actions/download-artifact@v5
