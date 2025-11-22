@@ -110,7 +110,10 @@ jobs:
         if: github.event_name == 'release'
         run: |
           echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          TAG="${{ github.event.release.tag_name }}"
+          MAJOR_TAG="$(echo "$TAG" | cut -d. -f1)"
+          MINOR_TAG="$(echo "$TAG" | cut -d. -f1-2)"
+          echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MAJOR_TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MINOR_TAG}" >> $GITHUB_ENV
 
       - name: Download artifacts
         uses: actions/download-artifact@v5
