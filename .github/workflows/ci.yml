@@ -113,7 +113,7 @@ jobs:
           TAG="3.45.5"
           MAJOR_TAG="${TAG%%.*}"
           MINOR_TAG="$(echo "$TAG" | cut -d. -f1-2)"
-          echo "DOCKER_ARGS_TEST=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MAJOR_TAG}" -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MINOR_TAG} >> $GITHUB_ENV
+          echo "DOCKER_ARGS_TEST=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:latest -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${TAG} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MAJOR_TAG}" -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:${MINOR_TAG}" >> $GITHUB_ENV
 
       - name: Download artifacts
         uses: actions/download-artifact@v5
