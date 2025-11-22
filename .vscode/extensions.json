@@ -16,7 +16,6 @@
     "ms-vscode-remote.remote-containers",
     "redhat.vscode-yaml",
     "SonarSource.sonarlint-vscode",
-    "tamasfe.even-better-toml",
-    "visualstudioexptteam.vscodeintellicode"
+    "tamasfe.even-better-toml"
   ]
 }
