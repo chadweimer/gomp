@@ -680,13 +680,62 @@ declare namespace LocalJSX {
          */
         "user"?: User;
     }
+
+    interface FiveStarRatingAttributes {
+        "value": number;
+        "disabled": boolean;
+        "icon": string;
+        "size": string;
+    }
+    interface HtmlEditorAttributes {
+        "value": string;
+        "label": string;
+        "labelPlacement": 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+    }
+    interface HtmlViewerAttributes {
+        "value": string;
+    }
+    interface NoteCardAttributes {
+        "readonly": boolean;
+    }
+    interface PageNavigatorAttributes {
+        "page": number;
+        "numPages": number;
+        "fill": 'clear' | 'outline' | 'solid' | 'default';
+        "color": Color;
+    }
+    interface PageRecipeAttributes {
+        "recipeId": number;
+    }
+    interface RecipeCardAttributes {
+        "size": 'large' | 'small';
+    }
+    interface RecipeLinkEditorAttributes {
+        "parentRecipeId": number;
+    }
+    interface RecipeViewerAttributes {
+        "rating": number;
+        "readonly": boolean;
+    }
+    interface SearchFilterEditorAttributes {
+        "name": string;
+        "saveLabel": string;
+        "hideName": boolean;
+        "showSavedLoader": boolean;
+        "prompt": string;
+    }
+    interface TagsInputAttributes {
+        "label": string;
+        "labelPlacement": 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+    }
+
     interface IntrinsicElements {
         "app-root": AppRoot;
-        "five-star-rating": FiveStarRating;
-        "html-editor": HtmlEditor;
-        "html-viewer": HtmlViewer;
+        "five-star-rating": Omit<FiveStarRating, keyof FiveStarRatingAttributes> & { [K in keyof FiveStarRating & keyof FiveStarRatingAttributes]?: FiveStarRating[K] } & { [K in keyof FiveStarRating & keyof FiveStarRatingAttributes as `attr:${K}`]?: FiveStarRatingAttributes[K] } & { [K in keyof FiveStarRating & keyof FiveStarRatingAttributes as `prop:${K}`]?: FiveStarRating[K] };
+        "html-editor": Omit<HtmlEditor, keyof HtmlEditorAttributes> & { [K in keyof HtmlEditor & keyof HtmlEditorAttributes]?: HtmlEditor[K] } & { [K in keyof HtmlEditor & keyof HtmlEditorAttributes as `attr:${K}`]?: HtmlEditorAttributes[K] } & { [K in keyof HtmlEditor & keyof HtmlEditorAttributes as `prop:${K}`]?: HtmlEditor[K] };
+        "html-viewer": Omit<HtmlViewer, keyof HtmlViewerAttributes> & { [K in keyof HtmlViewer & keyof HtmlViewerAttributes]?: HtmlViewer[K] } & { [K in keyof HtmlViewer & keyof HtmlViewerAttributes as `attr:${K}`]?: HtmlViewerAttributes[K] } & { [K in keyof HtmlViewer & keyof HtmlViewerAttributes as `prop:${K}`]?: HtmlViewer[K] };
         "image-upload-browser": ImageUploadBrowser;
-        "note-card": NoteCard;
+        "note-card": Omit<NoteCard, keyof NoteCardAttributes> & { [K in keyof NoteCard & keyof NoteCardAttributes]?: NoteCard[K] } & { [K in keyof NoteCard & keyof NoteCardAttributes as `attr:${K}`]?: NoteCardAttributes[K] } & { [K in keyof NoteCard & keyof NoteCardAttributes as `prop:${K}`]?: NoteCard[K] };
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
         "page-admin-configuration": PageAdminConfiguration;
@@ -694,20 +743,20 @@ declare namespace LocalJSX {
         "page-admin-users": PageAdminUsers;
         "page-home": PageHome;
         "page-login": PageLogin;
-        "page-navigator": PageNavigator;
-        "page-recipe": PageRecipe;
+        "page-navigator": Omit<PageNavigator, keyof PageNavigatorAttributes> & { [K in keyof PageNavigator & keyof PageNavigatorAttributes]?: PageNavigator[K] } & { [K in keyof PageNavigator & keyof PageNavigatorAttributes as `attr:${K}`]?: PageNavigatorAttributes[K] } & { [K in keyof PageNavigator & keyof PageNavigatorAttributes as `prop:${K}`]?: PageNavigator[K] };
+        "page-recipe": Omit<PageRecipe, keyof PageRecipeAttributes> & { [K in keyof PageRecipe & keyof PageRecipeAttributes]?: PageRecipe[K] } & { [K in keyof PageRecipe & keyof PageRecipeAttributes as `attr:${K}`]?: PageRecipeAttributes[K] } & { [K in keyof PageRecipe & keyof PageRecipeAttributes as `prop:${K}`]?: PageRecipe[K] };
         "page-search": PageSearch;
         "page-settings": PageSettings;
         "page-settings-preferences": PageSettingsPreferences;
         "page-settings-searches": PageSettingsSearches;
         "page-settings-security": PageSettingsSecurity;
         "page-tags": PageTags;
-        "recipe-card": RecipeCard;
+        "recipe-card": Omit<RecipeCard, keyof RecipeCardAttributes> & { [K in keyof RecipeCard & keyof RecipeCardAttributes]?: RecipeCard[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `attr:${K}`]?: RecipeCardAttributes[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `prop:${K}`]?: RecipeCard[K] };
         "recipe-editor": RecipeEditor;
-        "recipe-link-editor": RecipeLinkEditor;
-        "recipe-viewer": RecipeViewer;
-        "search-filter-editor": SearchFilterEditor;
-        "tags-input": TagsInput;
+        "recipe-link-editor": Omit<RecipeLinkEditor, keyof RecipeLinkEditorAttributes> & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes]?: RecipeLinkEditor[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `attr:${K}`]?: RecipeLinkEditorAttributes[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `prop:${K}`]?: RecipeLinkEditor[K] };
+        "recipe-viewer": Omit<RecipeViewer, keyof RecipeViewerAttributes> & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes]?: RecipeViewer[K] } & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes as `attr:${K}`]?: RecipeViewerAttributes[K] } & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes as `prop:${K}`]?: RecipeViewer[K] };
+        "search-filter-editor": Omit<SearchFilterEditor, keyof SearchFilterEditorAttributes> & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes]?: SearchFilterEditor[K] } & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes as `attr:${K}`]?: SearchFilterEditorAttributes[K] } & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes as `prop:${K}`]?: SearchFilterEditor[K] };
+        "tags-input": Omit<TagsInput, keyof TagsInputAttributes> & { [K in keyof TagsInput & keyof TagsInputAttributes]?: TagsInput[K] } & { [K in keyof TagsInput & keyof TagsInputAttributes as `attr:${K}`]?: TagsInputAttributes[K] } & { [K in keyof TagsInput & keyof TagsInputAttributes as `prop:${K}`]?: TagsInput[K] };
         "user-editor": UserEditor;
     }
 }
@@ -715,34 +764,34 @@ export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
-            "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
-            "five-star-rating": LocalJSX.FiveStarRating & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
-            "html-editor": LocalJSX.HtmlEditor & JSXBase.HTMLAttributes<HTMLHtmlEditorElement>;
-            "html-viewer": LocalJSX.HtmlViewer & JSXBase.HTMLAttributes<HTMLHtmlViewerElement>;
-            "image-upload-browser": LocalJSX.ImageUploadBrowser & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
-            "note-card": LocalJSX.NoteCard & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
-            "note-editor": LocalJSX.NoteEditor & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
-            "page-admin": LocalJSX.PageAdmin & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
-            "page-admin-configuration": LocalJSX.PageAdminConfiguration & JSXBase.HTMLAttributes<HTMLPageAdminConfigurationElement>;
-            "page-admin-maintenance": LocalJSX.PageAdminMaintenance & JSXBase.HTMLAttributes<HTMLPageAdminMaintenanceElement>;
-            "page-admin-users": LocalJSX.PageAdminUsers & JSXBase.HTMLAttributes<HTMLPageAdminUsersElement>;
-            "page-home": LocalJSX.PageHome & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
-            "page-login": LocalJSX.PageLogin & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
-            "page-navigator": LocalJSX.PageNavigator & JSXBase.HTMLAttributes<HTMLPageNavigatorElement>;
-            "page-recipe": LocalJSX.PageRecipe & JSXBase.HTMLAttributes<HTMLPageRecipeElement>;
-            "page-search": LocalJSX.PageSearch & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
-            "page-settings": LocalJSX.PageSettings & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
-            "page-settings-preferences": LocalJSX.PageSettingsPreferences & JSXBase.HTMLAttributes<HTMLPageSettingsPreferencesElement>;
-            "page-settings-searches": LocalJSX.PageSettingsSearches & JSXBase.HTMLAttributes<HTMLPageSettingsSearchesElement>;
-            "page-settings-security": LocalJSX.PageSettingsSecurity & JSXBase.HTMLAttributes<HTMLPageSettingsSecurityElement>;
-            "page-tags": LocalJSX.PageTags & JSXBase.HTMLAttributes<HTMLPageTagsElement>;
-            "recipe-card": LocalJSX.RecipeCard & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
-            "recipe-editor": LocalJSX.RecipeEditor & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
-            "recipe-link-editor": LocalJSX.RecipeLinkEditor & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
-            "recipe-viewer": LocalJSX.RecipeViewer & JSXBase.HTMLAttributes<HTMLRecipeViewerElement>;
-            "search-filter-editor": LocalJSX.SearchFilterEditor & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
-            "tags-input": LocalJSX.TagsInput & JSXBase.HTMLAttributes<HTMLTagsInputElement>;
-            "user-editor": LocalJSX.UserEditor & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
+            "app-root": LocalJSX.IntrinsicElements["app-root"] & JSXBase.HTMLAttributes<HTMLAppRootElement>;
+            "five-star-rating": LocalJSX.IntrinsicElements["five-star-rating"] & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
+            "html-editor": LocalJSX.IntrinsicElements["html-editor"] & JSXBase.HTMLAttributes<HTMLHtmlEditorElement>;
+            "html-viewer": LocalJSX.IntrinsicElements["html-viewer"] & JSXBase.HTMLAttributes<HTMLHtmlViewerElement>;
+            "image-upload-browser": LocalJSX.IntrinsicElements["image-upload-browser"] & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
+            "note-card": LocalJSX.IntrinsicElements["note-card"] & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
+            "note-editor": LocalJSX.IntrinsicElements["note-editor"] & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
+            "page-admin": LocalJSX.IntrinsicElements["page-admin"] & JSXBase.HTMLAttributes<HTMLPageAdminElement>;
+            "page-admin-configuration": LocalJSX.IntrinsicElements["page-admin-configuration"] & JSXBase.HTMLAttributes<HTMLPageAdminConfigurationElement>;
+            "page-admin-maintenance": LocalJSX.IntrinsicElements["page-admin-maintenance"] & JSXBase.HTMLAttributes<HTMLPageAdminMaintenanceElement>;
+            "page-admin-users": LocalJSX.IntrinsicElements["page-admin-users"] & JSXBase.HTMLAttributes<HTMLPageAdminUsersElement>;
+            "page-home": LocalJSX.IntrinsicElements["page-home"] & JSXBase.HTMLAttributes<HTMLPageHomeElement>;
+            "page-login": LocalJSX.IntrinsicElements["page-login"] & JSXBase.HTMLAttributes<HTMLPageLoginElement>;
+            "page-navigator": LocalJSX.IntrinsicElements["page-navigator"] & JSXBase.HTMLAttributes<HTMLPageNavigatorElement>;
+            "page-recipe": LocalJSX.IntrinsicElements["page-recipe"] & JSXBase.HTMLAttributes<HTMLPageRecipeElement>;
+            "page-search": LocalJSX.IntrinsicElements["page-search"] & JSXBase.HTMLAttributes<HTMLPageSearchElement>;
+            "page-settings": LocalJSX.IntrinsicElements["page-settings"] & JSXBase.HTMLAttributes<HTMLPageSettingsElement>;
+            "page-settings-preferences": LocalJSX.IntrinsicElements["page-settings-preferences"] & JSXBase.HTMLAttributes<HTMLPageSettingsPreferencesElement>;
+            "page-settings-searches": LocalJSX.IntrinsicElements["page-settings-searches"] & JSXBase.HTMLAttributes<HTMLPageSettingsSearchesElement>;
+            "page-settings-security": LocalJSX.IntrinsicElements["page-settings-security"] & JSXBase.HTMLAttributes<HTMLPageSettingsSecurityElement>;
+            "page-tags": LocalJSX.IntrinsicElements["page-tags"] & JSXBase.HTMLAttributes<HTMLPageTagsElement>;
+            "recipe-card": LocalJSX.IntrinsicElements["recipe-card"] & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
+            "recipe-editor": LocalJSX.IntrinsicElements["recipe-editor"] & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
+            "recipe-link-editor": LocalJSX.IntrinsicElements["recipe-link-editor"] & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
+            "recipe-viewer": LocalJSX.IntrinsicElements["recipe-viewer"] & JSXBase.HTMLAttributes<HTMLRecipeViewerElement>;
+            "search-filter-editor": LocalJSX.IntrinsicElements["search-filter-editor"] & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
+            "tags-input": LocalJSX.IntrinsicElements["tags-input"] & JSXBase.HTMLAttributes<HTMLTagsInputElement>;
+            "user-editor": LocalJSX.IntrinsicElements["user-editor"] & JSXBase.HTMLAttributes<HTMLUserEditorElement>;
         }
     }
 }
