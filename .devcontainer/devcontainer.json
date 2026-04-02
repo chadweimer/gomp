@@ -27,7 +27,7 @@
         "GitHub.vscode-github-actions",
         "GitHub.vscode-pull-request-github",
         "golang.go",
-        "ms-azuretools.vscode-docker",
+        "ms-azuretools.vscode-containers",
         "redhat.vscode-yaml",
         "SonarSource.sonarlint-vscode",
         "tamasfe.even-better-toml"
