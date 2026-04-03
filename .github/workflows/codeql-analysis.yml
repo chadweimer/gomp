@@ -18,8 +18,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [linux]
-        arch: [amd64]
         language: ['go', 'javascript']
 
     steps:
@@ -29,7 +27,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-      - run: make build/${{ matrix.os }}/${{ matrix.arch }}/gomp
+      - run: make build/linux/amd64/gomp
         if: ${{ matrix.language == 'go' }}
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
