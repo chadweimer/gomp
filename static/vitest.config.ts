@@ -14,7 +14,7 @@ export default defineVitestConfig({
               domEnvironment: 'jsdom'
             },
           },
-          setupFiles: ['./vitest-setup.ts'],
+          setupFiles: ['./vitest.setup.ts'],
           testTimeout: 10000,
         },
       },
