@@ -11,8 +11,6 @@ export default defineVitestConfig({
           environment: 'stencil',
           environmentOptions: {
             stencil: {
-              // Options: 'mock-doc' (default), 'jsdom', 'happy-dom'
-              // *note: jsdom and happy-dom require additional dependencies*
               domEnvironment: 'jsdom'
             },
           },

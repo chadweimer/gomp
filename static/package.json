@@ -34,6 +34,7 @@
     "eslint-plugin-react": "^7.33.2",
     "jsdom": "^29.0.1",
     "jwt-decode": "^4.0.0",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "vitest-fetch-mock": "^0.4.5"
   }
 }
