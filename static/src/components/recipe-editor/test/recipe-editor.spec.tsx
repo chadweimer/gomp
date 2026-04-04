@@ -1,12 +1,10 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { RecipeEditor } from '../recipe-editor';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('recipe-editor', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [RecipeEditor],
-      html: '<recipe-editor></recipe-editor>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(RecipeEditor);
+    const { root } = await render(<recipe-editor />);
+    expect(root).toEqualLightHtml(`
+      <recipe-editor class="hydrated"></recipe-editor>
+    `);
   });
 });

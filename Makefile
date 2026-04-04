@@ -147,6 +147,8 @@ $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	mkdir -p $@
 	cd static && npm run cover
 	cp -r static/coverage/* $@
+	# Use sed to add static/ prefix to all file paths in the lcov.info file
+	sed -i 's/^SF:\(.*\)/SF:static\/\1/' $@/lcov.info
 
 
 # ---- ARCHIVE ----

@@ -53,4 +53,4 @@ module.exports = defineConfig([{
       "varsIgnorePattern": "^h$",
     }],
   },
-}, globalIgnores(["**/node_modules", "src/generated", "**/build"])]);
+}, globalIgnores(["**/node_modules", "src/generated", "**/build", "*.ts"])]);

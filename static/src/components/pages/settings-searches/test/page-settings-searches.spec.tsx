@@ -1,12 +1,8 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { PageSettingsSearches } from '../page-settings-searches';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('page-settings-searches', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [PageSettingsSearches],
-      html: '<page-settings-searches></page-settings-searches>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(PageSettingsSearches);
+    const { root } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
+    expect(root).toHaveClass('hydrated');
   });
 });

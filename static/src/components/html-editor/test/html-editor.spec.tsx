@@ -1,12 +1,8 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { HTMLEditor } from '../html-editor';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('html-editor', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [HTMLEditor],
-      html: '<html-editor></html-editor>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(HTMLEditor);
+    const { root } = await render<HTMLHtmlEditorElement>(<html-editor />);
+    expect(root).toHaveClass('hydrated');
   });
 });

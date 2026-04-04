@@ -14,9 +14,9 @@
     "clean": "rm -fr ./www && rm -fr src/generated",
     "codegen": "rm -rf src/generated && openapi-generator-cli generate",
     "start": "stencil build --dev --watch --serve",
-    "test": "stencil test --config stencil.test.config.ts --spec",
-    "test.watch": "npm run test -- --watch",
-    "cover": "npm run test -- --coverage --coverageProvider v8",
+    "test": "stencil-test",
+    "test.watch": "stencil-test --watch",
+    "cover": "stencil-test --coverage",
     "generate": "stencil generate"
   },
   "devDependencies": {
@@ -25,14 +25,16 @@
     "@stencil-community/eslint-plugin": "^0.10.0",
     "@stencil/core": "^4.9.0",
     "@stencil/store": "^2.0.12",
-    "@types/jest": "^29.0.0",
+    "@stencil/vitest": "^1.10.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
     "dompurify": "^3.2.6",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.33.2",
-    "jest": "^29.0.0",
-    "jest-cli": "^29.0.0",
-    "jwt-decode": "^4.0.0"
+    "jsdom": "^29.0.1",
+    "jwt-decode": "^4.0.0",
+    "vitest": "^4.1.2",
+    "vitest-fetch-mock": "^0.4.5"
   }
 }

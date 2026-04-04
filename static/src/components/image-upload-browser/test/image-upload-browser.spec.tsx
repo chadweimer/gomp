@@ -1,12 +1,10 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { ImageUploadBrowser } from '../image-upload-browser';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('image-upload-browser', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [ImageUploadBrowser],
-      html: '<image-upload-browser></image-upload-browser>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(ImageUploadBrowser);
+    const { root } = await render(<image-upload-browser></image-upload-browser>);
+    expect(root).toEqualLightHtml(`
+      <image-upload-browser class="hydrated"></image-upload-browser>
+    `);
   });
 });

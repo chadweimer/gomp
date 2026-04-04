@@ -20,7 +20,7 @@ export class HTMLEditor {
   @State() isUnderlineActive: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
-  @State() activeHeading?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  @State() activeHeading: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null = null;
 
   private editorContentRef!: HTMLElement;
 
@@ -29,10 +29,12 @@ export class HTMLEditor {
     this.updateButtonStates();
   }
 
+  componentWillLoad() {
+    this.updateButtonStates();
+  }
+
   componentDidLoad() {
     this.el.ownerDocument.addEventListener('selectionchange', this.updateButtonStates);
-
-    this.updateButtonStates();
   }
 
   disconnectedCallback() {
