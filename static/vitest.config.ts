@@ -22,7 +22,7 @@ export default defineVitestConfig({
     coverage: {
       reporter: ['lcov', 'text'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.spec.{ts,tsx}', 'src/**/*.d.ts', 'src/generated/*.ts'],
+      exclude: ['src/**/*.spec.{ts,tsx}', 'src/**/*.d.ts', 'src/generated/**/*.ts'],
     }
   },
 });
