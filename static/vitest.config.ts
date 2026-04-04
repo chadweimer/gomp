@@ -15,8 +15,13 @@ export default defineVitestConfig({
             },
           },
           setupFiles: ['./vitest-setup.ts'],
+          testTimeout: 10000,
         },
       },
     ],
+    coverage: {
+      reporter: ['lcov', 'text'],
+      include: ['src/**/*.{ts,tsx}'],
+    }
   },
 });
