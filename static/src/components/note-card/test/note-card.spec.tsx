@@ -1,36 +1,29 @@
-import { h } from '@stencil/core';
-import { newSpecPage } from '@stencil/core/testing';
-import { NoteCard } from '../note-card';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 import { Note } from '../../../generated';
 
 describe('note-card', () => {
   it('renders', async () => {
-    const page = await newSpecPage({
-      components: [NoteCard],
-      html: '<note-card></note-card>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(NoteCard);
+    const { root } = await render(<note-card />);
+    expect(root).toEqualLightHtml(`
+      <note-card class="hydrated"></note-card>
+    `);
   });
 
   it('bind to note', async () => {
     const note: Note = { text: 'Some text', createdAt: new Date() };
-    const page = await newSpecPage({
-      components: [NoteCard],
-      template: () => (<note-card note={note}></note-card>),
-    });
-    const node = page.root.shadowRoot.querySelector('html-viewer');
-    expect(node).toEqualAttribute('value', note.text);
+    const { root } = await render(<note-card note={note}></note-card>);
+    const node = root.shadowRoot?.querySelector('html-viewer');
+    expect(node).not.toBeNull();
+    expect(node).toHaveProperty('value', note.text);
   });
 
   it('readonly works', async () => {
     const values = [true, false];
     for (const readonly of values) {
-      const page = await newSpecPage({
-        components: [NoteCard],
-        template: () => (<note-card readonly={readonly}></note-card>),
-      });
-      const buttons = page.root.shadowRoot.querySelectorAll('ion-button');
-      expect(buttons.length).toBe(readonly ? 0 : 2);
+      const { root } = await render(<note-card readonly={readonly}></note-card>);
+      const buttons = root.shadowRoot?.querySelectorAll('ion-button');
+      expect(buttons).not.toBeNull();
+      expect(buttons?.length).toBe(readonly ? 0 : 2);
     }
   });
 
@@ -42,14 +35,11 @@ describe('note-card', () => {
       modifiedAt.setDate(modifiedAt.getDate() + 1);
       modifiedAt = modified ? modifiedAt : createdAt;
       const note: Note = { text: 'Some text', createdAt: createdAt, modifiedAt: modifiedAt };
-      const page = await newSpecPage({
-        components: [NoteCard],
-        template: () => (<note-card note={note}></note-card>),
-      });
-      const label = page.root.shadowRoot.querySelector('ion-card-header ion-card-subtitle');
+      const { root } = await render(<note-card note={note}></note-card>);
+      const label = root.shadowRoot?.querySelector('ion-card-header ion-card-subtitle');
       if (modified) {
         expect(label).not.toBeNull();
-        expect(label.textContent.includes('Last Modified')).toBe(true);
+        expect(label?.textContent.includes('Last Modified')).toBe(true);
       } else {
         expect(label).toBeNull();
       }

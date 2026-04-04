@@ -1,12 +1,8 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { PageSettingsSecurity } from '../page-settings-security';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('page-settings-security', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [PageSettingsSecurity],
-      html: '<page-settings-security></page-settings-security>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(PageSettingsSecurity);
+    const { root } = await render<HTMLPageSettingsSecurityElement>(<page-settings-security />);
+    expect(root).toHaveClass('hydrated');
   });
 });

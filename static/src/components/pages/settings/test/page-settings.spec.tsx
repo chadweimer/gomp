@@ -1,12 +1,8 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { PageSettings } from '../page-settings';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('page-settings', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [PageSettings],
-      html: '<page-settings></page-settings>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(PageSettings);
+    const { root } = await render<HTMLPageSettingsElement>(<page-settings />);
+    expect(root).toHaveClass('hydrated');
   });
 });

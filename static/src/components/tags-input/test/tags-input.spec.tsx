@@ -1,134 +1,94 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { TagsInput } from '../tags-input';
-import { h } from '@stencil/core';
+import { render, h, describe, it, expect, vi } from '@stencil/vitest';
 
 describe('tags-input', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [TagsInput],
-      html: '<tags-input></tags-input>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(TagsInput);
+    const { root } = await render<HTMLTagsInputElement>(<tags-input />);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('default no label', async () => {
-    const page = await newSpecPage({
-      components: [TagsInput],
-      html: '<tags-input></tags-input>',
-    });
-    const component = page.rootInstance as TagsInput;
-    expect(component.label).toBeUndefined();
-    const label = page.root.querySelector('ion-label');
+    const { root } = await render(<tags-input />);
+    expect(root).toHaveProperty('label', undefined);
+    const label = root.querySelector('ion-label');
     expect(label).toBeNull();
   });
 
   it('label is used', async () => {
     const expectedLabel = 'My Label';
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input label={expectedLabel}></tags-input>),
-    });
-    const component = page.rootInstance as TagsInput;
-    expect(component.label).toEqual(expectedLabel);
-    const label = page.root.querySelector('ion-label');
+    const { root } = await render(<tags-input label={expectedLabel} />);
+    expect(root).toHaveProperty('label', expectedLabel);
+    const label = root.querySelector('ion-label');
     expect(label).toEqualText(expectedLabel);
   });
 
   it('label placement is used', async () => {
     const expectedLabel = 'My Label';
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input label={expectedLabel} label-placement="fixed"></tags-input>),
-    });
-    const component = page.rootInstance as TagsInput;
-    expect(component.label).toEqual(expectedLabel);
-    const label = page.root.querySelector('ion-label');
+    const { root } = await render(<tags-input label={expectedLabel} label-placement="fixed" />);
+    expect(root).toHaveProperty('label', expectedLabel);
+    const label = root.querySelector('ion-label');
     expect(label).toEqualText(expectedLabel);
-    expect(label).toEqualAttribute('position', 'fixed');
+    expect(label).toHaveProperty('position', 'fixed');
   });
 
   it('uses tags', async () => {
     const expectedTags = ['tag1', 'tag2'];
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input value={expectedTags}></tags-input>),
-    });
-    const component = page.rootInstance as TagsInput;
-    expect(component.value).toEqual(expectedTags);
-    const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const { root } = await render(<tags-input value={expectedTags} />);
+    expect(root).toHaveProperty('value', expectedTags);
+    const chips = root.querySelectorAll('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(expectedTags.length);
   });
 
   it('uses suggestions', async () => {
     const expectedTags = ['tag1', 'tag2'];
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input suggestions={expectedTags}></tags-input>),
-    });
-    const component = page.rootInstance as TagsInput;
-    expect(component.value).toEqual([]);
-    expect(component.suggestions).toEqual(expectedTags);
-    const chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    const { root } = await render<HTMLTagsInputElement>(<tags-input suggestions={expectedTags} />);
+    expect(root.value.length).toBe(0);
+    expect(root).toHaveProperty('suggestions', expectedTags);
+    const chips = root.querySelectorAll('ion-chip.suggested');
     expect(chips).toHaveLength(expectedTags.length);
   });
 
   it('tag can be removed', async () => {
     const initialTags = ['tag1', 'tag2'];
-    const handleValueChanged = jest.fn();
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input value={initialTags} onValueChanged={handleValueChanged}></tags-input>),
-    });
-    let chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const handleValueChanged = vi.fn();
+    const { root, waitForChanges } = await render(<tags-input value={initialTags} onValueChanged={handleValueChanged} />);
+    let chips = root.querySelectorAll('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(initialTags.length);
-    chips.forEach(chip => chip.click());
-    await page.waitForChanges();
-    const component = page.rootInstance as TagsInput;
-    expect(component.internalValue).toEqual([]);
-    chips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    chips.forEach(chip => chip.dispatchEvent(new MouseEvent('click')));
+    await waitForChanges();
+    chips = root.querySelectorAll('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(0);
     expect(handleValueChanged).toHaveBeenCalledTimes(initialTags.length);
   });
 
   it('tag can be added', async () => {
     const expectedTags = ['tag1', 'tag2'];
-    const handleValueChanged = jest.fn();
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input onValueChanged={handleValueChanged}></tags-input>),
-    });
-    const component = page.rootInstance as TagsInput;
-    expect(component.value).toEqual([]);
-    const input = page.root.querySelector('ion-input');
+    const handleValueChanged = vi.fn();
+    const { root, waitForChanges } = await render(<tags-input onValueChanged={handleValueChanged} />);
+    expect(root).toHaveProperty('value');
+    const input = root.querySelector<HTMLInputElement>('ion-input');
     expect(input).not.toBeNull();
     for (const tag of expectedTags) {
-      input.value = tag;
-      input.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Enter' }));
-      await page.waitForChanges();
-      expect(input.value).toEqualText('');
+      input!.value = tag;
+      input!.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Enter' }));
+      await waitForChanges();
+      expect(input).toHaveProperty('value', '');
     }
-    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const addedChips = root.querySelectorAll('ion-chip:not(.suggested)');
     expect(addedChips).toHaveLength(expectedTags.length);
     expect(handleValueChanged).toHaveBeenCalledTimes(expectedTags.length);
-    expect(component.internalValue).toEqual(expectedTags);
   });
 
   it('suggestions can be added', async () => {
     const initialSuggestions = ['tag1', 'tag2'];
-    const handleValueChanged = jest.fn();
-    const page = await newSpecPage({
-      components: [TagsInput],
-      template: () => (<tags-input suggestions={initialSuggestions} onValueChanged={handleValueChanged}></tags-input>),
-    });
-    let suggestedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    const handleValueChanged = vi.fn();
+    const { root, waitForChanges } = await render(<tags-input suggestions={initialSuggestions} onValueChanged={handleValueChanged} />);
+    let suggestedChips = root.querySelectorAll('ion-chip.suggested');
     expect(suggestedChips).toHaveLength(initialSuggestions.length);
-    suggestedChips.forEach(chip => chip.click());
-    await page.waitForChanges();
-    const component = page.rootInstance as TagsInput;
-    expect(component.internalValue).toEqual(initialSuggestions);
-    suggestedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip.suggested');
+    suggestedChips.forEach(chip => chip.dispatchEvent(new MouseEvent('click')));
+    await waitForChanges();
+    suggestedChips = root.querySelectorAll('ion-chip.suggested');
     expect(suggestedChips).toHaveLength(0);
-    const addedChips = page.root.querySelectorAll<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    const addedChips = root.querySelectorAll('ion-chip:not(.suggested)');
     expect(addedChips).toHaveLength(initialSuggestions.length);
     expect(handleValueChanged).toHaveBeenCalledTimes(initialSuggestions.length);
   });

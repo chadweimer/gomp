@@ -1,32 +1,25 @@
-import { h } from '@stencil/core';
-import { newSpecPage } from '@stencil/core/testing';
-import { UserEditor } from '../user-editor';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 import { AccessLevel, User } from '../../../generated';
 
 describe('user-editor', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [UserEditor],
-      html: '<user-editor></user-editor>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(UserEditor);
+    const { root } = await render(<user-editor />);
+    expect(root).toEqualLightHtml(`
+      <user-editor class="hydrated"></user-editor>
+    `);
   });
 
   it('defaults', async () => {
-    const page = await newSpecPage({
-      components: [UserEditor],
-      html: '<user-editor></user-editor>',
-    });
-    const component = page.rootInstance as UserEditor;
-    expect(component.user.id).toBeUndefined();
-    expect(component.user.username).toEqual('');
-    expect(component.user.accessLevel).toEqual(AccessLevel.Editor);
-    const usernameInput = page.root.shadowRoot.querySelector('ion-input[type=\'email\']');
+    const { root } = await render<HTMLUserEditorElement>(<user-editor />);
+    expect(root.user.id).toBeUndefined();
+    expect(root.user.username).toEqual('');
+    expect(root.user.accessLevel).toEqual(AccessLevel.Editor);
+    const usernameInput = root.shadowRoot?.querySelector('input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
-    expect(usernameInput).toEqualAttribute('value', '');
-    const accessLevelSelect = page.root.shadowRoot.querySelector('ion-select');
+    expect(usernameInput).toHaveProperty('value', '');
+    const accessLevelSelect = root.shadowRoot?.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
-    expect(accessLevelSelect).toEqualAttribute('value', AccessLevel.Editor);
+    expect(accessLevelSelect).toHaveProperty('value', AccessLevel.Editor);
   });
 
   it('bind to user', async () => {
@@ -35,33 +28,24 @@ describe('user-editor', () => {
       username: 'someone@example.com',
       accessLevel: AccessLevel.Admin,
     };
-    const page = await newSpecPage({
-      components: [UserEditor],
-      template: () => (<user-editor user={user}></user-editor>),
-    });
-    const component = page.rootInstance as UserEditor;
-    expect(component.user).toEqual(user);
-    const usernameInput = page.root.shadowRoot.querySelector('ion-input[type=\'email\']');
+    const { root } = await render(<user-editor user={user} />);
+    expect(root).toHaveProperty('user', user);
+    const usernameInput = root.shadowRoot?.querySelector('input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
-    expect(usernameInput).toEqualAttribute('value', user.username);
-    const accessLevelSelect = page.root.shadowRoot.querySelector('ion-select');
+    expect(usernameInput).toHaveProperty('value', user.username);
+    const accessLevelSelect = root.shadowRoot?.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
-    expect(accessLevelSelect).toEqualAttribute('value', user.accessLevel);
+    expect(accessLevelSelect).toHaveProperty('value', user.accessLevel);
   });
 
   it('shows passwords', async () => {
     const user: User = {
-      id: null,
       username: 'someone@example.com',
       accessLevel: AccessLevel.Editor,
     };
-    const page = await newSpecPage({
-      components: [UserEditor],
-      template: () => (<user-editor user={user}></user-editor>),
-    });
-    const component = page.rootInstance as UserEditor;
-    expect(component.user).toEqual(user);
-    const passwordInput = page.root.shadowRoot.querySelector('ion-input[type=\'password\']');
+    const { root } = await render(<user-editor user={user} />);
+    expect(root).toHaveProperty('user', user);
+    const passwordInput = root.shadowRoot?.querySelector('input[type=\'password\']');
     expect(passwordInput).not.toBeNull();
   });
 
@@ -71,13 +55,9 @@ describe('user-editor', () => {
       username: 'someone@example.com',
       accessLevel: AccessLevel.Editor,
     };
-    const page = await newSpecPage({
-      components: [UserEditor],
-      template: () => (<user-editor user={user}></user-editor>),
-    });
-    const component = page.rootInstance as UserEditor;
-    expect(component.user).toEqual(user);
-    const passwordInput = page.root.shadowRoot.querySelector('ion-input[type=\'password\']');
+    const { root } = await render(<user-editor user={user} />);
+    expect(root).toHaveProperty('user', user);
+    const passwordInput = root.shadowRoot?.querySelector('input[type=\'password\']');
     expect(passwordInput).toBeNull();
   });
 });
