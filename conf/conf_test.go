@@ -341,7 +341,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					}
 				}
 			} else {
-				t.Errorf("Bind() did not error")
+				t.Error("Bind() did not error")
 			}
 		})
 	}

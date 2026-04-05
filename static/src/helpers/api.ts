@@ -43,13 +43,16 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
     try {
       const localAppApi = new AppApi(new Configuration({
         basePath: `${globalThis.location.origin}/api/v1`,
-        accessToken: () => state.jwtToken
+        accessToken: () => state.jwtToken ?? ''
       }));
       const { token } = await localAppApi.refreshToken();
       state.jwtToken = token;
-      init.headers = {
-        ...init.headers,
-        'Authorization': `Bearer ${state.jwtToken}`
+      init = {
+        ...init,
+        headers: {
+          ...init?.headers,
+          'Authorization': `Bearer ${state.jwtToken}`
+        }
       };
       response = await globalThis.fetch(input, init);
     } catch (retryError) {
@@ -62,7 +65,7 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
 
 const configuration = new Configuration({
   basePath: `${globalThis.location.origin}/api/v1`,
-  accessToken: () => state.jwtToken,
+  accessToken: () => state.jwtToken ?? '',
   fetchApi: customFetch,
   middleware: [new LoadingMiddleware()]
 });
@@ -101,9 +104,9 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
     count: count,
     q: filter.query,
     pictures: toYesNoAny(filter.withPictures),
-    fields: filter.fields.length > 0 ? filter.fields : null,
-    states: filter.states.length > 0 ? filter.states : null,
-    tags: filter.tags.length > 0 ? filter.tags : null
+    fields: filter.fields.length > 0 ? filter.fields : undefined,
+    states: filter.states.length > 0 ? filter.states : undefined,
+    tags: filter.tags.length > 0 ? filter.tags : undefined
   });
 }
 
@@ -118,7 +121,7 @@ export async function refreshSearchResults() {
   } catch (ex) {
     console.error(ex);
     state.searchResults = [];
-    state.searchResultCount = null;
+    state.searchResultCount = undefined;
     state.searchNumPages = 1;
   } finally {
     if (state.searchPage > state.searchNumPages) {
@@ -132,6 +135,6 @@ export async function refreshSearchResults() {
     state.totalRecipeCount = total;
   } catch (ex) {
     console.error(ex);
-    state.totalRecipeCount = null;
+    state.totalRecipeCount = undefined;
   }
 }

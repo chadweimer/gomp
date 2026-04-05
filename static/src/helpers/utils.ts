@@ -8,11 +8,11 @@ interface GompClaims extends JwtPayload {
   scopes?: string[]
 }
 
-export function isNull<T>(val: T | null) {
-  return typeof val === 'undefined' || val === null;
+export function isNull<T>(val: T | null | undefined): val is null | undefined {
+  return val === undefined || val === null;
 }
 
-export function isNullOrEmpty(val: string | null) {
+export function isNullOrEmpty(val: string | null | undefined): val is '' | null | undefined {
   return isNull(val) || val === '';
 }
 
@@ -42,10 +42,10 @@ export function hasScope(token: string | null, accessLevel: AccessLevel) {
 
 export async function redirect(route: string) {
   const router = document.querySelector('ion-router');
-  await router.push(route);
+  await router?.push(route);
 }
 
-export function insertSpacesBetweenWords(val: string) {
+export function insertSpacesBetweenWords(val: string | null | undefined) {
   if (isNull(val)) {
     return '';
   }
@@ -53,7 +53,7 @@ export function insertSpacesBetweenWords(val: string) {
   return val.replace(/([A-Z])/g, ' $1').trim()
 }
 
-export function enumKeyFromValue(keys: object, val: string) {
+export function enumKeyFromValue(keys: Record<string, string>, val: string | null | undefined) {
   if (isNull(val)) {
     return '';
   }
@@ -107,14 +107,14 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
     gestureName: 'swipe',
     onEnd: e => {
       const swipe = getSwipe(e);
-      if (isNullOrEmpty(swipe)) return
+      if (isNullOrEmpty(swipe)) return;
 
       handler(swipe);
     }
   });
 }
 
-function getSwipe(e: GestureDetail) {
+function getSwipe(e: GestureDetail): SwipeDirection | undefined {
   if (Math.abs(e.velocityX) < 0.1) {
     return undefined
   }
@@ -148,7 +148,7 @@ function performAutofocus(this: HTMLIonModalElement) {
 
   // WORKAROUND: If the component is an HTML-EDITOR,
   // focus on the editor content instead of the editor itself.
-  if (focusEl.tagName === 'HTML-EDITOR') {
+  if (focusEl?.tagName === 'HTML-EDITOR') {
     focusEl = focusEl.querySelector('.editor-content');
   }
 
@@ -160,7 +160,7 @@ function performAutofocus(this: HTMLIonModalElement) {
 }
 
 export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
-  return getContainingModal(el).dismiss(data);
+  return getContainingModal(el)?.dismiss(data);
 }
 
 export async function showToast(message: string, duration = 2000) {
@@ -188,7 +188,7 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 
   if ('getTab' in router) {
     const tab = await router.getTab(routeId.id);
-    if (!isNull(tab.component)) {
+    if (!isNull(tab?.component)) {
       if (tab.component instanceof HTMLElement) {
         return tab.component;
       } else if (typeof tab.component === 'string') {
