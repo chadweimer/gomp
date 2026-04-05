@@ -8,7 +8,7 @@ import { enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../
   styleUrl: 'page-settings-security.css',
 })
 export class PageSettingsSecurity {
-  @State() currentUser: User | null;
+  @State() currentUser: User | undefined;
   @State() currentPassword = '';
   @State() newPassword = '';
   @State() repeatPassword = '';
@@ -29,7 +29,7 @@ export class PageSettingsSecurity {
           <ion-grid class="no-pad" fixed>
             <ion-row>
               <ion-col>
-                <form onSubmit={e => e.preventDefault()} ref={el => this.securityForm = el}>
+                <form onSubmit={e => e.preventDefault()} ref={el => this.securityForm = el!}>
                   <ion-card>
                     <ion-card-content>
                       <ion-item lines="full">
@@ -41,20 +41,20 @@ export class PageSettingsSecurity {
                       <ion-item lines="full">
                         <ion-input label="Current Password" label-placement="stacked" type="password" value={this.currentPassword}
                           autocomplete="current-password"
-                          onIonBlur={e => this.currentPassword = e.target.value as string}
+                          onIonBlur={(e: Event) => this.currentPassword = (e.currentTarget as HTMLIonInputElement).value as string}
                           required />
                       </ion-item>
                       <ion-item lines="full">
                         <ion-input label="New Password" label-placement="stacked" type="password" value={this.newPassword}
                           autocomplete="new-password"
-                          onIonBlur={e => this.newPassword = e.target.value as string}
+                          onIonBlur={(e: Event) => this.newPassword = (e.currentTarget as HTMLIonInputElement).value as string}
                           required />
                       </ion-item>
                       <ion-item lines="full">
                         <ion-input label="Confirm Password" label-placement="stacked" type="password" value={this.repeatPassword}
                           autocomplete="new-password"
-                          onIonBlur={e => this.repeatPassword = e.target.value as string}
-                          ref={el => this.repeatPasswordInput = el}
+                          onIonBlur={(e: Event) => this.repeatPassword = (e.currentTarget as HTMLIonInputElement).value as string}
+                          ref={(el: HTMLIonInputElement) => this.repeatPasswordInput = el}
                           required />
                       </ion-item>
                     </ion-card-content>
@@ -93,11 +93,7 @@ export class PageSettingsSecurity {
 
   private async onUpdatePasswordClicked() {
     const native = await this.repeatPasswordInput.getInputElement();
-    if (this.newPassword !== this.repeatPassword) {
-      native.setCustomValidity('Passwords must match');
-    } else {
-      native.setCustomValidity('');
-    }
+    native.setCustomValidity(this.newPassword === this.repeatPassword ? '' : 'Passwords must match');
 
     if (!this.securityForm.reportValidity()) {
       return;

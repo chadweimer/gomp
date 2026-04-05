@@ -12,7 +12,7 @@ export class TagsInput {
   @Prop() value: string[] = [];
   @Prop() suggestions: string[] = [];
 
-  @Event() valueChanged: EventEmitter<string[]>;
+  @Event() valueChanged!: EventEmitter<string[]>;
 
   @State() internalValue: string[] = [];
   @State() filteredSuggestions: string[] = [];
@@ -48,7 +48,7 @@ export class TagsInput {
             )}
           </div>
         }
-        <ion-input enterkeyhint="enter" onKeyDown={e => this.onTagsKeyDown(e)} ref={el => this.tagsInput = el} />
+        <ion-input enterkeyhint="enter" onKeyDown={(e: KeyboardEvent) => this.onTagsKeyDown(e)} ref={(el: HTMLIonInputElement) => this.tagsInput = el} />
         <div class="ion-padding-bottom">
           {this.filteredSuggestions.map(tag =>
             <ion-chip key={tag} class="suggested" color="success" onClick={() => this.addTag(tag)}>
@@ -82,7 +82,7 @@ export class TagsInput {
 
   private onTagsKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !isNullOrEmpty(this.tagsInput.value?.toString())) {
-      this.addTag(this.tagsInput.value.toString());
+      this.addTag(this.tagsInput.value!.toString());
       this.tagsInput.value = '';
     }
   }

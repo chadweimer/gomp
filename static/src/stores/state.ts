@@ -41,12 +41,13 @@ for (const prop of propsToSync) {
     set(prop.key, prop.isObject ? JSON.parse(val) : val);
   }
   onChange(prop.key, val => {
-    if (!isNull(val)) {
-      prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val);
-    } else {
+    if (isNull(val)) {
       prop.storage.removeItem(prop.key);
+    } else {
+      prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val);
     }
   });
 }
 
-export { state as default, reset as clearState, onChange as onStateChange };
+export default state;
+export { reset as clearState, onChange as onStateChange };
