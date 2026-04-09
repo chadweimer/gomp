@@ -79,7 +79,7 @@ func main() {
 
 	r := middleware.Wrap(
 		mux,
-		middleware.LogRequests(slog.Default()),
+		middleware.LogRequests(slog.Default(), cfg.getTrustedProxies()),
 		middleware.Recover("Recovered from panic"),
 	)
 

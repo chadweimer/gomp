@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -50,9 +51,11 @@ func TestLogRequests(t *testing.T) {
 		msg string
 	}
 	tests := []struct {
-		name string
-		args args
-		want *regexp.Regexp
+		name           string
+		args           args
+		headers        http.Header
+		trustedProxies []net.IPNet
+		want           *regexp.Regexp
 	}{
 		{
 			name: "Request is logged",
@@ -60,9 +63,57 @@ func TestLogRequests(t *testing.T) {
 				msg: "Hello, from handler!",
 			},
 			want: regexp.MustCompile(
-				"^time=.* level=DEBUG msg=Rx request-id=\\d+ req.from=.* req.method=GET req.referrer=\"\" req.url=\\/\\s+" +
-					"time=.* level=DEBUG msg=\"Hello, from handler!\" request-id=\\d+ req.from=.* req.method=GET req.referrer=\"\" req.url=\\/\\s+" +
-					"time=.* level=DEBUG msg=Tx request-id=\\d+ req.from=.* req.method=GET req.referrer=\"\" req.url=\\/ resp.bytes-written=20 resp.status=200 duration=.*$",
+				"^time=.* level=DEBUG msg=Rx request-id=\\d+ req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=\"Hello, from handler!\" request-id=\\d+ req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=Tx request-id=\\d+ req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/ resp\\.bytes-written=20 resp\\.status=200 duration=.*$",
+			),
+		},
+		{
+			name: "Request ID is read from headers",
+			args: args{
+				msg: "Hello, with request ID!",
+			},
+			headers: http.Header{
+				http.CanonicalHeaderKey("X-Request-Id"): []string{"12345"},
+			},
+			want: regexp.MustCompile(
+				"^time=.* level=DEBUG msg=Rx request-id=12345 req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=\"Hello, with request ID!\" request-id=12345 req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=Tx request-id=12345 req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/ resp\\.bytes-written=23 resp\\.status=200 duration=.*$",
+			),
+		},
+		{
+			name: "ClientIP is read from headers",
+			args: args{
+				msg: "Hello, with client IP!",
+			},
+			headers: http.Header{
+				http.CanonicalHeaderKey("X-Forwarded-For"): []string{"1.2.3.4,5.6.7.8"},
+			},
+			trustedProxies: []net.IPNet{
+				{
+					IP:   net.ParseIP("192.0.0.0"),
+					Mask: net.CIDRMask(8, 32),
+				},
+			},
+			want: regexp.MustCompile(
+				"^time=.* level=DEBUG msg=Rx request-id=\\d+ req.from=1\\.2\\.3\\.4 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=\"Hello, with client IP!\" request-id=\\d+ req\\.from=1\\.2\\.3\\.4 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=Tx request-id=\\d+ req\\.from=1\\.2\\.3\\.4 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/ resp\\.bytes-written=22 resp\\.status=200 duration=.*$",
+			),
+		},
+		{
+			name: "ClientIP is ignored for untrusted proxy",
+			args: args{
+				msg: "Hello, with ignored client IP!",
+			},
+			headers: http.Header{
+				http.CanonicalHeaderKey("X-Forwarded-For"): []string{"1.2.3.4,5.6.7.8"},
+			},
+			want: regexp.MustCompile(
+				"^time=.* level=DEBUG msg=Rx request-id=\\d+ req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=\"Hello, with ignored client IP!\" request-id=\\d+ req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/\\s+" +
+					"time=.* level=DEBUG msg=Tx request-id=\\d+ req\\.from=192\\.0\\.2\\.1 req\\.method=GET req\\.referrer=\"\" req\\.url=\\/ resp\\.bytes-written=30 resp\\.status=200 duration=.*$",
 			),
 		},
 	}
@@ -73,14 +124,18 @@ func TestLogRequests(t *testing.T) {
 			logger := slog.New(slog.NewTextHandler(buff, &slog.HandlerOptions{
 				Level: slog.LevelDebug,
 			}))
-			sut := LogRequests(logger)
+			sut := LogRequests(logger, tt.trustedProxies)
 			handler := sut(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				GetLoggerFromRequest(r).Debug(tt.args.msg)
 				w.Write([]byte(tt.args.msg))
 			}))
+			req := httptest.NewRequest("GET", "/", nil)
+			if tt.headers != nil {
+				req.Header = tt.headers
+			}
 
 			// Act
-			handler.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/", nil))
+			handler.ServeHTTP(httptest.NewRecorder(), req)
 			got := strings.TrimSpace(buff.String())
 
 			// Assert

@@ -9,6 +9,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 var (
@@ -151,15 +153,18 @@ func set(val reflect.Value, str string) error {
 func convertSlice(str string, val reflect.Value) error {
 	return convertAndSet(str, func(str string) (reflect.Value, error) {
 		valType := val.Type()
-		segments := strings.Split(str, ",")
-		newVal := reflect.MakeSlice(valType, 0, len(segments))
-		for _, segment := range segments {
-			elementPtr := reflect.New(valType.Elem())
-			element := resolvePointers(elementPtr)
-			if err := set(element, strings.TrimSpace(segment)); err != nil {
-				return reflect.Zero(valType), err
+		newVal := reflect.MakeSlice(valType, 0, 0)
+		if !lo.IsEmpty(str) {
+			segments := strings.Split(str, ",")
+			newVal = reflect.MakeSlice(valType, 0, len(segments))
+			for _, segment := range segments {
+				elementPtr := reflect.New(valType.Elem())
+				element := resolvePointers(elementPtr)
+				if err := set(element, strings.TrimSpace(segment)); err != nil {
+					return reflect.Zero(valType), err
+				}
+				newVal = reflect.Append(newVal, elementPtr.Elem())
 			}
-			newVal = reflect.Append(newVal, elementPtr.Elem())
 		}
 		return newVal, nil
 	}, val.Set)

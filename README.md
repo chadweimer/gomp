@@ -131,6 +131,7 @@ spec:
 ## Configuration
 
 The following table summarizes the available configuration settings, which are settable through environment variables.
+Unless otherwise specified, for settings that are arrays, multiple values should be separated by commas.
 
 ENV                     |Value(s)        |Default                                  |Description
 ------------------------|----------------|-----------------------------------------|------------
@@ -141,7 +142,8 @@ IS_DEVELOPMENT          |0, 1            |0                                     
 MIGRATIONS_FORCE_VERSION|int             |-1                                       |A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version.
 MIGRATIONS_TABLE_NAME   |string          |&lt;empty&gt;                            |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
 PORT                    |uint            |5000                                     |The port number under which the site is being hosted.
-SECURE_KEY              |[]string        |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas.
+SECURE_KEY              |[]string        |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters.
+TRUSTED_PROXIES         |[]string        |&lt;empty&gt;                            |List of IP addresses or CIDR ranges that are considered trusted proxies. When determining the client IP address, if the request comes from a trusted proxy, the `X-Forwarded-For` header will be used to determine the original client IP.
 UPLOAD_PATH             |string          |data/uploads                             |The path (full or relative) under which to store uploads.
 IMAGE_QUALITY           |original, high, medium, low|original                      |The quality level for recipe images. Original quality falls back to High if the uploaded image is not a JPEG. JPEG Qualities: High == 92, Medium == 80, Low == 70. Resizing Algorithm: High = CatmullRom, Medium = BiLinear, Low = NearestNeighbor.
 IMAGE_SIZE              |uint            |2000                                     |The size of the bounding box to fit recipe images to. Ignored if IMAGE_QUALITY == original.
