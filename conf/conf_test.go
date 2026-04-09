@@ -43,7 +43,8 @@ func TestBind_Defaults(t *testing.T) {
 		TestBool      bool   `default:"true"`
 		TestBoolArray []bool `default:"true,false"`
 
-		TestString string `default:"Hello, Tests!"`
+		TestString           string   `default:"Hello, Tests!"`
+		TestStringEmptyArray []string `default:""`
 
 		TestTime    time.Time  `default:"2000-01-02T03:04:05Z"`
 		TestTimePtr *time.Time `default:"2000-01-02T03:04:05Z"`
@@ -88,7 +89,8 @@ func TestBind_Defaults(t *testing.T) {
 				TestBool:      true,
 				TestBoolArray: []bool{true, false},
 
-				TestString: "Hello, Tests!",
+				TestString:           "Hello, Tests!",
+				TestStringEmptyArray: []string{},
 
 				TestTime:    time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
 				TestTimePtr: utils.GetPtr(time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)),
