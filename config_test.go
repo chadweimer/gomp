@@ -7,12 +7,14 @@ func TestConfig_validate(t *testing.T) {
 		Port           int
 		BaseAssetsPath string
 		SecureKeys     []string
+		TrustedProxies []string
 	}
 	init := func(opts ...func(f *fields)) fields {
 		f := fields{
 			Port:           1234,
 			BaseAssetsPath: "/path/to/assets",
 			SecureKeys:     []string{"secure key"},
+			TrustedProxies: []string{"192.168.0.0/16", "127.0.0.1"},
 		}
 		for _, opt := range opts {
 			opt(&f)
@@ -50,6 +52,13 @@ func TestConfig_validate(t *testing.T) {
 			}),
 			wantErr: true,
 		},
+		{
+			name: "Invalid Trusted Proxies",
+			fields: init(func(f *fields) {
+				f.TrustedProxies = []string{"invalid"}
+			}),
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -57,6 +66,7 @@ func TestConfig_validate(t *testing.T) {
 				Port:           tt.fields.Port,
 				BaseAssetsPath: tt.fields.BaseAssetsPath,
 				SecureKeys:     tt.fields.SecureKeys,
+				TrustedProxies: tt.fields.TrustedProxies,
 			}
 			if got := c.validate(); tt.wantErr != (got != nil) {
 				t.Errorf("Config.validate() = %v, want error? %v", got, tt.wantErr)
