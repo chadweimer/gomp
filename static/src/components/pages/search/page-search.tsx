@@ -13,7 +13,7 @@ import state from '../../../stores/state';
 export class PageSearch {
   @Element() el!: HTMLPageSearchElement;
   private content!: HTMLIonContentElement;
-  private gesture: Gesture;
+  private gesture: Gesture | null = null;
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
@@ -34,7 +34,7 @@ export class PageSearch {
   }
 
   disconnectedCallback() {
-    this.gesture.destroy();
+    this.gesture?.destroy();
     this.gesture = null;
   }
 
@@ -75,7 +75,8 @@ export class PageSearch {
           </ion-toolbar>
         </ion-header>
 
-        <ion-content ref={el => this.content = el} scroll-events onIonScrollEnd={e => this.onContentScrolled(e)}>
+        <ion-content ref={(el: HTMLIonContentElement) => this.content = el} scroll-events
+          onIonScrollEnd={(e: CustomEvent<ScrollBaseDetail>) => this.onContentScrolled(e)}>
           <ion-grid class="no-pad">
             <ion-row>
               {state.searchResults?.map(recipe =>
@@ -165,7 +166,7 @@ export class PageSearch {
         await showLoading(
           async () => {
             await recipesApi.uploadImage({
-              recipeId: newRecipe.id,
+              recipeId: newRecipe.id!,
               fileContent: file
             });
           },
@@ -210,8 +211,8 @@ export class PageSearch {
       inputs: Object.keys(RecipeState).map(item => ({
         type: 'checkbox',
         label: insertSpacesBetweenWords(item),
-        value: RecipeState[item],
-        checked: state.searchFilter.states.includes(RecipeState[item])
+        value: RecipeState[item as keyof typeof RecipeState],
+        checked: state.searchFilter.states.includes(RecipeState[item as keyof typeof RecipeState])
       })),
       buttons: [
         {
@@ -233,8 +234,8 @@ export class PageSearch {
       inputs: Object.keys(SortBy).map(item => ({
         type: 'radio',
         label: insertSpacesBetweenWords(item),
-        value: SortBy[item],
-        checked: state.searchFilter.sortBy === SortBy[item]
+        value: SortBy[item as keyof typeof SortBy],
+        checked: state.searchFilter.sortBy === SortBy[item as keyof typeof SortBy]
       })),
       buttons: [
         {

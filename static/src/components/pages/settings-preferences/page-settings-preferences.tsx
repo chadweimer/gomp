@@ -1,14 +1,14 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../generated';
 import { appApi, loadUserSettings, usersApi } from '../../../helpers/api';
-import { isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
+import { isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-preferences',
   styleUrl: 'page-settings-preferences.css',
 })
 export class PageSettingsPreferences {
-  @State() settings: UserSettings | null;
+  @State() settings: UserSettings | null = null;
 
   @Element() el!: HTMLPageSettingsPreferencesElement;
   private settingsForm!: HTMLFormElement;
@@ -26,7 +26,7 @@ export class PageSettingsPreferences {
           <ion-grid class="no-pad" fixed>
             <ion-row>
               <ion-col>
-                <form onSubmit={e => e.preventDefault()} ref={el => this.settingsForm = el}>
+                <form onSubmit={e => e.preventDefault()} ref={el => this.settingsForm = el!}>
                   <ion-card>
                     <ion-card-content>
                       <ion-item lines="full">
@@ -34,12 +34,12 @@ export class PageSettingsPreferences {
                           autocorrect="on"
                           spellcheck
                           required
-                          onIonBlur={e => this.settings = { ...this.settings, homeTitle: e.target.value as string }} />
+                          onIonBlur={(e: Event) => this.settings = { ...this.settings, homeTitle: (e.currentTarget as HTMLIonInputElement).value as string, favoriteTags: this.settings?.favoriteTags ?? [] }} />
                       </ion-item>
                       <ion-item lines="full">
                         <form enctype="multipart/form-data">
                           <ion-label position="stacked">Home Image</ion-label>
-                          <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
+                          <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el!} />
                         </form>
                         <ion-thumbnail>
                           <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
@@ -69,6 +69,11 @@ export class PageSettingsPreferences {
   }
 
   private async saveUserSettings() {
+    if (isNull(this.settings)) {
+      console.error('Cannot save settings: settings are null.');
+      return;
+    }
+
     try {
       await usersApi.saveSettings({ settings: this.settings });
     } catch (ex) {
@@ -82,15 +87,16 @@ export class PageSettingsPreferences {
       return;
     }
 
-    if (this.imageInput.files.length > 0) {
+    if ((this.imageInput.files ?? []).length > 0) {
       await showLoading(
         async () => {
           const resp = await appApi.uploadRaw({
-            fileContent: this.imageInput.files[0]
+            fileContent: this.imageInput.files![0]
           });
           this.settings = {
             ...this.settings,
-            homeImageUrl: resp.raw.headers.get('location') ?? ''
+            homeImageUrl: resp.raw.headers.get('location') ?? '',
+            favoriteTags: this.settings?.favoriteTags ?? []
           }
         },
         'Uploading picture...');

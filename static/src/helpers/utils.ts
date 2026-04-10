@@ -16,7 +16,7 @@ export function isNullOrEmpty(val: string | null | undefined): val is '' | null 
   return isNull(val) || val === '';
 }
 
-export function formatDate(date: Date | null) {
+export function formatDate(date: Date | null | undefined) {
   if (isNull(date)) {
     return '';
   }
@@ -32,7 +32,7 @@ export function formatDate(date: Date | null) {
   });
 }
 
-export function hasScope(token: string | null, accessLevel: AccessLevel) {
+export function hasScope(token: string | null | undefined, accessLevel: AccessLevel) {
   if (isNullOrEmpty(token)) {
     return false;
   }
@@ -83,7 +83,7 @@ export function fromYesNoAny(value: YesNoAny) {
       return false;
 
     default:
-      return undefined;
+      return null;
   }
 }
 

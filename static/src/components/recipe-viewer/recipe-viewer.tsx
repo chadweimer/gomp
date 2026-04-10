@@ -8,15 +8,15 @@ import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
   shadow: true,
 })
 export class RecipeViewer {
-  @Prop() recipe: Recipe = null;
-  @Prop() mainImage: RecipeImage = null;
+  @Prop() recipe: Recipe | null = null;
+  @Prop() mainImage: RecipeImage | null = null;
   @Prop() links: RecipeCompact[] = [];
   @Prop() rating = 0;
   @Prop() readonly = false;
 
-  @Event() ratingSelected: EventEmitter<number>;
-  @Event() deleteLinkClicked: EventEmitter<RecipeCompact>;
-  @Event() tagClicked: EventEmitter<string>;
+  @Event() ratingSelected!: EventEmitter<number>;
+  @Event() deleteLinkClicked!: EventEmitter<RecipeCompact>;
+  @Event() tagClicked!: EventEmitter<string>;
 
   render() {
     return (
@@ -30,10 +30,10 @@ export class RecipeViewer {
                 src={this.mainImage.thumbnailUrl}
                 onLoad={e => {
                   const img = e.currentTarget as HTMLImageElement;
-                  if (img.src.endsWith(this.mainImage.thumbnailUrl)) {
+                  if (!isNull(this.mainImage) && img.src.endsWith(this.mainImage.thumbnailUrl)) {
                     const fullImg = new Image();
                     fullImg.src = this.mainImage.url;
-                    fullImg.onload = () => img.src = this.mainImage.url;
+                    fullImg.onload = () => img.src = this.mainImage?.url ?? '';
                   }
                 }}
               />
@@ -118,7 +118,7 @@ export class RecipeViewer {
     );
   }
 
-  private getRecipeDatesText(createdAt: Date | null, modifiedAt: Date | null) {
+  private getRecipeDatesText(createdAt: Date | null | undefined, modifiedAt: Date | null | undefined) {
     if (createdAt?.getTime() !== modifiedAt?.getTime()) {
       return (
         <span>

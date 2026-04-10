@@ -48,12 +48,12 @@ export class PageAdminMaintenance {
             states: [RecipeState.Active, RecipeState.Archived],
             tags: []
           }, 1, -1,);
-          for (const recipe of recipes) {
-            const images = await recipesApi.getImages({ recipeId: recipe.id });
+          for (const recipe of (recipes || [])) {
+            const images = await recipesApi.getImages({ recipeId: recipe.id! });
             for (const image of images) {
               await recipesApi.optimizeImage({
-                recipeId: recipe.id,
-                imageId: image.id
+                recipeId: recipe.id!,
+                imageId: image.id!
               });
             }
           }

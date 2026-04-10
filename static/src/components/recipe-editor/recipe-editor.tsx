@@ -21,7 +21,7 @@ export class RecipeEditor {
     tags: []
   };
 
-  @State() currentUserSettings: UserSettings | null;
+  @State() currentUserSettings: UserSettings | null = null;
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
@@ -48,20 +48,20 @@ export class RecipeEditor {
         </ion-header>
 
         <ion-content>
-          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Name" label-placement="stacked" value={this.recipe.name}
                 autocorrect="on"
                 spellcheck
                 required
                 autofocus
-                onIonBlur={e => this.recipe = { ...this.recipe, name: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, name: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             {isNull(this.recipe.id) &&
               <ion-item lines="full">
                 <form enctype="multipart/form-data">
                   <ion-label position="stacked">Picture</ion-label>
-                  <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
+                  <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el!} />
                 </form>
               </ion-item>
             }
@@ -69,13 +69,13 @@ export class RecipeEditor {
               <ion-input label="Serving Size" label-placement="stacked" value={this.recipe.servingSize}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, servingSize: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Time" label-placement="stacked" value={this.recipe.time}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.recipe = { ...this.recipe, time: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, time: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Ingredients" label-placement="stacked" value={this.recipe.ingredients}
@@ -96,7 +96,7 @@ export class RecipeEditor {
             <ion-item lines="full">
               <ion-input label="Source" label-placement="stacked" value={this.recipe.sourceUrl}
                 inputmode="url"
-                onIonBlur={e => this.recipe = { ...this.recipe, sourceUrl: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, sourceUrl: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.recipe.tags}
@@ -116,7 +116,7 @@ export class RecipeEditor {
 
     dismissContainingModal(this.el, {
       recipe: this.recipe,
-      file: this.imageInput?.files.length > 0 ? this.imageInput.files[0] : null
+      file: (this.imageInput?.files ?? []).length > 0 ? this.imageInput.files![0] : null
     });
   }
 

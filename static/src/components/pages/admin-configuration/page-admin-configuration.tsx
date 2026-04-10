@@ -28,7 +28,7 @@ export class PageAdminConfiguration {
           <ion-grid class="no-pad" fixed>
             <ion-row>
               <ion-col>
-                <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el}>
+                <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el!}>
                   <ion-card>
                     <ion-card-content>
                       <ion-item lines="full">
@@ -36,7 +36,7 @@ export class PageAdminConfiguration {
                           autocorrect="on"
                           spellcheck
                           required
-                          onIonBlur={e => this.appConfig = { ...this.appConfig, title: e.target.value as string }} />
+                          onIonBlur={(e: Event) => this.appConfig = { ...this.appConfig, title: (e.currentTarget as HTMLIonInputElement).value as string }} />
                       </ion-item>
                     </ion-card-content>
                     <ion-button fill="clear" color="primary" onClick={() => this.onSaveConfigurationClicked()}>

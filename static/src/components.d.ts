@@ -50,7 +50,7 @@ export namespace Components {
         /**
           * @default null
          */
-        "note": Note;
+        "note": Note | null;
         /**
           * @default false
          */
@@ -91,6 +91,9 @@ export namespace Components {
     }
     interface PageRecipe {
         "activatedCallback": () => Promise<void>;
+        /**
+          * @default 0
+         */
         "recipeId": number;
     }
     interface PageSearch {
@@ -139,7 +142,7 @@ export namespace Components {
         /**
           * @default null
          */
-        "mainImage": RecipeImage;
+        "mainImage": RecipeImage | null;
         /**
           * @default 0
          */
@@ -151,7 +154,7 @@ export namespace Components {
         /**
           * @default null
          */
-        "recipe": Recipe;
+        "recipe": Recipe | null;
     }
     interface SearchFilterEditor {
         /**
@@ -534,7 +537,7 @@ declare namespace LocalJSX {
         /**
           * @default null
          */
-        "note"?: Note;
+        "note"?: Note | null;
         "onDeleteClicked"?: (event: NoteCardCustomEvent<Note>) => void;
         "onEditClicked"?: (event: NoteCardCustomEvent<Note>) => void;
         /**
@@ -574,6 +577,9 @@ declare namespace LocalJSX {
         "page"?: number;
     }
     interface PageRecipe {
+        /**
+          * @default 0
+         */
         "recipeId"?: number;
     }
     interface PageSearch {
@@ -618,7 +624,7 @@ declare namespace LocalJSX {
         /**
           * @default null
          */
-        "mainImage"?: RecipeImage;
+        "mainImage"?: RecipeImage | null;
         "onDeleteLinkClicked"?: (event: RecipeViewerCustomEvent<RecipeCompact>) => void;
         "onRatingSelected"?: (event: RecipeViewerCustomEvent<number>) => void;
         "onTagClicked"?: (event: RecipeViewerCustomEvent<string>) => void;
@@ -633,7 +639,7 @@ declare namespace LocalJSX {
         /**
           * @default null
          */
-        "recipe"?: Recipe;
+        "recipe"?: Recipe | null;
     }
     interface SearchFilterEditor {
         /**

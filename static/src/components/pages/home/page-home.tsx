@@ -4,14 +4,14 @@ import { modalController } from '@ionic/core';
 import { loadUserSettings, performRecipeSearch, recipesApi, refreshSearchResults, usersApi } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, isNull, isNullOrEmpty } from '../../../helpers/utils';
 import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SearchResult, SortBy, UserSettings } from '../../../generated';
 
 @Component({
   tag: 'page-home',
   styleUrl: 'page-home.css'
 })
 export class PageHome {
-  @State() currentUserSettings: UserSettings | null;
+  @State() currentUserSettings: UserSettings | null = null;
   @State() searches: {
     title: string,
     filter: SearchFilter,
@@ -98,7 +98,7 @@ export class PageHome {
       // Then load all the user's saved filters
       const savedFilters = await usersApi.getSearchFilters();
       for (const savedFilter of savedFilters ?? []) {
-        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id });
+        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id! });
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
           title: savedSearchFilter.name,
@@ -125,6 +125,7 @@ export class PageHome {
     } catch (ex) {
       console.error(ex);
       showToast('An unexpected error occurred attempting to perform the current search.');
+      return { total: 0, recipes: [] };
     }
   }
 
@@ -136,7 +137,7 @@ export class PageHome {
         await showLoading(
           async () => {
             await recipesApi.uploadImage({
-              recipeId: newRecipe.id,
+              recipeId: newRecipe.id!,
               fileContent: file
             });
           },
