@@ -103,7 +103,7 @@ clean:
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR) $(CLIENT_FILES)
-	rm -rf $@ && cd static && npm run build
+	rm -rf $@ && cd static && npm run build $(CLIENT_EXTRA_BUILD_ARGS)
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 

@@ -5,6 +5,9 @@
       "label": "Build",
       "type": "shell",
       "command": "make",
+      "args": [
+        "CLIENT_EXTRA_BUILD_ARGS='-- --dev'"
+      ],
       "problemMatcher": [
         "$go",
         "$tsc"
