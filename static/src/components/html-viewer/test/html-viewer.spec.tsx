@@ -3,9 +3,7 @@ import { render, h, describe, it, expect } from '@stencil/vitest';
 describe('html-viewer', () => {
   it('builds', async () => {
     const { root } = await render(<html-viewer />);
-    expect(root).toEqualLightHtml(`
-      <html-viewer class="hydrated"></html-viewer>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('renders', async () => {

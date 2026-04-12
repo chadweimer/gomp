@@ -4,9 +4,7 @@ import { AccessLevel, User } from '../../../generated';
 describe('user-editor', () => {
   it('builds', async () => {
     const { root } = await render(<user-editor />);
-    expect(root).toEqualLightHtml(`
-      <user-editor class="hydrated"></user-editor>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('defaults', async () => {

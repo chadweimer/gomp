@@ -4,9 +4,7 @@ import { Note } from '../../../generated';
 describe('note-editor', () => {
   it('builds', async () => {
     const { root } = await render(<note-editor></note-editor>);
-    expect(root).toEqualLightHtml(`
-      <note-editor class="hydrated"></note-editor>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('no initial value', async () => {

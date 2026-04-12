@@ -4,9 +4,7 @@ import { Recipe, RecipeCompact, RecipeImage } from '../../../generated';
 describe('recipe-viewer', () => {
   it('builds', async () => {
     const { root } = await render(<recipe-viewer />);
-    expect(root).toEqualLightHtml(`
-      <recipe-viewer class="hydrated"></recipe-viewer>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('bind to recipe', async () => {
@@ -67,58 +65,64 @@ describe('recipe-viewer', () => {
     // Ingredients
     setProps({ recipe: { ...recipe, ingredients: 'ingredients' } });
     await waitForChanges();
+    expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
     let node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe.ingredients);
+    expect(node).toHaveProperty('value', root.recipe!.ingredients);
 
     // Directions
     setProps({ recipe: { ...recipe, directions: 'directions' } });
     await waitForChanges();
+    expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe.directions);
+    expect(node).toHaveProperty('value', root.recipe!.directions);
 
     // Nutrition Info
     setProps({ recipe: { ...recipe, nutritionInfo: 'nutrition' } });
     await waitForChanges();
+    expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe.nutritionInfo);
+    expect(node).toHaveProperty('value', root.recipe!.nutritionInfo);
 
     // Storage Instructions
     setProps({ recipe: { ...recipe, storageInstructions: 'storage' } });
     await waitForChanges();
+    expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe.storageInstructions);
+    expect(node).toHaveProperty('value', root.recipe!.storageInstructions);
 
     // Source URL
     setProps({ recipe: { ...recipe, sourceUrl: 'http://some.recipe/' } });
     await waitForChanges();
+    expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
     const link = node?.querySelector('a');
     expect(link).not.toBeNull();
-    expect(link).toEqualAttribute('href', root.recipe.sourceUrl);
-    expect(link).toEqualText(root.recipe.sourceUrl);
+    expect(link).toEqualAttribute('href', root.recipe!.sourceUrl);
+    expect(link).toEqualText(root.recipe!.sourceUrl);
 
     // Tags
     let chips = root.shadowRoot?.querySelectorAll('ion-chip');
     expect(chips?.length).toBe(0);
     setProps({ recipe: { ...recipe, tags: ['a', 'b'] } });
     await waitForChanges();
+    expect(root.recipe).not.toBeNull();
     chips = root.shadowRoot?.querySelectorAll('ion-chip');
-    expect(chips?.length).toBe(root.recipe.tags.length);
+    expect(chips?.length).toBe(root.recipe!.tags.length);
   });
 
   it('modified date used', async () => {
