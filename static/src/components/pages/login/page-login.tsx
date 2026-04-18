@@ -30,8 +30,8 @@ export class PageLogin {
                     <ion-input type="email"
                       label="Email"
                       autocomplete="username"
-                      onKeyDown={e => this.onInputKeyDown(e)}
-                      ref={el => this.usernameInput = el}
+                      onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
+                      ref={(el: HTMLIonInputElement) => this.usernameInput = el}
                       required />
                   </ion-item>
                   <ion-item>
@@ -39,8 +39,8 @@ export class PageLogin {
                     <ion-input type="password"
                       label="Password"
                       autocomplete="current-password"
-                      onKeyDown={e => this.onInputKeyDown(e)}
-                      ref={el => this.passwordInput = el}
+                      onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
+                      ref={(el: HTMLIonInputElement) => this.passwordInput = el}
                       required />
                   </ion-item>
                   <ion-text color="danger">{this.errorMessage}</ion-text>

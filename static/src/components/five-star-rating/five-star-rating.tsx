@@ -11,18 +11,18 @@ export class FiveStarRating {
   @Prop() icon = 'star';
   @Prop() size = 'small';
 
-  @Event() valueSelected: EventEmitter<number>;
+  @Event() valueSelected!: EventEmitter<number>;
 
   private readonly ratings = [
-    { value: 5.0, class: 'whole' },
+    { value: 5, class: 'whole' },
     { value: 4.5, class: 'half' },
-    { value: 4.0, class: 'whole' },
+    { value: 4, class: 'whole' },
     { value: 3.5, class: 'half' },
-    { value: 3.0, class: 'whole' },
+    { value: 3, class: 'whole' },
     { value: 2.5, class: 'half' },
-    { value: 2.0, class: 'whole' },
+    { value: 2, class: 'whole' },
     { value: 1.5, class: 'half' },
-    { value: 1.0, class: 'whole' },
+    { value: 1, class: 'whole' },
     { value: 0.5, class: 'half' },
   ];
 

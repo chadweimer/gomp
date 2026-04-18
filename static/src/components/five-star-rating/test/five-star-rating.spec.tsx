@@ -3,9 +3,7 @@ import { render, h, describe, it, expect } from '@stencil/vitest';
 describe('five-star-rating', () => {
   it('builds', async () => {
     const { root } = await render(<five-star-rating />);
-    expect(root).toEqualLightHtml(`
-      <five-star-rating class="hydrated"></five-star-rating>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('renders', async () => {

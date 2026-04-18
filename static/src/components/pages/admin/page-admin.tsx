@@ -10,7 +10,7 @@ import { SwipeDirection } from '../../../models';
 export class PageAdmin {
   @Element() el!: HTMLPageAdminElement;
   private tabs!: HTMLIonTabsElement;
-  private gesture: Gesture;
+  private gesture: Gesture | null = null;
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
@@ -43,14 +43,16 @@ export class PageAdmin {
   }
 
   disconnectedCallback() {
-    this.gesture.destroy();
+    this.gesture?.destroy();
     this.gesture = null;
   }
 
   render() {
     return (
       <Host>
-        <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)} onIonTabsDidChange={() => sendActivatedCallback(this.tabs)} ref={el => this.tabs = el}>
+        <ion-tabs ref={(el: HTMLIonTabsElement) => this.tabs = el}
+          onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)}
+          onIonTabsDidChange={() => sendActivatedCallback(this.tabs)}>
           <ion-tab tab="tab-admin-configuration" component="page-admin-configuration" />
           <ion-tab tab="tab-admin-users" component="page-admin-users" />
           <ion-tab tab="tab-admin-maintenance" component="page-admin-maintenance" />

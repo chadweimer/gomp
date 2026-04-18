@@ -90,7 +90,7 @@ func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrations
 	}
 	defer func() {
 		if unlockErr := unlockPostgres(conn); unlockErr != nil {
-			panic("Failed to unlock database")
+			panic(fmt.Errorf("Failed to unlock database: %w", unlockErr))
 		}
 	}()
 

@@ -8,11 +8,11 @@ import { formatDate } from '../../helpers/utils';
   shadow: true,
 })
 export class NoteCard {
-  @Prop() note: Note = null;
+  @Prop() note: Note | null = null;
   @Prop() readonly = false;
 
-  @Event() editClicked: EventEmitter<Note>;
-  @Event() deleteClicked: EventEmitter<Note>;
+  @Event() editClicked!: EventEmitter<Note>;
+  @Event() deleteClicked!: EventEmitter<Note>;
 
   render() {
     return (
@@ -30,11 +30,11 @@ export class NoteCard {
           </ion-card-content>
           {!this.readonly &&
             <Fragment>
-              <ion-button size="small" fill="clear" onClick={() => this.editClicked.emit(this.note)}>
+              <ion-button size="small" fill="clear" onClick={() => this.editClicked.emit(this.note ?? undefined)}>
                 <ion-icon slot="start" icon="create" />
                 Edit
               </ion-button>
-              <ion-button size="small" fill="clear" color="danger" onClick={() => this.deleteClicked.emit(this.note)}>
+              <ion-button size="small" fill="clear" color="danger" onClick={() => this.deleteClicked.emit(this.note ?? undefined)}>
                 <ion-icon slot="start" icon="trash" />
                 Delete
               </ion-button>

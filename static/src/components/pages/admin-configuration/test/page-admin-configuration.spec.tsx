@@ -2,7 +2,7 @@ import { render, h, describe, it, expect } from '@stencil/vitest';
 
 describe('page-admin-configuration', () => {
   it('builds', async () => {
-    const { root } = await render<HTMLPageAdminConfigurationElement>(<page-admin-configuration />);
+    const { root } = await render(<page-admin-configuration />);
     expect(root).toHaveClass('hydrated');
   });
 });

@@ -13,7 +13,7 @@ export class HTMLEditor {
   @Prop() label?: string;
   @Prop() labelPlacement?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
 
-  @Event() valueChanged: EventEmitter<string>;
+  @Event() valueChanged!: EventEmitter<string>;
 
   @State() isBoldActive: boolean = false;
   @State() isItalicActive: boolean = false;
@@ -90,12 +90,12 @@ export class HTMLEditor {
           </ion-buttons>
         </ion-toolbar>
         <div
-          ref={el => (this.editorContentRef = el)}
+          ref={el => (this.editorContentRef = el!)}
           class="editor-content"
           contentEditable="true"
           role="textbox"
           tabindex="0"
-          onBlur={e => this.handleBlur(e)}
+          onBlur={(e: FocusEvent) => this.handleBlur(e)}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
           innerHTML={sanitizeHTML(preProcessMultilineText(this.value))}

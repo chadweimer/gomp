@@ -71,7 +71,7 @@ export class PageSettingsSearches {
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
       await usersApi.saveSearchFilter({
-        filterId: searchFilter.id,
+        filterId: searchFilter.id!,
         searchFilter: searchFilter
       });
     } catch (ex) {
@@ -80,7 +80,7 @@ export class PageSettingsSearches {
     }
   }
 
-  private async deleteSearchFilter(id: number | null) {
+  private async deleteSearchFilter(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }
@@ -115,7 +115,7 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onEditFilterClicked(id: number | null) {
+  private async onEditFilterClicked(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }
@@ -170,7 +170,7 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onLoadSearchClicked(id: number | null) {
+  private async onLoadSearchClicked(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }

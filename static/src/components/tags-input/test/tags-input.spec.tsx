@@ -2,7 +2,7 @@ import { render, h, describe, it, expect, vi } from '@stencil/vitest';
 
 describe('tags-input', () => {
   it('builds', async () => {
-    const { root } = await render<HTMLTagsInputElement>(<tags-input />);
+    const { root } = await render(<tags-input />);
     expect(root).toHaveClass('hydrated');
   });
 

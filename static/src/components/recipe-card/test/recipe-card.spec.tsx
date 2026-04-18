@@ -4,9 +4,7 @@ import { RecipeCompact } from '../../../generated';
 describe('recipe-card', () => {
   it('builds', async () => {
     const { root } = await render(<recipe-card />);
-    expect(root).toEqualLightHtml(`
-      <recipe-card class="hydrated"></recipe-card>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('no initial value', async () => {

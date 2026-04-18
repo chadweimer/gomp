@@ -11,11 +11,11 @@ import { getDefaultSearchFilter } from '../../../models';
   styleUrl: 'page-recipe.css'
 })
 export class PageRecipe {
-  @Prop() recipeId: number;
+  @Prop() recipeId: number = 0;
 
-  @State() recipe: Recipe | null;
-  @State() mainImage: RecipeImage | null;
-  @State() recipeRating: number | null;
+  @State() recipe: Recipe | null = null;
+  @State() mainImage: RecipeImage | null = null;
+  @State() recipeRating: number = 0;
   @State() links: RecipeCompact[] = [];
   @State() images: RecipeImage[] = [];
   @State() notes: Note[] = [];
@@ -194,7 +194,7 @@ export class PageRecipe {
         recipeId: this.recipeId
       });
     } catch (ex) {
-      this.recipeRating = null;
+      this.recipeRating = 0;
       console.error(ex);
     }
   }
@@ -294,7 +294,7 @@ export class PageRecipe {
     try {
       await recipesApi.deleteLink({
         recipeId: this.recipeId,
-        destRecipeId: link.id
+        destRecipeId: link.id!
       });
     } catch (ex) {
       console.error(ex);
@@ -318,7 +318,7 @@ export class PageRecipe {
     try {
       await recipesApi.saveNote({
         recipeId: this.recipeId,
-        noteId: note.id,
+        noteId: note.id!,
         note: note
       });
     } catch (ex) {
@@ -331,7 +331,7 @@ export class PageRecipe {
     try {
       await recipesApi.deleteNote({
         recipeId: this.recipeId,
-        noteId: note.id
+        noteId: note.id!
       });
     } catch (ex) {
       console.error(ex);
@@ -359,7 +359,7 @@ export class PageRecipe {
     try {
       await recipesApi.deleteImage({
         recipeId: this.recipeId,
-        imageId: image.id
+        imageId: image.id!
       });
     } catch (ex) {
       console.error(ex);
@@ -383,7 +383,7 @@ export class PageRecipe {
     try {
       await recipesApi.setMainImage({
         recipeId: this.recipeId,
-        imageId: image.id
+        imageId: image.id!
       });
     } catch (ex) {
       console.error(ex);

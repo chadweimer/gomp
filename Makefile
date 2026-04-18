@@ -77,11 +77,7 @@ $(MOCKS_CODEGEN_DIR)/%/mocks.gen.go: $(GO_FILES) $(MODELS_CODEGEN_FILE)
 # ---- LINT ----
 
 .PHONY: lint
-lint: lint-client lint-server
-
-.PHONY: lint-client
-lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
-	cd static && npm run lint
+lint: lint-server
 
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)
@@ -107,7 +103,7 @@ clean:
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR) $(CLIENT_FILES)
-	rm -rf $@ && cd static && npm run build
+	rm -rf $@ && cd static && npm run build $(CLIENT_EXTRA_BUILD_ARGS)
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 

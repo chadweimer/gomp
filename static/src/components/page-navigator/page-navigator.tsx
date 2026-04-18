@@ -12,7 +12,7 @@ export class PageNavigator {
   @Prop({ reflect: true }) fill?: 'clear' | 'outline' | 'solid' | 'default';
   @Prop({ reflect: true }) color?: Color;
 
-  @Event() pageChanged: EventEmitter<number>;
+  @Event() pageChanged!: EventEmitter<number>;
 
   render() {
     return (

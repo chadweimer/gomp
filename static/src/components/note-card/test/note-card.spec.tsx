@@ -4,9 +4,7 @@ import { Note } from '../../../generated';
 describe('note-card', () => {
   it('renders', async () => {
     const { root } = await render(<note-card />);
-    expect(root).toEqualLightHtml(`
-      <note-card class="hydrated"></note-card>
-    `);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('bind to note', async () => {

@@ -10,7 +10,7 @@ import { getDefaultSearchFilter } from '../../../models';
   styleUrl: 'page-tags.css'
 })
 export class PageTags {
-  @State() tags: { [tag: string]: number } | null;
+  @State() tags: { [tag: string]: number } | null = null;
   @State() sortBy: 'tag' | 'count' = 'count';
   @State() sortDir: SortDir = SortDir.Desc;
 
