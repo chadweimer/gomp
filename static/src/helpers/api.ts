@@ -6,13 +6,13 @@ import { isNullOrEmpty, toYesNoAny } from './utils';
 // Retrieve search results when search filters change
 const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
 for (const prop of propsToSearch) {
-  onStateChange(prop, async () => {
+  onStateChange(prop, () => {
     if (prop !== 'searchPage') {
       state.searchPage = 1;
     }
     state.searchScrollPosition = 0;
 
-    await refreshSearchResults();
+    refreshSearchResults().catch(ex => console.error(ex));
   });
 }
 
