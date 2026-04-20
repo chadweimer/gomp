@@ -47,7 +47,9 @@ export class PageSettingsPreferences {
                       </ion-item>
                       <ion-item lines="full">
                         <tags-input label="Favorite Tags" label-placement="stacked" value={this.settings?.favoriteTags ?? []}
-                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
+                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }}>
+                          <ion-input enterkeyhint="enter" />
+                        </tags-input>
                       </ion-item>
                     </ion-card-content>
                     <ion-button fill="clear" color="primary" onClick={() => this.onSaveSettingsClicked()}>
@@ -107,5 +109,4 @@ export class PageSettingsPreferences {
 
     await this.saveUserSettings();
   }
-
 }

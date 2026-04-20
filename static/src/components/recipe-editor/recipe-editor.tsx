@@ -101,7 +101,9 @@ export class RecipeEditor {
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.recipe.tags}
                 suggestions={this.currentUserSettings?.favoriteTags ?? []}
-                onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }}>
+                <ion-input enterkeyhint="enter" />
+              </tags-input>
             </ion-item>
           </form>
         </ion-content>

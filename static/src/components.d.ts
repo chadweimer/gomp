@@ -183,6 +183,7 @@ export namespace Components {
         "showSavedLoader": boolean;
     }
     interface TagsInput {
+        "addTag": (tag: string) => Promise<void>;
         "label"?: string;
         "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
         /**

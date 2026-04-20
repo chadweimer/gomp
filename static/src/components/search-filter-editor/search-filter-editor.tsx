@@ -82,7 +82,9 @@ export class SearchFilterEditor {
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.searchFilter.tags}
                 suggestions={this.currentUserSettings?.favoriteTags ?? []}
-                onValueChanged={(e: CustomEvent<string[]>) => this.searchFilter = { ...this.searchFilter, tags: e.detail }} />
+                onValueChanged={(e: CustomEvent<string[]>) => this.searchFilter = { ...this.searchFilter, tags: e.detail }}>
+                <ion-input enterkeyhint="enter" />
+              </tags-input>
             </ion-item>
             <ion-item lines="full">
               <ion-select label="Sort By" label-placement="stacked" value={this.searchFilter.sortBy}
@@ -163,5 +165,4 @@ export class SearchFilterEditor {
       console.error(ex);
     }
   }
-
 }
