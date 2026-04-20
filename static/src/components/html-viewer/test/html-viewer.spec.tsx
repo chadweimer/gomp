@@ -19,7 +19,7 @@ describe('html-viewer', () => {
     const node = root.shadowRoot?.querySelector('div');
     expect(node?.innerHTML).toEqualHtml('text');
     expect(root).toHaveProperty('value', value);
-    setProps({ value: 'Some other text' });
+    await setProps({ value: 'Some other text' });
     await waitForChanges();
     expect(node?.innerHTML).toEqualHtml('Some other text');
   });

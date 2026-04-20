@@ -4,7 +4,7 @@ import { UserSettings } from '../../../generated';
 
 describe('recipe-editor', () => {
   it('builds', async () => {
-    fetchMocker.mockResponse(async (req: Request) => {
+    fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/)) {
         const settings: UserSettings = {
           userId: 1,

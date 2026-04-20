@@ -68,7 +68,7 @@ export class PageAdminUsers {
       await usersApi.addUser({ user: { ...user, password } });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create new user.');
+      await showToast('Failed to create new user.');
     }
   }
 
@@ -80,7 +80,7 @@ export class PageAdminUsers {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save user.');
+      await showToast('Failed to save user.');
     }
   }
 
@@ -89,7 +89,7 @@ export class PageAdminUsers {
       await usersApi.deleteUser({ userId: user.id! });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete user.');
+      await showToast('Failed to delete user.');
     }
   }
 

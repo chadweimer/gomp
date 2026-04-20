@@ -52,11 +52,11 @@ export class NoteEditor {
       return;
     }
 
-    dismissContainingModal(this.el, { note: this.note });
+    await dismissContainingModal(this.el, { note: this.note });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 
 }

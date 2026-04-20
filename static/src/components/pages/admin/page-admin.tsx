@@ -14,30 +14,30 @@ export class PageAdmin {
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
-      this.tabs.getSelected().then(selectedTab => {
+      this.tabs.getSelected().then(async selectedTab => {
         switch (selectedTab) {
           case 'tab-admin-configuration':
             if (swipe === SwipeDirection.Left) {
-              this.tabs.select('tab-admin-users');
+              await this.tabs.select('tab-admin-users');
             }
             break;
           case 'tab-admin-users':
             switch (swipe) {
               case SwipeDirection.Left:
-                this.tabs.select('tab-admin-maintenance');
+                await this.tabs.select('tab-admin-maintenance');
                 break
               case SwipeDirection.Right:
-                this.tabs.select('tab-admin-configuration');
+                await this.tabs.select('tab-admin-configuration');
                 break;
             }
             break;
           case 'tab-admin-maintenance':
             if (swipe === SwipeDirection.Right) {
-              this.tabs.select('tab-admin-users');
+              await this.tabs.select('tab-admin-users');
             }
             break;
         }
-      });
+      }).catch(console.error);
     });
     this.gesture.enable();
   }

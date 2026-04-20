@@ -41,7 +41,7 @@ export class PageSearch {
   componentDidRender() {
     if (!isNull(state.searchScrollPosition)
       && typeof this.content.scrollToPoint === typeof Function) {
-      this.content.scrollToPoint(0, state.searchScrollPosition);
+      this.content.scrollToPoint(0, state.searchScrollPosition).catch(console.error);
     }
   }
 
@@ -179,7 +179,7 @@ export class PageSearch {
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create new recipe.');
+      await showToast('Failed to create new recipe.');
     }
   }
 

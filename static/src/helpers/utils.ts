@@ -93,13 +93,13 @@ export function fromYesNoAny(value: YesNoAny) {
 }
 
 export async function enableBackForOverlay(presenter: () => Promise<void>) {
-  if (!globalThis.history.state?.modal) {
+  if (!(globalThis.history.state as { modal?: boolean })?.modal) {
     globalThis.history.pushState({ modal: true }, '');
   }
   try {
     await presenter();
   } finally {
-    if (globalThis.history.state?.modal) {
+    if ((globalThis.history.state as { modal?: boolean })?.modal) {
       globalThis.history.back();
     }
   }

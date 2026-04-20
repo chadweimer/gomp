@@ -12,7 +12,7 @@ for (const prop of propsToSearch) {
     }
     state.searchScrollPosition = 0;
 
-    refreshSearchResults().catch(ex => console.error(ex));
+    refreshSearchResults().catch(console.error);
   });
 }
 

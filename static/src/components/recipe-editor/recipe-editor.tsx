@@ -114,13 +114,13 @@ export class RecipeEditor {
       return;
     }
 
-    dismissContainingModal(this.el, {
+    await dismissContainingModal(this.el, {
       recipe: this.recipe,
       file: (this.imageInput?.files ?? []).length > 0 ? this.imageInput.files![0] : null
     });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 }

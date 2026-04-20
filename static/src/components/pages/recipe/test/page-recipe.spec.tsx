@@ -4,7 +4,7 @@ import { Recipe } from '../../../../components';
 
 describe('page-recipe', () => {
   it('builds', async () => {
-    fetchMocker.mockResponse(async (req: Request) => {
+    fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/recipes\/\d+$/)) {
         const recipeObject: Recipe = {
           id: 1,

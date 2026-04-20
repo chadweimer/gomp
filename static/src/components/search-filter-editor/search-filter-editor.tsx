@@ -135,14 +135,14 @@ export class SearchFilterEditor {
       return;
     }
 
-    dismissContainingModal(this.el, {
+    await dismissContainingModal(this.el, {
       name: this.name,
       searchFilter: this.searchFilter
     });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 
   private onResetClicked() {

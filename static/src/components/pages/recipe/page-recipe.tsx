@@ -44,9 +44,9 @@ export class PageRecipe {
                   mainImage={this.mainImage}
                   links={this.links}
                   readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                  onRatingSelected={e => this.onRatingSelected(e.detail)}
-                  onDeleteLinkClicked={e => this.onDeleteLinkClicked(e.detail)}
-                  onTagClicked={e => this.onTagClicked(e.detail)} />
+                  onRatingSelected={e => void this.onRatingSelected(e.detail)}
+                  onDeleteLinkClicked={e => void this.onDeleteLinkClicked(e.detail)}
+                  onTagClicked={e => void this.onTagClicked(e.detail)} />
               </ion-col>
               <ion-col size="0" size-lg="3" size-xl="2">
                 <ion-list class="side-menu">
@@ -124,8 +124,8 @@ export class PageRecipe {
                         <note-card
                           note={note}
                           readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                          onEditClicked={e => this.onEditNoteClicked(e.detail)}
-                          onDeleteClicked={e => this.onDeleteNoteClicked(e.detail)} />
+                          onEditClicked={e => void this.onEditNoteClicked(e.detail)}
+                          onDeleteClicked={e => void this.onDeleteNoteClicked(e.detail)} />
                       </ion-col>
                     </ion-row>
                   )}
@@ -251,7 +251,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe.');
+      await showToast('Failed to save recipe.');
     }
   }
 
@@ -262,7 +262,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete recipe.');
+      await showToast('Failed to delete recipe.');
     }
   }
 
@@ -274,7 +274,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe state.');
+      await showToast('Failed to save recipe state.');
     }
   }
 
@@ -286,7 +286,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to add linked recipe.');
+      await showToast('Failed to add linked recipe.');
     }
   }
 
@@ -298,7 +298,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to remove linked recipe.');
+      await showToast('Failed to remove linked recipe.');
     }
   }
 
@@ -310,7 +310,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create note.');
+      await showToast('Failed to create note.');
     }
   }
 
@@ -323,7 +323,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save note.');
+      await showToast('Failed to save note.');
     }
   }
 
@@ -335,7 +335,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete note.');
+      await showToast('Failed to delete note.');
     }
   }
 
@@ -351,7 +351,7 @@ export class PageRecipe {
         'Uploading picture...');
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to upload picture.');
+      await showToast('Failed to upload picture.');
     }
   }
 
@@ -363,7 +363,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete image.');
+      await showToast('Failed to delete image.');
     }
   }
 
@@ -375,7 +375,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe rating.');
+      await showToast('Failed to save recipe rating.');
     }
   }
 
@@ -387,7 +387,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to set main picture.');
+      await showToast('Failed to set main picture.');
     }
   }
 

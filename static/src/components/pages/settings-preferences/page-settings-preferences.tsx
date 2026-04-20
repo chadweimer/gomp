@@ -78,7 +78,7 @@ export class PageSettingsPreferences {
       await usersApi.saveSettings({ settings: this.settings });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save preferences.');
+      await showToast('Failed to save preferences.');
     }
   }
 
@@ -105,7 +105,7 @@ export class PageSettingsPreferences {
       this.imageInput.value = '';
     }
 
-    this.saveUserSettings();
+    await this.saveUserSettings();
   }
 
 }
