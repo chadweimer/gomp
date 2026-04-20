@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { Recipe, RecipeCompact, RecipeImage } from '../../../generated';
+import '../recipe-viewer';
 
 describe('recipe-viewer', () => {
   it('builds', async () => {

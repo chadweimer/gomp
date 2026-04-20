@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { AccessLevel, User } from '../../../generated';
+import '../user-editor';
 
 describe('user-editor', () => {
   it('builds', async () => {

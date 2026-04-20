@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect, vi } from '@stencil/vitest';
+import '../tags-input';
 
 describe('tags-input', () => {
   it('builds', async () => {

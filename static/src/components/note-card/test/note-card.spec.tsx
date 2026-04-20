@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { Note } from '../../../generated';
+import '../note-card';
 
 describe('note-card', () => {
   it('renders', async () => {

@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../five-star-rating';
 
 describe('five-star-rating', () => {
   it('builds', async () => {

@@ -3,6 +3,7 @@
   "private": true,
   "version": "3.14.0",
   "description": "GOMP: Go Meal Planner - A web-based recipe book",
+  "type": "module",
   "license": "MIT",
   "files": [
     "dist/"
@@ -23,7 +24,7 @@
     "@openapitools/openapi-generator-cli": "^2.7.0",
     "@stencil/core": "^4.9.0",
     "@stencil/store": "^2.0.12",
-    "@stencil/vitest": "^1.10.0",
+    "@stencil/vitest": "^1.11.4",
     "@vitest/coverage-v8": "^4.1.2",
     "dompurify": "^3.2.6",
     "jsdom": "^29.0.1",

@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { Note } from '../../../generated';
+import '../note-editor';
 
 describe('note-editor', () => {
   it('builds', async () => {
