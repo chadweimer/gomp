@@ -60,7 +60,7 @@ export class PageAdminMaintenance {
         }, 'Optimizing images. This might take a while...');
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to optimize images.');
+      await showToast('Failed to optimize images.');
     }
   }
 

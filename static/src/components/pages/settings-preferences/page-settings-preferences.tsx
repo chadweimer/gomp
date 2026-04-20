@@ -47,7 +47,9 @@ export class PageSettingsPreferences {
                       </ion-item>
                       <ion-item lines="full">
                         <tags-input label="Favorite Tags" label-placement="stacked" value={this.settings?.favoriteTags ?? []}
-                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }} />
+                          onValueChanged={e => this.settings = { ...this.settings, favoriteTags: e.detail }}>
+                          <ion-input enterkeyhint="enter" />
+                        </tags-input>
                       </ion-item>
                     </ion-card-content>
                     <ion-button fill="clear" color="primary" onClick={() => this.onSaveSettingsClicked()}>
@@ -78,7 +80,7 @@ export class PageSettingsPreferences {
       await usersApi.saveSettings({ settings: this.settings });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save preferences.');
+      await showToast('Failed to save preferences.');
     }
   }
 
@@ -105,7 +107,6 @@ export class PageSettingsPreferences {
       this.imageInput.value = '';
     }
 
-    this.saveUserSettings();
+    await this.saveUserSettings();
   }
-
 }

@@ -25,7 +25,7 @@ export class HTMLEditor {
   private editorContentRef!: HTMLElement;
 
   @Watch('value')
-  async onValueChange() {
+  onValueChange() {
     this.updateButtonStates();
   }
 

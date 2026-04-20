@@ -298,7 +298,7 @@ export class AppRoot {
   }
 
   private async onPageChanging() {
-    this.menu.close();
+    await this.menu.close();
     // Let the current page know it's being deactivated
     await sendDeactivatingCallback(this.routerOutlet);
   }

@@ -18,6 +18,7 @@ interface AppState {
 }
 
 // Start with an empty state
+// eslint-disable-next-line @typescript-eslint/unbound-method
 const { state, set, onChange, reset } = createStore<AppState>({
   searchFilter: getDefaultSearchFilter(),
   searchSettings: getDefaultSearchSettings(),
@@ -38,7 +39,7 @@ const propsToSync: { storage: Storage, key: keyof AppState, isObject: boolean }[
 for (const prop of propsToSync) {
   const val = prop.storage.getItem(prop.key);
   if (!isNull(val)) {
-    set(prop.key, prop.isObject ? JSON.parse(val) : val);
+    set(prop.key, prop.isObject ? JSON.parse(val) as string | number | SearchFilter | SearchSettings | RecipeCompact[] | undefined : val);
   }
   onChange(prop.key, val => {
     if (isNull(val)) {

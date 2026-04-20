@@ -75,7 +75,7 @@ export class PageAdminConfiguration {
       appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save configuration.');
+      await showToast('Failed to save configuration.');
     }
   }
 

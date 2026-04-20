@@ -8,7 +8,7 @@ describe('page-tags', () => {
       "tag2": 3,
       "tag3": 8,
     };
-    fetchMocker.mockResponse(async (req: Request) => {
+    fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/tags$/)) {
         return {
           status: 200,

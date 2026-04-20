@@ -87,16 +87,16 @@ export class UserEditor {
         return;
       }
 
-      dismissContainingModal(this.el, {
+      await dismissContainingModal(this.el, {
         user: this.user,
         password: this.password
       });
     } else {
-      dismissContainingModal(this.el, { user: this.user });
+      await dismissContainingModal(this.el, { user: this.user });
     }
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 }

@@ -120,10 +120,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
+    await dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 }

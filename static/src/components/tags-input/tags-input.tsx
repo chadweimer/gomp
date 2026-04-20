@@ -1,4 +1,4 @@
-import { Component, Event, Host, h, Prop, State, EventEmitter, Watch } from '@stencil/core';
+import { Component, Event, Host, h, Prop, State, EventEmitter, Watch, Method, Listen } from '@stencil/core';
 import { isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -17,8 +17,6 @@ export class TagsInput {
   @State() internalValue: string[] = [];
   @State() filteredSuggestions: string[] = [];
 
-  private tagsInput!: HTMLIonInputElement;
-
   @Watch('value')
   onValueChanged(newValue: string[]) {
     this.internalValue = newValue ?? [];
@@ -32,6 +30,32 @@ export class TagsInput {
 
   connectedCallback() {
     this.onValueChanged(this.value);
+  }
+
+  @Listen('keydown', {})
+  async handleKeyDown(e: KeyboardEvent) {
+    // First confirm the target is an input element
+    if ((e.target as HTMLElement).tagName.toLowerCase() !== 'input') {
+      console.warn('Keydown event ignored: target is not an input element.');
+      return;
+    }
+
+    const input = e.target as HTMLInputElement;
+    if (e.key === 'Enter' && !isNullOrEmpty(input.value)) {
+      await this.addTag(input.value);
+      input.value = '';
+    }
+  }
+
+  @Method()
+  addTag(tag: string): Promise<void> {
+    this.internalValue = [
+      ...this.internalValue,
+      tag.toLowerCase()
+    ].filter((value, index, self) => self.indexOf(value) === index);
+    this.filterSuggestedTags(this.suggestions);
+    this.valueChanged.emit(this.internalValue);
+    return Promise.resolve();
   }
 
   render() {
@@ -48,7 +72,7 @@ export class TagsInput {
             )}
           </div>
         }
-        <ion-input enterkeyhint="enter" onKeyDown={(e: KeyboardEvent) => this.onTagsKeyDown(e)} ref={(el: HTMLIonInputElement) => this.tagsInput = el} />
+        <slot />
         <div class="ion-padding-bottom">
           {this.filteredSuggestions.map(tag =>
             <ion-chip key={tag} class="suggested" color="success" onClick={() => this.addTag(tag)}>
@@ -57,7 +81,7 @@ export class TagsInput {
             </ion-chip>
           )}
         </div>
-      </Host >
+      </Host>
     );
   }
 
@@ -65,26 +89,9 @@ export class TagsInput {
     this.filteredSuggestions = suggestions?.filter(value => !(this.internalValue.includes(value))) ?? [];
   }
 
-  private addTag(tag: string) {
-    this.internalValue = [
-      ...this.internalValue,
-      tag.toLowerCase()
-    ].filter((value, index, self) => self.indexOf(value) === index);
-    this.filterSuggestedTags(this.suggestions);
-    this.valueChanged.emit(this.internalValue);
-  }
-
   private removeTag(tag: string) {
     this.internalValue = this.internalValue.filter(value => value !== tag);
     this.filterSuggestedTags(this.suggestions);
     this.valueChanged.emit(this.internalValue);
   }
-
-  private onTagsKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !isNullOrEmpty(this.tagsInput.value?.toString())) {
-      this.addTag(this.tagsInput.value!.toString());
-      this.tagsInput.value = '';
-    }
-  }
-
 }

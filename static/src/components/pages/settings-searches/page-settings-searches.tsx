@@ -64,7 +64,7 @@ export class PageSettingsSearches {
       await usersApi.addSearchFilter({ searchFilter });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create search filter.');
+      await showToast('Failed to create search filter.');
     }
   }
 
@@ -76,7 +76,7 @@ export class PageSettingsSearches {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save search filter.');
+      await showToast('Failed to save search filter.');
     }
   }
 
@@ -89,7 +89,7 @@ export class PageSettingsSearches {
       await usersApi.deleteSearchFilter({ filterId: id });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete search filter.');
+      await showToast('Failed to delete search filter.');
     }
   }
 

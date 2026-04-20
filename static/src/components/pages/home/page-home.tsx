@@ -4,7 +4,7 @@ import { modalController } from '@ionic/core';
 import { loadUserSettings, performRecipeSearch, recipesApi, refreshSearchResults, usersApi } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, isNull, isNullOrEmpty } from '../../../helpers/utils';
 import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SearchResult, SortBy, UserSettings } from '../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
 
 @Component({
   tag: 'page-home',
@@ -124,7 +124,7 @@ export class PageHome {
       return resp;
     } catch (ex) {
       console.error(ex);
-      showToast('An unexpected error occurred attempting to perform the current search.');
+      await showToast('An unexpected error occurred attempting to perform the current search.');
       return { total: 0, recipes: [] };
     }
   }
