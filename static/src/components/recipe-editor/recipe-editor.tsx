@@ -28,8 +28,8 @@ export class RecipeEditor {
   private imageInput!: HTMLInputElement;
 
   async connectedCallback() {
-    this.currentUserSettings = await loadUserSettings();
     configureModalAutofocus(this.el);
+    this.currentUserSettings = await loadUserSettings();
   }
 
   render() {
