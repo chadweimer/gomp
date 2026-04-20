@@ -28,8 +28,8 @@ export class RecipeEditor {
   private imageInput!: HTMLInputElement;
 
   async connectedCallback() {
-    this.currentUserSettings = await loadUserSettings();
     configureModalAutofocus(this.el);
+    this.currentUserSettings = await loadUserSettings();
   }
 
   render() {
@@ -101,7 +101,9 @@ export class RecipeEditor {
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.recipe.tags}
                 suggestions={this.currentUserSettings?.favoriteTags ?? []}
-                onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }}>
+                <ion-input enterkeyhint="enter" />
+              </tags-input>
             </ion-item>
           </form>
         </ion-content>
@@ -114,13 +116,13 @@ export class RecipeEditor {
       return;
     }
 
-    dismissContainingModal(this.el, {
+    await dismissContainingModal(this.el, {
       recipe: this.recipe,
       file: (this.imageInput?.files ?? []).length > 0 ? this.imageInput.files![0] : null
     });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 }

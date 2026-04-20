@@ -5,7 +5,7 @@ import '../search-filter-editor';
 
 describe('search-filter-editor', () => {
   it('builds', async () => {
-    fetchMocker.mockResponse(async (req: Request) => {
+    fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/)) {
         const settings: UserSettings = {
           userId: 1,
@@ -31,7 +31,7 @@ describe('search-filter-editor', () => {
 
 describe('shows saved filter loader', () => {
   it('builds', async () => {
-    fetchMocker.mockResponse(async (req: Request) => {
+    fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/)) {
         const settings: UserSettings = {
           userId: 1,

@@ -87,7 +87,7 @@ export class PageSettingsSecurity {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to update password.');
+      await showToast('Failed to update password.');
     }
   }
 

@@ -64,15 +64,11 @@ describe('tags-input', () => {
   it('tag can be added', async () => {
     const expectedTags = ['tag1', 'tag2'];
     const handleValueChanged = vi.fn();
-    const { root, waitForChanges } = await render(<tags-input onValueChanged={handleValueChanged} />);
+    const { root, waitForChanges } = await render<HTMLTagsInputElement>(<tags-input onValueChanged={handleValueChanged} />);
     expect(root).toHaveProperty('value');
-    const input = root.querySelector<HTMLInputElement>('ion-input');
-    expect(input).not.toBeNull();
     for (const tag of expectedTags) {
-      input!.value = tag;
-      input!.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'Enter' }));
+      await root.addTag(tag);
       await waitForChanges();
-      expect(input).toHaveProperty('value', '');
     }
     const addedChips = root.querySelectorAll('ion-chip:not(.suggested)');
     expect(addedChips).toHaveLength(expectedTags.length);

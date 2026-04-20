@@ -9,6 +9,7 @@
     "dist/"
   ],
   "scripts": {
+    "lint": "eslint .",
     "build": "stencil build",
     "clear": "rm -fr ./node_modules",
     "clean": "rm -fr ./www && rm -fr src/generated",
@@ -20,15 +21,21 @@
     "generate": "stencil generate"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "@ionic/core": "^8.5.7",
     "@openapitools/openapi-generator-cli": "^2.7.0",
     "@stencil/core": "^4.9.0",
+    "@stencil/eslint-plugin": "^1.2.0",
     "@stencil/store": "^2.0.12",
     "@stencil/vitest": "^1.11.4",
     "@vitest/coverage-v8": "^4.1.2",
     "dompurify": "^3.2.6",
+    "eslint": "^9.0.0",
+    "globals": "^17.5.0",
     "jsdom": "^29.0.1",
     "jwt-decode": "^4.0.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.2",
     "vitest-fetch-mock": "^0.4.5"
   }

@@ -52,19 +52,19 @@ describe('recipe-viewer', () => {
     expect(subtitle?.textContent.includes('Time:')).toBe(false);
 
     // Serving Size
-    setProps({ recipe: { ...recipe, servingSize: 'serving size' } });
+    await setProps({ recipe: { ...recipe, servingSize: 'serving size' } });
     await waitForChanges();
     subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
     expect(subtitle?.textContent.includes('Servings: serving size')).toBe(true);
 
     // Time
-    setProps({ recipe: { ...recipe, time: 'time' } });
+    await setProps({ recipe: { ...recipe, time: 'time' } });
     await waitForChanges();
     subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
     expect(subtitle?.textContent.includes('Time: time')).toBe(true);
 
     // Ingredients
-    setProps({ recipe: { ...recipe, ingredients: 'ingredients' } });
+    await setProps({ recipe: { ...recipe, ingredients: 'ingredients' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
@@ -74,7 +74,7 @@ describe('recipe-viewer', () => {
     expect(node).toHaveProperty('value', root.recipe!.ingredients);
 
     // Directions
-    setProps({ recipe: { ...recipe, directions: 'directions' } });
+    await setProps({ recipe: { ...recipe, directions: 'directions' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
@@ -84,7 +84,7 @@ describe('recipe-viewer', () => {
     expect(node).toHaveProperty('value', root.recipe!.directions);
 
     // Nutrition Info
-    setProps({ recipe: { ...recipe, nutritionInfo: 'nutrition' } });
+    await setProps({ recipe: { ...recipe, nutritionInfo: 'nutrition' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
@@ -94,7 +94,7 @@ describe('recipe-viewer', () => {
     expect(node).toHaveProperty('value', root.recipe!.nutritionInfo);
 
     // Storage Instructions
-    setProps({ recipe: { ...recipe, storageInstructions: 'storage' } });
+    await setProps({ recipe: { ...recipe, storageInstructions: 'storage' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
@@ -104,7 +104,7 @@ describe('recipe-viewer', () => {
     expect(node).toHaveProperty('value', root.recipe!.storageInstructions);
 
     // Source URL
-    setProps({ recipe: { ...recipe, sourceUrl: 'http://some.recipe/' } });
+    await setProps({ recipe: { ...recipe, sourceUrl: 'http://some.recipe/' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
@@ -119,7 +119,7 @@ describe('recipe-viewer', () => {
     // Tags
     let chips = root.shadowRoot?.querySelectorAll('ion-chip');
     expect(chips?.length).toBe(0);
-    setProps({ recipe: { ...recipe, tags: ['a', 'b'] } });
+    await setProps({ recipe: { ...recipe, tags: ['a', 'b'] } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     chips = root.shadowRoot?.querySelectorAll('ion-chip');

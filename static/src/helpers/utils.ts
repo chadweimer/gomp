@@ -8,6 +8,11 @@ interface GompClaims extends JwtPayload {
   scopes?: string[]
 }
 
+interface ComponentWithCallbacks {
+  activatedCallback?: () => Promise<void>;
+  deactivatingCallback?: () => Promise<void>;
+}
+
 export function isNull<T>(val: T | null | undefined): val is null | undefined {
   return val === undefined || val === null;
 }
@@ -88,13 +93,13 @@ export function fromYesNoAny(value: YesNoAny) {
 }
 
 export async function enableBackForOverlay(presenter: () => Promise<void>) {
-  if (!globalThis.history.state?.modal) {
+  if (!(globalThis.history.state as { modal?: boolean })?.modal) {
     globalThis.history.pushState({ modal: true }, '');
   }
   try {
     await presenter();
   } finally {
-    if (globalThis.history.state?.modal) {
+    if ((globalThis.history.state as { modal?: boolean })?.modal) {
       globalThis.history.back();
     }
   }
@@ -165,7 +170,7 @@ export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
 
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
-  toast.present();
+  await toast.present();
 }
 
 export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
@@ -201,19 +206,17 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const el = await getActiveComponent(router) as any;
-  if (!isNull(el) && typeof el.activatedCallback === 'function') {
-    el.activatedCallback();
+  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  if (!isNull(el)) {
+    await el.activatedCallback?.();
   }
 }
 
 export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const el = await getActiveComponent(router) as any;
-  if (!isNull(el) && typeof el.deactivatingCallback === 'function') {
-    el.deactivatingCallback();
+  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  if (!isNull(el)) {
+    await el.deactivatingCallback?.();
   }
 }
 

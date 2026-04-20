@@ -83,9 +83,9 @@ export class PageLogin {
     }
   }
 
-  private onInputKeyDown(e: KeyboardEvent) {
+  private async onInputKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
-      this.onLoginClicked();
+      await this.onLoginClicked();
     }
   }
 

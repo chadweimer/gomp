@@ -10,46 +10,50 @@ import { SwipeDirection } from '../../../models';
 export class PageSettings {
   @Element() el!: HTMLPageSettingsElement;
   private tabs!: HTMLIonTabsElement;
-  private gesture: Gesture;
+  private gesture: Gesture | null = null;
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
-      this.tabs.getSelected().then(selectedTab => {
-        switch (selectedTab) {
-          case 'tab-settings-preferences':
-            if (swipe === SwipeDirection.Left) {
-              this.tabs.select('tab-settings-searches');
-            }
-            break;
-          case 'tab-settings-searches':
-            switch (swipe) {
-              case SwipeDirection.Left:
-                this.tabs.select('tab-settings-security');
-                break
-              case SwipeDirection.Right:
-                this.tabs.select('tab-settings-preferences');
-                break;
-            }
-            break;
-          case 'tab-settings-security':
-            if (swipe === SwipeDirection.Right) {
-              this.tabs.select('tab-settings-searches');
-            }
-            break;
-        }
-      });
+      this.tabs.getSelected()
+        .then(async selectedTab => {
+          switch (selectedTab) {
+            case 'tab-settings-preferences':
+              if (swipe === SwipeDirection.Left) {
+                await this.tabs.select('tab-settings-searches');
+              }
+              break;
+            case 'tab-settings-searches':
+              switch (swipe) {
+                case SwipeDirection.Left:
+                  await this.tabs.select('tab-settings-security');
+                  break
+                case SwipeDirection.Right:
+                  await this.tabs.select('tab-settings-preferences');
+                  break;
+              }
+              break;
+            case 'tab-settings-security':
+              if (swipe === SwipeDirection.Right) {
+                await this.tabs.select('tab-settings-searches');
+              }
+              break;
+          }
+        })
+        .catch(console.error);
     });
     this.gesture.enable();
   }
 
   disconnectedCallback() {
-    this.gesture.destroy();
+    this.gesture?.destroy();
     this.gesture = null;
   }
 
   render() {
     return (
-      <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)} onIonTabsDidChange={() => sendActivatedCallback(this.tabs)} ref={el => this.tabs = el}>
+      <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)}
+        onIonTabsDidChange={() => sendActivatedCallback(this.tabs)}
+        ref={(el: HTMLIonTabsElement) => this.tabs = el}>
         <ion-tab tab="tab-settings-preferences" component="page-settings-preferences" />
         <ion-tab tab="tab-settings-searches" component="page-settings-searches" />
         <ion-tab tab="tab-settings-security" component="page-settings-security" />
