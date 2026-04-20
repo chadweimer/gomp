@@ -32,7 +32,7 @@ export class PageAdminConfiguration {
                   <ion-card>
                     <ion-card-content>
                       <ion-item lines="full">
-                        <ion-input label="Application Title" label-placement="stacked" value={this.appConfig.title}
+                        <ion-input label="Application Title" label-placement="stacked" value={this.appConfig?.title}
                           autocorrect="on"
                           spellcheck
                           required
