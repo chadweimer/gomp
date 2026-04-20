@@ -77,7 +77,11 @@ $(MOCKS_CODEGEN_DIR)/%/mocks.gen.go: $(GO_FILES) $(MODELS_CODEGEN_FILE)
 # ---- LINT ----
 
 .PHONY: lint
-lint: lint-server
+lint: lint-client lint-server
+
+.PHONY: lint-client
+lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
+	cd static && npm run lint
 
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)

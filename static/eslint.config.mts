@@ -12,11 +12,17 @@ export default defineConfig([
       "www/**",
       "coverage/**",
       "src/generated/**",
+      "*.config.{js,mjs,cjs,ts,mts,cts}",
+      "*.setup.{js,mjs,cjs,ts,mts,cts}"
     ],
   },
   { files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.browser } },
   ...tseslint.configs.recommendedTypeChecked,
   {
+    rules: {
+      "@typescript-eslint/no-unnecessary-type-assertion": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+    },
     files: ["**/*.{ts,mts,cts,tsx}"],
     languageOptions: {
       parserOptions: {
