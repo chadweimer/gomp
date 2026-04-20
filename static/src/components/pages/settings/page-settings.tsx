@@ -14,30 +14,32 @@ export class PageSettings {
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
-      this.tabs.getSelected().then(async selectedTab => {
-        switch (selectedTab) {
-          case 'tab-settings-preferences':
-            if (swipe === SwipeDirection.Left) {
-              await this.tabs.select('tab-settings-searches');
-            }
-            break;
-          case 'tab-settings-searches':
-            switch (swipe) {
-              case SwipeDirection.Left:
-                await this.tabs.select('tab-settings-security');
-                break
-              case SwipeDirection.Right:
-                await this.tabs.select('tab-settings-preferences');
-                break;
-            }
-            break;
-          case 'tab-settings-security':
-            if (swipe === SwipeDirection.Right) {
-              await this.tabs.select('tab-settings-searches');
-            }
-            break;
-        }
-      }).catch(console.error);
+      this.tabs.getSelected()
+        .then(async selectedTab => {
+          switch (selectedTab) {
+            case 'tab-settings-preferences':
+              if (swipe === SwipeDirection.Left) {
+                await this.tabs.select('tab-settings-searches');
+              }
+              break;
+            case 'tab-settings-searches':
+              switch (swipe) {
+                case SwipeDirection.Left:
+                  await this.tabs.select('tab-settings-security');
+                  break
+                case SwipeDirection.Right:
+                  await this.tabs.select('tab-settings-preferences');
+                  break;
+              }
+              break;
+            case 'tab-settings-security':
+              if (swipe === SwipeDirection.Right) {
+                await this.tabs.select('tab-settings-searches');
+              }
+              break;
+          }
+        })
+        .catch(console.error);
     });
     this.gesture.enable();
   }

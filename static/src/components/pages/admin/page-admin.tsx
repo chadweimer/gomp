@@ -14,30 +14,32 @@ export class PageAdmin {
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
-      this.tabs.getSelected().then(async selectedTab => {
-        switch (selectedTab) {
-          case 'tab-admin-configuration':
-            if (swipe === SwipeDirection.Left) {
-              await this.tabs.select('tab-admin-users');
-            }
-            break;
-          case 'tab-admin-users':
-            switch (swipe) {
-              case SwipeDirection.Left:
-                await this.tabs.select('tab-admin-maintenance');
-                break
-              case SwipeDirection.Right:
-                await this.tabs.select('tab-admin-configuration');
-                break;
-            }
-            break;
-          case 'tab-admin-maintenance':
-            if (swipe === SwipeDirection.Right) {
-              await this.tabs.select('tab-admin-users');
-            }
-            break;
-        }
-      }).catch(console.error);
+      this.tabs.getSelected()
+        .then(async selectedTab => {
+          switch (selectedTab) {
+            case 'tab-admin-configuration':
+              if (swipe === SwipeDirection.Left) {
+                await this.tabs.select('tab-admin-users');
+              }
+              break;
+            case 'tab-admin-users':
+              switch (swipe) {
+                case SwipeDirection.Left:
+                  await this.tabs.select('tab-admin-maintenance');
+                  break
+                case SwipeDirection.Right:
+                  await this.tabs.select('tab-admin-configuration');
+                  break;
+              }
+              break;
+            case 'tab-admin-maintenance':
+              if (swipe === SwipeDirection.Right) {
+                await this.tabs.select('tab-admin-users');
+              }
+              break;
+          }
+        })
+        .catch(console.error);
     });
     this.gesture.enable();
   }
