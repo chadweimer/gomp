@@ -1,11 +1,11 @@
 name: Continuous Integration
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   pull_request:
-    branches: [master]
+    branches: [ master ]
   release:
-    types: [published]
+    types: [ published ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,13 +29,15 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - run: make install
-      - run: make lint test
+      - id: lint-test
+        run: make lint test
       - uses: actions/upload-artifact@v6
         with:
           name: coverage
           path: |
             build/coverage/*
       - name: SonarCloud Scan
+        if: success() || steps.lint-test.outcome == 'failure'
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -44,8 +46,8 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        os: [linux]
-        arch: [amd64, arm64, arm]
+        os: [ linux ]
+        arch: [ amd64, arm64, arm ]
     env:
       TARGETOS: ${{ matrix.os }}
       TARGETARCH: ${{ matrix.arch }}
@@ -63,7 +65,8 @@ jobs:
         run: echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
       - name: Set env vars (pr)
         if: github.event_name == 'pull_request'
-        run: echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+        run: echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number
+          }}+commit.${{ github.sha }}" >> $GITHUB_ENV
       - name: Set env vars (release)
         if: github.event_name == 'release'
         run: echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
@@ -74,7 +77,8 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}
-          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
+          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION
+            }}.tar.gz
           compression-level: 0
   publish:
     name: Publish
