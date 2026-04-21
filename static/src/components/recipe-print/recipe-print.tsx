@@ -72,12 +72,6 @@ export class RecipePrint {
               <html-viewer value={this.recipe?.directions} />
             </section>
           )}
-          {this.recipe?.nutritionInfo && (
-            <section>
-              <h2>Nutrition</h2>
-              <html-viewer value={this.recipe?.nutritionInfo} />
-            </section>
-          )}
           {this.recipe?.storageInstructions && (
             <section>
               <h2>Storage Instructions</h2>
