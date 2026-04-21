@@ -134,6 +134,20 @@ export namespace Components {
          */
         "parentRecipeId": number;
     }
+    interface RecipePrint {
+        /**
+          * @default null
+         */
+        "mainImage": RecipeImage | null;
+        /**
+          * @default 0
+         */
+        "rating": number;
+        /**
+          * @default null
+         */
+        "recipe": Recipe | null;
+    }
     interface RecipeViewer {
         /**
           * @default []
@@ -416,6 +430,12 @@ declare global {
         prototype: HTMLRecipeLinkEditorElement;
         new (): HTMLRecipeLinkEditorElement;
     };
+    interface HTMLRecipePrintElement extends Components.RecipePrint, HTMLStencilElement {
+    }
+    var HTMLRecipePrintElement: {
+        prototype: HTMLRecipePrintElement;
+        new (): HTMLRecipePrintElement;
+    };
     interface HTMLRecipeViewerElementEventMap {
         "ratingSelected": number;
         "deleteLinkClicked": RecipeCompact;
@@ -489,6 +509,7 @@ declare global {
         "recipe-card": HTMLRecipeCardElement;
         "recipe-editor": HTMLRecipeEditorElement;
         "recipe-link-editor": HTMLRecipeLinkEditorElement;
+        "recipe-print": HTMLRecipePrintElement;
         "recipe-viewer": HTMLRecipeViewerElement;
         "search-filter-editor": HTMLSearchFilterEditorElement;
         "tags-input": HTMLTagsInputElement;
@@ -617,6 +638,20 @@ declare namespace LocalJSX {
          */
         "parentRecipeId"?: number;
     }
+    interface RecipePrint {
+        /**
+          * @default null
+         */
+        "mainImage"?: RecipeImage | null;
+        /**
+          * @default 0
+         */
+        "rating"?: number;
+        /**
+          * @default null
+         */
+        "recipe"?: Recipe | null;
+    }
     interface RecipeViewer {
         /**
           * @default []
@@ -720,6 +755,9 @@ declare namespace LocalJSX {
     interface RecipeLinkEditorAttributes {
         "parentRecipeId": number;
     }
+    interface RecipePrintAttributes {
+        "rating": number;
+    }
     interface RecipeViewerAttributes {
         "rating": number;
         "readonly": boolean;
@@ -761,6 +799,7 @@ declare namespace LocalJSX {
         "recipe-card": Omit<RecipeCard, keyof RecipeCardAttributes> & { [K in keyof RecipeCard & keyof RecipeCardAttributes]?: RecipeCard[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `attr:${K}`]?: RecipeCardAttributes[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `prop:${K}`]?: RecipeCard[K] };
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": Omit<RecipeLinkEditor, keyof RecipeLinkEditorAttributes> & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes]?: RecipeLinkEditor[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `attr:${K}`]?: RecipeLinkEditorAttributes[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `prop:${K}`]?: RecipeLinkEditor[K] };
+        "recipe-print": Omit<RecipePrint, keyof RecipePrintAttributes> & { [K in keyof RecipePrint & keyof RecipePrintAttributes]?: RecipePrint[K] } & { [K in keyof RecipePrint & keyof RecipePrintAttributes as `attr:${K}`]?: RecipePrintAttributes[K] } & { [K in keyof RecipePrint & keyof RecipePrintAttributes as `prop:${K}`]?: RecipePrint[K] };
         "recipe-viewer": Omit<RecipeViewer, keyof RecipeViewerAttributes> & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes]?: RecipeViewer[K] } & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes as `attr:${K}`]?: RecipeViewerAttributes[K] } & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes as `prop:${K}`]?: RecipeViewer[K] };
         "search-filter-editor": Omit<SearchFilterEditor, keyof SearchFilterEditorAttributes> & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes]?: SearchFilterEditor[K] } & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes as `attr:${K}`]?: SearchFilterEditorAttributes[K] } & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes as `prop:${K}`]?: SearchFilterEditor[K] };
         "tags-input": Omit<TagsInput, keyof TagsInputAttributes> & { [K in keyof TagsInput & keyof TagsInputAttributes]?: TagsInput[K] } & { [K in keyof TagsInput & keyof TagsInputAttributes as `attr:${K}`]?: TagsInputAttributes[K] } & { [K in keyof TagsInput & keyof TagsInputAttributes as `prop:${K}`]?: TagsInput[K] };
@@ -795,6 +834,7 @@ declare module "@stencil/core" {
             "recipe-card": LocalJSX.IntrinsicElements["recipe-card"] & JSXBase.HTMLAttributes<HTMLRecipeCardElement>;
             "recipe-editor": LocalJSX.IntrinsicElements["recipe-editor"] & JSXBase.HTMLAttributes<HTMLRecipeEditorElement>;
             "recipe-link-editor": LocalJSX.IntrinsicElements["recipe-link-editor"] & JSXBase.HTMLAttributes<HTMLRecipeLinkEditorElement>;
+            "recipe-print": LocalJSX.IntrinsicElements["recipe-print"] & JSXBase.HTMLAttributes<HTMLRecipePrintElement>;
             "recipe-viewer": LocalJSX.IntrinsicElements["recipe-viewer"] & JSXBase.HTMLAttributes<HTMLRecipeViewerElement>;
             "search-filter-editor": LocalJSX.IntrinsicElements["search-filter-editor"] & JSXBase.HTMLAttributes<HTMLSearchFilterEditorElement>;
             "tags-input": LocalJSX.IntrinsicElements["tags-input"] & JSXBase.HTMLAttributes<HTMLTagsInputElement>;

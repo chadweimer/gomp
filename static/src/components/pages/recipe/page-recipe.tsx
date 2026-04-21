@@ -32,108 +32,118 @@ export class PageRecipe {
   }
 
   render() {
+    const printable = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('printable') === 'true';
+
     return (
       <Host>
-        <ion-content>
-          <ion-grid class="no-pad">
-            <ion-row>
-              <ion-col size="12" size-lg="9" size-xl="8" offset-xl="2">
-                <recipe-viewer
-                  recipe={this.recipe}
-                  rating={this.recipeRating}
-                  mainImage={this.mainImage}
-                  links={this.links}
-                  readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                  onRatingSelected={e => void this.onRatingSelected(e.detail)}
-                  onDeleteLinkClicked={e => void this.onDeleteLinkClicked(e.detail)}
-                  onTagClicked={e => void this.onTagClicked(e.detail)} />
-              </ion-col>
-              <ion-col size="0" size-lg="3" size-xl="2">
-                <ion-list class="side-menu">
-                  <ion-item button onClick={() => this.onEditClicked()}>
-                    <ion-icon slot="start" icon="create" />
-                    Edit
-                  </ion-item>
-                  <ion-item button onClick={() => this.onAddNoteClicked()}>
-                    <ion-icon slot="start" icon="chatbox" />
-                    Add Note
-                  </ion-item>
-                  <ion-item button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-                    <ion-icon slot="start" icon="camera" />
-                    Upload Picture
-                  </ion-item>
-                  <ion-item button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
-                    <ion-icon slot="start" icon="link" />
-                    Add Link
-                  </ion-item>
-                  {this.recipe?.state === RecipeState.Archived ?
-                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
-                      <ion-icon slot="start" icon="archive" />
-                      Unarchive
+        {printable ?
+          <recipe-print recipe={this.recipe} mainImage={this.mainImage} rating={this.recipeRating} />
+          :
+          <ion-content>
+            <ion-grid class="no-pad">
+              <ion-row>
+                <ion-col size="12" size-lg="9" size-xl="8" offset-xl="2">
+                  <recipe-viewer
+                    recipe={this.recipe}
+                    rating={this.recipeRating}
+                    mainImage={this.mainImage}
+                    links={this.links}
+                    readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
+                    onRatingSelected={e => void this.onRatingSelected(e.detail)}
+                    onDeleteLinkClicked={e => void this.onDeleteLinkClicked(e.detail)}
+                    onTagClicked={e => void this.onTagClicked(e.detail)} />
+                </ion-col>
+                <ion-col size="0" size-lg="3" size-xl="2">
+                  <ion-list class="side-menu">
+                    <ion-item button onClick={() => this.onEditClicked()}>
+                      <ion-icon slot="start" icon="create" />
+                      Edit
                     </ion-item>
-                    :
-                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
-                      <ion-icon slot="start" icon="archive" />
-                      Archive
+                    <ion-item button onClick={() => this.onAddNoteClicked()}>
+                      <ion-icon slot="start" icon="chatbox" />
+                      Add Note
                     </ion-item>
-                  }
-                  <ion-item button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
-                    <ion-icon slot="start" icon="trash" />
-                    Delete
-                  </ion-item>
-                </ion-list>
-              </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col size="12" size-md="6" size-xl="4" offset-xl="2">
-                <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
-                <ion-grid class="no-pad">
-                  <ion-row class="ion-justify-content-center">
-                    {this.images?.map(image =>
-                      <ion-col key={image.id} size="auto">
-                        <ion-card class="zoom">
-                          <a href={image.url} target="_blank" rel="noopener noreferrer">
-                            <ion-thumbnail class="upload">
-                              <ion-img alt={image.url} class="thumb" src={image.thumbnailUrl} />
-                            </ion-thumbnail>
-                          </a>
-                          {hasScope(state.jwtToken, AccessLevel.Editor) &&
-                            <ion-card-content class="ion-no-padding">
-                              <ion-buttons>
-                                <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="star" size="small" />
-                                </ion-button>
-                                <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="trash" size="small" />
-                                </ion-button>
-                              </ion-buttons>
-                            </ion-card-content>
-                          }
-                        </ion-card>
-                      </ion-col>
-                    )}
-                  </ion-row>
-                </ion-grid>
-              </ion-col>
-              <ion-col size="12" size-md="6" size-xl="4">
-                <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
-                <ion-grid>
-                  {this.notes?.map(note =>
-                    <ion-row key={note.id}>
-                      <ion-col>
-                        <note-card
-                          note={note}
-                          readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                          onEditClicked={e => void this.onEditNoteClicked(e.detail)}
-                          onDeleteClicked={e => void this.onDeleteNoteClicked(e.detail)} />
-                      </ion-col>
+                    <ion-item button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                      <ion-icon slot="start" icon="camera" />
+                      Upload Picture
+                    </ion-item>
+                    <ion-item button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
+                      <ion-icon slot="start" icon="link" />
+                      Add Link
+                    </ion-item>
+                    <ion-item button class="ion-hide-md-down" onClick={() => this.onPrintClicked()}>
+                      <ion-icon slot="start" icon="print" />
+                      Print
+                    </ion-item>
+                    {this.recipe?.state === RecipeState.Archived ?
+                      <ion-item button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
+                        <ion-icon slot="start" icon="archive" />
+                        Unarchive
+                      </ion-item>
+                      :
+                      <ion-item button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
+                        <ion-icon slot="start" icon="archive" />
+                        Archive
+                      </ion-item>
+                    }
+                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
+                      <ion-icon slot="start" icon="trash" />
+                      Delete
+                    </ion-item>
+                  </ion-list>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12" size-md="6" size-xl="4" offset-xl="2">
+                  <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
+                  <ion-grid class="no-pad">
+                    <ion-row class="ion-justify-content-center">
+                      {this.images?.map(image =>
+                        <ion-col key={image.id} size="auto">
+                          <ion-card class="zoom">
+                            <a href={image.url} target="_blank" rel="noopener noreferrer">
+                              <ion-thumbnail class="upload">
+                                <ion-img alt={image.url} class="thumb" src={image.thumbnailUrl} />
+                              </ion-thumbnail>
+                            </a>
+                            {hasScope(state.jwtToken, AccessLevel.Editor) &&
+                              <ion-card-content class="ion-no-padding">
+                                <ion-buttons>
+                                  <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
+                                    <ion-icon slot="icon-only" icon="star" size="small" />
+                                  </ion-button>
+                                  <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
+                                    <ion-icon slot="icon-only" icon="trash" size="small" />
+                                  </ion-button>
+                                </ion-buttons>
+                              </ion-card-content>
+                            }
+                          </ion-card>
+                        </ion-col>
+                      )}
                     </ion-row>
-                  )}
-                </ion-grid>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-content>
+                  </ion-grid>
+                </ion-col>
+                <ion-col size="12" size-md="6" size-xl="4">
+                  <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
+                  <ion-grid>
+                    {this.notes?.map(note =>
+                      <ion-row key={note.id}>
+                        <ion-col>
+                          <note-card
+                            note={note}
+                            readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
+                            onEditClicked={e => void this.onEditNoteClicked(e.detail)}
+                            onDeleteClicked={e => void this.onDeleteNoteClicked(e.detail)} />
+                        </ion-col>
+                      </ion-row>
+                    )}
+                  </ion-grid>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-content>
+        }
         {hasScope(state.jwtToken, AccessLevel.Editor) &&
           <ion-footer class="ion-hide-lg-up">
             <ion-toolbar>
@@ -409,6 +419,11 @@ export class PageRecipe {
             : this.onArchiveClicked()
         },
         {
+          text: 'Print',
+          icon: 'print',
+          handler: () => this.onPrintClicked()
+        },
+        {
           text: 'Add Link',
           icon: 'link',
           handler: () => this.onAddLinkClicked()
@@ -672,6 +687,12 @@ export class PageRecipe {
         await refreshSearchResults();
       }
     });
+  }
+
+  private onPrintClicked() {
+    if (typeof window === 'undefined') return;
+    const url = `${window.location.pathname}?printable=true`;
+    window.open(url, '_blank');
   }
 
   private async onRatingSelected(rating: number) {
