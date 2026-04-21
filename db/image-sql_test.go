@@ -27,7 +27,7 @@ func Test_Image_Create(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My image", "url", "thumbnailURL", nil, nil},
+		{1, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", nil, nil},
 		{0, "", "", "", sql.ErrNoRows, ErrNotFound},
 		{0, "", "", "", sql.ErrConnDone, sql.ErrConnDone},
 	}
@@ -104,7 +104,7 @@ func Test_Image_Read(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.imageID, test.recipeID)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "name", "url", "thumbnail_url", "created_at", "modified_at"}).
-					AddRow(test.imageID, test.recipeID, "My Image", "My URL", "My Thumbnail URL", time.Now(), time.Now())
+					AddRow(test.imageID, test.recipeID, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", time.Now(), time.Now())
 				query.WillReturnRows(rows)
 			} else {
 				query.WillReturnError(test.dbError)
@@ -153,7 +153,7 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\(SELECT image_id FROM recipe WHERE id = \\$1\\)").WithArgs(test.recipeID)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "name", "url", "thumbnail_url", "created_at", "modified_at"}).
-					AddRow(test.imageID, test.recipeID, "My Image", "My URL", "My Thumbnail URL", time.Now(), time.Now())
+					AddRow(test.imageID, test.recipeID, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", time.Now(), time.Now())
 				query.WillReturnRows(rows)
 			} else {
 				query.WillReturnError(test.dbError)
@@ -189,7 +189,7 @@ func Test_Image_Update(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, 2, "My image", "url", "thumbnailURL", nil, nil},
+		{1, 2, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", nil, nil},
 		{0, 0, "", "", "", sql.ErrNoRows, ErrNotFound},
 		{0, 0, "", "", "", sql.ErrConnDone, sql.ErrConnDone},
 	}
@@ -389,17 +389,17 @@ func Test_Image_List(t *testing.T) {
 		{1, []models.RecipeImage{
 			{
 				ID:           utils.GetPtr[int64](1),
-				Name:         utils.GetPtr("My Image"),
-				URL:          utils.GetPtr("My URL"),
-				ThumbnailURL: utils.GetPtr("My Thumbnail URL"),
+				Name:         utils.GetPtr("plated-dish.jpg"),
+				URL:          utils.GetPtr("/uploads/recipes/1/images/plated-dish.jpg"),
+				ThumbnailURL: utils.GetPtr("/uploads/recipes/1/thumbs/plated-dish.jpg"),
 				CreatedAt:    &now,
 				ModifiedAt:   &now,
 			},
 			{
 				ID:           utils.GetPtr[int64](2),
-				Name:         utils.GetPtr("My Other Image"),
-				URL:          utils.GetPtr("My URL"),
-				ThumbnailURL: utils.GetPtr("My Thumbnail URL"),
+				Name:         utils.GetPtr("prep-step.jpg"),
+				URL:          utils.GetPtr("/uploads/recipes/1/images/prep-step.jpg"),
+				ThumbnailURL: utils.GetPtr("/uploads/recipes/1/thumbs/prep-step.jpg"),
 				CreatedAt:    &now,
 				ModifiedAt:   &now,
 			},

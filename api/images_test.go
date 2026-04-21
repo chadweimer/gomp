@@ -30,7 +30,7 @@ func Test_GetImages(t *testing.T) {
 	}
 
 	tests := []testArgs{
-		{1, []models.RecipeImage{{ID: utils.GetPtr[int64](1), Name: utils.GetPtr("My Image")}}, nil},
+		{1, []models.RecipeImage{{ID: utils.GetPtr[int64](1), Name: utils.GetPtr("plated-dish.jpg")}}, nil},
 		{2, nil, db.ErrNotFound},
 	}
 	for i, test := range tests {
@@ -73,7 +73,7 @@ func Test_GetMainImage(t *testing.T) {
 	}
 
 	tests := []testArgs{
-		{1, &models.RecipeImage{ID: utils.GetPtr[int64](1), Name: utils.GetPtr("My Image")}, nil},
+		{1, &models.RecipeImage{ID: utils.GetPtr[int64](1), Name: utils.GetPtr("plated-dish.jpg")}, nil},
 		{2, nil, db.ErrNotFound},
 	}
 	for i, test := range tests {

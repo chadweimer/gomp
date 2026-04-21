@@ -70,9 +70,9 @@ func Test_AddNote(t *testing.T) {
 	}
 
 	tests := []addNoteTest{
-		{1, models.Note{Text: "some note"}, false},
-		{2, models.Note{Text: "some other note"}, false},
-		{3, models.Note{Text: "some error causing note"}, true},
+		{1, models.Note{Text: "Add chopped parsley right before serving."}, false},
+		{2, models.Note{Text: "Refrigerate leftovers within 2 hours."}, false},
+		{3, models.Note{Text: "Intentional failing note fixture"}, true},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -110,7 +110,7 @@ func Test_AddNote_MismatchedID(t *testing.T) {
 	}
 
 	tests := []addNoteTest{
-		{1, models.Note{RecipeID: new(int64), Text: "some note"}},
+		{1, models.Note{RecipeID: new(int64), Text: "Add chopped parsley right before serving."}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -143,9 +143,9 @@ func Test_SaveNote(t *testing.T) {
 	}
 
 	tests := []addNoteTest{
-		{1, 1, models.Note{Text: "some note"}, false},
-		{2, 3, models.Note{Text: "some other note"}, false},
-		{3, 7, models.Note{Text: "some error causing note"}, true},
+		{1, 1, models.Note{Text: "Add chopped parsley right before serving."}, false},
+		{2, 3, models.Note{Text: "Refrigerate leftovers within 2 hours."}, false},
+		{3, 7, models.Note{Text: "Intentional failing note fixture"}, true},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -184,8 +184,8 @@ func Test_SaveNote_MismatchedID(t *testing.T) {
 	}
 
 	tests := []addNoteTest{
-		{1, 1, models.Note{RecipeID: new(int64), Text: "some note"}},
-		{1, 1, models.Note{ID: new(int64), Text: "some other note"}},
+		{1, 1, models.Note{RecipeID: new(int64), Text: "Add chopped parsley right before serving."}},
+		{1, 1, models.Note{ID: new(int64), Text: "Refrigerate leftovers within 2 hours."}},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {

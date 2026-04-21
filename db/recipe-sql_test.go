@@ -16,6 +16,48 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func recipeFixtureLemonGarlicChicken() models.Recipe {
+	return models.Recipe{
+		Name:                "Lemon Garlic Chicken",
+		Ingredients:         "1.5 lb chicken thighs\n2 tbsp olive oil\n3 cloves garlic\n1 lemon",
+		Directions:          "Marinate chicken, then roast at 400F until cooked through.",
+		NutritionInfo:       "420 kcal per serving",
+		ServingSize:         "4 servings",
+		StorageInstructions: "Refrigerate in an airtight container for up to 3 days.",
+		SourceURL:           "https://example.com/recipes/lemon-garlic-chicken",
+		Time:                "45 minutes",
+		Tags:                []string{"weeknight", "chicken", "high-protein"},
+	}
+}
+
+func recipeFixtureSheetPanSausage() models.Recipe {
+	return models.Recipe{
+		Name:                "Sheet Pan Sausage and Peppers",
+		Ingredients:         "12 oz smoked sausage\n2 bell peppers\n1 red onion\n2 tbsp olive oil",
+		Directions:          "Slice the vegetables and sausage, toss with oil, and roast until browned.",
+		NutritionInfo:       "510 kcal per serving",
+		ServingSize:         "4 servings",
+		StorageInstructions: "Store refrigerated for up to 4 days and reheat in the oven.",
+		SourceURL:           "https://example.com/recipes/sheet-pan-sausage-peppers",
+		Time:                "35 minutes",
+		Tags:                []string{"weeknight", "one-pan", "dinner"},
+	}
+}
+
+func recipeFixtureChickpeaSaladWraps() models.Recipe {
+	return models.Recipe{
+		Name:                "Chickpea Salad Wraps",
+		Ingredients:         "2 cans chickpeas\n3 tbsp mayo\n1 celery stalk\n4 tortillas",
+		Directions:          "Mash the chickpeas, mix with the remaining ingredients, and roll into wraps.",
+		NutritionInfo:       "390 kcal per serving",
+		ServingSize:         "4 wraps",
+		StorageInstructions: "Keep the filling chilled and assemble wraps just before serving.",
+		SourceURL:           "https://example.com/recipes/chickpea-salad-wraps",
+		Time:                "20 minutes",
+		Tags:                []string{"vegetarian", "lunch", "make-ahead"},
+	}
+}
+
 type simpleSQLRecipeDriverAdapter struct{}
 
 func (simpleSQLRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
@@ -39,53 +81,16 @@ func Test_Recipe_Create(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, nil, nil,
+			recipeFixtureLemonGarlicChicken(), nil, nil,
 		},
 		{
-			models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-				Tags:                []string{"A", "B"},
-			}, nil, nil,
+			recipeFixtureSheetPanSausage(), nil, nil,
 		},
 		{
-			models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, sql.ErrNoRows, ErrNotFound,
+			recipeFixtureChickpeaSaladWraps(), sql.ErrNoRows, ErrNotFound,
 		},
 		{
-			models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, sql.ErrConnDone, sql.ErrConnDone,
+			recipeFixtureSheetPanSausage(), sql.ErrConnDone, sql.ErrConnDone,
 		},
 	}
 	for i, test := range tests {
@@ -155,8 +160,9 @@ func Test_Recipe_Read(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, created_at, modified_at FROM recipe WHERE id = \\$1").
 				WithArgs(test.recipeID)
 			if test.dbError == nil {
+				fixture := recipeFixtureLemonGarlicChicken()
 				rows := sqlmock.NewRows([]string{"id", "name", "serving_size", "nutrition_info", "ingredients", "directions", "storage_instructions", "source_url", "recipe_time", "current_state", "created_at", "modified_at"}).
-					AddRow(test.recipeID, "My Recipe", "My Serving Size", "My Nutrition Info", "My Ingredients", "My Directions", "My Storage Instructions", "My URL", "My Time", models.Active, time.Now(), time.Now())
+					AddRow(test.recipeID, fixture.Name, fixture.ServingSize, fixture.NutritionInfo, fixture.Ingredients, fixture.Directions, fixture.StorageInstructions, fixture.SourceURL, fixture.Time, models.Active, time.Now(), time.Now())
 				query.WillReturnRows(rows)
 				dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID).WillReturnRows(&sqlmock.Rows{})
 			} else {
@@ -190,70 +196,35 @@ func Test_Recipe_Update(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			models.Recipe{
-				ID:                  utils.GetPtr[int64](1),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, nil, nil,
+			func() models.Recipe {
+				recipe := recipeFixtureLemonGarlicChicken()
+				recipe.ID = utils.GetPtr[int64](1)
+				return recipe
+			}(), nil, nil,
 		},
 		{
-			models.Recipe{
-				ID:                  utils.GetPtr[int64](1),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-				Tags:                []string{"A", "B"},
-			}, nil, nil,
+			func() models.Recipe {
+				recipe := recipeFixtureSheetPanSausage()
+				recipe.ID = utils.GetPtr[int64](1)
+				return recipe
+			}(), nil, nil,
 		},
 		{
-			models.Recipe{
-				ID:                  utils.GetPtr[int64](2),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, sql.ErrNoRows, ErrNotFound,
+			func() models.Recipe {
+				recipe := recipeFixtureChickpeaSaladWraps()
+				recipe.ID = utils.GetPtr[int64](2)
+				return recipe
+			}(), sql.ErrNoRows, ErrNotFound,
 		},
 		{
-			models.Recipe{
-				ID:                  utils.GetPtr[int64](3),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, sql.ErrConnDone, sql.ErrConnDone,
+			func() models.Recipe {
+				recipe := recipeFixtureSheetPanSausage()
+				recipe.ID = utils.GetPtr[int64](3)
+				return recipe
+			}(), sql.ErrConnDone, sql.ErrConnDone,
 		},
 		{
-			models.Recipe{
-				ID:                  nil,
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My URL",
-				Time:                "My Time",
-			}, nil, ErrMissingID,
+			func() models.Recipe { recipe := recipeFixtureChickpeaSaladWraps(); return recipe }(), nil, ErrMissingID,
 		},
 	}
 	for i, test := range tests {
@@ -512,9 +483,9 @@ func Test_Recipe_CreateTag(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "A", nil, nil},
-		{1, "A", sql.ErrNoRows, ErrNotFound},
-		{1, "A", sql.ErrConnDone, sql.ErrConnDone},
+		{1, "weeknight", nil, nil},
+		{1, "weeknight", sql.ErrNoRows, ErrNotFound},
+		{1, "weeknight", sql.ErrConnDone, sql.ErrConnDone},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -606,7 +577,7 @@ func Test_Recipe_ListTags(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, []string{"A", "B"}, nil, nil},
+		{1, []string{"weeknight", "high-protein"}, nil, nil},
 		{0, nil, sql.ErrNoRows, ErrNotFound},
 		{0, nil, sql.ErrConnDone, sql.ErrConnDone},
 	}

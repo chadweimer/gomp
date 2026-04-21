@@ -6,6 +6,8 @@ paths: {}
 components:
   schemas:
     accessLevel:
+      description: Access level assigned to a user and used for authorization scopes.
+      example: editor
       type: string
       enum:
         - admin
@@ -15,6 +17,8 @@ components:
       x-oapi-codegen-extra-tags:
         db: access_level
     recipeState:
+      description: Lifecycle state of a recipe.
+      example: active
       type: string
       enum:
         - active
@@ -23,6 +27,8 @@ components:
       x-oapi-codegen-extra-tags:
         db: current_state
     searchField:
+      description: Recipe field to include when applying text search.
+      example: ingredients
       type: string
       enum:
         - name
@@ -37,6 +43,8 @@ components:
         - StorageInstructions
         - Nutrition
     sortBy:
+      description: Field used to order recipe search results.
+      example: modified
       type: string
       enum:
         - name
@@ -49,6 +57,8 @@ components:
       x-oapi-codegen-extra-tags:
         db: sort_by
     sortDir:
+      description: Direction used to sort search results.
+      example: desc
       type: string
       enum:
         - asc
@@ -57,6 +67,10 @@ components:
       x-oapi-codegen-extra-tags:
         db: sort_dir
     appInfo:
+      description: Read-only application metadata.
+      example:
+        copyright: Copyright 2016-2026
+        version: 1.12.0
       type: object
       required:
         - copyright
@@ -69,6 +83,9 @@ components:
           type: string
           readOnly: true
     appConfiguration:
+      description: Application-wide configuration values managed by administrators.
+      example:
+        title: The App Title
       required:
         - title
       type: object
@@ -127,6 +144,13 @@ components:
             db: modified_at
           x-go-type: time.Time
     recipeBase:
+      description: Shared recipe metadata used by full and compact recipe payloads.
+      example:
+        id: 3
+        name: Lemon Garlic Chicken
+        state: active
+        createdAt: "2026-04-19T09:00:00Z"
+        modifiedAt: "2026-04-20T18:15:00Z"
       required:
         - name
       type: object
@@ -235,6 +259,15 @@ components:
               x-oapi-codegen-extra-tags:
                 db: tags
     recipeCompact:
+      description: Compact recipe representation used when returning lists.
+      example:
+        id: 3
+        name: Lemon Garlic Chicken
+        state: active
+        thumbnailUrl: /uploads/recipes/3/plated-dish-thumb.jpg
+        averageRating: 4.5
+        createdAt: "2026-04-19T09:00:00Z"
+        modifiedAt: "2026-04-20T18:15:00Z"
       allOf:
         - $ref: "#/components/schemas/recipeBase"
         - type: object
@@ -257,8 +290,8 @@ components:
         id: 25
         recipeId: 3
         name: plated-dish.jpg
-        url: /api/v1/uploads/recipes/3/plated-dish.jpg
-        thumbnailUrl: /api/v1/uploads/recipes/3/plated-dish-thumb.jpg
+        url: /uploads/recipes/3/plated-dish.jpg
+        thumbnailUrl: /uploads/recipes/3/plated-dish-thumb.jpg
         createdAt: "2026-04-20T18:20:00Z"
         modifiedAt: "2026-04-20T18:20:00Z"
       type: object
@@ -317,6 +350,20 @@ components:
             db: modified_at
           x-go-type: time.Time
     searchFilter:
+      description: Search filter criteria used to find recipes.
+      example:
+        query: chicken lemon
+        withPictures: true
+        fields:
+          - name
+          - ingredients
+        states:
+          - active
+        tags:
+          - weeknight
+          - high-protein
+        sortBy: modified
+        sortDir: desc
       type: object
       required:
         - query
@@ -355,6 +402,11 @@ components:
         sortDir:
           $ref: "#/components/schemas/sortDir"
     savedSearchFilterCompact:
+      description: Compact saved search representation used when returning lists.
+      example:
+        id: 9
+        userId: 1
+        name: Weeknight Dinners
       required:
         - name
       type: object
@@ -380,10 +432,33 @@ components:
           x-oapi-codegen-extra-tags:
             db: name
     savedSearchFilter:
+      description: Full saved search filter with metadata and filtering criteria.
+      example:
+        id: 9
+        userId: 1
+        name: Weeknight Dinners
+        query: chicken lemon
+        withPictures: true
+        fields:
+          - name
+          - ingredients
+        states:
+          - active
+        tags:
+          - weeknight
+        sortBy: modified
+        sortDir: desc
       allOf:
         - $ref: "#/components/schemas/savedSearchFilterCompact"
         - $ref: "#/components/schemas/searchFilter"
     user:
+      description: User account details and authorization level.
+      example:
+        id: 1
+        username: user1
+        accessLevel: admin
+        createdAt: "2026-04-21T12:00:00Z"
+        modifiedAt: "2026-04-21T12:00:00Z"
       type: object
       required:
         - username
@@ -420,6 +495,15 @@ components:
             db: modified_at
           x-go-type: time.Time
     userSettings:
+      description: Per-user UI preferences and quick-access tag settings.
+      example:
+        userId: 1
+        homeTitle: My Home Title
+        homeImageUrl: https://example.com/my-image.jpg
+        favoriteTags:
+          - quick
+          - kid-friendly
+          - vegetarian
       type: object
       required:
         - favoriteTags

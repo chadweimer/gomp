@@ -540,10 +540,10 @@ func Test_SaveSettings(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, db.ErrNotFound, db.ErrNotFound, nil},
-		{1, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, errMismatchedID, nil},
+		{1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
+		{1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
+		{2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, db.ErrNotFound, db.ErrNotFound, nil},
+		{1, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, errMismatchedID, nil},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -585,15 +585,15 @@ func Test_SaveUserSettings(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
 
-		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 2, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
+		{1, 2, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
 
-		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, db.ErrNotFound, db.ErrNotFound, nil},
+		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, db.ErrNotFound, db.ErrNotFound, nil},
 
-		{1, 3, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Title"), HomeImageURL: utils.GetPtr("My URL"), FavoriteTags: []string{"A", "B"}}, nil, errMismatchedID, nil},
+		{1, 3, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, errMismatchedID, nil},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
