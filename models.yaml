@@ -79,6 +79,13 @@ components:
           x-oapi-codegen-extra-tags:
             db: title
     note:
+      description: A free-form note attached to a single recipe.
+      example:
+        id: 14
+        recipeId: 3
+        text: Add chopped parsley right before serving.
+        createdAt: "2026-04-21T14:05:00Z"
+        modifiedAt: "2026-04-21T14:05:00Z"
       required:
         - text
       type: object
@@ -154,6 +161,24 @@ components:
             db: modified_at
           x-go-type: time.Time
     recipe:
+      description: Full recipe details including ingredients, directions, and tags.
+      example:
+        id: 3
+        name: Lemon Garlic Chicken
+        state: active
+        servingSize: 4 servings
+        time: 45 minutes
+        nutritionInfo: 420 kcal per serving
+        ingredients: 1.5 lb chicken thighs\n2 tbsp olive oil\n3 cloves garlic\n1 lemon
+        directions: Marinate chicken, then roast at 400F until cooked through.
+        storageInstructions: Refrigerate in an airtight container for up to 3 days.
+        sourceUrl: https://example.com/recipes/lemon-garlic-chicken
+        tags:
+          - weeknight
+          - chicken
+          - high-protein
+        createdAt: "2026-04-19T09:00:00Z"
+        modifiedAt: "2026-04-20T18:15:00Z"
       allOf:
         - $ref: "#/components/schemas/recipeBase"
         - type: object
@@ -227,6 +252,15 @@ components:
               x-oapi-codegen-extra-tags:
                 db: avg_rating
     recipeImage:
+      description: Metadata for an uploaded recipe image and its generated thumbnail.
+      example:
+        id: 25
+        recipeId: 3
+        name: plated-dish.jpg
+        url: /api/v1/uploads/recipes/3/plated-dish.jpg
+        thumbnailUrl: /api/v1/uploads/recipes/3/plated-dish-thumb.jpg
+        createdAt: "2026-04-20T18:20:00Z"
+        modifiedAt: "2026-04-20T18:20:00Z"
       type: object
       required:
         - recipeId
