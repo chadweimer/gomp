@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { fetchMocker } from '../../../../../vitest.setup';
+import '../page-tags';
 
 describe('page-tags', () => {
   it('builds', async () => {

@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../page-admin-users';
 
 describe('page-admin-users', () => {
   it('builds', async () => {

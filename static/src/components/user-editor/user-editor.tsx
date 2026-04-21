@@ -32,7 +32,7 @@ export class UserEditor {
             <ion-buttons slot="primary">
               <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{isNull(this.user.id) ? 'New User' : 'Edit User'}</ion-title>
+            <ion-title>{isNull(this.user?.id) ? 'New User' : 'Edit User'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -42,20 +42,20 @@ export class UserEditor {
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
-              <ion-input label="Email" label-placement="stacked" type="email" value={this.user.username} disabled={!isNull(this.user.id)}
+              <ion-input label="Email" label-placement="stacked" type="email" value={this.user?.username ?? ''} disabled={!isNull(this.user?.id)}
                 onIonBlur={(e: Event) => this.user = { ...this.user, username: (e.currentTarget as HTMLIonInputElement).value as string }}
                 required
                 autofocus />
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Access Level" label-placement="stacked" value={this.user.accessLevel}
+              <ion-select label="Access Level" label-placement="stacked" value={this.user?.accessLevel ?? AccessLevel.Editor} disabled={!isNull(this.user?.id)}
                 onIonChange={(e: CustomEvent<{ value: AccessLevel }>) => this.user = { ...this.user, accessLevel: e.detail.value }}>
                 {Object.keys(AccessLevel).map(item =>
                   <ion-select-option key={item} value={AccessLevel[item as keyof typeof AccessLevel]}>{insertSpacesBetweenWords(item)}</ion-select-option>
                 )}
               </ion-select>
             </ion-item>
-            {isNull(this.user.id) &&
+            {isNull(this.user?.id) &&
               <ion-item lines="full">
                 <ion-input label="Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
@@ -63,7 +63,7 @@ export class UserEditor {
                   required />
               </ion-item>
             }
-            {isNull(this.user.id) &&
+            {isNull(this.user?.id) &&
               <ion-item lines="full">
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"

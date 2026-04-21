@@ -220,10 +220,14 @@ export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElemen
   }
 }
 
-export function preProcessMultilineText(text: string) {
+export function preProcessMultilineText(text: string | null | undefined) {
   // This function exists to handle backward compatibility with older versions.
   // Before the introduction of the WYSIWYG edtior,
   // all text was rendered as the original text with whitespace preserved.
+
+  if (isNull(text)) {
+    return '';
+  }
 
   // Return early if there are no newlines in the text.
   if (!text.includes('\n') && !text.includes('\r')) {

@@ -40,7 +40,7 @@ export class RecipeEditor {
             <ion-buttons slot="primary">
               <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{isNull(this.recipe.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
+            <ion-title>{isNull(this.recipe?.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -50,14 +50,14 @@ export class RecipeEditor {
         <ion-content>
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
-              <ion-input label="Name" label-placement="stacked" value={this.recipe.name}
+              <ion-input label="Name" label-placement="stacked" value={this.recipe?.name}
                 autocorrect="on"
                 spellcheck
                 required
                 autofocus
                 onIonBlur={(e: Event) => this.recipe = { ...this.recipe, name: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
-            {isNull(this.recipe.id) &&
+            {isNull(this.recipe?.id) &&
               <ion-item lines="full">
                 <form enctype="multipart/form-data">
                   <ion-label position="stacked">Picture</ion-label>
@@ -66,40 +66,40 @@ export class RecipeEditor {
               </ion-item>
             }
             <ion-item lines="full">
-              <ion-input label="Serving Size" label-placement="stacked" value={this.recipe.servingSize}
+              <ion-input label="Serving Size" label-placement="stacked" value={this.recipe?.servingSize}
                 autocorrect="on"
                 spellcheck
                 onIonBlur={(e: Event) => this.recipe = { ...this.recipe, servingSize: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-input label="Time" label-placement="stacked" value={this.recipe.time}
+              <ion-input label="Time" label-placement="stacked" value={this.recipe?.time}
                 autocorrect="on"
                 spellcheck
                 onIonBlur={(e: Event) => this.recipe = { ...this.recipe, time: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Ingredients" label-placement="stacked" value={this.recipe.ingredients}
+              <html-editor label="Ingredients" label-placement="stacked" value={this.recipe?.ingredients}
                 onValueChanged={e => this.recipe = { ...this.recipe, ingredients: e.detail }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Directions" label-placement="stacked" value={this.recipe.directions}
+              <html-editor label="Directions" label-placement="stacked" value={this.recipe?.directions}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Storage Instructions" label-placement="stacked" value={this.recipe.storageInstructions}
+              <html-editor label="Storage Instructions" label-placement="stacked" value={this.recipe?.storageInstructions}
                 onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Nutrition" label-placement="stacked" value={this.recipe.nutritionInfo}
+              <html-editor label="Nutrition" label-placement="stacked" value={this.recipe?.nutritionInfo}
                 onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-input label="Source" label-placement="stacked" value={this.recipe.sourceUrl}
+              <ion-input label="Source" label-placement="stacked" value={this.recipe?.sourceUrl}
                 inputmode="url"
                 onIonBlur={(e: Event) => this.recipe = { ...this.recipe, sourceUrl: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
-              <tags-input label="Tags" label-placement="stacked" value={this.recipe.tags}
+              <tags-input label="Tags" label-placement="stacked" value={this.recipe?.tags}
                 suggestions={this.currentUserSettings?.favoriteTags ?? []}
                 onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }}>
                 <ion-input enterkeyhint="enter" />
