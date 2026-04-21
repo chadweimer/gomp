@@ -65,8 +65,8 @@ jobs:
         run: echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
       - name: Set env vars (pr)
         if: github.event_name == 'pull_request'
-        run: echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number
-          }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+        run: |
+          echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
       - name: Set env vars (release)
         if: github.event_name == 'release'
         run: echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
@@ -77,8 +77,8 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}
-          path: build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION
-            }}.tar.gz
+          path: |
+            build/gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}.tar.gz
           compression-level: 0
   publish:
     name: Publish
