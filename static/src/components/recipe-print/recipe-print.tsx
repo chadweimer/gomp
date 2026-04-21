@@ -87,7 +87,7 @@ export class RecipePrint {
           {this.recipe?.sourceUrl && (
             <section>
               <h2>Source</h2>
-              <div class="plain"><a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a></div>
+              <div class="plain">{this.recipe?.sourceUrl}</div>
             </section>
           )}
         </div>
