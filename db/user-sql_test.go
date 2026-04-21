@@ -325,7 +325,7 @@ func Test_User_ReadSettings(t *testing.T) {
 
 				dbmock.ExpectQuery("SELECT tag FROM app_user_favorite_tag WHERE user_id = \\$1 ORDER BY tag ASC").
 					WithArgs(test.userID).
-					WillReturnRows(sqlmock.NewRows([]string{"tag"}).AddRow("A").AddRow("B"))
+					WillReturnRows(sqlmock.NewRows([]string{"tag"}).AddRow("kid-friendly").AddRow("quick"))
 			} else {
 				query.WillReturnError(test.dbError)
 			}
@@ -359,9 +359,9 @@ func Test_User_UpdateSettings(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My Home Title", "https://example.com/my-image.jpg", []string{"A", "B"}, nil, nil},
-		{0, "", "", []string{"A", "B"}, sql.ErrNoRows, ErrNotFound},
-		{0, "", "", []string{"A", "B"}, sql.ErrConnDone, sql.ErrConnDone},
+		{1, "My Home Title", "https://example.com/my-image.jpg", []string{"quick", "kid-friendly"}, nil, nil},
+		{0, "", "", []string{"quick", "kid-friendly"}, sql.ErrNoRows, ErrNotFound},
+		{0, "", "", []string{"quick", "kid-friendly"}, sql.ErrConnDone, sql.ErrConnDone},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -561,7 +561,7 @@ func Test_User_CreateSearchFilter(t *testing.T) {
 				SortDir:      models.Desc,
 				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
 				States:       []models.RecipeState{models.Active, models.Archived},
-				Tags:         []string{"A", "B"},
+				Tags:         []string{"weeknight", "high-protein"},
 			},
 			nil,
 			nil,
@@ -748,7 +748,7 @@ func Test_User_UpdateSearchFilter(t *testing.T) {
 				SortDir:      models.Desc,
 				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
 				States:       []models.RecipeState{models.Active, models.Archived},
-				Tags:         []string{"A", "B"},
+				Tags:         []string{"weeknight", "high-protein"},
 			},
 			nil,
 			nil,

@@ -15,6 +15,48 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+func recipeFixtureLemonGarlicChicken() *models.Recipe {
+	return &models.Recipe{
+		Name:                "Lemon Garlic Chicken",
+		Ingredients:         "1.5 lb chicken thighs\n2 tbsp olive oil\n3 cloves garlic\n1 lemon",
+		Directions:          "Marinate chicken, then roast at 400F until cooked through.",
+		NutritionInfo:       "420 kcal per serving",
+		ServingSize:         "4 servings",
+		StorageInstructions: "Refrigerate in an airtight container for up to 3 days.",
+		SourceURL:           "https://example.com/recipes/lemon-garlic-chicken",
+		Time:                "45 minutes",
+		Tags:                []string{"weeknight", "chicken", "high-protein"},
+	}
+}
+
+func recipeFixtureSheetPanSausage() *models.Recipe {
+	return &models.Recipe{
+		Name:                "Sheet Pan Sausage and Peppers",
+		Ingredients:         "12 oz smoked sausage\n2 bell peppers\n1 red onion\n2 tbsp olive oil",
+		Directions:          "Slice the vegetables and sausage, toss with oil, and roast until browned.",
+		NutritionInfo:       "510 kcal per serving",
+		ServingSize:         "4 servings",
+		StorageInstructions: "Store refrigerated for up to 4 days and reheat in the oven.",
+		SourceURL:           "https://example.com/recipes/sheet-pan-sausage-peppers",
+		Time:                "35 minutes",
+		Tags:                []string{"weeknight", "one-pan", "dinner"},
+	}
+}
+
+func recipeFixtureChickpeaSaladWraps() *models.Recipe {
+	return &models.Recipe{
+		Name:                "Chickpea Salad Wraps",
+		Ingredients:         "2 cans chickpeas\n3 tbsp mayo\n1 celery stalk\n4 tortillas",
+		Directions:          "Mash the chickpeas, mix with the remaining ingredients, and roll into wraps.",
+		NutritionInfo:       "390 kcal per serving",
+		ServingSize:         "4 wraps",
+		StorageInstructions: "Keep the filling chilled and assemble wraps just before serving.",
+		SourceURL:           "https://example.com/recipes/chickpea-salad-wraps",
+		Time:                "20 minutes",
+		Tags:                []string{"vegetarian", "lunch", "make-ahead"},
+	}
+}
+
 func Test_GetRecipe(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
@@ -24,7 +66,7 @@ func Test_GetRecipe(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My Recipe", nil},
+		{1, recipeFixtureLemonGarlicChicken().Name, nil},
 		{2, "", db.ErrNotFound},
 	}
 	for i, test := range tests {
@@ -76,15 +118,7 @@ func Test_AddRecipe(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			&models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil,
+			recipeFixtureLemonGarlicChicken(), nil,
 		},
 		{nil, db.ErrNotFound},
 	}
@@ -130,54 +164,26 @@ func Test_SaveRecipe(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			1,
-			&models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil, nil,
+			1, recipeFixtureLemonGarlicChicken(), nil, nil,
 		},
 		{
 			1,
-			&models.Recipe{
-				ID:                  utils.GetPtr[int64](1),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil, nil,
+			func() *models.Recipe {
+				recipe := recipeFixtureSheetPanSausage()
+				recipe.ID = utils.GetPtr[int64](1)
+				return recipe
+			}(), nil, nil,
 		},
 		{
 			1,
-			&models.Recipe{
-				ID:                  utils.GetPtr[int64](2),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil, errMismatchedID,
+			func() *models.Recipe {
+				recipe := recipeFixtureChickpeaSaladWraps()
+				recipe.ID = utils.GetPtr[int64](2)
+				return recipe
+			}(), nil, errMismatchedID,
 		},
 		{
-			2,
-			&models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, db.ErrNotFound, db.ErrNotFound,
+			2, recipeFixtureSheetPanSausage(), db.ErrNotFound, db.ErrNotFound,
 		},
 	}
 	for i, test := range tests {
