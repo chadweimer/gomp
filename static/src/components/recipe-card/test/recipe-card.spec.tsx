@@ -10,7 +10,7 @@ describe('recipe-card', () => {
 
   it('no initial value', async () => {
     const { root } = await render<HTMLRecipeCardElement>(<recipe-card />);
-    expect(root.recipe.name).toEqual('');
+    expect(root.recipe).toBeNullable();
     const image = root.shadowRoot?.querySelector('ion-img.hidden');
     expect(image).not.toBeNull();
     const node = root.shadowRoot?.querySelector('ion-card-title');
@@ -18,7 +18,7 @@ describe('recipe-card', () => {
     expect(node).toEqualText('');
     const rating = root.shadowRoot?.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
-    expect(rating).toHaveProperty('value', 0);
+    expect(rating).toEqualAttribute('value', '0');
   });
 
   it('bind to recipe', async () => {
@@ -35,6 +35,6 @@ describe('recipe-card', () => {
     expect(node).toEqualText(recipe.name);
     const rating = root.shadowRoot?.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
-    expect(rating).toHaveProperty('value', recipe.averageRating);
+    expect(rating).toEqualAttribute('value', recipe.averageRating?.toString() ?? '0');
   });
 });

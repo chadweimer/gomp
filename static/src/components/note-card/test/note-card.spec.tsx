@@ -13,7 +13,7 @@ describe('note-card', () => {
     const { root } = await render(<note-card note={note}></note-card>);
     const node = root.shadowRoot?.querySelector('html-viewer');
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', note.text);
+    expect(node).toEqualAttribute('value', note.text);
   });
 
   it('readonly works', async () => {

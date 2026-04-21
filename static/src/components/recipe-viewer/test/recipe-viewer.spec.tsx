@@ -71,7 +71,7 @@ describe('recipe-viewer', () => {
     expect(items?.length).toBe(1);
     let node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe!.ingredients);
+    expect(node).toEqualAttribute('value', root.recipe!.ingredients);
 
     // Directions
     await setProps({ recipe: { ...recipe, directions: 'directions' } });
@@ -81,7 +81,7 @@ describe('recipe-viewer', () => {
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe!.directions);
+    expect(node).toEqualAttribute('value', root.recipe!.directions);
 
     // Nutrition Info
     await setProps({ recipe: { ...recipe, nutritionInfo: 'nutrition' } });
@@ -91,7 +91,7 @@ describe('recipe-viewer', () => {
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe!.nutritionInfo);
+    expect(node).toEqualAttribute('value', root.recipe!.nutritionInfo);
 
     // Storage Instructions
     await setProps({ recipe: { ...recipe, storageInstructions: 'storage' } });
@@ -101,7 +101,7 @@ describe('recipe-viewer', () => {
     expect(items?.length).toBe(1);
     node = items![0].lastElementChild;
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', root.recipe!.storageInstructions);
+    expect(node).toEqualAttribute('value', root.recipe!.storageInstructions);
 
     // Source URL
     await setProps({ recipe: { ...recipe, sourceUrl: 'http://some.recipe/' } });
@@ -191,15 +191,8 @@ describe('recipe-viewer', () => {
     const linkElements = items![0].querySelectorAll('ion-router-link');
     expect(linkElements.length).toBe(links.length);
     for (const link of links) {
-      let found = false;
-      linkElements.forEach(linkElement => {
-        const anchor = linkElement.shadowRoot?.querySelector(`a[href='/recipes/${link.id}']`);
-        if (anchor !== null) {
-          expect(linkElement).toEqualText(link.name);
-          found = true;
-        }
-      });
-      expect(found).toBe(true);
+      const router = items![0].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
+      expect(router).toEqualText(link.name);
     }
   });
 });

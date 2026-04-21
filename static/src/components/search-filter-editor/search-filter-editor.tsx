@@ -74,20 +74,20 @@ export class SearchFilterEditor {
               </ion-item>
             }
             <ion-item lines="full">
-              <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter.query}
+              <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter?.query}
                 autocorrect="on"
                 spellcheck
                 onIonBlur={(e: Event) => this.searchFilter = { ...this.searchFilter, query: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
-              <tags-input label="Tags" label-placement="stacked" value={this.searchFilter.tags}
+              <tags-input label="Tags" label-placement="stacked" value={this.searchFilter?.tags}
                 suggestions={this.currentUserSettings?.favoriteTags ?? []}
                 onValueChanged={(e: CustomEvent<string[]>) => this.searchFilter = { ...this.searchFilter, tags: e.detail }}>
                 <ion-input enterkeyhint="enter" />
               </tags-input>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Sort By" label-placement="stacked" value={this.searchFilter.sortBy}
+              <ion-select label="Sort By" label-placement="stacked" value={this.searchFilter?.sortBy}
                 onIonChange={(e: CustomEvent<{ value: SortBy }>) => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}>
                 {Object.keys(SortBy).map(item =>
                   <ion-select-option key={item} value={SortBy[item as keyof typeof SortBy]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -95,7 +95,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Sort Order" label-placement="stacked" value={this.searchFilter.sortDir}
+              <ion-select label="Sort Order" label-placement="stacked" value={this.searchFilter?.sortDir}
                 onIonChange={(e: CustomEvent<{ value: SortDir }>) => this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value }}>
                 {Object.keys(SortDir).map(item =>
                   <ion-select-option key={item} value={SortDir[item as keyof typeof SortDir]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -103,7 +103,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Pictures" label-placement="stacked" value={toYesNoAny(this.searchFilter.withPictures)}
+              <ion-select label="Pictures" label-placement="stacked" value={toYesNoAny(this.searchFilter?.withPictures)}
                 onIonChange={(e: CustomEvent<{ value: YesNoAny }>) => this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) }}>
                 {Object.keys(YesNoAny).map(item =>
                   <ion-select-option key={item} value={YesNoAny[item as keyof typeof YesNoAny]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -111,7 +111,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="States" label-placement="stacked" multiple value={this.searchFilter.states}
+              <ion-select label="States" label-placement="stacked" multiple value={this.searchFilter?.states}
                 onIonChange={(e: CustomEvent<{ value: RecipeState[] }>) => this.searchFilter = { ...this.searchFilter, states: e.detail.value }}>
                 {Object.keys(RecipeState).map(item =>
                   <ion-select-option key={item} value={RecipeState[item as keyof typeof RecipeState]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -119,7 +119,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Fields to Search" label-placement="stacked" multiple value={this.searchFilter.fields}
+              <ion-select label="Fields to Search" label-placement="stacked" multiple value={this.searchFilter?.fields}
                 onIonChange={(e: CustomEvent<{ value: SearchField[] }>) => this.searchFilter = { ...this.searchFilter, fields: e.detail.value }}>
                 {Object.keys(SearchField).map(item =>
                   <ion-select-option key={item} value={SearchField[item as keyof typeof SearchField]}>{insertSpacesBetweenWords(item)}</ion-select-option>
