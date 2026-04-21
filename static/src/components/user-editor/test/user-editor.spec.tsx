@@ -10,7 +10,7 @@ describe('user-editor', () => {
 
   it('defaults', async () => {
     const { root } = await render<HTMLUserEditorElement>(<user-editor />);
-    expect(root.user).toBeNullable(); // TODO: should be default value
+    expect(root.user).toBeNullable();
     const usernameInput = root.shadowRoot?.querySelector('ion-input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput).toEqualAttribute('value', '');
