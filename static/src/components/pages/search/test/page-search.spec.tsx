@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../page-search';
 
 describe('page-search', () => {
   it('builds', async () => {

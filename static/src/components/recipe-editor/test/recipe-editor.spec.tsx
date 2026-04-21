@@ -1,6 +1,7 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { fetchMocker } from '../../../../vitest.setup';
 import { UserSettings } from '../../../generated';
+import '../recipe-editor';
 
 describe('recipe-editor', () => {
   it('builds', async () => {

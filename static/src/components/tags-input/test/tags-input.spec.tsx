@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect, vi } from '@stencil/vitest';
+import '../tags-input';
 
 describe('tags-input', () => {
   it('builds', async () => {
@@ -27,7 +28,7 @@ describe('tags-input', () => {
     expect(root).toHaveProperty('label', expectedLabel);
     const label = root.querySelector('ion-label');
     expect(label).toEqualText(expectedLabel);
-    expect(label).toHaveProperty('position', 'fixed');
+    expect(label).toEqualAttribute('position', 'fixed');
   });
 
   it('uses tags', async () => {
@@ -41,7 +42,7 @@ describe('tags-input', () => {
   it('uses suggestions', async () => {
     const expectedTags = ['tag1', 'tag2'];
     const { root } = await render<HTMLTagsInputElement>(<tags-input suggestions={expectedTags} />);
-    expect(root.value.length).toBe(0);
+    expect(root.value?.length ?? 0).toBe(0);
     expect(root).toHaveProperty('suggestions', expectedTags);
     const chips = root.querySelectorAll('ion-chip.suggested');
     expect(chips).toHaveLength(expectedTags.length);

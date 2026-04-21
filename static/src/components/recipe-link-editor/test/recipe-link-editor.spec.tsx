@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../recipe-link-editor';
 
 describe('recipe-link-editor', () => {
   it('builds', async () => {

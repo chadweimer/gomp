@@ -1,4 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../html-viewer';
 
 describe('html-viewer', () => {
   it('builds', async () => {

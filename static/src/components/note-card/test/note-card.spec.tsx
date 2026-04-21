@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { Note } from '../../../generated';
+import '../note-card';
 
 describe('note-card', () => {
   it('renders', async () => {
@@ -12,7 +13,7 @@ describe('note-card', () => {
     const { root } = await render(<note-card note={note}></note-card>);
     const node = root.shadowRoot?.querySelector('html-viewer');
     expect(node).not.toBeNull();
-    expect(node).toHaveProperty('value', note.text);
+    expect(node).toEqualAttribute('value', note.text);
   });
 
   it('readonly works', async () => {

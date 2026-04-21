@@ -40,7 +40,7 @@ export class PageHome {
                 </header>
               </ion-col>
             </ion-row>
-            {this.searches.map(search =>
+            {this.searches?.map(search =>
               <Fragment>
                 <ion-row key={search.title}>
                   <ion-col>

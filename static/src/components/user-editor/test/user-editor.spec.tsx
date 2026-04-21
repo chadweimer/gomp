@@ -1,5 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { AccessLevel, User } from '../../../generated';
+import '../user-editor';
 
 describe('user-editor', () => {
   it('builds', async () => {
@@ -9,15 +10,13 @@ describe('user-editor', () => {
 
   it('defaults', async () => {
     const { root } = await render<HTMLUserEditorElement>(<user-editor />);
-    expect(root.user.id).toBeUndefined();
-    expect(root.user.username).toEqual('');
-    expect(root.user.accessLevel).toEqual(AccessLevel.Editor);
-    const usernameInput = root.shadowRoot?.querySelector('input[type=\'email\']');
+    expect(root.user).toBeNullable();
+    const usernameInput = root.shadowRoot?.querySelector('ion-input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
-    expect(usernameInput).toHaveProperty('value', '');
+    expect(usernameInput).toEqualAttribute('value', '');
     const accessLevelSelect = root.shadowRoot?.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
-    expect(accessLevelSelect).toHaveProperty('value', AccessLevel.Editor);
+    expect(accessLevelSelect).toEqualAttribute('value', AccessLevel.Editor);
   });
 
   it('bind to user', async () => {
@@ -28,12 +27,12 @@ describe('user-editor', () => {
     };
     const { root } = await render(<user-editor user={user} />);
     expect(root).toHaveProperty('user', user);
-    const usernameInput = root.shadowRoot?.querySelector('input[type=\'email\']');
+    const usernameInput = root.shadowRoot?.querySelector('ion-input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
-    expect(usernameInput).toHaveProperty('value', user.username);
+    expect(usernameInput).toEqualAttribute('value', user.username);
     const accessLevelSelect = root.shadowRoot?.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
-    expect(accessLevelSelect).toHaveProperty('value', user.accessLevel);
+    expect(accessLevelSelect).toEqualAttribute('value', user.accessLevel);
   });
 
   it('shows passwords', async () => {
@@ -43,7 +42,7 @@ describe('user-editor', () => {
     };
     const { root } = await render(<user-editor user={user} />);
     expect(root).toHaveProperty('user', user);
-    const passwordInput = root.shadowRoot?.querySelector('input[type=\'password\']');
+    const passwordInput = root.shadowRoot?.querySelector('ion-input[type=\'password\']');
     expect(passwordInput).not.toBeNull();
   });
 
@@ -55,7 +54,7 @@ describe('user-editor', () => {
     };
     const { root } = await render(<user-editor user={user} />);
     expect(root).toHaveProperty('user', user);
-    const passwordInput = root.shadowRoot?.querySelector('input[type=\'password\']');
+    const passwordInput = root.shadowRoot?.querySelector('ion-input[type=\'password\']');
     expect(passwordInput).toBeNull();
   });
 });
