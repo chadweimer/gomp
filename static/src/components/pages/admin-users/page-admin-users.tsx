@@ -73,7 +73,6 @@ export class PageAdminUsers {
   }
 
   private async saveExistingUser(user: User) {
-
     try {
       if (isNull(user.id)) {
         throw new Error('Cannot save user: user ID is null.');
