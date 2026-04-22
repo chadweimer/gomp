@@ -78,10 +78,8 @@ components:
       properties:
         copyright:
           type: string
-          readOnly: true
         version:
           type: string
-          readOnly: true
     appConfiguration:
       description: Application-wide configuration values managed by administrators.
       example:
@@ -534,3 +532,18 @@ components:
           x-go-custom-tag: db:"favorite_tags"
           x-oapi-codegen-extra-tags:
             db: favorite_tags
+    backup:
+      description: A full export of all application data for backup and restore purposes.
+      example:
+        name: backup-2026-04-21
+        url: /backups/backup-2026-04-21.zip
+      type: object
+      required:
+        - name
+        - url
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: uri

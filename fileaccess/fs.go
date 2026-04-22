@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
@@ -75,6 +77,23 @@ func (u *fileSystemDriver) DeleteAll(dirPath string) error {
 	dirPath = filepath.Join(u.rootPath, filepath.Clean(dirPath))
 
 	return os.RemoveAll(dirPath)
+}
+
+func (u *fileSystemDriver) List(dirPath string) ([]fs.DirEntry, error) {
+	// First prepend the base UploadPath
+	dirPath = filepath.Join(u.rootPath, filepath.Clean(dirPath))
+
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter out directories, only return files
+	fileEntries := lo.Filter(entries, func(entry fs.DirEntry, _ int) bool {
+		return !entry.IsDir()
+	})
+
+	return fileEntries, nil
 }
 
 type justFilesFileSystem struct {

@@ -272,8 +272,8 @@ type RecipeImageDriver interface {
 // BackupDriver provides functionality to backup and restore all data and files.
 type BackupDriver interface {
 	// Export retrieves all data from the database
-	Export(ctx context.Context) (*models.Backup, error)
+	Export(ctx context.Context) (*models.BackupData, error)
 
 	// Import restores all data from the backup, deleting any existing data first
-	Import(ctx context.Context, backup *models.Backup) error
+	Import(ctx context.Context, backup *models.BackupData) error
 }

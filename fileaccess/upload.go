@@ -22,9 +22,6 @@ import (
 	_ "golang.org/x/image/webp" // Register WEBP format
 )
 
-// RootUploadPath is the root directory for uploads
-const RootUploadPath = "uploads"
-
 // ---- Begin Standard Errors ----
 
 // ErrInvalidContentType indicates that the uploaded file is not an image
@@ -175,7 +172,7 @@ func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName
 }
 
 func getDirPathForRecipe(recipeID int64) string {
-	return filepath.Join(RootUploadPath, "recipes", strconv.FormatInt(recipeID, 10))
+	return filepath.Join(UploadDirectoryName, "recipes", strconv.FormatInt(recipeID, 10))
 }
 
 func getDirPathForImage(recipeID int64) string {

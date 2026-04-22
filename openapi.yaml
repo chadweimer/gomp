@@ -89,16 +89,22 @@ paths:
         - Bearer: []
   /backups:
     get:
-      tags: [app]
+      tags: [ app ]
       description: get list of backups
       operationId: getAllBackups
       responses:
         200:
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/backup"
       security:
-        - Bearer: [admin]
+        - Bearer: [ admin ]
     post:
-      tags: [app]
+      tags: [ app ]
       description: create a backup of the application
       operationId: createBackup
       responses:
@@ -109,28 +115,41 @@ paths:
               schema:
                 type: string
       security:
-        - Bearer: [admin]
-  /backups/{backupId}:
+        - Bearer: [ admin ]
+  /backups/{name}:
     parameters:
-      - name: backupId
+      - name: name
         in: path
         required: true
         schema:
           type: string
     get:
-      tags: [app]
+      tags: [ app ]
       description: get a single backup
       operationId: getBackup
       responses:
         200:
-          description: Gzip-compressed backup file
+          description: OK
           content:
-            application/gzip:
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: "./models.yaml#/components/schemas/backup"
       security:
-        - Bearer: [admin]
+        - Bearer: [ admin ]
+    delete:
+      tags: [ app ]
+      summary: Delete backup
+      description: delete an existing backup
+      operationId: deleteBackup
+      responses:
+        204:
+          description: No Content
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+      security:
+        - Bearer: [ admin ]
   /recipes:
     get:
       tags: [ recipes ]

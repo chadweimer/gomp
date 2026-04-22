@@ -11,8 +11,8 @@ type TableData struct {
 	Data      []RowData `json:"data"`
 }
 
-// Backup represents the data structure used for backing up the entire database
-type Backup []TableData
+// BackupData represents the data structure used for backing up the entire database
+type BackupData []TableData
 
 // RecipeLink represents the links between recipes, allowing for connections such as "related recipes" or "similar recipes"
 type RecipeLink struct {

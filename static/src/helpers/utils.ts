@@ -8,8 +8,11 @@ interface GompClaims extends JwtPayload {
   scopes?: string[]
 }
 
-interface ComponentWithCallbacks {
+export interface ComponentWithActivatedCallback {
   activatedCallback?: () => Promise<void>;
+}
+
+export interface ComponentWithDeactivatingCallback {
   deactivatingCallback?: () => Promise<void>;
 }
 
@@ -206,7 +209,7 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  const el = await getActiveComponent(router) as ComponentWithActivatedCallback | null | undefined;
   if (!isNull(el)) {
     await el.activatedCallback?.();
   }
@@ -214,7 +217,7 @@ export async function sendActivatedCallback(router: HTMLIonRouterOutletElement |
 
 export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  const el = await getActiveComponent(router) as ComponentWithDeactivatingCallback | null | undefined;
   if (!isNull(el)) {
     await el.deactivatingCallback?.();
   }

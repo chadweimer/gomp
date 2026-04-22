@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
-import { enableBackForOverlay, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -10,7 +10,7 @@ import { getDefaultSearchFilter } from '../../../models';
   tag: 'page-recipe',
   styleUrl: 'page-recipe.css'
 })
-export class PageRecipe {
+export class PageRecipe implements ComponentWithActivatedCallback {
   @Prop() recipeId: number = 0;
 
   @State() recipe: Recipe | null = null;

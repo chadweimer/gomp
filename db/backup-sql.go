@@ -19,8 +19,8 @@ type sqlBackupDriver struct {
 	adapter sqlBackupDriverAdapter
 }
 
-func (b *sqlBackupDriver) Export(ctx context.Context) (*models.Backup, error) {
-	backup := models.Backup(make([]models.TableData, 0))
+func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error) {
+	backup := models.BackupData(make([]models.TableData, 0))
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		// Get all table names
 		tables, err := b.adapter.GetTableNames(ctx, db)
@@ -50,7 +50,7 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.Backup, error) {
 	return &backup, nil
 }
 
-func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.Backup) error {
+func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		for _, tableData := range *backup {

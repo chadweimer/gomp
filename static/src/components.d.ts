@@ -68,6 +68,7 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface PageAdminMaintenance {
+        "activatedCallback": () => Promise<void>;
     }
     interface PageAdminUsers {
         "activatedCallback": () => Promise<void>;

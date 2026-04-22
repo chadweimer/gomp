@@ -1,14 +1,21 @@
 import { alertController } from '@ionic/core';
-import { Component, Host, h } from '@stencil/core';
-import { RecipeState, SortBy, SortDir } from '../../../generated';
+import { Component, Host, Method, State, h } from '@stencil/core';
+import { Backup, RecipeState, SortBy, SortDir } from '../../../generated';
 import { performRecipeSearch, appApi, recipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, isNull, showLoading, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-maintenance',
   styleUrl: 'page-admin-maintenance.css',
 })
-export class PageAdminMaintenance {
+export class PageAdminMaintenance implements ComponentWithActivatedCallback {
+  @State() backups: Backup[] = [];
+
+  @Method()
+  async activatedCallback() {
+    await this.loadBackups();
+  }
+
   render() {
     return (
       <Host>
@@ -43,10 +50,60 @@ export class PageAdminMaintenance {
                 </ion-card>
               </ion-col>
             </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-card>
+                  <ion-card-content>
+                    <ion-item lines="full">
+                      <form enctype="multipart/form-data">
+                        <ion-label position="stacked">Backup File</ion-label>
+                        <input name="file_content" type="file" accept=".zip" class="ion-padding-vertical" required />
+                      </form>
+                    </ion-item>
+                    <ion-button color="primary">
+                      <ion-icon slot="start" name="open-outline" />
+                      Upload & Restore
+                    </ion-button>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              {this.backups?.map(backup =>
+                <ion-col key={backup.name} size="12" size-md="12" size-lg="6" size-xl="4">
+                  <ion-card class="zoom">
+                    <ion-card-header>
+                      <ion-card-title>{backup.name}</ion-card-title>
+                    </ion-card-header>
+                    <ion-button size="small" fill="clear">
+                      <ion-icon slot="start" name="open-outline" />
+                      Restore
+                    </ion-button>
+                    <ion-button size="small" fill="clear">
+                      <ion-icon slot="start" name="download" />
+                      <a class="no-style" href={backup.url} download={backup.name}>Download</a>
+                    </ion-button>
+                    <ion-button size="small" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
+                      <ion-icon slot="start" name="trash" />
+                      Delete
+                    </ion-button>
+                  </ion-card>
+                </ion-col>
+              )}
+            </ion-row>
           </ion-grid>
         </ion-content>
       </Host>
     );
+  }
+
+  private async loadBackups() {
+    try {
+      this.backups = await appApi.getAllBackups();
+    } catch (ex) {
+      this.backups = [];
+      console.error(ex);
+    }
   }
 
   private async optimizeImages() {
@@ -126,6 +183,41 @@ export class PageAdminMaintenance {
             text: 'Yes',
             handler: async () => {
               await this.createBackup();
+              await this.loadBackups();
+              return true;
+            }
+          }
+        ],
+      });
+
+      await confirmation.present();
+
+      await confirmation.onDidDismiss();
+    });
+  }
+
+  private async deleteBackup(backup: Backup) {
+    try {
+      await showLoading(
+        async () => await appApi.deleteBackup({ name: backup.name }), 'Deleting backup...');
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to delete backup.');
+    }
+  }
+
+  private async onDeleteBackupClicked(backup: Backup) {
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Delete Backup?',
+        message: 'Are you sure you want to delete this backup? This operation cannot be undone.',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.deleteBackup(backup);
+              await this.loadBackups();
               return true;
             }
           }

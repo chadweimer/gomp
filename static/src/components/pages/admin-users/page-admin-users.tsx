@@ -2,13 +2,13 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { User } from '../../../generated';
 import { usersApi } from '../../../helpers/api';
-import { enableBackForOverlay, isNull, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-users',
   styleUrl: 'page-admin-users.css',
 })
-export class PageAdminUsers {
+export class PageAdminUsers implements ComponentWithActivatedCallback {
   @State() users: User[] = [];
 
   @Element() el!: HTMLPageAdminUsersElement;

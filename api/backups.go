@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io/fs"
 	"log/slog"
 	"path/filepath"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 )
 
 func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
@@ -27,7 +29,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObjec
 	// Save the backup file
 	// Generate a name based on the current timestamp in UTC
 	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
-	backupFilePath := filepath.Join("backups", timestamp+".zip")
+	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, timestamp+".zip")
 	if err = h.writeBackup(ctx, backupFilePath, logger, exportedData); err != nil {
 		logger.ErrorContext(ctx, "Failed to write backup file", "error", err)
 		// Attempt to clean up the backup file if it was created
@@ -38,19 +40,43 @@ func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObjec
 		return nil, err
 	}
 
-	// TODO: Give back the location of the backup
-	return CreateBackup201Response{}, nil
+	fileURL := filepath.ToSlash(filepath.Join("/", backupFilePath))
+
+	return CreateBackup201Response{
+		Headers: CreateBackup201ResponseHeaders{
+			Location: fileURL,
+		},
+	}, nil
 }
 
-func (apiHandler) GetAllBackups(_ context.Context, _ GetAllBackupsRequestObject) (GetAllBackupsResponseObject, error) {
-	return GetAllBackups200Response{}, nil
+func (h apiHandler) GetAllBackups(ctx context.Context, _ GetAllBackupsRequestObject) (GetAllBackupsResponseObject, error) {
+	logger := middleware.GetLoggerFromContext(ctx)
+
+	backupFiles, err := h.fs.List(fileaccess.BackupDirectoryName)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
+		return nil, err
+	}
+
+	backups := lo.Map(backupFiles, func(entry fs.DirEntry, _ int) models.Backup {
+		return models.Backup{
+			Name: entry.Name(),
+			URL:  filepath.ToSlash(filepath.Join("/", fileaccess.BackupDirectoryName, entry.Name())),
+		}
+	})
+
+	return GetAllBackups200JSONResponse(backups), nil
 }
 
 func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBackupResponseObject, error) {
-	return GetBackup200ApplicationGzipResponse{}, nil
+	return GetBackup200JSONResponse{}, nil
 }
 
-func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *slog.Logger, exportedData *models.Backup) error {
+func (apiHandler) DeleteBackup(_ context.Context, _ DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
+	return DeleteBackup204Response{}, nil
+}
+
+func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *slog.Logger, exportedData *models.BackupData) error {
 	backupFile, err := h.fs.Create(filePath)
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
@@ -73,6 +99,6 @@ func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *sl
 		logger.DebugContext(ctx, "Copied backup data to zip")
 
 		// Copy all uploads to the backup directory
-		return fileaccess.CopyDirectoryToZip(h.fs, fileaccess.RootUploadPath, writer)
+		return fileaccess.CopyDirectoryToZip(h.fs, fileaccess.UploadDirectoryName, writer)
 	})
 }

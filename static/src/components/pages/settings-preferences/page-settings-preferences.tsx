@@ -1,13 +1,13 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../generated';
 import { appApi, loadUserSettings, usersApi } from '../../../helpers/api';
-import { isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-preferences',
   styleUrl: 'page-settings-preferences.css',
 })
-export class PageSettingsPreferences {
+export class PageSettingsPreferences implements ComponentWithActivatedCallback {
   @State() settings: UserSettings | null = null;
 
   @Element() el!: HTMLPageSettingsPreferencesElement;

@@ -2,14 +2,14 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
 import { loadSearchFilters, usersApi } from '../../../helpers/api';
-import { enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-searches',
   styleUrl: 'page-settings-searches.css',
 })
-export class PageSettingsSearches {
+export class PageSettingsSearches implements ComponentWithActivatedCallback {
   @State() filters: SavedSearchFilterCompact[] = [];
 
   @Element() el!: HTMLPageSettingsSearchesElement;

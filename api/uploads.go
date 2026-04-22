@@ -17,14 +17,13 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 		return nil, err
 	}
 
-	fileURL := filepath.ToSlash(filepath.Join("/", fileaccess.RootUploadPath, imageName))
 	if err := h.fs.Save(imageName, bytes.NewReader(uploadedFileData)); err != nil {
 		return nil, err
 	}
 
 	return Upload201Response{
 		Headers: Upload201ResponseHeaders{
-			Location: fileURL,
+			Location: filepath.ToSlash(filepath.Join("/", fileaccess.UploadDirectoryName, imageName)),
 		},
 	}, nil
 }
