@@ -70,8 +70,12 @@ export class PageSettingsSearches {
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
+      if (isNull(searchFilter.id)) {
+        throw new Error('Cannot save search filter: filter ID is null.');
+      }
+
       await usersApi.saveSearchFilter({
-        filterId: searchFilter.id!,
+        filterId: searchFilter.id,
         searchFilter: searchFilter
       });
     } catch (ex) {

@@ -89,11 +89,11 @@ export class PageSettingsPreferences {
       return;
     }
 
-    if ((this.imageInput.files ?? []).length > 0) {
+    if ((this.imageInput?.files?.length ?? 0) > 0) {
       await showLoading(
         async () => {
           const resp = await appApi.uploadRaw({
-            fileContent: this.imageInput.files![0]
+            fileContent: this.imageInput.files?.[0]
           });
           this.settings = {
             ...this.settings,

@@ -69,7 +69,7 @@ describe('recipe-print', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
     expect(items?.length).toBe(1);
-    let node = items![0].parentElement?.lastElementChild;
+    let node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.ingredients);
 
@@ -79,7 +79,7 @@ describe('recipe-print', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
     expect(items?.length).toBe(1);
-    node = items![0].parentElement?.lastElementChild;
+    node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.directions);
 
@@ -96,7 +96,7 @@ describe('recipe-print', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
     expect(items?.length).toBe(1);
-    node = items![0].parentElement?.lastElementChild;
+    node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.storageInstructions);
 
@@ -106,7 +106,7 @@ describe('recipe-print', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
     expect(items?.length).toBe(1);
-    node = items![0].parentElement?.lastElementChild;
+    node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualText(root.recipe!.sourceUrl);
   });

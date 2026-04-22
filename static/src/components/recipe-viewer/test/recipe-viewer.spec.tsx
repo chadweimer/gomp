@@ -69,7 +69,7 @@ describe('recipe-viewer', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
-    let node = items![0].lastElementChild;
+    let node = items?.[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.ingredients);
 
@@ -79,7 +79,7 @@ describe('recipe-viewer', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
-    node = items![0].lastElementChild;
+    node = items?.[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.directions);
 
@@ -89,7 +89,7 @@ describe('recipe-viewer', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
-    node = items![0].lastElementChild;
+    node = items?.[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.nutritionInfo);
 
@@ -99,7 +99,7 @@ describe('recipe-viewer', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
-    node = items![0].lastElementChild;
+    node = items?.[0].lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.storageInstructions);
 
@@ -109,7 +109,7 @@ describe('recipe-viewer', () => {
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('ion-item');
     expect(items?.length).toBe(1);
-    node = items![0].lastElementChild;
+    node = items?.[0].lastElementChild;
     expect(node).not.toBeNull();
     const link = node?.querySelector('a');
     expect(link).not.toBeNull();
@@ -184,14 +184,14 @@ describe('recipe-viewer', () => {
     expect(items?.length).toBe(1);
 
     // There should be elements for each link
-    const linkItems = items![0].querySelectorAll('ion-item');
-    expect(linkItems.length).toBe(links.length);
+    const linkItems = items?.[0].querySelectorAll('ion-item');
+    expect(linkItems?.length).toBe(links.length);
 
     // Each link should be present
-    const linkElements = items![0].querySelectorAll('ion-router-link');
-    expect(linkElements.length).toBe(links.length);
+    const linkElements = items?.[0].querySelectorAll('ion-router-link');
+    expect(linkElements?.length).toBe(links.length);
     for (const link of links) {
-      const router = items![0].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
+      const router = items?.[0].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
       expect(router).toEqualText(link.name);
     }
   });
