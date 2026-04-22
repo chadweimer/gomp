@@ -5,7 +5,7 @@ import { isNullOrEmpty } from '../../helpers/utils';
 @Component({
   tag: 'recipe-print',
   styleUrl: 'recipe-print.css',
-  shadow: false,
+  shadow: true,
 })
 export class RecipePrint {
   @Prop() recipe: Recipe | null = null;
@@ -56,7 +56,7 @@ export class RecipePrint {
         </div>
         {this.mainImage && (
           <div class="print-image">
-            <img src={this.mainImage.url} alt={this.mainImage.thumbnailUrl} />
+            <img src={this.mainImage.thumbnailUrl} alt={this.mainImage.thumbnailUrl} />
           </div>
         )}
         <div class="print-section">
