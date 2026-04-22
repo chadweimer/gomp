@@ -2,7 +2,7 @@ import { alertController } from '@ionic/core';
 import { Component, Host, h } from '@stencil/core';
 import { RecipeState, SortBy, SortDir } from '../../../generated';
 import { performRecipeSearch, recipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, isNull, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-maintenance',
@@ -48,12 +48,16 @@ export class PageAdminMaintenance {
             states: [RecipeState.Active, RecipeState.Archived],
             tags: []
           }, 1, -1,);
-          for (const recipe of (recipes || [])) {
-            const images = await recipesApi.getImages({ recipeId: recipe.id! });
+          for (const recipe of recipes ?? []) {
+            if (isNull(recipe.id)) continue;
+
+            const images = await recipesApi.getImages({ recipeId: recipe.id });
             for (const image of images) {
+              if (isNull(image.id)) continue;
+
               await recipesApi.optimizeImage({
-                recipeId: recipe.id!,
-                imageId: image.id!
+                recipeId: recipe.id,
+                imageId: image.id
               });
             }
           }

@@ -73,9 +73,14 @@ export class PageAdminUsers {
   }
 
   private async saveExistingUser(user: User) {
+
     try {
+      if (isNull(user.id)) {
+        throw new Error('Cannot save user: user ID is null.');
+      }
+
       await usersApi.saveUser({
-        userId: user.id!,
+        userId: user.id,
         user: user
       });
     } catch (ex) {
@@ -86,7 +91,11 @@ export class PageAdminUsers {
 
   private async deleteUser(user: User) {
     try {
-      await usersApi.deleteUser({ userId: user.id! });
+      if (isNull(user.id)) {
+        throw new Error('Cannot delete user: user ID is null.');
+      }
+
+      await usersApi.deleteUser({ userId: user.id });
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete user.');

@@ -303,9 +303,13 @@ export class PageRecipe {
 
   private async deleteLink(link: RecipeCompact) {
     try {
+      if (isNull(link.id)) {
+        throw new Error('Cannot delete link: linked recipe ID is null.');
+      }
+
       await recipesApi.deleteLink({
         recipeId: this.recipeId,
-        destRecipeId: link.id!
+        destRecipeId: link.id
       });
     } catch (ex) {
       console.error(ex);
@@ -327,9 +331,13 @@ export class PageRecipe {
 
   private async saveExistingNote(note: Note) {
     try {
+      if (isNull(note.id)) {
+        throw new Error('Cannot save note: note ID is null.');
+      }
+
       await recipesApi.saveNote({
         recipeId: this.recipeId,
-        noteId: note.id!,
+        noteId: note.id,
         note: note
       });
     } catch (ex) {
@@ -340,9 +348,13 @@ export class PageRecipe {
 
   private async deleteNote(note: Note) {
     try {
+      if (isNull(note.id)) {
+        throw new Error('Cannot delete note: note ID is null.');
+      }
+
       await recipesApi.deleteNote({
         recipeId: this.recipeId,
-        noteId: note.id!
+        noteId: note.id
       });
     } catch (ex) {
       console.error(ex);
@@ -368,9 +380,13 @@ export class PageRecipe {
 
   private async deleteImage(image: RecipeImage) {
     try {
+      if (isNull(image.id)) {
+        throw new Error('Cannot delete image: image ID is null.');
+      }
+
       await recipesApi.deleteImage({
         recipeId: this.recipeId,
-        imageId: image.id!
+        imageId: image.id
       });
     } catch (ex) {
       console.error(ex);
@@ -392,9 +408,13 @@ export class PageRecipe {
 
   private async setMainImage(image: RecipeImage) {
     try {
+      if (isNull(image.id)) {
+        throw new Error('Cannot set main image: image ID is null.');
+      }
+
       await recipesApi.setMainImage({
         recipeId: this.recipeId,
-        imageId: image.id!
+        imageId: image.id
       });
     } catch (ex) {
       console.error(ex);

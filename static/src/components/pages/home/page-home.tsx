@@ -97,8 +97,10 @@ export class PageHome {
 
       // Then load all the user's saved filters
       const savedFilters = await usersApi.getSearchFilters();
-      for (const savedFilter of savedFilters ?? []) {
-        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id! });
+      for (const savedFilter of savedFilters) {
+        if (isNull(savedFilter.id)) continue;
+
+        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id });
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
           title: savedSearchFilter.name,
@@ -136,8 +138,12 @@ export class PageHome {
       if (!isNull(file)) {
         await showLoading(
           async () => {
+            if (isNull(newRecipe.id)) {
+              throw new Error('Failed to upload image: recipe ID is null.');
+            }
+
             await recipesApi.uploadImage({
-              recipeId: newRecipe.id!,
+              recipeId: newRecipe.id,
               fileContent: file
             });
           },

@@ -48,7 +48,7 @@ export class ImageUploadBrowser {
     }
 
     await dismissContainingModal(this.el, {
-      file: (this.imageInput?.files ?? []).length > 0 ? this.imageInput.files![0] : null
+      file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput.files?.[0] : null
     });
   }
 
