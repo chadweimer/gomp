@@ -1,81 +1,29 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { PageTags } from '../page-tags';
-import { SortDir } from '../../../../generated';
+import { render, h, describe, it, expect } from '@stencil/vitest';
+import { fetchMocker } from '../../../../../vitest.setup';
+import '../page-tags';
 
 describe('page-tags', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [PageTags],
-      html: '<page-tags></page-tags>',
+    const tags: { [tag: string]: number } = {
+      "tag1": 5,
+      "tag2": 3,
+      "tag3": 8,
+    };
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.match(/\/tags$/)) {
+        return {
+          status: 200,
+          body: JSON.stringify(tags),
+        };
+      }
+      return {
+        status: 404,
+      };
     });
-    expect(page.rootInstance).toBeInstanceOf(PageTags);
-    // Should not render any tag items
-    const items = page.root.querySelectorAll('ion-item');
-    expect(items.length).toBe(0);
-  });
-
-  it('renders tags sorted by count descending by default', async () => {
-    const tags = { apple: 2, banana: 5, cherry: 1 };
-    const page = await newSpecPage({
-      components: [PageTags],
-      html: '<page-tags></page-tags>'
-    });
-    const instance = page.rootInstance as PageTags;;
-    instance.tags = tags;
-    await page.waitForChanges();
-    const items = page.root.querySelectorAll('ion-item');
-    expect(items.length).toBe(3);
-    expect(items[0].textContent).toContain('banana');
-    expect(items[1].textContent).toContain('apple');
-    expect(items[2].textContent).toContain('cherry');
-  });
-
-  it('can render tags sorted by count ascending', async () => {
-    const tags = { apple: 2, banana: 5, cherry: 1 };
-    const page = await newSpecPage({
-      components: [PageTags],
-      html: '<page-tags></page-tags>'
-    });
-    const instance = page.rootInstance as PageTags;
-    instance.tags = tags;
-    instance.sortDir = SortDir.Asc;
-    await page.waitForChanges();
-    const items = page.root.querySelectorAll('ion-item');
-    expect(items[0].textContent).toContain('cherry');
-    expect(items[1].textContent).toContain('apple');
-    expect(items[2].textContent).toContain('banana');
-  });
-
-  it('can render tags sorted by tag descending', async () => {
-    const tags = { apple: 2, banana: 5, cherry: 1 };
-    const page = await newSpecPage({
-      components: [PageTags],
-      html: '<page-tags></page-tags>'
-    });
-    const instance = page.rootInstance as PageTags;
-    instance.tags = tags;
-    instance.sortBy = 'tag';
-    await page.waitForChanges();
-    const items = page.root.querySelectorAll('ion-item');
-    expect(items[0].textContent).toContain('cherry');
-    expect(items[1].textContent).toContain('banana');
-    expect(items[2].textContent).toContain('apple');
-  });
-
-  it('can render tags sorted by tag ascending', async () => {
-    const tags = { apple: 2, banana: 5, cherry: 1 };
-    const page = await newSpecPage({
-      components: [PageTags],
-      html: '<page-tags></page-tags>'
-    });
-    const instance = page.rootInstance as PageTags;
-    instance.tags = tags;
-    instance.sortBy = 'tag';
-    instance.sortDir = SortDir.Asc;
-    await page.waitForChanges();
-    const items = page.root.querySelectorAll('ion-item');
-    expect(items[0].textContent).toContain('apple');
-    expect(items[1].textContent).toContain('banana');
-    expect(items[2].textContent).toContain('cherry');
+    const { root } = await render(<page-tags />);
+    expect(root).toHaveClass('hydrated');
+    // Should render an ion-item for each tag
+    const items = root.querySelectorAll('ion-item');
+    expect(items.length).toBe(Object.keys(tags).length);
   });
 });

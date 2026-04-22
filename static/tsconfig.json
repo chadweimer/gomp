@@ -12,7 +12,8 @@
     "module": "esnext",
     "target": "es2018",
     "jsx": "react",
-    "jsxFactory": "h"
+    "jsxFactory": "h",
+    "skipLibCheck": true
   },
   "include": [
     "src"

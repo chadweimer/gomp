@@ -2,18 +2,17 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
-	"image/color"
+	"image"
+	"image/jpeg"
 	"mime/multipart"
 	"testing"
 
 	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
-	"github.com/disintegration/imaging"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Upload(t *testing.T) {
@@ -40,11 +39,11 @@ func Test_Upload(t *testing.T) {
 			buf := bytes.NewBuffer([]byte{})
 			writer := multipart.NewWriter(buf)
 			part, err := writer.CreateFormFile("fileupload", "img.jpeg")
-			imaging.Encode(part, imaging.New(1, 1, color.Black), imaging.JPEG)
+			jpeg.Encode(part, image.NewGray(image.Rect(0, 0, 1, 1)), nil)
 			writer.Close()
 
 			// Act
-			resp, err := api.Upload(context.Background(), UploadRequestObject{Body: multipart.NewReader(buf, writer.Boundary())})
+			resp, err := api.Upload(t.Context(), UploadRequestObject{Body: multipart.NewReader(buf, writer.Boundary())})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

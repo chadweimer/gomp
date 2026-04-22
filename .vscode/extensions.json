@@ -10,13 +10,12 @@
     "editorconfig.editorconfig",
     "formulahendry.auto-rename-tag",
     "GitHub.vscode-github-actions",
+    "GitHub.vscode-pull-request-github",
     "golang.go",
-    "ms-azuretools.vscode-docker",
+    "ms-azuretools.vscode-containers",
     "ms-vscode-remote.remote-containers",
     "redhat.vscode-yaml",
     "SonarSource.sonarlint-vscode",
-    "spmeesseman.vscode-taskexplorer",
-    "tamasfe.even-better-toml",
-    "visualstudioexptteam.vscodeintellicode"
+    "tamasfe.even-better-toml"
   ]
 }

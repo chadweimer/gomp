@@ -12,7 +12,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -59,7 +59,7 @@ func Test_User_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().Create(user, test.password)
+			err := sut.Users().Create(t.Context(), user, test.password)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -107,7 +107,7 @@ func Test_User_Read(t *testing.T) {
 			}
 
 			// Act
-			user, err := sut.Users().Read(test.userID)
+			user, err := sut.Users().Read(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -162,7 +162,7 @@ func Test_User_Authenticate(t *testing.T) {
 			}
 
 			// Act
-			user, err := sut.Users().Authenticate(test.username, test.attemptedPassword)
+			user, err := sut.Users().Authenticate(t.Context(), test.username, test.attemptedPassword)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -220,7 +220,7 @@ func Test_User_Update(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().Update(user)
+			err := sut.Users().Update(t.Context(), user)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -282,7 +282,7 @@ func Test_User_UpdatePassword(t *testing.T) {
 			}
 
 			// Act
-			err = sut.Users().UpdatePassword(test.userID, test.attemptedPassword, test.newPassword)
+			err = sut.Users().UpdatePassword(t.Context(), test.userID, test.attemptedPassword, test.newPassword)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -325,13 +325,13 @@ func Test_User_ReadSettings(t *testing.T) {
 
 				dbmock.ExpectQuery("SELECT tag FROM app_user_favorite_tag WHERE user_id = \\$1 ORDER BY tag ASC").
 					WithArgs(test.userID).
-					WillReturnRows(sqlmock.NewRows([]string{"tag"}).AddRow("A").AddRow("B"))
+					WillReturnRows(sqlmock.NewRows([]string{"tag"}).AddRow("kid-friendly").AddRow("quick"))
 			} else {
 				query.WillReturnError(test.dbError)
 			}
 
 			// Act
-			userSettings, err := sut.Users().ReadSettings(test.userID)
+			userSettings, err := sut.Users().ReadSettings(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -359,9 +359,9 @@ func Test_User_UpdateSettings(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My Home Title", "https://example.com/my-image.jpg", []string{"A", "B"}, nil, nil},
-		{0, "", "", []string{"A", "B"}, sql.ErrNoRows, ErrNotFound},
-		{0, "", "", []string{"A", "B"}, sql.ErrConnDone, sql.ErrConnDone},
+		{1, "My Home Title", "https://example.com/my-image.jpg", []string{"quick", "kid-friendly"}, nil, nil},
+		{0, "", "", []string{"quick", "kid-friendly"}, sql.ErrNoRows, ErrNotFound},
+		{0, "", "", []string{"quick", "kid-friendly"}, sql.ErrConnDone, sql.ErrConnDone},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -402,7 +402,7 @@ func Test_User_UpdateSettings(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().UpdateSettings(userSettings)
+			err := sut.Users().UpdateSettings(t.Context(), userSettings)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -448,7 +448,7 @@ func Test_User_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().Delete(test.userID)
+			err := sut.Users().Delete(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -511,7 +511,7 @@ func Test_User_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Users().List()
+			result, err := sut.Users().List(t.Context())
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -561,7 +561,7 @@ func Test_User_CreateSearchFilter(t *testing.T) {
 				SortDir:      models.Desc,
 				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
 				States:       []models.RecipeState{models.Active, models.Archived},
-				Tags:         []string{"A", "B"},
+				Tags:         []string{"weeknight", "high-protein"},
 			},
 			nil,
 			nil,
@@ -652,7 +652,7 @@ func Test_User_CreateSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().CreateSearchFilter(test.searchFilter)
+			err := sut.Users().CreateSearchFilter(t.Context(), test.searchFilter)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -714,7 +714,7 @@ func Test_User_ReadSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			_, err := sut.Users().ReadSearchFilter(test.userID, test.filterID)
+			_, err := sut.Users().ReadSearchFilter(t.Context(), test.userID, test.filterID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -748,7 +748,7 @@ func Test_User_UpdateSearchFilter(t *testing.T) {
 				SortDir:      models.Desc,
 				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
 				States:       []models.RecipeState{models.Active, models.Archived},
-				Tags:         []string{"A", "B"},
+				Tags:         []string{"weeknight", "high-protein"},
 			},
 			nil,
 			nil,
@@ -854,7 +854,7 @@ func Test_User_UpdateSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().UpdateSearchFilter(test.searchFilter)
+			err := sut.Users().UpdateSearchFilter(t.Context(), test.searchFilter)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -902,7 +902,7 @@ func Test_User_DeleteSearchFilter(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Users().DeleteSearchFilter(test.userID, test.filterID)
+			err := sut.Users().DeleteSearchFilter(t.Context(), test.userID, test.filterID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -961,7 +961,7 @@ func Test_User_ListSearchFilters(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Users().ListSearchFilters(test.userID)
+			result, err := sut.Users().ListSearchFilters(t.Context(), test.userID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

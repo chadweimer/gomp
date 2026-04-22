@@ -50,8 +50,8 @@ export class AppRoot {
 
   async componentWillLoad() {
     // Automatically trigger a logout if an API returns a 401
-    const { fetch: originalFetch } = window;
-    window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const { fetch: originalFetch } = globalThis;
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const response = await originalFetch(input, init);
       if (response.status === 401) {
         await this.logout();
@@ -65,7 +65,9 @@ export class AppRoot {
   render() {
     return (
       <ion-app>
-        <ion-router useHash={false} onIonRouteWillChange={() => this.onPageChanging()} onIonRouteDidChange={(e) => this.onPageChanged(e)}>
+        <ion-router useHash={false}
+          onIonRouteWillChange={() => this.onPageChanging()}
+          onIonRouteDidChange={(e: CustomEvent<RouterEventDetail>) => this.onPageChanged(e)}>
           <ion-route url="/login" component="page-login" />
 
           <ion-route url="/" component="page-home" beforeEnter={() => this.requireLogin()} />
@@ -94,7 +96,7 @@ export class AppRoot {
           </ion-route>
         </ion-router>
 
-        <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el}>
+        <ion-menu side="start" type="reveal" content-id="main-content" ref={(el: HTMLIonMenuElement) => this.menu = el}>
           <ion-content>
             <ion-list class="ion-no-padding">
               {this.appLinks
@@ -110,9 +112,9 @@ export class AppRoot {
                       <ion-label>{link.title}</ion-label>
                       {!isNull(link.detail) && <ion-label slot="end">{link.detail()}</ion-label>}
                     </ion-item>
-                    {link.children?.length > 0 &&
+                    {(link.children ?? []).length > 0 &&
                       <ion-list class="ion-no-padding child-links">
-                        {link.children.map(child =>
+                        {link.children?.map(child =>
                           <ion-item
                             href={child.url}
                             color={this.pageTitle === child.title ? 'dark' : ''}
@@ -139,7 +141,7 @@ export class AppRoot {
         </ion-menu>
 
         <div class="ion-page" id="main-content">
-          <ion-header mode="md">
+          <ion-header mode="md" class="hide-on-print">
             <ion-toolbar color="primary">
               {hasScope(state.jwtToken, AccessLevel.Viewer) &&
                 <ion-buttons slot="start">
@@ -177,8 +179,8 @@ export class AppRoot {
                   cancel-button-text="Reset"
                   cancel-button-icon="arrow-undo-outline"
                   value={state.searchFilter?.query}
-                  onKeyDown={e => this.onSearchKeyDown(e)}
-                  onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
+                  onKeyDown={(e: KeyboardEvent) => this.onSearchKeyDown(e)}
+                  onIonBlur={(e: Event) => (e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? ''}
                   onIonClear={() => this.onSearchClearClicked()}
                   onIonCancel={() => this.onSearchCancelClicked()}
                 ></ion-searchbar>
@@ -201,8 +203,8 @@ export class AppRoot {
                   cancel-button-text="Reset"
                   cancel-button-icon="arrow-undo-outline"
                   value={state.searchFilter?.query}
-                  onKeyDown={e => this.onSearchKeyDown(e)}
-                  onIonBlur={e => e.target.value = state.searchFilter?.query ?? ''}
+                  onKeyDown={(e: KeyboardEvent) => this.onSearchKeyDown(e)}
+                  onIonBlur={(e: Event) => (e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? ''}
                   onIonClear={() => this.onSearchClearClicked()}
                   onIonCancel={() => this.onSearchCancelClicked()}
                 ></ion-searchbar>
@@ -222,7 +224,7 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-router-outlet ref={el => this.routerOutlet = el} />
+            <ion-router-outlet ref={(el: HTMLIonRouterOutletElement) => this.routerOutlet = el} />
           </ion-content>
         </div>
       </ion-app>
@@ -296,7 +298,7 @@ export class AppRoot {
   }
 
   private async onPageChanging() {
-    this.menu.close();
+    await this.menu.close();
     // Let the current page know it's being deactivated
     await sendDeactivatingCallback(this.routerOutlet);
   }
@@ -332,7 +334,7 @@ export class AppRoot {
       const searchBar = e.target as HTMLIonInputElement;
       state.searchFilter = {
         ...state.searchFilter,
-        query: searchBar.value?.toString()
+        query: searchBar.value?.toString() ?? ''
       };
       await redirect('/recipes');
     }

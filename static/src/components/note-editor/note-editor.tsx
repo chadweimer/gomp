@@ -27,7 +27,7 @@ export class NoteEditor {
             <ion-buttons slot="primary">
               <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{isNull(this.note.id) ? 'New Note' : 'Edit Note'}</ion-title>
+            <ion-title>{isNull(this.note?.id) ? 'New Note' : 'Edit Note'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -35,9 +35,9 @@ export class NoteEditor {
         </ion-header>
 
         <ion-content>
-          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Text" label-placement="stacked" value={this.note.text}
+              <html-editor label="Text" label-placement="stacked" value={this.note?.text ?? ''}
                 autofocus
                 onValueChanged={e => this.note = { ...this.note, text: e.detail }} />
             </ion-item>
@@ -52,11 +52,11 @@ export class NoteEditor {
       return;
     }
 
-    dismissContainingModal(this.el, { note: this.note });
+    await dismissContainingModal(this.el, { note: this.note });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 
 }

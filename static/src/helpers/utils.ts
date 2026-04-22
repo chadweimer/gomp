@@ -8,15 +8,20 @@ interface GompClaims extends JwtPayload {
   scopes?: string[]
 }
 
-export function isNull<T>(val: T | null) {
-  return typeof val === 'undefined' || val === null;
+interface ComponentWithCallbacks {
+  activatedCallback?: () => Promise<void>;
+  deactivatingCallback?: () => Promise<void>;
 }
 
-export function isNullOrEmpty(val: string | null) {
+export function isNull<T>(val: T | null | undefined): val is null | undefined {
+  return val === undefined || val === null;
+}
+
+export function isNullOrEmpty(val: string | null | undefined): val is '' | null | undefined {
   return isNull(val) || val === '';
 }
 
-export function formatDate(date: Date | null) {
+export function formatDate(date: Date | null | undefined) {
   if (isNull(date)) {
     return '';
   }
@@ -32,7 +37,7 @@ export function formatDate(date: Date | null) {
   });
 }
 
-export function hasScope(token: string | null, accessLevel: AccessLevel) {
+export function hasScope(token: string | null | undefined, accessLevel: AccessLevel) {
   if (isNullOrEmpty(token)) {
     return false;
   }
@@ -42,10 +47,10 @@ export function hasScope(token: string | null, accessLevel: AccessLevel) {
 
 export async function redirect(route: string) {
   const router = document.querySelector('ion-router');
-  await router.push(route);
+  await router?.push(route);
 }
 
-export function insertSpacesBetweenWords(val: string) {
+export function insertSpacesBetweenWords(val: string | null | undefined) {
   if (isNull(val)) {
     return '';
   }
@@ -53,7 +58,7 @@ export function insertSpacesBetweenWords(val: string) {
   return val.replace(/([A-Z])/g, ' $1').trim()
 }
 
-export function enumKeyFromValue(keys: object, val: string) {
+export function enumKeyFromValue(keys: Record<string, string>, val: string | null | undefined) {
   if (isNull(val)) {
     return '';
   }
@@ -83,19 +88,19 @@ export function fromYesNoAny(value: YesNoAny) {
       return false;
 
     default:
-      return undefined;
+      return null;
   }
 }
 
 export async function enableBackForOverlay(presenter: () => Promise<void>) {
-  if (!window.history.state?.modal) {
-    window.history.pushState({ modal: true }, '');
+  if (!(globalThis.history.state as { modal?: boolean })?.modal) {
+    globalThis.history.pushState({ modal: true }, '');
   }
   try {
     await presenter();
   } finally {
-    if (window.history.state?.modal) {
-      window.history.back();
+    if ((globalThis.history.state as { modal?: boolean })?.modal) {
+      globalThis.history.back();
     }
   }
 }
@@ -107,14 +112,14 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
     gestureName: 'swipe',
     onEnd: e => {
       const swipe = getSwipe(e);
-      if (isNullOrEmpty(swipe)) return
+      if (isNullOrEmpty(swipe)) return;
 
       handler(swipe);
     }
   });
 }
 
-function getSwipe(e: GestureDetail) {
+function getSwipe(e: GestureDetail): SwipeDirection | undefined {
   if (Math.abs(e.velocityX) < 0.1) {
     return undefined
   }
@@ -148,7 +153,7 @@ function performAutofocus(this: HTMLIonModalElement) {
 
   // WORKAROUND: If the component is an HTML-EDITOR,
   // focus on the editor content instead of the editor itself.
-  if (focusEl.tagName === 'HTML-EDITOR') {
+  if (focusEl?.tagName === 'HTML-EDITOR') {
     focusEl = focusEl.querySelector('.editor-content');
   }
 
@@ -160,12 +165,12 @@ function performAutofocus(this: HTMLIonModalElement) {
 }
 
 export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
-  return getContainingModal(el).dismiss(data);
+  return getContainingModal(el)?.dismiss(data);
 }
 
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
-  toast.present();
+  await toast.present();
 }
 
 export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
@@ -188,7 +193,7 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 
   if ('getTab' in router) {
     const tab = await router.getTab(routeId.id);
-    if (!isNull(tab.component)) {
+    if (!isNull(tab?.component)) {
       if (tab.component instanceof HTMLElement) {
         return tab.component;
       } else if (typeof tab.component === 'string') {
@@ -201,26 +206,28 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const el = await getActiveComponent(router) as any;
-  if (!isNull(el) && typeof el.activatedCallback === 'function') {
-    el.activatedCallback();
+  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  if (!isNull(el)) {
+    await el.activatedCallback?.();
   }
 }
 
 export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const el = await getActiveComponent(router) as any;
-  if (!isNull(el) && typeof el.deactivatingCallback === 'function') {
-    el.deactivatingCallback();
+  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  if (!isNull(el)) {
+    await el.deactivatingCallback?.();
   }
 }
 
-export function preProcessMultilineText(text: string) {
+export function preProcessMultilineText(text: string | null | undefined) {
   // This function exists to handle backward compatibility with older versions.
   // Before the introduction of the WYSIWYG edtior,
   // all text was rendered as the original text with whitespace preserved.
+
+  if (isNull(text)) {
+    return '';
+  }
 
   // Return early if there are no newlines in the text.
   if (!text.includes('\n') && !text.includes('\r')) {

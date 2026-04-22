@@ -12,9 +12,9 @@ import (
 	"github.com/chadweimer/gomp/fileaccess"
 )
 
-func (h apiHandler) CreateBackup(_ context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
+func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
 	// Export all data from the database
-	exportedData, err := h.db.Backups().Export()
+	exportedData, err := h.db.Backups().Export(ctx)
 	if err != nil {
 		return nil, err
 	}

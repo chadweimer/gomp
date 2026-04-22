@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
-import { Component, Element, h, Host, Method, Prop, State } from '@stencil/core';
+import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
 import { enableBackForOverlay, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
@@ -11,11 +11,11 @@ import { getDefaultSearchFilter } from '../../../models';
   styleUrl: 'page-recipe.css'
 })
 export class PageRecipe {
-  @Prop() recipeId: number;
+  @Prop() recipeId: number = 0;
 
-  @State() recipe: Recipe | null;
-  @State() mainImage: RecipeImage | null;
-  @State() recipeRating: number | null;
+  @State() recipe: Recipe | null = null;
+  @State() mainImage: RecipeImage | null = null;
+  @State() recipeRating: number = 0;
   @State() links: RecipeCompact[] = [];
   @State() images: RecipeImage[] = [];
   @State() notes: Note[] = [];
@@ -34,7 +34,8 @@ export class PageRecipe {
   render() {
     return (
       <Host>
-        <ion-content>
+        <recipe-print class="show-on-print-only" recipe={this.recipe} mainImage={this.mainImage} rating={this.recipeRating} />
+        <ion-content class="hide-on-print">
           <ion-grid class="no-pad">
             <ion-row>
               <ion-col size="12" size-lg="9" size-xl="8" offset-xl="2">
@@ -44,42 +45,50 @@ export class PageRecipe {
                   mainImage={this.mainImage}
                   links={this.links}
                   readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                  onRatingSelected={e => this.onRatingSelected(e.detail)}
-                  onDeleteLinkClicked={e => this.onDeleteLinkClicked(e.detail)}
-                  onTagClicked={e => this.onTagClicked(e.detail)} />
+                  onRatingSelected={e => void this.onRatingSelected(e.detail)}
+                  onDeleteLinkClicked={e => void this.onDeleteLinkClicked(e.detail)}
+                  onTagClicked={e => void this.onTagClicked(e.detail)} />
               </ion-col>
               <ion-col size="0" size-lg="3" size-xl="2">
                 <ion-list class="side-menu">
-                  <ion-item button onClick={() => this.onEditClicked()}>
-                    <ion-icon slot="start" icon="create" />
-                    Edit
-                  </ion-item>
-                  <ion-item button onClick={() => this.onAddNoteClicked()}>
-                    <ion-icon slot="start" icon="chatbox" />
-                    Add Note
-                  </ion-item>
-                  <ion-item button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-                    <ion-icon slot="start" icon="camera" />
-                    Upload Picture
-                  </ion-item>
-                  <ion-item button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
-                    <ion-icon slot="start" icon="link" />
-                    Add Link
-                  </ion-item>
-                  {this.recipe?.state === RecipeState.Archived ?
-                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
-                      <ion-icon slot="start" icon="archive" />
-                      Unarchive
-                    </ion-item>
-                    :
-                    <ion-item button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
-                      <ion-icon slot="start" icon="archive" />
-                      Archive
-                    </ion-item>
+                  {hasScope(state.jwtToken, AccessLevel.Editor) &&
+                    <Fragment>
+                      <ion-item button onClick={() => this.onEditClicked()}>
+                        <ion-icon slot="start" icon="create" />
+                        Edit
+                      </ion-item>
+                      <ion-item button onClick={() => this.onAddNoteClicked()}>
+                        <ion-icon slot="start" icon="chatbox" />
+                        Add Note
+                      </ion-item>
+                      <ion-item button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                        <ion-icon slot="start" icon="camera" />
+                        Upload Picture
+                      </ion-item>
+                      <ion-item button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
+                        <ion-icon slot="start" icon="link" />
+                        Add Link
+                      </ion-item>
+                      {this.recipe?.state === RecipeState.Archived ?
+                        <ion-item button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
+                          <ion-icon slot="start" icon="archive" />
+                          Unarchive
+                        </ion-item>
+                        :
+                        <ion-item button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
+                          <ion-icon slot="start" icon="archive" />
+                          Archive
+                        </ion-item>
+                      }
+                      <ion-item button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
+                        <ion-icon slot="start" icon="trash" />
+                        Delete
+                      </ion-item>
+                    </Fragment>
                   }
-                  <ion-item button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
-                    <ion-icon slot="start" icon="trash" />
-                    Delete
+                  <ion-item button class="ion-hide-md-down" onClick={() => this.onPrintClicked()}>
+                    <ion-icon slot="start" icon="print" />
+                    Print
                   </ion-item>
                 </ion-list>
               </ion-col>
@@ -124,8 +133,8 @@ export class PageRecipe {
                         <note-card
                           note={note}
                           readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
-                          onEditClicked={e => this.onEditNoteClicked(e.detail)}
-                          onDeleteClicked={e => this.onDeleteNoteClicked(e.detail)} />
+                          onEditClicked={e => void this.onEditNoteClicked(e.detail)}
+                          onDeleteClicked={e => void this.onDeleteNoteClicked(e.detail)} />
                       </ion-col>
                     </ion-row>
                   )}
@@ -134,36 +143,38 @@ export class PageRecipe {
             </ion-row>
           </ion-grid>
         </ion-content>
-        {hasScope(state.jwtToken, AccessLevel.Editor) &&
-          <ion-footer class="ion-hide-lg-up">
-            <ion-toolbar>
-              <ion-buttons slot="start">
-                <ion-back-button defaultHref="/recipes" />
-              </ion-buttons>
-              <ion-buttons slot="primary">
-                <ion-button onClick={() => this.onEditClicked()}>
-                  <ion-icon slot="start" icon="create" />
-                  Edit
-                </ion-button>
-                <ion-button onClick={() => this.onAddNoteClicked()}>
-                  <ion-icon slot="start" icon="chatbox" />
-                  Add Note
-                </ion-button>
-                <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-                  <ion-icon slot="start" icon="camera" />
-                  Upload Picture
-                </ion-button>
-                <ion-button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
-                  <ion-icon slot="start" icon="link" />
-                  Add Link
-                </ion-button>
-                <ion-button onClick={() => this.onRecipeMenuClicked()}>
-                  <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
-                </ion-button>
-              </ion-buttons>
-            </ion-toolbar>
-          </ion-footer>
-        }
+        <ion-footer class="ion-hide-lg-up hide-on-print">
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-back-button defaultHref="/recipes" />
+            </ion-buttons>
+            <ion-buttons slot="primary">
+              {hasScope(state.jwtToken, AccessLevel.Editor) &&
+                <Fragment>
+                  <ion-button onClick={() => this.onEditClicked()}>
+                    <ion-icon slot="start" icon="create" />
+                    Edit
+                  </ion-button>
+                  <ion-button onClick={() => this.onAddNoteClicked()}>
+                    <ion-icon slot="start" icon="chatbox" />
+                    Add Note
+                  </ion-button>
+                  <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                    <ion-icon slot="start" icon="camera" />
+                    Upload Picture
+                  </ion-button>
+                  <ion-button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
+                    <ion-icon slot="start" icon="link" />
+                    Add Link
+                  </ion-button>
+                </Fragment>
+              }
+              <ion-button onClick={() => this.onRecipeMenuClicked()}>
+                <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-footer>
       </Host>
     );
   }
@@ -194,7 +205,7 @@ export class PageRecipe {
         recipeId: this.recipeId
       });
     } catch (ex) {
-      this.recipeRating = null;
+      this.recipeRating = 0;
       console.error(ex);
     }
   }
@@ -251,7 +262,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe.');
+      await showToast('Failed to save recipe.');
     }
   }
 
@@ -262,7 +273,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete recipe.');
+      await showToast('Failed to delete recipe.');
     }
   }
 
@@ -274,7 +285,7 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe state.');
+      await showToast('Failed to save recipe state.');
     }
   }
 
@@ -286,19 +297,23 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to add linked recipe.');
+      await showToast('Failed to add linked recipe.');
     }
   }
 
   private async deleteLink(link: RecipeCompact) {
     try {
+      if (isNull(link.id)) {
+        throw new Error('Cannot delete link: linked recipe ID is null.');
+      }
+
       await recipesApi.deleteLink({
         recipeId: this.recipeId,
         destRecipeId: link.id
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to remove linked recipe.');
+      await showToast('Failed to remove linked recipe.');
     }
   }
 
@@ -310,12 +325,16 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create note.');
+      await showToast('Failed to create note.');
     }
   }
 
   private async saveExistingNote(note: Note) {
     try {
+      if (isNull(note.id)) {
+        throw new Error('Cannot save note: note ID is null.');
+      }
+
       await recipesApi.saveNote({
         recipeId: this.recipeId,
         noteId: note.id,
@@ -323,19 +342,23 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save note.');
+      await showToast('Failed to save note.');
     }
   }
 
   private async deleteNote(note: Note) {
     try {
+      if (isNull(note.id)) {
+        throw new Error('Cannot delete note: note ID is null.');
+      }
+
       await recipesApi.deleteNote({
         recipeId: this.recipeId,
         noteId: note.id
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete note.');
+      await showToast('Failed to delete note.');
     }
   }
 
@@ -351,19 +374,23 @@ export class PageRecipe {
         'Uploading picture...');
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to upload picture.');
+      await showToast('Failed to upload picture.');
     }
   }
 
   private async deleteImage(image: RecipeImage) {
     try {
+      if (isNull(image.id)) {
+        throw new Error('Cannot delete image: image ID is null.');
+      }
+
       await recipesApi.deleteImage({
         recipeId: this.recipeId,
         imageId: image.id
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete image.');
+      await showToast('Failed to delete image.');
     }
   }
 
@@ -375,19 +402,23 @@ export class PageRecipe {
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save recipe rating.');
+      await showToast('Failed to save recipe rating.');
     }
   }
 
   private async setMainImage(image: RecipeImage) {
     try {
+      if (isNull(image.id)) {
+        throw new Error('Cannot set main image: image ID is null.');
+      }
+
       await recipesApi.setMainImage({
         recipeId: this.recipeId,
         imageId: image.id
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to set main picture.');
+      await showToast('Failed to set main picture.');
     }
   }
 
@@ -395,45 +426,54 @@ export class PageRecipe {
     const menu = await actionSheetController.create({
       header: 'Menu',
       buttons: [
-        {
-          text: 'Delete',
-          icon: 'trash',
-          role: 'destructive',
-          handler: () => this.onDeleteClicked(),
-        },
-        {
-          text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
-          icon: 'archive',
-          handler: () => this.recipe?.state === RecipeState.Archived
-            ? this.onUnarchiveClicked()
-            : this.onArchiveClicked()
-        },
-        {
-          text: 'Add Link',
-          icon: 'link',
-          handler: () => this.onAddLinkClicked()
-        },
-        {
-          text: 'Upload Picture',
-          icon: 'camera',
-          handler: () => this.onUploadImageClicked()
-        },
-        {
-          text: 'Add Note',
-          icon: 'chatbox',
-          handler: () => this.onAddNoteClicked()
-        },
-        {
-          text: 'Edit',
-          icon: 'create',
-          handler: () => this.onEditClicked()
-        },
+        { text: 'Print', icon: 'print', role: 'print' },
+        ...(hasScope(state.jwtToken, AccessLevel.Editor) ?
+          [
+            {
+              text: 'Delete',
+              icon: 'trash',
+              role: 'destructive',
+              handler: () => this.onDeleteClicked(),
+            },
+            {
+              text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
+              icon: 'archive',
+              handler: () => this.recipe?.state === RecipeState.Archived
+                ? this.onUnarchiveClicked()
+                : this.onArchiveClicked()
+            },
+            {
+              text: 'Add Link',
+              icon: 'link',
+              handler: () => this.onAddLinkClicked()
+            },
+            {
+              text: 'Upload Picture',
+              icon: 'camera',
+              handler: () => this.onUploadImageClicked()
+            },
+            {
+              text: 'Add Note',
+              icon: 'chatbox',
+              handler: () => this.onAddNoteClicked()
+            },
+            {
+              text: 'Edit',
+              icon: 'create',
+              handler: () => this.onEditClicked()
+            }
+          ] : []),
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
     });
     await menu.present();
 
-    await menu.onDidDismiss();
+    const res = await menu.onDidDismiss();
+
+    // Handle print after the menu closes so that the menu doesn't get included in the printout.
+    if (res.role === 'print') {
+      this.onPrintClicked();
+    }
   }
 
   private async onEditClicked() {
@@ -672,6 +712,10 @@ export class PageRecipe {
         await refreshSearchResults();
       }
     });
+  }
+
+  private onPrintClicked() {
+    window?.print();
   }
 
   private async onRatingSelected(rating: number) {

@@ -32,9 +32,9 @@ export class ImageUploadBrowser {
 
         <ion-content>
           <ion-item lines="full">
-            <form enctype="multipart/form-data" ref={el => this.imageForm = el}>
+            <form enctype="multipart/form-data" ref={el => this.imageForm = el!}>
               <ion-label position="stacked">Picture</ion-label>
-              <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} required />
+              <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el!} required />
             </form>
           </ion-item>
         </ion-content>
@@ -47,13 +47,13 @@ export class ImageUploadBrowser {
       return;
     }
 
-    dismissContainingModal(this.el, {
-      file: this.imageInput?.files.length > 0 ? this.imageInput.files[0] : null
+    await dismissContainingModal(this.el, {
+      file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput.files?.[0] : null
     });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 
 }

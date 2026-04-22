@@ -49,7 +49,7 @@ install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
 $(CLIENT_INSTALL_DIR): static/package.json
-	cd static && npm install --silent
+	cd static && npm ci --silent
 
 .PHONY: uninstall
 uninstall:
@@ -57,6 +57,9 @@ uninstall:
 
 
 # ---- CODEGEN ----
+
+.PHONY: codegen
+codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
 
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	cd static && npm run codegen
@@ -84,8 +87,8 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 lint-server: $(CODEGEN_FILES)
 	mkdir -p $(ROOT_BUILD_DIR)
 	go vet ./...
-	go run github.com/mgechev/revive -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
-	go run github.com/securego/gosec/v2/cmd/gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
+	go tool revive -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
+	go tool gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
 
 
 # ---- CLEAN ----
@@ -104,7 +107,7 @@ clean:
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR) $(CLIENT_FILES)
-	rm -rf $@ && cd static && npm run build
+	rm -rf $@ && cd static && npm run build $(CLIENT_EXTRA_BUILD_ARGS)
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 
@@ -116,6 +119,15 @@ $(BUILD_DIR)/static: $(CLIENT_BUILD_DIR)
 
 $(BUILD_DIR)/gomp: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	$(GO_ENV) go build -o $@ $(GO_LD_FLAGS)
+
+
+# ---- RUN ----
+
+.PHONY: run
+run: IS_DEVELOPMENT?=1
+run: PORT?=5678
+run: go.mod $(CODEGEN_FILES) $(GO_FILES) $(CLIENT_BUILD_DIR)
+	IS_DEVELOPMENT=$(IS_DEVELOPMENT) PORT=$(PORT) BASE_ASSETS_PATH=$(CLIENT_BUILD_DIR) go run .
 
 
 # ---- TEST ----
@@ -135,6 +147,8 @@ $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	mkdir -p $@
 	cd static && npm run cover
 	cp -r static/coverage/* $@
+	# Use sed to add static/ prefix to all file paths in the lcov.info file
+	sed -i 's/^SF:\(.*\)/SF:static\/\1/' $@/lcov.info
 
 
 # ---- ARCHIVE ----

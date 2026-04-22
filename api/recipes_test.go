@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -13,8 +12,50 @@ import (
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
+
+func recipeFixtureLemonGarlicChicken() *models.Recipe {
+	return &models.Recipe{
+		Name:                "Lemon Garlic Chicken",
+		Ingredients:         "1.5 lb chicken thighs\n2 tbsp olive oil\n3 cloves garlic\n1 lemon",
+		Directions:          "Marinate chicken, then roast at 400F until cooked through.",
+		NutritionInfo:       "420 kcal per serving",
+		ServingSize:         "4 servings",
+		StorageInstructions: "Refrigerate in an airtight container for up to 3 days.",
+		SourceURL:           "https://example.com/recipes/lemon-garlic-chicken",
+		Time:                "45 minutes",
+		Tags:                []string{"weeknight", "chicken", "high-protein"},
+	}
+}
+
+func recipeFixtureSheetPanSausage() *models.Recipe {
+	return &models.Recipe{
+		Name:                "Sheet Pan Sausage and Peppers",
+		Ingredients:         "12 oz smoked sausage\n2 bell peppers\n1 red onion\n2 tbsp olive oil",
+		Directions:          "Slice the vegetables and sausage, toss with oil, and roast until browned.",
+		NutritionInfo:       "510 kcal per serving",
+		ServingSize:         "4 servings",
+		StorageInstructions: "Store refrigerated for up to 4 days and reheat in the oven.",
+		SourceURL:           "https://example.com/recipes/sheet-pan-sausage-peppers",
+		Time:                "35 minutes",
+		Tags:                []string{"weeknight", "one-pan", "dinner"},
+	}
+}
+
+func recipeFixtureChickpeaSaladWraps() *models.Recipe {
+	return &models.Recipe{
+		Name:                "Chickpea Salad Wraps",
+		Ingredients:         "2 cans chickpeas\n3 tbsp mayo\n1 celery stalk\n4 tortillas",
+		Directions:          "Mash the chickpeas, mix with the remaining ingredients, and roll into wraps.",
+		NutritionInfo:       "390 kcal per serving",
+		ServingSize:         "4 wraps",
+		StorageInstructions: "Keep the filling chilled and assemble wraps just before serving.",
+		SourceURL:           "https://example.com/recipes/chickpea-salad-wraps",
+		Time:                "20 minutes",
+		Tags:                []string{"vegetarian", "lunch", "make-ahead"},
+	}
+}
 
 func Test_GetRecipe(t *testing.T) {
 	type testArgs struct {
@@ -25,7 +66,7 @@ func Test_GetRecipe(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My Recipe", nil},
+		{1, recipeFixtureLemonGarlicChicken().Name, nil},
 		{2, "", db.ErrNotFound},
 	}
 	for i, test := range tests {
@@ -39,13 +80,13 @@ func Test_GetRecipe(t *testing.T) {
 				Name: test.recipeName,
 			}
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().Read(gomock.Any()).Return(nil, test.expectedError)
+				recipesDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				recipesDriver.EXPECT().Read(test.recipeID).Return(&expectedRecipe, nil)
+				recipesDriver.EXPECT().Read(t.Context(), test.recipeID).Return(&expectedRecipe, nil)
 			}
 
 			// Act
-			resp, err := api.GetRecipe(context.Background(), GetRecipeRequestObject{RecipeID: test.recipeID})
+			resp, err := api.GetRecipe(t.Context(), GetRecipeRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -77,15 +118,7 @@ func Test_AddRecipe(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			&models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil,
+			recipeFixtureLemonGarlicChicken(), nil,
 		},
 		{nil, db.ErrNotFound},
 	}
@@ -96,13 +129,13 @@ func Test_AddRecipe(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().Create(gomock.Any()).Return(test.expectedError)
+				recipesDriver.EXPECT().Create(t.Context(), gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().Create(test.recipe).Return(nil)
+				recipesDriver.EXPECT().Create(t.Context(), test.recipe).Return(nil)
 			}
 
 			// Act
-			resp, err := api.AddRecipe(context.Background(), AddRecipeRequestObject{Body: test.recipe})
+			resp, err := api.AddRecipe(t.Context(), AddRecipeRequestObject{Body: test.recipe})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -131,54 +164,26 @@ func Test_SaveRecipe(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			1,
-			&models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil, nil,
+			1, recipeFixtureLemonGarlicChicken(), nil, nil,
 		},
 		{
 			1,
-			&models.Recipe{
-				ID:                  utils.GetPtr[int64](1),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil, nil,
+			func() *models.Recipe {
+				recipe := recipeFixtureSheetPanSausage()
+				recipe.ID = utils.GetPtr[int64](1)
+				return recipe
+			}(), nil, nil,
 		},
 		{
 			1,
-			&models.Recipe{
-				ID:                  utils.GetPtr[int64](2),
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, nil, errMismatchedID,
+			func() *models.Recipe {
+				recipe := recipeFixtureChickpeaSaladWraps()
+				recipe.ID = utils.GetPtr[int64](2)
+				return recipe
+			}(), nil, errMismatchedID,
 		},
 		{
-			2,
-			&models.Recipe{
-				Name:                "My Recipe",
-				Ingredients:         "My Ingredients",
-				Directions:          "My Directions",
-				NutritionInfo:       "My Nutrition Info",
-				ServingSize:         "My Serving Size",
-				StorageInstructions: "My Storage Instructions",
-				SourceURL:           "My Url",
-			}, db.ErrNotFound, db.ErrNotFound,
+			2, recipeFixtureSheetPanSausage(), db.ErrNotFound, db.ErrNotFound,
 		},
 	}
 	for i, test := range tests {
@@ -188,13 +193,13 @@ func Test_SaveRecipe(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedDbError != nil {
-				recipesDriver.EXPECT().Update(gomock.Any()).Return(test.expectedDbError)
+				recipesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(test.expectedDbError)
 			} else {
-				recipesDriver.EXPECT().Update(test.recipe).MaxTimes(1).Return(nil)
+				recipesDriver.EXPECT().Update(t.Context(), test.recipe).MaxTimes(1).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SaveRecipe(context.Background(), SaveRecipeRequestObject{RecipeID: test.recipeID, Body: test.recipe})
+			resp, err := api.SaveRecipe(t.Context(), SaveRecipeRequestObject{RecipeID: test.recipeID, Body: test.recipe})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -228,14 +233,14 @@ func Test_DeleteRecipe(t *testing.T) {
 
 			api, recipesDriver, uplDriver := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().Delete(gomock.Any()).Return(test.expectedError)
+				recipesDriver.EXPECT().Delete(t.Context(), gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().Delete(test.recipeID).Return(nil)
+				recipesDriver.EXPECT().Delete(t.Context(), test.recipeID).Return(nil)
 				uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(nil)
 			}
 
 			// Act
-			resp, err := api.DeleteRecipe(context.Background(), DeleteRecipeRequestObject{RecipeID: test.recipeID})
+			resp, err := api.DeleteRecipe(t.Context(), DeleteRecipeRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -270,13 +275,13 @@ func Test_SetState(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().SetState(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				recipesDriver.EXPECT().SetState(t.Context(), gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().SetState(test.recipeID, test.state).Return(nil)
+				recipesDriver.EXPECT().SetState(t.Context(), test.recipeID, test.state).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SetState(context.Background(), SetStateRequestObject{RecipeID: test.recipeID, Body: &test.state})
+			resp, err := api.SetState(t.Context(), SetStateRequestObject{RecipeID: test.recipeID, Body: &test.state})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -311,13 +316,13 @@ func Test_GetRating(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().GetRating(gomock.Any()).Return(nil, test.expectedError)
+				recipesDriver.EXPECT().GetRating(t.Context(), gomock.Any()).Return(nil, test.expectedError)
 			} else {
-				recipesDriver.EXPECT().GetRating(test.recipeID).Return(&test.rating, nil)
+				recipesDriver.EXPECT().GetRating(t.Context(), test.recipeID).Return(&test.rating, nil)
 			}
 
 			// Act
-			resp, err := api.GetRating(context.Background(), GetRatingRequestObject{RecipeID: test.recipeID})
+			resp, err := api.GetRating(t.Context(), GetRatingRequestObject{RecipeID: test.recipeID})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -355,13 +360,13 @@ func Test_SetRating(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().SetRating(gomock.Any(), gomock.Any()).Return(test.expectedError)
+				recipesDriver.EXPECT().SetRating(t.Context(), gomock.Any(), gomock.Any()).Return(test.expectedError)
 			} else {
-				recipesDriver.EXPECT().SetRating(test.recipeID, test.rating).Return(nil)
+				recipesDriver.EXPECT().SetRating(t.Context(), test.recipeID, test.rating).Return(nil)
 			}
 
 			// Act
-			resp, err := api.SetRating(context.Background(), SetRatingRequestObject{RecipeID: test.recipeID, Body: &test.rating})
+			resp, err := api.SetRating(t.Context(), SetRatingRequestObject{RecipeID: test.recipeID, Body: &test.rating})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -397,13 +402,13 @@ func Test_GetAllTags(t *testing.T) {
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
 			if test.expectedError != nil {
-				recipesDriver.EXPECT().ListAllTags().Return(nil, test.expectedError)
+				recipesDriver.EXPECT().ListAllTags(t.Context()).Return(nil, test.expectedError)
 			} else {
-				recipesDriver.EXPECT().ListAllTags().Return(&test.expectedTags, nil)
+				recipesDriver.EXPECT().ListAllTags(t.Context()).Return(&test.expectedTags, nil)
 			}
 
 			// Act
-			resp, err := api.GetAllTags(context.Background(), GetAllTagsRequestObject{})
+			resp, err := api.GetAllTags(t.Context(), GetAllTagsRequestObject{})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -543,15 +548,15 @@ func Test_Find(t *testing.T) {
 
 			if test.expectedError != nil {
 				recipesDriver.EXPECT().
-					Find(&expectedFilter, test.expectedPage, test.expectedCount).
+					Find(t.Context(), &expectedFilter, test.expectedPage, test.expectedCount).
 					Return(nil, int64(0), test.expectedError)
 			} else {
 				recipesDriver.EXPECT().
-					Find(&expectedFilter, test.expectedPage, test.expectedCount).
+					Find(t.Context(), &expectedFilter, test.expectedPage, test.expectedCount).
 					Return(test.recipes, test.total, nil)
 			}
 
-			resp, err := api.Find(context.Background(), FindRequestObject{Params: test.params})
+			resp, err := api.Find(t.Context(), FindRequestObject{Params: test.params})
 
 			if test.expectedError != nil {
 				if err == nil || err.Error() != test.expectedError.Error() {
@@ -563,7 +568,7 @@ func Test_Find(t *testing.T) {
 				}
 				got, ok := resp.(Find200JSONResponse)
 				if !ok {
-					t.Errorf("invalid response type")
+					t.Error("invalid response type")
 				}
 				if !reflect.DeepEqual(got.Recipes, test.recipes) {
 					t.Errorf("expected recipes: %v, got: %v", test.recipes, got.Recipes)

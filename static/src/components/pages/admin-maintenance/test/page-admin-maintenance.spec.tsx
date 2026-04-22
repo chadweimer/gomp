@@ -1,12 +1,9 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { PageAdminMaintenance } from '../page-admin-maintenance';
+import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../page-admin-maintenance';
 
-describe('page-admin-configuration', () => {
+describe('page-admin-maintenance', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [PageAdminMaintenance],
-      html: '<page-admin-maintenance></page-admin-maintenance>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(PageAdminMaintenance);
+    const { root } = await render(<page-admin-maintenance />);
+    expect(root).toHaveClass('hydrated');
   });
 });

@@ -7,20 +7,20 @@
 */
 
 /** Core CSS required for ionic components to work property */
-@import '~@ionic/core/css/core.css';
+@import '../../node_modules/@ionic/core/css/core.css';
 
 /** Basic CSS for apps built with Ionic */
-@import '~@ionic/core/css/display.css';
-@import '~@ionic/core/css/normalize.css';
-@import '~@ionic/core/css/structure.css';
-@import '~@ionic/core/css/typography.css';
+@import '../../node_modules/@ionic/core/css/display.css';
+@import '../../node_modules/@ionic/core/css/normalize.css';
+@import '../../node_modules/@ionic/core/css/structure.css';
+@import '../../node_modules/@ionic/core/css/typography.css';
 
 /** Optional CSS utils that can be commented out */
-@import '~@ionic/core/css/padding.css';
-@import '~@ionic/core/css/float-elements.css';
-@import '~@ionic/core/css/text-alignment.css';
-@import '~@ionic/core/css/text-transformation.css';
-@import '~@ionic/core/css/flex-utils.css';
+@import '../../node_modules/@ionic/core/css/padding.css';
+@import '../../node_modules/@ionic/core/css/float-elements.css';
+@import '../../node_modules/@ionic/core/css/text-alignment.css';
+@import '../../node_modules/@ionic/core/css/text-transformation.css';
+@import '../../node_modules/@ionic/core/css/flex-utils.css';
 
 /* Workaround for bug in stencil 4.25.2 and later that causes the corresponding
 item in @ionic/core/css/structure.css to hide everything on the page*/
@@ -160,6 +160,10 @@ html:not(.hydrated) body {
   z-index: 1;
 }
 
+.show-on-print-only {
+  display: none;
+}
+
 ion-card-title.ios {
   font-size: 1.4rem;
 }
@@ -195,5 +199,38 @@ ion-thumbnail.preview {
     --ion-safe-area-bottom: 0px;
     --ion-safe-area-right: 0px;
     --ion-safe-area-left: 0px;
+  }
+}
+
+@media print {
+  body {
+    position: initial !important;
+    max-height: initial !important;
+    overflow: auto !important;
+  }
+
+  ion-router-outlet {
+    overflow: auto !important;
+    contain: none !important;
+    position: initial !important;
+  }
+
+  ion-content {
+    --offset-bottom: unset !important;
+    display: unset !important;
+    position: unset !important;
+  }
+
+  .ion-page {
+    display: initial !important;
+    position: initial !important;
+  }
+
+  .show-on-print-only {
+    display: initial;
+  }
+
+  .hide-on-print {
+    display: none !important;
   }
 }

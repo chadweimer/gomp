@@ -11,7 +11,7 @@ import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings 
   styleUrl: 'page-home.css'
 })
 export class PageHome {
-  @State() currentUserSettings: UserSettings | null;
+  @State() currentUserSettings: UserSettings | null = null;
   @State() searches: {
     title: string,
     filter: SearchFilter,
@@ -40,7 +40,7 @@ export class PageHome {
                 </header>
               </ion-col>
             </ion-row>
-            {this.searches.map(search =>
+            {this.searches?.map(search =>
               <Fragment>
                 <ion-row key={search.title}>
                   <ion-col>
@@ -97,7 +97,9 @@ export class PageHome {
 
       // Then load all the user's saved filters
       const savedFilters = await usersApi.getSearchFilters();
-      for (const savedFilter of savedFilters ?? []) {
+      for (const savedFilter of savedFilters) {
+        if (isNull(savedFilter.id)) continue;
+
         const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id });
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
@@ -124,7 +126,8 @@ export class PageHome {
       return resp;
     } catch (ex) {
       console.error(ex);
-      showToast('An unexpected error occurred attempting to perform the current search.');
+      await showToast('An unexpected error occurred attempting to perform the current search.');
+      return { total: 0, recipes: [] };
     }
   }
 
@@ -135,6 +138,10 @@ export class PageHome {
       if (!isNull(file)) {
         await showLoading(
           async () => {
+            if (isNull(newRecipe.id)) {
+              throw new Error('Failed to upload image: recipe ID is null.');
+            }
+
             await recipesApi.uploadImage({
               recipeId: newRecipe.id,
               fileContent: file

@@ -131,22 +131,24 @@ spec:
 ## Configuration
 
 The following table summarizes the available configuration settings, which are settable through environment variables.
+Unless otherwise specified, for settings that are arrays, multiple values should be separated by commas.
 
 ENV                     |Value(s)        |Default                                  |Description
 ------------------------|----------------|-----------------------------------------|------------
 BASE_ASSETS_PATH        |string          |static                                   |The base path to the client assets.
-DATABASE_DRIVER         |postgres, sqlite|&lt;empty&gt;                            |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL. The value 'sqlite3' can also be used, but is deprecated, and is equivalent to 'sqlite'.
-DATABASE_URL            |string          |file:data/data.db?_pragma=foreign_keys(1)|The url (or path, connection string, etc) to use with the associated database driver when opening the database connection.
+DATABASE_DRIVER         |postgres, sqlite|&lt;empty&gt;                            |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL.
+DATABASE_URL            |string          |file:data/data.db?_pragma=foreign_keys(1)|The url (path, connection string, etc) to use with the associated database driver when opening the database connection.
 IS_DEVELOPMENT          |0, 1            |0                                        |Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment.
 MIGRATIONS_FORCE_VERSION|int             |-1                                       |A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version.
 MIGRATIONS_TABLE_NAME   |string          |&lt;empty&gt;                            |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
 PORT                    |uint            |5000                                     |The port number under which the site is being hosted.
-SECURE_KEY              |[]string        |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters. Multiple keys can be separated by commas.
+SECURE_KEY              |[]string        |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters.
+TRUSTED_PROXIES         |[]string        |&lt;empty&gt;                            |List of IP addresses or CIDR ranges that are considered trusted proxies. When determining the client IP address, if the request comes from a trusted proxy, the `X-Forwarded-For` header will be used to determine the original client IP.
 FILES_DRIVER            |fs, s3          |fs                                       |Used to select which backend data store is used for file access (e.g., uploads, backups).
 FILES_PATH              |string          |data                                     |The path (full or relative) under which to store file data. When using Amazon S3, this should be set to the bucket name.
-IMAGE_QUALITY           |original, high, medium, low|original                      |The quality level for recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighber instead of the Box resizing algorithm.
+IMAGE_QUALITY           |original, high, medium, low|original                      |The quality level for recipe images. Original quality falls back to High if the uploaded image is not a JPEG. JPEG Qualities: High == 92, Medium == 80, Low == 70. Resizing Algorithm: High = CatmullRom, Medium = BiLinear, Low = NearestNeighbor.
 IMAGE_SIZE              |uint            |2000                                     |The size of the bounding box to fit recipe images to. Ignored if IMAGE_QUALITY == original.
-THUMBNAIL_QUALITY       |high, medium, low|medium                                  |The quality level for the thumbnails of recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighber instead of the Box resizing algorithm.
+THUMBNAIL_QUALITY       |high, medium, low|medium                                  |The quality level for the thumbnails of recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighbor instead of the Box resizing algorithm.
 THUMBNAIL_SIZE          |uint            |500                                      |The size of the bounding box to fit the thumbnails of recipe images to.
 
 All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.

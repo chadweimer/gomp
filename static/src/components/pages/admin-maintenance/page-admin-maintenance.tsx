@@ -2,7 +2,7 @@ import { alertController } from '@ionic/core';
 import { Component, Host, h } from '@stencil/core';
 import { RecipeState, SortBy, SortDir } from '../../../generated';
 import { performRecipeSearch, appApi, recipesApi } from '../../../helpers/api';
-import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, isNull, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-maintenance',
@@ -62,9 +62,13 @@ export class PageAdminMaintenance {
             states: [RecipeState.Active, RecipeState.Archived],
             tags: []
           }, 1, -1,);
-          for (const recipe of recipes) {
+          for (const recipe of recipes ?? []) {
+            if (isNull(recipe.id)) continue;
+
             const images = await recipesApi.getImages({ recipeId: recipe.id });
             for (const image of images) {
+              if (isNull(image.id)) continue;
+
               await recipesApi.optimizeImage({
                 recipeId: recipe.id,
                 imageId: image.id
@@ -74,7 +78,7 @@ export class PageAdminMaintenance {
         }, 'Optimizing images. This might take a while...');
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to optimize images.');
+      await showToast('Failed to optimize images.');
     }
   }
 
@@ -104,10 +108,10 @@ export class PageAdminMaintenance {
   private async createBackup() {
     try {
       await showLoading(
-        async () => appApi.createBackup(), 'Creating backup...');
+        async () => await appApi.createBackup(), 'Creating backup...');
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create backup.');
+      await showToast('Failed to create backup.');
     }
   }
 

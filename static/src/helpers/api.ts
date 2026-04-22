@@ -6,13 +6,13 @@ import { isNullOrEmpty, toYesNoAny } from './utils';
 // Retrieve search results when search filters change
 const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
 for (const prop of propsToSearch) {
-  onStateChange(prop, async () => {
+  onStateChange(prop, () => {
     if (prop !== 'searchPage') {
       state.searchPage = 1;
     }
     state.searchScrollPosition = 0;
 
-    await refreshSearchResults();
+    refreshSearchResults().catch(console.error);
   });
 }
 
@@ -35,23 +35,26 @@ class LoadingMiddleware implements Middleware {
 }
 
 const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestInit) => {
-  let response = await window.fetch(input, init);
+  let response = await globalThis.fetch(input, init);
   if (response.status === 403) {
     // Try refreshing the token and repeating the request
     // This can fix the situation where the access level of
     // the user has been changed and requires a new token
     try {
       const localAppApi = new AppApi(new Configuration({
-        basePath: `${window.location.origin}/api/v1`,
-        accessToken: () => state.jwtToken
+        basePath: `${globalThis.location.origin}/api/v1`,
+        accessToken: () => state.jwtToken ?? ''
       }));
       const { token } = await localAppApi.refreshToken();
       state.jwtToken = token;
-      init.headers = {
-        ...init.headers,
-        'Authorization': `Bearer ${state.jwtToken}`
+      init = {
+        ...init,
+        headers: {
+          ...init?.headers,
+          'Authorization': `Bearer ${state.jwtToken}`
+        }
       };
-      response = await window.fetch(input, init);
+      response = await globalThis.fetch(input, init);
     } catch (retryError) {
       // Just log this; let the original error propogate
       console.error(retryError);
@@ -61,8 +64,8 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
 };
 
 const configuration = new Configuration({
-  basePath: `${window.location.origin}/api/v1`,
-  accessToken: () => state.jwtToken,
+  basePath: `${globalThis.location.origin}/api/v1`,
+  accessToken: () => state.jwtToken ?? '',
   fetchApi: customFetch,
   middleware: [new LoadingMiddleware()]
 });
@@ -101,9 +104,9 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
     count: count,
     q: filter.query,
     pictures: toYesNoAny(filter.withPictures),
-    fields: filter.fields.length > 0 ? filter.fields : null,
-    states: filter.states.length > 0 ? filter.states : null,
-    tags: filter.tags.length > 0 ? filter.tags : null
+    fields: filter.fields.length > 0 ? filter.fields : undefined,
+    states: filter.states.length > 0 ? filter.states : undefined,
+    tags: filter.tags.length > 0 ? filter.tags : undefined
   });
 }
 
@@ -118,7 +121,7 @@ export async function refreshSearchResults() {
   } catch (ex) {
     console.error(ex);
     state.searchResults = [];
-    state.searchResultCount = null;
+    state.searchResultCount = undefined;
     state.searchNumPages = 1;
   } finally {
     if (state.searchPage > state.searchNumPages) {
@@ -132,6 +135,6 @@ export async function refreshSearchResults() {
     state.totalRecipeCount = total;
   } catch (ex) {
     console.error(ex);
-    state.totalRecipeCount = null;
+    state.totalRecipeCount = undefined;
   }
 }

@@ -68,28 +68,36 @@ export class PageAdminUsers {
       await usersApi.addUser({ user: { ...user, password } });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create new user.');
+      await showToast('Failed to create new user.');
     }
   }
 
   private async saveExistingUser(user: User) {
     try {
+      if (isNull(user.id)) {
+        throw new Error('Cannot save user: user ID is null.');
+      }
+
       await usersApi.saveUser({
         userId: user.id,
         user: user
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save user.');
+      await showToast('Failed to save user.');
     }
   }
 
   private async deleteUser(user: User) {
     try {
+      if (isNull(user.id)) {
+        throw new Error('Cannot delete user: user ID is null.');
+      }
+
       await usersApi.deleteUser({ userId: user.id });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete user.');
+      await showToast('Failed to delete user.');
     }
   }
 

@@ -1,50 +1,39 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { FiveStarRating } from '../five-star-rating';
+import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../five-star-rating';
 
 describe('five-star-rating', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [FiveStarRating],
-      html: '<five-star-rating></five-star-rating>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(FiveStarRating);
+    const { root } = await render(<five-star-rating />);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('renders', async () => {
-    const page = await newSpecPage({
-      components: [FiveStarRating],
-      html: '<five-star-rating></five-star-rating>',
-    });
-    expect(page.root.shadowRoot).toEqualHtml(`
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon" icon="star" size="small"></ion-icon>
-    `);
+    const { root } = await render(<five-star-rating />);
+    const icons = root.shadowRoot?.querySelectorAll('ion-icon');
+    expect(icons).not.toBeNull();
+    expect(icons?.length).toBe(10);
+    // Check that the icons alternate between whole and half icons
+    for (let i = 0; i < icons!.length; i++) {
+      const icon = icons![i];
+      const expectedClass = i % 2 === 0 ? 'whole' : 'half';
+      expect(icon).toHaveClass(expectedClass);
+      expect(icon).not.toHaveClass('selected');
+    }
   });
 
   it('renders value', async () => {
-    const page = await newSpecPage({
-      components: [FiveStarRating],
-      html: '<five-star-rating value="3.5"></five-star-rating>',
-    });
-    expect(page.root.shadowRoot).toEqualHtml(`
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon selected" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole selected" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon selected" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole selected" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon selected" icon="star" size="small"></ion-icon>
-      <ion-icon class="icon whole selected" icon="star" size="small"></ion-icon>
-      <ion-icon class="half icon selected" icon="star" size="small"></ion-icon>
-    `);
+    const { root } = await render(<five-star-rating value={3.5} />);
+    const icons = root.shadowRoot?.querySelectorAll('ion-icon');
+    expect(icons).not.toBeNull();
+    expect(icons?.length).toBe(10);
+    // Check that only the last 7 icons are selected
+    for (let i = 0; i < 3; i++) {
+      const icon = icons![i];
+      expect(icon).not.toHaveClass('selected');
+    }
+    for (let i = 3; i < icons!.length; i++) {
+      const icon = icons![i];
+      expect(icon).toHaveClass('selected');
+    }
   });
 });

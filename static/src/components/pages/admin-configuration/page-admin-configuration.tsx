@@ -28,15 +28,15 @@ export class PageAdminConfiguration {
           <ion-grid class="no-pad" fixed>
             <ion-row>
               <ion-col>
-                <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el}>
+                <form onSubmit={e => e.preventDefault()} ref={el => this.appConfigForm = el!}>
                   <ion-card>
                     <ion-card-content>
                       <ion-item lines="full">
-                        <ion-input label="Application Title" label-placement="stacked" value={this.appConfig.title}
+                        <ion-input label="Application Title" label-placement="stacked" value={this.appConfig?.title}
                           autocorrect="on"
                           spellcheck
                           required
-                          onIonBlur={e => this.appConfig = { ...this.appConfig, title: e.target.value as string }} />
+                          onIonBlur={(e: Event) => this.appConfig = { ...this.appConfig, title: (e.currentTarget as HTMLIonInputElement).value as string }} />
                       </ion-item>
                     </ion-card-content>
                     <ion-button fill="clear" color="primary" onClick={() => this.onSaveConfigurationClicked()}>
@@ -75,7 +75,7 @@ export class PageAdminConfiguration {
       appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save configuration.');
+      await showToast('Failed to save configuration.');
     }
   }
 

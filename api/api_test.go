@@ -70,7 +70,7 @@ func Test_getResourceIDFromCtx(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctx := context.Background()
+			ctx := t.Context()
 			// Treat non-positive as not adding to context
 			if test.val > 0 {
 				if test.usePtr {

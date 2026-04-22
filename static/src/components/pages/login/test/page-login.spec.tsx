@@ -1,12 +1,9 @@
-import { newSpecPage } from '@stencil/core/testing';
-import { PageLogin } from '../page-login';
+import { render, h, describe, it, expect } from '@stencil/vitest';
+import '../page-login';
 
 describe('page-login', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [PageLogin],
-      html: '<page-login></page-login>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(PageLogin);
+    const { root } = await render(<page-login />);
+    expect(root).toHaveClass('hydrated');
   });
 });

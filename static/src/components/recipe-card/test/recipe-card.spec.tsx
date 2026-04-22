@@ -1,32 +1,24 @@
-import { h } from '@stencil/core';
-import { newSpecPage } from '@stencil/core/testing';
-import { RecipeCard } from '../recipe-card';
+import { render, h, describe, it, expect } from '@stencil/vitest';
 import { RecipeCompact } from '../../../generated';
+import '../recipe-card';
 
 describe('recipe-card', () => {
   it('builds', async () => {
-    const page = await newSpecPage({
-      components: [RecipeCard],
-      html: '<recipe-card></recipe-card>',
-    });
-    expect(page.rootInstance).toBeInstanceOf(RecipeCard);
+    const { root } = await render(<recipe-card />);
+    expect(root).toHaveClass('hydrated');
   });
 
   it('no initial value', async () => {
-    const page = await newSpecPage({
-      components: [RecipeCard],
-      html: '<recipe-card></recipe-card>',
-    });
-    const component = page.rootInstance as RecipeCard;
-    expect(component.recipe.name).toEqual('');
-    const image = page.root.shadowRoot.querySelector('ion-img.hidden');
+    const { root } = await render<HTMLRecipeCardElement>(<recipe-card />);
+    expect(root.recipe).toBeNullable();
+    const image = root.shadowRoot?.querySelector('ion-img.hidden');
     expect(image).not.toBeNull();
-    const node = page.root.shadowRoot.querySelector('ion-card-title');
+    const node = root.shadowRoot?.querySelector('ion-card-title');
     expect(node).not.toBeNull();
     expect(node).toEqualText('');
-    const rating = page.root.shadowRoot.querySelector('five-star-rating');
+    const rating = root.shadowRoot?.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
-    expect(rating).toEqualAttribute('value', 0);
+    expect(rating).toEqualAttribute('value', '0');
   });
 
   it('bind to recipe', async () => {
@@ -34,19 +26,15 @@ describe('recipe-card', () => {
       name: 'Some Recipe',
       averageRating: 2,
     };
-    const page = await newSpecPage({
-      components: [RecipeCard],
-      template: () => (<recipe-card recipe={recipe}></recipe-card>),
-    });
-    const component = page.rootInstance as RecipeCard;
-    expect(component.recipe).toEqual(recipe);
-    const image = page.root.shadowRoot.querySelector('ion-img.hidden');
+    const { root } = await render(<recipe-card recipe={recipe} />);
+    expect(root).toHaveProperty('recipe', recipe);
+    const image = root.shadowRoot?.querySelector('ion-img.hidden');
     expect(image).not.toBeNull();
-    const node = page.root.shadowRoot.querySelector('ion-card-title');
+    const node = root.shadowRoot?.querySelector('ion-card-title');
     expect(node).not.toBeNull();
     expect(node).toEqualText(recipe.name);
-    const rating = page.root.shadowRoot.querySelector('five-star-rating');
+    const rating = root.shadowRoot?.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
-    expect(rating).toEqualAttribute('value', recipe.averageRating);
+    expect(rating).toEqualAttribute('value', recipe.averageRating?.toString() ?? '0');
   });
 });

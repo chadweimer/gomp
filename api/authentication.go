@@ -25,7 +25,7 @@ type gompClaims struct {
 
 func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateRequestObject) (AuthenticateResponseObject, error) {
 	credentials := request.Body
-	user, err := h.db.Users().Authenticate(credentials.Username, credentials.Password)
+	user, err := h.db.Users().Authenticate(ctx, credentials.Username, credentials.Password)
 	if err != nil {
 		logger(ctx).Error("failure authenticating", "error", err)
 		return Authenticate401Response{}, nil
@@ -41,7 +41,7 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 
 func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
 	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userID int64) (RefreshTokenResponseObject, error) {
-		user, err := h.db.Users().Read(userID)
+		user, err := h.db.Users().Read(ctx, userID)
 		if err != nil {
 			logger(ctx).Error("failure refreshing token", "error", err)
 			return RefreshToken401Response{}, nil
@@ -118,7 +118,7 @@ func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*m
 		return nil, nil, err
 	}
 
-	user, err := h.verifyUserExists(userID, logger)
+	user, err := h.verifyUserExists(ctx, userID, logger)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			err = errors.New("invalid user")
@@ -163,9 +163,9 @@ func (h apiHandler) getAuthTokenFromRequest(header http.Header, logger *slog.Log
 	return nil, errors.New("invalid token")
 }
 
-func (h apiHandler) verifyUserExists(userID int64, logger *slog.Logger) (*models.User, error) {
+func (h apiHandler) verifyUserExists(ctx context.Context, userID int64, logger *slog.Logger) (*models.User, error) {
 	// Verify this is a valid user in the DB
-	user, err := h.db.Users().Read(userID)
+	user, err := h.db.Users().Read(ctx, userID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return nil, err
@@ -207,6 +207,8 @@ func getScopes(accessLevel models.AccessLevel) []string {
 		scopes = append(scopes, string(models.Editor))
 	case models.Editor:
 		scopes = append(scopes, string(models.Editor))
+	default:
+		// Viewer level or any other access level only gets Viewer scope
 	}
 
 	return scopes

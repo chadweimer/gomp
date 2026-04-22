@@ -10,47 +10,51 @@ import { SwipeDirection } from '../../../models';
 export class PageAdmin {
   @Element() el!: HTMLPageAdminElement;
   private tabs!: HTMLIonTabsElement;
-  private gesture: Gesture;
+  private gesture: Gesture | null = null;
 
   connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
-      this.tabs.getSelected().then(selectedTab => {
-        switch (selectedTab) {
-          case 'tab-admin-configuration':
-            if (swipe === SwipeDirection.Left) {
-              this.tabs.select('tab-admin-users');
-            }
-            break;
-          case 'tab-admin-users':
-            switch (swipe) {
-              case SwipeDirection.Left:
-                this.tabs.select('tab-admin-maintenance');
-                break
-              case SwipeDirection.Right:
-                this.tabs.select('tab-admin-configuration');
-                break;
-            }
-            break;
-          case 'tab-admin-maintenance':
-            if (swipe === SwipeDirection.Right) {
-              this.tabs.select('tab-admin-users');
-            }
-            break;
-        }
-      });
+      this.tabs.getSelected()
+        .then(async selectedTab => {
+          switch (selectedTab) {
+            case 'tab-admin-configuration':
+              if (swipe === SwipeDirection.Left) {
+                await this.tabs.select('tab-admin-users');
+              }
+              break;
+            case 'tab-admin-users':
+              switch (swipe) {
+                case SwipeDirection.Left:
+                  await this.tabs.select('tab-admin-maintenance');
+                  break
+                case SwipeDirection.Right:
+                  await this.tabs.select('tab-admin-configuration');
+                  break;
+              }
+              break;
+            case 'tab-admin-maintenance':
+              if (swipe === SwipeDirection.Right) {
+                await this.tabs.select('tab-admin-users');
+              }
+              break;
+          }
+        })
+        .catch(console.error);
     });
     this.gesture.enable();
   }
 
   disconnectedCallback() {
-    this.gesture.destroy();
+    this.gesture?.destroy();
     this.gesture = null;
   }
 
   render() {
     return (
       <Host>
-        <ion-tabs onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)} onIonTabsDidChange={() => sendActivatedCallback(this.tabs)} ref={el => this.tabs = el}>
+        <ion-tabs ref={(el: HTMLIonTabsElement) => this.tabs = el}
+          onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)}
+          onIonTabsDidChange={() => sendActivatedCallback(this.tabs)}>
           <ion-tab tab="tab-admin-configuration" component="page-admin-configuration" />
           <ion-tab tab="tab-admin-users" component="page-admin-users" />
           <ion-tab tab="tab-admin-maintenance" component="page-admin-maintenance" />

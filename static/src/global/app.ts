@@ -1,5 +1,7 @@
 import { setupConfig } from '@ionic/core';
 
-export default () => {
+const setup = () => {
   setupConfig({});
 };
+
+export default setup;

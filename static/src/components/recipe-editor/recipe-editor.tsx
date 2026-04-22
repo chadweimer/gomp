@@ -21,15 +21,15 @@ export class RecipeEditor {
     tags: []
   };
 
-  @State() currentUserSettings: UserSettings | null;
+  @State() currentUserSettings: UserSettings | null = null;
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
   private imageInput!: HTMLInputElement;
 
   async connectedCallback() {
-    this.currentUserSettings = await loadUserSettings();
     configureModalAutofocus(this.el);
+    this.currentUserSettings = await loadUserSettings();
   }
 
   render() {
@@ -40,7 +40,7 @@ export class RecipeEditor {
             <ion-buttons slot="primary">
               <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
-            <ion-title>{isNull(this.recipe.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
+            <ion-title>{isNull(this.recipe?.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onCancelClicked()}>Cancel</ion-button>
             </ion-buttons>
@@ -48,60 +48,62 @@ export class RecipeEditor {
         </ion-header>
 
         <ion-content>
-          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
-              <ion-input label="Name" label-placement="stacked" value={this.recipe.name}
+              <ion-input label="Name" label-placement="stacked" value={this.recipe?.name}
                 autocorrect="on"
                 spellcheck
                 required
                 autofocus
-                onIonBlur={e => this.recipe = { ...this.recipe, name: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, name: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
-            {isNull(this.recipe.id) &&
+            {isNull(this.recipe?.id) &&
               <ion-item lines="full">
                 <form enctype="multipart/form-data">
                   <ion-label position="stacked">Picture</ion-label>
-                  <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el} />
+                  <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el!} />
                 </form>
               </ion-item>
             }
             <ion-item lines="full">
-              <ion-input label="Serving Size" label-placement="stacked" value={this.recipe.servingSize}
+              <ion-input label="Serving Size" label-placement="stacked" value={this.recipe?.servingSize}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.recipe = { ...this.recipe, servingSize: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, servingSize: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-input label="Time" label-placement="stacked" value={this.recipe.time}
+              <ion-input label="Time" label-placement="stacked" value={this.recipe?.time}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={e => this.recipe = { ...this.recipe, time: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, time: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Ingredients" label-placement="stacked" value={this.recipe.ingredients}
+              <html-editor label="Ingredients" label-placement="stacked" value={this.recipe?.ingredients}
                 onValueChanged={e => this.recipe = { ...this.recipe, ingredients: e.detail }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Directions" label-placement="stacked" value={this.recipe.directions}
+              <html-editor label="Directions" label-placement="stacked" value={this.recipe?.directions}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Storage Instructions" label-placement="stacked" value={this.recipe.storageInstructions}
+              <html-editor label="Storage Instructions" label-placement="stacked" value={this.recipe?.storageInstructions}
                 onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Nutrition" label-placement="stacked" value={this.recipe.nutritionInfo}
+              <html-editor label="Nutrition" label-placement="stacked" value={this.recipe?.nutritionInfo}
                 onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail }} />
             </ion-item>
             <ion-item lines="full">
-              <ion-input label="Source" label-placement="stacked" value={this.recipe.sourceUrl}
+              <ion-input label="Source" label-placement="stacked" value={this.recipe?.sourceUrl}
                 inputmode="url"
-                onIonBlur={e => this.recipe = { ...this.recipe, sourceUrl: e.target.value as string }} />
+                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, sourceUrl: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item lines="full">
-              <tags-input label="Tags" label-placement="stacked" value={this.recipe.tags}
+              <tags-input label="Tags" label-placement="stacked" value={this.recipe?.tags}
                 suggestions={this.currentUserSettings?.favoriteTags ?? []}
-                onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, tags: e.detail }}>
+                <ion-input enterkeyhint="enter" />
+              </tags-input>
             </ion-item>
           </form>
         </ion-content>
@@ -114,13 +116,13 @@ export class RecipeEditor {
       return;
     }
 
-    dismissContainingModal(this.el, {
+    await dismissContainingModal(this.el, {
       recipe: this.recipe,
-      file: this.imageInput?.files.length > 0 ? this.imageInput.files[0] : null
+      file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput.files?.[0] : null
     });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 }

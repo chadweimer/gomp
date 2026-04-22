@@ -1,16 +1,19 @@
 package db
 
-import "testing"
+import (
+	"net/url"
+	"testing"
+)
 
 func TestConfig_validate(t *testing.T) {
 	type fields struct {
-		Driver           string
-		ConnectionString string
+		Driver string
+		URL    url.URL
 	}
 	init := func(opts ...func(f *fields)) fields {
 		f := fields{
-			Driver:           "sqlite",
-			ConnectionString: "file:/path/to/db",
+			Driver: "sqlite",
+			URL:    url.URL{Scheme: "file", Path: "/path/to/db"},
 		}
 		for _, opt := range opts {
 			opt(&f)
@@ -35,9 +38,9 @@ func TestConfig_validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Empty Connection String",
+			name: "Empty URL",
 			fields: init(func(f *fields) {
-				f.ConnectionString = ""
+				f.URL = url.URL{}
 			}),
 			wantErr: true,
 		},
@@ -45,8 +48,8 @@ func TestConfig_validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Config{
-				Driver:           tt.fields.Driver,
-				ConnectionString: tt.fields.ConnectionString,
+				Driver: tt.fields.Driver,
+				URL:    tt.fields.URL,
 			}
 			if got := c.validate(); tt.wantErr != (got != nil) {
 				t.Errorf("ImageConfig.validate() = %v, want error? %v", got, tt.wantErr)

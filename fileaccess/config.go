@@ -16,10 +16,6 @@ type Config struct {
 
 // FilesConfig represents the configuration settings for file storage
 type FilesConfig struct {
-	// Driver is used to select which backend data store is used for files.
-	// Supported drivers: fs, s3
-	Driver string `env:"FILES_DRIVER" default:"fs"`
-
 	// Path gets the path (full or relative) under which to store files (e.g., uploads and backups).
 	// When using Amazon S3, this should be set to the bucket name.
 	Path string `env:"FILES_PATH" default:"data"`
@@ -27,10 +23,6 @@ type FilesConfig struct {
 
 func (c FilesConfig) validate() error {
 	errs := make([]error, 0)
-
-	if c.Driver != FileSystemDriver && c.Driver != S3Driver {
-		errs = append(errs, fmt.Errorf("driver must be one of ('%s', '%s')", FileSystemDriver, S3Driver))
-	}
 
 	if c.Path == "" {
 		errs = append(errs, errors.New("path must be specified"))

@@ -4,9 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
+	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/samber/lo"
 )
 
 type ctxKey string
@@ -14,11 +18,13 @@ type ctxKey string
 const (
 	logCtxKey       = ctxKey("request-logger")
 	requestIDCtxKey = ctxKey("request-id")
+	clientIPCtxKey  = ctxKey("client-ip")
 )
 
 var (
-	requestIDHeader = http.CanonicalHeaderKey("X-Request-Id")
-	lastRequestID   uint64
+	forwardedForHeader = http.CanonicalHeaderKey("X-Forwarded-For")
+	requestIDHeader    = http.CanonicalHeaderKey("X-Request-Id")
+	lastRequestID      uint64
 )
 
 type responseWriter struct {
@@ -85,24 +91,21 @@ func GetLoggerFromRequest(r *http.Request) *slog.Logger {
 // LogRequests returns a middleware that logs all requests and their responses,
 // as well as adds a request specific logger than can be retreived with
 // GetLoggerFromContext or GetLoggerFromRequest.
-func LogRequests(logger *slog.Logger) func(http.Handler) http.Handler {
+func LogRequests(logger *slog.Logger, trustedProxies []net.IPNet) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
 
-			// Attempt to get request id from the headers
-			requestID := r.Header.Get(requestIDHeader)
-			if requestID == "" {
-				// If it wasn't in the header, use an auto-incrementing counter
-				nextRequestID := atomic.AddUint64(&lastRequestID, 1)
-				requestID = fmt.Sprintf("%d", nextRequestID)
-			}
+			requestID := getRequestID(r)
 			ctx = context.WithValue(ctx, requestIDCtxKey, requestID)
+
+			clientIP := getClientIP(r, trustedProxies)
+			ctx = context.WithValue(ctx, clientIPCtxKey, clientIP)
 
 			requestLogger := logger.With(
 				slog.String("request-id", requestID),
 				slog.Group("req",
-					"from", r.RemoteAddr,
+					"from", clientIP,
 					"method", r.Method,
 					"referrer", r.Referer(),
 					"url", r.URL.String()))
@@ -132,4 +135,39 @@ func Wrap(h http.Handler, middleware ...func(http.Handler) http.Handler) http.Ha
 	}
 
 	return h
+}
+
+func getRequestID(r *http.Request) string {
+	// Attempt to get request id from the headers
+	requestID := r.Header.Get(requestIDHeader)
+	if requestID == "" {
+		// If it wasn't in the header, use an auto-incrementing counter
+		nextRequestID := atomic.AddUint64(&lastRequestID, 1)
+		requestID = fmt.Sprintf("%d", nextRequestID)
+	}
+	return requestID
+}
+
+func getClientIP(r *http.Request, trustedProxies []net.IPNet) string {
+	// Get the remote address from the request
+	remoteIP := r.RemoteAddr
+	if host, _, err := net.SplitHostPort(remoteIP); err == nil {
+		remoteIP = host
+	}
+
+	if remoteIPAddr := net.ParseIP(remoteIP); remoteIPAddr != nil {
+		isTrustedProxy := lo.ContainsBy(trustedProxies, func(proxyNet net.IPNet) bool {
+			return proxyNet.Contains(remoteIPAddr)
+		})
+		if isTrustedProxy {
+			// If it's a trusted proxy, check the X-Forwarded-For header for the original client IP
+			xForwardedFor := r.Header.Get(forwardedForHeader)
+			if xForwardedFor != "" {
+				// The X-Forwarded-For header can contain multiple IPs, the first one is the original client IP
+				remoteIP, _, _ = strings.Cut(xForwardedFor, ",")
+			}
+		}
+	}
+
+	return remoteIP
 }

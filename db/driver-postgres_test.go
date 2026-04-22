@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"database/sql/driver"
 	"errors"
@@ -10,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang/mock/gomock"
 	"github.com/samber/lo"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_postgres_GetSearchFields(t *testing.T) {
@@ -85,7 +84,7 @@ func Test_lockPostgres(t *testing.T) {
 
 			sut, dbmock := getMockDb(t)
 			defer sut.Close()
-			conn, err := sut.Db.Conn(context.Background())
+			conn, err := sut.Db.Conn(t.Context())
 			if err != nil {
 				t.Fatalf("failed to open connection, error: %v", err)
 			}

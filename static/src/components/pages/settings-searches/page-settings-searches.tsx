@@ -64,23 +64,27 @@ export class PageSettingsSearches {
       await usersApi.addSearchFilter({ searchFilter });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to create search filter.');
+      await showToast('Failed to create search filter.');
     }
   }
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
+      if (isNull(searchFilter.id)) {
+        throw new Error('Cannot save search filter: filter ID is null.');
+      }
+
       await usersApi.saveSearchFilter({
         filterId: searchFilter.id,
         searchFilter: searchFilter
       });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to save search filter.');
+      await showToast('Failed to save search filter.');
     }
   }
 
-  private async deleteSearchFilter(id: number | null) {
+  private async deleteSearchFilter(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }
@@ -89,7 +93,7 @@ export class PageSettingsSearches {
       await usersApi.deleteSearchFilter({ filterId: id });
     } catch (ex) {
       console.error(ex);
-      showToast('Failed to delete search filter.');
+      await showToast('Failed to delete search filter.');
     }
   }
 
@@ -115,7 +119,7 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onEditFilterClicked(id: number | null) {
+  private async onEditFilterClicked(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }
@@ -170,7 +174,7 @@ export class PageSettingsSearches {
     });
   }
 
-  private async onLoadSearchClicked(id: number | null) {
+  private async onLoadSearchClicked(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"path/filepath"
 	"time"
 
@@ -42,14 +43,14 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 	return fieldStr, fieldArgs
 }
 
-func openPostgres(connectionString string, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
+func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// In docker, on first bring up, the DB takes a little while.
 	// Let's try a few times to establish connection before giving up.
 	const maxAttempts = 20
 	var db *sqlx.DB
 	var err error
 	for i := 1; i <= maxAttempts; i++ {
-		db, err = sqlx.Connect(PostgresDriverName, connectionString)
+		db, err = sqlx.Connect(PostgresDriverName, connectionURL.String())
 		if err == nil {
 			break
 		}
@@ -89,7 +90,7 @@ func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrations
 	}
 	defer func() {
 		if unlockErr := unlockPostgres(conn); unlockErr != nil {
-			panic("Failed to unlock database")
+			panic(fmt.Errorf("Failed to unlock database: %w", unlockErr))
 		}
 	}()
 

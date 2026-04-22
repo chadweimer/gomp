@@ -39,15 +39,15 @@ export class RecipeLinkEditor {
         </ion-header>
 
         <ion-content scrollY={false}>
-          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el}>
+          <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Find Recipe" label-placement="stacked" value={this.query} type="search"
                 autocorrect="on"
                 spellcheck
                 autofocus
                 debounce={500}
-                onIonInput={e => this.query = e.target.value as string}
-                ref={el => this.searchInput = el} />
+                onIonInput={(e: Event) => this.query = (e.currentTarget as HTMLIonInputElement).value as string}
+                ref={(el: HTMLIonInputElement) => this.searchInput = el} />
             </ion-item>
             <ion-content>
               <ion-list lines="none">
@@ -58,8 +58,9 @@ export class RecipeLinkEditor {
                     : <ion-button onClick={() => this.includeArchived = true}>Include Archived</ion-button>
                   }
                 </ion-list-header>
-                <ion-radio-group value={this.selectedRecipeId} onIonChange={e => this.selectedRecipeId = e.detail.value} allow-empty-selection>
-                  {this.matchingRecipes.map(recipe =>
+                <ion-radio-group value={this.selectedRecipeId}
+                  onIonChange={(e: CustomEvent<{ value: number }>) => this.selectedRecipeId = e.detail.value} allow-empty-selection>
+                  {this.matchingRecipes?.map(recipe =>
                     <ion-item key={recipe.id} lines="full">
                       <ion-thumbnail slot="start" class="preview">
                         {!isNullOrEmpty(recipe.thumbnailUrl) && <img alt="" src={recipe.thumbnailUrl} />}
@@ -104,7 +105,7 @@ export class RecipeLinkEditor {
     this.selectedRecipeId = null;
 
     // Don't allow linking to self
-    this.matchingRecipes = recipes.filter(r => r.id !== this.parentRecipeId) ?? [];
+    this.matchingRecipes = recipes?.filter(r => r.id !== this.parentRecipeId) ?? [];
   }
 
   private async onSaveClicked() {
@@ -119,10 +120,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
+    await dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
   }
 
-  private onCancelClicked() {
-    dismissContainingModal(this.el);
+  private async onCancelClicked() {
+    await dismissContainingModal(this.el);
   }
 }

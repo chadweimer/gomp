@@ -12,7 +12,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Image_Create(t *testing.T) {
@@ -27,7 +27,7 @@ func Test_Image_Create(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My image", "url", "thumbnailURL", nil, nil},
+		{1, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", nil, nil},
 		{0, "", "", "", sql.ErrNoRows, ErrNotFound},
 		{0, "", "", "", sql.ErrConnDone, sql.ErrConnDone},
 	}
@@ -62,7 +62,7 @@ func Test_Image_Create(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().Create(image)
+			err := sut.Images().Create(t.Context(), image)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -104,14 +104,14 @@ func Test_Image_Read(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\$1 AND recipe_id = \\$2").WithArgs(test.imageID, test.recipeID)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "name", "url", "thumbnail_url", "created_at", "modified_at"}).
-					AddRow(test.imageID, test.recipeID, "My Image", "My URL", "My Thumbnail URL", time.Now(), time.Now())
+					AddRow(test.imageID, test.recipeID, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", time.Now(), time.Now())
 				query.WillReturnRows(rows)
 			} else {
 				query.WillReturnError(test.dbError)
 			}
 
 			// Act
-			image, err := sut.Images().Read(test.recipeID, test.imageID)
+			image, err := sut.Images().Read(t.Context(), test.recipeID, test.imageID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -153,14 +153,14 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_image WHERE id = \\(SELECT image_id FROM recipe WHERE id = \\$1\\)").WithArgs(test.recipeID)
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"id", "recipe_id", "name", "url", "thumbnail_url", "created_at", "modified_at"}).
-					AddRow(test.imageID, test.recipeID, "My Image", "My URL", "My Thumbnail URL", time.Now(), time.Now())
+					AddRow(test.imageID, test.recipeID, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", time.Now(), time.Now())
 				query.WillReturnRows(rows)
 			} else {
 				query.WillReturnError(test.dbError)
 			}
 
 			// Act
-			image, err := sut.Images().ReadMainImage(test.recipeID)
+			image, err := sut.Images().ReadMainImage(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -171,6 +171,63 @@ func Test_Image_ReadMainImage(t *testing.T) {
 			}
 			if test.expectedError == nil && *image.ID != test.imageID {
 				t.Errorf("ids don't match, expected: %d, received: %d", test.imageID, *image.ID)
+			}
+		})
+	}
+}
+
+func Test_Image_Update(t *testing.T) {
+	type testArgs struct {
+		recipeID      int64
+		imageID       int64
+		name          string
+		url           string
+		thumbnailURL  string
+		dbError       error
+		expectedError error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{1, 2, "plated-dish.jpg", "/uploads/recipes/1/images/plated-dish.jpg", "/uploads/recipes/1/thumbs/plated-dish.jpg", nil, nil},
+		{0, 0, "", "", "", sql.ErrNoRows, ErrNotFound},
+		{0, 0, "", "", "", sql.ErrConnDone, sql.ErrConnDone},
+	}
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			exec := dbmock.ExpectExec("UPDATE recipe_image SET recipe_id = \\$1, name = \\$2, url = \\$3, thumbnail_url = \\$4 WHERE id = \\$5").
+				WithArgs(test.recipeID, test.name, test.url, test.thumbnailURL, test.imageID)
+			if test.dbError == nil {
+				exec.WillReturnResult(driver.RowsAffected(1))
+				dbmock.ExpectCommit()
+			} else {
+				exec.WillReturnError(test.dbError)
+				dbmock.ExpectRollback()
+			}
+
+			// Act
+			err := sut.Images().Update(t.Context(), &models.RecipeImage{
+				ID:           &test.imageID,
+				RecipeID:     &test.recipeID,
+				Name:         &test.name,
+				URL:          &test.url,
+				ThumbnailURL: &test.thumbnailURL,
+			})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 		})
 	}
@@ -210,7 +267,7 @@ func Test_Image_UpdateMainImage(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().UpdateMainImage(test.recipeID, test.imageID)
+			err := sut.Images().UpdateMainImage(t.Context(), test.recipeID, test.imageID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -259,7 +316,7 @@ func Test_Image_Delete(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().Delete(test.recipeID, test.imageID)
+			err := sut.Images().Delete(t.Context(), test.recipeID, test.imageID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -305,7 +362,7 @@ func Test_Image_DeleteAll(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Images().DeleteAll(test.recipeID)
+			err := sut.Images().DeleteAll(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -332,17 +389,17 @@ func Test_Image_List(t *testing.T) {
 		{1, []models.RecipeImage{
 			{
 				ID:           utils.GetPtr[int64](1),
-				Name:         utils.GetPtr("My Image"),
-				URL:          utils.GetPtr("My URL"),
-				ThumbnailURL: utils.GetPtr("My Thumbnail URL"),
+				Name:         utils.GetPtr("plated-dish.jpg"),
+				URL:          utils.GetPtr("/uploads/recipes/1/images/plated-dish.jpg"),
+				ThumbnailURL: utils.GetPtr("/uploads/recipes/1/thumbs/plated-dish.jpg"),
 				CreatedAt:    &now,
 				ModifiedAt:   &now,
 			},
 			{
 				ID:           utils.GetPtr[int64](2),
-				Name:         utils.GetPtr("My Other Image"),
-				URL:          utils.GetPtr("My URL"),
-				ThumbnailURL: utils.GetPtr("My Thumbnail URL"),
+				Name:         utils.GetPtr("prep-step.jpg"),
+				URL:          utils.GetPtr("/uploads/recipes/1/images/prep-step.jpg"),
+				ThumbnailURL: utils.GetPtr("/uploads/recipes/1/thumbs/prep-step.jpg"),
 				CreatedAt:    &now,
 				ModifiedAt:   &now,
 			},
@@ -371,7 +428,7 @@ func Test_Image_List(t *testing.T) {
 			}
 
 			// Act
-			result, err := sut.Images().List(test.recipeID)
+			result, err := sut.Images().List(t.Context(), test.recipeID)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -13,18 +14,18 @@ type sqlBackupDriver struct {
 	db *sqlx.DB
 }
 
-func (b *sqlBackupDriver) Export() (*models.Backup, error) {
+func (b *sqlBackupDriver) Export(ctx context.Context) (*models.Backup, error) {
 	backup := models.Backup(make([]models.TableData, 0))
-	err := tx(b.db, func(db *sqlx.Tx) error {
+	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		// Get all table names
 		tables := make([]string, 0)
-		if err := sqlx.Select(db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
+		if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
 			return err
 		}
 
 		// Process each table
 		for _, tableName := range tables {
-			rowData, err := getRows(db, tableName)
+			rowData, err := getRows(ctx, db, tableName)
 			if err != nil {
 				return err
 			}
@@ -44,20 +45,20 @@ func (b *sqlBackupDriver) Export() (*models.Backup, error) {
 	return &backup, nil
 }
 
-func (b *sqlBackupDriver) Import(backup *models.Backup) error {
+func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.Backup) error {
 	// Import data from all tables in the backup
-	err := tx(b.db, func(db *sqlx.Tx) error {
+	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		for _, tableData := range *backup {
 			sanitizedTableName, err := sanitizeIdentifier(tableData.TableName)
 			if err != nil {
 				return fmt.Errorf("sanitizing table name %s: %w", tableData.TableName, err)
 			}
 
-			if _, err := db.Exec(fmt.Sprintf("DELETE FROM %s", sanitizedTableName)); err != nil {
+			if _, err := db.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s", sanitizedTableName)); err != nil {
 				return fmt.Errorf("deleting from table %s: %w", sanitizedTableName, err)
 			}
 
-			if err := insertRows(db, sanitizedTableName, tableData.Data); err != nil {
+			if err := insertRows(ctx, db, sanitizedTableName, tableData.Data); err != nil {
 				return fmt.Errorf("importing table %s: %w", sanitizedTableName, err)
 			}
 		}
@@ -69,8 +70,8 @@ func (b *sqlBackupDriver) Import(backup *models.Backup) error {
 	return nil
 }
 
-func getRows(db sqlx.Queryer, tableName string) ([]models.RowData, error) {
-	rows, err := db.Queryx(fmt.Sprintf("SELECT * FROM %s", tableName))
+func getRows(ctx context.Context, db sqlx.QueryerContext, tableName string) ([]models.RowData, error) {
+	rows, err := db.QueryxContext(ctx, fmt.Sprintf("SELECT * FROM %s", tableName))
 	if err != nil {
 		return nil, fmt.Errorf("querying %s: %w", tableName, err)
 	}
@@ -90,7 +91,7 @@ func getRows(db sqlx.Queryer, tableName string) ([]models.RowData, error) {
 	return data, nil
 }
 
-func insertRows(db *sqlx.Tx, tableName string, rowData []models.RowData) error {
+func insertRows(ctx context.Context, db *sqlx.Tx, tableName string, rowData []models.RowData) error {
 	// Check if there is anything to insert
 	if len(rowData) == 0 {
 		return nil
@@ -114,14 +115,14 @@ func insertRows(db *sqlx.Tx, tableName string, rowData []models.RowData) error {
 		strings.Join(placeholders, ","))
 
 	// Prepare the statement
-	stmt, err := db.PrepareNamed(insertQuery)
+	stmt, err := db.PrepareNamedContext(ctx, insertQuery)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
 	for _, row := range rowData {
-		_, err := stmt.Exec(row)
+		_, err := stmt.ExecContext(ctx, row)
 		if err != nil {
 			return fmt.Errorf("inserting row into %s: %w", tableName, err)
 		}
