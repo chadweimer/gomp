@@ -1,6 +1,6 @@
 import { Gesture } from '@ionic/core';
 import { Component, Element, Host, h } from '@stencil/core';
-import { createSwipeGesture, sendActivatedCallback, sendDeactivatingCallback } from '../../../helpers/utils';
+import { createSwipeGesture, sendActivatedCallback } from '../../../helpers/utils';
 import { SwipeDirection } from '../../../models';
 
 @Component({
@@ -53,7 +53,6 @@ export class PageAdmin {
     return (
       <Host>
         <ion-tabs ref={(el: HTMLIonTabsElement) => this.tabs = el}
-          onIonTabsWillChange={() => sendDeactivatingCallback(this.tabs)}
           onIonTabsDidChange={() => sendActivatedCallback(this.tabs)}>
           <ion-tab tab="tab-admin-configuration" component="page-admin-configuration" />
           <ion-tab tab="tab-admin-users" component="page-admin-users" />

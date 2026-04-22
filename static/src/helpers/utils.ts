@@ -12,10 +12,6 @@ export interface ComponentWithActivatedCallback {
   activatedCallback?: () => Promise<void>;
 }
 
-export interface ComponentWithDeactivatingCallback {
-  deactivatingCallback?: () => Promise<void>;
-}
-
 export function isNull<T>(val: T | null | undefined): val is null | undefined {
   return val === undefined || val === null;
 }
@@ -212,14 +208,6 @@ export async function sendActivatedCallback(router: HTMLIonRouterOutletElement |
   const el = await getActiveComponent(router) as ComponentWithActivatedCallback | null | undefined;
   if (!isNull(el)) {
     await el.activatedCallback?.();
-  }
-}
-
-export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
-  // Let the current page know it's being deactivated
-  const el = await getActiveComponent(router) as ComponentWithDeactivatingCallback | null | undefined;
-  if (!isNull(el)) {
-    await el.deactivatingCallback?.();
   }
 }
 
