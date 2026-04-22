@@ -19,12 +19,15 @@ func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObjec
 		return nil, err
 	}
 
-	tempFile, err := os.CreateTemp("", "backup-*.zip")
+	if err = os.MkdirAll("tmp", 0750); err != nil {
+		return nil, err
+	}
+	tempFile, err := os.CreateTemp("tmp", "backup-*.zip")
 	if err != nil {
 		return nil, err
 	}
 	defer tempFile.Close()
-	defer os.RemoveAll(tempFile.Name())
+	defer os.Remove(tempFile.Name())
 
 	err = fileaccess.CreateZip(tempFile, func(writer *zip.Writer) error {
 		// // Write the backup to JSON
