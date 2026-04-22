@@ -160,6 +160,10 @@ html:not(.hydrated) body {
   z-index: 1;
 }
 
+.show-on-print-only {
+  display: none;
+}
+
 ion-card-title.ios {
   font-size: 1.4rem;
 }
@@ -199,12 +203,6 @@ ion-thumbnail.preview {
 }
 
 @media print {
-
-  ion-header,
-  ion-footer {
-    display: none !important;
-  }
-
   body {
     position: initial !important;
     max-height: initial !important;
@@ -226,5 +224,13 @@ ion-thumbnail.preview {
   .ion-page {
     display: initial !important;
     position: initial !important;
+  }
+
+  .show-on-print-only {
+    display: initial;
+  }
+
+  .hide-on-print {
+    display: none !important;
   }
 }

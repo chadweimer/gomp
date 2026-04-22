@@ -141,7 +141,7 @@ export class AppRoot {
         </ion-menu>
 
         <div class="ion-page" id="main-content">
-          <ion-header mode="md">
+          <ion-header mode="md" class="hide-on-print">
             <ion-toolbar color="primary">
               {hasScope(state.jwtToken, AccessLevel.Viewer) &&
                 <ion-buttons slot="start">

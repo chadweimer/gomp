@@ -1,4 +1,4 @@
-import { Component, h, Host, Listen, Prop, State } from '@stencil/core';
+import { Component, h, Host, Prop } from '@stencil/core';
 import { Recipe, RecipeImage } from '../../generated';
 import { isNullOrEmpty } from '../../helpers/utils';
 
@@ -11,36 +11,6 @@ export class RecipePrint {
   @Prop() recipe: Recipe | null = null;
   @Prop() mainImage: RecipeImage | null = null;
   @Prop() rating = 0;
-
-  @State() hasPrinted: boolean = false;
-
-  @Listen('load', { target: 'window' })
-  onLoaded() {
-    if (this.hasPrinted) return;
-    this.hasPrinted = true;
-    // small delay to ensure layout stabilizes
-    setTimeout(() => {
-      try {
-        window.print();
-      } catch (e) {
-        console.error(e);
-      }
-    }, 500);
-  }
-
-  componentDidLoad() {
-    // If there's no main image, still auto-print after short delay
-    if (!this.mainImage && !this.hasPrinted) {
-      this.hasPrinted = true;
-      setTimeout(() => {
-        try {
-          window.print();
-        } catch (e) {
-          console.error(e);
-        }
-      }, 500);
-    }
-  }
 
   render() {
     return (
