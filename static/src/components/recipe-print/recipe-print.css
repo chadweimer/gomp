@@ -1,0 +1,41 @@
+@import '../../global/app.css';
+
+:host {
+  color: #222;
+  padding: 24px;
+  margin: 0 auto;
+}
+
+.print-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+}
+
+.print-header .meta {
+  color: #555;
+  margin-bottom: 16px;
+}
+
+.print-image {
+  margin: 16px 0;
+}
+
+.print-image img {
+  max-height: 200px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.print-section section {
+  margin: 16px 0;
+}
+
+.print-section h2 {
+  font-size: 18px;
+  margin: 0 0 8px 0;
+}
+
+section {
+  break-inside: avoid;
+}
