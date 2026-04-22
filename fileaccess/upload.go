@@ -166,7 +166,7 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 
 func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName string) (string, error) {
 	fullPath := filepath.Join(baseDir, imageName)
-	url := filepath.ToSlash(filepath.Join("/", RootUploadPath, fullPath))
+	url := filepath.ToSlash(filepath.Join("/", fullPath))
 	err := u.driver.Save(fullPath, reader)
 	if err != nil {
 		return "", fmt.Errorf("failed to save image to '%s' using configured upload driver: %w", fullPath, err)
@@ -175,15 +175,15 @@ func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName
 }
 
 func getDirPathForRecipe(recipeID int64) string {
-	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
+	return filepath.Join(RootUploadPath, "recipes", strconv.FormatInt(recipeID, 10))
 }
 
 func getDirPathForImage(recipeID int64) string {
-	return filepath.Join(RootUploadPath, getDirPathForRecipe(recipeID), "images")
+	return filepath.Join(getDirPathForRecipe(recipeID), "images")
 }
 
 func getDirPathForThumbnail(recipeID int64) string {
-	return filepath.Join(RootUploadPath, getDirPathForRecipe(recipeID), "thumbs")
+	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
 }
 
 func fit(src image.Rectangle, size int) (resize image.Rectangle) {
