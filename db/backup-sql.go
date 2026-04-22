@@ -10,17 +10,22 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type sqlBackupDriverAdapter interface {
+	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
+}
+
 type sqlBackupDriver struct {
-	db *sqlx.DB
+	db      *sqlx.DB
+	adapter sqlBackupDriverAdapter
 }
 
 func (b *sqlBackupDriver) Export(ctx context.Context) (*models.Backup, error) {
 	backup := models.Backup(make([]models.TableData, 0))
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		// Get all table names
-		tables := make([]string, 0)
-		if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
-			return err
+		tables, err := b.adapter.GetTableNames(ctx, db)
+		if err != nil {
+			return fmt.Errorf("getting table names: %w", err)
 		}
 
 		// Process each table

@@ -24,9 +24,9 @@ import (
 // SQLiteDriverName is the name to use for this driver
 const SQLiteDriverName string = "sqlite"
 
-type sqliteRecipeDriverAdapter struct{}
+type sqliteDriverAdapter struct{}
 
-func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
 	for _, field := range supportedSearchFields {
@@ -40,6 +40,15 @@ func (sqliteRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchFie
 	}
 
 	return fieldStr, fieldArgs
+}
+
+func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
+	tables := make([]string, 0)
+	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
 }
 
 func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -67,7 +76,8 @@ func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsFor
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSQLDriver(db, sqliteRecipeDriverAdapter{})
+	adapter := sqliteDriverAdapter{}
+	drv := newSQLDriver(db, adapter, adapter)
 	return drv, nil
 }
 

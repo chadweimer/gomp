@@ -29,7 +29,7 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			sut := postgresRecipeDriverAdapter{}
+			sut := postgresDriverAdapter{}
 
 			// Act
 			stmt, args := sut.GetSearchFields(test.fields, test.query)

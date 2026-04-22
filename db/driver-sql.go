@@ -30,17 +30,17 @@ type sqlDriver struct {
 	backups *sqlBackupDriver
 }
 
-func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+func newSQLDriver(db *sqlx.DB, recipeAdapter sqlRecipeDriverAdapter, backupAdapter sqlBackupDriverAdapter) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
 		app:     &sqlAppConfigurationDriver{db},
-		recipes: &sqlRecipeDriver{db, adapter},
+		recipes: &sqlRecipeDriver{db, recipeAdapter},
 		images:  &sqlRecipeImageDriver{db},
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
-		backups: &sqlBackupDriver{db},
+		backups: &sqlBackupDriver{db, backupAdapter},
 	}
 }
 

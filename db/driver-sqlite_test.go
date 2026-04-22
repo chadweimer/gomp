@@ -25,7 +25,7 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			sut := sqliteRecipeDriverAdapter{}
+			sut := sqliteDriverAdapter{}
 
 			// Act
 			stmt, args := sut.GetSearchFields(test.fields, test.query)

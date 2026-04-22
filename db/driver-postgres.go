@@ -26,9 +26,9 @@ import (
 // PostgresDriverName is the name to use for this driver
 const PostgresDriverName string = "postgres"
 
-type postgresRecipeDriverAdapter struct{}
+type postgresDriverAdapter struct{}
 
-func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
 
@@ -41,6 +41,15 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 	}
 
 	return fieldStr, fieldArgs
+}
+
+func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
+	tables := make([]string, 0)
+	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
 }
 
 func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -71,7 +80,8 @@ func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsF
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSQLDriver(db, postgresRecipeDriverAdapter{})
+	adapter := postgresDriverAdapter{}
+	drv := newSQLDriver(db, adapter, adapter)
 	return drv, nil
 }
 

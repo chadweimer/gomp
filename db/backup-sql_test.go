@@ -16,6 +16,7 @@ import (
 
 func Test_Backup_Export(t *testing.T) {
 	type testArgs struct {
+		mockTableNames []string
 		expectedTables []models.TableData
 		dbError        error
 		expectedError  error
@@ -23,6 +24,7 @@ func Test_Backup_Export(t *testing.T) {
 
 	tests := []testArgs{
 		{
+			mockTableNames: []string{"table1", "table2"},
 			expectedTables: []models.TableData{
 				{
 					TableName: "table1",
@@ -43,6 +45,7 @@ func Test_Backup_Export(t *testing.T) {
 			expectedError: nil,
 		},
 		{
+			mockTableNames: []string{"table1"},
 			expectedTables: nil,
 			dbError:        sql.ErrConnDone,
 			expectedError:  sql.ErrConnDone,
@@ -54,50 +57,56 @@ func Test_Backup_Export(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDbWithTableNames(t, test.mockTableNames)
 			defer sut.Close()
 
 			dbmock.MatchExpectationsInOrder(false)
 			dbmock.ExpectBegin()
 
 			tableRows := sqlmock.NewRows([]string{"name"})
-			for _, table := range test.expectedTables {
-				tableRows.AddRow(table.TableName)
+			for _, tableName := range test.mockTableNames {
+				tableRows.AddRow(tableName)
 
-				if len(table.Data) > 0 {
-					columns := slices.Sorted(slices.Values(lo.Keys(table.Data[0])))
-					valueRows := sqlmock.NewRows(columns)
-					for _, row := range table.Data {
-						// Sort for consistent order
-						sortedRows := slices.SortedFunc(slices.Values(lo.Entries(row)), func(a, b lo.Entry[string, any]) int {
-							switch {
-							case a.Key < b.Key:
-								return -1
-							case a.Key > b.Key:
-								return 1
-							default:
-								return 0
-							}
-						})
+				if test.dbError == nil {
+					// Get the table data
+					table, ok := lo.Find(test.expectedTables, func(table models.TableData) bool {
+						return table.TableName == tableName
+					})
 
-						values := lo.Map(sortedRows, func(v lo.Entry[string, any], _ int) driver.Value {
-							return driver.Value(v.Value)
-						})
-						valueRows.AddRow(values...)
+					if ok && len(table.Data) > 0 {
+						columns := slices.Sorted(slices.Values(lo.Keys(table.Data[0])))
+						valueRows := sqlmock.NewRows(columns)
+						for _, row := range table.Data {
+							// Sort for consistent order
+							sortedRows := slices.SortedFunc(slices.Values(lo.Entries(row)), func(a, b lo.Entry[string, any]) int {
+								switch {
+								case a.Key < b.Key:
+									return -1
+								case a.Key > b.Key:
+									return 1
+								default:
+									return 0
+								}
+							})
+
+							values := lo.Map(sortedRows, func(v lo.Entry[string, any], _ int) driver.Value {
+								return driver.Value(v.Value)
+							})
+							valueRows.AddRow(values...)
+						}
+						dbmock.ExpectQuery(fmt.Sprintf("SELECT \\* FROM %s", tableName)).
+							WillReturnRows(valueRows)
 					}
-					dbmock.ExpectQuery(fmt.Sprintf("SELECT \\* FROM %s", table.TableName)).
-						WillReturnRows(valueRows)
+				} else {
+					dbmock.ExpectQuery(fmt.Sprintf("SELECT \\* FROM %s", tableName)).
+						WillReturnError(test.dbError)
 				}
 			}
 
 			if test.dbError == nil {
 				dbmock.ExpectCommit()
-				dbmock.ExpectQuery("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'").
-					WillReturnRows(tableRows)
 			} else {
 				dbmock.ExpectRollback()
-				dbmock.ExpectQuery("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'").
-					WillReturnError(test.dbError)
 			}
 
 			// Act
