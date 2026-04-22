@@ -11,6 +11,9 @@ import (
 type Driver interface {
 	fs.FS
 
+	// Create creates a new file at the specified path and returns a WriteCloser for writing to it.
+	Create(filePath string) (io.WriteCloser, error)
+
 	// Save creates or overrites a file with the content from the provider reader.
 	// This will seek to the beginning of the content.
 	Save(filePath string, reader io.ReadSeeker) error

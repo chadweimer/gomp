@@ -24,6 +24,18 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 	return &fileSystemDriver{os.DirFS(rootPath), rootPath}, nil
 }
 
+func (u *fileSystemDriver) Create(filePath string) (io.WriteCloser, error) {
+	// First prepend the base UploadPath
+	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
+
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, fs.FileMode(0777)); err != nil {
+		return nil, err
+	}
+
+	return os.Create(filePath) // #nosec G304 -- Path already cleaned
+}
+
 func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
 	// Make sure we're at the beginning of the content
 	_, err := reader.Seek(0, io.SeekStart)
@@ -31,16 +43,7 @@ func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
 		return err
 	}
 
-	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
-
-	dir := filepath.Dir(filePath)
-	err = os.MkdirAll(dir, fs.FileMode(0777))
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Create(filePath) // #nosec G304 -- Path already cleaned
+	file, err := u.Create(filePath)
 	if err != nil {
 		return err
 	}

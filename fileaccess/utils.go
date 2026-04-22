@@ -2,6 +2,7 @@ package fileaccess
 
 import (
 	"archive/zip"
+	"errors"
 	"io"
 	"io/fs"
 )
@@ -24,6 +25,14 @@ func WriteFileToZip(name string, src io.Reader, zipWriter *zip.Writer) (err erro
 
 // CopyDirectoryToZip copies a directory and its contents to a zip archive.
 func CopyDirectoryToZip(f fs.FS, srcPath string, writer *zip.Writer) error {
+	// Do nothing if the directory doesn't exist
+	if _, err := fs.Stat(f, srcPath); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
 	return fs.WalkDir(f, srcPath, func(name string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

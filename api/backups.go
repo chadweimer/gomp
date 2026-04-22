@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"os"
+	"log/slog"
 	"path/filepath"
 	"time"
 
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/middleware"
+	"github.com/chadweimer/gomp/models"
 )
 
 func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
@@ -23,18 +24,42 @@ func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObjec
 		return nil, err
 	}
 
-	tempFile, err := os.CreateTemp("", "backup-*.zip")
-	if err != nil {
-		logger.ErrorContext(ctx, "Failed to create temp file", "error", err)
+	// Save the backup file
+	// Generate a name based on the current timestamp in UTC
+	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
+	backupFilePath := filepath.Join("backups", timestamp+".zip")
+	if err = h.writeBackup(ctx, backupFilePath, logger, exportedData); err != nil {
+		logger.ErrorContext(ctx, "Failed to write backup file", "error", err)
+		// Attempt to clean up the backup file if it was created
+		cleanupErr := h.fs.Delete(backupFilePath)
+		if cleanupErr != nil {
+			logger.ErrorContext(ctx, "Failed to clean up backup file", "error", cleanupErr)
+		}
 		return nil, err
 	}
-	defer tempFile.Close()
-	defer os.Remove(tempFile.Name())
 
-	logger.DebugContext(ctx, "Created temp file")
+	// TODO: Give back the location of the backup
+	return CreateBackup201Response{}, nil
+}
 
-	err = fileaccess.CreateZip(tempFile, func(writer *zip.Writer) error {
-		// // Write the backup to JSON
+func (apiHandler) GetAllBackups(_ context.Context, _ GetAllBackupsRequestObject) (GetAllBackupsResponseObject, error) {
+	return GetAllBackups200Response{}, nil
+}
+
+func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBackupResponseObject, error) {
+	return GetBackup200ApplicationGzipResponse{}, nil
+}
+
+func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *slog.Logger, exportedData *models.Backup) error {
+	backupFile, err := h.fs.Create(filePath)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
+		return err
+	}
+	defer backupFile.Close()
+
+	return fileaccess.CreateZip(backupFile, func(writer *zip.Writer) error {
+		// Write the backup to JSON
 		buf, err := json.MarshalIndent(exportedData, "", "  ")
 		if err != nil {
 			logger.ErrorContext(ctx, "Failed to marshal backup data", "error", err)
@@ -50,23 +75,4 @@ func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObjec
 		// Copy all uploads to the backup directory
 		return fileaccess.CopyDirectoryToZip(h.fs, fileaccess.RootUploadPath, writer)
 	})
-
-	// Save the backup file
-	// Generate a name based on the current timestamp in UTC
-	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
-	backupFilePath := filepath.Join("backups", timestamp+".zip")
-	if err = h.fs.Save(backupFilePath, tempFile); err != nil {
-		return nil, err
-	}
-
-	// TODO: Give back the location of the backup
-	return CreateBackup201Response{}, nil
-}
-
-func (apiHandler) GetAllBackups(_ context.Context, _ GetAllBackupsRequestObject) (GetAllBackupsResponseObject, error) {
-	return GetAllBackups200Response{}, nil
-}
-
-func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBackupResponseObject, error) {
-	return GetBackup200ApplicationGzipResponse{}, nil
 }
