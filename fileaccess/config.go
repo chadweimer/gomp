@@ -17,7 +17,6 @@ type Config struct {
 // FilesConfig represents the configuration settings for file storage
 type FilesConfig struct {
 	// Path gets the path (full or relative) under which to store files (e.g., uploads and backups).
-	// When using Amazon S3, this should be set to the bucket name.
 	Path string `env:"FILES_PATH" default:"data"`
 }
 
