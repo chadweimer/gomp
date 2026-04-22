@@ -166,14 +166,14 @@ func Test_Backup_Export(t *testing.T) {
 
 func Test_Backup_Import(t *testing.T) {
 	type testArgs struct {
-		input         models.Backup
+		input         models.BackupData
 		dbError       error
 		expectedError error
 	}
 
 	tests := []testArgs{
 		{
-			input: models.Backup{
+			input: models.BackupData{
 				{
 					TableName: "table1",
 					Data: []models.RowData{
@@ -193,12 +193,12 @@ func Test_Backup_Import(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			input:         models.Backup{},
+			input:         models.BackupData{},
 			dbError:       nil,
 			expectedError: nil,
 		},
 		{
-			input: models.Backup{
+			input: models.BackupData{
 				{
 					TableName: "table1",
 					Data: []models.RowData{

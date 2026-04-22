@@ -30,8 +30,8 @@ func Test_GetInfo(t *testing.T) {
 		if !ok {
 			t.Fatal("invalid response")
 		}
-		if typedResp.Version != &metadata.BuildVersion {
-			t.Errorf("unexpected version: %s", *typedResp.Version)
+		if typedResp.Version != metadata.BuildVersion {
+			t.Errorf("unexpected version: %s", typedResp.Version)
 		}
 	}
 }
