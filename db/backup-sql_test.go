@@ -10,8 +10,8 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang/mock/gomock"
 	"github.com/samber/lo"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Backup_Export(t *testing.T) {
@@ -101,7 +101,7 @@ func Test_Backup_Export(t *testing.T) {
 			}
 
 			// Act
-			backup, err := sut.Backups().Export()
+			backup, err := sut.Backups().Export(t.Context())
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -112,7 +112,7 @@ func Test_Backup_Export(t *testing.T) {
 			}
 			if test.expectedTables == nil {
 				if backup != nil {
-					t.Errorf("expected backup to be nil")
+					t.Error("expected backup to be nil")
 				}
 
 				return
@@ -231,7 +231,7 @@ func Test_Backup_Import(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Backups().Import(&test.input)
+			err := sut.Backups().Import(t.Context(), &test.input)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
