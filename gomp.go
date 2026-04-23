@@ -21,8 +21,9 @@ import (
 
 func main() {
 	// Start with a logger that defaults to the info level, until we load configuration
+	var logLevel = new(slog.LevelVar)
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level: logLevel,
 	})))
 
 	// Write the app metadata to logs
@@ -37,9 +38,7 @@ func main() {
 
 	// Reconfigure the logger now that we've loaded the main application configuation
 	if cfg.IsDevelopment {
-		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		})))
+		logLevel.Set(slog.LevelDebug)
 	}
 
 	// Now it's OK to log what was loaded
