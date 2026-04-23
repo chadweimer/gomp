@@ -1,4 +1,4 @@
-import { alertController } from '@ionic/core';
+import { alertController, modalController } from '@ionic/core';
 import { Component, Host, Method, State, h } from '@stencil/core';
 import { Backup, RecipeState, SortBy, SortDir } from '../../../generated';
 import { performRecipeSearch, appApi, recipesApi } from '../../../helpers/api';
@@ -24,8 +24,10 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
             <ion-row>
               <ion-col>
                 <ion-card>
+                  <ion-card-header>
+                    <ion-card-title>Image Optimization</ion-card-title>
+                  </ion-card-header>
                   <ion-card-content>
-                    <ion-button color="danger" fill="solid" onClick={() => this.optimizeImagesClicked()}>Optimize All Images</ion-button>
                     <p>
                       <ion-note>
                         Optimizing images will load and re-save all uploaded recipe images using the latest configured settings,
@@ -33,63 +35,58 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                       </ion-note>
                     </p>
                   </ion-card-content>
+                  <ion-button size="small" fill="clear" onClick={() => this.optimizeImagesClicked()}>
+                    <ion-icon slot="start" name="sparkles" />
+                    Optimize All
+                  </ion-button>
                 </ion-card>
               </ion-col>
             </ion-row>
             <ion-row>
               <ion-col>
                 <ion-card>
+                  <ion-card-header>
+                    <ion-card-title>Backup & Restore</ion-card-title>
+                  </ion-card-header>
                   <ion-card-content>
-                    <ion-button color="danger" fill="solid" onClick={() => this.createBackupClicked()}>Create Backup</ion-button>
                     <p>
                       <ion-note>
                         Creating a backup will save all current data to a backup file. This operation may take a while depending on the amount of data.
                       </ion-note>
                     </p>
+                    <ion-list lines="full">
+                      <ion-list-header>
+                        <ion-label>Backups</ion-label>
+                      </ion-list-header>
+                      {this.backups?.map(backup =>
+                        <ion-item key={backup.name}>
+                          <ion-label>{backup.name}</ion-label>
+                          <ion-button slot="end" size="small" fill="clear">
+                            <ion-icon slot="start" name="open-outline" />
+                            Restore
+                          </ion-button>
+                          <ion-button slot="end" size="small" fill="clear">
+                            <ion-icon slot="start" name="download-outline" />
+                            <a class="no-style" href={backup.url} download={backup.name}>Download</a>
+                          </ion-button>
+                          <ion-button slot="end" size="small" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
+                            <ion-icon slot="start" name="trash" />
+                            Delete
+                          </ion-button>
+                        </ion-item>
+                      )}
+                    </ion-list>
                   </ion-card-content>
+                  <ion-button size="small" fill="clear" onClick={() => this.createBackupClicked()}>
+                    <ion-icon slot="start" name="server" />
+                    Backup Now
+                  </ion-button>
+                  <ion-button size="small" fill="clear" onClick={() => this.onUploadAndRestoreClicked()}>
+                    <ion-icon slot="start" name="open-outline" />
+                    Upload & Restore
+                  </ion-button>
                 </ion-card>
               </ion-col>
-            </ion-row>
-            <ion-row>
-              <ion-col>
-                <ion-card>
-                  <ion-card-content>
-                    <ion-item lines="full">
-                      <form enctype="multipart/form-data">
-                        <ion-label position="stacked">Backup File</ion-label>
-                        <input name="file_content" type="file" accept=".zip" class="ion-padding-vertical" required />
-                      </form>
-                    </ion-item>
-                    <ion-button color="primary">
-                      <ion-icon slot="start" name="open-outline" />
-                      Upload & Restore
-                    </ion-button>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-            </ion-row>
-            <ion-row>
-              {this.backups?.map(backup =>
-                <ion-col key={backup.name} size="12" size-md="12" size-lg="6" size-xl="4">
-                  <ion-card class="zoom">
-                    <ion-card-header>
-                      <ion-card-title>{backup.name}</ion-card-title>
-                    </ion-card-header>
-                    <ion-button size="small" fill="clear">
-                      <ion-icon slot="start" name="open-outline" />
-                      Restore
-                    </ion-button>
-                    <ion-button size="small" fill="clear">
-                      <ion-icon slot="start" name="download" />
-                      <a class="no-style" href={backup.url} download={backup.name}>Download</a>
-                    </ion-button>
-                    <ion-button size="small" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
-                      <ion-icon slot="start" name="trash" />
-                      Delete
-                    </ion-button>
-                  </ion-card>
-                </ion-col>
-              )}
             </ion-row>
           </ion-grid>
         </ion-content>
@@ -227,6 +224,29 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
       await confirmation.present();
 
       await confirmation.onDidDismiss();
+    });
+  }
+
+  private async onUploadAndRestoreClicked() {
+    await enableBackForOverlay(async () => {
+      const modal = await modalController.create({
+        component: 'file-upload-browser',
+        componentProps: {
+          heading: 'Upload & Restore Backup',
+          label: 'Backup File',
+          accept: 'application/zip,application/x-zip,application/x-zip-compressed,.zip',
+        },
+        backdropDismiss: false,
+      });
+      await modal.present();
+
+      const { data } = await modal.onDidDismiss<{ file: File }>();
+      if (!isNull(data)) {
+        // await this.uploadAndRestoreBackup(data.file);
+
+        // Update the list of backups
+        await this.loadBackups();
+      }
     });
   }
 }
