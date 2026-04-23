@@ -11,8 +11,7 @@ import (
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
 type fileSystemDriver struct {
-	fs.FS
-	rootPath string
+	root *os.Root
 }
 
 func newFileSystemDriver(rootPath string) (Driver, error) {
@@ -20,20 +19,24 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 		return nil, errors.New("root path is empty")
 	}
 
-	return &fileSystemDriver{OnlyFiles(os.DirFS(rootPath)), rootPath}, nil
+	root, err := os.OpenRoot(rootPath)
+	if err != nil {
+		return nil, err
+	}
+	return &fileSystemDriver{root}, nil
+}
+
+func (u *fileSystemDriver) Open(filePath string) (fs.File, error) {
+	return u.root.Open(filepath.Clean(filePath))
 }
 
 func (u *fileSystemDriver) Save(filePath string, data []byte) error {
-	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
-
-	dir := filepath.Dir(filePath)
-	err := os.MkdirAll(dir, fs.FileMode(0777))
-	if err != nil {
+	dir := filepath.Dir(filepath.Clean(filePath))
+	if err := u.root.MkdirAll(dir, fs.FileMode(0777)); err != nil {
 		return err
 	}
 
-	file, err := os.Create(filePath) // #nosec G304 -- Path already cleaned
+	file, err := u.root.Create(filePath) // #nosec G304 -- Path already cleaned
 	if err != nil {
 		return err
 	}
@@ -54,17 +57,11 @@ func (u *fileSystemDriver) Save(filePath string, data []byte) error {
 }
 
 func (u *fileSystemDriver) Delete(filePath string) error {
-	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
-
-	return os.Remove(filePath)
+	return u.root.Remove(filepath.Clean(filePath))
 }
 
 func (u *fileSystemDriver) DeleteAll(dirPath string) error {
-	// First prepend the base UploadPath
-	dirPath = filepath.Join(u.rootPath, filepath.Clean(dirPath))
-
-	return os.RemoveAll(dirPath)
+	return u.root.RemoveAll(filepath.Clean(dirPath))
 }
 
 type justFilesFileSystem struct {
