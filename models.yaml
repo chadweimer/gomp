@@ -535,15 +535,37 @@ components:
     backup:
       description: A full export of all application data for backup and restore purposes.
       example:
+        metadata:
+          name: 2026-04-21
+          version: 1.0
+        fileName: backup-2026-04-21.zip
+        fileUrl: /backups/backup-2026-04-21.zip
+      type: object
+      required:
+        - metadata
+        - fileName
+        - fileUrl
+      properties:
+        metadata:
+          $ref: "#/components/schemas/backupMetadata"
+        fileName:
+          type: string
+        fileUrl:
+          type: string
+          format: uri
+    backupMetadata:
+      description: |
+        Metadata about a backup file,
+        such as its name and the version of the application that created it.
+      example:
         name: backup-2026-04-21
-        url: /backups/backup-2026-04-21.zip
+        version: 1.0
       type: object
       required:
         - name
-        - url
+        - version
       properties:
         name:
           type: string
-        url:
+        version:
           type: string
-          format: uri

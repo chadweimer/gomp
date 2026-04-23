@@ -101,6 +101,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/backup"
+        500:
+          description: Internal Server Error
       security:
         - Bearer: [ admin ]
     post:
@@ -116,9 +118,9 @@ paths:
                 type: string
       security:
         - Bearer: [ admin ]
-  /backups/{name}:
+  /backups/{fileName}:
     parameters:
-      - name: name
+      - name: fileName
         in: path
         required: true
         schema:

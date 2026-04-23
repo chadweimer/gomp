@@ -5,15 +5,18 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"io/fs"
 	"log/slog"
 	"path/filepath"
 	"time"
 
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
-	"github.com/samber/lo"
 )
 
 func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObject) (CreateBackupResponseObject, error) {
@@ -28,9 +31,9 @@ func (h apiHandler) CreateBackup(ctx context.Context, _ CreateBackupRequestObjec
 
 	// Save the backup file
 	// Generate a name based on the current timestamp in UTC
-	timestamp := time.Now().Format("2006-01-02T15-04-05.000Z")
-	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, timestamp+".zip")
-	if err = h.writeBackup(ctx, backupFilePath, logger, exportedData); err != nil {
+	name := time.Now().Format("2006-01-02T15-04-05.000Z")
+	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
+	if err = h.writeBackup(ctx, name, backupFilePath, logger, exportedData); err != nil {
 		logger.ErrorContext(ctx, "Failed to write backup file", "error", err)
 		// Attempt to clean up the backup file if it was created
 		cleanupErr := h.fs.Delete(backupFilePath)
@@ -55,15 +58,32 @@ func (h apiHandler) GetAllBackups(ctx context.Context, _ GetAllBackupsRequestObj
 	backupFiles, err := h.fs.List(fileaccess.BackupDirectoryName)
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
-		return nil, err
+		return GetAllBackups500Response{}, nil
 	}
 
-	backups := lo.Map(backupFiles, func(entry fs.DirEntry, _ int) models.Backup {
-		return models.Backup{
-			Name: entry.Name(),
-			URL:  filepath.ToSlash(filepath.Join("/", fileaccess.BackupDirectoryName, entry.Name())),
+	backups := make([]models.Backup, 0, len(backupFiles))
+	for _, entry := range backupFiles {
+		if entry.IsDir() {
+			logger.WarnContext(ctx, "Skipping directory in backup listing", "name", entry.Name())
+			continue
 		}
-	})
+
+		metadataContent, err := h.getBackupMetadata(entry)
+		if err != nil {
+			logger.WarnContext(ctx, "Skipping backup file due to metadata error", "name", entry.Name())
+			continue
+		}
+		if !metadataContent.Validate() {
+			logger.WarnContext(ctx, "Skipping backup file due to invalid metadata", "name", entry.Name(), "metadata", metadataContent)
+			continue
+		}
+
+		backups = append(backups, models.Backup{
+			Metadata: *metadataContent,
+			FileName: entry.Name(),
+			FileURL:  filepath.ToSlash(filepath.Join("/", fileaccess.BackupDirectoryName, entry.Name())),
+		})
+	}
 
 	return GetAllBackups200JSONResponse(backups), nil
 }
@@ -75,15 +95,15 @@ func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBac
 func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
 	logger := middleware.GetLoggerFromContext(ctx)
 
-	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.Name))
+	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.FileName))
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "backupName", request.Name)
+		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "backupFileName", request.FileName)
 		return nil, err
 	}
 	return DeleteBackup204Response{}, nil
 }
 
-func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *slog.Logger, exportedData *models.BackupData) error {
+func (h apiHandler) writeBackup(ctx context.Context, name, filePath string, logger *slog.Logger, exportedData *models.BackupData) error {
 	backupFile, err := h.fs.Create(filePath)
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
@@ -92,13 +112,18 @@ func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *sl
 	defer backupFile.Close()
 
 	return fileaccess.CreateZip(backupFile, func(writer *zip.Writer) error {
-		// Write the backup to JSON
-		buf, err := json.MarshalIndent(exportedData, "", "  ")
-		if err != nil {
-			logger.ErrorContext(ctx, "Failed to marshal backup data", "error", err)
+		// Write the metadata to a JSON file in the zip
+		metadata := models.BackupMetadata{
+			Name:    name,
+			Version: metadata.BuildVersion,
+		}
+		if err := writeToJSONFileInZip(writer, "metadata.json", metadata); err != nil {
+			logger.ErrorContext(ctx, "Failed to write backup metadata to zip", "error", err)
 			return err
 		}
-		if err := fileaccess.WriteFileToZip("data.json", bytes.NewBuffer(buf), writer); err != nil {
+
+		// Write the database backup to JSON
+		if err := writeToJSONFileInZip(writer, "database.json", exportedData); err != nil {
 			logger.ErrorContext(ctx, "Failed to write backup data to zip", "error", err)
 			return err
 		}
@@ -108,4 +133,77 @@ func (h apiHandler) writeBackup(ctx context.Context, filePath string, logger *sl
 		// Copy all uploads to the backup directory
 		return fileaccess.CopyDirectoryToZip(h.fs, fileaccess.UploadDirectoryName, writer)
 	})
+}
+
+func writeToJSONFileInZip(writer *zip.Writer, fileName string, data any) error {
+	buf, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return fileaccess.WriteFileToZip(fileName, bytes.NewBuffer(buf), writer)
+}
+
+func (h apiHandler) getBackupMetadata(entry fs.DirEntry) (*models.BackupMetadata, error) {
+	file, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, entry.Name()))
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	ioReaderAt, ok := file.(io.ReaderAt)
+	if !ok {
+		// We have to create an adapter and potentially buffer the entire file in memory.
+		// This is not ideal, but it should be rare since most file systems support io.ReaderAt.
+		ioReaderAt = &unbufferedReaderAt{file, 0}
+	}
+
+	info, err := entry.Info()
+	if err != nil {
+		return nil, err
+	}
+
+	zipReader, err := zip.NewReader(ioReaderAt, info.Size())
+	if err != nil {
+		return nil, err
+	}
+
+	metadataFile, err := zipReader.Open("metadata.json")
+	if err != nil {
+		return nil, err
+	}
+	defer metadataFile.Close()
+
+	metadataBytes, err := io.ReadAll(metadataFile)
+	if err != nil {
+		return nil, err
+	}
+
+	metadataContent := new(models.BackupMetadata)
+	if err := json.Unmarshal(metadataBytes, metadataContent); err != nil {
+		return nil, err
+	}
+	return metadataContent, nil
+}
+
+type unbufferedReaderAt struct {
+	io.Reader
+
+	offset int64
+}
+
+func (u *unbufferedReaderAt) ReadAt(p []byte, off int64) (int, error) {
+	if off < u.offset {
+		return 0, errors.New("invalid offset")
+	}
+
+	bytesWritten, err := io.CopyN(io.Discard, u.Reader, off-u.offset)
+	u.offset += bytesWritten
+	if err != nil {
+		return 0, err
+	}
+
+	bytesRead, err := u.Reader.Read(p)
+	u.offset += int64(bytesRead)
+	return bytesRead, err
 }

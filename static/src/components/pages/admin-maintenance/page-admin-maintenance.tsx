@@ -59,15 +59,15 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                         <ion-label>Backups</ion-label>
                       </ion-list-header>
                       {this.backups?.map(backup =>
-                        <ion-item key={backup.name}>
-                          <ion-label>{backup.name}</ion-label>
+                        <ion-item key={backup.metadata.name}>
+                          <ion-label>{backup.metadata.name}</ion-label>
                           <ion-button slot="end" size="small" fill="clear">
                             <ion-icon slot="start" name="open-outline" />
                             Restore
                           </ion-button>
                           <ion-button slot="end" size="small" fill="clear">
                             <ion-icon slot="start" name="download-outline" />
-                            <a class="no-style" href={backup.url} download={backup.name}>Download</a>
+                            <a class="no-style" href={backup.fileUrl} download={backup.fileName}>Download</a>
                           </ion-button>
                           <ion-button slot="end" size="small" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
                             <ion-icon slot="start" name="trash" />
@@ -196,7 +196,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async deleteBackup(backup: Backup) {
     try {
       await showLoading(
-        async () => await appApi.deleteBackup({ name: backup.name }), 'Deleting backup...');
+        async () => await appApi.deleteBackup({ fileName: backup.fileName }), 'Deleting backup...');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete backup.');
