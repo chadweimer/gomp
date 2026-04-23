@@ -697,7 +697,12 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   private async onUploadImageClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
-        component: 'image-upload-browser',
+        component: 'file-upload-browser',
+        componentProps: {
+          heading: 'Upload Picture',
+          label: 'Picture',
+          accept: 'image/*',
+        },
         backdropDismiss: false,
       });
       await modal.present();
