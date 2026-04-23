@@ -135,19 +135,6 @@ paths:
         required: true
         schema:
           type: string
-    get:
-      tags: [ app ]
-      description: get a single backup
-      operationId: getBackup
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "./models.yaml#/components/schemas/backup"
-      security:
-        - Bearer: [ admin ]
     post:
       tags: [ app ]
       summary: Restore from backup

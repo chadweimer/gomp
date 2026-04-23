@@ -43,6 +43,13 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
+func (postgresDriverAdapter) DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error {
+	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
+		return fmt.Errorf("deferring constraints: %w", err)
+	}
+	return nil
+}
+
 func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
 	tables := make([]string, 0)
 	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"); err != nil {
@@ -81,7 +88,7 @@ func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsF
 	}
 
 	adapter := postgresDriverAdapter{}
-	drv := newSQLDriver(db, adapter, adapter)
+	drv := newSQLDriver(db, adapter)
 	return drv, nil
 }
 

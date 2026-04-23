@@ -51,6 +51,13 @@ func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerCon
 	return tables, nil
 }
 
+func (sqliteDriverAdapter) DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error {
+	if _, err := db.ExecContext(ctx, "PRAGMA defer_foreign_keys = on"); err != nil {
+		return fmt.Errorf("deferring constraints: %w", err)
+	}
+	return nil
+}
+
 func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// Attempt to create the base path, if necessary
 	if connectionURL.Scheme == "file" {
@@ -77,7 +84,7 @@ func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsFor
 	}
 
 	adapter := sqliteDriverAdapter{}
-	drv := newSQLDriver(db, adapter, adapter)
+	drv := newSQLDriver(db, adapter)
 	return drv, nil
 }
 

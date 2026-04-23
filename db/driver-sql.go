@@ -11,6 +11,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type sqlDriverAdapter interface {
+	sqlRecipeDriverAdapter
+	sqlBackupDriverAdapter
+}
+
 // UserWithPasswordHash reprents a user including the password hash in the database
 type UserWithPasswordHash struct {
 	models.User
@@ -30,17 +35,17 @@ type sqlDriver struct {
 	backups *sqlBackupDriver
 }
 
-func newSQLDriver(db *sqlx.DB, recipeAdapter sqlRecipeDriverAdapter, backupAdapter sqlBackupDriverAdapter) *sqlDriver {
+func newSQLDriver(db *sqlx.DB, adapter sqlDriverAdapter) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
 		app:     &sqlAppConfigurationDriver{db},
-		recipes: &sqlRecipeDriver{db, recipeAdapter},
+		recipes: &sqlRecipeDriver{db, adapter},
 		images:  &sqlRecipeImageDriver{db},
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
-		backups: &sqlBackupDriver{db, backupAdapter},
+		backups: &sqlBackupDriver{db, adapter},
 	}
 }
 

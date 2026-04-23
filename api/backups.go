@@ -115,10 +115,6 @@ func (h apiHandler) GetAllBackups(ctx context.Context, _ GetAllBackupsRequestObj
 	return GetAllBackups200JSONResponse(backups), nil
 }
 
-func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBackupResponseObject, error) {
-	return GetBackup200JSONResponse{}, nil
-}
-
 func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBackupRequestObject) (RestoreFromBackupResponseObject, error) {
 	logger := middleware.GetLoggerFromContext(ctx)
 
@@ -140,6 +136,7 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	}
 	defer file.Close()
 
+	var databaseData *models.BackupData
 	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
 		metadataContent, err := readJSONFileFromZip[models.BackupMetadata](reader, metadataFileName)
 		if err != nil {
@@ -151,13 +148,11 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 			return err
 		}
 
-		_, err = readJSONFileFromZip[models.BackupData](reader, databaseFileName)
+		databaseData, err = readJSONFileFromZip[models.BackupData](reader, databaseFileName)
 		if err != nil {
 			logger.ErrorContext(ctx, "Failed to read backup data", "error", err, "name", request.FileName)
 			return err
 		}
-
-		// TODO: Restore database
 
 		err = fileaccess.CopyDirectoryFromZip(h.fs, fileaccess.UploadDirectoryName, fileaccess.UploadDirectoryName, reader)
 		if err != nil {
@@ -169,6 +164,12 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	})
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to read backup zip file", "error", err, "name", request.FileName)
+		return RestoreFromBackup400Response{}, nil
+	}
+
+	err = h.db.Backups().Import(ctx, databaseData)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to import backup data", "error", err, "name", request.FileName)
 		return RestoreFromBackup400Response{}, nil
 	}
 

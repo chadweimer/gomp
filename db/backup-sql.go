@@ -11,6 +11,7 @@ import (
 )
 
 type sqlBackupDriverAdapter interface {
+	DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
 }
 
@@ -53,6 +54,12 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
+		// Must defer all constraints to the end of the transaction
+		// to avoid issues with foreign key constraints during import.
+		if err := b.adapter.DeferConstraints(ctx, db); err != nil {
+			return fmt.Errorf("deferring constraints: %w", err)
+		}
+
 		for _, tableData := range *backup {
 			sanitizedTableName, err := sanitizeIdentifier(tableData.TableName)
 			if err != nil {
