@@ -23,14 +23,17 @@ type Driver interface {
 	Create(filePath string) (io.WriteCloser, error)
 
 	// Save creates or overrites a file with the content from the provider reader.
-	// This will seek to the beginning of the content.
-	Save(filePath string, reader io.ReadSeeker) error
+	// This will seek to the beginning of the content if the reader supports seeking.
+	Save(filePath string, reader io.Reader) error
 
 	// Delete deletes the file at the specified path, if it exists.
 	Delete(filePath string) error
 
 	// DeleteAll deletes all files at or under the specified directory path.
 	DeleteAll(dirPath string) error
+
+	// Stat returns a FileInfo describing the named file, or an error if there is any problem accessing the file.
+	Stat(path string) (fs.FileInfo, error)
 
 	// List lists all files at the specified directory path.
 	List(dirPath string) ([]fs.DirEntry, error)

@@ -109,6 +109,14 @@ paths:
       tags: [ app ]
       description: create a backup of the application
       operationId: createBackup
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file_content:
+                  type: string
+                  format: binary
       responses:
         201:
           description: Created
@@ -116,6 +124,8 @@ paths:
             Location:
               schema:
                 type: string
+        400:
+          description: Bad Request
       security:
         - Bearer: [ admin ]
   /backups/{fileName}:
@@ -136,6 +146,22 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/backup"
+      security:
+        - Bearer: [ admin ]
+    post:
+      tags: [ app ]
+      summary: Restore from backup
+      description: restore from an existing backup
+      operationId: restoreFromBackup
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
       security:
         - Bearer: [ admin ]
     delete:

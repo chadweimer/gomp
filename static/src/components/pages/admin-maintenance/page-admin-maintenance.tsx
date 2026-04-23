@@ -61,7 +61,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                       {this.backups?.map(backup =>
                         <ion-item key={backup.metadata.name}>
                           <ion-label>{backup.metadata.name}</ion-label>
-                          <ion-button slot="end" size="small" fill="clear">
+                          <ion-button slot="end" size="small" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
                             <ion-icon slot="start" name="open-outline" />
                             Restore
                           </ion-button>
@@ -81,9 +81,9 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                     <ion-icon slot="start" name="server" />
                     Backup Now
                   </ion-button>
-                  <ion-button size="small" fill="clear" onClick={() => this.onUploadAndRestoreClicked()}>
+                  <ion-button size="small" fill="clear" onClick={() => this.onUploadClicked()}>
                     <ion-icon slot="start" name="open-outline" />
-                    Upload & Restore
+                    Upload
                   </ion-button>
                 </ion-card>
               </ion-col>
@@ -227,12 +227,56 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     });
   }
 
-  private async onUploadAndRestoreClicked() {
+  private async restoreBackup(backupFileName: string) {
+    try {
+      await showLoading(
+        async () => await appApi.restoreFromBackup({ fileName: backupFileName }), 'Restoring backup...');
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to restore from backup.');
+    }
+  }
+
+  private async onRestoreBackupClicked(backup: Backup) {
+    await enableBackForOverlay(async () => {
+      const confirmation = await alertController.create({
+        header: 'Restore Backup?',
+        message: 'Are you sure you want to restore this backup? This operation cannot be undone.',
+        buttons: [
+          'No',
+          {
+            text: 'Yes',
+            handler: async () => {
+              await this.restoreBackup(backup.fileName);
+              await this.loadBackups();
+              return true;
+            }
+          }
+        ],
+      });
+
+      await confirmation.present();
+
+      await confirmation.onDidDismiss();
+    });
+  }
+
+  private async uploadBackup(file: File) {
+    try {
+      await showLoading(
+        async () => await appApi.createBackup({ fileContent: file }), 'Uploading backup....');
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to upload backup.');
+    }
+  }
+
+  private async onUploadClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
         component: 'file-upload-browser',
         componentProps: {
-          heading: 'Upload & Restore Backup',
+          heading: 'Upload Backup',
           label: 'Backup File',
           accept: 'application/zip,application/x-zip,application/x-zip-compressed,.zip',
         },
@@ -242,9 +286,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
 
       const { data } = await modal.onDidDismiss<{ file: File }>();
       if (!isNull(data)) {
-        // await this.uploadAndRestoreBackup(data.file);
-
-        // Update the list of backups
+        await this.uploadBackup(data.file);
         await this.loadBackups();
       }
     });

@@ -43,11 +43,13 @@ func (u *fileSystemDriver) Create(filePath string) (io.WriteCloser, error) {
 	return u.root.Create(cleanedPath)
 }
 
-func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
+func (u *fileSystemDriver) Save(filePath string, reader io.Reader) error {
 	// Make sure we're at the beginning of the content
-	_, err := reader.Seek(0, io.SeekStart)
-	if err != nil {
-		return err
+	if seeker, ok := reader.(io.Seeker); ok {
+		_, err := seeker.Seek(0, io.SeekStart)
+		if err != nil {
+			return err
+		}
 	}
 
 	file, err := u.Create(filePath)
@@ -76,6 +78,10 @@ func (u *fileSystemDriver) Delete(filePath string) error {
 
 func (u *fileSystemDriver) DeleteAll(dirPath string) error {
 	return u.root.RemoveAll(filepath.Clean(dirPath))
+}
+
+func (u *fileSystemDriver) Stat(path string) (fs.FileInfo, error) {
+	return u.root.Stat(filepath.Clean(path))
 }
 
 func (u *fileSystemDriver) List(dirPath string) ([]fs.DirEntry, error) {

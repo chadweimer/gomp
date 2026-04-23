@@ -1,53 +1,38 @@
 package fileaccess
 
 import (
-	"archive/zip"
 	"errors"
 	"io"
-	"io/fs"
 )
 
-// CreateZip creates a zip archive using the provided writer.
-func CreateZip(ioWriter io.Writer, writeContent func(*zip.Writer) error) error {
-	zipWriter := zip.NewWriter(ioWriter)
-	defer zipWriter.Close()
+type unbufferedReaderAt struct {
+	io.Reader
 
-	return writeContent(zipWriter)
+	offset int64
 }
 
-// WriteFileToZip adds a file to a zip archive.
-func WriteFileToZip(name string, src io.Reader, zipWriter *zip.Writer) (err error) {
-	if file, err := zipWriter.Create(name); err == nil {
-		_, err = io.Copy(file, src)
+func ensureReaderAt(reader io.Reader) io.ReaderAt {
+	readerAt, ok := reader.(io.ReaderAt)
+	if !ok {
+		// We have to create an adapter and potentially buffer the entire file in memory.
+		// This is not ideal, but it should be rare since most file systems support io.ReaderAt.
+		readerAt = &unbufferedReaderAt{reader, 0}
 	}
-	return err
+	return readerAt
 }
 
-// CopyDirectoryToZip copies a directory and its contents to a zip archive.
-func CopyDirectoryToZip(f fs.FS, srcPath string, writer *zip.Writer) error {
-	// Do nothing if the directory doesn't exist
-	if _, err := fs.Stat(f, srcPath); err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return nil
-		}
-		return err
+func (u *unbufferedReaderAt) ReadAt(p []byte, off int64) (int, error) {
+	if off < u.offset {
+		return 0, errors.New("invalid offset")
 	}
 
-	return fs.WalkDir(f, srcPath, func(name string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
+	bytesWritten, err := io.CopyN(io.Discard, u.Reader, off-u.offset)
+	u.offset += bytesWritten
+	if err != nil {
+		return 0, err
+	}
 
-		// Skip the directories since WalkDir already recurses into them
-		if d.IsDir() {
-			return nil
-		}
-
-		// Write the content to the destination
-		if file, err := f.Open(name); err == nil {
-			return WriteFileToZip(name, file, writer)
-		}
-
-		return err
-	})
+	bytesRead, err := u.Reader.Read(p)
+	u.offset += int64(bytesRead)
+	return bytesRead, err
 }
