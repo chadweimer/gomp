@@ -104,15 +104,16 @@ html:not(.hydrated) body {
   --ion-color-light-tint: #f5f6f9;
 }
 
-* {
-  -webkit-user-select: auto;
-  user-select: auto;
+/* This allows text selection by default in mobile browsers, particularly firefox */
+:not(.prevent-selection) * {
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
 }
 
 .prevent-selection,
 .prevent-selection * {
-  -webkit-user-select: none;
-  user-select: none;
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 .fill {
