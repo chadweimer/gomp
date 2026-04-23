@@ -40,7 +40,7 @@ func (u *fileSystemDriver) Create(filePath string) (io.WriteCloser, error) {
 		return nil, err
 	}
 
-	return u.root.Create(cleanedPath) // #nosec G304 -- Path already cleaned
+	return u.root.Create(cleanedPath)
 }
 
 func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
