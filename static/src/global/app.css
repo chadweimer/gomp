@@ -105,7 +105,14 @@ html:not(.hydrated) body {
 }
 
 * {
-  user-select: auto !important;
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+.prevent-selection,
+.prevent-selection * {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .fill {
