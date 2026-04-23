@@ -33,26 +33,10 @@ func CopyDirectoryToZip(f fs.FS, srcPath string, writer *zip.Writer) error {
 		return err
 	}
 
-	return fs.WalkDir(f, srcPath, func(name string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Skip the root directory itself
-		if name == srcPath {
-			return nil
-		}
-
-		// Recurse into directories
-		if d.IsDir() {
-			return CopyDirectoryToZip(f, name, writer)
-		}
-
-		// Write the content to the destination
-		if file, err := f.Open(name); err == nil {
-			return WriteFileToZip(name, file, writer)
-		}
-
+	subFs, err := fs.Sub(f, srcPath)
+	if err != nil {
 		return err
-	})
+	}
+
+	return writer.AddFS(subFs)
 }
