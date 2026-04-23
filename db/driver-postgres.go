@@ -87,8 +87,7 @@ func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsF
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	adapter := postgresDriverAdapter{}
-	drv := newSQLDriver(db, adapter)
+	drv := newSQLDriver(db, postgresDriverAdapter{})
 	return drv, nil
 }
 

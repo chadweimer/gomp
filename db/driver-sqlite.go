@@ -83,8 +83,7 @@ func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsFor
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	adapter := sqliteDriverAdapter{}
-	drv := newSQLDriver(db, adapter)
+	drv := newSQLDriver(db, sqliteDriverAdapter{})
 	return drv, nil
 }
 
