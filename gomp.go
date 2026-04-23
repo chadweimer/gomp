@@ -75,6 +75,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
+		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
+	}
+	handlePrefixStripped := func(mux *http.ServeMux, prefix string, handler http.Handler) {
+		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
+	}
+
 	mux := http.NewServeMux()
 	handlePrefixStripped(mux, "api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver, fsDriver))
 	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(baseAssetsRoot.FS())))
@@ -118,12 +125,4 @@ func main() {
 		// We're already going down. Time to panic
 		panic(err)
 	}
-}
-
-func handlePrefixed(mux *http.ServeMux, prefix string, handler http.Handler) {
-	mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
-}
-
-func handlePrefixStripped(mux *http.ServeMux, prefix string, handler http.Handler) {
-	handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 }
