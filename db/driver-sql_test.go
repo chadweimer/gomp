@@ -21,7 +21,7 @@ func getMockDbWithTableNames(t *testing.T, tableNames []string) (*sqlDriver, sql
 
 	dbx := sqlx.NewDb(db, "sqlmock")
 	mockAdapter := mockDriverAdapter{tableNames}
-	return newSQLDriver(dbx, mockAdapter, mockAdapter), mock
+	return newSQLDriver(dbx, mockAdapter), mock
 }
 
 type mockDriverAdapter struct {
@@ -34,4 +34,8 @@ func (mockDriverAdapter) GetSearchFields(_ []models.SearchField, _ string) (stri
 
 func (m mockDriverAdapter) GetTableNames(_ context.Context, _ sqlx.QueryerContext) ([]string, error) {
 	return m.tableNames, nil
+}
+
+func (mockDriverAdapter) DeferConstraints(_ context.Context, _ sqlx.ExecerContext) error {
+	return nil
 }
