@@ -72,7 +72,14 @@ func (apiHandler) GetBackup(_ context.Context, _ GetBackupRequestObject) (GetBac
 	return GetBackup200JSONResponse{}, nil
 }
 
-func (apiHandler) DeleteBackup(_ context.Context, _ DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
+func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
+	logger := middleware.GetLoggerFromContext(ctx)
+
+	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.Name))
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "backupName", request.Name)
+		return nil, err
+	}
 	return DeleteBackup204Response{}, nil
 }
 
