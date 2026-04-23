@@ -69,10 +69,16 @@ func main() {
 	}
 	defer dbDriver.Close()
 
+	baseAssetsRoot, err := os.OpenRoot(cfg.BaseAssetsPath)
+	if err != nil {
+		slog.Error("Opening base assets path failed. Exiting...", "error", err)
+		os.Exit(1)
+	}
+
 	mux := http.NewServeMux()
-	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver)))
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(upload.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
-	mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.FS(uplDriver))))
+	handlePrefixed(mux, "api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver))
+	handlePrefixed(mux, "static", http.FileServerFS(upload.OnlyFiles(baseAssetsRoot.FS())))
+	handlePrefixed(mux, "uploads", http.FileServerFS(upload.OnlyFiles(uplDriver)))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
@@ -111,4 +117,10 @@ func main() {
 		// We're already going down. Time to panic
 		panic(err)
 	}
+}
+
+func handlePrefixed(mux *http.ServeMux, prefix string, handler http.Handler) {
+	mux.Handle(
+		fmt.Sprintf("/%s/", prefix),
+		http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 }
