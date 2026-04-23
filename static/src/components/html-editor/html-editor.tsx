@@ -34,11 +34,11 @@ export class HTMLEditor {
   }
 
   componentDidLoad() {
-    this.el.ownerDocument.addEventListener('selectionchange', this.updateButtonStates);
+    this.el.ownerDocument.addEventListener('selectionchange', this.onSelectionChange);
   }
 
   disconnectedCallback() {
-    this.el.ownerDocument.removeEventListener('selectionchange', this.updateButtonStates);
+    this.el.ownerDocument.removeEventListener('selectionchange', this.onSelectionChange);
   }
 
   render() {
@@ -46,7 +46,7 @@ export class HTMLEditor {
       <Host>
         {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <ion-toolbar class="editor-toolbar">
-          <ion-buttons>
+          <ion-buttons class="prevent-selection">
             <ion-button
               onClick={() => this.executeCommand('bold')}
               size="default"
@@ -105,6 +105,11 @@ export class HTMLEditor {
     );
   }
 
+  // It's important for this to be a property so that it can be used in the event listeners
+  private readonly onSelectionChange = () => {
+    this.updateButtonStates();
+  }
+
   private handleBlur(e: FocusEvent) {
     // If something inside this editor is focused, do not emit the value change.
     // This is important to prevent emitting changes when the user is still editing.
@@ -115,8 +120,7 @@ export class HTMLEditor {
     this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
   }
 
-  // It's important for this to be a property so that it can be used in the event listeners
-  private readonly updateButtonStates = () => {
+  private updateButtonStates() {
     // Reset all states
     this.isBoldActive = false;
     this.isItalicActive = false;

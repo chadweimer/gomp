@@ -21,8 +21,9 @@ import (
 
 func main() {
 	// Start with a logger that defaults to the info level, until we load configuration
+	var logLevel = new(slog.LevelVar)
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level: logLevel,
 	})))
 
 	// Write the app metadata to logs
@@ -37,9 +38,7 @@ func main() {
 
 	// Reconfigure the logger now that we've loaded the main application configuation
 	if cfg.IsDevelopment {
-		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		})))
+		logLevel.Set(slog.LevelDebug)
 	}
 
 	// Now it's OK to log what was loaded
@@ -55,7 +54,7 @@ func main() {
 		slog.Error("Establishing file access driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
-	fileServer := http.FileServer(http.FS(fileaccess.OnlyFiles(fsDriver)))
+	fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
 
 	uploader, err := fileaccess.CreateImageUploader(fsDriver, cfg.FileAccess.Image)
 	if err != nil {
@@ -70,11 +69,17 @@ func main() {
 	}
 	defer dbDriver.Close()
 
+	baseAssetsRoot, err := os.OpenRoot(cfg.BaseAssetsPath)
+	if err != nil {
+		slog.Error("Opening base assets path failed. Exiting...", "error", err)
+		os.Exit(1)
+	}
+
 	mux := http.NewServeMux()
-	mux.Handle("/api/", http.StripPrefix("/api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver, fsDriver)))
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(fileaccess.OnlyFiles(os.DirFS(cfg.BaseAssetsPath))))))
-	mux.Handle(fmt.Sprintf("/%s/", fileaccess.UploadDirectoryName), fileServer)
-	mux.Handle(fmt.Sprintf("/%s/", fileaccess.BackupDirectoryName), fileServer)
+	handlePrefixStripped(mux, "api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver, fsDriver))
+	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(baseAssetsRoot.FS())))
+	handlePrefixed(mux, fileaccess.UploadDirectoryName, fileServer)
+	handlePrefixed(mux, fileaccess.BackupDirectoryName, fileServer)
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
@@ -113,4 +118,12 @@ func main() {
 		// We're already going down. Time to panic
 		panic(err)
 	}
+}
+
+func handlePrefixed(mux *http.ServeMux, prefix string, handler http.Handler) {
+	mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
+}
+
+func handlePrefixStripped(mux *http.ServeMux, prefix string, handler http.Handler) {
+	handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 }

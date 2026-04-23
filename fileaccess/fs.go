@@ -14,8 +14,7 @@ import (
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
 type fileSystemDriver struct {
-	fs.FS
-	rootPath string
+	root *os.Root
 }
 
 func newFileSystemDriver(rootPath string) (Driver, error) {
@@ -23,19 +22,25 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 		return nil, errors.New("root path is empty")
 	}
 
-	return &fileSystemDriver{os.DirFS(rootPath), rootPath}, nil
+	root, err := os.OpenRoot(rootPath)
+	if err != nil {
+		return nil, err
+	}
+	return &fileSystemDriver{root}, nil
+}
+
+func (u *fileSystemDriver) Open(filePath string) (fs.File, error) {
+	return u.root.Open(filepath.Clean(filePath))
 }
 
 func (u *fileSystemDriver) Create(filePath string) (io.WriteCloser, error) {
-	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
-
-	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, fs.FileMode(0777)); err != nil {
+	cleanedPath := filepath.Clean(filePath)
+	dir := filepath.Dir(cleanedPath)
+	if err := u.root.MkdirAll(dir, fs.FileMode(0777)); err != nil {
 		return nil, err
 	}
 
-	return os.Create(filePath) // #nosec G304 -- Path already cleaned
+	return u.root.Create(cleanedPath) // #nosec G304 -- Path already cleaned
 }
 
 func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
@@ -66,24 +71,30 @@ func (u *fileSystemDriver) Save(filePath string, reader io.ReadSeeker) error {
 }
 
 func (u *fileSystemDriver) Delete(filePath string) error {
-	// First prepend the base UploadPath
-	filePath = filepath.Join(u.rootPath, filepath.Clean(filePath))
-
-	return os.Remove(filePath)
+	return u.root.Remove(filepath.Clean(filePath))
 }
 
 func (u *fileSystemDriver) DeleteAll(dirPath string) error {
-	// First prepend the base UploadPath
-	dirPath = filepath.Join(u.rootPath, filepath.Clean(dirPath))
-
-	return os.RemoveAll(dirPath)
+	return u.root.RemoveAll(filepath.Clean(dirPath))
 }
 
 func (u *fileSystemDriver) List(dirPath string) ([]fs.DirEntry, error) {
-	// First prepend the base UploadPath
-	dirPath = filepath.Join(u.rootPath, filepath.Clean(dirPath))
+	dir, err := u.root.Open(filepath.Clean(dirPath))
+	if err != nil {
+		return nil, err
+	}
+	defer dir.Close()
 
-	entries, err := os.ReadDir(dirPath)
+	stat, err := dir.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	if !stat.IsDir() {
+		return nil, fs.ErrInvalid
+	}
+
+	entries, err := dir.ReadDir(0)
 	if err != nil {
 		return nil, err
 	}
