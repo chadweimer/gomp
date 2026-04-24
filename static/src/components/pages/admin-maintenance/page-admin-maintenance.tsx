@@ -96,7 +96,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
 
   private async loadBackups() {
     try {
-      this.backups = await appApi.getAllBackups();
+      this.backups = await appApi.getBackups();
     } catch (ex) {
       this.backups = [];
       console.error(ex);
