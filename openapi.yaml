@@ -126,6 +126,8 @@ paths:
                 type: string
         400:
           description: Bad Request
+        500:
+          description: Internal Server Error
       security:
         - Bearer: [ admin ]
   /backups/{fileName}:

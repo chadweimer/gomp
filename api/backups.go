@@ -17,6 +17,7 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/utils"
 )
 
 const (
@@ -40,44 +41,20 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 
 	var backupFilePath string
 	if err == nil {
-		logger.DebugContext(ctx, "Creating backup from uploaded file content")
-
-		// TODO: Verify it's a valid backup file before saving it.
-
-		backupFilePath = filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-upload-%s.zip", name))
-		if err := h.fs.Save(backupFilePath, bytes.NewReader(uploadedFileData)); err != nil {
-			logger.ErrorContext(ctx, "Failed to save uploaded backup file", "error", err)
-			return nil, err
+		backupFilePath, err = h.uploadBackup(ctx, logger, name, uploadedFileData, err)
+		if err != nil {
+			return CreateBackup400Response{}, nil
 		}
 	} else {
-		logger.DebugContext(ctx, "Creating backup from database export")
-
-		// Export all data from the database
-		exportedData, err := h.db.Backups().Export(ctx)
+		backupFilePath, err = h.generateNewBackup(ctx, logger, name)
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
-			return nil, err
-		}
-
-		// Save the backup file
-		// Generate a name based on the current timestamp in UTC
-		backupFilePath = filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
-		if err = h.writeBackup(ctx, logger, name, backupFilePath, exportedData); err != nil {
-			logger.ErrorContext(ctx, "Failed to write backup file", "error", err)
-			// Attempt to clean up the backup file if it was created
-			cleanupErr := h.fs.Delete(backupFilePath)
-			if cleanupErr != nil {
-				logger.ErrorContext(ctx, "Failed to clean up backup file", "error", cleanupErr)
-			}
-			return nil, err
+			return CreateBackup500Response{}, nil
 		}
 	}
 
-	fileURL := filepath.ToSlash(filepath.Join("/", backupFilePath))
-
 	return CreateBackup201Response{
 		Headers: CreateBackup201ResponseHeaders{
-			Location: fileURL,
+			Location: filepath.ToSlash(filepath.Join("/", backupFilePath)),
 		},
 	}, nil
 }
@@ -93,11 +70,6 @@ func (h apiHandler) GetAllBackups(ctx context.Context, _ GetAllBackupsRequestObj
 
 	backups := make([]models.Backup, 0, len(backupFiles))
 	for _, entry := range backupFiles {
-		if entry.IsDir() {
-			logger.WarnContext(ctx, "Skipping directory in backup listing", "name", entry.Name())
-			continue
-		}
-
 		info, err := entry.Info()
 		if err != nil {
 			logger.WarnContext(ctx, "Skipping backup file due to stat error", "error", err, "name", entry.Name())
@@ -138,15 +110,12 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 
 	var databaseData *models.BackupData
 	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
-		metadataContent, err := readJSONFileFromZip[models.BackupMetadata](reader, metadataFileName)
+		_, err := getMetadata(ctx, logger, reader, request.FileName)
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to read backup metadata", "error", err, "name", request.FileName)
 			return err
 		}
-		if !metadataContent.Validate() {
-			logger.ErrorContext(ctx, "Backup file has invalid metadata", "name", request.FileName, "metadata", metadataContent)
-			return err
-		}
+
+		// TODO: Check the version in the metadata and return an error if it's not compatible with the current version of Gomp.
 
 		databaseData, err = readJSONFileFromZip[models.BackupData](reader, databaseFileName)
 		if err != nil {
@@ -185,6 +154,72 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 		return nil, err
 	}
 	return DeleteBackup204Response{}, nil
+}
+
+func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, name string) (string, error) {
+	logger.DebugContext(ctx, "Creating backup from database export")
+
+	// Export all data from the database
+	exportedData, err := h.db.Backups().Export(ctx)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
+		return "", err
+	}
+
+	// Save the backup file
+	// Generate a name based on the current timestamp in UTC
+	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
+	err = utils.Trap(func() error {
+		return h.writeBackup(ctx, logger, name, backupFilePath, exportedData)
+	}, func() error {
+		// Attempt to clean up the backup file if it was created
+		return h.fs.Delete(backupFilePath)
+	})
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
+		return "", err
+	}
+
+	return backupFilePath, nil
+}
+
+func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name string, uploadedFileData []byte, err error) (string, error) {
+	logger.DebugContext(ctx, "Creating backup from uploaded file content")
+
+	backupFileName := fmt.Sprintf("gomp-backup-upload-%s.zip", name)
+	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, backupFileName)
+	if err := h.fs.Save(backupFilePath, bytes.NewReader(uploadedFileData)); err != nil {
+		logger.ErrorContext(ctx, "Failed to save uploaded backup file", "error", err)
+		return "", err
+	}
+
+	err = utils.Trap(func() error {
+		// Confirm this is a valid backup file by attempting to read it back
+		info, err := h.fs.Stat(backupFilePath)
+		if err != nil {
+			logger.ErrorContext(ctx, "Failed to stat backup file", "error", err, "name", backupFileName)
+			return err
+		}
+
+		file, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, info.Name()))
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		return fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
+			_, err := getMetadata(ctx, logger, reader, info.Name())
+			return err
+		})
+	}, func() error {
+		// Always try to delete the file just created if it fails validation,
+		// since it was uploaded by the user and we don't want to keep invalid backup files around.
+		return h.fs.Delete(backupFilePath)
+	})
+	if err != nil {
+		return "", err
+	}
+	return backupFilePath, nil
 }
 
 func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, filePath string, exportedData *models.BackupData) error {
@@ -229,14 +264,9 @@ func (h apiHandler) readBackup(ctx context.Context, logger *slog.Logger, info fs
 
 	var backup models.Backup
 	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
-		metadataContent, err := readJSONFileFromZip[models.BackupMetadata](reader, metadataFileName)
+		metadataContent, err := getMetadata(ctx, logger, reader, info.Name())
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to read metadata from backup", "error", err, "name", entry.Name())
 			return err
-		}
-		if !metadataContent.Validate() {
-			logger.ErrorContext(ctx, "Backup file has invalid metadata", "name", entry.Name(), "metadata", metadataContent)
-			return errors.New("invalid backup metadata")
 		}
 
 		backup = models.Backup{
@@ -251,6 +281,21 @@ func (h apiHandler) readBackup(ctx context.Context, logger *slog.Logger, info fs
 	}
 
 	return &backup, nil
+}
+
+func getMetadata(ctx context.Context, logger *slog.Logger, reader *zip.Reader, fileName string) (*models.BackupMetadata, error) {
+	metadataContent, err := readJSONFileFromZip[models.BackupMetadata](reader, metadataFileName)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to read backup metadata", "error", err, "name", fileName)
+		return nil, err
+	}
+
+	if !metadataContent.Validate() {
+		logger.ErrorContext(ctx, "Backup file has invalid metadata", "name", fileName, "metadata", metadataContent)
+		return nil, err
+	}
+
+	return metadataContent, nil
 }
 
 func writeJSONFileToZip(writer *zip.Writer, fileName string, data any) error {
