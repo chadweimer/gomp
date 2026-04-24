@@ -34,5 +34,11 @@ func (u *unbufferedReaderAt) ReadAt(p []byte, off int64) (int, error) {
 
 	bytesRead, err := u.Reader.Read(p)
 	u.offset += int64(bytesRead)
+	
+	// io.ReaderAt contract: if n < len(p), must return non-nil error
+	if bytesRead < len(p) && err == nil {
+		err = io.EOF
+	}
+	
 	return bytesRead, err
 }
