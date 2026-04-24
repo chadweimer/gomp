@@ -74,9 +74,6 @@ func TestUnbufferedReaderAtReadAt(t *testing.T) {
 			bufferSize:  5,
 			expectN:     0,
 			expectError: true,
-			validateBuffer: func(t *testing.T, buf []byte) {
-				// Should not read anything
-			},
 		},
 		{
 			name:        "Read with buffer larger than remaining content - returns EOF",
@@ -98,9 +95,6 @@ func TestUnbufferedReaderAtReadAt(t *testing.T) {
 			bufferSize:  0,
 			expectN:     0,
 			expectError: false,
-			validateBuffer: func(t *testing.T, buf []byte) {
-				// No bytes should be read
-			},
 		},
 		{
 			name:        "Sequential read at same offset",
@@ -157,9 +151,6 @@ func TestUnbufferedReaderAtReadAt(t *testing.T) {
 			bufferSize:  1,
 			expectN:     0,
 			expectError: true,
-			validateBuffer: func(t *testing.T, buf []byte) {
-				// EOF, no bytes read
-			},
 		},
 		{
 			name:        "Read with offset one before end - returns EOF",
@@ -210,25 +201,21 @@ func TestUnbufferedReaderAtReadAt(t *testing.T) {
 }
 
 func TestUnbufferedReaderAtMultipleReads(t *testing.T) {
+	type testRead []struct {
+		offset     int64
+		bufferSize int
+		expectN    int
+		expectData string
+	}
 	tests := []struct {
 		name  string
 		data  string
-		reads []struct {
-			offset     int64
-			bufferSize int
-			expectN    int
-			expectData string
-		}
+		reads testRead
 	}{
 		{
 			name: "Sequential forward reads only",
 			data: "Hello, World!",
-			reads: []struct {
-				offset     int64
-				bufferSize int
-				expectN    int
-				expectData string
-			}{
+			reads: testRead{
 				{offset: 0, bufferSize: 5, expectN: 5, expectData: "Hello"},
 				{offset: 5, bufferSize: 2, expectN: 2, expectData: ", "},
 				{offset: 7, bufferSize: 5, expectN: 5, expectData: "World"},
@@ -237,12 +224,7 @@ func TestUnbufferedReaderAtMultipleReads(t *testing.T) {
 		{
 			name: "Single forward read",
 			data: "0123456789",
-			reads: []struct {
-				offset     int64
-				bufferSize int
-				expectN    int
-				expectData string
-			}{
+			reads: testRead{
 				{offset: 5, bufferSize: 2, expectN: 2, expectData: "56"},
 			},
 		},
