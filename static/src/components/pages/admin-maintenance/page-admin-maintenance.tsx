@@ -64,7 +64,8 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                         <ion-item key={backup.metadata.name}>
                           <ion-label>
                             <h2>{backup.metadata.name}</h2>
-                            <p>{scaleValue(backup.sizeInBytes, 1048576, 2)} MiB</p>
+                            <p>Version: {backup.metadata.version}</p>
+                            <p>Size: {scaleValue(backup.sizeInBytes, 1048576, 2)} MiB</p>
                           </ion-label>
                           <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
                             <ion-icon slot="start" name="open-outline" />
