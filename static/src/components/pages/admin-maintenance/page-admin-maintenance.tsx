@@ -1,8 +1,8 @@
-import { alertController, modalController } from '@ionic/core';
+import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Host, Method, State, h } from '@stencil/core';
 import { Backup, RecipeState, SortBy, SortDir } from '../../../generated';
 import { performRecipeSearch, appApi, recipesApi } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, showLoading, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, scaleValue, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-maintenance',
@@ -51,7 +51,9 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                   <ion-card-content>
                     <p>
                       <ion-note>
-                        Creating a backup will save all current data to a backup file. This operation may take a while depending on the amount of data.
+                        Creating a backup will save all current data to a backup file.
+                        Restoring a backup will replace all current data with the data from the backup file; this is a destructive operation and cannot be undone.
+                        These operations may take a while depending on the amount of data.
                       </ion-note>
                     </p>
                     <ion-list lines="full">
@@ -62,19 +64,22 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                         <ion-item key={backup.metadata.name}>
                           <ion-label>
                             <h2>{backup.metadata.name}</h2>
-                            <p>{backup.sizeInBytes} bytes</p>
+                            <p>{scaleValue(backup.sizeInBytes, 1048576, 2)} MiB</p>
                           </ion-label>
-                          <ion-button slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
+                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
                             <ion-icon slot="start" name="open-outline" />
                             Restore
                           </ion-button>
-                          <ion-button slot="end" fill="clear">
+                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onDownloadBackupClicked(backup)}>
                             <ion-icon slot="start" name="download-outline" />
-                            <a class="no-style" href={backup.fileUrl} download={backup.fileName}>Download</a>
+                            Download
                           </ion-button>
-                          <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
+                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
                             <ion-icon slot="start" name="trash" />
                             Delete
+                          </ion-button>
+                          <ion-button class="ion-hide-lg-up" slot="end" color="dark" fill="clear" onClick={() => this.onBackupMenuClicked(backup)}>
+                            <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
                           </ion-button>
                         </ion-item>
                       )}
@@ -293,5 +298,43 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
         await this.loadBackups();
       }
     });
+  }
+
+  private onDownloadBackupClicked(backup: Backup) {
+    // Programmatically start the download
+    const link = document.createElement('a');
+    link.href = backup.fileUrl;
+    link.download = backup.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  private async onBackupMenuClicked(backup: Backup) {
+    const menu = await actionSheetController.create({
+      header: backup.metadata.name,
+      buttons: [
+        {
+          text: 'Delete',
+          icon: 'trash',
+          role: 'destructive',
+          handler: () => this.onDeleteBackupClicked(backup),
+        },
+        {
+          text: 'Download',
+          icon: 'download-outline',
+          handler: () => this.onDownloadBackupClicked(backup)
+        },
+        {
+          text: 'Restore',
+          icon: 'open-outline',
+          handler: () => this.onRestoreBackupClicked(backup)
+        },
+        { text: 'Cancel', icon: 'close', role: 'cancel' }
+      ],
+    });
+    await menu.present();
+
+    await menu.onDidDismiss();
   }
 }

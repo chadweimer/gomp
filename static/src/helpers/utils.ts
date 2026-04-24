@@ -247,3 +247,7 @@ export function sanitizeHTML(html: string) {
   // Also forbid span tags to prevent inline styles.
   return DOMPurify.sanitize(html, { FORBID_ATTR: ['style'], FORBID_TAGS: ['style', 'span'] });
 }
+
+export function scaleValue(value: number | null | undefined, divider: number, decimalPlaces: number) {
+  return ((value ?? 0) / divider).toFixed(decimalPlaces);
+}

@@ -172,11 +172,6 @@ html:not(.hydrated) body {
   display: none;
 }
 
-a.no-style {
-  color: inherit;
-  text-decoration: none;
-}
-
 ion-card-title.ios {
   font-size: 1.4rem;
 }
