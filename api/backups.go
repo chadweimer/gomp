@@ -261,16 +261,18 @@ func (h apiHandler) readBackup(ctx context.Context, logger *slog.Logger, info fs
 	defer file.Close()
 
 	var backup models.Backup
-	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
+	sizeInBytes := info.Size()
+	err = fileaccess.ReadZip(file, sizeInBytes, func(reader *zip.Reader) error {
 		metadataContent, err := getMetadata(ctx, logger, reader, info.Name())
 		if err != nil {
 			return err
 		}
 
 		backup = models.Backup{
-			Metadata: *metadataContent,
-			FileName: entry.Name(),
-			FileURL:  filepath.ToSlash(filepath.Join("/", fileaccess.BackupDirectoryName, entry.Name())),
+			SizeInBytes: &sizeInBytes,
+			Metadata:    *metadataContent,
+			FileName:    entry.Name(),
+			FileURL:     filepath.ToSlash(filepath.Join("/", fileaccess.BackupDirectoryName, entry.Name())),
 		}
 		return nil
 	})

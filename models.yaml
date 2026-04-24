@@ -546,6 +546,9 @@ components:
         - fileName
         - fileUrl
       properties:
+        sizeInBytes:
+          type: integer
+          format: int64
         metadata:
           $ref: "#/components/schemas/backupMetadata"
         fileName:

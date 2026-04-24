@@ -35,7 +35,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                       </ion-note>
                     </p>
                   </ion-card-content>
-                  <ion-button size="small" fill="clear" onClick={() => this.optimizeImagesClicked()}>
+                  <ion-button fill="clear" onClick={() => this.optimizeImagesClicked()}>
                     <ion-icon slot="start" name="sparkles" />
                     Optimize All
                   </ion-button>
@@ -60,16 +60,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                       </ion-list-header>
                       {this.backups?.map(backup =>
                         <ion-item key={backup.metadata.name}>
-                          <ion-label>{backup.metadata.name}</ion-label>
-                          <ion-button slot="end" size="small" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
+                          <ion-label>
+                            <h2>{backup.metadata.name}</h2>
+                            <p>{backup.sizeInBytes} bytes</p>
+                          </ion-label>
+                          <ion-button slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
                             <ion-icon slot="start" name="open-outline" />
                             Restore
                           </ion-button>
-                          <ion-button slot="end" size="small" fill="clear">
+                          <ion-button slot="end" fill="clear">
                             <ion-icon slot="start" name="download-outline" />
                             <a class="no-style" href={backup.fileUrl} download={backup.fileName}>Download</a>
                           </ion-button>
-                          <ion-button slot="end" size="small" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
+                          <ion-button slot="end" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
                             <ion-icon slot="start" name="trash" />
                             Delete
                           </ion-button>
@@ -77,11 +80,11 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                       )}
                     </ion-list>
                   </ion-card-content>
-                  <ion-button size="small" fill="clear" onClick={() => this.createBackupClicked()}>
+                  <ion-button fill="clear" onClick={() => this.createBackupClicked()}>
                     <ion-icon slot="start" name="server" />
                     Backup Now
                   </ion-button>
-                  <ion-button size="small" fill="clear" onClick={() => this.onUploadClicked()}>
+                  <ion-button fill="clear" onClick={() => this.onUploadClicked()}>
                     <ion-icon slot="start" name="open-outline" />
                     Upload
                   </ion-button>
