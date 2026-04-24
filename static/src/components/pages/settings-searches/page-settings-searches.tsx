@@ -153,24 +153,22 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
       const confirmation = await alertController.create({
-        header: 'Delete User?',
+        header: 'Delete Search Filter?',
         message: `Are you sure you want to delete ${searchFilter.name}?`,
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.deleteSearchFilter(searchFilter.id);
-              this.filters = await loadSearchFilters();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteSearchFilter(searchFilter.id);
+        this.filters = await loadSearchFilters();
+      }
     });
   }
 

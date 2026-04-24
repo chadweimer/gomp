@@ -151,20 +151,18 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
         header: 'Optimize All Images?',
         message: 'Are you sure you want to optimize all images? This operation cannot be undone.',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.optimizeImages();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.optimizeImages();
+      }
     });
   }
 
@@ -184,21 +182,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
         header: 'Create Backup?',
         message: 'Are you sure you want to create a backup? This operation may take a while depending on the amount of data.',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.createBackup();
-              await this.loadBackups();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.createBackup();
+        await this.loadBackups();
+      }
     });
   }
 
@@ -218,21 +214,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
         header: 'Delete Backup?',
         message: 'Are you sure you want to delete this backup? This operation cannot be undone.',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.deleteBackup(backup);
-              await this.loadBackups();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteBackup(backup);
+        await this.loadBackups();
+      }
     });
   }
 
@@ -252,21 +246,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
         header: 'Restore Backup?',
         message: 'Are you sure you want to restore this backup? This operation cannot be undone.',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.restoreBackup(backup.fileName);
-              await this.loadBackups();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.restoreBackup(backup.fileName);
+        await this.loadBackups();
+      }
     });
   }
 
@@ -315,27 +307,26 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     const menu = await actionSheetController.create({
       header: backup.metadata.name,
       buttons: [
-        {
-          text: 'Delete',
-          icon: 'trash',
-          role: 'destructive',
-          handler: () => this.onDeleteBackupClicked(backup),
-        },
-        {
-          text: 'Download',
-          icon: 'download-outline',
-          handler: () => this.onDownloadBackupClicked(backup)
-        },
-        {
-          text: 'Restore',
-          icon: 'open-outline',
-          handler: () => this.onRestoreBackupClicked(backup)
-        },
+        { text: 'Delete', icon: 'trash', role: 'destructive' },
+        { text: 'Download', icon: 'download-outline', role: 'download' },
+        { text: 'Restore', icon: 'open-outline', role: 'restore' },
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
     });
     await menu.present();
 
-    await menu.onDidDismiss();
+    const { role } = await menu.onDidDismiss();
+
+    switch (role) {
+      case 'destructive':
+        await this.onDeleteBackupClicked(backup);
+        break;
+      case 'download':
+        this.onDownloadBackupClicked(backup);
+        break;
+      case 'restore':
+        await this.onRestoreBackupClicked(backup);
+        break;
+    }
   }
 }

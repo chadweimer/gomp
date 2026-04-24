@@ -429,50 +429,48 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         { text: 'Print', icon: 'print', role: 'print' },
         ...(hasScope(state.jwtToken, AccessLevel.Editor) ?
           [
-            {
-              text: 'Delete',
-              icon: 'trash',
-              role: 'destructive',
-              handler: () => this.onDeleteClicked(),
-            },
+            { text: 'Delete', icon: 'trash', role: 'destructive' },
             {
               text: this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive',
               icon: 'archive',
-              handler: () => this.recipe?.state === RecipeState.Archived
-                ? this.onUnarchiveClicked()
-                : this.onArchiveClicked()
+              role: 'archive'
             },
-            {
-              text: 'Add Link',
-              icon: 'link',
-              handler: () => this.onAddLinkClicked()
-            },
-            {
-              text: 'Upload Picture',
-              icon: 'camera',
-              handler: () => this.onUploadImageClicked()
-            },
-            {
-              text: 'Add Note',
-              icon: 'chatbox',
-              handler: () => this.onAddNoteClicked()
-            },
-            {
-              text: 'Edit',
-              icon: 'create',
-              handler: () => this.onEditClicked()
-            }
+            { text: 'Add Link', icon: 'link', role: 'add-link' },
+            { text: 'Upload Picture', icon: 'camera', role: 'upload-image' },
+            { text: 'Add Note', icon: 'chatbox', role: 'add-note' },
+            { text: 'Edit', icon: 'create', role: 'edit' }
           ] : []),
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
     });
     await menu.present();
 
-    const res = await menu.onDidDismiss();
+    const { role } = await menu.onDidDismiss();
 
-    // Handle print after the menu closes so that the menu doesn't get included in the printout.
-    if (res.role === 'print') {
-      this.onPrintClicked();
+    switch (role) {
+      case 'print':
+        this.onPrintClicked();
+        break;
+      case 'destructive':
+        await this.onDeleteClicked();
+        break;
+      case 'archive':
+        await (this.recipe?.state === RecipeState.Archived
+          ? this.onUnarchiveClicked()
+          : this.onArchiveClicked());
+        break;
+      case 'add-link':
+        await this.onAddLinkClicked();
+        break;
+      case 'upload-image':
+        await this.onUploadImageClicked();
+        break;
+      case 'add-note':
+        await this.onAddNoteClicked();
+        break;
+      case 'edit':
+        await this.onEditClicked();
+        break;
     }
   }
 
@@ -507,26 +505,22 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Delete Recipe?',
         message: 'Are you sure you want to delete this recipe?',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            role: 'yes',
-            handler: async () => {
-              await this.deleteRecipe();
-
-              // Update the search results since the modified recipe may be in them
-              await refreshSearchResults();
-              await redirect('/recipes');
-
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteRecipe();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+        await redirect('/recipes');
+      }
     });
   }
 
@@ -536,26 +530,22 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Arhive Recipe?',
         message: 'Are you sure you want to archive this recipe?',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            role: 'yes',
-            handler: async () => {
-              await this.setRecipeState(RecipeState.Archived);
-              await this.loadRecipe();
-
-              // Update the search results since the modified recipe may be in them
-              await refreshSearchResults();
-
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.setRecipeState(RecipeState.Archived);
+        await this.loadRecipe();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 
@@ -565,26 +555,22 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Unarchive Recipe?',
         message: 'Are you sure you want to unarchive this recipe?',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            role: 'yes',
-            handler: async () => {
-              await this.setRecipeState(RecipeState.Active);
-              await this.loadRecipe();
-
-              // Update the search results since the modified recipe may be in them
-              await refreshSearchResults();
-
-              return true;
-            }
-          },
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.setRecipeState(RecipeState.Active);
+        await this.loadRecipe();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 
@@ -613,22 +599,19 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Remove Link?',
         message: `Are you sure you want to remove the linked recipe '${link.name}'?`,
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            role: 'yes',
-            handler: async () => {
-              await this.deleteLink(link);
-              await this.loadLinks();
-              return true;
-            }
-          },
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteLink(link);
+        await this.loadLinks();
+      }
     });
   }
 
@@ -676,21 +659,19 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Delete Note?',
         message: 'Are you sure you want to delete this note?',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.deleteNote(note);
-              await this.loadNotes();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteNote(note);
+        await this.loadNotes();
+      }
     });
   }
 
@@ -737,26 +718,22 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Set Main Picture?',
         message: 'Are you sure you want to this as the main picture for the recipe?',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            role: 'yes',
-            handler: async () => {
-              await this.setMainImage(image);
-              await this.loadMainImage();
-
-              // Update the search results since the modified recipe may be in them
-              await refreshSearchResults();
-
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.setMainImage(image);
+        await this.loadMainImage();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 
@@ -766,27 +743,23 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         header: 'Delete Image?',
         message: 'Are you sure you want to delete this picture?',
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            role: 'yes',
-            handler: async () => {
-              await this.deleteImage(image);
-              await this.loadMainImage();
-              await this.loadImages();
-
-              // Update the search results since the modified recipe may be in them
-              await refreshSearchResults();
-
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteImage(image);
+        await this.loadMainImage();
+        await this.loadImages();
+
+        // Update the search results since the modified recipe may be in them
+        await refreshSearchResults();
+      }
     });
   }
 

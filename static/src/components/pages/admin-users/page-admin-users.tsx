@@ -145,21 +145,19 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         header: 'Delete User?',
         message: `Are you sure you want to delete ${user.username}?`,
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.deleteUser(user);
-              await this.loadUsers();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteUser(user);
+        await this.loadUsers();
+      }
     });
   }
 
