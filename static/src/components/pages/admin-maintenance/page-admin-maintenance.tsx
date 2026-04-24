@@ -307,7 +307,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     link.download = backup.fileName;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    link.remove();
   }
 
   private async onBackupMenuClicked(backup: Backup) {
