@@ -29,27 +29,25 @@ const (
 func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupRequestObject) (CreateBackupResponseObject, error) {
 	logger := middleware.GetLoggerFromContext(ctx)
 
+	var backupFilePath string
 	name := time.Now().Format(backupFileNameTimeFormat)
 
 	// If the request includes file content, use it as the source for the backup instead of exporting from the database.
 	// This allows for restoring from a backup by uploading the backup file as the content of the request.
 	uploadedFileData, _, err := readFile(request.Body)
-	if err != nil && !errors.Is(err, io.EOF) {
-		logger.ErrorContext(ctx, "Failed to read uploaded backup file content", "error", err)
-		return nil, err
-	}
-
-	var backupFilePath string
 	if err == nil {
 		backupFilePath, err = h.uploadBackup(ctx, logger, name, uploadedFileData, err)
 		if err != nil {
 			return CreateBackup400Response{}, nil
 		}
-	} else {
+	} else if errors.Is(err, io.EOF) {
 		backupFilePath, err = h.generateNewBackup(ctx, logger, name)
 		if err != nil {
 			return CreateBackup500Response{}, nil
 		}
+	} else {
+		logger.ErrorContext(ctx, "Failed to read uploaded backup file content", "error", err)
+		return CreateBackup500Response{}, nil
 	}
 
 	return CreateBackup201Response{
