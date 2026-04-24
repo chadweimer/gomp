@@ -177,7 +177,7 @@ func TestWriteFileToZip(t *testing.T) {
 			}
 
 			if !tt.wantErr {
-				zw.Close()
+				_ = zw.Close()
 				// Verify the file was written
 				zr, _ := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
 				found := false
@@ -186,7 +186,7 @@ func TestWriteFileToZip(t *testing.T) {
 						found = true
 						rc, _ := f.Open()
 						data, _ := io.ReadAll(rc)
-						rc.Close()
+						_ = rc.Close()
 						if bytes.Equal(data, tt.content) {
 							break
 						}
@@ -224,7 +224,7 @@ func TestCopyDirectoryToZip(t *testing.T) {
 					if expected, ok := expectedFiles[f.Name]; ok {
 						rc, _ := f.Open()
 						data, _ := io.ReadAll(rc)
-						rc.Close()
+						_ = rc.Close()
 						if string(data) != expected {
 							t.Errorf("file %s content mismatch: got %q, want %q", f.Name, string(data), expected)
 						}
@@ -264,7 +264,7 @@ func TestCopyDirectoryToZip(t *testing.T) {
 			}
 
 			if !tt.wantErr && tt.verify != nil {
-				zw.Close()
+				_ = zw.Close()
 				zr, _ := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
 				tt.verify(t, zr)
 			}
@@ -277,8 +277,8 @@ func TestReadFileFromZip(t *testing.T) {
 	buf := new(bytes.Buffer)
 	zw := zip.NewWriter(buf)
 	w, _ := zw.Create("test.txt")
-	w.Write([]byte("hello world"))
-	zw.Close()
+	_, _ = w.Write([]byte("hello world"))
+	_ = zw.Close()
 
 	zr, _ := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
 
