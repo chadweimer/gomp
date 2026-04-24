@@ -311,6 +311,8 @@ func TestRestoreFromBackup(t *testing.T) {
 					// CopyDirectoryFromZip expects this method, but it's internal to fileaccess
 					// so we just expect the Import to be called
 					mockBackupDriver.EXPECT().Import(gomock.Any(), gomock.Any()).Return(nil),
+					// After successful import, the upload directory should be cleared
+					mockFS.EXPECT().DeleteAll(fileaccess.UploadDirectoryName).Return(nil),
 				)
 			},
 			expectError: false,

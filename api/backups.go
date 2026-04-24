@@ -105,21 +105,33 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	}
 	defer file.Close()
 
-	var databaseData *models.BackupData
 	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
 		_, err := getMetadata(ctx, logger, reader, request.FileName)
 		if err != nil {
 			return err
 		}
 
-		// TODO: Check the version in the metadata and return an error if it's not compatible with the current version of Gomp.
+		// FUTURE CHECK: Confirm version compatibility between the backup file and
+		// the current application version before attempting to restore the database content.
 
-		databaseData, err = readJSONFileFromZip[models.BackupData](reader, databaseFileName)
+		// Restore the database first. Since this is done in a transaction, if it fails,
+		// the file copy won't be attempted and the database won't be left in a partially restored state.
+		databaseData, err := readJSONFileFromZip[models.BackupData](reader, databaseFileName)
 		if err != nil {
 			logger.ErrorContext(ctx, "Failed to read backup data", "error", err, "name", request.FileName)
 			return err
 		}
+		err = h.db.Backups().Import(ctx, databaseData)
+		if err != nil {
+			logger.ErrorContext(ctx, "Failed to import backup data", "error", err, "name", request.FileName)
+			return err
+		}
 
+		// If the database restore succeeded, copy all the files from the backup to the upload directory.
+		if err := h.fs.DeleteAll(fileaccess.UploadDirectoryName); err != nil {
+			logger.ErrorContext(ctx, "Failed to delete upload directory", "error", err)
+			return err
+		}
 		err = fileaccess.CopyDirectoryFromZip(h.fs, fileaccess.UploadDirectoryName, fileaccess.UploadDirectoryName, reader)
 		if err != nil {
 			logger.ErrorContext(ctx, "Failed to copy files from backup", "error", err, "name", request.FileName)
@@ -130,12 +142,6 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	})
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to read backup zip file", "error", err, "name", request.FileName)
-		return RestoreFromBackup400Response{}, nil
-	}
-
-	err = h.db.Backups().Import(ctx, databaseData)
-	if err != nil {
-		logger.ErrorContext(ctx, "Failed to import backup data", "error", err, "name", request.FileName)
 		return RestoreFromBackup400Response{}, nil
 	}
 
