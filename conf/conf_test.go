@@ -13,7 +13,7 @@ import (
 
 func TestBind_Defaults(t *testing.T) {
 	type allSupportedTypes struct {
-		unexportedInt int `default:"5"`
+		unexportedInt int `default:"5"` // revive:disable-line:struct-tag
 
 		TestInt            int     `default:"-1"`
 		TestInt8           int8    `default:"-0b10"`

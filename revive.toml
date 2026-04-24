@@ -24,6 +24,8 @@ Disabled = true
 Disabled = true
 [rule.package-comments]
 Disabled = true
+[rule.package-naming]
+Disabled = true
 
 # Exclude tests from certain rules
 [rule.defer]
