@@ -57,7 +57,8 @@ func Test_Backup_Export(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDbWithTableNames(t, test.mockTableNames)
+			mockAdapter := mockDriverAdapter{tableNames: test.mockTableNames}
+			sut, dbmock := getMockDb(t, mockAdapter)
 			defer sut.Close()
 
 			dbmock.MatchExpectationsInOrder(false)
@@ -217,7 +218,7 @@ func Test_Backup_Import(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()

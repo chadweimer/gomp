@@ -99,7 +99,7 @@ func Test_Recipe_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 			expectedID := rand.Int63()
 
@@ -154,7 +154,7 @@ func Test_Recipe_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, created_at, modified_at FROM recipe WHERE id = \\$1").
@@ -233,7 +233,7 @@ func Test_Recipe_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -289,7 +289,7 @@ func Test_Recipe_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -336,7 +336,7 @@ func Test_Recipe_GetRating(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT COALESCE\\(g\\.rating, 0\\) AS avg_rating FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.id = \\$1").
@@ -389,7 +389,7 @@ func Test_Recipe_SetRating(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -445,7 +445,7 @@ func Test_Recipe_SetState(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -493,7 +493,7 @@ func Test_Recipe_CreateTag(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -540,7 +540,7 @@ func Test_Recipe_DeleteAllTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -587,7 +587,7 @@ func Test_Recipe_ListTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID)
@@ -651,7 +651,7 @@ func Test_Recipe_ListAllTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT tag, count\\(tag\\) as num FROM recipe_tag GROUP BY tag")
@@ -1142,7 +1142,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 			if tt.setupMock != nil {
 				tt.setupMock(dbmock)

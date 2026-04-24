@@ -31,7 +31,7 @@ func Test_AppConfiguration_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_configuration")
@@ -77,7 +77,7 @@ func Test_AppConfiguration_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()

@@ -9,19 +9,17 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func getMockDb(t *testing.T) (*sqlDriver, sqlmock.Sqlmock) {
-	return getMockDbWithTableNames(t, []string{})
-}
-
-func getMockDbWithTableNames(t *testing.T, tableNames []string) (*sqlDriver, sqlmock.Sqlmock) {
+func getMockDb(t *testing.T, adapter sqlDriverAdapter) (*sqlDriver, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
 	dbx := sqlx.NewDb(db, "sqlmock")
-	mockAdapter := mockDriverAdapter{tableNames}
-	return newSQLDriver(dbx, mockAdapter), mock
+	if adapter == nil {
+		adapter = mockDriverAdapter{}
+	}
+	return newSQLDriver(dbx, adapter), mock
 }
 
 type mockDriverAdapter struct {

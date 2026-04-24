@@ -82,7 +82,7 @@ func Test_lockPostgres(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 			conn, err := sut.Db.Conn(t.Context())
 			if err != nil {
