@@ -59,6 +59,27 @@ func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerC
 	return tables, nil
 }
 
+func (postgresDriverAdapter) SanitizeExport(_ context.Context, backup *models.BackupData) {
+	for _, table := range *backup {
+		for _, row := range table.Data {
+			for key, value := range row {
+				if byteValue, ok := value.([]byte); ok {
+					// Postgres can return []byte for enum fields, which isn't JSON serializable. Convert those to strings.
+					// In a general purpose implementation, we'd want to check the column type to make sure we're only converting enum fields,
+					// but since we don't otherwise store binary data, we can get away with just converting any []byte we encounter.
+					row[key] = string(byteValue)
+				} else {
+					row[key] = value
+				}
+			}
+		}
+	}
+}
+
+func (postgresDriverAdapter) SanitizeImport(_ context.Context, backup *models.BackupData) {
+	// Nothing to do for Postgres; it can handle all the types we throw at it without any special handling during import
+}
+
 func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// In docker, on first bring up, the DB takes a little while.
 	// Let's try a few times to establish connection before giving up.

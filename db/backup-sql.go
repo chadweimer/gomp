@@ -13,6 +13,8 @@ import (
 type sqlBackupDriverAdapter interface {
 	DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
+	SanitizeExport(ctx context.Context, backup *models.BackupData)
+	SanitizeImport(ctx context.Context, backup *models.BackupData)
 }
 
 type sqlBackupDriver struct {
@@ -48,10 +50,16 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 		return nil, fmt.Errorf("exporting database: %w", err)
 	}
 
+	// Sanitize the backup data; this allows us to handle special cases for each database driver
+	b.adapter.SanitizeExport(ctx, &backup)
+
 	return &backup, nil
 }
 
 func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
+	// Sanitize the backup data before importing; this allows us to handle special cases for each database driver
+	b.adapter.SanitizeImport(ctx, backup)
+
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		// Must defer all constraints to the end of the transaction
@@ -95,6 +103,7 @@ func getRows(ctx context.Context, db sqlx.QueryerContext, tableName string) ([]m
 		if err := rows.MapScan(row); err != nil {
 			return nil, fmt.Errorf("scanning row: %w", err)
 		}
+
 		data = append(data, row)
 	}
 	if err := rows.Err(); err != nil {

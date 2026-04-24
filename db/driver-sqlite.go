@@ -42,6 +42,13 @@ func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, qu
 	return fieldStr, fieldArgs
 }
 
+func (sqliteDriverAdapter) DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error {
+	if _, err := db.ExecContext(ctx, "PRAGMA defer_foreign_keys = on"); err != nil {
+		return fmt.Errorf("deferring constraints: %w", err)
+	}
+	return nil
+}
+
 func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
 	tables := make([]string, 0)
 	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
@@ -51,11 +58,27 @@ func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerCon
 	return tables, nil
 }
 
-func (sqliteDriverAdapter) DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error {
-	if _, err := db.ExecContext(ctx, "PRAGMA defer_foreign_keys = on"); err != nil {
-		return fmt.Errorf("deferring constraints: %w", err)
+func (sqliteDriverAdapter) SanitizeExport(_ context.Context, _ *models.BackupData) {
+	// Nothing to do for SQLite; it does not have any special types that need to be handled during export
+}
+
+func (sqliteDriverAdapter) SanitizeImport(_ context.Context, backup *models.BackupData) {
+	for _, table := range *backup {
+		for _, row := range table.Data {
+			// SQLite does not have a native boolean type, so we need to convert any boolean values to integers (0 or 1)
+			for key, value := range row {
+				switch v := value.(type) {
+				case bool:
+					if v {
+						row[key] = 1
+					} else {
+						row[key] = 0
+					}
+				default:
+				}
+			}
+		}
 	}
-	return nil
 }
 
 func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {

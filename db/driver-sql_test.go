@@ -37,3 +37,9 @@ func (m mockDriverAdapter) GetTableNames(_ context.Context, _ sqlx.QueryerContex
 func (mockDriverAdapter) DeferConstraints(_ context.Context, _ sqlx.ExecerContext) error {
 	return nil
 }
+
+func (mockDriverAdapter) SanitizeExport(_ context.Context, _ *models.BackupData) {
+}
+
+func (mockDriverAdapter) SanitizeImport(_ context.Context, _ *models.BackupData) {
+}
