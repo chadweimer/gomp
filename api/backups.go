@@ -17,7 +17,6 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 )
 
 const (
@@ -167,14 +166,16 @@ func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, 
 	// Save the backup file
 	// Generate a name based on the current timestamp in UTC
 	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
-	err = utils.Trap(func() error {
-		return h.writeBackup(ctx, logger, name, backupFilePath, exportedData)
-	}, func() error {
-		// Attempt to clean up the backup file if it was created
-		return h.fs.Delete(backupFilePath)
-	})
+	err = h.writeBackup(ctx, logger, name, backupFilePath, exportedData)
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
+		logger.ErrorContext(ctx, "Failed to create backup file", "error", err, "file", backupFilePath)
+
+		// Attempt to clean up the backup file if it was created
+		innerErr := h.fs.Delete(backupFilePath)
+		if innerErr != nil {
+			logger.ErrorContext(ctx, "Failed to delete backup file after a previous error", "error", innerErr, "file", backupFilePath)
+		}
+
 		return "", err
 	}
 
@@ -187,36 +188,41 @@ func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name 
 	backupFileName := fmt.Sprintf("gomp-backup-upload-%s.zip", name)
 	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, backupFileName)
 	if err := h.fs.Save(backupFilePath, bytes.NewReader(uploadedFileData)); err != nil {
-		logger.ErrorContext(ctx, "Failed to save uploaded backup file", "error", err)
+		logger.ErrorContext(ctx, "Failed to save uploaded backup file", "error", err, "file", backupFilePath)
 		return "", err
 	}
 
-	err = utils.Trap(func() error {
-		// Confirm this is a valid backup file by attempting to read it back
-		info, err := h.fs.Stat(backupFilePath)
-		if err != nil {
-			logger.ErrorContext(ctx, "Failed to stat backup file", "error", err, "name", backupFileName)
-			return err
-		}
+	info, err := h.fs.Stat(backupFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to stat backup file: %w", err)
+	}
 
-		file, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, info.Name()))
-		if err != nil {
-			return err
-		}
+	// Confirm this is a valid backup file by attempting to read it back
+	file, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, info.Name()))
+	if err != nil {
+		err = fmt.Errorf("failed to open backup file: %w", err)
+	} else {
 		defer file.Close()
 
-		return fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
+		err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
 			_, err := getMetadata(ctx, logger, reader, info.Name())
 			return err
 		})
-	}, func() error {
+		if err != nil {
+			err = fmt.Errorf("failed to read backup file as zip: %w", err)
+		}
+	}
+	if err != nil {
+		logger.ErrorContext(ctx, "Uploaded backup failed. Cleaning up...", "error", err, "file", backupFilePath)
+
 		// Always try to delete the file just created if it fails validation,
 		// since it was uploaded by the user and we don't want to keep invalid backup files around.
-		return h.fs.Delete(backupFilePath)
-	})
-	if err != nil {
+		if innerErr := h.fs.Delete(backupFilePath); innerErr != nil {
+			logger.ErrorContext(ctx, "Failed to delete invalid uploaded backup file", "error", innerErr, "file", backupFilePath)
+		}
 		return "", err
 	}
+
 	return backupFilePath, nil
 }
 
