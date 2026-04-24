@@ -227,6 +227,8 @@ func Test_Backup_Import(t *testing.T) {
 				for _, table := range test.input {
 					dbmock.ExpectExec(fmt.Sprintf("DELETE FROM %s", table.TableName)).
 						WillReturnResult(sqlmock.NewResult(1, 1))
+				}
+				for _, table := range test.input {
 					stmt := dbmock.ExpectPrepare(fmt.Sprintf("INSERT INTO %s \\(.*\\) VALUES \\(.*\\)", table.TableName)).
 						WillBeClosed()
 					for range table.Data {
