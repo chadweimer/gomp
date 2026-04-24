@@ -57,13 +57,13 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 	}, nil
 }
 
-func (h apiHandler) GetAllBackups(ctx context.Context, _ GetAllBackupsRequestObject) (GetAllBackupsResponseObject, error) {
+func (h apiHandler) GetBackups(ctx context.Context, _ GetBackupsRequestObject) (GetBackupsResponseObject, error) {
 	logger := middleware.GetLoggerFromContext(ctx)
 
 	backupFiles, err := h.fs.List(fileaccess.BackupDirectoryName)
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
-		return GetAllBackups500Response{}, nil
+		return GetBackups500Response{}, nil
 	}
 
 	backups := make([]models.Backup, 0, len(backupFiles))
@@ -82,7 +82,7 @@ func (h apiHandler) GetAllBackups(ctx context.Context, _ GetAllBackupsRequestObj
 		backups = append(backups, *backup)
 	}
 
-	return GetAllBackups200JSONResponse(backups), nil
+	return GetBackups200JSONResponse(backups), nil
 }
 
 func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBackupRequestObject) (RestoreFromBackupResponseObject, error) {

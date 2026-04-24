@@ -91,7 +91,7 @@ paths:
     get:
       tags: [ app ]
       description: get list of backups
-      operationId: getAllBackups
+      operationId: getBackups
       responses:
         200:
           description: OK
