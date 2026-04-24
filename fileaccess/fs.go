@@ -2,6 +2,7 @@ package fileaccess
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -22,6 +23,11 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 		return nil, errors.New("root path is empty")
 	}
 
+	// Make sure the root path exists and is a directory
+	if err := os.MkdirAll(rootPath, 0755); err != nil {
+		return nil, fmt.Errorf("creating root path: %w", err)
+	}
+
 	root, err := os.OpenRoot(rootPath)
 	if err != nil {
 		return nil, err
@@ -36,7 +42,7 @@ func (u *fileSystemDriver) Open(filePath string) (fs.File, error) {
 func (u *fileSystemDriver) Create(filePath string) (io.WriteCloser, error) {
 	cleanedPath := filepath.Clean(filePath)
 	dir := filepath.Dir(cleanedPath)
-	if err := u.root.MkdirAll(dir, fs.FileMode(0777)); err != nil {
+	if err := u.root.MkdirAll(dir, fs.FileMode(0755)); err != nil {
 		return nil, err
 	}
 

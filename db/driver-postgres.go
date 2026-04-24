@@ -43,9 +43,25 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
-func (postgresDriverAdapter) DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error {
+func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
 	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
+	}
+	// Disable triggers during the import
+	if _, err := db.ExecContext(ctx, "SET session_replication_role = replica"); err != nil {
+		return fmt.Errorf("disabling triggers: %w", err)
+	}
+	return nil
+}
+
+func (postgresDriverAdapter) GetImportInsertStatement() string {
+	return "INSERT"
+}
+
+func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext) error {
+	// Re-enable triggers after the import
+	if _, err := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); err != nil {
+		return fmt.Errorf("enabling triggers: %w", err)
 	}
 	return nil
 }
@@ -59,7 +75,7 @@ func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerC
 	return tables, nil
 }
 
-func (postgresDriverAdapter) SanitizeExport(_ context.Context, backup *models.BackupData) {
+func (postgresDriverAdapter) StandardizeExport(_ context.Context, backup *models.BackupData) {
 	for _, table := range *backup {
 		for _, row := range table.Data {
 			for key, value := range row {
@@ -74,10 +90,6 @@ func (postgresDriverAdapter) SanitizeExport(_ context.Context, backup *models.Ba
 			}
 		}
 	}
-}
-
-func (postgresDriverAdapter) SanitizeImport(_ context.Context, backup *models.BackupData) {
-	// Nothing to do for Postgres; it can handle all the types we throw at it without any special handling during import
 }
 
 func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -104,11 +116,16 @@ func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsF
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
+	// If the migrations table name was not specificed, use the default from the migrate library
+	if migrationsTableName == "" {
+		migrationsTableName = postgres.DefaultMigrationsTable
+	}
+
 	if err := migratePostgresDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSQLDriver(db, postgresDriverAdapter{})
+	drv := newSQLDriver(db, postgresDriverAdapter{}, migrationsTableName)
 	return drv, nil
 }
 

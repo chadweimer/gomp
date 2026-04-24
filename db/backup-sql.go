@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -11,15 +12,17 @@ import (
 )
 
 type sqlBackupDriverAdapter interface {
-	DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error
+	PreImport(ctx context.Context, db sqlx.ExecerContext) error
+	PostImport(ctx context.Context, db sqlx.ExecerContext) error
+	GetImportInsertStatement() string
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
-	SanitizeExport(ctx context.Context, backup *models.BackupData)
-	SanitizeImport(ctx context.Context, backup *models.BackupData)
+	StandardizeExport(ctx context.Context, backup *models.BackupData)
 }
 
 type sqlBackupDriver struct {
-	db      *sqlx.DB
-	adapter sqlBackupDriverAdapter
+	db                  *sqlx.DB
+	adapter             sqlBackupDriverAdapter
+	migrationsTableName string
 }
 
 func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error) {
@@ -33,6 +36,11 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 
 		// Process each table
 		for _, tableName := range tables {
+			// Skip the migrations table, since we don't want to include it in the backup
+			if tableName == b.migrationsTableName {
+				continue
+			}
+
 			rowData, err := getRows(ctx, db, tableName)
 			if err != nil {
 				return err
@@ -50,38 +58,53 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 		return nil, fmt.Errorf("exporting database: %w", err)
 	}
 
-	// Sanitize the backup data; this allows us to handle special cases for each database driver
-	b.adapter.SanitizeExport(ctx, &backup)
+	// Standardize the backup data; this allows us to handle special cases for each database driver
+	b.adapter.StandardizeExport(ctx, &backup)
 
 	return &backup, nil
 }
 
 func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
-	// Sanitize the backup data before importing; this allows us to handle special cases for each database driver
-	b.adapter.SanitizeImport(ctx, backup)
-
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
-		// Must defer all constraints to the end of the transaction
-		// to avoid issues with foreign key constraints during import.
-		if err := b.adapter.DeferConstraints(ctx, db); err != nil {
-			return fmt.Errorf("deferring constraints: %w", err)
+		if err := b.adapter.PreImport(ctx, db); err != nil {
+			return fmt.Errorf("pre import: %w", err)
 		}
+		defer func() {
+			if err := b.adapter.PostImport(ctx, db); err != nil {
+				slog.ErrorContext(ctx, "Failed running post import", "error", err)
+			}
+		}()
 
+		// Sanitize all the table names,
+		// and remove the migrations table if it exists in the backup,
+		// since we don't want to import it
+		var sanitizedBackup map[string][]models.RowData = make(map[string][]models.RowData, len(*backup))
 		for _, tableData := range *backup {
 			sanitizedTableName, err := sanitizeIdentifier(tableData.TableName)
 			if err != nil {
 				return fmt.Errorf("sanitizing table name %s: %w", tableData.TableName, err)
 			}
 
-			if _, err := db.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s", sanitizedTableName)); err != nil {
-				return fmt.Errorf("deleting from table %s: %w", sanitizedTableName, err)
-			}
-
-			if err := insertRows(ctx, db, sanitizedTableName, tableData.Data); err != nil {
-				return fmt.Errorf("importing table %s: %w", sanitizedTableName, err)
+			if tableData.TableName != b.migrationsTableName {
+				sanitizedBackup[sanitizedTableName] = tableData.Data
 			}
 		}
+
+		// Delete everything first
+		for tableName := range sanitizedBackup {
+			if _, err := db.ExecContext(ctx, fmt.Sprintf("DELETE FROM %s", tableName)); err != nil {
+				return fmt.Errorf("deleting from table %s: %w", tableName, err)
+			}
+		}
+
+		// Now import all the data
+		for tableName, rows := range sanitizedBackup {
+			if err := insertRows(ctx, db, tableName, rows, b.adapter.GetImportInsertStatement()); err != nil {
+				return fmt.Errorf("importing table %s: %w", tableName, err)
+			}
+		}
+
 		return nil
 	})
 	if err != nil {
@@ -112,7 +135,7 @@ func getRows(ctx context.Context, db sqlx.QueryerContext, tableName string) ([]m
 	return data, nil
 }
 
-func insertRows(ctx context.Context, db *sqlx.Tx, tableName string, rowData []models.RowData) error {
+func insertRows(ctx context.Context, db *sqlx.Tx, tableName string, rowData []models.RowData, insertStmtPrefix string) error {
 	// Check if there is anything to insert
 	if len(rowData) == 0 {
 		return nil
@@ -130,7 +153,8 @@ func insertRows(ctx context.Context, db *sqlx.Tx, tableName string, rowData []mo
 		placeholders = append(placeholders, ":"+sanitizedColumnName)
 	}
 
-	insertQuery := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)",
+	insertQuery := fmt.Sprintf("%s INTO %s (%s) VALUES (%s)",
+		insertStmtPrefix,
 		tableName,
 		strings.Join(columns, ","),
 		strings.Join(placeholders, ","))

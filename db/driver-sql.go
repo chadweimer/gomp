@@ -35,7 +35,7 @@ type sqlDriver struct {
 	backups *sqlBackupDriver
 }
 
-func newSQLDriver(db *sqlx.DB, adapter sqlDriverAdapter) *sqlDriver {
+func newSQLDriver(db *sqlx.DB, adapter sqlDriverAdapter, migrationsTableName string) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
@@ -45,7 +45,7 @@ func newSQLDriver(db *sqlx.DB, adapter sqlDriverAdapter) *sqlDriver {
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
-		backups: &sqlBackupDriver{db, adapter},
+		backups: &sqlBackupDriver{db, adapter, migrationsTableName},
 	}
 }
 

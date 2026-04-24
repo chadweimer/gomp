@@ -42,10 +42,18 @@ func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, qu
 	return fieldStr, fieldArgs
 }
 
-func (sqliteDriverAdapter) DeferConstraints(ctx context.Context, db sqlx.ExecerContext) error {
+func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
 	if _, err := db.ExecContext(ctx, "PRAGMA defer_foreign_keys = on"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
 	}
+	return nil
+}
+
+func (sqliteDriverAdapter) GetImportInsertStatement() string {
+	return "INSERT OR REPLACE"
+}
+
+func (sqliteDriverAdapter) PostImport(_ context.Context, _ sqlx.ExecerContext) error {
 	return nil
 }
 
@@ -58,27 +66,8 @@ func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerCon
 	return tables, nil
 }
 
-func (sqliteDriverAdapter) SanitizeExport(_ context.Context, _ *models.BackupData) {
+func (sqliteDriverAdapter) StandardizeExport(_ context.Context, _ *models.BackupData) {
 	// Nothing to do for SQLite; it does not have any special types that need to be handled during export
-}
-
-func (sqliteDriverAdapter) SanitizeImport(_ context.Context, backup *models.BackupData) {
-	for _, table := range *backup {
-		for _, row := range table.Data {
-			// SQLite does not have a native boolean type, so we need to convert any boolean values to integers (0 or 1)
-			for key, value := range row {
-				switch v := value.(type) {
-				case bool:
-					if v {
-						row[key] = 1
-					} else {
-						row[key] = 0
-					}
-				default:
-				}
-			}
-		}
-	}
 }
 
 func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -102,11 +91,16 @@ func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsFor
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
+	// If the migrations table name was not specificed, use the default from the migrate library
+	if migrationsTableName == "" {
+		migrationsTableName = sqlite.DefaultMigrationsTable
+	}
+
 	if err := migrateSqliteDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSQLDriver(db, sqliteDriverAdapter{})
+	drv := newSQLDriver(db, sqliteDriverAdapter{}, migrationsTableName)
 	return drv, nil
 }
 

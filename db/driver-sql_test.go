@@ -19,7 +19,7 @@ func getMockDb(t *testing.T, adapter sqlDriverAdapter) (*sqlDriver, sqlmock.Sqlm
 	if adapter == nil {
 		adapter = mockDriverAdapter{}
 	}
-	return newSQLDriver(dbx, adapter), mock
+	return newSQLDriver(dbx, adapter, "schema_migrations"), mock
 }
 
 type mockDriverAdapter struct {
@@ -34,12 +34,17 @@ func (m mockDriverAdapter) GetTableNames(_ context.Context, _ sqlx.QueryerContex
 	return m.tableNames, nil
 }
 
-func (mockDriverAdapter) DeferConstraints(_ context.Context, _ sqlx.ExecerContext) error {
+func (mockDriverAdapter) PreImport(_ context.Context, _ sqlx.ExecerContext) error {
 	return nil
 }
 
-func (mockDriverAdapter) SanitizeExport(_ context.Context, _ *models.BackupData) {
+func (mockDriverAdapter) GetImportInsertStatement() string {
+	return "INSERT"
 }
 
-func (mockDriverAdapter) SanitizeImport(_ context.Context, _ *models.BackupData) {
+func (mockDriverAdapter) PostImport(_ context.Context, _ sqlx.ExecerContext) error {
+	return nil
+}
+
+func (mockDriverAdapter) StandardizeExport(_ context.Context, _ *models.BackupData) {
 }
