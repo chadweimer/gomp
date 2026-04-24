@@ -61,7 +61,7 @@ func (h apiHandler) GetBackups(ctx context.Context, _ GetBackupsRequestObject) (
 
 	backupFiles, err := h.fs.List(fileaccess.BackupDirectoryName)
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
+		logger.ErrorContext(ctx, "Failed to list contents of backup directory", "error", err)
 		return GetBackups500Response{}, nil
 	}
 
