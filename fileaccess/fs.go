@@ -24,7 +24,7 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 	}
 
 	// Make sure the root path exists and is a directory
-	if err := os.MkdirAll(rootPath, 0755); err != nil {
+	if err := os.MkdirAll(rootPath, 0750); err != nil {
 		return nil, fmt.Errorf("creating root path: %w", err)
 	}
 
@@ -42,7 +42,7 @@ func (u *fileSystemDriver) Open(filePath string) (fs.File, error) {
 func (u *fileSystemDriver) Create(filePath string) (io.WriteCloser, error) {
 	cleanedPath := filepath.Clean(filePath)
 	dir := filepath.Dir(cleanedPath)
-	if err := u.root.MkdirAll(dir, fs.FileMode(0755)); err != nil {
+	if err := u.root.MkdirAll(dir, fs.FileMode(0750)); err != nil {
 		return nil, err
 	}
 
