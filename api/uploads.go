@@ -30,6 +30,10 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 }
 
 func readFile(reader *multipart.Reader) ([]byte, string, error) {
+	if reader == nil {
+		return nil, "", io.EOF
+	}
+
 	part, err := reader.NextPart()
 	if err != nil {
 		return nil, "", err
