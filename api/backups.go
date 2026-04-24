@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/metadata"
-	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
 )
 
@@ -26,7 +26,7 @@ const (
 )
 
 func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupRequestObject) (CreateBackupResponseObject, error) {
-	logger := middleware.GetLoggerFromContext(ctx)
+	logger := infra.GetLoggerFromContext(ctx)
 
 	var backupFilePath string
 	name := time.Now().Format(backupFileNameTimeFormat)
@@ -57,7 +57,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 }
 
 func (h apiHandler) GetBackups(ctx context.Context, _ GetBackupsRequestObject) (GetBackupsResponseObject, error) {
-	logger := middleware.GetLoggerFromContext(ctx)
+	logger := infra.GetLoggerFromContext(ctx)
 
 	backupFiles, err := h.fs.List(fileaccess.BackupDirectoryName)
 	if err != nil {
@@ -85,7 +85,7 @@ func (h apiHandler) GetBackups(ctx context.Context, _ GetBackupsRequestObject) (
 }
 
 func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBackupRequestObject) (RestoreFromBackupResponseObject, error) {
-	logger := middleware.GetLoggerFromContext(ctx)
+	logger := infra.GetLoggerFromContext(ctx)
 
 	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, request.FileName)
 
@@ -149,7 +149,7 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 }
 
 func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
-	logger := middleware.GetLoggerFromContext(ctx)
+	logger := infra.GetLoggerFromContext(ctx)
 
 	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.FileName))
 	if err != nil {

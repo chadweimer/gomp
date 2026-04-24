@@ -10,6 +10,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/chadweimer/gomp/infra"
 )
 
 func TestRecover(t *testing.T) {
@@ -126,7 +128,7 @@ func TestLogRequests(t *testing.T) {
 			}))
 			sut := LogRequests(logger, tt.trustedProxies)
 			handler := sut(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				GetLoggerFromRequest(r).Debug(tt.args.msg)
+				infra.GetLoggerFromContext(r.Context()).Debug(tt.args.msg)
 				w.Write([]byte(tt.args.msg))
 			}))
 			req := httptest.NewRequest("GET", "/", nil)

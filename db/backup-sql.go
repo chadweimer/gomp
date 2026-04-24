@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"regexp"
 	"strings"
 
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -65,6 +65,8 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 }
 
 func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		if err := b.adapter.PreImport(ctx, db); err != nil {
@@ -72,7 +74,7 @@ func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData)
 		}
 		defer func() {
 			if err := b.adapter.PostImport(ctx, db); err != nil {
-				slog.ErrorContext(ctx, "Failed running post import", "error", err)
+				logger.ErrorContext(ctx, "Failed running post import", "error", err)
 			}
 		}()
 

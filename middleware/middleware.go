@@ -10,15 +10,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/chadweimer/gomp/infra"
 	"github.com/samber/lo"
 )
 
-type ctxKey string
-
 const (
-	logCtxKey       = ctxKey("request-logger")
-	requestIDCtxKey = ctxKey("request-id")
-	clientIPCtxKey  = ctxKey("client-ip")
+	requestIDCtxKey = infra.ContextKey("request-id")
+	clientIPCtxKey  = infra.ContextKey("client-ip")
 )
 
 var (
@@ -61,7 +59,7 @@ func Recover(msg string) func(http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			defer func() {
 				if err := recover(); err != nil {
-					GetLoggerFromRequest(r).Error(msg, "error", err)
+					infra.GetLoggerFromContext(r.Context()).Error(msg, "error", err)
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				}
 			}()
@@ -73,24 +71,8 @@ func Recover(msg string) func(http.Handler) http.Handler {
 	}
 }
 
-// GetLoggerFromContext gets the logger from the supplied context
-func GetLoggerFromContext(ctx context.Context) *slog.Logger {
-	logger, ok := ctx.Value(logCtxKey).(*slog.Logger)
-	if !ok {
-		return slog.Default()
-	}
-
-	return logger
-}
-
-// GetLoggerFromRequest gets the logger from the supplied request
-func GetLoggerFromRequest(r *http.Request) *slog.Logger {
-	return GetLoggerFromContext(r.Context())
-}
-
 // LogRequests returns a middleware that logs all requests and their responses,
-// as well as adds a request specific logger than can be retreived with
-// GetLoggerFromContext or GetLoggerFromRequest.
+// as well as adds a request specific logger than can be retreived with infra.GetLoggerFromContext.
 func LogRequests(logger *slog.Logger, trustedProxies []net.IPNet) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +91,7 @@ func LogRequests(logger *slog.Logger, trustedProxies []net.IPNet) func(http.Hand
 					"method", r.Method,
 					"referrer", r.Referer(),
 					"url", r.URL.String()))
-			ctx = context.WithValue(ctx, logCtxKey, requestLogger)
+			ctx = infra.AddLoggerToContext(ctx, requestLogger)
 
 			requestLogger.Debug("Rx")
 

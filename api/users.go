@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 )
 
@@ -87,7 +88,7 @@ func (h apiHandler) DeleteUser(ctx context.Context, request DeleteUserRequestObj
 func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRequestObject) (ChangePasswordResponseObject, error) {
 	return withCurrentUser[ChangePasswordResponseObject](ctx, ChangePassword401Response{}, func(userID int64) (ChangePasswordResponseObject, error) {
 		if err := h.db.Users().UpdatePassword(ctx, userID, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-			logger(ctx).Error("update failed", "error", err)
+			infra.GetLoggerFromContext(ctx).Error("update failed", "error", err)
 			return ChangePassword403Response{}, nil
 		}
 
@@ -97,7 +98,7 @@ func (h apiHandler) ChangePassword(ctx context.Context, request ChangePasswordRe
 
 func (h apiHandler) ChangeUserPassword(ctx context.Context, request ChangeUserPasswordRequestObject) (ChangeUserPasswordResponseObject, error) {
 	if err := h.db.Users().UpdatePassword(ctx, request.UserID, request.Body.CurrentPassword, request.Body.NewPassword); err != nil {
-		logger(ctx).Error("update failed", "error", err)
+		infra.GetLoggerFromContext(ctx).Error("update failed", "error", err)
 		return ChangeUserPassword403Response{}, nil
 	}
 
