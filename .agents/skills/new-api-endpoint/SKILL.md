@@ -1,3 +1,8 @@
+---
+name: new-api-endpoint
+description: Guide for adding new API endpoints in GOMP. Use this when asked to create or update API endpoints.
+---
+
 # New API Endpoint Checklist
 
 Use this checklist when adding a new API endpoint to GOMP.
