@@ -61,7 +61,10 @@ func Test_Backup_Export(t *testing.T) {
 			sut, dbmock := getMockDb(t, mockAdapter)
 			defer sut.Close()
 
+			// Since maps are not ordered, we need to set MatchExpectationsInOrder to falseto avoid
+			// test failures due to different order of operations in the code vs the test expectations
 			dbmock.MatchExpectationsInOrder(false)
+
 			dbmock.ExpectBegin()
 
 			tableRows := sqlmock.NewRows([]string{"name"})
@@ -220,6 +223,10 @@ func Test_Backup_Import(t *testing.T) {
 
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
+
+			// Since maps are not ordered, we need to set MatchExpectationsInOrder to falseto avoid
+			// test failures due to different order of operations in the code vs the test expectations
+			dbmock.MatchExpectationsInOrder(false)
 
 			dbmock.ExpectBegin()
 

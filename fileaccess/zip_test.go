@@ -356,10 +356,19 @@ func TestCopyDirectoryFromZip(t *testing.T) {
 			dirWithin: "backup/dir1",
 			destPath:  "dest",
 			setupMock: func(md *fileaccessmock.MockDriver) {
-				gomock.InOrder(
-					md.EXPECT().Save("dest/file1.txt", gomock.Any()).Return(nil),
-					md.EXPECT().Save("dest/file2.txt", gomock.Any()).Return(nil),
-				)
+				md.EXPECT().Save("dest/file1.txt", gomock.Any()).Return(nil)
+				md.EXPECT().Save("dest/file2.txt", gomock.Any()).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name:      "Success - copy files recursively from directory",
+			dirWithin: "backup",
+			destPath:  "dest",
+			setupMock: func(md *fileaccessmock.MockDriver) {
+				md.EXPECT().Save("dest/dir1/file1.txt", gomock.Any()).Return(nil)
+				md.EXPECT().Save("dest/dir1/file2.txt", gomock.Any()).Return(nil)
+				md.EXPECT().Save("dest/dir2/file3.txt", gomock.Any()).Return(nil)
 			},
 			wantErr: false,
 		},

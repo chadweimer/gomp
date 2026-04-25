@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"mime/multipart"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
 	"time"
@@ -161,12 +162,10 @@ func TestGetBackups(t *testing.T) {
 				mapFS := fstest.MapFS(files)
 
 				mockFS.EXPECT().List(fileaccess.BackupDirectoryName).Return(createMockDirEntries(files), nil)
-
-				gomock.InOrder(
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("backup1.zip")),
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("backup2.zip")),
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("backup3.zip")),
-				)
+				mockFS.EXPECT().Open(gomock.Any()).DoAndReturn(func(name string) (fs.File, error) {
+					baseName := filepath.Base(name)
+					return mapFS.Open(baseName)
+				}).Times(len(files))
 			},
 			expectError:   false,
 			expectedCount: 3,
@@ -189,7 +188,10 @@ func TestGetBackups(t *testing.T) {
 				backupFiles = append(backupFiles, &mockDirEntry{name: "invalid.zip", isDir: false, size: 10, infoErr: errors.New("stat error")})
 
 				mockFS.EXPECT().List(fileaccess.BackupDirectoryName).Return(backupFiles, nil)
-				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("valid.zip"))
+				mockFS.EXPECT().Open(gomock.Any()).DoAndReturn(func(name string) (fs.File, error) {
+					baseName := filepath.Base(name)
+					return mapFS.Open(baseName)
+				}).Times(len(files))
 			},
 			expectError:   false,
 			expectedCount: 1,
@@ -213,10 +215,10 @@ func TestGetBackups(t *testing.T) {
 				mapFS := fstest.MapFS(files)
 
 				mockFS.EXPECT().List(fileaccess.BackupDirectoryName).Return(createMockDirEntries(files), nil)
-				gomock.InOrder(
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("valid.zip")),
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("corrupted.zip")),
-				)
+				mockFS.EXPECT().Open(gomock.Any()).DoAndReturn(func(name string) (fs.File, error) {
+					baseName := filepath.Base(name)
+					return mapFS.Open(baseName)
+				}).Times(len(files))
 			},
 			expectError:   false,
 			expectedCount: 1,
@@ -596,7 +598,7 @@ type mockFileInfo struct {
 	isDir bool
 }
 
-func (*mockFileInfo) Name() string       { return "test.zip" }
+func (m *mockFileInfo) Name() string     { return m.name }
 func (m *mockFileInfo) Size() int64      { return m.size }
 func (*mockFileInfo) Mode() fs.FileMode  { return 0644 }
 func (*mockFileInfo) ModTime() time.Time { return time.Now() }
