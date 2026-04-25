@@ -3,6 +3,8 @@ package fileaccess
 import (
 	"errors"
 	"fmt"
+
+	"github.com/chadweimer/gomp/models"
 )
 
 // Config represents the upload configuration settings
@@ -34,13 +36,13 @@ func (c FilesConfig) validate() error {
 type ImageConfig struct {
 
 	// ImageQuality gets the quality level for recipe images.
-	ImageQuality ImageQualityLevel `env:"IMAGE_QUALITY" default:"original"`
+	ImageQuality models.ImageQualityLevel `env:"IMAGE_QUALITY" default:"original"`
 
 	// ImageSize gets the size of the bounding box to fit recipe images to. Ignored if ImageQuality == original.
 	ImageSize int `env:"IMAGE_SIZE" default:"2000"`
 
 	// ThumbnailQuality gets the quality level for the thumbnails of recipe images. Note that Original is not supported.
-	ThumbnailQuality ImageQualityLevel `env:"THUMBNAIL_QUALITY" default:"medium"`
+	ThumbnailQuality models.ImageQualityLevel `env:"THUMBNAIL_QUALITY" default:"medium"`
 
 	// ThumbnailSize gets the size of the bounding box to fit the thumbnails recipe images to.
 	ThumbnailSize int `env:"THUMBNAIL_SIZE" default:"500"`
@@ -61,8 +63,8 @@ func (cfg ImageConfig) validate() error {
 		errs = append(errs, errors.New("thumbnail quality is invalid"))
 	}
 
-	if cfg.ThumbnailQuality == ImageQualityOriginal {
-		errs = append(errs, fmt.Errorf("thumbnail quality cannot be %s", ImageQualityOriginal))
+	if cfg.ThumbnailQuality == models.ImageQualityOriginal {
+		errs = append(errs, fmt.Errorf("thumbnail quality cannot be %s", models.ImageQualityOriginal))
 	}
 
 	if cfg.ThumbnailSize <= 0 {

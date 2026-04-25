@@ -302,9 +302,9 @@ func getMetadata(ctx context.Context, logger *slog.Logger, reader *zip.Reader, f
 		return nil, err
 	}
 
-	if !metadataContent.Validate() {
+	if !metadataContent.IsValid() {
 		logger.ErrorContext(ctx, "Backup file has invalid metadata", "name", fileName, "metadata", metadataContent)
-		return nil, err
+		return nil, errors.New("invalid backup metadata")
 	}
 
 	return metadataContent, nil

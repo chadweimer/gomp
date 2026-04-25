@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/chadweimer/gomp/models"
 	"golang.org/x/image/draw"
 
 	_ "image/gif" // Register GIF format
@@ -78,7 +79,7 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (resu
 
 	var imageURL string
 	imgDir := getDirPathForImage(recipeID)
-	if format == "jpeg" && u.imgCfg.ImageQuality == ImageQualityOriginal {
+	if format == "jpeg" && u.imgCfg.ImageQuality == models.ImageQualityOriginal {
 		// Save the original as-is
 		imageURL, err = u.saveImage(dataReader, imgDir, imageName)
 	} else {
@@ -144,7 +145,7 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 	var fittedImage image.Image
 
 	bounds := original.Bounds()
-	if u.imgCfg.ImageQuality == ImageQualityOriginal ||
+	if u.imgCfg.ImageQuality == models.ImageQualityOriginal ||
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
@@ -228,22 +229,22 @@ func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *imag
 	return dst
 }
 
-func getScaler(quality ImageQualityLevel) draw.Scaler {
+func getScaler(quality models.ImageQualityLevel) draw.Scaler {
 	switch quality {
-	case ImageQualityMedium:
+	case models.ImageQualityMedium:
 		return draw.BiLinear
-	case ImageQualityLow:
+	case models.ImageQualityLow:
 		return draw.NearestNeighbor
 	default:
 		return draw.CatmullRom
 	}
 }
 
-func getJPEGOptions(quality ImageQualityLevel) *jpeg.Options {
+func getJPEGOptions(quality models.ImageQualityLevel) *jpeg.Options {
 	switch quality {
-	case ImageQualityMedium:
+	case models.ImageQualityMedium:
 		return &jpeg.Options{Quality: 80}
-	case ImageQualityLow:
+	case models.ImageQualityLow:
 		return &jpeg.Options{Quality: 70}
 	default:
 		return &jpeg.Options{Quality: 92}

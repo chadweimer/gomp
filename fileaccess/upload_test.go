@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
+	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
 )
 
@@ -33,9 +34,9 @@ func Test_Save(t *testing.T) {
 		{
 			caseName: "Original Quality",
 			cfg: ImageConfig{
-				ImageQuality:     ImageQualityOriginal,
+				ImageQuality:     models.ImageQualityOriginal,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			},
 			recipeID:              42,
@@ -51,9 +52,9 @@ func Test_Save(t *testing.T) {
 		{
 			caseName: "High Quality",
 			cfg: ImageConfig{
-				ImageQuality:     ImageQualityHigh,
+				ImageQuality:     models.ImageQualityHigh,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			},
 			recipeID:              42,
@@ -69,9 +70,9 @@ func Test_Save(t *testing.T) {
 		{
 			caseName: "PNG Input",
 			cfg: ImageConfig{
-				ImageQuality:     ImageQualityOriginal,
+				ImageQuality:     models.ImageQualityOriginal,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			},
 			recipeID:              42,
@@ -87,9 +88,9 @@ func Test_Save(t *testing.T) {
 		{
 			caseName: "JPG File Extension",
 			cfg: ImageConfig{
-				ImageQuality:     ImageQualityOriginal,
+				ImageQuality:     models.ImageQualityOriginal,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			},
 			recipeID:              42,
@@ -105,9 +106,9 @@ func Test_Save(t *testing.T) {
 		{
 			caseName: "Invalid Image",
 			cfg: ImageConfig{
-				ImageQuality:     ImageQualityOriginal,
+				ImageQuality:     models.ImageQualityOriginal,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			},
 			recipeID:          42,
@@ -208,9 +209,9 @@ func Test_Delete(t *testing.T) {
 			drv.EXPECT().Delete(test.expectedThumbnailPath).Return(nil).Times(1)
 
 			imgCfg := ImageConfig{
-				ImageQuality:     ImageQualityOriginal,
+				ImageQuality:     models.ImageQualityOriginal,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			}
 
@@ -252,9 +253,9 @@ func Test_DeleteAll(t *testing.T) {
 			drv.EXPECT().DeleteAll(test.expectedDirPath).Return(nil).Times(1)
 
 			imgCfg := ImageConfig{
-				ImageQuality:     ImageQualityOriginal,
+				ImageQuality:     models.ImageQualityOriginal,
 				ImageSize:        200,
-				ThumbnailQuality: ImageQualityMedium,
+				ThumbnailQuality: models.ImageQualityMedium,
 				ThumbnailSize:    50,
 			}
 
