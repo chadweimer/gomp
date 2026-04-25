@@ -1,9 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json.
 {
   "name": "Go",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "image": "golang:1.25",
   "containerUser": "vscode",
   "customizations": {
     "vscode": {
@@ -41,9 +39,11 @@
       "moby": false
     },
     "ghcr.io/devcontainers/features/go:1": {
-      "version": "1.25"
+      "version": "none"
     },
-    "ghcr.io/devcontainers/features/node:1": {}
+    "ghcr.io/devcontainers/features/node:1": {},
+    // Need for openapi-generator
+    "ghcr.io/devcontainers/features/java:1": {}
   },
   "forwardPorts": [
     5678
