@@ -1,14 +1,14 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { AppConfiguration } from '../../../generated';
 import { appApi } from '../../../helpers/api';
-import { showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, showToast } from '../../../helpers/utils';
 import appConfig from '../../../stores/config';
 
 @Component({
   tag: 'page-admin-configuration',
   styleUrl: 'page-admin-configuration.css',
 })
-export class PageAdminConfiguration {
+export class PageAdminConfiguration implements ComponentWithActivatedCallback {
   @State() appConfig: AppConfiguration = {
     title: 'GOMP: Go Meal Planner'
   };

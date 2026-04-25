@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController, popoverControl
 import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, refreshSearchResults } from '../../helpers/api';
-import { redirect, enableBackForOverlay, sendDeactivatingCallback, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { redirect, enableBackForOverlay, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
@@ -299,8 +299,6 @@ export class AppRoot {
 
   private async onPageChanging() {
     await this.menu.close();
-    // Let the current page know it's being deactivated
-    await sendDeactivatingCallback(this.routerOutlet);
   }
 
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {

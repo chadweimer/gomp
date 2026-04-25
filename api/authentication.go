@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/samber/lo"
@@ -27,7 +28,7 @@ func (h apiHandler) Authenticate(ctx context.Context, request AuthenticateReques
 	credentials := request.Body
 	user, err := h.db.Users().Authenticate(ctx, credentials.Username, credentials.Password)
 	if err != nil {
-		logger(ctx).Error("failure authenticating", "error", err)
+		infra.GetLoggerFromContext(ctx).Error("failure authenticating", "error", err)
 		return Authenticate401Response{}, nil
 	}
 
@@ -43,7 +44,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userID int64) (RefreshTokenResponseObject, error) {
 		user, err := h.db.Users().Read(ctx, userID)
 		if err != nil {
-			logger(ctx).Error("failure refreshing token", "error", err)
+			infra.GetLoggerFromContext(ctx).Error("failure refreshing token", "error", err)
 			return RefreshToken401Response{}, nil
 		}
 
@@ -101,7 +102,7 @@ func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 }
 
 func (h apiHandler) isAuthenticated(ctx context.Context, header http.Header) (*models.User, *gompClaims, error) {
-	logger := logger(ctx)
+	logger := infra.GetLoggerFromContext(ctx)
 
 	token, err := h.getAuthTokenFromRequest(header, logger)
 	if err != nil {
@@ -250,7 +251,7 @@ func getUserIDFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int6
 func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TResponse, do func(userID int64) (TResponse, error)) (TResponse, error) {
 	userID, err := getResourceIDFromCtx(ctx, currentUserIDCtxKey)
 	if err != nil {
-		logger(ctx).Error("failed to get current user from request context", "error", err)
+		infra.GetLoggerFromContext(ctx).Error("failed to get current user from request context", "error", err)
 		return invalidUserResponse, nil
 	}
 

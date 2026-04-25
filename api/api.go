@@ -8,12 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 
 	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/middleware"
-	"github.com/chadweimer/gomp/upload"
+	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 )
 
 // ---- Begin Standard Errors ----
@@ -24,26 +23,22 @@ var errMismatchedID = errors.New("id in the path does not match the one specifie
 
 // ---- Begin Context Keys ----
 
-type contextKey string
-
-func (k contextKey) String() string {
-	return "gomp context key: " + string(k)
-}
-
-const currentUserIDCtxKey = contextKey("current-user-id")
+const currentUserIDCtxKey = infra.ContextKey("current-user-id")
 
 // ---- End Context Keys ----
 
 type apiHandler struct {
 	secureKeys []string
-	upl        *upload.ImageUploader
+	fs         fileaccess.Driver
+	upl        *fileaccess.ImageUploader
 	db         db.Driver
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *upload.ImageUploader, drDriver db.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) http.Handler {
 	h := apiHandler{
 		secureKeys: secureKeys,
+		fs:         fs,
 		upl:        upl,
 		db:         drDriver,
 	}
@@ -68,14 +63,10 @@ func NewHandler(secureKeys []string, upl *upload.ImageUploader, drDriver db.Driv
 		})
 }
 
-func logger(ctx context.Context) *slog.Logger {
-	return middleware.GetLoggerFromContext(ctx)
-}
-
 func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v any) {
 	buf := new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(v); err != nil {
-		logger(r.Context()).
+		infra.GetLoggerFromContext(r.Context()).
 			Error("Failed to encode response",
 				"error", err,
 				"original-status", status)
@@ -92,12 +83,12 @@ func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v any
 }
 
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
-	logger(r.Context()).Error("failure on request", "error", err)
+	infra.GetLoggerFromContext(r.Context()).Error("failure on request", "error", err)
 	status = getStatusFromError(err, status)
 	writeJSONResponse(w, r, status, http.StatusText(status))
 }
 
-func getResourceIDFromCtx(ctx context.Context, idKey contextKey) (int64, error) {
+func getResourceIDFromCtx(ctx context.Context, idKey infra.ContextKey) (int64, error) {
 	idVal := ctx.Value(idKey)
 
 	id, ok := idVal.(int64)

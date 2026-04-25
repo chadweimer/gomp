@@ -1,4 +1,4 @@
-package upload
+package fileaccess
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	uploadmock "github.com/chadweimer/gomp/mocks/upload"
+	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"go.uber.org/mock/gomock"
 )
 
@@ -42,8 +42,8 @@ func Test_Save(t *testing.T) {
 			originalName:          "picture.jpeg",
 			srcImage:              image.NewRGBA(image.Rect(0, 0, 500, 300)),
 			expectedName:          "picture.jpeg",
-			expectedImagePath:     "recipes/42/images/picture.jpeg",
-			expectedThumbnailPath: "recipes/42/thumbs/picture.jpeg",
+			expectedImagePath:     "uploads/recipes/42/images/picture.jpeg",
+			expectedThumbnailPath: "uploads/recipes/42/thumbs/picture.jpeg",
 			expectedURL:           "/uploads/recipes/42/images/picture.jpeg",
 			expectedThumbnailURL:  "/uploads/recipes/42/thumbs/picture.jpeg",
 			expectedSaveError:     nil,
@@ -60,8 +60,8 @@ func Test_Save(t *testing.T) {
 			originalName:          "picture.jpeg",
 			srcImage:              image.NewRGBA(image.Rect(0, 0, 500, 300)),
 			expectedName:          "picture.jpeg",
-			expectedImagePath:     "recipes/42/images/picture.jpeg",
-			expectedThumbnailPath: "recipes/42/thumbs/picture.jpeg",
+			expectedImagePath:     "uploads/recipes/42/images/picture.jpeg",
+			expectedThumbnailPath: "uploads/recipes/42/thumbs/picture.jpeg",
 			expectedURL:           "/uploads/recipes/42/images/picture.jpeg",
 			expectedThumbnailURL:  "/uploads/recipes/42/thumbs/picture.jpeg",
 			expectedSaveError:     nil,
@@ -78,8 +78,8 @@ func Test_Save(t *testing.T) {
 			originalName:          "picture.png",
 			srcImage:              image.NewRGBA(image.Rect(0, 0, 500, 300)),
 			expectedName:          "picture.jpeg",
-			expectedImagePath:     "recipes/42/images/picture.jpeg",
-			expectedThumbnailPath: "recipes/42/thumbs/picture.jpeg",
+			expectedImagePath:     "uploads/recipes/42/images/picture.jpeg",
+			expectedThumbnailPath: "uploads/recipes/42/thumbs/picture.jpeg",
 			expectedURL:           "/uploads/recipes/42/images/picture.jpeg",
 			expectedThumbnailURL:  "/uploads/recipes/42/thumbs/picture.jpeg",
 			expectedSaveError:     nil,
@@ -96,8 +96,8 @@ func Test_Save(t *testing.T) {
 			originalName:          "picture.jpg",
 			srcImage:              image.NewRGBA(image.Rect(0, 0, 500, 300)),
 			expectedName:          "picture.jpg",
-			expectedImagePath:     "recipes/42/images/picture.jpg",
-			expectedThumbnailPath: "recipes/42/thumbs/picture.jpg",
+			expectedImagePath:     "uploads/recipes/42/images/picture.jpg",
+			expectedThumbnailPath: "uploads/recipes/42/thumbs/picture.jpg",
 			expectedURL:           "/uploads/recipes/42/images/picture.jpg",
 			expectedThumbnailURL:  "/uploads/recipes/42/thumbs/picture.jpg",
 			expectedSaveError:     nil,
@@ -122,7 +122,7 @@ func Test_Save(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			drv := uploadmock.NewMockDriver(ctrl)
+			drv := fileaccessmock.NewMockDriver(ctrl)
 			if test.expectedSaveError == nil {
 				drv.EXPECT().Save(test.expectedImagePath, gomock.Any()).Return(nil).Times(1)
 				drv.EXPECT().Save(test.expectedThumbnailPath, gomock.Any()).Return(nil).Times(1)
@@ -192,8 +192,8 @@ func Test_Delete(t *testing.T) {
 			caseName:              "Nominal Case",
 			recipeID:              42,
 			originalName:          "picture.jpeg",
-			expectedImagePath:     "recipes/42/images/picture.jpeg",
-			expectedThumbnailPath: "recipes/42/thumbs/picture.jpeg",
+			expectedImagePath:     "uploads/recipes/42/images/picture.jpeg",
+			expectedThumbnailPath: "uploads/recipes/42/thumbs/picture.jpeg",
 		},
 	}
 	for _, test := range tests {
@@ -202,7 +202,7 @@ func Test_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			drv := uploadmock.NewMockDriver(ctrl)
+			drv := fileaccessmock.NewMockDriver(ctrl)
 			// Delete should remove both files
 			drv.EXPECT().Delete(test.expectedImagePath).Return(nil).Times(1)
 			drv.EXPECT().Delete(test.expectedThumbnailPath).Return(nil).Times(1)
@@ -238,7 +238,7 @@ func Test_DeleteAll(t *testing.T) {
 		{
 			caseName:        "Nominal Case",
 			recipeID:        42,
-			expectedDirPath: "recipes/42",
+			expectedDirPath: "uploads/recipes/42",
 		},
 	}
 	for _, test := range tests {
@@ -247,7 +247,7 @@ func Test_DeleteAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			drv := uploadmock.NewMockDriver(ctrl)
+			drv := fileaccessmock.NewMockDriver(ctrl)
 			// Delete all should remove the entire directory
 			drv.EXPECT().DeleteAll(test.expectedDirPath).Return(nil).Times(1)
 

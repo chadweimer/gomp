@@ -2,14 +2,14 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
 import { loadSearchFilters, usersApi } from '../../../helpers/api';
-import { enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
   tag: 'page-settings-searches',
   styleUrl: 'page-settings-searches.css',
 })
-export class PageSettingsSearches {
+export class PageSettingsSearches implements ComponentWithActivatedCallback {
   @State() filters: SavedSearchFilterCompact[] = [];
 
   @Element() el!: HTMLPageSettingsSearchesElement;
@@ -153,24 +153,22 @@ export class PageSettingsSearches {
   private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
     await enableBackForOverlay(async () => {
       const confirmation = await alertController.create({
-        header: 'Delete User?',
+        header: 'Delete Search Filter?',
         message: `Are you sure you want to delete ${searchFilter.name}?`,
         buttons: [
-          'No',
-          {
-            text: 'Yes',
-            handler: async () => {
-              await this.deleteSearchFilter(searchFilter.id);
-              this.filters = await loadSearchFilters();
-              return true;
-            }
-          }
+          { text: 'No', role: 'cancel' },
+          { text: 'Yes', role: 'confirm' }
         ],
       });
 
       await confirmation.present();
 
-      await confirmation.onDidDismiss();
+      const { role } = await confirmation.onDidDismiss();
+
+      if (role === 'confirm') {
+        await this.deleteSearchFilter(searchFilter.id);
+        this.filters = await loadSearchFilters();
+      }
     });
   }
 

@@ -12,7 +12,7 @@ type sqlNoteDriver struct {
 }
 
 func (d *sqlNoteDriver) Create(ctx context.Context, note *models.Note) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(ctx, note, db)
 	})
 }
@@ -25,7 +25,7 @@ func (*sqlNoteDriver) createImpl(ctx context.Context, note *models.Note, db sqlx
 }
 
 func (d *sqlNoteDriver) Update(ctx context.Context, note *models.Note) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(ctx, note, db)
 	})
 }
@@ -37,7 +37,7 @@ func (*sqlNoteDriver) updateImpl(ctx context.Context, note *models.Note, db sqlx
 }
 
 func (d *sqlNoteDriver) Delete(ctx context.Context, recipeID, noteID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(ctx, recipeID, noteID, db)
 	})
 }
@@ -48,7 +48,7 @@ func (*sqlNoteDriver) deleteImpl(ctx context.Context, recipeID, noteID int64, db
 }
 
 func (d *sqlNoteDriver) DeleteAll(ctx context.Context, recipeID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteAllImpl(ctx, recipeID, db)
 	})
 }

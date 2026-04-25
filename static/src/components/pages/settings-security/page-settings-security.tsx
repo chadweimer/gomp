@@ -1,13 +1,13 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { AccessLevel, User } from '../../../generated';
 import { usersApi } from '../../../helpers/api';
-import { enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-security',
   styleUrl: 'page-settings-security.css',
 })
-export class PageSettingsSecurity {
+export class PageSettingsSecurity implements ComponentWithActivatedCallback {
   @State() currentUser: User | undefined;
   @State() currentPassword = '';
   @State() newPassword = '';

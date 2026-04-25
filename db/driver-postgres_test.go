@@ -29,7 +29,7 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			sut := postgresRecipeDriverAdapter{}
+			sut := postgresDriverAdapter{}
 
 			// Act
 			stmt, args := sut.GetSearchFields(test.fields, test.query)
@@ -82,7 +82,7 @@ func Test_lockPostgres(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 			conn, err := sut.Db.Conn(t.Context())
 			if err != nil {

@@ -12,6 +12,20 @@ export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {
     }
+    interface FileUploadBrowser {
+        /**
+          * @default '*\/*'
+         */
+        "accept": string;
+        /**
+          * @default 'Select File'
+         */
+        "heading": string;
+        /**
+          * @default 'File'
+         */
+        "label": string;
+    }
     interface FiveStarRating {
         /**
           * @default false
@@ -44,8 +58,6 @@ export namespace Components {
          */
         "value": string;
     }
-    interface ImageUploadBrowser {
-    }
     interface NoteCard {
         /**
           * @default null
@@ -68,6 +80,7 @@ export namespace Components {
         "activatedCallback": () => Promise<void>;
     }
     interface PageAdminMaintenance {
+        "activatedCallback": () => Promise<void>;
     }
     interface PageAdminUsers {
         "activatedCallback": () => Promise<void>;
@@ -247,6 +260,12 @@ declare global {
         prototype: HTMLAppRootElement;
         new (): HTMLAppRootElement;
     };
+    interface HTMLFileUploadBrowserElement extends Components.FileUploadBrowser, HTMLStencilElement {
+    }
+    var HTMLFileUploadBrowserElement: {
+        prototype: HTMLFileUploadBrowserElement;
+        new (): HTMLFileUploadBrowserElement;
+    };
     interface HTMLFiveStarRatingElementEventMap {
         "valueSelected": number;
     }
@@ -286,12 +305,6 @@ declare global {
     var HTMLHtmlViewerElement: {
         prototype: HTMLHtmlViewerElement;
         new (): HTMLHtmlViewerElement;
-    };
-    interface HTMLImageUploadBrowserElement extends Components.ImageUploadBrowser, HTMLStencilElement {
-    }
-    var HTMLImageUploadBrowserElement: {
-        prototype: HTMLImageUploadBrowserElement;
-        new (): HTMLImageUploadBrowserElement;
     };
     interface HTMLNoteCardElementEventMap {
         "editClicked": Note;
@@ -486,10 +499,10 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "app-root": HTMLAppRootElement;
+        "file-upload-browser": HTMLFileUploadBrowserElement;
         "five-star-rating": HTMLFiveStarRatingElement;
         "html-editor": HTMLHtmlEditorElement;
         "html-viewer": HTMLHtmlViewerElement;
-        "image-upload-browser": HTMLImageUploadBrowserElement;
         "note-card": HTMLNoteCardElement;
         "note-editor": HTMLNoteEditorElement;
         "page-admin": HTMLPageAdminElement;
@@ -518,6 +531,20 @@ declare global {
 }
 declare namespace LocalJSX {
     interface AppRoot {
+    }
+    interface FileUploadBrowser {
+        /**
+          * @default '*\/*'
+         */
+        "accept"?: string;
+        /**
+          * @default 'Select File'
+         */
+        "heading"?: string;
+        /**
+          * @default 'File'
+         */
+        "label"?: string;
     }
     interface FiveStarRating {
         /**
@@ -552,8 +579,6 @@ declare namespace LocalJSX {
           * @default ''
          */
         "value"?: string;
-    }
-    interface ImageUploadBrowser {
     }
     interface NoteCard {
         /**
@@ -723,6 +748,11 @@ declare namespace LocalJSX {
         "user"?: User;
     }
 
+    interface FileUploadBrowserAttributes {
+        "heading": string;
+        "label": string;
+        "accept": string;
+    }
     interface FiveStarRatingAttributes {
         "value": number;
         "disabled": boolean;
@@ -776,10 +806,10 @@ declare namespace LocalJSX {
 
     interface IntrinsicElements {
         "app-root": AppRoot;
+        "file-upload-browser": Omit<FileUploadBrowser, keyof FileUploadBrowserAttributes> & { [K in keyof FileUploadBrowser & keyof FileUploadBrowserAttributes]?: FileUploadBrowser[K] } & { [K in keyof FileUploadBrowser & keyof FileUploadBrowserAttributes as `attr:${K}`]?: FileUploadBrowserAttributes[K] } & { [K in keyof FileUploadBrowser & keyof FileUploadBrowserAttributes as `prop:${K}`]?: FileUploadBrowser[K] };
         "five-star-rating": Omit<FiveStarRating, keyof FiveStarRatingAttributes> & { [K in keyof FiveStarRating & keyof FiveStarRatingAttributes]?: FiveStarRating[K] } & { [K in keyof FiveStarRating & keyof FiveStarRatingAttributes as `attr:${K}`]?: FiveStarRatingAttributes[K] } & { [K in keyof FiveStarRating & keyof FiveStarRatingAttributes as `prop:${K}`]?: FiveStarRating[K] };
         "html-editor": Omit<HtmlEditor, keyof HtmlEditorAttributes> & { [K in keyof HtmlEditor & keyof HtmlEditorAttributes]?: HtmlEditor[K] } & { [K in keyof HtmlEditor & keyof HtmlEditorAttributes as `attr:${K}`]?: HtmlEditorAttributes[K] } & { [K in keyof HtmlEditor & keyof HtmlEditorAttributes as `prop:${K}`]?: HtmlEditor[K] };
         "html-viewer": Omit<HtmlViewer, keyof HtmlViewerAttributes> & { [K in keyof HtmlViewer & keyof HtmlViewerAttributes]?: HtmlViewer[K] } & { [K in keyof HtmlViewer & keyof HtmlViewerAttributes as `attr:${K}`]?: HtmlViewerAttributes[K] } & { [K in keyof HtmlViewer & keyof HtmlViewerAttributes as `prop:${K}`]?: HtmlViewer[K] };
-        "image-upload-browser": ImageUploadBrowser;
         "note-card": Omit<NoteCard, keyof NoteCardAttributes> & { [K in keyof NoteCard & keyof NoteCardAttributes]?: NoteCard[K] } & { [K in keyof NoteCard & keyof NoteCardAttributes as `attr:${K}`]?: NoteCardAttributes[K] } & { [K in keyof NoteCard & keyof NoteCardAttributes as `prop:${K}`]?: NoteCard[K] };
         "note-editor": NoteEditor;
         "page-admin": PageAdmin;
@@ -811,10 +841,10 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "app-root": LocalJSX.IntrinsicElements["app-root"] & JSXBase.HTMLAttributes<HTMLAppRootElement>;
+            "file-upload-browser": LocalJSX.IntrinsicElements["file-upload-browser"] & JSXBase.HTMLAttributes<HTMLFileUploadBrowserElement>;
             "five-star-rating": LocalJSX.IntrinsicElements["five-star-rating"] & JSXBase.HTMLAttributes<HTMLFiveStarRatingElement>;
             "html-editor": LocalJSX.IntrinsicElements["html-editor"] & JSXBase.HTMLAttributes<HTMLHtmlEditorElement>;
             "html-viewer": LocalJSX.IntrinsicElements["html-viewer"] & JSXBase.HTMLAttributes<HTMLHtmlViewerElement>;
-            "image-upload-browser": LocalJSX.IntrinsicElements["image-upload-browser"] & JSXBase.HTMLAttributes<HTMLImageUploadBrowserElement>;
             "note-card": LocalJSX.IntrinsicElements["note-card"] & JSXBase.HTMLAttributes<HTMLNoteCardElement>;
             "note-editor": LocalJSX.IntrinsicElements["note-editor"] & JSXBase.HTMLAttributes<HTMLNoteEditorElement>;
             "page-admin": LocalJSX.IntrinsicElements["page-admin"] & JSXBase.HTMLAttributes<HTMLPageAdminElement>;

@@ -38,7 +38,7 @@ func Test_User_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			user := &models.User{
@@ -94,7 +94,7 @@ func Test_User_Read(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_user WHERE id = \\$1").WithArgs(test.userID)
@@ -145,7 +145,7 @@ func Test_User_Authenticate(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			passwordHash, err := bcrypt.GenerateFromPassword([]byte(test.currentPassword), bcrypt.DefaultCost)
@@ -199,7 +199,7 @@ func Test_User_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			user := &models.User{
@@ -256,7 +256,7 @@ func Test_User_UpdatePassword(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			currentPasswordHash, err := hashPassword(test.currentPassword)
@@ -314,7 +314,7 @@ func Test_User_ReadSettings(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM app_user_settings WHERE user_id = \\$1").WithArgs(test.userID)
@@ -369,7 +369,7 @@ func Test_User_UpdateSettings(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			userSettings := &models.UserSettings{
@@ -434,7 +434,7 @@ func Test_User_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -496,7 +496,7 @@ func Test_User_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC")
@@ -596,7 +596,7 @@ func Test_User_CreateSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			expectedID := rand.Int63()
@@ -688,7 +688,7 @@ func Test_User_ReadSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM search_filter WHERE id = \\$1 AND user_id = \\$2").
@@ -795,7 +795,7 @@ func Test_User_UpdateSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -887,7 +887,7 @@ func Test_User_DeleteSearchFilter(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -946,7 +946,7 @@ func Test_User_ListSearchFilters(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT id, user_id, name FROM search_filter WHERE user_id = \\$1 ORDER BY name ASC")

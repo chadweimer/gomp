@@ -24,7 +24,7 @@ func (d *sqlAppConfigurationDriver) Read(ctx context.Context) (*models.AppConfig
 }
 
 func (d *sqlAppConfigurationDriver) Update(ctx context.Context, cfg *models.AppConfiguration) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(ctx, cfg, db)
 	})
 }

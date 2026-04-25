@@ -26,9 +26,9 @@ import (
 // PostgresDriverName is the name to use for this driver
 const PostgresDriverName string = "postgres"
 
-type postgresRecipeDriverAdapter struct{}
+type postgresDriverAdapter struct{}
 
-func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
 	fieldArgs := make([]any, 0)
 
@@ -41,6 +41,55 @@ func (postgresRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchF
 	}
 
 	return fieldStr, fieldArgs
+}
+
+func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
+	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
+		return fmt.Errorf("deferring constraints: %w", err)
+	}
+	// Disable triggers during the import
+	if _, err := db.ExecContext(ctx, "SET session_replication_role = replica"); err != nil {
+		return fmt.Errorf("disabling triggers: %w", err)
+	}
+	return nil
+}
+
+func (postgresDriverAdapter) GetImportInsertStatement() string {
+	return "INSERT"
+}
+
+func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext) error {
+	// Re-enable triggers after the import
+	if _, err := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); err != nil {
+		return fmt.Errorf("enabling triggers: %w", err)
+	}
+	return nil
+}
+
+func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
+	tables := make([]string, 0)
+	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
+}
+
+func (postgresDriverAdapter) StandardizeExport(_ context.Context, backup *models.BackupData) {
+	for _, table := range *backup {
+		for _, row := range table.Data {
+			for key, value := range row {
+				if byteValue, ok := value.([]byte); ok {
+					// Postgres can return []byte for enum fields, which isn't JSON serializable. Convert those to strings.
+					// In a general purpose implementation, we'd want to check the column type to make sure we're only converting enum fields,
+					// but since we don't otherwise store binary data, we can get away with just converting any []byte we encounter.
+					row[key] = string(byteValue)
+				} else {
+					row[key] = value
+				}
+			}
+		}
+	}
 }
 
 func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
@@ -67,11 +116,16 @@ func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsF
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
+	// If the migrations table name was not specificed, use the default from the migrate library
+	if migrationsTableName == "" {
+		migrationsTableName = postgres.DefaultMigrationsTable
+	}
+
 	if err := migratePostgresDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
 	}
 
-	drv := newSQLDriver(db, postgresRecipeDriverAdapter{})
+	drv := newSQLDriver(db, postgresDriverAdapter{}, migrationsTableName)
 	return drv, nil
 }
 

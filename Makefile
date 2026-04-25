@@ -27,7 +27,7 @@ CLIENT_CODEGEN_DIR:=static/src/generated
 MODELS_CODEGEN_FILE:=models/models.gen.go
 API_CODEGEN_FILE:=api/routes.gen.go
 MOCKS_CODEGEN_DIR:=mocks
-CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)/db/mocks.gen.go $(MOCKS_CODEGEN_DIR)/upload/mocks.gen.go
+CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)/db/mocks.gen.go $(MOCKS_CODEGEN_DIR)/fileaccess/mocks.gen.go
 
 # Source files
 GO_FILES:=$(shell find . -type f -name "*.go" ! -name "*.gen.go")
@@ -87,7 +87,7 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
 lint-server: $(CODEGEN_FILES)
 	mkdir -p $(ROOT_BUILD_DIR)
 	go vet ./...
-	go tool revive -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
+	go tool revive -exclude static/... -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
 	go tool gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
 
 

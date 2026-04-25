@@ -1,7 +1,7 @@
 import { Component, h, Host, Method, State } from '@stencil/core';
 import { SortDir } from '../../../generated';
 import { recipesApi } from '../../../helpers/api';
-import { isNull } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, isNull } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -9,7 +9,7 @@ import { getDefaultSearchFilter } from '../../../models';
   tag: 'page-tags',
   styleUrl: 'page-tags.css'
 })
-export class PageTags {
+export class PageTags implements ComponentWithActivatedCallback {
   @State() tags: { [tag: string]: number } | null = null;
   @State() sortBy: 'tag' | 'count' = 'count';
   @State() sortDir: SortDir = SortDir.Desc;

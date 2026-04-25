@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/infra"
 )
 
 func Test_getStatusFromError(t *testing.T) {
@@ -56,16 +57,16 @@ func Test_getStatusFromError(t *testing.T) {
 
 func Test_getResourceIDFromCtx(t *testing.T) {
 	type getResourceIDFromCtxTest struct {
-		key    contextKey
+		key    infra.ContextKey
 		val    int64
 		usePtr bool
 	}
 
 	// Arrange
 	tests := []getResourceIDFromCtxTest{
-		{contextKey("the-item"), 10, false},
-		{contextKey("the-item"), 10, true},
-		{contextKey("the-item"), -1, false},
+		{infra.ContextKey("the-item"), 10, false},
+		{infra.ContextKey("the-item"), 10, true},
+		{infra.ContextKey("the-item"), -1, false},
 	}
 
 	for i, test := range tests {

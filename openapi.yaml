@@ -87,6 +87,80 @@ paths:
           description: Unauthorized
       security:
         - Bearer: []
+  /backups:
+    get:
+      tags: [ app ]
+      description: get list of backups
+      operationId: getBackups
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./models.yaml#/components/schemas/backup"
+        500:
+          description: Internal Server Error
+      security:
+        - Bearer: [ admin ]
+    post:
+      tags: [ app ]
+      description: create a backup of the application
+      operationId: createBackup
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                file_content:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+      security:
+        - Bearer: [ admin ]
+  /backups/{fileName}:
+    parameters:
+      - name: fileName
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      tags: [ app ]
+      summary: Restore from backup
+      description: restore from an existing backup
+      operationId: restoreFromBackup
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+      security:
+        - Bearer: [ admin ]
+    delete:
+      tags: [ app ]
+      summary: Delete backup
+      description: delete an existing backup
+      operationId: deleteBackup
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+      security:
+        - Bearer: [ admin ]
   /recipes:
     get:
       tags: [ recipes ]

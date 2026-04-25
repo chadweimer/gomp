@@ -1,3 +1,8 @@
+---
+name: new-db-migration
+description: Guide for creating new database migrations in GOMP. Use this when asked to add or update database schema.
+---
+
 # New DB Migration Checklist
 
 Use this checklist when making schema changes.

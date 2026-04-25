@@ -28,7 +28,7 @@ var supportedSearchFields = [...]models.SearchField{
 }
 
 func (d *sqlRecipeDriver) Create(ctx context.Context, recipe *models.Recipe) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(ctx, recipe, db)
 	})
 }
@@ -72,7 +72,7 @@ func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, e
 }
 
 func (d *sqlRecipeDriver) Update(ctx context.Context, recipe *models.Recipe) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(ctx, recipe, db)
 	})
 }
@@ -105,7 +105,7 @@ func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe,
 }
 
 func (d *sqlRecipeDriver) Delete(ctx context.Context, id int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(ctx, id, db)
 	})
 }
@@ -134,7 +134,7 @@ func (d *sqlRecipeDriver) GetRating(ctx context.Context, id int64) (*float32, er
 }
 
 func (d *sqlRecipeDriver) SetRating(ctx context.Context, id int64, rating float32) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		count := -1
 		err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
 
@@ -158,7 +158,7 @@ func (d *sqlRecipeDriver) SetRating(ctx context.Context, id int64, rating float3
 }
 
 func (d *sqlRecipeDriver) SetState(ctx context.Context, id int64, state models.RecipeState) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		_, err := db.ExecContext(ctx,
 			"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
 		if err != nil {
@@ -304,7 +304,7 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 }
 
 func (d *sqlRecipeDriver) CreateTag(ctx context.Context, recipeID int64, tag string) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createTagImpl(ctx, recipeID, tag, db)
 	})
 }
@@ -317,7 +317,7 @@ func (*sqlRecipeDriver) createTagImpl(ctx context.Context, recipeID int64, tag s
 }
 
 func (d *sqlRecipeDriver) DeleteAllTags(ctx context.Context, recipeID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteAllTagsImpl(ctx, recipeID, db)
 	})
 }

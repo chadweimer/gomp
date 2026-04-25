@@ -8,9 +8,8 @@ interface GompClaims extends JwtPayload {
   scopes?: string[]
 }
 
-interface ComponentWithCallbacks {
+export interface ComponentWithActivatedCallback {
   activatedCallback?: () => Promise<void>;
-  deactivatingCallback?: () => Promise<void>;
 }
 
 export function isNull<T>(val: T | null | undefined): val is null | undefined {
@@ -206,17 +205,9 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
-  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
+  const el = await getActiveComponent(router) as ComponentWithActivatedCallback | null | undefined;
   if (!isNull(el)) {
     await el.activatedCallback?.();
-  }
-}
-
-export async function sendDeactivatingCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
-  // Let the current page know it's being deactivated
-  const el = await getActiveComponent(router) as ComponentWithCallbacks | null | undefined;
-  if (!isNull(el)) {
-    await el.deactivatingCallback?.();
   }
 }
 
@@ -255,4 +246,8 @@ export function sanitizeHTML(html: string) {
   // Forbid the use of style attributes and style tags.
   // Also forbid span tags to prevent inline styles.
   return DOMPurify.sanitize(html, { FORBID_ATTR: ['style'], FORBID_TAGS: ['style', 'span'] });
+}
+
+export function scaleValue(value: number | null | undefined, divider: number, decimalPlaces: number) {
+  return ((value ?? 0) / divider).toFixed(decimalPlaces);
 }

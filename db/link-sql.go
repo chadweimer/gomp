@@ -12,7 +12,7 @@ type sqlLinkDriver struct {
 }
 
 func (d *sqlLinkDriver) Create(ctx context.Context, recipeID, destRecipeID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(ctx, recipeID, destRecipeID, db)
 	})
 }
@@ -25,7 +25,7 @@ func (*sqlLinkDriver) createImpl(ctx context.Context, recipeID, destRecipeID int
 }
 
 func (d *sqlLinkDriver) Delete(ctx context.Context, recipeID, destRecipeID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(ctx, recipeID, destRecipeID, db)
 	})
 }

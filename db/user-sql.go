@@ -32,7 +32,7 @@ func (d *sqlUserDriver) Authenticate(ctx context.Context, username, password str
 }
 
 func (d *sqlUserDriver) Create(ctx context.Context, user *models.User, password string) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(ctx, user, password, db)
 	})
 }
@@ -66,7 +66,7 @@ func (*sqlUserDriver) readImpl(ctx context.Context, id int64, db sqlx.QueryerCon
 }
 
 func (d *sqlUserDriver) Update(ctx context.Context, user *models.User) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(ctx, user, db)
 	})
 }
@@ -78,7 +78,7 @@ func (*sqlUserDriver) updateImpl(ctx context.Context, user *models.User, db sqlx
 }
 
 func (d *sqlUserDriver) UpdatePassword(ctx context.Context, id int64, password, newPassword string) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updatePasswordImpl(ctx, id, password, newPassword, db)
 	})
 }
@@ -126,7 +126,7 @@ func (*sqlUserDriver) readSettingsImpl(ctx context.Context, id int64, db sqlx.Qu
 }
 
 func (d *sqlUserDriver) UpdateSettings(ctx context.Context, settings *models.UserSettings) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateSettingsImpl(ctx, settings, db)
 	})
 }
@@ -160,7 +160,7 @@ func (*sqlUserDriver) updateSettingsImpl(ctx context.Context, settings *models.U
 }
 
 func (d *sqlUserDriver) Delete(ctx context.Context, id int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(ctx, id, db)
 	})
 }
@@ -187,7 +187,7 @@ func (*sqlUserDriver) listImpl(ctx context.Context, db sqlx.QueryerContext) (*[]
 }
 
 func (d *sqlUserDriver) CreateSearchFilter(ctx context.Context, filter *models.SavedSearchFilter) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createSearchFilterImpl(ctx, filter, db)
 	})
 }
@@ -321,7 +321,7 @@ func (*sqlUserDriver) readSearchFilterImpl(ctx context.Context, userID int64, fi
 }
 
 func (d *sqlUserDriver) UpdateSearchFilter(ctx context.Context, filter *models.SavedSearchFilter) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateSearchFilterImpl(ctx, filter, db)
 	})
 }
@@ -361,7 +361,7 @@ func (d *sqlUserDriver) updateSearchFilterImpl(ctx context.Context, filter *mode
 }
 
 func (d *sqlUserDriver) DeleteSearchFilter(ctx context.Context, userID int64, filterID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteSearchFilterImpl(ctx, userID, filterID, db)
 	})
 }

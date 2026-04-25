@@ -1,10 +1,17 @@
+---
+name: writing-tests
+description: Guide for writing tests in GOMP. Use this when asked to create or run tests.
+---
+
 # Writing Tests in GOMP
+
+**ALWAYS use this skill when asked to write or add tests.**
 
 Use this guide for consistent tests across API, DB, and middleware layers.
 
 ## Core Patterns
-- Prefer table-driven tests for input/output coverage.
-- Keep tests in package-local `*_test.go` files near the implementation.
+- For Go, **always** use table-driven tests when testing multiple input/output scenarios.
+- For Go, Keep tests in package-local `*_test.go` files near the implementation.
 - Focus on behavior and contract verification over implementation detail.
 
 ## API Layer Tests (`api/`)

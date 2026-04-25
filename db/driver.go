@@ -1,6 +1,6 @@
 package db
 
-//go:generate go tool mockgen -destination=../mocks/db/mocks.gen.go -package=db . Driver,AppConfigurationDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
+//go:generate go tool mockgen -destination=../mocks/db/mocks.gen.go -package=db . Driver,AppConfigurationDriver,BackupDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
 
 import (
 	"context"
@@ -36,6 +36,7 @@ type Driver interface {
 	Images() RecipeImageDriver
 	Links() LinkDriver
 	Users() UserDriver
+	Backups() BackupDriver
 }
 
 // CreateDriver returns a Driver implementation based upon the value of the driver parameter
@@ -266,4 +267,13 @@ type RecipeImageDriver interface {
 	// DeleteAll removes all images for the specified recipe from the database
 	// using a dedicated transaction that is committed if there are not errors.
 	DeleteAll(ctx context.Context, recipeID int64) error
+}
+
+// BackupDriver provides functionality to backup and restore all data and files.
+type BackupDriver interface {
+	// Export retrieves all data from the database
+	Export(ctx context.Context) (*models.BackupData, error)
+
+	// Import restores all data from the backup, deleting any existing data first
+	Import(ctx context.Context, backup *models.BackupData) error
 }

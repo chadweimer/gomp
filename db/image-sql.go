@@ -13,7 +13,7 @@ type sqlRecipeImageDriver struct {
 }
 
 func (d *sqlRecipeImageDriver) Create(ctx context.Context, imageInfo *models.RecipeImage) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(ctx, imageInfo, db)
 	})
 }
@@ -57,7 +57,7 @@ func (d *sqlRecipeImageDriver) ReadMainImage(ctx context.Context, recipeID int64
 }
 
 func (d *sqlRecipeImageDriver) Update(ctx context.Context, imageInfo *models.RecipeImage) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateImpl(ctx, imageInfo, db)
 	})
 }
@@ -73,7 +73,7 @@ func (*sqlRecipeImageDriver) updateImpl(ctx context.Context, image *models.Recip
 }
 
 func (d *sqlRecipeImageDriver) UpdateMainImage(ctx context.Context, recipeID, id int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.updateMainImageImpl(ctx, recipeID, id, db)
 	})
 }
@@ -99,7 +99,7 @@ func (d *sqlRecipeImageDriver) List(ctx context.Context, recipeID int64) (*[]mod
 }
 
 func (d *sqlRecipeImageDriver) Delete(ctx context.Context, recipeID, id int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(ctx, recipeID, id, db)
 	})
 }
@@ -123,7 +123,7 @@ func (*sqlRecipeImageDriver) setMainImageIfNecessary(ctx context.Context, recipe
 }
 
 func (d *sqlRecipeImageDriver) DeleteAll(ctx context.Context, recipeID int64) error {
-	return tx(ctx, d.Db, func(db sqlx.ExtContext) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteAllImpl(ctx, recipeID, db)
 	})
 }

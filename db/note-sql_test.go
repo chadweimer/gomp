@@ -35,7 +35,7 @@ func Test_Note_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			note := &models.Note{RecipeID: &test.recipeID, Text: test.text}
@@ -89,7 +89,7 @@ func Test_Note_Update(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			note := &models.Note{ID: &test.noteID, RecipeID: &test.recipeID, Text: test.text}
@@ -138,7 +138,7 @@ func Test_Note_Delete(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -184,7 +184,7 @@ func Test_Note_DeleteAll(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			dbmock.ExpectBegin()
@@ -245,7 +245,7 @@ func Test_Note_List(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			sut, dbmock := getMockDb(t)
+			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
 			query := dbmock.ExpectQuery("SELECT \\* FROM recipe_note WHERE recipe_id = \\$1 ORDER BY created_at DESC").WithArgs(test.recipeID)

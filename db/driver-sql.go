@@ -11,6 +11,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type sqlDriverAdapter interface {
+	sqlRecipeDriverAdapter
+	sqlBackupDriverAdapter
+}
+
 // UserWithPasswordHash reprents a user including the password hash in the database
 type UserWithPasswordHash struct {
 	models.User
@@ -27,9 +32,10 @@ type sqlDriver struct {
 	notes   *sqlNoteDriver
 	links   *sqlLinkDriver
 	users   *sqlUserDriver
+	backups *sqlBackupDriver
 }
 
-func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
+func newSQLDriver(db *sqlx.DB, adapter sqlDriverAdapter, migrationsTableName string) *sqlDriver {
 	return &sqlDriver{
 		Db: db,
 
@@ -39,6 +45,7 @@ func newSQLDriver(db *sqlx.DB, adapter sqlRecipeDriverAdapter) *sqlDriver {
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
+		backups: &sqlBackupDriver{db, adapter, migrationsTableName},
 	}
 }
 
@@ -66,6 +73,10 @@ func (d *sqlDriver) Users() UserDriver {
 	return d.users
 }
 
+func (d *sqlDriver) Backups() BackupDriver {
+	return d.backups
+}
+
 func (d *sqlDriver) Close() error {
 	slog.Debug("Closing database connection...")
 	if err := d.Db.Close(); err != nil {
@@ -80,7 +91,7 @@ func get[T any](db sqlx.QueryerContext, op func(sqlx.QueryerContext) (T, error))
 	return t, mapSQLErrors(err)
 }
 
-func tx(ctx context.Context, db *sqlx.DB, op func(sqlx.ExtContext) error) error {
+func tx(ctx context.Context, db *sqlx.DB, op func(*sqlx.Tx) error) error {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err

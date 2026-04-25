@@ -14,9 +14,9 @@ import (
 	"github.com/chadweimer/gomp/api"
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
-	"github.com/chadweimer/gomp/upload"
 )
 
 func main() {
@@ -49,13 +49,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	uplDriver, err := upload.CreateDriver(cfg.Upload.Driver)
+	fsDriver, err := fileaccess.CreateDriver(cfg.FileAccess.Files)
 	if err != nil {
-		slog.Error("Establishing upload driver failed. Exiting...", "error", err)
+		slog.Error("Establishing file access driver failed. Exiting...", "error", err)
 		os.Exit(1)
 	}
+	fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
 
-	uploader, err := upload.CreateImageUploader(uplDriver, cfg.Upload.Image)
+	uploader, err := fileaccess.CreateImageUploader(fsDriver, cfg.FileAccess.Image)
 	if err != nil {
 		slog.Error("Establishing uploader failed. Exiting...", "error", err)
 		os.Exit(1)
@@ -74,10 +75,18 @@ func main() {
 		os.Exit(1)
 	}
 
+	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
+		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
+	}
+	handlePrefixStripped := func(mux *http.ServeMux, prefix string, handler http.Handler) {
+		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
+	}
+
 	mux := http.NewServeMux()
-	handlePrefixed(mux, "api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver))
-	handlePrefixed(mux, "static", http.FileServerFS(upload.OnlyFiles(baseAssetsRoot.FS())))
-	handlePrefixed(mux, "uploads", http.FileServerFS(upload.OnlyFiles(uplDriver)))
+	handlePrefixStripped(mux, "api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver, fsDriver))
+	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(baseAssetsRoot.FS())))
+	handlePrefixed(mux, fileaccess.UploadDirectoryName, fileServer)
+	handlePrefixed(mux, fileaccess.BackupDirectoryName, fileServer)
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
@@ -116,10 +125,4 @@ func main() {
 		// We're already going down. Time to panic
 		panic(err)
 	}
-}
-
-func handlePrefixed(mux *http.ServeMux, prefix string, handler http.Handler) {
-	mux.Handle(
-		fmt.Sprintf("/%s/", prefix),
-		http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 }

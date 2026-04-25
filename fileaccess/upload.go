@@ -1,4 +1,4 @@
-package upload
+package fileaccess
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"io/fs"
 	"math"
 	"path/filepath"
 	"strconv"
@@ -30,7 +31,7 @@ var ErrInvalidContentType = errors.New("image is not in a supported format")
 
 // ImageUploader represents an object to handle image uploads
 type ImageUploader struct {
-	Driver Driver
+	driver Driver
 	imgCfg ImageConfig
 }
 
@@ -79,7 +80,7 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (resu
 	imgDir := getDirPathForImage(recipeID)
 	if format == "jpeg" && u.imgCfg.ImageQuality == ImageQualityOriginal {
 		// Save the original as-is
-		imageURL, err = u.saveImage(data, imgDir, imageName)
+		imageURL, err = u.saveImage(dataReader, imgDir, imageName)
 	} else {
 		// Resize and save as jpeg
 		imageURL, err = u.generateFitted(original, imgDir, imageName)
@@ -104,17 +105,17 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (resu
 // Delete removes the specified image files from the upload store.
 func (u ImageUploader) Delete(recipeID int64, imageName string) error {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
-	if err := u.Driver.Delete(origPath); err != nil {
+	if err := u.driver.Delete(origPath); err != nil {
 		return err
 	}
 	thumbPath := filepath.Join(getDirPathForThumbnail(recipeID), imageName)
-	return u.Driver.Delete(thumbPath)
+	return u.driver.Delete(thumbPath)
 }
 
 // DeleteAll removes all image files for the specified recipe from the upload store.
 func (u ImageUploader) DeleteAll(recipeID int64) error {
 	dirPath := getDirPathForRecipe(recipeID)
-	err := u.Driver.DeleteAll(dirPath)
+	err := u.driver.DeleteAll(dirPath)
 
 	return err
 }
@@ -122,13 +123,7 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 // Load reads the image for the given recipe, returning the bytes of the file
 func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)
-
-	file, err := u.Driver.Open(origPath)
-	if err != nil {
-		return nil, err
-	}
-
-	return io.ReadAll(file)
+	return fs.ReadFile(u.driver, origPath)
 }
 
 func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
@@ -142,7 +137,7 @@ func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, i
 		return "", fmt.Errorf("failed to encode thumbnail image: %w", err)
 	}
 
-	return u.saveImage(thumbBuf.Bytes(), saveDir, imageName)
+	return u.saveImage(bytes.NewReader(thumbBuf.Bytes()), saveDir, imageName)
 }
 
 func (u ImageUploader) generateFitted(original image.Image, saveDir string, imageName string) (string, error) {
@@ -163,13 +158,13 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		return "", fmt.Errorf("failed to encode fitted image: %w", err)
 	}
 
-	return u.saveImage(fittedBuf.Bytes(), saveDir, imageName)
+	return u.saveImage(bytes.NewReader(fittedBuf.Bytes()), saveDir, imageName)
 }
 
-func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) (string, error) {
+func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName string) (string, error) {
 	fullPath := filepath.Join(baseDir, imageName)
-	url := filepath.ToSlash(filepath.Join("/uploads/", fullPath))
-	err := u.Driver.Save(fullPath, data)
+	url := filepath.ToSlash(filepath.Join("/", fullPath))
+	err := u.driver.Save(fullPath, reader)
 	if err != nil {
 		return "", fmt.Errorf("failed to save image to '%s' using configured upload driver: %w", fullPath, err)
 	}
@@ -177,7 +172,7 @@ func (u ImageUploader) saveImage(data []byte, baseDir string, imageName string) 
 }
 
 func getDirPathForRecipe(recipeID int64) string {
-	return filepath.Join("recipes", strconv.FormatInt(recipeID, 10))
+	return filepath.Join(UploadDirectoryName, "recipes", strconv.FormatInt(recipeID, 10))
 }
 
 func getDirPathForImage(recipeID int64) string {
