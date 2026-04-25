@@ -12,6 +12,7 @@ import (
 	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
+	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
 )
 
@@ -62,9 +63,9 @@ func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *fileaccessmock.Moc
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	fsDriver := fileaccessmock.NewMockDriver(ctrl)
 	imgCfg := fileaccess.ImageConfig{
-		ImageQuality:     fileaccess.ImageQualityOriginal,
+		ImageQuality:     models.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: fileaccess.ImageQualityMedium,
+		ThumbnailQuality: models.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
 	upl, _ := fileaccess.CreateImageUploader(fsDriver, imgCfg)

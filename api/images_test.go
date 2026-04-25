@@ -395,9 +395,9 @@ func getMockImagesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeIm
 	dbDriver.EXPECT().Images().AnyTimes().Return(imagesDriver)
 	uplDriver := fileaccessmock.NewMockDriver(ctrl)
 	imgCfg := fileaccess.ImageConfig{
-		ImageQuality:     fileaccess.ImageQualityOriginal,
+		ImageQuality:     models.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: fileaccess.ImageQualityMedium,
+		ThumbnailQuality: models.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)

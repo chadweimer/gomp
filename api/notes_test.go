@@ -258,9 +258,9 @@ func getMockNotesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockNoteDrive
 	dbDriver.EXPECT().Notes().AnyTimes().Return(notesDriver)
 	uplDriver := fileaccessmock.NewMockDriver(ctrl)
 	imgCfg := fileaccess.ImageConfig{
-		ImageQuality:     fileaccess.ImageQualityOriginal,
+		ImageQuality:     models.ImageQualityOriginal,
 		ImageSize:        2000,
-		ThumbnailQuality: fileaccess.ImageQualityMedium,
+		ThumbnailQuality: models.ImageQualityMedium,
 		ThumbnailSize:    500,
 	}
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)

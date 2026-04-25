@@ -2,6 +2,8 @@ package fileaccess
 
 import (
 	"testing"
+
+	"github.com/chadweimer/gomp/models"
 )
 
 func TestFilesConfig_validate(t *testing.T) {
@@ -49,9 +51,9 @@ func TestFilesConfig_validate(t *testing.T) {
 
 func TestImageConfig_validate(t *testing.T) {
 	type fields struct {
-		ImageQuality     ImageQualityLevel
+		ImageQuality     models.ImageQualityLevel
 		ImageSize        int
-		ThumbnailQuality ImageQualityLevel
+		ThumbnailQuality models.ImageQualityLevel
 		ThumbnailSize    int
 	}
 	init := func(opts ...func(f *fields)) fields {
