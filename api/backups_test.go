@@ -3,7 +3,6 @@ package api
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -96,13 +95,12 @@ func TestCreateBackup(t *testing.T) {
 				fs:         mockFS,
 			}
 
-			ctx := context.Background()
 			request := CreateBackupRequestObject{
 				Body: tt.body,
 			}
 
 			// Act
-			resp, err := api.CreateBackup(ctx, request)
+			resp, err := api.CreateBackup(t.Context(), request)
 
 			// Assert
 			if (err != nil) != tt.expectError {
@@ -251,11 +249,10 @@ func TestGetBackups(t *testing.T) {
 				fs:         mockFS,
 			}
 
-			ctx := context.Background()
 			request := GetBackupsRequestObject{}
 
 			// Act
-			resp, err := api.GetBackups(ctx, request)
+			resp, err := api.GetBackups(t.Context(), request)
 
 			// Assert
 			if err != nil {
@@ -432,13 +429,12 @@ func TestRestoreFromBackup(t *testing.T) {
 				fs:         mockFS,
 			}
 
-			ctx := context.Background()
 			request := RestoreFromBackupRequestObject{
 				FileName: tt.fileName,
 			}
 
 			// Act
-			resp, err := api.RestoreFromBackup(ctx, request)
+			resp, err := api.RestoreFromBackup(t.Context(), request)
 
 			// Assert
 			if err != nil {
@@ -513,13 +509,12 @@ func TestDeleteBackup(t *testing.T) {
 				fs:         mockFS,
 			}
 
-			ctx := context.Background()
 			request := DeleteBackupRequestObject{
 				FileName: tt.fileName,
 			}
 
 			// Act
-			resp, err := api.DeleteBackup(ctx, request)
+			resp, err := api.DeleteBackup(t.Context(), request)
 
 			// Assert
 			if err != nil {

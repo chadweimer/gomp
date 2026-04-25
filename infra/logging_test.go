@@ -8,9 +8,8 @@ import (
 
 func TestAddLoggerToContext(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(nil, nil))
-	ctx := context.Background()
 
-	newCtx := AddLoggerToContext(ctx, logger)
+	newCtx := AddLoggerToContext(t.Context(), logger)
 
 	// Verify context is not nil
 	if newCtx == nil {
