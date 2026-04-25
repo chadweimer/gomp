@@ -119,16 +119,16 @@ func (u *fileSystemDriver) List(dirPath string) ([]fs.DirEntry, error) {
 	return fileEntries, nil
 }
 
-type justFilesFileSystem struct {
+type onlyFilesFileSystem struct {
 	fs fs.FS
 }
 
 // OnlyFiles constucts a fs.FS that returns fs.ErrPermission for directories.
 func OnlyFiles(f fs.FS) fs.FS {
-	return &justFilesFileSystem{f}
+	return &onlyFilesFileSystem{f}
 }
 
-func (f *justFilesFileSystem) Open(name string) (fs.File, error) {
+func (f *onlyFilesFileSystem) Open(name string) (fs.File, error) {
 	name = strings.TrimPrefix(name, "/")
 
 	file, err := f.fs.Open(name)
