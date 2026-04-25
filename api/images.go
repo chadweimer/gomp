@@ -14,7 +14,7 @@ func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject)
 	return GetImages200JSONResponse(images), nil
 }
 
-func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
+func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
 	uploadedFileData, imageName, err := readFile(request.Body)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,10 @@ func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObj
 		return nil, fmt.Errorf("failed to save image file: %w", err)
 	}
 
-	// TODO: Update main image if necessary
+	// Update main image if necessary
+	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, nil); err != nil {
+		return nil, err
+	}
 
 	return UploadImage201Response{
 		Headers: UploadImage201ResponseHeaders{
@@ -35,13 +38,15 @@ func (h apiHandler) UploadImage(_ context.Context, request UploadImageRequestObj
 	}, nil
 }
 
-func (h apiHandler) DeleteImage(_ context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
-	// And lastly delete the image file itself
+func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
 	if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
 		return nil, fmt.Errorf("failed to delete image file: %w", err)
 	}
 
-	// TODO: Update main image if necessary
+	// Update main image if necessary
+	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, &request.Name); err != nil {
+		return nil, err
+	}
 
 	return DeleteImage204Response{}, nil
 }
@@ -75,4 +80,32 @@ func (h apiHandler) OptimizeImage(_ context.Context, request OptimizeImageReques
 			Location: res.URL,
 		},
 	}, nil
+}
+
+func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64, justDeletedImageName *string) error {
+	images, err := h.upl.List(recipeID)
+	if err != nil {
+		return fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
+	}
+	recipe, err := h.db.Recipes().Read(ctx, recipeID)
+	if err != nil {
+		return fmt.Errorf("failed to get recipe %d: %w", recipeID, err)
+	}
+
+	saveNeeded := false
+	if len(images) == 0 && recipe.MainImageName != nil {
+		recipe.MainImageName = nil
+		saveNeeded = true
+	} else if len(images) > 0 && (recipe.MainImageName == nil || (justDeletedImageName != nil && *recipe.MainImageName == *justDeletedImageName)) {
+		recipe.MainImageName = &images[0]
+		saveNeeded = true
+	}
+
+	if saveNeeded {
+		if err := h.db.Recipes().Update(ctx, recipe); err != nil {
+			return fmt.Errorf("failed to update recipe %d with main image: %w", recipeID, err)
+		}
+	}
+
+	return nil
 }
