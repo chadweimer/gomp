@@ -1,8 +1,8 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
-import { AccessLevel, Note, Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../../generated';
+import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -14,10 +14,9 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   @Prop() recipeId: number = 0;
 
   @State() recipe: Recipe | null = null;
-  @State() mainImage: RecipeImage | null = null;
   @State() recipeRating: number = 0;
   @State() links: RecipeCompact[] = [];
-  @State() images: RecipeImage[] = [];
+  @State() images: string[] = [];
   @State() notes: Note[] = [];
 
   @Element() el!: HTMLPageRecipeElement;
@@ -34,7 +33,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   render() {
     return (
       <Host>
-        <recipe-print class="show-on-print-only" recipe={this.recipe} mainImage={this.mainImage} rating={this.recipeRating} />
+        <recipe-print class="show-on-print-only" recipe={this.recipe} rating={this.recipeRating} />
         <ion-content class="hide-on-print">
           <ion-grid class="no-pad">
             <ion-row>
@@ -42,7 +41,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                 <recipe-viewer
                   recipe={this.recipe}
                   rating={this.recipeRating}
-                  mainImage={this.mainImage}
                   links={this.links}
                   readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
                   onRatingSelected={e => void this.onRatingSelected(e.detail)}
@@ -99,11 +97,11 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                 <ion-grid class="no-pad">
                   <ion-row class="ion-justify-content-center">
                     {this.images?.map(image =>
-                      <ion-col key={image.id} size="auto">
+                      <ion-col key={image} size="auto">
                         <ion-card class="zoom">
-                          <a href={image.url} target="_blank" rel="noopener noreferrer">
+                          <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
                             <ion-thumbnail class="upload">
-                              <ion-img alt={image.url} class="thumb" src={image.thumbnailUrl} />
+                              <ion-img alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
                             </ion-thumbnail>
                           </a>
                           {hasScope(state.jwtToken, AccessLevel.Editor) &&
@@ -183,7 +181,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     await this.loadRecipe();
     await this.loadRating();
     await this.loadLinks();
-    await this.loadMainImage();
     await this.loadImages();
     await this.loadNotes();
   }
@@ -228,17 +225,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
     } catch (ex) {
       this.images = [];
-      console.error(ex);
-    }
-  }
-
-  private async loadMainImage() {
-    try {
-      this.mainImage = await recipesApi.getMainImage({
-        recipeId: this.recipeId
-      });
-    } catch (ex) {
-      this.mainImage = null;
       console.error(ex);
     }
   }
@@ -378,15 +364,11 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     }
   }
 
-  private async deleteImage(image: RecipeImage) {
+  private async deleteImage(image: string) {
     try {
-      if (isNull(image.id)) {
-        throw new Error('Cannot delete image: image ID is null.');
-      }
-
       await recipesApi.deleteImage({
         recipeId: this.recipeId,
-        imageId: image.id
+        name: image
       });
     } catch (ex) {
       console.error(ex);
@@ -406,15 +388,14 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     }
   }
 
-  private async setMainImage(image: RecipeImage) {
+  private async setMainImage(image: string) {
     try {
-      if (isNull(image.id)) {
-        throw new Error('Cannot set main image: image ID is null.');
-      }
-
-      await recipesApi.setMainImage({
-        recipeId: this.recipeId,
-        imageId: image.id
+      const recipe = await recipesApi.getRecipe({
+        recipeId: this.recipeId
+      });
+      await this.saveRecipe({
+        ...recipe,
+        mainImageName: image
       });
     } catch (ex) {
       console.error(ex);
@@ -691,7 +672,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       const { data } = await modal.onDidDismiss<{ file: File }>();
       if (!isNull(data)) {
         await this.uploadImage(data.file);
-        await this.loadMainImage();
+        await this.loadRecipe();
         await this.loadImages();
 
         // Update the search results since the modified recipe may be in them
@@ -712,7 +693,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     await refreshSearchResults();
   }
 
-  private async onSetMainImageClicked(image: RecipeImage) {
+  private async onSetMainImageClicked(image: string) {
     await enableBackForOverlay(async () => {
       const confirmation = await alertController.create({
         header: 'Set Main Picture?',
@@ -729,7 +710,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
       if (role === 'confirm') {
         await this.setMainImage(image);
-        await this.loadMainImage();
+        await this.loadRecipe();
 
         // Update the search results since the modified recipe may be in them
         await refreshSearchResults();
@@ -737,7 +718,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     });
   }
 
-  private async onDeleteImageClicked(image: RecipeImage) {
+  private async onDeleteImageClicked(image: string) {
     await enableBackForOverlay(async () => {
       const confirmation = await alertController.create({
         header: 'Delete Image?',
@@ -754,7 +735,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
       if (role === 'confirm') {
         await this.deleteImage(image);
-        await this.loadMainImage();
+        await this.loadRecipe();
         await this.loadImages();
 
         // Update the search results since the modified recipe may be in them

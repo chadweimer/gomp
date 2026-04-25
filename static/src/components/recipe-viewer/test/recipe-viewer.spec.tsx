@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Recipe, RecipeCompact, RecipeImage } from '../../../generated';
+import { Recipe, RecipeCompact } from '../../../generated';
 import '../recipe-viewer';
 
 describe('recipe-viewer', () => {
@@ -154,15 +154,21 @@ describe('recipe-viewer', () => {
   });
 
   it('bind to main image', async () => {
-    const mainImage: RecipeImage = {
-      recipeId: 1,
+    const recipe: Recipe = {
+      id: 1,
       name: 'image',
-      url: 'http://example.com/image.jpg',
-      thumbnailUrl: 'http://example.com/thumb.jpg'
+      mainImageName: 'image.jpg',
+      servingSize: '',
+      time: '',
+      nutritionInfo: '',
+      ingredients: '',
+      directions: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      tags: []
     };
-    const { root } = await render(<recipe-viewer mainImage={mainImage}></recipe-viewer>);
-    expect(root).toHaveProperty('mainImage', mainImage);
-    const img = root.shadowRoot?.querySelector(`img[src='${mainImage.thumbnailUrl}']`);
+    const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
+    const img = root.shadowRoot?.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
     expect(img).not.toBeNull();
   });
 
@@ -174,7 +180,7 @@ describe('recipe-viewer', () => {
       links.push({
         id: i,
         name: `recipe ${i}`,
-        thumbnailUrl: `http://example.com/${i}.jpg`
+        mainImageName: `${i}.jpg`
       });
     }
     const { root } = await render(<recipe-viewer links={links}></recipe-viewer>);

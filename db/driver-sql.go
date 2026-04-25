@@ -28,7 +28,6 @@ type sqlDriver struct {
 
 	app     *sqlAppConfigurationDriver
 	recipes *sqlRecipeDriver
-	images  *sqlRecipeImageDriver
 	notes   *sqlNoteDriver
 	links   *sqlLinkDriver
 	users   *sqlUserDriver
@@ -41,7 +40,6 @@ func newSQLDriver(db *sqlx.DB, adapter sqlDriverAdapter, migrationsTableName str
 
 		app:     &sqlAppConfigurationDriver{db},
 		recipes: &sqlRecipeDriver{db, adapter},
-		images:  &sqlRecipeImageDriver{db},
 		notes:   &sqlNoteDriver{db},
 		links:   &sqlLinkDriver{db},
 		users:   &sqlUserDriver{db},
@@ -55,10 +53,6 @@ func (d *sqlDriver) AppConfiguration() AppConfigurationDriver {
 
 func (d *sqlDriver) Recipes() RecipeDriver {
 	return d.recipes
-}
-
-func (d *sqlDriver) Images() RecipeImageDriver {
-	return d.images
 }
 
 func (d *sqlDriver) Notes() NoteDriver {

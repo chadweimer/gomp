@@ -121,6 +121,24 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 	return err
 }
 
+// List returns a list of image names for the specified recipe
+func (u ImageUploader) List(recipeID int64) ([]string, error) {
+	dirPath := getDirPathForImage(recipeID)
+	entries, err := u.driver.List(dirPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
+	}
+
+	imageNames := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			imageNames = append(imageNames, entry.Name())
+		}
+	}
+
+	return imageNames, nil
+}
+
 // Load reads the image for the given recipe, returning the bytes of the file
 func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	origPath := filepath.Join(getDirPathForImage(recipeID), imageName)

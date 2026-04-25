@@ -43,10 +43,9 @@ func (d *sqlLinkDriver) List(ctx context.Context, recipeID int64) (*[]models.Rec
 		recipes := make([]models.RecipeCompact, 0)
 
 		selectStmt := "SELECT " +
-			"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
+			"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, r.main_image_name " +
 			"FROM recipe AS r " +
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
-			"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
 			"WHERE " +
 			"r.id IN (SELECT dest_recipe_id FROM recipe_link WHERE recipe_id = $1) OR " +
 			"r.id IN (SELECT recipe_id FROM recipe_link WHERE dest_recipe_id = $1) " +
