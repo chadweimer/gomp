@@ -1,8 +1,6 @@
 package models
 
-import (
-	"strings"
-)
+import "strings"
 
 //go:generate go tool oapi-codegen --config cfg.yaml ../models.yaml
 
