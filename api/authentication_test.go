@@ -144,6 +144,39 @@ func Test_RefreshToken(t *testing.T) {
 	}
 }
 
+func Test_Logout(t *testing.T) {
+	// Arrange
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	api, _ := getMockUsersAPI(ctrl)
+
+	// Act
+	resp, err := api.Logout(t.Context(), LogoutRequestObject{})
+
+	// Assert
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	typedResp, ok := resp.(Logout204Response)
+	if !ok {
+		t.Fatalf("invalid response: %v", resp)
+	}
+
+	cookieStr := typedResp.Headers.SetCookie
+	cookie, err := http.ParseSetCookie(cookieStr)
+	if err != nil {
+		t.Fatalf("failed to parse cookie: %v", err)
+	}
+
+	if cookie.Value != "" {
+		t.Fatalf("expected empty cookie value, got: %s", cookie.Value)
+	}
+	if !cookie.Expires.Before(time.Now()) {
+		t.Fatalf("expected expiration in the past, got: %s", cookie.Expires)
+	}
+}
+
 func checkToken(cookieStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
 	cookie, err := http.ParseSetCookie(cookieStr)
 	if err != nil {

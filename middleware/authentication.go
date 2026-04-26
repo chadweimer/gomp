@@ -83,7 +83,6 @@ func isAuthenticated(ctx context.Context, r *http.Request, secureKeys []string, 
 }
 
 func getAuthTokenFromRequest(r *http.Request, secureKeys []string, logger *slog.Logger) (*jwt.Token, error) {
-	var tokenStr string
 	cookie, err := infra.GetAuthCookieFromRequest(r)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
@@ -92,12 +91,11 @@ func getAuthTokenFromRequest(r *http.Request, secureKeys []string, logger *slog.
 		logger.Error("Error retrieving auth cookie", "error", err)
 		return nil, errors.New("error retrieving auth cookie")
 	}
-	tokenStr = cookie.Value
+	tokenStr := cookie.Value
 
 	// Try each key when validating the token
-	var token *jwt.Token
 	for i, key := range secureKeys {
-		token, err = infra.ParseToken(tokenStr, key)
+		token, err := infra.ParseToken(tokenStr, key)
 		if err == nil {
 			return token, nil
 		}

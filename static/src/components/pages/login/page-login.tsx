@@ -67,7 +67,7 @@ export class PageLogin {
       const password = this.passwordInput.value as string;
       const { user } = await appApi.login({ credentials: { username, password } });
 
-      // Store the token so we stay logged in
+      // Store the user so we stay logged in
       state.currentUser = user;
 
       // Clear the username so it's not left around when the next login is needed

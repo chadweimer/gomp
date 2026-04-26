@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/middleware"
@@ -16,17 +17,17 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 		return Login401Response{}, nil
 	}
 
-	tokenStr, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys)
+	tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys)
 	if err != nil {
 		return nil, err
 	}
 
 	return Login200JSONResponse{
 		Body: AuthenticationResponse{
-			User:  *user,
+			User: *user,
 		},
 		Headers: Login200ResponseHeaders{
-			SetCookie: infra.CreateAuthCookie(tokenStr).String(),
+			SetCookie: infra.CreateAuthCookie(tokenStr, *expiresAt).String(),
 		},
 	}, nil
 }
@@ -39,17 +40,17 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 			return RefreshToken401Response{}, nil
 		}
 
-		tokenStr, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys)
+		tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys)
 		if err != nil {
 			return nil, err
 		}
 
 		return RefreshToken200JSONResponse{
 			Body: AuthenticationResponse{
-				User:  user.User,
+				User: user.User,
 			},
 			Headers: RefreshToken200ResponseHeaders{
-				SetCookie: infra.CreateAuthCookie(tokenStr).String(),
+				SetCookie: infra.CreateAuthCookie(tokenStr, *expiresAt).String(),
 			},
 		}, nil
 	})
@@ -58,7 +59,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 func (apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutResponseObject, error) {
 	return Logout204Response{
 		Headers: Logout204ResponseHeaders{
-			SetCookie: infra.CreateExpiredAuthCookie().String(),
+			SetCookie: infra.CreateAuthCookie("", time.Now().Add(-1*time.Hour)).String(),
 		},
 	}, nil
 }

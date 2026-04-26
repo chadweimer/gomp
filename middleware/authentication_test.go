@@ -51,24 +51,27 @@ func Test_isAuthenticated(t *testing.T) {
 			} else {
 				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
 			}
+			secureKeys := []string{"secure-key"}
 			header := http.Header{}
 			if test.includeCookie {
-				tokenStr, _ := infra.CreateToken(*expectedUser.ID, infra.GetScopes(expectedUser.AccessLevel), []string{"secure-key"})
+				tokenStr, _, _ := infra.CreateToken(*expectedUser.ID, infra.GetScopes(expectedUser.AccessLevel), secureKeys)
 				cookie := &http.Cookie{Name: test.cookieName, Value: tokenStr}
 				header.Add("Cookie", cookie.String())
 			}
 			req := &http.Request{Header: header}
 
 			// Act
-			_, _, err := isAuthenticated(ctx, req, []string{"secure-key"}, userDriver)
+			user, token, err := isAuthenticated(ctx, req, secureKeys, userDriver)
 
 			// Assert
 			if (err != nil) != test.expectError {
 				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
 			} else if err == nil {
-				ctxUser := ctx.Value(currentUserIDCtxKey)
-				if ctxUser == nil {
-					t.Error("user id missing from context")
+				if user.ID == nil || *user.ID != expectedUserID {
+					t.Errorf("expected user ID: %v, received user ID: %v", expectedUserID, user.ID)
+				}
+				if token == nil {
+					t.Error("expected token to be returned, got nil")
 				}
 			}
 		})

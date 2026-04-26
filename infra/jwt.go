@@ -19,11 +19,15 @@ type GompClaims struct {
 }
 
 // CreateToken creates a JWT token for the given user ID and scopes using the provided secure keys
-func CreateToken(userID int64, scopes []string, secureKeys []string) (string, error) {
+func CreateToken(userID int64, scopes []string, secureKeys []string) (string, *time.Time, error) {
+	// Tokens are valid for 14 days
+	issuedAt := time.Now()
+	expiresAt := issuedAt.AddDate(0, 0, 14)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, GompClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(0, 0, 14)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
 			Subject:   strconv.FormatInt(userID, 10),
 		},
 		Scopes: jwt.ClaimStrings(scopes),
@@ -32,9 +36,9 @@ func CreateToken(userID int64, scopes []string, secureKeys []string) (string, er
 	// Always sign using the 0'th key
 	tokenStr, err := token.SignedString([]byte(secureKeys[0]))
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return tokenStr, nil
+	return tokenStr, &expiresAt, nil
 }
 
 // ParseToken parses the given token string using the provided key and returns the token if it's valid
