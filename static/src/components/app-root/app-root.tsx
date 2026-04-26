@@ -54,7 +54,12 @@ export class AppRoot {
     globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const response = await originalFetch(input, init);
       if (response.status === 401) {
-        await this.logout();
+        // Make sure we don't recursively call ourselves if the logout also triggers a 401
+        const logoutOptions = await appApi.logoutRequestOpts();
+        const url = input instanceof Request ? input.url : input.toString();
+        if (!url.endsWith(logoutOptions.path) || init?.method !== logoutOptions.method) {
+          await this.logout();
+        }
       }
       return response;
     };
