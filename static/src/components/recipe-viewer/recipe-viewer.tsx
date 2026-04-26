@@ -1,6 +1,6 @@
 import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
-import { Recipe, RecipeCompact, RecipeImage, RecipeState } from '../../generated';
-import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { Recipe, RecipeCompact, RecipeState } from '../../generated';
+import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-viewer',
@@ -9,7 +9,6 @@ import { formatDate, isNull, isNullOrEmpty } from '../../helpers/utils';
 })
 export class RecipeViewer {
   @Prop() recipe: Recipe | null = null;
-  @Prop() mainImage: RecipeImage | null = null;
   @Prop() links: RecipeCompact[] = [];
   @Prop() rating = 0;
   @Prop() readonly = false;
@@ -22,18 +21,18 @@ export class RecipeViewer {
     return (
       <Host>
         <ion-card>
-          {!isNull(this.mainImage) && (
-            <a href={this.mainImage.url} target="_blank" rel="noopener noreferrer">
+          {!isNullOrEmpty(this.recipe?.mainImageName) && (
+            <a href={getRecipeImageUrl(this.recipe?.id, this.recipe?.mainImageName)} target="_blank" rel="noopener noreferrer">
               <img
                 class="main"
-                alt={this.mainImage.url}
-                src={this.mainImage.thumbnailUrl}
+                alt={this.recipe?.name}
+                src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)}
                 onLoad={e => {
                   const img = e.currentTarget as HTMLImageElement;
-                  if (!isNull(this.mainImage) && img.src.endsWith(this.mainImage.thumbnailUrl)) {
+                  if (!isNullOrEmpty(this.recipe?.mainImageName) && img.src.endsWith(getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName))) {
                     const fullImg = new Image();
-                    fullImg.src = this.mainImage.url;
-                    fullImg.onload = () => img.src = this.mainImage?.url ?? '';
+                    fullImg.src = getRecipeImageUrl(this.recipe?.id, this.recipe?.mainImageName);
+                    fullImg.onload = () => img.src = getRecipeImageUrl(this.recipe?.id, this.recipe?.mainImageName);
                   }
                 }}
               />
@@ -88,7 +87,7 @@ export class RecipeViewer {
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(link.thumbnailUrl) && <ion-img alt="" src={link.thumbnailUrl} />}
+                        {!isNullOrEmpty(link.mainImageName) && <ion-img alt="" src={getRecipeThumbnailUrl(link.id, link.mainImageName)} />}
                       </ion-thumbnail>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">

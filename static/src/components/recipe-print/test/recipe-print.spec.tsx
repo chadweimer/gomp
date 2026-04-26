@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Recipe, RecipeImage } from '../../../generated';
+import { Recipe } from '../../../generated';
 import '../recipe-print';
 
 describe('recipe-print', () => {
@@ -112,15 +112,21 @@ describe('recipe-print', () => {
   });
 
   it('bind to main image', async () => {
-    const mainImage: RecipeImage = {
-      recipeId: 1,
-      name: 'image',
-      url: 'http://example.com/image.jpg',
-      thumbnailUrl: 'http://example.com/thumb.jpg'
+    const recipe: Recipe = {
+      id: 1,
+      name: 'recipe with image',
+      mainImageName: 'image.jpg',
+      servingSize: '',
+      time: '',
+      nutritionInfo: '',
+      ingredients: '',
+      directions: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      tags: []
     };
-    const { root } = await render(<recipe-print mainImage={mainImage}></recipe-print>);
-    expect(root).toHaveProperty('mainImage', mainImage);
-    const img = root.shadowRoot?.querySelector(`img[src='${mainImage.thumbnailUrl}']`);
+    const { root } = await render(<recipe-print recipe={recipe}></recipe-print>);
+    const img = root.shadowRoot?.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
     expect(img).not.toBeNull();
   });
 });

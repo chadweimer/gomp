@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 	"golang.org/x/image/draw"
 
 	_ "image/gif" // Register GIF format
@@ -119,6 +120,25 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 	err := u.driver.DeleteAll(dirPath)
 
 	return err
+}
+
+// List returns a list of image names for the specified recipe
+func (u ImageUploader) List(recipeID int64) ([]string, error) {
+	dirPath := getDirPathForImage(recipeID)
+	entries, err := u.driver.List(dirPath)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return []string{}, nil
+		}
+		return nil, fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
+	}
+
+	return lo.FilterMap(entries, func(entry fs.DirEntry, _ int) (string, bool) {
+		if entry.IsDir() {
+			return "", false
+		}
+		return entry.Name(), true
+	}), nil
 }
 
 // Load reads the image for the given recipe, returning the bytes of the file

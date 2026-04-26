@@ -1,6 +1,6 @@
 package db
 
-//go:generate go tool mockgen -destination=../mocks/db/mocks.gen.go -package=db . Driver,AppConfigurationDriver,BackupDriver,LinkDriver,NoteDriver,RecipeDriver,RecipeImageDriver,UserDriver
+//go:generate go tool mockgen -destination=../mocks/db/mocks.gen.go -package=db . Driver,AppConfigurationDriver,BackupDriver,LinkDriver,NoteDriver,RecipeDriver,UserDriver
 
 import (
 	"context"
@@ -33,7 +33,6 @@ type Driver interface {
 	AppConfiguration() AppConfigurationDriver
 	Recipes() RecipeDriver
 	Notes() NoteDriver
-	Images() RecipeImageDriver
 	Links() LinkDriver
 	Users() UserDriver
 	Backups() BackupDriver
@@ -121,10 +120,6 @@ type NoteDriver interface {
 	// that is committed if there are not errors.
 	Delete(ctx context.Context, recipeID, noteID int64) error
 
-	// DeleteAll removes all notes for the specified recipe from the database using a dedicated
-	// transaction that is committed if there are not errors.
-	DeleteAll(ctx context.Context, recipeID int64) error
-
 	// List retrieves all notes associated with the recipe with the specified id.
 	List(ctx context.Context, recipeID int64) (*[]models.Note, error)
 }
@@ -160,14 +155,6 @@ type RecipeDriver interface {
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
 	Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
-
-	// Create stores the tag in the database as a new record using
-	// a dedicated transaction that is committed if there are not errors.
-	CreateTag(ctx context.Context, recipeID int64, tag string) error
-
-	// DeleteAll removes all tags for the specified recipe from the database using a dedicated
-	// transaction that is committed if there are not errors.
-	DeleteAllTags(ctx context.Context, recipeID int64) error
 
 	// List retrieves all tags associated with the recipe with the specified id.
 	ListTags(ctx context.Context, recipeID int64) (*[]string, error)
@@ -232,41 +219,6 @@ type UserDriver interface {
 
 	// List retrieves all user's saved search filters.
 	ListSearchFilters(ctx context.Context, userID int64) (*[]models.SavedSearchFilterCompact, error)
-}
-
-// RecipeImageDriver provides functionality to edit and retrieve images attached to recipes.
-type RecipeImageDriver interface {
-	// Create creates a record in the database using a dedicated transaction
-	// that is committed if there are not errors.
-	Create(ctx context.Context, imageInfo *models.RecipeImage) error
-
-	// Read retrieves the information about the image from the database, if found.
-	// If no image exists with the specified ID, a ErrNotFound error is returned.
-	Read(ctx context.Context, recipeID, id int64) (*models.RecipeImage, error)
-
-	// ReadMainImage retrieves the information about the main image for the specified recipe
-	// image from the database. If no main image exists, a ErrNotFound error is returned.
-	ReadMainImage(ctx context.Context, recipeID int64) (*models.RecipeImage, error)
-
-	// Update stores the specified image information in the database by updating the existing record
-	// with the specified id using a dedicated transaction that is committed if there are not errors.
-	Update(ctx context.Context, imageInfo *models.RecipeImage) error
-
-	// UpdateMainImage sets the id of the main image for the specified recipe
-	// using a dedicated transaction that is committed if there are not errors.
-	UpdateMainImage(ctx context.Context, recipeID, id int64) error
-
-	// List returns a RecipeImage slice that contains data for all images
-	// attached to the specified recipe.
-	List(ctx context.Context, recipeID int64) (*[]models.RecipeImage, error)
-
-	// Delete removes the specified image from the backing store and database
-	// using a dedicated transaction that is committed if there are not errors.
-	Delete(ctx context.Context, recipeID, id int64) error
-
-	// DeleteAll removes all images for the specified recipe from the database
-	// using a dedicated transaction that is committed if there are not errors.
-	DeleteAll(ctx context.Context, recipeID int64) error
 }
 
 // BackupDriver provides functionality to backup and restore all data and files.

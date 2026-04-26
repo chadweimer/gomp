@@ -1,6 +1,6 @@
 import { Component, h, Host, Prop } from '@stencil/core';
-import { Recipe, RecipeImage } from '../../generated';
-import { isNullOrEmpty } from '../../helpers/utils';
+import { Recipe } from '../../generated';
+import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-print',
@@ -9,7 +9,6 @@ import { isNullOrEmpty } from '../../helpers/utils';
 })
 export class RecipePrint {
   @Prop() recipe: Recipe | null = null;
-  @Prop() mainImage: RecipeImage | null = null;
   @Prop() rating = 0;
 
   render() {
@@ -24,9 +23,9 @@ export class RecipePrint {
             {!isNullOrEmpty(this.recipe?.time) && <span>Time: {this.recipe?.time}</span>}
           </div>
         </div>
-        {this.mainImage && (
+        {!isNullOrEmpty(this.recipe?.mainImageName) && (
           <div class="print-image">
-            <img src={this.mainImage.thumbnailUrl} alt={this.mainImage.thumbnailUrl} />
+            <img src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)} alt={this.recipe?.mainImageName} />
           </div>
         )}
         <div class="print-section">

@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../generated';
 import { performRecipeSearch } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -63,7 +63,7 @@ export class RecipeLinkEditor {
                   {this.matchingRecipes?.map(recipe =>
                     <ion-item key={recipe.id} lines="full">
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(recipe.thumbnailUrl) && <img alt="" src={recipe.thumbnailUrl} />}
+                        {!isNullOrEmpty(recipe.mainImageName) && <img alt="" src={getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />}
                       </ion-thumbnail>
                       <ion-radio value={recipe.id}>{recipe.name}</ion-radio>
                     </ion-item>

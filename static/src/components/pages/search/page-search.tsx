@@ -2,7 +2,7 @@ import { alertController, Gesture, modalController, ScrollBaseDetail } from '@io
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty } from '../../../helpers/utils';
+import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, getRecipeThumbnailUrl } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -88,7 +88,7 @@ export class PageSearch {
                   <ion-col key={recipe.id} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href={`/recipes/${recipe.id}`} lines="none">
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(recipe.thumbnailUrl) && <ion-img alt="" src={recipe.thumbnailUrl} />}
+                        {!isNullOrEmpty(recipe.mainImageName) && <ion-img alt="" src={getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />}
                       </ion-thumbnail>
                       <ion-label>{recipe.name}</ion-label>
                     </ion-item>

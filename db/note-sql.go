@@ -47,19 +47,6 @@ func (*sqlNoteDriver) deleteImpl(ctx context.Context, recipeID, noteID int64, db
 	return err
 }
 
-func (d *sqlNoteDriver) DeleteAll(ctx context.Context, recipeID int64) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		return d.deleteAllImpl(ctx, recipeID, db)
-	})
-}
-
-func (*sqlNoteDriver) deleteAllImpl(ctx context.Context, recipeID int64, db sqlx.ExecerContext) error {
-	_, err := db.ExecContext(ctx,
-		"DELETE FROM recipe_note WHERE recipe_id = $1",
-		recipeID)
-	return err
-}
-
 func (d *sqlNoteDriver) List(ctx context.Context, recipeID int64) (*[]models.Note, error) {
 	return get(d.Db, func(db sqlx.QueryerContext) (*[]models.Note, error) {
 		notes := make([]models.Note, 0)
