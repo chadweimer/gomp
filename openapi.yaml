@@ -87,8 +87,6 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-      security:
-        - Cookie: []
   /auth/refresh:
     get:
       tags: [ app ]
