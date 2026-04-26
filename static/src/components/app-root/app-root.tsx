@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController, popoverControl
 import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../generated';
 import { appApi, refreshSearchResults } from '../../helpers/api';
-import { redirect, enableBackForOverlay, sendActivatedCallback, hasScope, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { redirect, enableBackForOverlay, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
@@ -54,7 +54,12 @@ export class AppRoot {
     globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const response = await originalFetch(input, init);
       if (response.status === 401) {
-        await this.logout();
+        // Make sure we don't recursively call ourselves if the logout also triggers a 401
+        const logoutOptions = await appApi.logoutRequestOpts();
+        const url = input instanceof Request ? input.url : input.toString();
+        if (!url.endsWith(logoutOptions.path) || init?.method !== logoutOptions.method) {
+          await this.logout();
+        }
       }
       return response;
     };
@@ -100,7 +105,7 @@ export class AppRoot {
           <ion-content>
             <ion-list class="ion-no-padding">
               {this.appLinks
-                .filter(link => isNull(link.access) || hasScope(state.jwtToken, link.access))
+                .filter(link => isNull(link.access) || isAuthorized(state.currentUser, link.access))
                 .map(link =>
                   <Fragment>
                     <ion-item
@@ -143,7 +148,7 @@ export class AppRoot {
         <div class="ion-page" id="main-content">
           <ion-header mode="md" class="hide-on-print">
             <ion-toolbar color="primary">
-              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
+              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-buttons slot="start">
                   <ion-menu-button />
                 </ion-buttons>
@@ -154,10 +159,10 @@ export class AppRoot {
                 {!isNullOrEmpty(this.pageTitle) && <ion-text color="light"> | {this.pageTitle}</ion-text>}
               </ion-title>
 
-              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
+              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-buttons slot="end" class="ion-hide-md-down">
                   {this.appLinks
-                    .filter(link => link.toolbar && (isNull(link.access) || hasScope(state.jwtToken, link.access)))
+                    .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
                     .map(link => (
                       <ion-button
                         class={{ active: this.pageTitle === link.title }}
@@ -169,7 +174,7 @@ export class AppRoot {
                   }
                 </ion-buttons>
               }
-              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
+              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-searchbar
                   slot="end"
                   class="end ion-hide-md-down"
@@ -185,7 +190,7 @@ export class AppRoot {
                   onIonCancel={() => this.onSearchCancelClicked()}
                 ></ion-searchbar>
               }
-              {hasScope(state.jwtToken, AccessLevel.Viewer) &&
+              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-buttons slot="end" class="ion-hide-md-down">
                   <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
                     <ion-icon icon="filter" slot="start" />
@@ -194,7 +199,7 @@ export class AppRoot {
                 </ion-buttons>
               }
             </ion-toolbar>
-            {hasScope(state.jwtToken, AccessLevel.Viewer) &&
+            {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
               <ion-toolbar color="primary" class="ion-hide-md-up">
                 <ion-searchbar
                   autocorrect="on"
@@ -257,11 +262,12 @@ export class AppRoot {
 
   private async logout() {
     clearState();
+    await appApi.logout();
     await redirect('/login');
   }
 
   private isLoggedIn() {
-    return !isNullOrEmpty(state.jwtToken);
+    return !isNull(state.currentUser);
   }
 
   private requireLogin(): NavigationHookResult {
@@ -273,7 +279,7 @@ export class AppRoot {
   }
 
   private requireAdmin(): NavigationHookResult {
-    if (hasScope(state.jwtToken, AccessLevel.Admin)) {
+    if (isAuthorized(state.currentUser, AccessLevel.Admin)) {
       return true;
     }
 

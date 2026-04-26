@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
-func Test_Authenticate(t *testing.T) {
+func Test_Login(t *testing.T) {
 	type testArgs struct {
 		username    string
 		accessLevel models.AccessLevel
@@ -38,7 +38,7 @@ func Test_Authenticate(t *testing.T) {
 
 			api, userDriver := getMockUsersAPI(ctrl)
 			expectedUserID := int64(i)
-			expectedScopes := getScopes(test.accessLevel)
+			expectedScopes := infra.GetScopes(test.accessLevel)
 			if test.err != nil {
 				userDriver.EXPECT().Authenticate(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.err)
 			} else {
@@ -51,7 +51,7 @@ func Test_Authenticate(t *testing.T) {
 			}
 
 			// Act
-			resp, err := api.Authenticate(t.Context(), AuthenticateRequestObject{Body: &Credentials{Username: test.username, Password: "password"}})
+			resp, err := api.Login(t.Context(), LoginRequestObject{Body: &Credentials{Username: test.username, Password: "password"}})
 
 			// Assert
 			if err != nil {
@@ -59,17 +59,17 @@ func Test_Authenticate(t *testing.T) {
 			}
 
 			if test.err != nil {
-				_, ok := resp.(Authenticate401Response)
+				_, ok := resp.(Login401Response)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
 				}
 			} else {
-				typedResp, ok := resp.(Authenticate200JSONResponse)
+				typedResp, ok := resp.(Login200JSONResponse)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Token, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
+				err := checkToken(typedResp.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -101,7 +101,7 @@ func Test_RefreshToken(t *testing.T) {
 
 			api, userDriver := getMockUsersAPI(ctrl)
 			expectedUserID := int64(i)
-			expectedScopes := getScopes(test.accessLevel)
+			expectedScopes := infra.GetScopes(test.accessLevel)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, expectedUserID)
 			if test.err != nil {
 				userDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.err)
@@ -135,7 +135,7 @@ func Test_RefreshToken(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Token, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
+				err := checkToken(typedResp.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -144,213 +144,55 @@ func Test_RefreshToken(t *testing.T) {
 	}
 }
 
-func Test_isAuthentication(t *testing.T) {
-	type testArgs struct {
-		includeAuthHeader bool
-		headerFmt         string
-		userExists        bool
-		expectError       bool
-	}
-
-	tests := []testArgs{
-		{true, "Bearer %s", true, false},
-		{true, "Bearer %s", false, true},
-		{true, "Bearer: %s", true, true},
-		{true, "Bearers %s", true, true},
-		{true, "Token %s", true, true},
-		{true, "%s", true, true},
-		{false, "", true, true},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			expectedUserID := int64(1)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, expectedUserID)
-			expectedUser := db.UserWithPasswordHash{
-				User: models.User{
-					ID:          &expectedUserID,
-					AccessLevel: models.Admin,
-				},
-			}
-			api, userDriver := getMockUsersAPI(ctrl)
-			if test.userExists {
-				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(&expectedUser, nil)
-			} else {
-				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
-			}
-			header := http.Header{}
-			if test.includeAuthHeader {
-				tokenStr, _ := api.createToken(&expectedUser.User)
-				header.Add("Authorization", fmt.Sprintf(test.headerFmt, tokenStr))
-			}
-
-			// Act
-			_, _, err := api.isAuthenticated(ctx, header)
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			} else if err == nil {
-				ctxUser := ctx.Value(currentUserIDCtxKey)
-				if ctxUser == nil {
-					t.Error("user id missing from context")
-				}
-			}
-		})
-	}
-}
-
-func Test_getScopes(t *testing.T) {
-	type testArgs struct {
-		user           models.User
-		expectedScopes []string
-	}
-
+func Test_Logout(t *testing.T) {
 	// Arrange
-	tests := []testArgs{
-		{models.User{AccessLevel: models.Admin}, []string{string(models.Admin), string(models.Editor), string(models.Viewer)}},
-		{models.User{AccessLevel: models.Editor}, []string{string(models.Editor), string(models.Viewer)}},
-		{models.User{AccessLevel: models.Viewer}, []string{string(models.Viewer)}},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	api, _ := getMockUsersAPI(ctrl)
 
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Act
-			actualScopes := getScopes(test.user.AccessLevel)
+	// Act
+	resp, err := api.Logout(t.Context(), LogoutRequestObject{})
 
-			// Assert
-			missingExpected, extraActual := lo.Difference(test.expectedScopes, actualScopes)
-			if len(missingExpected) > 0 {
-				t.Errorf("access level: %s, missing %v scopes", test.user.AccessLevel, missingExpected)
-			}
-			if len(extraActual) > 0 {
-				t.Errorf("access level: %s, extra %v scopes", test.user.AccessLevel, extraActual)
-			}
-		})
-	}
-}
-
-func Test_checkScopes(t *testing.T) {
-	type testArgs struct {
-		routeScopes []string
-		accessLevel models.AccessLevel
-		expectError bool
-	}
-
-	tests := []testArgs{
-		{[]string{string(models.Admin)}, models.Admin, false},
-		{[]string{string(models.Admin)}, models.Editor, true},
-		{[]string{string(models.Admin)}, models.Viewer, true},
-		{[]string{string(models.Editor)}, models.Admin, false},
-		{[]string{string(models.Editor)}, models.Editor, false},
-		{[]string{string(models.Editor)}, models.Viewer, true},
-		{[]string{string(models.Viewer)}, models.Admin, false},
-		{[]string{string(models.Viewer)}, models.Editor, false},
-		{[]string{string(models.Viewer)}, models.Viewer, false},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			now := time.Now()
-			user := models.User{AccessLevel: test.accessLevel, ModifiedAt: &now}
-			claims := gompClaims{
-				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, 1))},
-				Scopes:           getScopes(test.accessLevel),
-			}
-
-			// Act
-			err := checkScopes(test.routeScopes, &user, &claims)
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			}
-		})
-	}
-}
-
-func Test_checkScopes_UserUpdated(t *testing.T) {
-	type testArgs struct {
-		routeScopes    []string
-		issuedAtDelta  int
-		accessLevel    models.AccessLevel
-		newAccessLevel models.AccessLevel
-		expectError    bool
-	}
-
-	tests := []testArgs{
-		{[]string{string(models.Editor)}, 1, models.Admin, models.Admin, false},
-		{[]string{string(models.Editor)}, 1, models.Admin, models.Editor, false},
-		{[]string{string(models.Editor)}, -1, models.Admin, models.Admin, false},
-		{[]string{string(models.Editor)}, -1, models.Admin, models.Editor, true},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			now := time.Now()
-			user := models.User{AccessLevel: test.newAccessLevel, ModifiedAt: &now}
-			claims := gompClaims{
-				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, test.issuedAtDelta))},
-				Scopes:           getScopes(test.accessLevel),
-			}
-
-			// Act
-			err := checkScopes(test.routeScopes, &user, &claims)
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			}
-		})
-	}
-}
-
-func Test_getUserIdFromClaims(t *testing.T) {
-	type testArgs struct {
-		claims      jwt.RegisteredClaims
-		expectedID  int64
-		expectError bool
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{jwt.RegisteredClaims{Subject: "1"}, 1, false},
-		{jwt.RegisteredClaims{Subject: "A"}, -1, true},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Act
-			actualID, err := getUserIDFromClaims(test.claims, slog.Default())
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			}
-			if actualID != test.expectedID {
-				t.Errorf("expected id: %d, actual id: %d", test.expectedID, actualID)
-			}
-		})
-	}
-}
-
-func checkToken(tokenStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
-	token, err := parseToken(tokenStr, key)
+	// Assert
 	if err != nil {
-		return fmt.Errorf("failed to parse token in respose: %w", err)
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	typedResp, ok := resp.(Logout204Response)
+	if !ok {
+		t.Fatalf("invalid response: %v", resp)
+	}
+
+	cookieStr := typedResp.Headers.SetCookie
+	cookie, err := http.ParseSetCookie(cookieStr)
+	if err != nil {
+		t.Fatalf("failed to parse cookie: %v", err)
+	}
+
+	if cookie.Value != "" {
+		t.Fatalf("expected empty cookie value, got: %s", cookie.Value)
+	}
+	if !cookie.Expires.Before(time.Now()) {
+		t.Fatalf("expected expiration in the past, got: %s", cookie.Expires)
+	}
+}
+
+func checkToken(cookieStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
+	cookie, err := http.ParseSetCookie(cookieStr)
+	if err != nil {
+		return fmt.Errorf("failed to parse cookie: %w", err)
+	}
+	tokenStr := cookie.Value
+	token, err := infra.ParseToken(tokenStr, key)
+	if err != nil {
+		return fmt.Errorf("failed to parse token in response: %w", err)
 	}
 
 	if !token.Valid {
 		return fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
 	}
 
-	claims, ok := token.Claims.(*gompClaims)
+	claims, ok := token.Claims.(*infra.GompClaims)
 
 	if !ok {
 		return errors.New("invalid claims")
@@ -375,7 +217,7 @@ func checkToken(tokenStr string, key string, expectedUserID int64, expectedScope
 		return errors.New("token expires before validity date")
 	}
 
-	userID, err := getUserIDFromClaims(claims.RegisteredClaims, slog.Default())
+	userID, err := infra.GetUserIDFromClaims(claims.RegisteredClaims, slog.Default())
 	if err != nil {
 		return fmt.Errorf("couldn't get user id from token: %s", tokenStr)
 	}

@@ -46,14 +46,15 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: appConfiguration
   /auth:
     post:
       tags: [ app ]
-      summary: Authenticate user
-      description: authenticate a user with username and password and return a JWT
-      operationId: authenticate
+      summary: Authenticate user and set auth cookie
+      description: authenticate a user with username and password and set the
+        authentication cookie via the Set-Cookie response header
+      operationId: login
       requestBody:
         content:
           application/json:
@@ -63,6 +64,10 @@ paths:
       responses:
         200:
           description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -70,11 +75,24 @@ paths:
         401:
           description: Unauthorized
       x-codegen-request-body-name: credentials
+    delete:
+      tags: [ app ]
+      summary: Logout user
+      description: invalidate the current cookie
+      operationId: logout
+      responses:
+        204:
+          description: No Content
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
   /auth/refresh:
     get:
       tags: [ app ]
       summary: Refresh auth token
-      description: refresh a JWT using a valid existing bearer token
+      description: refresh the current authentication token and set the new token via
+        the Set-Cookie response header
       operationId: refreshToken
       responses:
         200:
@@ -83,10 +101,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/authenticationResponse"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
         401:
           description: Unauthorized
       security:
-        - Bearer: []
+        - Cookie: []
   /backups:
     get:
       tags: [ app ]
@@ -104,7 +126,7 @@ paths:
         500:
           description: Internal Server Error
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     post:
       tags: [ app ]
       description: create a backup of the application
@@ -129,7 +151,7 @@ paths:
         500:
           description: Internal Server Error
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
   /backups/{fileName}:
     parameters:
       - name: fileName
@@ -148,7 +170,7 @@ paths:
         400:
           description: Bad Request
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     delete:
       tags: [ app ]
       summary: Delete backup
@@ -160,7 +182,7 @@ paths:
         400:
           description: Bad Request
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
   /recipes:
     get:
       tags: [ recipes ]
@@ -229,7 +251,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/searchResult"
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     post:
       tags: [ recipes ]
       summary: Add recipe
@@ -249,7 +271,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipe"
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
       x-codegen-request-body-name: recipe
   /recipes/{recipeId}:
     parameters:
@@ -272,7 +294,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipe"
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     put:
       tags: [ recipes ]
       summary: Save recipe
@@ -288,7 +310,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
       x-codegen-request-body-name: recipe
     delete:
       tags: [ recipes ]
@@ -299,7 +321,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
   /recipes/{recipeId}/images:
     parameters:
       - name: recipeId
@@ -323,7 +345,7 @@ paths:
                 items:
                   type: string
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     post:
       tags: [ recipes ]
       summary: Upload recipe image
@@ -347,7 +369,7 @@ paths:
         400:
           description: Bad Request
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
   /recipes/{recipeId}/images/{name}:
     parameters:
       - name: recipeId
@@ -374,7 +396,7 @@ paths:
               schema:
                 type: string
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     delete:
       tags: [ recipes ]
       summary: Delete recipe image
@@ -384,7 +406,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
   /recipes/{recipeId}/links:
     parameters:
       - name: recipeId
@@ -408,7 +430,7 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/recipeCompact"
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
   /recipes/{recipeId}/links/{destRecipeId}:
     parameters:
       - name: recipeId
@@ -432,7 +454,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
     delete:
       tags: [ recipes ]
       summary: Delete recipe link
@@ -442,7 +464,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
   /recipes/{recipeId}/notes:
     parameters:
       - name: recipeId
@@ -466,7 +488,7 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/note"
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     post:
       tags: [ recipes ]
       summary: Add recipe note
@@ -486,7 +508,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/note"
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
       x-codegen-request-body-name: note
   /recipes/{recipeId}/notes/{noteId}:
     parameters:
@@ -517,7 +539,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
       x-codegen-request-body-name: note
     delete:
       tags: [ recipes ]
@@ -528,7 +550,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
   /recipes/{recipeId}/rating:
     parameters:
       - name: recipeId
@@ -551,7 +573,7 @@ paths:
                 type: number
                 format: float
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     put:
       tags: [ recipes ]
       summary: Set recipe rating
@@ -568,7 +590,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
       x-codegen-request-body-name: rating
   /recipes/{recipeId}/state:
     parameters:
@@ -593,7 +615,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ editor ]
+        - Cookie: [ editor ]
       x-codegen-request-body-name: state
   /tags:
     get:
@@ -611,7 +633,7 @@ paths:
                 additionalProperties:
                   type: integer
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
   /uploads:
     post:
       tags: [ app ]
@@ -636,7 +658,7 @@ paths:
         400:
           description: Bad Request
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
   /users:
     get:
       tags: [ users ]
@@ -653,7 +675,7 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     post:
       tags: [ users ]
       summary: Add user
@@ -673,7 +695,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: user
   /users/current:
     get:
@@ -691,7 +713,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
   /users/current/filters:
     get:
       tags: [ users ]
@@ -710,7 +732,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     post:
       tags: [ users ]
       summary: Add current user search filter
@@ -732,7 +754,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
       x-codegen-request-body-name: searchFilter
   /users/current/filters/{filterId}:
     parameters:
@@ -757,7 +779,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     put:
       tags: [ users ]
       summary: Save current user search filter
@@ -775,7 +797,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
       x-codegen-request-body-name: searchFilter
     delete:
       tags: [ users ]
@@ -788,7 +810,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
   /users/current/password:
     put:
       tags: [ users ]
@@ -809,7 +831,7 @@ paths:
         403:
           description: Forbidden
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
       x-codegen-request-body-name: userPasswordRequest
   /users/current/settings:
     get:
@@ -827,7 +849,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
     put:
       tags: [ users ]
       summary: Save current user settings
@@ -845,7 +867,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Bearer: [ viewer ]
+        - Cookie: [ viewer ]
       x-codegen-request-body-name: settings
   /users/{userId}:
     parameters:
@@ -868,7 +890,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     put:
       tags: [ users ]
       summary: Save user
@@ -888,7 +910,7 @@ paths:
         403:
           description: Forbidden
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: user
     delete:
       tags: [ users ]
@@ -903,7 +925,7 @@ paths:
         403:
           description: Forbidden
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
   /users/{userId}/filters:
     parameters:
       - name: userId
@@ -927,7 +949,7 @@ paths:
                 items:
                   $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     post:
       tags: [ users ]
       summary: Add user search filter
@@ -947,7 +969,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: searchFilter
   /users/{userId}/filters/{filterId}:
     parameters:
@@ -976,7 +998,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     put:
       tags: [ users ]
       summary: Save user search filter
@@ -992,7 +1014,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: searchFilter
     delete:
       tags: [ users ]
@@ -1003,7 +1025,7 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
   /users/{userId}/password:
     parameters:
       - name: userId
@@ -1031,7 +1053,7 @@ paths:
         403:
           description: Forbidden
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: userPasswordRequest
   /users/{userId}/settings:
     parameters:
@@ -1054,7 +1076,7 @@ paths:
               schema:
                 $ref: "./models.yaml#/components/schemas/userSettings"
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
     put:
       tags: [ users ]
       summary: Save user settings
@@ -1070,15 +1092,13 @@ paths:
         204:
           description: No Content
       security:
-        - Bearer: [ admin ]
+        - Cookie: [ admin ]
       x-codegen-request-body-name: settings
 components:
   schemas:
     authenticationResponse:
-      description: Authentication payload containing a signed JWT and the
-        authenticated user.
+      description: Authentication payload containing the authenticated user.
       example:
-        token: <jwt>
         user:
           id: 1
           username: admin
@@ -1087,11 +1107,8 @@ components:
           modifiedAt: "2026-04-21T12:00:00Z"
       type: object
       required:
-        - token
         - user
       properties:
-        token:
-          type: string
         user:
           $ref: "./models.yaml#/components/schemas/user"
     credentials:
@@ -1151,7 +1168,10 @@ components:
         - "no"
         - any
   securitySchemes:
-    Bearer:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    Cookie:
+      type: apiKey
+      in: cookie
+      name: auth_token
+      description: Authentication is done via a cookie. To authenticate, send a POST
+        request to /auth with the username and password to receive the
+        authentication cookie in the Set-Cookie response header.

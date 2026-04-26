@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, hasScope, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -42,14 +42,14 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                   recipe={this.recipe}
                   rating={this.recipeRating}
                   links={this.links}
-                  readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
+                  readonly={!isAuthorized(state.currentUser, AccessLevel.Editor)}
                   onRatingSelected={e => void this.onRatingSelected(e.detail)}
                   onDeleteLinkClicked={e => void this.onDeleteLinkClicked(e.detail)}
                   onTagClicked={e => void this.onTagClicked(e.detail)} />
               </ion-col>
               <ion-col size="0" size-lg="3" size-xl="2">
                 <ion-list class="side-menu">
-                  {hasScope(state.jwtToken, AccessLevel.Editor) &&
+                  {isAuthorized(state.currentUser, AccessLevel.Editor) &&
                     <Fragment>
                       <ion-item button onClick={() => this.onEditClicked()}>
                         <ion-icon slot="start" icon="create" />
@@ -104,7 +104,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                               <ion-img alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
                             </ion-thumbnail>
                           </a>
-                          {hasScope(state.jwtToken, AccessLevel.Editor) &&
+                          {isAuthorized(state.currentUser, AccessLevel.Editor) &&
                             <ion-card-content class="ion-no-padding">
                               <ion-buttons>
                                 <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
@@ -130,7 +130,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                       <ion-col>
                         <note-card
                           note={note}
-                          readonly={!hasScope(state.jwtToken, AccessLevel.Editor)}
+                          readonly={!isAuthorized(state.currentUser, AccessLevel.Editor)}
                           onEditClicked={e => void this.onEditNoteClicked(e.detail)}
                           onDeleteClicked={e => void this.onDeleteNoteClicked(e.detail)} />
                       </ion-col>
@@ -147,7 +147,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
               <ion-back-button defaultHref="/recipes" />
             </ion-buttons>
             <ion-buttons slot="primary">
-              {hasScope(state.jwtToken, AccessLevel.Editor) &&
+              {isAuthorized(state.currentUser, AccessLevel.Editor) &&
                 <Fragment>
                   <ion-button onClick={() => this.onEditClicked()}>
                     <ion-icon slot="start" icon="create" />
@@ -408,7 +408,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       header: 'Menu',
       buttons: [
         { text: 'Print', icon: 'print', role: 'print' },
-        ...(hasScope(state.jwtToken, AccessLevel.Editor) ?
+        ...(isAuthorized(state.currentUser, AccessLevel.Editor) ?
           [
             { text: 'Delete', icon: 'trash', role: 'destructive' },
             {
