@@ -185,7 +185,7 @@ func checkToken(cookieStr string, key string, expectedUserID int64, expectedScop
 	tokenStr := cookie.Value
 	token, err := infra.ParseToken(tokenStr, key)
 	if err != nil {
-		return fmt.Errorf("failed to parse token in respose: %w", err)
+		return fmt.Errorf("failed to parse token in response: %w", err)
 	}
 
 	if !token.Valid {
