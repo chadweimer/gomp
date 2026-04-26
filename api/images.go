@@ -51,7 +51,7 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 	return DeleteImage204Response{}, nil
 }
 
-func (h apiHandler) OptimizeImage(_ context.Context, request OptimizeImageRequestObject) (OptimizeImageResponseObject, error) {
+func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequestObject) (OptimizeImageResponseObject, error) {
 	// Load the current original
 	data, err := h.upl.Load(request.RecipeID, request.Name)
 	if err != nil {
@@ -70,6 +70,18 @@ func (h apiHandler) OptimizeImage(_ context.Context, request OptimizeImageReques
 		// Delete the original image
 		if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
 			return nil, fmt.Errorf("failed to delete original image file: %w", err)
+		}
+
+		recipe, err := h.db.Recipes().Read(ctx, request.RecipeID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get recipe %d: %w", request.RecipeID, err)
+		}
+		if recipe.MainImageName != nil && *recipe.MainImageName == request.Name {
+			// Update the main image name if it was pointing to the original
+			recipe.MainImageName = &res.Name
+			if err := h.db.Recipes().Update(ctx, recipe); err != nil {
+				return nil, fmt.Errorf("failed to update recipe %d with new main image name: %w", request.RecipeID, err)
+			}
 		}
 	}
 

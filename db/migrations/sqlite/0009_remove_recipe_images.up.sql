@@ -11,4 +11,6 @@ SET main_image_name = (
 ALTER TABLE recipe
 DROP COLUMN image_id;
 
+DROP TABLE IF EXISTS recipe_image;
+
 COMMIT;
