@@ -73,7 +73,7 @@ func (sqliteDriverAdapter) StandardizeExport(_ context.Context, _ *models.Backup
 func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
 	// Attempt to create the base path, if necessary
 	if connectionURL.Scheme == "file" {
-		fullPath, err := filepath.Abs(connectionURL.RequestURI())
+		fullPath, err := filepath.Abs(filepath.Clean(connectionURL.RequestURI()))
 		if err != nil {
 			return nil, err
 		}
