@@ -383,6 +383,8 @@ paths:
         required: true
         schema:
           type: string
+          # Disallow path separator characters and ..
+          pattern: "^(?!.*[\\/]|\\.\\.).*$"
     patch:
       tags: [ recipes ]
       summary: Optimize recipe image
@@ -395,6 +397,8 @@ paths:
             Location:
               schema:
                 type: string
+        400:
+          description: Bad Request
       security:
         - Cookie: [ admin ]
     delete:
@@ -405,6 +409,8 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/links:

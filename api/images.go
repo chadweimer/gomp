@@ -3,6 +3,9 @@ package api
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+
+	"github.com/chadweimer/gomp/infra"
 )
 
 func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
@@ -39,19 +42,35 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 }
 
 func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestObject) (DeleteImageResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
+	// Validate the image name to prevent path traversal attacks
+	if filepath.Base(request.Name) != request.Name {
+		logger.WarnContext(ctx, "invalid image name", "name", request.Name)
+		return DeleteImage400Response{}, nil
+	}
+
 	if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
 		return nil, fmt.Errorf("failed to delete image file: %w", err)
 	}
 
 	// Update main image if necessary
 	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, &request.Name); err != nil {
-		return nil, fmt.Errorf("failed to update main image after deletion: %w", err)
+		return nil, fmt.Errorf("failed to update main image before deletion: %w", err)
 	}
 
 	return DeleteImage204Response{}, nil
 }
 
 func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequestObject) (OptimizeImageResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
+	// Validate the image name to prevent path traversal attacks
+	if filepath.Base(request.Name) != request.Name {
+		logger.WarnContext(ctx, "invalid image name", "name", request.Name)
+		return OptimizeImage400Response{}, nil
+	}
+
 	// Load the current original
 	data, err := h.upl.Load(request.RecipeID, request.Name)
 	if err != nil {
