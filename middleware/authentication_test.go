@@ -15,26 +15,24 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_isAuthentication(t *testing.T) {
+func Test_isAuthenticated(t *testing.T) {
 	type testArgs struct {
-		includeAuthHeader bool
-		headerFmt         string
-		userExists        bool
-		expectError       bool
+		name          string
+		includeCookie bool
+		cookieName    string
+		userExists    bool
+		expectError   bool
 	}
 
 	tests := []testArgs{
-		{true, "Bearer %s", true, false},
-		{true, "Bearer %s", false, true},
-		{true, "Bearer: %s", true, true},
-		{true, "Bearers %s", true, true},
-		{true, "Token %s", true, true},
-		{true, "%s", true, true},
-		{false, "", true, true},
+		{"Valid cookie and user exists", true, "gomp-auth-token", true, false},
+		{"Invalid cookie name", true, "invalid-name", true, true},
+		{"Valid cookie but user does not exist", true, "gomp-auth-token", false, true},
+		{"No cookie provided", false, "", true, true},
 	}
 
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -54,9 +52,10 @@ func Test_isAuthentication(t *testing.T) {
 				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
 			}
 			header := http.Header{}
-			if test.includeAuthHeader {
+			if test.includeCookie {
 				tokenStr, _ := infra.CreateToken(*expectedUser.ID, infra.GetScopes(expectedUser.AccessLevel), []string{"secure-key"})
-				header.Add("Authorization", fmt.Sprintf(test.headerFmt, tokenStr))
+				cookie := &http.Cookie{Name: test.cookieName, Value: tokenStr}
+				header.Add("Cookie", cookie.String())
 			}
 			req := &http.Request{Header: header}
 
