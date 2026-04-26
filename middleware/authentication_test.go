@@ -25,9 +25,9 @@ func Test_isAuthenticated(t *testing.T) {
 	}
 
 	tests := []testArgs{
-		{"Valid cookie and user exists", true, "gomp-auth-token", true, false},
+		{"Valid cookie and user exists", true, "auth_token", true, false},
 		{"Invalid cookie name", true, "invalid-name", true, true},
-		{"Valid cookie but user does not exist", true, "gomp-auth-token", false, true},
+		{"Valid cookie but user does not exist", true, "auth_token", false, true},
 		{"No cookie provided", false, "", true, true},
 	}
 
@@ -51,14 +51,14 @@ func Test_isAuthenticated(t *testing.T) {
 			} else {
 				userDriver.EXPECT().Read(ctx, gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
 			}
+
 			secureKeys := []string{"secure-key"}
-			header := http.Header{}
+
+			req, _ := http.NewRequest("GET", "http://example.com", nil)
 			if test.includeCookie {
 				tokenStr, _, _ := infra.CreateToken(*expectedUser.ID, infra.GetScopes(expectedUser.AccessLevel), secureKeys)
-				cookie := &http.Cookie{Name: test.cookieName, Value: tokenStr}
-				header.Add("Cookie", cookie.String())
+				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
 			}
-			req := &http.Request{Header: header}
 
 			// Act
 			user, token, err := isAuthenticated(ctx, req, secureKeys, userDriver)
