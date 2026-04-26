@@ -120,10 +120,6 @@ type NoteDriver interface {
 	// that is committed if there are not errors.
 	Delete(ctx context.Context, recipeID, noteID int64) error
 
-	// DeleteAll removes all notes for the specified recipe from the database using a dedicated
-	// transaction that is committed if there are not errors.
-	DeleteAll(ctx context.Context, recipeID int64) error
-
 	// List retrieves all notes associated with the recipe with the specified id.
 	List(ctx context.Context, recipeID int64) (*[]models.Note, error)
 }
@@ -159,14 +155,6 @@ type RecipeDriver interface {
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
 	Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
-
-	// Create stores the tag in the database as a new record using
-	// a dedicated transaction that is committed if there are not errors.
-	CreateTag(ctx context.Context, recipeID int64, tag string) error
-
-	// DeleteAll removes all tags for the specified recipe from the database using a dedicated
-	// transaction that is committed if there are not errors.
-	DeleteAllTags(ctx context.Context, recipeID int64) error
 
 	// List retrieves all tags associated with the recipe with the specified id.
 	ListTags(ctx context.Context, recipeID int64) (*[]string, error)

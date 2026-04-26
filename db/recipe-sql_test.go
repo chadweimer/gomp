@@ -13,6 +13,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/mock/gomock"
 )
 
@@ -473,7 +474,7 @@ func Test_Recipe_SetState(t *testing.T) {
 	}
 }
 
-func Test_Recipe_CreateTag(t *testing.T) {
+func Test_Recipe_createTagImpl(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
 		tag           string
@@ -508,7 +509,9 @@ func Test_Recipe_CreateTag(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().CreateTag(t.Context(), test.recipeID, test.tag)
+			err := tx(t.Context(), sut.Db, func(db *sqlx.Tx) error {
+				return sut.recipes.createTagImpl(t.Context(), test.recipeID, test.tag, db)
+			})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -521,7 +524,7 @@ func Test_Recipe_CreateTag(t *testing.T) {
 	}
 }
 
-func Test_Recipe_DeleteAllTags(t *testing.T) {
+func Test_Recipe_deleteAllTagsImpl(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
 		dbError       error
@@ -554,7 +557,9 @@ func Test_Recipe_DeleteAllTags(t *testing.T) {
 			}
 
 			// Act
-			err := sut.Recipes().DeleteAllTags(t.Context(), test.recipeID)
+			err := tx(t.Context(), sut.Db, func(db *sqlx.Tx) error {
+				return sut.recipes.deleteAllTagsImpl(t.Context(), test.recipeID, db)
+			})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {

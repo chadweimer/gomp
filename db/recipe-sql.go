@@ -302,23 +302,11 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 	return stmt
 }
 
-func (d *sqlRecipeDriver) CreateTag(ctx context.Context, recipeID int64, tag string) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		return d.createTagImpl(ctx, recipeID, tag, db)
-	})
-}
-
 func (*sqlRecipeDriver) createTagImpl(ctx context.Context, recipeID int64, tag string, db sqlx.ExecerContext) error {
 	_, err := db.ExecContext(ctx,
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeID, tag)
 	return err
-}
-
-func (d *sqlRecipeDriver) DeleteAllTags(ctx context.Context, recipeID int64) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		return d.deleteAllTagsImpl(ctx, recipeID, db)
-	})
 }
 
 func (*sqlRecipeDriver) deleteAllTagsImpl(ctx context.Context, recipeID int64, db sqlx.ExecerContext) error {
