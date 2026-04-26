@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 	"golang.org/x/image/draw"
 
 	_ "image/gif" // Register GIF format
@@ -129,14 +130,12 @@ func (u ImageUploader) List(recipeID int64) ([]string, error) {
 		return nil, fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
 	}
 
-	imageNames := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			imageNames = append(imageNames, entry.Name())
+	return lo.FilterMap(entries, func(entry fs.DirEntry, _ int) (string, bool) {
+		if entry.IsDir() {
+			return "", false
 		}
-	}
-
-	return imageNames, nil
+		return entry.Name(), true
+	}), nil
 }
 
 // Load reads the image for the given recipe, returning the bytes of the file

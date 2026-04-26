@@ -17,7 +17,7 @@ func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject)
 func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
 	uploadedFileData, imageName, err := readFile(request.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read uploaded file: %w", err)
 	}
 
 	// Save the image itself
@@ -28,7 +28,7 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 
 	// Update main image if necessary
 	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, nil); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update main image after upload: %w", err)
 	}
 
 	return UploadImage201Response{
@@ -45,7 +45,7 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 
 	// Update main image if necessary
 	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, &request.Name); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update main image after deletion: %w", err)
 	}
 
 	return DeleteImage204Response{}, nil
@@ -67,10 +67,8 @@ func (h apiHandler) OptimizeImage(_ context.Context, request OptimizeImageReques
 
 	// The name may have changed if the original was not in the current optimized format
 	if request.Name != res.Name {
-		originalName := request.Name
-
 		// Delete the original image
-		if err := h.upl.Delete(request.RecipeID, originalName); err != nil {
+		if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
 			return nil, fmt.Errorf("failed to delete original image file: %w", err)
 		}
 	}
