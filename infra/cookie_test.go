@@ -21,7 +21,6 @@ func TestCreateAuthCookie(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-
 			cookie := CreateAuthCookie(test.value, test.expiresAt)
 
 			if cookie.Name != cookieName {
