@@ -127,6 +127,9 @@ func (u ImageUploader) List(recipeID int64) ([]string, error) {
 	dirPath := getDirPathForImage(recipeID)
 	entries, err := u.driver.List(dirPath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return []string{}, nil
+		}
 		return nil, fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
 	}
 
