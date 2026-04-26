@@ -48,7 +48,7 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
       state.currentUser = user;
       response = await globalThis.fetch(input, init);
     } catch (retryError) {
-      // Just log this; let the original error propogate
+      // Just log this; let the original error propagate
       console.error(retryError);
     }
   }
