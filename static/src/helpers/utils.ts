@@ -260,7 +260,9 @@ export function getRecipeImageUrl(recipeId: number | null | undefined, imageName
   if (isNull(recipeId) || isNull(imageName)) {
     return '';
   }
-  return `/uploads/recipes/${recipeId}/images/${imageName}`;
+
+  const encodedName = encodeURIComponent(imageName);
+  return `/uploads/recipes/${recipeId}/images/${encodedName}`;
 }
 
 export function getRecipeThumbnailUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
@@ -268,5 +270,6 @@ export function getRecipeThumbnailUrl(recipeId: number | null | undefined, image
     return '';
   }
 
-  return `/uploads/recipes/${recipeId}/thumbs/${imageName}`;
+  const encodedName = encodeURIComponent(imageName);
+  return `/uploads/recipes/${recipeId}/thumbs/${encodedName}`;
 }
