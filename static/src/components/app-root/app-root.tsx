@@ -257,6 +257,7 @@ export class AppRoot {
 
   private async logout() {
     clearState();
+    await appApi.logout();
     await redirect('/login');
   }
 

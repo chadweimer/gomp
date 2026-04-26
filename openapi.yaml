@@ -53,7 +53,7 @@ paths:
       tags: [ app ]
       summary: Authenticate user
       description: authenticate a user with username and password and return a JWT
-      operationId: authenticate
+      operationId: login
       requestBody:
         content:
           application/json:
@@ -63,6 +63,10 @@ paths:
       responses:
         200:
           description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -70,6 +74,20 @@ paths:
         401:
           description: Unauthorized
       x-codegen-request-body-name: credentials
+    delete:
+      tags: [ app ]
+      summary: Logout user
+      description: invalidate the current cookie
+      operationId: logout
+      responses:
+        204:
+          description: No Content
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+      security:
+        - Bearer: []
   /auth/refresh:
     get:
       tags: [ app ]
@@ -83,6 +101,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/authenticationResponse"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
         401:
           description: Unauthorized
       security:
