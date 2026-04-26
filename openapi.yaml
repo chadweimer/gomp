@@ -1135,10 +1135,8 @@ paths:
 components:
   schemas:
     authenticationResponse:
-      description: Authentication payload containing a signed JWT and the
-        authenticated user.
+      description: Authentication payload containing the authenticated user.
       example:
-        token: <jwt>
         user:
           id: 1
           username: admin
@@ -1147,11 +1145,8 @@ components:
           modifiedAt: "2026-04-21T12:00:00Z"
       type: object
       required:
-        - token
         - user
       properties:
-        token:
-          type: string
         user:
           $ref: "./models.yaml#/components/schemas/user"
     credentials:

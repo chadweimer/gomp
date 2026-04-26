@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"testing"
 	"time"
 
@@ -68,7 +69,7 @@ func Test_Login(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Body.Token, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
+				err := checkToken(typedResp.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -134,7 +135,7 @@ func Test_RefreshToken(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Body.Token, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
+				err := checkToken(typedResp.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -143,7 +144,12 @@ func Test_RefreshToken(t *testing.T) {
 	}
 }
 
-func checkToken(tokenStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
+func checkToken(cookieStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
+	cookie, err := http.ParseSetCookie(cookieStr)
+	if err != nil {
+		return fmt.Errorf("failed to parse cookie: %w", err)
+	}
+	tokenStr := cookie.Value
 	token, err := infra.ParseToken(tokenStr, key)
 	if err != nil {
 		return fmt.Errorf("failed to parse token in respose: %w", err)

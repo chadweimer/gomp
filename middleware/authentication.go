@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"reflect"
-	"strings"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
@@ -85,29 +84,18 @@ func isAuthenticated(ctx context.Context, r *http.Request, secureKeys []string, 
 
 func getAuthTokenFromRequest(r *http.Request, secureKeys []string, logger *slog.Logger) (*jwt.Token, error) {
 	var tokenStr string
-	authHeader := r.Header.Get("Authorization")
-	if authHeader != "" {
-		authHeaderParts := strings.Split(authHeader, " ")
-		if len(authHeaderParts) != 2 || strings.ToLower(authHeaderParts[0]) != "bearer" {
-			return nil, errors.New("authorization header must be in the form 'Bearer {token}'")
+	cookie, err := infra.GetAuthCookieFromRequest(r)
+	if err != nil {
+		if errors.Is(err, http.ErrNoCookie) {
+			return nil, errors.New("authorization cookie missing")
 		}
-
-		tokenStr = authHeaderParts[1]
-	} else {
-		cookie, err := infra.GetAuthCookieFromRequest(r)
-		if err != nil {
-			if errors.Is(err, http.ErrNoCookie) {
-				return nil, errors.New("authorization header missing")
-			}
-			logger.Error("Error retrieving auth cookie", "error", err)
-			return nil, errors.New("error retrieving auth cookie")
-		}
-		tokenStr = cookie.Value
+		logger.Error("Error retrieving auth cookie", "error", err)
+		return nil, errors.New("error retrieving auth cookie")
 	}
+	tokenStr = cookie.Value
 
 	// Try each key when validating the token
 	var token *jwt.Token
-	var err error
 	for i, key := range secureKeys {
 		token, err = infra.ParseToken(tokenStr, key)
 		if err == nil {
@@ -117,7 +105,7 @@ func getAuthTokenFromRequest(r *http.Request, secureKeys []string, logger *slog.
 		logger.Error("Failed parsing JWT token",
 			"error", err,
 			"key-index", i)
-		if i < (len(secureKeys) + 1) {
+		if i < (len(secureKeys) - 1) {
 			logger.Debug("Will try again with next key")
 		}
 	}

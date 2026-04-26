@@ -1,12 +1,7 @@
 import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
 import DOMPurify from 'dompurify';
-import { jwtDecode, JwtPayload } from 'jwt-decode';
-import { AccessLevel, YesNoAny } from '../generated';
+import { AccessLevel, User, YesNoAny } from '../generated';
 import { SwipeDirection } from '../models';
-
-interface GompClaims extends JwtPayload {
-  scopes?: string[]
-}
 
 export interface ComponentWithActivatedCallback {
   activatedCallback?: () => Promise<void>;
@@ -36,12 +31,21 @@ export function formatDate(date: Date | null | undefined) {
   });
 }
 
-export function hasScope(token: string | null | undefined, accessLevel: AccessLevel) {
-  if (isNullOrEmpty(token)) {
+export function isAuthorized(user: User | null | undefined, accessLevel: AccessLevel) {
+  if (isNull(user)) {
     return false;
   }
-  const decoded = jwtDecode<GompClaims>(token);
-  return decoded.scopes?.includes(accessLevel) ?? false;
+
+  switch (accessLevel) {
+    case AccessLevel.Admin:
+      return user.accessLevel === AccessLevel.Admin;
+    case AccessLevel.Editor:
+      return user.accessLevel === AccessLevel.Editor || user.accessLevel === AccessLevel.Admin;
+    case AccessLevel.Viewer:
+      return user.accessLevel === AccessLevel.Viewer || user.accessLevel === AccessLevel.Editor || user.accessLevel === AccessLevel.Admin;
+    default:
+      return false;
+  }
 }
 
 export async function redirect(route: string) {

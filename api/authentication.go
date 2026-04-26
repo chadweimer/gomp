@@ -23,7 +23,6 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 
 	return Login200JSONResponse{
 		Body: AuthenticationResponse{
-			Token: tokenStr,
 			User:  *user,
 		},
 		Headers: Login200ResponseHeaders{
@@ -47,7 +46,6 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 
 		return RefreshToken200JSONResponse{
 			Body: AuthenticationResponse{
-				Token: tokenStr,
 				User:  user.User,
 			},
 			Headers: RefreshToken200ResponseHeaders{

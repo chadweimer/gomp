@@ -2,7 +2,7 @@ import { alertController, Gesture, modalController, ScrollBaseDetail } from '@io
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
 import { recipesApi, refreshSearchResults } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, hasScope, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty } from '../../../helpers/utils';
+import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -97,7 +97,7 @@ export class PageSearch {
             </ion-row>
           </ion-grid>
 
-          {hasScope(state.jwtToken, AccessLevel.Editor) &&
+          {isAuthorized(state.currentUser, AccessLevel.Editor) &&
             <ion-fab horizontal="end" vertical="bottom" slot="fixed">
               <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
                 <ion-icon icon="add" />
