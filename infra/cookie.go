@@ -15,8 +15,7 @@ func CreateAuthCookie(value string, expiresAt time.Time) *http.Cookie {
 		Path:     "/",
 		Expires:  expiresAt,
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 	}
 }
 

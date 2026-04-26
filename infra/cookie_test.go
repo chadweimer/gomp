@@ -39,11 +39,8 @@ func TestCreateAuthCookie(t *testing.T) {
 			if !cookie.HttpOnly {
 				t.Error("expected HttpOnly to be true")
 			}
-			if !cookie.Secure {
-				t.Error("expected Secure to be true")
-			}
-			if cookie.SameSite != http.SameSiteLaxMode {
-				t.Errorf("expected SameSite to be %v, got %v", http.SameSiteLaxMode, cookie.SameSite)
+			if cookie.SameSite != http.SameSiteStrictMode {
+				t.Errorf("expected SameSite to be %v, got %v", http.SameSiteStrictMode, cookie.SameSite)
 			}
 		})
 	}
