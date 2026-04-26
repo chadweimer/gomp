@@ -15,7 +15,6 @@ import (
 	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
-	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
@@ -89,10 +88,10 @@ func main() {
 	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(baseAssetsRoot.FS())))
 	// Uploaded files require authentication
 	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
-		infra.GetScopes(models.Viewer), cfg.SecureKeys, dbDriver.Users())(fileServer))
+		[]string{string(models.Viewer)}, cfg.SecureKeys, dbDriver.Users())(fileServer))
 	// Backups require admin access
 	handlePrefixed(mux, fileaccess.BackupDirectoryName, middleware.VerifyScopes(
-		infra.GetScopes(models.Admin), cfg.SecureKeys, dbDriver.Users())(fileServer))
+		[]string{string(models.Admin)}, cfg.SecureKeys, dbDriver.Users())(fileServer))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
 	}))
