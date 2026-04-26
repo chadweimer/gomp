@@ -15,6 +15,12 @@ import (
 	"github.com/samber/lo"
 )
 
+// ---- Begin Standard Errors ----
+
+var errMissingScopes = errors.New("token had no scopes")
+
+// ---- End Standard Errors ----
+
 // ---- Begin Context Keys ----
 
 const currentUserIDCtxKey = infra.ContextKey("current-user-id")
@@ -29,6 +35,10 @@ func VerifyScopes(requiredScopes []string, secureKeys []string, dbDriver db.User
 
 			user, token, err := isAuthenticated(ctx, r, secureKeys, dbDriver)
 			if err != nil {
+				if errors.Is(err, errMissingScopes) {
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -37,11 +47,9 @@ func VerifyScopes(requiredScopes []string, secureKeys []string, dbDriver db.User
 			ctx = context.WithValue(ctx, currentUserIDCtxKey, user.ID)
 			r = r.WithContext(ctx)
 
-			claims, ok := token.Claims.(*infra.GompClaims)
-			if !ok || len(claims.Scopes) == 0 {
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
+			// We know there are scopes because isAuthenticated would have returned an error if there were not
+			// revive:disable-next-line:unchecked-type-assertion
+			claims := token.Claims.(*infra.GompClaims)
 			if err := checkScopes(requiredScopes, user, claims); err != nil {
 				w.WriteHeader(http.StatusForbidden)
 				return
@@ -62,7 +70,7 @@ func isAuthenticated(ctx context.Context, r *http.Request, secureKeys []string, 
 
 	claims, ok := token.Claims.(*infra.GompClaims)
 	if !ok || len(claims.Scopes) == 0 {
-		return nil, nil, errors.New("token had no scopes")
+		return nil, nil, errMissingScopes
 	}
 
 	userID, err := infra.GetUserIDFromClaims(claims.RegisteredClaims, logger)
@@ -131,7 +139,7 @@ func checkScopes(routeScopes []string, user *models.User, claims *infra.GompClai
 	if len(routeScopes) > 0 && (len(routeScopes) != 1 || routeScopes[0] != "") {
 		// If the user has been modified since issuing the token,
 		// we need to check if the scopes are still the same
-		if claims.IssuedAt.Time.Before(*user.ModifiedAt) {
+		if user.ModifiedAt != nil && claims.IssuedAt.Time.Before(*user.ModifiedAt) {
 			// If the scopes of the token don't match the latest scopes of the user,
 			// don't proceed. The client should refresh the token and try again.
 			userScopes := infra.GetScopes(user.AccessLevel)
