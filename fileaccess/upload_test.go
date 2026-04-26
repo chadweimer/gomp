@@ -274,11 +274,12 @@ func Test_DeleteAll(t *testing.T) {
 
 func Test_List(t *testing.T) {
 	tests := []struct {
-		name     string
-		recipeID int64
-		entries  []fs.DirEntry
-		listErr  error
-		expected []string
+		name        string
+		recipeID    int64
+		entries     []fs.DirEntry
+		listErr     error
+		expectError bool
+		expected    []string
 	}{
 		{name: "No Files", recipeID: 123, entries: []fs.DirEntry{}, expected: []string{}},
 		{
@@ -302,7 +303,8 @@ func Test_List(t *testing.T) {
 			},
 			expected: []string{"a.jpeg", "b.png"},
 		},
-		{name: "Error", recipeID: 7, listErr: errors.New("driver failure")},
+		{name: "Error", recipeID: 7, listErr: errors.New("driver failure"), expectError: true},
+		{name: "Not Found", recipeID: 7, listErr: fs.ErrNotExist, expectError: false, expected: []string{}},
 	}
 
 	for _, tt := range tests {
@@ -332,7 +334,7 @@ func Test_List(t *testing.T) {
 			}
 
 			got, err := uploader.List(tt.recipeID)
-			if tt.listErr != nil {
+			if tt.expectError {
 				if err == nil {
 					t.Fatal("expected error, got nil")
 				}

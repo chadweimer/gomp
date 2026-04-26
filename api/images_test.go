@@ -19,6 +19,7 @@ import (
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
+	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
@@ -69,7 +70,7 @@ func Test_GetImages(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected erro: %v, received error: %v", test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				resp, ok := resp.(GetImages200JSONResponse)
 				if !ok {
@@ -77,6 +78,13 @@ func Test_GetImages(t *testing.T) {
 				}
 				if len(resp) != len(test.images) {
 					t.Errorf("expected length: %d, actual length: %d", len(test.images), len(resp))
+				}
+				missingImages, unexpectedImages := lo.Difference(resp, test.images)
+				if len(missingImages) > 0 {
+					t.Errorf("missing images: %v", missingImages)
+				}
+				if len(unexpectedImages) > 0 {
+					t.Errorf("unexpected images: %v", unexpectedImages)
 				}
 			}
 		})
