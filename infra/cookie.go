@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const cookieName = "gomp-auth-token"
+const cookieName = "auth_token"
 
 // CreateAuthCookie creates a cookie with the appropriate settings to be used for authentication
 func CreateAuthCookie(value string, expiresAt time.Time) *http.Cookie {

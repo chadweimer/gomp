@@ -66,7 +66,7 @@ func (apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutRespon
 
 func (h apiHandler) checkScopes(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		routeScopes, ok := r.Context().Value(BearerScopes).([]string)
+		routeScopes, ok := r.Context().Value(CookieScopes).([]string)
 		if ok {
 			next = middleware.VerifyScopes(routeScopes, h.secureKeys, h.db.Users())(next)
 		}
