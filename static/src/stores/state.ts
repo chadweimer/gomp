@@ -39,7 +39,14 @@ const propsToSync: { storage: Storage, key: keyof AppState }[] = [
 for (const prop of propsToSync) {
   const val = prop.storage.getItem(prop.key);
   if (!isNull(val)) {
-    set(prop.key, JSON.parse(val) as number | SearchFilter | SearchSettings | RecipeCompact[] | User | undefined);
+    try {
+      const parsedVal = JSON.parse(val) as number | SearchFilter | SearchSettings | RecipeCompact[] | User | undefined;
+      set(prop.key, parsedVal);
+    } catch (e) {
+      prop.storage.removeItem(prop.key);
+      console.warn(`Failed to parse stored value for ${prop.key}: ${val}`, e);
+      continue;
+    }
   }
   onChange(prop.key, val => {
     if (isNull(val)) {
