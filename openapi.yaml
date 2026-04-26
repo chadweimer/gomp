@@ -51,9 +51,10 @@ paths:
   /auth:
     post:
       tags: [ app ]
-      summary: Authenticate user
-      description: authenticate a user with username and password and return a JWT
-      operationId: authenticate
+      summary: Authenticate user and set auth cookie
+      description: authenticate a user with username and password and set the
+        authentication cookie via the Set-Cookie response header
+      operationId: login
       requestBody:
         content:
           application/json:
@@ -63,6 +64,10 @@ paths:
       responses:
         200:
           description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
           content:
             application/json:
               schema:
@@ -70,11 +75,26 @@ paths:
         401:
           description: Unauthorized
       x-codegen-request-body-name: credentials
+    delete:
+      tags: [ app ]
+      summary: Logout user
+      description: invalidate the current cookie
+      operationId: logout
+      responses:
+        204:
+          description: No Content
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+      security:
+        - Bearer: []
   /auth/refresh:
     get:
       tags: [ app ]
       summary: Refresh auth token
-      description: refresh a JWT using a valid existing bearer token
+      description: refresh the current authentication token and set the new token via
+        the Set-Cookie response header
       operationId: refreshToken
       responses:
         200:
@@ -83,6 +103,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/authenticationResponse"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
         401:
           description: Unauthorized
       security:
@@ -1113,10 +1137,8 @@ paths:
 components:
   schemas:
     authenticationResponse:
-      description: Authentication payload containing a signed JWT and the
-        authenticated user.
+      description: Authentication payload containing the authenticated user.
       example:
-        token: <jwt>
         user:
           id: 1
           username: admin
@@ -1125,11 +1147,8 @@ components:
           modifiedAt: "2026-04-21T12:00:00Z"
       type: object
       required:
-        - token
         - user
       properties:
-        token:
-          type: string
         user:
           $ref: "./models.yaml#/components/schemas/user"
     credentials:

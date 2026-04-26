@@ -1,10 +1,10 @@
 import { createStore } from '@stencil/store';
-import { RecipeCompact, SearchFilter } from '../generated';
+import { RecipeCompact, SearchFilter, User } from '../generated';
 import { isNull } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 
 interface AppState {
-  jwtToken?: string;
+  currentUser?: User;
   searchFilter: SearchFilter;
   searchSettings: SearchSettings;
   searchPage: number;
@@ -29,23 +29,23 @@ const { state, set, onChange, reset } = createStore<AppState>({
 });
 
 // Sync certain properties from browser storage
-const propsToSync: { storage: Storage, key: keyof AppState, isObject: boolean }[] = [
-  { storage: localStorage, key: 'jwtToken', isObject: false },
-  { storage: sessionStorage, key: 'searchFilter', isObject: true },
-  { storage: sessionStorage, key: 'searchSettings', isObject: true },
-  { storage: sessionStorage, key: 'searchPage', isObject: true },
-  { storage: sessionStorage, key: 'searchResultsPerPage', isObject: true }
+const propsToSync: { storage: Storage, key: keyof AppState }[] = [
+  { storage: localStorage, key: 'currentUser' },
+  { storage: sessionStorage, key: 'searchFilter' },
+  { storage: sessionStorage, key: 'searchSettings' },
+  { storage: sessionStorage, key: 'searchPage' },
+  { storage: sessionStorage, key: 'searchResultsPerPage' }
 ];
 for (const prop of propsToSync) {
   const val = prop.storage.getItem(prop.key);
   if (!isNull(val)) {
-    set(prop.key, prop.isObject ? JSON.parse(val) as string | number | SearchFilter | SearchSettings | RecipeCompact[] | undefined : val);
+    set(prop.key, JSON.parse(val) as number | SearchFilter | SearchSettings | RecipeCompact[] | User | undefined);
   }
   onChange(prop.key, val => {
     if (isNull(val)) {
       prop.storage.removeItem(prop.key);
     } else {
-      prop.storage.setItem(prop.key, prop.isObject ? JSON.stringify(val) : <string>val);
+      prop.storage.setItem(prop.key, JSON.stringify(val));
     }
   });
 }

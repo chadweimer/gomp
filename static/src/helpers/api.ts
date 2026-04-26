@@ -1,7 +1,7 @@
 import { AppApi, Configuration, FetchAPI, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
 import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
-import { isNullOrEmpty, toYesNoAny } from './utils';
+import { isNull, toYesNoAny } from './utils';
 
 // Retrieve search results when search filters change
 const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
@@ -42,18 +42,10 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
     // the user has been changed and requires a new token
     try {
       const localAppApi = new AppApi(new Configuration({
-        basePath: `${globalThis.location.origin}/api/v1`,
-        accessToken: () => state.jwtToken ?? ''
+        basePath: `${globalThis.location.origin}/api/v1`
       }));
-      const { token } = await localAppApi.refreshToken();
-      state.jwtToken = token;
-      init = {
-        ...init,
-        headers: {
-          ...init?.headers,
-          'Authorization': `Bearer ${state.jwtToken}`
-        }
-      };
+      const { user } = await localAppApi.refreshToken();
+      state.currentUser = user;
       response = await globalThis.fetch(input, init);
     } catch (retryError) {
       // Just log this; let the original error propogate
@@ -65,7 +57,6 @@ const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestIni
 
 const configuration = new Configuration({
   basePath: `${globalThis.location.origin}/api/v1`,
-  accessToken: () => state.jwtToken ?? '',
   fetchApi: customFetch,
   middleware: [new LoadingMiddleware()]
 });
@@ -111,7 +102,7 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
 }
 
 export async function refreshSearchResults() {
-  if (isNullOrEmpty(state.jwtToken)) return;
+  if (isNull(state.currentUser)) return;
 
   try {
     const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
