@@ -249,60 +249,66 @@ func Test_DeleteImage(t *testing.T) {
 
 func Test_OptimizeImage(t *testing.T) {
 	type testArgs struct {
-		caseName          string
-		recipeID          int64
-		originalName      string
-		expectedName      string
-		expectedLoadError error
-		expectedSaveError error
-		expectedError     error
+		caseName           string
+		recipeID           int64
+		originalName       string
+		expectedName       string
+		expectRecipeUpdate bool
+		expectedLoadError  error
+		expectedSaveError  error
+		expectedError      error
 	}
 
 	tests := []testArgs{
 		{
-			caseName:          "Nominal",
-			recipeID:          1,
-			originalName:      "img.jpeg",
-			expectedName:      "img.jpeg",
-			expectedLoadError: nil,
-			expectedSaveError: nil,
-			expectedError:     nil,
+			caseName:           "Nominal",
+			recipeID:           1,
+			originalName:       "img.jpeg",
+			expectedName:       "img.jpeg",
+			expectRecipeUpdate: false,
+			expectedLoadError:  nil,
+			expectedSaveError:  nil,
+			expectedError:      nil,
 		},
 		{
-			caseName:          "JPG Extension",
-			recipeID:          1,
-			originalName:      "img.jpg",
-			expectedName:      "img.jpg",
-			expectedLoadError: nil,
-			expectedSaveError: nil,
-			expectedError:     nil,
+			caseName:           "JPG Extension",
+			recipeID:           1,
+			originalName:       "img.jpg",
+			expectedName:       "img.jpg",
+			expectRecipeUpdate: false,
+			expectedLoadError:  nil,
+			expectedSaveError:  nil,
+			expectedError:      nil,
 		},
 		{
-			caseName:          "PNG Format",
-			recipeID:          1,
-			originalName:      "img.png",
-			expectedName:      "img.jpeg",
-			expectedLoadError: nil,
-			expectedSaveError: nil,
-			expectedError:     nil,
+			caseName:           "PNG Format",
+			recipeID:           1,
+			originalName:       "img.png",
+			expectedName:       "img.jpeg",
+			expectRecipeUpdate: true,
+			expectedLoadError:  nil,
+			expectedSaveError:  nil,
+			expectedError:      nil,
 		},
 		{
-			caseName:          "EOF",
-			recipeID:          1,
-			originalName:      "img.jpeg",
-			expectedName:      "img.jpeg",
-			expectedLoadError: io.ErrUnexpectedEOF,
-			expectedSaveError: nil,
-			expectedError:     io.ErrUnexpectedEOF,
+			caseName:           "EOF",
+			recipeID:           1,
+			originalName:       "img.jpeg",
+			expectedName:       "img.jpeg",
+			expectRecipeUpdate: false,
+			expectedLoadError:  io.ErrUnexpectedEOF,
+			expectedSaveError:  nil,
+			expectedError:      io.ErrUnexpectedEOF,
 		},
 		{
-			caseName:          "Closed Pipe",
-			recipeID:          1,
-			originalName:      "img.jpeg",
-			expectedName:      "img.jpeg",
-			expectedLoadError: nil,
-			expectedSaveError: io.ErrClosedPipe,
-			expectedError:     io.ErrClosedPipe,
+			caseName:           "Closed Pipe",
+			recipeID:           1,
+			originalName:       "img.jpeg",
+			expectedName:       "img.jpeg",
+			expectRecipeUpdate: false,
+			expectedLoadError:  nil,
+			expectedSaveError:  io.ErrClosedPipe,
+			expectedError:      io.ErrClosedPipe,
 		},
 	}
 	for _, test := range tests {
@@ -311,7 +317,7 @@ func Test_OptimizeImage(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, _, uplDriver := getMockImagesAPI(ctrl)
+			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
 			if test.expectedLoadError != nil {
 				uplDriver.EXPECT().Open(gomock.Any()).Return(nil, test.expectedLoadError)
 			} else {
@@ -335,6 +341,11 @@ func Test_OptimizeImage(t *testing.T) {
 				} else {
 					// 2 times; once for original, once for thumbnail
 					uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Times(2).Return(nil)
+				}
+
+				if test.expectRecipeUpdate {
+					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&models.Recipe{ID: utils.GetPtr(test.recipeID), MainImageName: utils.GetPtr(test.originalName)}, nil)
+					dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 				}
 			}
 
