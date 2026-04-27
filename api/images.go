@@ -45,7 +45,7 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 	logger := infra.GetLoggerFromContext(ctx)
 
 	// Validate the image name to prevent path traversal attacks
-	if filepath.Base(request.Name) != request.Name {
+	if !isNameSafe(request.Name) {
 		logger.WarnContext(ctx, "invalid image name", "name", request.Name)
 		return DeleteImage400Response{}, nil
 	}
@@ -66,7 +66,7 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 	logger := infra.GetLoggerFromContext(ctx)
 
 	// Validate the image name to prevent path traversal attacks
-	if filepath.Base(request.Name) != request.Name {
+	if !isNameSafe(request.Name) {
 		logger.WarnContext(ctx, "invalid image name", "name", request.Name)
 		return OptimizeImage400Response{}, nil
 	}
@@ -137,4 +137,12 @@ func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64,
 	}
 
 	return nil
+}
+
+func isNameSafe(name string) bool {
+	return filepath.Base(name) == name &&
+		filepath.Clean(name) == name &&
+		!filepath.IsAbs(name) &&
+		name != "." &&
+		name != ".."
 }
