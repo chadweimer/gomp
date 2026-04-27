@@ -127,7 +127,7 @@ export namespace Components {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     mainImageName: '',     averageRating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     averageRating: 0,   }
          */
         "recipe": RecipeCompact;
         /**
@@ -137,7 +137,7 @@ export namespace Components {
     }
     interface RecipeEditor {
         /**
-          * @default {     name: '',     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     tags: []   }
+          * @default {     name: '',     state: RecipeState.Active,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe": Recipe;
     }
@@ -635,7 +635,7 @@ declare namespace LocalJSX {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     mainImageName: '',     averageRating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     averageRating: 0,   }
          */
         "recipe"?: RecipeCompact;
         /**
@@ -645,7 +645,7 @@ declare namespace LocalJSX {
     }
     interface RecipeEditor {
         /**
-          * @default {     name: '',     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     tags: []   }
+          * @default {     name: '',     state: RecipeState.Active,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe"?: Recipe;
     }

@@ -10,6 +10,7 @@ import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/util
 export class RecipeCard {
   @Prop() recipe: RecipeCompact = {
     name: '',
+    state: RecipeState.Active,
     mainImageName: '',
     averageRating: 0,
   };

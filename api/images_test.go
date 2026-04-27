@@ -105,7 +105,7 @@ func Test_UploadImage(t *testing.T) {
 			name: "Nominal",
 			recipe: models.Recipe{
 				ID:            utils.GetPtr[int64](1),
-				MainImageName: utils.GetPtr("some-image.jpeg"),
+				MainImageName: "some-image.jpeg",
 			},
 			mockFS: fstest.MapFS{
 				"new-image.jpg": &fstest.MapFile{
@@ -212,7 +212,7 @@ func Test_DeleteImage(t *testing.T) {
 			name: "Main Image Deleted",
 			recipe: models.Recipe{
 				ID:            utils.GetPtr[int64](2),
-				MainImageName: utils.GetPtr("img.jpeg"),
+				MainImageName: "img.jpeg",
 			},
 			imageName:              "img.jpeg",
 			expectUpdateMainImage:  true,
@@ -352,7 +352,7 @@ func Test_OptimizeImage(t *testing.T) {
 				}
 
 				if test.expectRecipeUpdate {
-					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&models.Recipe{ID: utils.GetPtr(test.recipeID), MainImageName: utils.GetPtr(test.originalName)}, nil)
+					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&models.Recipe{ID: utils.GetPtr(test.recipeID), MainImageName: test.originalName}, nil)
 					dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 				}
 			}

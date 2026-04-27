@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Recipe } from '../../../generated';
+import { Recipe, RecipeState } from '../../../generated';
 import '../recipe-print';
 
 describe('recipe-print', () => {
@@ -11,6 +11,7 @@ describe('recipe-print', () => {
   it('bind to recipe', async () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
+      state: RecipeState.Active,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -18,6 +19,7 @@ describe('recipe-print', () => {
       nutritionInfo: '',
       storageInstructions: '',
       sourceUrl: '',
+      mainImageName: '',
       tags: []
     };
     const { root } = await render(<recipe-print recipe={recipe}></recipe-print>);
@@ -30,6 +32,7 @@ describe('recipe-print', () => {
   it('hide and show fields', async () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
+      state: RecipeState.Active,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -37,6 +40,7 @@ describe('recipe-print', () => {
       nutritionInfo: '',
       storageInstructions: '',
       sourceUrl: '',
+      mainImageName: '',
       tags: []
     };
     const { root, waitForChanges, setProps } = await render<HTMLRecipePrintElement>(<recipe-print recipe={recipe}></recipe-print>);
@@ -115,7 +119,7 @@ describe('recipe-print', () => {
     const recipe: Recipe = {
       id: 1,
       name: 'recipe with image',
-      mainImageName: 'image.jpg',
+      state: RecipeState.Active,
       servingSize: '',
       time: '',
       nutritionInfo: '',
@@ -123,6 +127,7 @@ describe('recipe-print', () => {
       directions: '',
       storageInstructions: '',
       sourceUrl: '',
+      mainImageName: 'image.jpg',
       tags: []
     };
     const { root } = await render(<recipe-print recipe={recipe}></recipe-print>);

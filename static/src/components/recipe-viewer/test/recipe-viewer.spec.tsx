@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Recipe, RecipeCompact } from '../../../generated';
+import { Recipe, RecipeCompact, RecipeState } from '../../../generated';
 import '../recipe-viewer';
 
 describe('recipe-viewer', () => {
@@ -11,6 +11,7 @@ describe('recipe-viewer', () => {
   it('bind to recipe', async () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
+      state: RecipeState.Active,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -18,6 +19,7 @@ describe('recipe-viewer', () => {
       nutritionInfo: '',
       storageInstructions: '',
       sourceUrl: '',
+      mainImageName: '',
       tags: []
     };
     const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
@@ -30,6 +32,7 @@ describe('recipe-viewer', () => {
   it('hide and show fields', async () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
+      state: RecipeState.Active,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -37,6 +40,7 @@ describe('recipe-viewer', () => {
       nutritionInfo: '',
       storageInstructions: '',
       sourceUrl: '',
+      mainImageName: '',
       tags: []
     };
     const { root, waitForChanges, setProps } = await render<HTMLRecipeViewerElement>(<recipe-viewer recipe={recipe}></recipe-viewer>);
@@ -135,6 +139,7 @@ describe('recipe-viewer', () => {
       modifiedAt = modified ? modifiedAt : createdAt;
       const recipe: Recipe = {
         name: 'Some Recipe',
+        state: RecipeState.Active,
         servingSize: '',
         time: '',
         ingredients: '',
@@ -142,6 +147,7 @@ describe('recipe-viewer', () => {
         nutritionInfo: '',
         storageInstructions: '',
         sourceUrl: '',
+        mainImageName: '',
         tags: [],
         createdAt: createdAt,
         modifiedAt: modifiedAt
@@ -157,7 +163,7 @@ describe('recipe-viewer', () => {
     const recipe: Recipe = {
       id: 1,
       name: 'image',
-      mainImageName: 'image.jpg',
+      state: RecipeState.Active,
       servingSize: '',
       time: '',
       nutritionInfo: '',
@@ -165,6 +171,7 @@ describe('recipe-viewer', () => {
       directions: '',
       storageInstructions: '',
       sourceUrl: '',
+      mainImageName: 'image.jpg',
       tags: []
     };
     const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
@@ -180,6 +187,7 @@ describe('recipe-viewer', () => {
       links.push({
         id: i,
         name: `recipe ${i}`,
+        state: RecipeState.Active,
         mainImageName: `${i}.jpg`
       });
     }

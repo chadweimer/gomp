@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { Recipe, UserSettings } from '../../generated';
+import { Recipe, RecipeState, UserSettings } from '../../generated';
 import { loadUserSettings } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
 
@@ -11,6 +11,7 @@ import { configureModalAutofocus, dismissContainingModal, isNull } from '../../h
 export class RecipeEditor {
   @Prop() recipe: Recipe = {
     name: '',
+    state: RecipeState.Active,
     servingSize: '',
     time: '',
     nutritionInfo: '',
@@ -18,6 +19,7 @@ export class RecipeEditor {
     directions: '',
     storageInstructions: '',
     sourceUrl: '',
+    mainImageName: '',
     tags: []
   };
 

@@ -151,6 +151,8 @@ components:
         modifiedAt: "2026-04-20T18:15:00Z"
       required:
         - name
+        - state
+        - mainImageName
       type: object
       properties:
         id:

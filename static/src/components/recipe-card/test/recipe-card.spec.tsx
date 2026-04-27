@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { RecipeCompact } from '../../../generated';
+import { RecipeCompact, RecipeState } from '../../../generated';
 import '../recipe-card';
 
 describe('recipe-card', () => {
@@ -24,7 +24,9 @@ describe('recipe-card', () => {
   it('bind to recipe', async () => {
     const recipe: RecipeCompact = {
       name: 'Some Recipe',
-      averageRating: 2,
+      state: RecipeState.Active,
+      mainImageName: '',
+      averageRating: 2
     };
     const { root } = await render(<recipe-card recipe={recipe} />);
     expect(root).toHaveProperty('recipe', recipe);

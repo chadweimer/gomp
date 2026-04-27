@@ -263,10 +263,10 @@ func getPicturesStmt(withPictures *bool) string {
 	}
 
 	if !*withPictures {
-		return "r.main_image_name IS NULL"
+		return "r.main_image_name IS NULL OR r.main_image_name = ''"
 	}
 
-	return "r.main_image_name IS NOT NULL"
+	return "r.main_image_name IS NOT NULL AND r.main_image_name != ''"
 }
 
 func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {

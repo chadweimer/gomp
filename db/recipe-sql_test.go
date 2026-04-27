@@ -863,16 +863,16 @@ func Test_getPicturesStmt(t *testing.T) {
 		{
 			name: "Yes",
 			args: args{
-				withPictures: utils.GetPtr[bool](true),
+				withPictures: utils.GetPtr(true),
 			},
-			want: "r.main_image_name IS NOT NULL",
+			want: "r.main_image_name IS NOT NULL AND r.main_image_name != ''",
 		},
 		{
 			name: "No",
 			args: args{
-				withPictures: utils.GetPtr[bool](false),
+				withPictures: utils.GetPtr(false),
 			},
-			want: "r.main_image_name IS NULL",
+			want: "r.main_image_name IS NULL OR r.main_image_name = ''",
 		},
 	}
 	for _, tt := range tests {
@@ -1036,8 +1036,8 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](1), Name: "Recipe1", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](4.5), MainImageName: utils.GetPtr("url1")},
-				{ID: utils.GetPtr[int64](2), Name: "Recipe2", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](3.0), MainImageName: utils.GetPtr("url2")},
+				{ID: utils.GetPtr[int64](1), Name: "Recipe1", State: models.Active, AverageRating: utils.GetPtr[float32](4.5), MainImageName: "url1"},
+				{ID: utils.GetPtr[int64](2), Name: "Recipe2", State: models.Active, AverageRating: utils.GetPtr[float32](3.0), MainImageName: "url2"},
 			},
 			expectedTotal: 2,
 		},
@@ -1060,7 +1060,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](3), Name: "Recipe3", State: utils.GetPtr(models.Archived), AverageRating: utils.GetPtr[float32](2.0), MainImageName: utils.GetPtr("url3")},
+				{ID: utils.GetPtr[int64](3), Name: "Recipe3", State: models.Archived, AverageRating: utils.GetPtr[float32](2.0), MainImageName: "url3"},
 			},
 			expectedTotal: 1,
 		},
@@ -1083,7 +1083,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](4), Name: "Recipe4", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](5.0), MainImageName: utils.GetPtr("url4")},
+				{ID: utils.GetPtr[int64](4), Name: "Recipe4", State: models.Active, AverageRating: utils.GetPtr[float32](5.0), MainImageName: "url4"},
 			},
 			expectedTotal: 1,
 		},
@@ -1095,16 +1095,16 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 				count:  1,
 			},
 			setupMock: func(dbmock sqlmock.Sqlmock) {
-				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL\\)").
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL AND r\\.main_image_name != ''\\)").
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL AND r\\.main_image_name != ''\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs(1, 0).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "main_image_name"}).
 						AddRow(5, "Recipe5", models.Active, time.Now(), time.Now(), 1.0, "url5"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](5), Name: "Recipe5", State: utils.GetPtr(models.Active), AverageRating: utils.GetPtr[float32](1.0), MainImageName: utils.GetPtr("url5")},
+				{ID: utils.GetPtr[int64](5), Name: "Recipe5", State: models.Active, AverageRating: utils.GetPtr[float32](1.0), MainImageName: "url5"},
 			},
 			expectedTotal: 1,
 		},
@@ -1172,13 +1172,13 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					if gotItem.Name != wantItem.Name {
 						t.Errorf("result at index %d: Name mismatch: got %v, want %v", i, gotItem.Name, wantItem.Name)
 					}
-					if (gotItem.State == nil && wantItem.State != nil) || (gotItem.State != nil && wantItem.State == nil) || (gotItem.State != nil && wantItem.State != nil && *gotItem.State != *wantItem.State) {
+					if gotItem.State != wantItem.State {
 						t.Errorf("result at index %d: State mismatch: got %v, want %v", i, gotItem.State, wantItem.State)
 					}
 					if (gotItem.AverageRating == nil && wantItem.AverageRating != nil) || (gotItem.AverageRating != nil && wantItem.AverageRating == nil) || (gotItem.AverageRating != nil && wantItem.AverageRating != nil && *gotItem.AverageRating != *wantItem.AverageRating) {
 						t.Errorf("result at index %d: AverageRating mismatch: got %v, want %v", i, gotItem.AverageRating, wantItem.AverageRating)
 					}
-					if (gotItem.MainImageName == nil && wantItem.MainImageName != nil) || (gotItem.MainImageName != nil && wantItem.MainImageName == nil) || (gotItem.MainImageName != nil && wantItem.MainImageName != nil && *gotItem.MainImageName != *wantItem.MainImageName) {
+					if gotItem.MainImageName != wantItem.MainImageName {
 						t.Errorf("result at index %d: MainImageName mismatch: got %v, want %v", i, gotItem.MainImageName, wantItem.MainImageName)
 					}
 				}

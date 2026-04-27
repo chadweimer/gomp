@@ -95,9 +95,9 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 		if err != nil {
 			return nil, fmt.Errorf("failed to get recipe %d: %w", request.RecipeID, err)
 		}
-		if recipe.MainImageName != nil && *recipe.MainImageName == request.Name {
+		if recipe.MainImageName == request.Name {
 			// Update the main image name if it was pointing to the original
-			recipe.MainImageName = &res.Name
+			recipe.MainImageName = res.Name
 			if err := h.db.Recipes().Update(ctx, recipe); err != nil {
 				return nil, fmt.Errorf("failed to update recipe %d with new main image name: %w", request.RecipeID, err)
 			}
@@ -122,11 +122,11 @@ func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64,
 	}
 
 	saveNeeded := false
-	if len(images) == 0 && recipe.MainImageName != nil {
-		recipe.MainImageName = nil
+	if len(images) == 0 && recipe.MainImageName != "" {
+		recipe.MainImageName = ""
 		saveNeeded = true
-	} else if len(images) > 0 && (recipe.MainImageName == nil || (justDeletedImageName != nil && *recipe.MainImageName == *justDeletedImageName)) {
-		recipe.MainImageName = &images[0]
+	} else if len(images) > 0 && (recipe.MainImageName == "" || (justDeletedImageName != nil && recipe.MainImageName == *justDeletedImageName)) {
+		recipe.MainImageName = images[0]
 		saveNeeded = true
 	}
 
