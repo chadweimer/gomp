@@ -165,52 +165,6 @@ func Test_Note_Delete(t *testing.T) {
 	}
 }
 
-func Test_Note_DeleteAll(t *testing.T) {
-	type testArgs struct {
-		recipeID      int64
-		dbError       error
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, nil, nil},
-		{0, sql.ErrNoRows, ErrNotFound},
-		{0, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("DELETE FROM recipe_note WHERE recipe_id = \\$1").WithArgs(test.recipeID)
-			if test.dbError == nil {
-				exec.WillReturnResult(driver.RowsAffected(1))
-				dbmock.ExpectCommit()
-			} else {
-				exec.WillReturnError(test.dbError)
-				dbmock.ExpectRollback()
-			}
-
-			// Act
-			err := sut.Notes().DeleteAll(t.Context(), test.recipeID)
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
 func Test_Note_List(t *testing.T) {
 	type testArgs struct {
 		recipeID       int64

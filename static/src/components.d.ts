@@ -5,9 +5,9 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User } from "./generated";
+import { Note, Recipe, RecipeCompact, SearchFilter, User } from "./generated";
 import { Color } from "@ionic/core";
-export { Note, Recipe, RecipeCompact, RecipeImage, SearchFilter, User } from "./generated";
+export { Note, Recipe, RecipeCompact, SearchFilter, User } from "./generated";
 export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {
@@ -127,7 +127,7 @@ export namespace Components {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     thumbnailUrl: '',     averageRating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     averageRating: 0,   }
          */
         "recipe": RecipeCompact;
         /**
@@ -137,7 +137,7 @@ export namespace Components {
     }
     interface RecipeEditor {
         /**
-          * @default {     name: '',     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     tags: []   }
+          * @default {     name: '',     state: RecipeState.Active,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe": Recipe;
     }
@@ -148,10 +148,6 @@ export namespace Components {
         "parentRecipeId": number;
     }
     interface RecipePrint {
-        /**
-          * @default null
-         */
-        "mainImage": RecipeImage | null;
         /**
           * @default 0
          */
@@ -166,10 +162,6 @@ export namespace Components {
           * @default []
          */
         "links": RecipeCompact[];
-        /**
-          * @default null
-         */
-        "mainImage": RecipeImage | null;
         /**
           * @default 0
          */
@@ -643,7 +635,7 @@ declare namespace LocalJSX {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     thumbnailUrl: '',     averageRating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     averageRating: 0,   }
          */
         "recipe"?: RecipeCompact;
         /**
@@ -653,7 +645,7 @@ declare namespace LocalJSX {
     }
     interface RecipeEditor {
         /**
-          * @default {     name: '',     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     tags: []   }
+          * @default {     name: '',     state: RecipeState.Active,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe"?: Recipe;
     }
@@ -664,10 +656,6 @@ declare namespace LocalJSX {
         "parentRecipeId"?: number;
     }
     interface RecipePrint {
-        /**
-          * @default null
-         */
-        "mainImage"?: RecipeImage | null;
         /**
           * @default 0
          */
@@ -682,10 +670,6 @@ declare namespace LocalJSX {
           * @default []
          */
         "links"?: RecipeCompact[];
-        /**
-          * @default null
-         */
-        "mainImage"?: RecipeImage | null;
         "onDeleteLinkClicked"?: (event: RecipeViewerCustomEvent<RecipeCompact>) => void;
         "onRatingSelected"?: (event: RecipeViewerCustomEvent<number>) => void;
         "onTagClicked"?: (event: RecipeViewerCustomEvent<string>) => void;

@@ -54,7 +54,7 @@ func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe,
 
 func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, error) {
 	return get(d.Db, func(q sqlx.QueryerContext) (*models.Recipe, error) {
-		stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, created_at, modified_at " +
+		stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, main_image_name, created_at, modified_at " +
 			"FROM recipe WHERE id = $1"
 		recipe := new(models.Recipe)
 		if err := sqlx.GetContext(ctx, q, recipe, stmt, id); err != nil {
@@ -84,9 +84,9 @@ func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe,
 
 	_, err := db.ExecContext(ctx,
 		"UPDATE recipe "+
-			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7, recipe_time = $8 "+
-			"WHERE id = $9",
-		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.Time, recipe.ID)
+			"SET name = $1, serving_size = $2, nutrition_info = $3, ingredients = $4, directions = $5, storage_instructions = $6, source_url = $7, recipe_time = $8, main_image_name = $9 "+
+			"WHERE id = $10",
+		recipe.Name, recipe.ServingSize, recipe.NutritionInfo, recipe.Ingredients, recipe.Directions, recipe.StorageInstructions, recipe.SourceURL, recipe.Time, recipe.MainImageName, recipe.ID)
 	if err != nil {
 		return fmt.Errorf("updating recipe: %w", err)
 	}
@@ -219,10 +219,9 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 	}
 
 	combinedStr :=
-		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, COALESCE(i.thumbnail_url, '') AS thumbnail_url " +
+		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, r.main_image_name " +
 			"FROM recipe AS r " +
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
-			"LEFT OUTER JOIN recipe_image as i ON r.image_id = i.id " +
 			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
 
 	selectArgs := append(whereArgs, limitArgs...)
@@ -263,11 +262,11 @@ func getPicturesStmt(withPictures *bool) string {
 		return ""
 	}
 
-	prefix := ""
 	if !*withPictures {
-		prefix = "NOT "
+		return "r.main_image_name IS NULL OR r.main_image_name = ''"
 	}
-	return prefix + "EXISTS (SELECT 1 FROM recipe_image AS t WHERE t.recipe_id = r.id)"
+
+	return "r.main_image_name IS NOT NULL AND r.main_image_name != ''"
 }
 
 func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
@@ -303,23 +302,11 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 	return stmt
 }
 
-func (d *sqlRecipeDriver) CreateTag(ctx context.Context, recipeID int64, tag string) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		return d.createTagImpl(ctx, recipeID, tag, db)
-	})
-}
-
 func (*sqlRecipeDriver) createTagImpl(ctx context.Context, recipeID int64, tag string, db sqlx.ExecerContext) error {
 	_, err := db.ExecContext(ctx,
 		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
 		recipeID, tag)
 	return err
-}
-
-func (d *sqlRecipeDriver) DeleteAllTags(ctx context.Context, recipeID int64) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		return d.deleteAllTagsImpl(ctx, recipeID, db)
-	})
 }
 
 func (*sqlRecipeDriver) deleteAllTagsImpl(ctx context.Context, recipeID int64, db sqlx.ExecerContext) error {

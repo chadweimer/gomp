@@ -151,6 +151,8 @@ components:
         modifiedAt: "2026-04-20T18:15:00Z"
       required:
         - name
+        - state
+        - mainImageName
       type: object
       properties:
         id:
@@ -166,6 +168,11 @@ components:
           x-go-custom-tag: db:"name"
         state:
           $ref: "#/components/schemas/recipeState"
+        mainImageName:
+          type: string
+          x-go-custom-tag: db:"main_image_name"
+          x-oapi-codegen-extra-tags:
+            db: main_image_name
         createdAt:
           type: string
           format: date-time
@@ -270,83 +277,12 @@ components:
         - $ref: "#/components/schemas/recipeBase"
         - type: object
           properties:
-            thumbnailUrl:
-              type: string
-              readOnly: true
-              x-go-custom-tag: db:"thumbnail_url"
-              x-oapi-codegen-extra-tags:
-                db: thumbnail_url
             averageRating:
               type: number
               readOnly: true
               x-go-custom-tag: db:"avg_rating"
               x-oapi-codegen-extra-tags:
                 db: avg_rating
-    recipeImage:
-      description: Metadata for an uploaded recipe image and its generated thumbnail.
-      example:
-        id: 25
-        recipeId: 3
-        name: plated-dish.jpg
-        url: /uploads/recipes/3/plated-dish.jpg
-        thumbnailUrl: /uploads/recipes/3/plated-dish-thumb.jpg
-        createdAt: "2026-04-20T18:20:00Z"
-        modifiedAt: "2026-04-20T18:20:00Z"
-      type: object
-      required:
-        - recipeId
-        - name
-        - url
-        - thumbnailUrl
-      properties:
-        id:
-          type: integer
-          format: int64
-          readOnly: true
-          x-go-custom-tag: db:"id"
-          x-oapi-codegen-extra-tags:
-            db: id
-        recipeId:
-          type: integer
-          format: int64
-          readOnly: true
-          x-go-custom-tag: db:"recipe_id"
-          x-oapi-codegen-extra-tags:
-            db: recipe_id
-        name:
-          type: string
-          readOnly: true
-          x-go-custom-tag: db:"name"
-          x-oapi-codegen-extra-tags:
-            db: name
-        url:
-          type: string
-          readOnly: true
-          x-go-custom-tag: db:"url"
-          x-oapi-codegen-extra-tags:
-            db: url
-        thumbnailUrl:
-          type: string
-          readOnly: true
-          x-go-custom-tag: db:"thumbnail_url"
-          x-oapi-codegen-extra-tags:
-            db: thumbnail_url
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-          x-go-custom-tag: db:"created_at"
-          x-oapi-codegen-extra-tags:
-            db: created_at
-          x-go-type: time.Time
-        modifiedAt:
-          type: string
-          format: date-time
-          readOnly: true
-          x-go-custom-tag: db:"modified_at"
-          x-oapi-codegen-extra-tags:
-            db: modified_at
-          x-go-type: time.Time
     searchFilter:
       description: Search filter criteria used to find recipes.
       example:

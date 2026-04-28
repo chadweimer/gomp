@@ -322,46 +322,6 @@ paths:
           description: No Content
       security:
         - Cookie: [ editor ]
-  /recipes/{recipeId}/image:
-    parameters:
-      - name: recipeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-    get:
-      tags: [ recipes ]
-      summary: Get main image
-      description: get the main image of a recipe
-      operationId: getMainImage
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "./models.yaml#/components/schemas/recipeImage"
-      security:
-        - Cookie: [ viewer ]
-    put:
-      tags: [ recipes ]
-      summary: Set main image
-      description: set the main image of a recipe
-      operationId: setMainImage
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: integer
-              format: int64
-        required: true
-      responses:
-        204:
-          description: No Content
-      security:
-        - Cookie: [ editor ]
-      x-codegen-request-body-name: imageId
   /recipes/{recipeId}/images:
     parameters:
       - name: recipeId
@@ -383,7 +343,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/recipeImage"
+                  type: string
       security:
         - Cookie: [ viewer ]
     post:
@@ -402,15 +362,15 @@ paths:
       responses:
         201:
           description: Created
-          content:
-            application/json:
+          headers:
+            Location:
               schema:
-                $ref: "./models.yaml#/components/schemas/recipeImage"
+                type: string
         400:
           description: Bad Request
       security:
         - Cookie: [ editor ]
-  /recipes/{recipeId}/images/{imageId}:
+  /recipes/{recipeId}/images/{name}:
     parameters:
       - name: recipeId
         in: path
@@ -418,21 +378,27 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: imageId
+      - name: name
         in: path
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+          # Disallow path separator characters and ..
+          pattern: "^(?!.*[\\/]|\\.\\.).*$"
     patch:
       tags: [ recipes ]
       summary: Optimize recipe image
       description: optimize an existing image from a recipe
       operationId: optimizeImage
       responses:
-        204:
-          description: No Content
-          content: {}
+        200:
+          description: OK
+          headers:
+            Location:
+              schema:
+                type: string
+        400:
+          description: Bad Request
       security:
         - Cookie: [ admin ]
     delete:
@@ -443,6 +409,8 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/links:

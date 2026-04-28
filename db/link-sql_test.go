@@ -123,20 +123,20 @@ func Test_Link_List(t *testing.T) {
 			{
 				ID:            utils.GetPtr[int64](1),
 				Name:          "My Linked Recipe",
-				State:         utils.GetPtr(models.Active),
+				State:         models.Active,
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
 				AverageRating: utils.GetPtr[float32](2.5),
-				ThumbnailURL:  nil,
+				MainImageName: "",
 			},
 			{
 				ID:            utils.GetPtr[int64](2),
 				Name:          "My Other Linked Recipe",
-				State:         utils.GetPtr(models.Archived),
+				State:         models.Archived,
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
 				AverageRating: utils.GetPtr[float32](4),
-				ThumbnailURL:  nil,
+				MainImageName: "",
 			},
 		}, nil, nil},
 		{0, nil, sql.ErrNoRows, ErrNotFound},
@@ -151,11 +151,11 @@ func Test_Link_List(t *testing.T) {
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*thumbnail_url .* ORDER BY .*name ASC").WithArgs(test.recipeID)
+			query := dbmock.ExpectQuery("SELECT .*id, .*name, .*current_state, .*created_at, .*modified_at, .*avg_rating, .*main_image_name .* ORDER BY .*name ASC").WithArgs(test.recipeID)
 			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "thumbnail_url"})
+				rows := sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "main_image_name"})
 				for _, recipe := range test.expectedResult {
-					rows.AddRow(recipe.ID, recipe.Name, recipe.State, recipe.CreatedAt, recipe.ModifiedAt, recipe.AverageRating, recipe.ThumbnailURL)
+					rows.AddRow(recipe.ID, recipe.Name, recipe.State, recipe.CreatedAt, recipe.ModifiedAt, recipe.AverageRating, recipe.MainImageName)
 				}
 				query.WillReturnRows(rows)
 			} else {

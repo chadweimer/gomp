@@ -255,3 +255,21 @@ export function sanitizeHTML(html: string) {
 export function scaleValue(value: number | null | undefined, divider: number, decimalPlaces: number) {
   return ((value ?? 0) / divider).toFixed(decimalPlaces);
 }
+
+export function getRecipeImageUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
+  if (isNull(recipeId) || isNull(imageName)) {
+    return '';
+  }
+
+  const encodedName = encodeURIComponent(imageName);
+  return `/uploads/recipes/${recipeId}/images/${encodedName}`;
+}
+
+export function getRecipeThumbnailUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
+  if (isNull(recipeId) || isNull(imageName)) {
+    return '';
+  }
+
+  const encodedName = encodeURIComponent(imageName);
+  return `/uploads/recipes/${recipeId}/thumbs/${encodedName}`;
+}

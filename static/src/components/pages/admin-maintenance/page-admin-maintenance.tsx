@@ -130,11 +130,9 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
 
             const images = await recipesApi.getImages({ recipeId: recipe.id });
             for (const image of images) {
-              if (isNull(image.id)) continue;
-
               await recipesApi.optimizeImage({
                 recipeId: recipe.id,
-                imageId: image.id
+                name: image
               });
             }
           }

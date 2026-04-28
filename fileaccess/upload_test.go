@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io/fs"
 	"path/filepath"
 	"testing"
 
@@ -271,6 +272,93 @@ func Test_DeleteAll(t *testing.T) {
 	}
 }
 
+func Test_List(t *testing.T) {
+	tests := []struct {
+		name        string
+		recipeID    int64
+		entries     []fs.DirEntry
+		listErr     error
+		expectError bool
+		expected    []string
+	}{
+		{name: "No Files", recipeID: 123, entries: []fs.DirEntry{}, expected: []string{}},
+		{
+			name:     "With Files",
+			recipeID: 42,
+			entries: []fs.DirEntry{
+				testDirEntry{name: "a.jpeg", dir: false},
+				testDirEntry{name: "b.png", dir: false},
+				testDirEntry{name: "c.png", dir: false},
+			},
+			expected: []string{"a.jpeg", "b.png", "c.png"},
+		},
+		{
+			name:     "With Files and Dirs",
+			recipeID: 42,
+			entries: []fs.DirEntry{
+				testDirEntry{name: "a.jpeg", dir: false},
+				testDirEntry{name: "b.png", dir: false},
+				testDirEntry{name: "subdir", dir: true},
+				testDirEntry{name: "subdir/c.png", dir: true},
+			},
+			expected: []string{"a.jpeg", "b.png"},
+		},
+		{name: "Error", recipeID: 7, listErr: errors.New("driver failure"), expectError: true},
+		{name: "Not Found", recipeID: 7, listErr: fs.ErrNotExist, expectError: false, expected: []string{}},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			drv := fileaccessmock.NewMockDriver(ctrl)
+			dirPath := getDirPathForImage(tt.recipeID)
+
+			if tt.listErr != nil {
+				drv.EXPECT().List(dirPath).Return(nil, tt.listErr).Times(1)
+			} else {
+				drv.EXPECT().List(dirPath).Return(tt.entries, nil).Times(1)
+			}
+
+			imgCfg := ImageConfig{
+				ImageQuality:     models.ImageQualityOriginal,
+				ImageSize:        200,
+				ThumbnailQuality: models.ImageQualityMedium,
+				ThumbnailSize:    50,
+			}
+			uploader, err := CreateImageUploader(drv, imgCfg)
+			if err != nil {
+				t.Fatalf("CreateImageUploader: %v", err)
+			}
+
+			got, err := uploader.List(tt.recipeID)
+			if tt.expectError {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				if !errors.Is(err, tt.listErr) {
+					t.Fatalf("expected wrapped error to be testErr, got: %v", err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("List returned error: %v", err)
+			}
+			if len(got) != len(tt.expected) {
+				t.Fatalf("expected %d files, got %d: %v", len(tt.expected), len(got), got)
+			}
+			for i := range tt.expected {
+				if got[i] != tt.expected[i] {
+					t.Fatalf("unexpected file list: %v", got)
+				}
+			}
+		})
+	}
+}
+
 func Test_fit(t *testing.T) {
 	type testArgs struct {
 		caseName string
@@ -357,3 +445,18 @@ func Test_cover(t *testing.T) {
 		})
 	}
 }
+
+type testDirEntry struct {
+	name string
+	dir  bool
+}
+
+func (t testDirEntry) Name() string { return t.name }
+func (t testDirEntry) IsDir() bool  { return t.dir }
+func (t testDirEntry) Type() fs.FileMode {
+	if t.dir {
+		return fs.ModeDir
+	}
+	return 0
+}
+func (testDirEntry) Info() (fs.FileInfo, error) { return nil, nil }

@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop } from '@stencil/core';
 import { RecipeCompact, RecipeState } from '../../generated';
-import { isNull, isNullOrEmpty } from '../../helpers/utils';
+import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-card',
@@ -10,7 +10,8 @@ import { isNull, isNullOrEmpty } from '../../helpers/utils';
 export class RecipeCard {
   @Prop() recipe: RecipeCompact = {
     name: '',
-    thumbnailUrl: '',
+    state: RecipeState.Active,
+    mainImageName: '',
     averageRating: 0,
   };
   @Prop() size: 'large' | 'small' = 'large';
@@ -19,7 +20,7 @@ export class RecipeCard {
     return (
       <Host>
         <ion-card href={isNull(this.recipe?.id) ? '' : `/recipes/${this.recipe?.id}`} class={{ zoom: true, [this.size]: true }}>
-          <ion-img class={{ image: true, hidden: isNullOrEmpty(this.recipe?.thumbnailUrl) }} alt="" src={this.recipe?.thumbnailUrl} />
+          <ion-img class={{ image: true, hidden: isNullOrEmpty(this.recipe?.mainImageName) }} alt="" src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)} />
           <ion-card-header class="header">
             <ion-card-title class="single-line title">
               {this.recipe?.name}

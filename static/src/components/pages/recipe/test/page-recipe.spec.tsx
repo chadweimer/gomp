@@ -2,6 +2,7 @@ import { render, h, describe, it, expect } from '@stencil/vitest';
 import { fetchMocker } from '../../../../../vitest.setup';
 import { Recipe } from '../../../../components';
 import '../page-recipe';
+import { RecipeState } from '../../../../generated';
 
 describe('page-recipe', () => {
   it('builds', async () => {
@@ -9,15 +10,17 @@ describe('page-recipe', () => {
       if (req.url.match(/\/recipes\/\d+$/)) {
         const recipeObject: Recipe = {
           id: 1,
-          name: "Pancakes",
-          servingSize: "4",
-          time: "30 minutes",
-          nutritionInfo: "...",
-          ingredients: "...",
-          directions: "...",
-          storageInstructions: "...",
-          sourceUrl: "...",
-          tags: ["breakfast"],
+          name: 'Pancakes',
+          state: RecipeState.Active,
+          servingSize: '4',
+          time: '30 minutes',
+          nutritionInfo: '...',
+          ingredients: '...',
+          directions: '...',
+          storageInstructions: '...',
+          sourceUrl: '...',
+          mainImageName: '',
+          tags: ['breakfast'],
         };
         return {
           status: 200,
