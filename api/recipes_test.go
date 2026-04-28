@@ -381,50 +381,6 @@ func Test_SetRating(t *testing.T) {
 	}
 }
 
-func Test_GetAllTags(t *testing.T) {
-	type testArgs struct {
-		expectedTags  map[string]int
-		expectedError error
-	}
-
-	tests := []testArgs{
-		{
-			map[string]int{"tag1": 2, "tag2": 3},
-			nil,
-		},
-		{map[string]int{}, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
-			if test.expectedError != nil {
-				recipesDriver.EXPECT().ListAllTags(t.Context()).Return(nil, test.expectedError)
-			} else {
-				recipesDriver.EXPECT().ListAllTags(t.Context()).Return(&test.expectedTags, nil)
-			}
-
-			// Act
-			resp, err := api.GetAllTags(t.Context(), GetAllTagsRequestObject{})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: expected error: %v, received error '%v'", test, test.expectedError, err)
-			} else if err == nil {
-				got, ok := resp.(GetAllTags200JSONResponse)
-				if !ok {
-					t.Errorf("test %v: invalid response", test)
-				}
-				if !reflect.DeepEqual(got, GetAllTags200JSONResponse(test.expectedTags)) {
-					t.Errorf("test %v: got = %v, want %v", test, got, test.expectedTags)
-				}
-			}
-		})
-	}
-}
 func Test_Find(t *testing.T) {
 	type testArgs struct {
 		params               FindParams

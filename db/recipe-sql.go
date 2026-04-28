@@ -33,7 +33,7 @@ func (d *sqlRecipeDriver) Create(ctx context.Context, recipe *models.Recipe) err
 	})
 }
 
-func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExtContext) error {
+func (*sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExtContext) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time) " +
 		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
 
@@ -44,7 +44,7 @@ func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe,
 	}
 
 	for _, tag := range recipe.Tags {
-		if err := d.createTagImpl(ctx, *recipe.ID, tag, db); err != nil {
+		if err := createTagForRecipe(ctx, *recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("adding tags to new recipe: %w", err)
 		}
 	}
@@ -61,7 +61,7 @@ func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, e
 			return nil, err
 		}
 
-		tags, err := d.ListTags(ctx, id)
+		tags, err := listTagsForRecipe(ctx, id, q)
 		if err != nil {
 			return nil, fmt.Errorf("reading tags for recipe: %w", err)
 		}
@@ -77,7 +77,7 @@ func (d *sqlRecipeDriver) Update(ctx context.Context, recipe *models.Recipe) err
 	})
 }
 
-func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExecerContext) error {
+func (*sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExecerContext) error {
 	if recipe.ID == nil {
 		return ErrMissingID
 	}
@@ -92,11 +92,11 @@ func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe,
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if err = d.deleteAllTagsImpl(ctx, *recipe.ID, db); err != nil {
+	if err = deleteAllTagsFromRecipe(ctx, *recipe.ID, db); err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %w", err)
 	}
 	for _, tag := range recipe.Tags {
-		if err = d.createTagImpl(ctx, *recipe.ID, tag, db); err != nil {
+		if err = createTagForRecipe(ctx, *recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("updating tags on recipe: %w", err)
 		}
 	}
@@ -300,51 +300,4 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 	}
 
 	return stmt
-}
-
-func (*sqlRecipeDriver) createTagImpl(ctx context.Context, recipeID int64, tag string, db sqlx.ExecerContext) error {
-	_, err := db.ExecContext(ctx,
-		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
-		recipeID, tag)
-	return err
-}
-
-func (*sqlRecipeDriver) deleteAllTagsImpl(ctx context.Context, recipeID int64, db sqlx.ExecerContext) error {
-	_, err := db.ExecContext(ctx,
-		"DELETE FROM recipe_tag WHERE recipe_id = $1",
-		recipeID)
-	return err
-}
-
-func (d *sqlRecipeDriver) ListTags(ctx context.Context, recipeID int64) (*[]string, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*[]string, error) {
-		tags := make([]string, 0)
-		if err := sqlx.SelectContext(ctx, db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
-			return nil, err
-		}
-
-		return &tags, nil
-	})
-}
-
-func (d *sqlRecipeDriver) ListAllTags(ctx context.Context) (*map[string]int, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*map[string]int, error) {
-		rows, err := db.QueryContext(ctx, "SELECT tag, count(tag) as num FROM recipe_tag GROUP BY tag")
-		if err != nil {
-			return nil, err
-		}
-		defer rows.Close()
-
-		tags := make(map[string]int)
-		for rows.Next() {
-			var tag string
-			var count int
-			if err := rows.Scan(&tag, &count); err != nil {
-				return nil, fmt.Errorf("scanning tag row: %w", err)
-			}
-			tags[tag] = count
-		}
-
-		return &tags, nil
-	})
 }
