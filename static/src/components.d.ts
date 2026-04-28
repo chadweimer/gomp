@@ -127,7 +127,7 @@ export namespace Components {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     averageRating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,   }
          */
         "recipe": RecipeCompact;
         /**
@@ -137,7 +137,7 @@ export namespace Components {
     }
     interface RecipeEditor {
         /**
-          * @default {     name: '',     state: RecipeState.Active,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
+          * @default {     name: '',     state: RecipeState.Active,     rating: 0,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe": Recipe;
     }
@@ -149,10 +149,6 @@ export namespace Components {
     }
     interface RecipePrint {
         /**
-          * @default 0
-         */
-        "rating": number;
-        /**
           * @default null
          */
         "recipe": Recipe | null;
@@ -162,10 +158,6 @@ export namespace Components {
           * @default []
          */
         "links": RecipeCompact[];
-        /**
-          * @default 0
-         */
-        "rating": number;
         /**
           * @default false
          */
@@ -635,7 +627,7 @@ declare namespace LocalJSX {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     averageRating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,   }
          */
         "recipe"?: RecipeCompact;
         /**
@@ -645,7 +637,7 @@ declare namespace LocalJSX {
     }
     interface RecipeEditor {
         /**
-          * @default {     name: '',     state: RecipeState.Active,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
+          * @default {     name: '',     state: RecipeState.Active,     rating: 0,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe"?: Recipe;
     }
@@ -656,10 +648,6 @@ declare namespace LocalJSX {
         "parentRecipeId"?: number;
     }
     interface RecipePrint {
-        /**
-          * @default 0
-         */
-        "rating"?: number;
         /**
           * @default null
          */
@@ -673,10 +661,6 @@ declare namespace LocalJSX {
         "onDeleteLinkClicked"?: (event: RecipeViewerCustomEvent<RecipeCompact>) => void;
         "onRatingSelected"?: (event: RecipeViewerCustomEvent<number>) => void;
         "onTagClicked"?: (event: RecipeViewerCustomEvent<string>) => void;
-        /**
-          * @default 0
-         */
-        "rating"?: number;
         /**
           * @default false
          */
@@ -769,11 +753,7 @@ declare namespace LocalJSX {
     interface RecipeLinkEditorAttributes {
         "parentRecipeId": number;
     }
-    interface RecipePrintAttributes {
-        "rating": number;
-    }
     interface RecipeViewerAttributes {
-        "rating": number;
         "readonly": boolean;
     }
     interface SearchFilterEditorAttributes {
@@ -813,7 +793,7 @@ declare namespace LocalJSX {
         "recipe-card": Omit<RecipeCard, keyof RecipeCardAttributes> & { [K in keyof RecipeCard & keyof RecipeCardAttributes]?: RecipeCard[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `attr:${K}`]?: RecipeCardAttributes[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `prop:${K}`]?: RecipeCard[K] };
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": Omit<RecipeLinkEditor, keyof RecipeLinkEditorAttributes> & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes]?: RecipeLinkEditor[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `attr:${K}`]?: RecipeLinkEditorAttributes[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `prop:${K}`]?: RecipeLinkEditor[K] };
-        "recipe-print": Omit<RecipePrint, keyof RecipePrintAttributes> & { [K in keyof RecipePrint & keyof RecipePrintAttributes]?: RecipePrint[K] } & { [K in keyof RecipePrint & keyof RecipePrintAttributes as `attr:${K}`]?: RecipePrintAttributes[K] } & { [K in keyof RecipePrint & keyof RecipePrintAttributes as `prop:${K}`]?: RecipePrint[K] };
+        "recipe-print": RecipePrint;
         "recipe-viewer": Omit<RecipeViewer, keyof RecipeViewerAttributes> & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes]?: RecipeViewer[K] } & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes as `attr:${K}`]?: RecipeViewerAttributes[K] } & { [K in keyof RecipeViewer & keyof RecipeViewerAttributes as `prop:${K}`]?: RecipeViewer[K] };
         "search-filter-editor": Omit<SearchFilterEditor, keyof SearchFilterEditorAttributes> & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes]?: SearchFilterEditor[K] } & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes as `attr:${K}`]?: SearchFilterEditorAttributes[K] } & { [K in keyof SearchFilterEditor & keyof SearchFilterEditorAttributes as `prop:${K}`]?: SearchFilterEditor[K] };
         "tags-input": Omit<TagsInput, keyof TagsInputAttributes> & { [K in keyof TagsInput & keyof TagsInputAttributes]?: TagsInput[K] } & { [K in keyof TagsInput & keyof TagsInputAttributes as `attr:${K}`]?: TagsInputAttributes[K] } & { [K in keyof TagsInput & keyof TagsInputAttributes as `prop:${K}`]?: TagsInput[K] };

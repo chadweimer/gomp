@@ -151,19 +151,17 @@ type RecipeDriver interface {
 	// that is committed if there are not errors.
 	Update(ctx context.Context, recipe *models.Recipe) error
 
+	// Patch updates the specified fields on the recipe in the database by updating the
+	// existing record with the specified id using a dedicated transaction that is committed if there are not errors.
+	//
+	// Only the fields specified in the patch will be updated.
+	// Any field with a nil value in the patch will not be updated on the recipe.
+	Patch(ctx context.Context, id int64, patch *models.RecipePatch) error
+
 	// Delete removes the specified recipe from the database using a dedicated transaction
 	// that is committed if there are not errors. Note that this method does not delete
 	// any attachments that we associated with the deleted recipe.
 	Delete(ctx context.Context, id int64) error
-
-	// GetRating gets the current rating of the specific recipe.
-	GetRating(ctx context.Context, id int64) (*float32, error)
-
-	// SetRating adds or updates the rating of the specified recipe.
-	SetRating(ctx context.Context, id int64, rating float32) error
-
-	// SetState updates the state of the specified recipe.
-	SetState(ctx context.Context, id int64, state models.RecipeState) error
 
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
 	Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)

@@ -102,6 +102,15 @@ func (h apiHandler) SaveRecipe(ctx context.Context, request SaveRecipeRequestObj
 	return SaveRecipe204Response{}, nil
 }
 
+func (h apiHandler) PatchRecipe(ctx context.Context, request PatchRecipeRequestObject) (PatchRecipeResponseObject, error) {
+	patch := request.Body
+	if err := h.db.Recipes().Patch(ctx, request.RecipeID, patch); err != nil {
+		return nil, err
+	}
+
+	return PatchRecipe204Response{}, nil
+}
+
 func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeRequestObject) (DeleteRecipeResponseObject, error) {
 	if err := h.db.Recipes().Delete(ctx, request.RecipeID); err != nil {
 		return nil, err
@@ -113,29 +122,4 @@ func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeReques
 	}
 
 	return DeleteRecipe204Response{}, nil
-}
-
-func (h apiHandler) SetState(ctx context.Context, request SetStateRequestObject) (SetStateResponseObject, error) {
-	if err := h.db.Recipes().SetState(ctx, request.RecipeID, *request.Body); err != nil {
-		return nil, err
-	}
-
-	return SetState204Response{}, nil
-}
-
-func (h apiHandler) GetRating(ctx context.Context, request GetRatingRequestObject) (GetRatingResponseObject, error) {
-	rating, err := h.db.Recipes().GetRating(ctx, request.RecipeID)
-	if err != nil {
-		return nil, err
-	}
-
-	return GetRating200JSONResponse(*rating), nil
-}
-
-func (h apiHandler) SetRating(ctx context.Context, request SetRatingRequestObject) (SetRatingResponseObject, error) {
-	if err := h.db.Recipes().SetRating(ctx, request.RecipeID, *request.Body); err != nil {
-		return nil, err
-	}
-
-	return SetRating204Response{}, nil
 }

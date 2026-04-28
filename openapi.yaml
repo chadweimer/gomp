@@ -312,6 +312,23 @@ paths:
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: recipe
+    patch:
+      tags: [ recipes ]
+      summary: Patch recipe
+      description: partially modify an existing recipe
+      operationId: patchRecipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/recipePatch"
+        required: true
+      responses:
+        204:
+          description: No Content
+      security:
+        - Cookie: [ editor ]
+      x-codegen-request-body-name: recipePatch
     delete:
       tags: [ recipes ]
       summary: Delete recipe
@@ -557,72 +574,6 @@ paths:
           description: No Content
       security:
         - Cookie: [ editor ]
-  /recipes/{recipeId}/rating:
-    parameters:
-      - name: recipeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-    get:
-      tags: [ recipes ]
-      summary: Get recipe rating
-      description: get the current rating of a recipe
-      operationId: getRating
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: number
-                format: float
-      security:
-        - Cookie: [ viewer ]
-    put:
-      tags: [ recipes ]
-      summary: Set recipe rating
-      description: modify the rating of a recipe
-      operationId: setRating
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: number
-              format: float
-        required: true
-      responses:
-        204:
-          description: No Content
-      security:
-        - Cookie: [ editor ]
-      x-codegen-request-body-name: rating
-  /recipes/{recipeId}/state:
-    parameters:
-      - name: recipeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-    put:
-      tags: [ recipes ]
-      summary: Set recipe state
-      description: modify the state of a recipe
-      operationId: setState
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "./models.yaml#/components/schemas/recipeState"
-        required: true
-      responses:
-        204:
-          description: No Content
-      security:
-        - Cookie: [ editor ]
-      x-codegen-request-body-name: state
   /tags:
     get:
       tags: [ recipes ]

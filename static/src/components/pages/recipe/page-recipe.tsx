@@ -14,7 +14,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   @Prop() recipeId: number = 0;
 
   @State() recipe: Recipe | null = null;
-  @State() recipeRating: number = 0;
   @State() links: RecipeCompact[] = [];
   @State() images: string[] = [];
   @State() notes: Note[] = [];
@@ -33,14 +32,13 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   render() {
     return (
       <Host>
-        <recipe-print class="show-on-print-only" recipe={this.recipe} rating={this.recipeRating} />
+        <recipe-print class="show-on-print-only" recipe={this.recipe} />
         <ion-content class="hide-on-print">
           <ion-grid class="no-pad">
             <ion-row>
               <ion-col size="12" size-lg="9" size-xl="8" offset-xl="2">
                 <recipe-viewer
                   recipe={this.recipe}
-                  rating={this.recipeRating}
                   links={this.links}
                   readonly={!isAuthorized(state.currentUser, AccessLevel.Editor)}
                   onRatingSelected={e => void this.onRatingSelected(e.detail)}
@@ -179,7 +177,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async load() {
     await this.loadRecipe();
-    await this.loadRating();
     await this.loadLinks();
     await this.loadImages();
     await this.loadNotes();
@@ -192,17 +189,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
     } catch (ex) {
       this.recipe = null;
-      console.error(ex);
-    }
-  }
-
-  private async loadRating() {
-    try {
-      this.recipeRating = await recipesApi.getRating({
-        recipeId: this.recipeId
-      });
-    } catch (ex) {
-      this.recipeRating = 0;
       console.error(ex);
     }
   }
@@ -265,9 +251,9 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async setRecipeState(state: RecipeState) {
     try {
-      await recipesApi.setState({
+      await recipesApi.patchRecipe({
         recipeId: this.recipeId,
-        state: state
+        recipePatch: { state: state }
       });
     } catch (ex) {
       console.error(ex);
@@ -378,9 +364,9 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async setRating(value: number) {
     try {
-      await recipesApi.setRating({
+      await recipesApi.patchRecipe({
         recipeId: this.recipeId,
-        rating: value
+        recipePatch: { rating: value }
       });
     } catch (ex) {
       console.error(ex);
@@ -390,12 +376,9 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async setMainImage(image: string) {
     try {
-      const recipe = await recipesApi.getRecipe({
-        recipeId: this.recipeId
-      });
-      await this.saveRecipe({
-        ...recipe,
-        mainImageName: image
+      await recipesApi.patchRecipe({
+        recipeId: this.recipeId,
+        recipePatch: { mainImageName: image }
       });
     } catch (ex) {
       console.error(ex);
@@ -687,7 +670,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async onRatingSelected(rating: number) {
     await this.setRating(rating);
-    await this.loadRating();
+    await this.loadRecipe();
 
     // Update the search results since the modified recipe may be in them
     await refreshSearchResults();
