@@ -81,7 +81,7 @@ func Test_GetUser(t *testing.T) {
 				case GetUser200JSONResponse:
 					got, ok := resp.(GetUser200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetUser200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if got.ID == nil {
 						t.Error("expected non-null id")
@@ -93,7 +93,7 @@ func Test_GetUser(t *testing.T) {
 					}
 				case GetUser404Response:
 					if _, ok := resp.(GetUser404Response); !ok {
-						t.Fatalf("expected GetUser404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", expected)
@@ -169,7 +169,7 @@ func Test_GetCurrentUser(t *testing.T) {
 				case GetCurrentUser200JSONResponse:
 					got, ok := resp.(GetCurrentUser200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetCurrentUser200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if got.ID == nil {
 						t.Error("expected non-null id")
@@ -181,7 +181,7 @@ func Test_GetCurrentUser(t *testing.T) {
 					}
 				case GetCurrentUser401Response:
 					if _, ok := resp.(GetCurrentUser401Response); !ok {
-						t.Fatalf("expected GetCurrentUser401Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", expected)
@@ -239,7 +239,7 @@ func Test_GetAllUsers(t *testing.T) {
 				case GetAllUsers200JSONResponse:
 					got, ok := resp.(GetAllUsers200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetAllUsers200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if len(got) != len(test.users) {
 						t.Errorf("expected length: %d, actual length: %d", len(test.users), len(got))
@@ -316,7 +316,7 @@ func Test_AddUser(t *testing.T) {
 				case AddUser201JSONResponse:
 					got, ok := resp.(AddUser201JSONResponse)
 					if !ok {
-						t.Fatalf("expected AddUser201JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if got.Username != expectedUser.Username {
 						t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, got.Username)
@@ -449,19 +449,19 @@ func Test_SaveUser(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case SaveUser204Response:
 					if _, ok := resp.(SaveUser204Response); !ok {
-						t.Fatalf("expected SaveUser204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveUser400Response:
 					if _, ok := resp.(SaveUser400Response); !ok {
-						t.Fatalf("expected SaveUser400Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveUser403Response:
 					if _, ok := resp.(SaveUser403Response); !ok {
-						t.Fatalf("expected SaveUser403Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveUser404Response:
 					if _, ok := resp.(SaveUser404Response); !ok {
-						t.Fatalf("expected SaveUser404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
@@ -539,15 +539,15 @@ func Test_DeleteUser(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case DeleteUser204Response:
 					if _, ok := resp.(DeleteUser204Response); !ok {
-						t.Fatalf("expected DeleteUser204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case DeleteUser403Response:
 					if _, ok := resp.(DeleteUser403Response); !ok {
-						t.Fatalf("expected DeleteUser403Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case DeleteUser404Response:
 					if _, ok := resp.(DeleteUser404Response); !ok {
-						t.Fatalf("expected DeleteUser404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
@@ -617,11 +617,11 @@ func Test_ChangePassword(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case ChangePassword204Response:
 					if _, ok := resp.(ChangePassword204Response); !ok {
-						t.Fatalf("expected ChangePassword204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case ChangePassword403Response:
 					if _, ok := resp.(ChangePassword403Response); !ok {
-						t.Fatalf("expected ChangePassword403Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
@@ -713,15 +713,15 @@ func Test_ChangeUserPassword(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case ChangeUserPassword204Response:
 					if _, ok := resp.(ChangeUserPassword204Response); !ok {
-						t.Fatalf("expected ChangeUserPassword204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case ChangeUserPassword403Response:
 					if _, ok := resp.(ChangeUserPassword403Response); !ok {
-						t.Fatalf("expected ChangeUserPassword403Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case ChangeUserPassword404Response:
 					if _, ok := resp.(ChangeUserPassword404Response); !ok {
-						t.Fatalf("expected ChangeUserPassword404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)

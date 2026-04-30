@@ -70,7 +70,7 @@ func Test_GetLinks(t *testing.T) {
 				case GetLinks200JSONResponse:
 					got, ok := resp.(GetLinks200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetLinks200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if len(got) != len(expected) {
 						t.Errorf("expected length: %d, actual length: %d", len(expected), len(got))
@@ -84,7 +84,7 @@ func Test_GetLinks(t *testing.T) {
 					}
 				case GetLinks404Response:
 					if _, ok := resp.(GetLinks404Response); !ok {
-						t.Fatalf("expected GetLinks404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -153,11 +153,11 @@ func Test_AddLink(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case AddLink204Response:
 					if _, ok := resp.(AddLink204Response); !ok {
-						t.Fatalf("expected AddLink204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case AddLink404Response:
 					if _, ok := resp.(AddLink404Response); !ok {
-						t.Fatalf("expected AddLink404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -226,11 +226,11 @@ func Test_DeleteLink(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case DeleteLink204Response:
 					if _, ok := resp.(DeleteLink204Response); !ok {
-						t.Fatalf("expected DeleteLink204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case DeleteLink404Response:
 					if _, ok := resp.(DeleteLink404Response); !ok {
-						t.Fatalf("expected DeleteLink404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)

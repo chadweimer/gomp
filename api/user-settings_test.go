@@ -79,7 +79,7 @@ func Test_GetUserSettings(t *testing.T) {
 				case GetUserSettings200JSONResponse:
 					got, ok := resp.(GetUserSettings200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetUserSettings200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if got.UserID == nil {
 						t.Error("expected non-null id")
@@ -93,7 +93,7 @@ func Test_GetUserSettings(t *testing.T) {
 					}
 				case GetUserSettings404Response:
 					if _, ok := resp.(GetUserSettings404Response); !ok {
-						t.Fatalf("expected GetUserSettings404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", test.expectedResponse)
@@ -160,7 +160,7 @@ func Test_GetSettings(t *testing.T) {
 				case GetSettings200JSONResponse:
 					got, ok := resp.(GetSettings200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetUserSettings200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if got.UserID == nil {
 						t.Error("expected non-null id")
@@ -248,11 +248,11 @@ func Test_SaveSettings(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case SaveSettings204Response:
 					if _, ok := resp.(SaveSettings204Response); !ok {
-						t.Fatalf("expected response type SaveSettings204Response, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 				case SaveSettings400Response:
 					if _, ok := resp.(SaveSettings400Response); !ok {
-						t.Fatalf("expected response type SaveSettings400Response, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", test.expectedResponse)
@@ -362,15 +362,15 @@ func Test_SaveUserSettings(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case SaveUserSettings204Response:
 					if _, ok := resp.(SaveUserSettings204Response); !ok {
-						t.Fatalf("expected response type SaveUserSettings204Response, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 				case SaveUserSettings404Response:
 					if _, ok := resp.(SaveUserSettings404Response); !ok {
-						t.Fatalf("expected response type SaveUserSettings404Response, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 				case SaveUserSettings400Response:
 					if _, ok := resp.(SaveUserSettings400Response); !ok {
-						t.Fatalf("expected response type SaveUserSettings400Response, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", test.expectedResponse)

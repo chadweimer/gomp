@@ -80,12 +80,12 @@ func Test_GetUserSearchFilters(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case GetUserSearchFilters404Response:
 					if _, ok := resp.(GetUserSearchFilters404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case GetUserSearchFilters200JSONResponse:
 					got, ok := resp.(GetUserSearchFilters200JSONResponse)
 					if !ok {
-						t.Fatalf("expected response type GetUserSearchFilters200JSONResponse, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 					if len(got) != len(test.filters) {
 						t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(got))
@@ -157,7 +157,7 @@ func Test_GetSearchFilters(t *testing.T) {
 				case GetSearchFilters200JSONResponse:
 					got, ok := resp.(GetSearchFilters200JSONResponse)
 					if !ok {
-						t.Fatalf("expected response type GetSearchFilters200JSONResponse, got %T", resp)
+						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
 					if len(got) != len(test.filters) {
 						t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(got))
@@ -229,11 +229,11 @@ func Test_GetUserSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case GetUserSearchFilter404Response:
 					if _, ok := resp.(GetUserSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case GetUserSearchFilter200JSONResponse:
 					if _, ok := resp.(GetUserSearchFilter200JSONResponse); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -303,11 +303,11 @@ func Test_GetSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case GetSearchFilter404Response:
 					if _, ok := resp.(GetSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case GetSearchFilter200JSONResponse:
 					if _, ok := resp.(GetSearchFilter200JSONResponse); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -384,15 +384,15 @@ func Test_AddUserSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case AddUserSearchFilter201JSONResponse:
 					if _, ok := resp.(AddUserSearchFilter201JSONResponse); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case AddUserSearchFilter400Response:
 					if _, ok := resp.(AddUserSearchFilter400Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case AddUserSearchFilter404Response:
 					if _, ok := resp.(AddUserSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -462,11 +462,11 @@ func Test_AddSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case AddSearchFilter201JSONResponse:
 					if _, ok := resp.(AddSearchFilter201JSONResponse); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case AddSearchFilter400Response:
 					if _, ok := resp.(AddSearchFilter400Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -559,15 +559,15 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case SaveUserSearchFilter204Response:
 					if _, ok := resp.(SaveUserSearchFilter204Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveUserSearchFilter400Response:
 					if _, ok := resp.(SaveUserSearchFilter400Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveUserSearchFilter404Response:
 					if _, ok := resp.(SaveUserSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -661,15 +661,15 @@ func Test_SaveSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case SaveSearchFilter204Response:
 					if _, ok := resp.(SaveSearchFilter204Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveSearchFilter400Response:
 					if _, ok := resp.(SaveSearchFilter400Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveSearchFilter404Response:
 					if _, ok := resp.(SaveSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -738,11 +738,11 @@ func Test_DeleteUserSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case DeleteUserSearchFilter404Response:
 					if _, ok := resp.(DeleteUserSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case DeleteUserSearchFilter204Response:
 					if _, ok := resp.(DeleteUserSearchFilter204Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -812,11 +812,11 @@ func Test_DeleteSearchFilter(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case DeleteSearchFilter404Response:
 					if _, ok := resp.(DeleteSearchFilter404Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case DeleteSearchFilter204Response:
 					if _, ok := resp.(DeleteSearchFilter204Response); !ok {
-						t.Errorf("expected response type: %T, received response type: %T", test.expectedResponse, resp)
+						t.Errorf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)

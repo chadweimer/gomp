@@ -125,7 +125,7 @@ func Test_GetRecipe(t *testing.T) {
 				case GetRecipe200JSONResponse:
 					got, ok := resp.(GetRecipe200JSONResponse)
 					if !ok {
-						t.Fatalf("expected GetRecipe200JSONResponse, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 					if got.ID == nil {
 						t.Error("expected non-null id")
@@ -137,7 +137,7 @@ func Test_GetRecipe(t *testing.T) {
 					}
 				case GetRecipe404Response:
 					if _, ok := resp.(GetRecipe404Response); !ok {
-						t.Fatalf("expected GetRecipe404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
@@ -274,15 +274,15 @@ func Test_SaveRecipe(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case SaveRecipe204Response:
 					if _, ok := resp.(SaveRecipe204Response); !ok {
-						t.Fatalf("expected SaveRecipe204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveRecipe400Response:
 					if _, ok := resp.(SaveRecipe400Response); !ok {
-						t.Fatalf("expected SaveRecipe400Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case SaveRecipe404Response:
 					if _, ok := resp.(SaveRecipe404Response); !ok {
-						t.Fatalf("expected SaveRecipe404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
@@ -356,11 +356,11 @@ func Test_PatchRecipe(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case PatchRecipe204Response:
 					if _, ok := resp.(PatchRecipe204Response); !ok {
-						t.Fatalf("expected PatchRecipe204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case PatchRecipe404Response:
 					if _, ok := resp.(PatchRecipe404Response); !ok {
-						t.Fatalf("expected PatchRecipe404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
@@ -426,11 +426,11 @@ func Test_DeleteRecipe(t *testing.T) {
 				switch test.expectedResponse.(type) {
 				case DeleteRecipe204Response:
 					if _, ok := resp.(DeleteRecipe204Response); !ok {
-						t.Fatalf("expected DeleteRecipe204Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				case DeleteRecipe404Response:
 					if _, ok := resp.(DeleteRecipe404Response); !ok {
-						t.Fatalf("expected DeleteRecipe404Response, got %T", resp)
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
