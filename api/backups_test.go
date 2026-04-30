@@ -428,7 +428,7 @@ func TestRestoreFromBackup(t *testing.T) {
 			}
 
 			request := RestoreFromBackupRequestObject{
-				FileName: tt.fileName,
+				Name: tt.fileName,
 			}
 
 			// Act
@@ -506,7 +506,7 @@ func TestDeleteBackup(t *testing.T) {
 			}
 
 			request := DeleteBackupRequestObject{
-				FileName: tt.fileName,
+				Name: tt.fileName,
 			}
 
 			// Act

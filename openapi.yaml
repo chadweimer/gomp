@@ -151,13 +151,15 @@ paths:
           description: Internal Server Error
       security:
         - Cookie: [ admin ]
-  /backups/{fileName}:
+  /backups/{name}:
     parameters:
-      - name: fileName
+      - name: name
         in: path
         required: true
         schema:
           type: string
+          # Disallow path separator characters and ..
+          pattern: "^(?!.*[\\/]|\\.\\.).*$"
     post:
       tags: [ app ]
       summary: Restore from backup
