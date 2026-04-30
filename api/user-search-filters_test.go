@@ -54,12 +54,12 @@ func Test_GetUserSearchFilters(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				typedResp, ok := resp.(GetSearchFilters200JSONResponse)
+				got, ok := resp.(GetSearchFilters200JSONResponse)
 				if !ok {
 					t.Error("invalid response")
 				}
-				if len(typedResp) != len(test.filters) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(typedResp))
+				if len(got) != len(test.filters) {
+					t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(got))
 				}
 			}
 		})
@@ -104,12 +104,12 @@ func Test_GetSearchFilters(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				typedResp, ok := resp.(GetUserSearchFilters200JSONResponse)
+				got, ok := resp.(GetUserSearchFilters200JSONResponse)
 				if !ok {
 					t.Error("invalid response")
 				}
-				if len(typedResp) != len(test.filters) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(typedResp))
+				if len(got) != len(test.filters) {
+					t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(got))
 				}
 			}
 		})

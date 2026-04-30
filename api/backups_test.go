@@ -111,9 +111,8 @@ func TestCreateBackup(t *testing.T) {
 				t.Fatal("response is nil")
 			}
 
-			_, ok := resp.(CreateBackup201Response)
-			if !ok {
-				t.Errorf("expected CreateBackup201Response, got %T", resp)
+			if _, ok := resp.(CreateBackup201Response); !ok {
+				t.Fatalf("expected CreateBackup201Response, got %T", resp)
 			}
 		})
 	}
@@ -265,7 +264,7 @@ func TestGetBackups(t *testing.T) {
 			if !tt.expectError {
 				backups, ok := resp.(GetBackups200JSONResponse)
 				if !ok {
-					t.Errorf("expected GetBackups200JSONResponse, got %T", resp)
+					t.Fatalf("expected GetBackups200JSONResponse, got %T", resp)
 					return
 				}
 
@@ -273,9 +272,8 @@ func TestGetBackups(t *testing.T) {
 					t.Errorf("expected %d backups, got %d", tt.expectedCount, len(backups))
 				}
 			} else {
-				_, ok := resp.(GetBackups500Response)
-				if !ok {
-					t.Errorf("expected GetBackups500Response, got %T", resp)
+				if _, ok := resp.(GetBackups500Response); !ok {
+					t.Fatalf("expected GetBackups500Response, got %T", resp)
 				}
 			}
 		})
@@ -445,14 +443,12 @@ func TestRestoreFromBackup(t *testing.T) {
 			}
 
 			if !tt.expectError {
-				_, ok := resp.(RestoreFromBackup204Response)
-				if !ok {
-					t.Errorf("expected RestoreFromBackup204Response, got %T", resp)
+				if _, ok := resp.(RestoreFromBackup204Response); !ok {
+					t.Fatalf("expected RestoreFromBackup204Response, got %T", resp)
 				}
 			} else {
-				_, ok := resp.(RestoreFromBackup400Response)
-				if !ok {
-					t.Errorf("expected RestoreFromBackup400Response, got %T", resp)
+				if _, ok := resp.(RestoreFromBackup400Response); !ok {
+					t.Fatalf("expected RestoreFromBackup400Response, got %T", resp)
 				}
 			}
 		})
@@ -524,14 +520,12 @@ func TestDeleteBackup(t *testing.T) {
 				t.Fatal("response is nil")
 			}
 			if !tt.expectError {
-				_, ok := resp.(DeleteBackup204Response)
-				if !ok {
-					t.Errorf("expected DeleteBackup204Response, got %T", resp)
+				if _, ok := resp.(DeleteBackup204Response); !ok {
+					t.Fatalf("expected DeleteBackup204Response, got %T", resp)
 				}
 			} else {
-				_, ok := resp.(DeleteBackup400Response)
-				if !ok {
-					t.Errorf("expected DeleteBackup400Response, got %T", resp)
+				if _, ok := resp.(DeleteBackup400Response); !ok {
+					t.Fatalf("expected DeleteBackup400Response, got %T", resp)
 				}
 			}
 		})

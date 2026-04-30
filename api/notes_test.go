@@ -72,14 +72,14 @@ func Test_GetNotes(t *testing.T) {
 			} else if err == nil {
 				switch expected := test.expectedResponse.(type) {
 				case GetNotes200JSONResponse:
-					resp, ok := resp.(GetNotes200JSONResponse)
+					got, ok := resp.(GetNotes200JSONResponse)
 					if !ok {
-						t.Errorf("expected GetNotes200JSONResponse, got %T", resp)
+						t.Fatalf("expected GetNotes200JSONResponse, got %T", resp)
 					}
-					if len(resp) != len(expected) {
-						t.Errorf("expected length: %d, actual length: %d", len(expected), len(resp))
+					if len(got) != len(expected) {
+						t.Errorf("expected length: %d, actual length: %d", len(expected), len(got))
 					}
-					missingNotes, unexpectedNotes := lo.Difference(resp, expected)
+					missingNotes, unexpectedNotes := lo.Difference(got, expected)
 					if len(missingNotes) > 0 {
 						t.Errorf("missing notes: %v", missingNotes)
 					}
@@ -87,9 +87,8 @@ func Test_GetNotes(t *testing.T) {
 						t.Errorf("unexpected notes: %v", unexpectedNotes)
 					}
 				case GetNotes404Response:
-					_, ok := resp.(GetNotes404Response)
-					if !ok {
-						t.Errorf("expected GetNotes404Response, got %T", resp)
+					if _, ok := resp.(GetNotes404Response); !ok {
+						t.Fatalf("expected GetNotes404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -181,25 +180,23 @@ func Test_AddNote(t *testing.T) {
 			} else if err == nil {
 				switch expected := test.expectedResponse.(type) {
 				case AddNote201JSONResponse:
-					resp, ok := resp.(AddNote201JSONResponse)
+					got, ok := resp.(AddNote201JSONResponse)
 					if !ok {
-						t.Errorf("expected AddNote201JSONResponse, got %T", resp)
+						t.Fatalf("expected AddNote201JSONResponse, got %T", resp)
 					}
-					if resp.Text != expected.Text {
-						t.Errorf("expected text: %s, actual text: %s", expected.Text, resp.Text)
+					if got.Text != expected.Text {
+						t.Errorf("expected text: %s, actual text: %s", expected.Text, got.Text)
 					}
-					if (resp.RecipeID == nil) != (expected.RecipeID == nil) || (resp.RecipeID != nil && *resp.RecipeID != *expected.RecipeID) {
-						t.Errorf("expected recipe ID: %v, actual recipe ID: %v", expected.RecipeID, resp.RecipeID)
+					if (got.RecipeID == nil) != (expected.RecipeID == nil) || (got.RecipeID != nil && *got.RecipeID != *expected.RecipeID) {
+						t.Errorf("expected recipe ID: %v, actual recipe ID: %v", expected.RecipeID, got.RecipeID)
 					}
 				case AddNote400Response:
-					_, ok := resp.(AddNote400Response)
-					if !ok {
-						t.Errorf("expected AddNote400Response, got %T", resp)
+					if _, ok := resp.(AddNote400Response); !ok {
+						t.Fatalf("expected AddNote400Response, got %T", resp)
 					}
 				case AddNote404Response:
-					_, ok := resp.(AddNote404Response)
-					if !ok {
-						t.Errorf("expected AddNote404Response, got %T", resp)
+					if _, ok := resp.(AddNote404Response); !ok {
+						t.Fatalf("expected AddNote404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -297,19 +294,16 @@ func Test_SaveNote(t *testing.T) {
 			} else if err == nil {
 				switch test.expectedResponse.(type) {
 				case SaveNote204Response:
-					_, ok := resp.(SaveNote204Response)
-					if !ok {
-						t.Errorf("expected SaveNote204Response, got %T", resp)
+					if _, ok := resp.(SaveNote204Response); !ok {
+						t.Fatalf("expected SaveNote204Response, got %T", resp)
 					}
 				case SaveNote400Response:
-					_, ok := resp.(SaveNote400Response)
-					if !ok {
-						t.Errorf("expected SaveNote400Response, got %T", resp)
+					if _, ok := resp.(SaveNote400Response); !ok {
+						t.Fatalf("expected SaveNote400Response, got %T", resp)
 					}
 				case SaveNote404Response:
-					_, ok := resp.(SaveNote404Response)
-					if !ok {
-						t.Errorf("expected SaveNote404Response, got %T", resp)
+					if _, ok := resp.(SaveNote404Response); !ok {
+						t.Fatalf("expected SaveNote404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -377,14 +371,12 @@ func Test_DeleteNote(t *testing.T) {
 			} else if err == nil {
 				switch test.expectedResponse.(type) {
 				case DeleteNote204Response:
-					_, ok := resp.(DeleteNote204Response)
-					if !ok {
-						t.Errorf("expected DeleteNote204Response, got %T", resp)
+					if _, ok := resp.(DeleteNote204Response); !ok {
+						t.Fatalf("expected DeleteNote204Response, got %T", resp)
 					}
 				case DeleteNote404Response:
-					_, ok := resp.(DeleteNote404Response)
-					if !ok {
-						t.Errorf("expected DeleteNote404Response, got %T", resp)
+					if _, ok := resp.(DeleteNote404Response); !ok {
+						t.Fatalf("expected DeleteNote404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)

@@ -52,19 +52,19 @@ func Test_GetUserSettings(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(GetUserSettings200JSONResponse)
+				got, ok := resp.(GetUserSettings200JSONResponse)
 				if !ok {
 					t.Error("invalid response")
 				}
-				if resp.UserID == nil {
+				if got.UserID == nil {
 					t.Error("expected non-null id")
-				} else if *resp.UserID != *expectedSettings.UserID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *resp.UserID)
+				} else if *got.UserID != *expectedSettings.UserID {
+					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *got.UserID)
 				}
-				if resp.HomeTitle == nil {
+				if got.HomeTitle == nil {
 					t.Error("expected non-null title")
-				} else if resp.HomeTitle != expectedSettings.HomeTitle {
-					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *resp.HomeTitle)
+				} else if *got.HomeTitle != *expectedSettings.HomeTitle {
+					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *got.HomeTitle)
 				}
 			}
 		})
@@ -108,19 +108,19 @@ func Test_GetSettings(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(GetSettings200JSONResponse)
+				got, ok := resp.(GetSettings200JSONResponse)
 				if !ok {
 					t.Error("invalid response")
 				}
-				if resp.UserID == nil {
+				if got.UserID == nil {
 					t.Error("expected non-null id")
-				} else if *resp.UserID != *expectedSettings.UserID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *resp.UserID)
+				} else if *got.UserID != *expectedSettings.UserID {
+					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *got.UserID)
 				}
-				if resp.HomeTitle == nil {
+				if got.HomeTitle == nil {
 					t.Error("expected non-null title")
-				} else if resp.HomeTitle != expectedSettings.HomeTitle {
-					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *resp.HomeTitle)
+				} else if *got.HomeTitle != *expectedSettings.HomeTitle {
+					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *got.HomeTitle)
 				}
 			}
 		})

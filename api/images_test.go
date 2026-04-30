@@ -88,14 +88,14 @@ func Test_GetImages(t *testing.T) {
 			} else if err == nil {
 				switch expected := test.expectedResponse.(type) {
 				case GetImages200JSONResponse:
-					resp, ok := resp.(GetImages200JSONResponse)
+					got, ok := resp.(GetImages200JSONResponse)
 					if !ok {
-						t.Errorf("expected GetImages200JSONResponse, got %T", resp)
+						t.Fatalf("expected GetImages200JSONResponse, got %T", resp)
 					}
-					if len(resp) != len(expected) {
-						t.Errorf("expected length: %d, actual length: %d", len(expected), len(resp))
+					if len(got) != len(expected) {
+						t.Errorf("expected length: %d, actual length: %d", len(expected), len(got))
 					}
-					missingImages, unexpectedImages := lo.Difference(resp, expected)
+					missingImages, unexpectedImages := lo.Difference(got, expected)
 					if len(missingImages) > 0 {
 						t.Errorf("missing images: %v", missingImages)
 					}
@@ -103,9 +103,8 @@ func Test_GetImages(t *testing.T) {
 						t.Errorf("unexpected images: %v", unexpectedImages)
 					}
 				case GetImages404Response:
-					_, ok := resp.(GetImages404Response)
-					if !ok {
-						t.Errorf("expected GetImages404Response, got %T", resp)
+					if _, ok := resp.(GetImages404Response); !ok {
+						t.Fatalf("expected GetImages404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
@@ -216,17 +215,16 @@ func Test_UploadImage(t *testing.T) {
 			} else if err == nil {
 				switch test.expectedResponse.(type) {
 				case UploadImage201Response:
-					resp, ok := resp.(UploadImage201Response)
+					got, ok := resp.(UploadImage201Response)
 					if !ok {
-						t.Errorf("expected UploadImage201Response, got %T", resp)
+						t.Fatalf("expected UploadImage201Response, got %T", resp)
 					}
-					if resp.Headers.Location == "" {
+					if got.Headers.Location == "" {
 						t.Error("expected non-empty Location header")
 					}
 				case UploadImage404Response:
-					_, ok := resp.(UploadImage404Response)
-					if !ok {
-						t.Errorf("expected UploadImage404Response, got %T", resp)
+					if _, ok := resp.(UploadImage404Response); !ok {
+						t.Fatalf("expected UploadImage404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
@@ -335,19 +333,16 @@ func Test_DeleteImage(t *testing.T) {
 			} else if err == nil {
 				switch test.expectedResponse.(type) {
 				case DeleteImage204Response:
-					resp, ok := resp.(DeleteImage204Response)
-					if !ok {
-						t.Errorf("expected DeleteImage204Response, got %T", resp)
+					if _, ok := resp.(DeleteImage204Response); !ok {
+						t.Fatalf("expected DeleteImage204Response, got %T", resp)
 					}
 				case DeleteImage400Response:
-					_, ok := resp.(DeleteImage400Response)
-					if !ok {
-						t.Errorf("expected DeleteImage400Response, got %T", resp)
+					if _, ok := resp.(DeleteImage400Response); !ok {
+						t.Fatalf("expected DeleteImage400Response, got %T", resp)
 					}
 				case DeleteImage404Response:
-					_, ok := resp.(DeleteImage404Response)
-					if !ok {
-						t.Errorf("expected DeleteImage404Response, got %T", resp)
+					if _, ok := resp.(DeleteImage404Response); !ok {
+						t.Fatalf("expected DeleteImage404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
@@ -516,22 +511,20 @@ func Test_OptimizeImage(t *testing.T) {
 			} else if err == nil {
 				switch test.expectedResponse.(type) {
 				case OptimizeImage204Response:
-					resp, ok := resp.(OptimizeImage204Response)
+					got, ok := resp.(OptimizeImage204Response)
 					if !ok {
-						t.Errorf("expected OptimizeImage204Response, got %T", resp)
+						t.Fatalf("expected OptimizeImage204Response, got %T", resp)
 					}
-					if resp.Headers.Location == "" {
+					if got.Headers.Location == "" {
 						t.Error("expected non-empty Location header")
 					}
 				case OptimizeImage400Response:
-					_, ok := resp.(OptimizeImage400Response)
-					if !ok {
-						t.Errorf("expected OptimizeImage400Response, got %T", resp)
+					if _, ok := resp.(OptimizeImage400Response); !ok {
+						t.Fatalf("expected OptimizeImage400Response, got %T", resp)
 					}
 				case OptimizeImage404Response:
-					_, ok := resp.(OptimizeImage404Response)
-					if !ok {
-						t.Errorf("expected OptimizeImage404Response, got %T", resp)
+					if _, ok := resp.(OptimizeImage404Response); !ok {
+						t.Fatalf("expected OptimizeImage404Response, got %T", resp)
 					}
 				default:
 					t.Errorf("unexpected response type %T", resp)
