@@ -774,6 +774,8 @@ paths:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
         401:
           description: Unauthorized
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     put:
@@ -792,6 +794,8 @@ paths:
           description: No Content
         401:
           description: Unauthorized
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
       x-codegen-request-body-name: searchFilter
@@ -805,6 +809,8 @@ paths:
           description: No Content
         401:
           description: Unauthorized
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
   /users/current/password:
@@ -885,6 +891,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     put:
@@ -901,10 +909,14 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
         401:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: user
@@ -920,6 +932,8 @@ paths:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
   /users/{userId}/filters:
@@ -944,6 +958,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     post:
@@ -964,6 +980,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: searchFilter
@@ -993,6 +1011,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     put:
@@ -1009,6 +1029,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: searchFilter
@@ -1020,6 +1042,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
   /users/{userId}/password:
@@ -1048,6 +1072,8 @@ paths:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: userPasswordRequest
@@ -1071,6 +1097,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/userSettings"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     put:
@@ -1087,6 +1115,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: settings
