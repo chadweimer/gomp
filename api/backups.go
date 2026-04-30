@@ -91,6 +91,10 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 
 	info, err := h.fs.Stat(backupFilePath)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			logger.WarnContext(ctx, "Backup file to restore from does not exist", "name", request.FileName)
+			return RestoreFromBackup404Response{}, nil
+		}
 		logger.ErrorContext(ctx, "Failed to stat backup file", "error", err, "name", request.FileName)
 		return RestoreFromBackup400Response{}, nil
 	}
@@ -153,6 +157,10 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 
 	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.FileName))
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			logger.WarnContext(ctx, "Backup file to delete does not exist", "backupFileName", request.FileName)
+			return DeleteBackup404Response{}, nil
+		}
 		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "backupFileName", request.FileName)
 		return DeleteBackup400Response{}, nil
 	}

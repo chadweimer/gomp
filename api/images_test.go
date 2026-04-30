@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"image"
 	"image/jpeg"
 	"io"
@@ -13,7 +12,6 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
@@ -25,41 +23,57 @@ import (
 
 func Test_GetImages(t *testing.T) {
 	type testArgs struct {
-		recipeID      int64
-		images        []string
-		mockFS        fstest.MapFS
-		expectedError error
+		name             string
+		recipeID         int64
+		images           []string
+		mockFS           fstest.MapFS
+		fsError          error
+		expectedError    error
+		expectedResponse GetImagesResponseObject
 	}
 
 	tests := []testArgs{
 		{
-			1,
-			[]string{"plated-dish.jpg"},
-			fstest.MapFS{
+			name:     "Nominal",
+			recipeID: 1,
+			images:   []string{"plated-dish.jpg"},
+			mockFS: fstest.MapFS{
 				"plated-dish.jpg": &fstest.MapFile{
 					Data:    []byte{},
 					Mode:    fs.ModeAppend,
 					ModTime: time.Now(),
 				},
 			},
-			nil,
+			fsError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetImages200JSONResponse([]string{"plated-dish.jpg"}),
 		},
 		{
-			2,
-			nil,
-			nil,
-			db.ErrNotFound,
+			name:             "Not Found",
+			recipeID:         2,
+			mockFS:           nil,
+			fsError:          fs.ErrNotExist,
+			expectedError:    nil,
+			expectedResponse: GetImages200JSONResponse([]string{}),
+		},
+		{
+			name:             "FS Error",
+			recipeID:         3,
+			mockFS:           nil,
+			fsError:          fs.ErrClosed,
+			expectedError:    fs.ErrClosed,
+			expectedResponse: nil,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, _, uplDriver := getMockImagesAPI(ctrl)
-			if test.expectedError != nil {
-				uplDriver.EXPECT().List(gomock.Any()).Return(nil, test.expectedError)
+			if test.fsError != nil {
+				uplDriver.EXPECT().List(gomock.Any()).Return(nil, test.fsError)
 			} else {
 				entries, _ := test.mockFS.ReadDir(".")
 				uplDriver.EXPECT().List(gomock.Any()).Return(entries, nil)
@@ -72,19 +86,29 @@ func Test_GetImages(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(GetImages200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if len(resp) != len(test.images) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.images), len(resp))
-				}
-				missingImages, unexpectedImages := lo.Difference(resp, test.images)
-				if len(missingImages) > 0 {
-					t.Errorf("missing images: %v", missingImages)
-				}
-				if len(unexpectedImages) > 0 {
-					t.Errorf("unexpected images: %v", unexpectedImages)
+				switch expected := test.expectedResponse.(type) {
+				case GetImages200JSONResponse:
+					resp, ok := resp.(GetImages200JSONResponse)
+					if !ok {
+						t.Errorf("expected GetImages200JSONResponse, got %T", resp)
+					}
+					if len(resp) != len(expected) {
+						t.Errorf("expected length: %d, actual length: %d", len(expected), len(resp))
+					}
+					missingImages, unexpectedImages := lo.Difference(resp, expected)
+					if len(missingImages) > 0 {
+						t.Errorf("missing images: %v", missingImages)
+					}
+					if len(unexpectedImages) > 0 {
+						t.Errorf("unexpected images: %v", unexpectedImages)
+					}
+				case GetImages404Response:
+					_, ok := resp.(GetImages404Response)
+					if !ok {
+						t.Errorf("expected GetImages404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})
@@ -97,7 +121,9 @@ func Test_UploadImage(t *testing.T) {
 		recipe                models.Recipe
 		mockFS                fstest.MapFS
 		expectUpdateMainImage bool
+		saveError             error
 		expectedError         error
+		expectedResponse      UploadImageResponseObject
 	}
 
 	tests := []testArgs{
@@ -115,7 +141,9 @@ func Test_UploadImage(t *testing.T) {
 				},
 			},
 			expectUpdateMainImage: false,
+			saveError:             nil,
 			expectedError:         nil,
+			expectedResponse:      UploadImage201Response{},
 		},
 		{
 			name: "No Main Image",
@@ -130,7 +158,9 @@ func Test_UploadImage(t *testing.T) {
 				},
 			},
 			expectUpdateMainImage: true,
+			saveError:             nil,
 			expectedError:         nil,
+			expectedResponse:      UploadImage201Response{},
 		},
 		{
 			name: "Not Found",
@@ -138,18 +168,30 @@ func Test_UploadImage(t *testing.T) {
 				ID: utils.GetPtr[int64](2),
 			},
 			expectUpdateMainImage: false,
-			expectedError:         db.ErrNotFound,
+			saveError:             fs.ErrNotExist,
+			expectedError:         nil,
+			expectedResponse:      UploadImage404Response{},
+		},
+		{
+			name: "Save Error",
+			recipe: models.Recipe{
+				ID: utils.GetPtr[int64](3),
+			},
+			expectUpdateMainImage: false,
+			saveError:             io.ErrClosedPipe,
+			expectedError:         io.ErrClosedPipe,
+			expectedResponse:      nil,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
-			if test.expectedError != nil {
-				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedError)
+			if test.saveError != nil {
+				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.saveError)
 			} else {
 				uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).AnyTimes().Return(nil)
 				entries, _ := test.mockFS.ReadDir(".")
@@ -172,9 +214,22 @@ func Test_UploadImage(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(UploadImage201Response)
-				if !ok {
-					t.Error("invalid response")
+				switch test.expectedResponse.(type) {
+				case UploadImage201Response:
+					resp, ok := resp.(UploadImage201Response)
+					if !ok {
+						t.Errorf("expected UploadImage201Response, got %T", resp)
+					}
+					if resp.Headers.Location == "" {
+						t.Error("expected non-empty Location header")
+					}
+				case UploadImage404Response:
+					_, ok := resp.(UploadImage404Response)
+					if !ok {
+						t.Errorf("expected UploadImage404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})
@@ -183,30 +238,46 @@ func Test_UploadImage(t *testing.T) {
 
 func Test_DeleteImage(t *testing.T) {
 	type testArgs struct {
-		name                   string
-		recipe                 models.Recipe
-		imageName              string
-		expectUpdateMainImage  bool
-		expectedUplDeleteError error
-		expectedError          error
+		name                  string
+		recipe                models.Recipe
+		imageName             string
+		expectDelete          bool
+		expectUpdateMainImage bool
+		deleteError           error
+		expectedError         error
+		expectedResponse      DeleteImageResponseObject
 	}
 
 	tests := []testArgs{
 		{
-			name:                   "Nominal",
-			recipe:                 models.Recipe{ID: utils.GetPtr[int64](1)},
-			imageName:              "img.jpeg",
-			expectUpdateMainImage:  false,
-			expectedUplDeleteError: nil,
-			expectedError:          nil,
+			name:                  "Nominal",
+			recipe:                models.Recipe{ID: utils.GetPtr[int64](1)},
+			imageName:             "img.jpeg",
+			expectDelete:          true,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage204Response{},
 		},
 		{
-			name:                   "Error",
-			recipe:                 models.Recipe{ID: utils.GetPtr[int64](2)},
-			imageName:              "img.jpeg",
-			expectUpdateMainImage:  false,
-			expectedUplDeleteError: io.ErrClosedPipe,
-			expectedError:          io.ErrClosedPipe,
+			name:                  "Not Found",
+			recipe:                models.Recipe{ID: utils.GetPtr[int64](2)},
+			imageName:             "img.jpeg",
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           fs.ErrNotExist,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage404Response{},
+		},
+		{
+			name:                  "Error",
+			recipe:                models.Recipe{ID: utils.GetPtr[int64](2)},
+			imageName:             "img.jpeg",
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           io.ErrClosedPipe,
+			expectedError:         io.ErrClosedPipe,
+			expectedResponse:      nil,
 		},
 		{
 			name: "Main Image Deleted",
@@ -214,10 +285,24 @@ func Test_DeleteImage(t *testing.T) {
 				ID:            utils.GetPtr[int64](2),
 				MainImageName: "img.jpeg",
 			},
-			imageName:              "img.jpeg",
-			expectUpdateMainImage:  true,
-			expectedUplDeleteError: nil,
-			expectedError:          nil,
+			imageName:             "img.jpeg",
+			expectDelete:          true,
+			expectUpdateMainImage: true,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage204Response{},
+		},
+		{
+			name: "Unsafe name",
+			recipe: models.Recipe{
+				ID: utils.GetPtr[int64](2),
+			},
+			imageName:             "../img.jpeg",
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage400Response{},
 		},
 	}
 	for _, test := range tests {
@@ -227,13 +312,15 @@ func Test_DeleteImage(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
-			if test.expectedUplDeleteError != nil {
-				uplDriver.EXPECT().Delete(gomock.Any()).Return(test.expectedUplDeleteError)
+			if test.deleteError != nil {
+				uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
 			} else {
-				// 2 times; once for original, once for thumbnail
-				uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
-				uplDriver.EXPECT().List(gomock.Any())
-				dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
+				if test.expectDelete {
+					// 2 times; once for original, once for thumbnail
+					uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
+					uplDriver.EXPECT().List(gomock.Any())
+					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
+				}
 				if test.expectUpdateMainImage {
 					dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 				}
@@ -246,9 +333,24 @@ func Test_DeleteImage(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(DeleteImage204Response)
-				if !ok {
-					t.Error("invalid response")
+				switch test.expectedResponse.(type) {
+				case DeleteImage204Response:
+					resp, ok := resp.(DeleteImage204Response)
+					if !ok {
+						t.Errorf("expected DeleteImage204Response, got %T", resp)
+					}
+				case DeleteImage400Response:
+					_, ok := resp.(DeleteImage400Response)
+					if !ok {
+						t.Errorf("expected DeleteImage400Response, got %T", resp)
+					}
+				case DeleteImage404Response:
+					_, ok := resp.(DeleteImage404Response)
+					if !ok {
+						t.Errorf("expected DeleteImage404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})
@@ -257,77 +359,121 @@ func Test_DeleteImage(t *testing.T) {
 
 func Test_OptimizeImage(t *testing.T) {
 	type testArgs struct {
-		caseName           string
+		name               string
 		recipeID           int64
 		originalName       string
 		expectedName       string
+		expectOpen         bool
+		expectSave         bool
 		expectRecipeUpdate bool
-		expectedLoadError  error
-		expectedSaveError  error
+		openError          error
+		saveError          error
 		expectedError      error
+		expectedResponse   OptimizeImageResponseObject
 	}
 
 	tests := []testArgs{
 		{
-			caseName:           "Nominal",
+			name:               "Nominal",
 			recipeID:           1,
 			originalName:       "img.jpeg",
 			expectedName:       "img.jpeg",
+			expectOpen:         true,
+			expectSave:         true,
 			expectRecipeUpdate: false,
-			expectedLoadError:  nil,
-			expectedSaveError:  nil,
+			openError:          nil,
+			saveError:          nil,
 			expectedError:      nil,
+			expectedResponse:   OptimizeImage204Response{},
 		},
 		{
-			caseName:           "JPG Extension",
+			name:               "JPG Extension",
 			recipeID:           1,
 			originalName:       "img.jpg",
 			expectedName:       "img.jpg",
+			expectOpen:         true,
+			expectSave:         true,
 			expectRecipeUpdate: false,
-			expectedLoadError:  nil,
-			expectedSaveError:  nil,
+			openError:          nil,
+			saveError:          nil,
 			expectedError:      nil,
+			expectedResponse:   OptimizeImage204Response{},
 		},
 		{
-			caseName:           "PNG Format",
+			name:               "PNG Format",
 			recipeID:           1,
 			originalName:       "img.png",
 			expectedName:       "img.jpeg",
+			expectOpen:         true,
+			expectSave:         true,
 			expectRecipeUpdate: true,
-			expectedLoadError:  nil,
-			expectedSaveError:  nil,
+			openError:          nil,
+			saveError:          nil,
 			expectedError:      nil,
+			expectedResponse:   OptimizeImage204Response{},
 		},
 		{
-			caseName:           "EOF",
+			name:               "EOF on Open",
 			recipeID:           1,
 			originalName:       "img.jpeg",
 			expectedName:       "img.jpeg",
+			expectOpen:         true,
+			expectSave:         false,
 			expectRecipeUpdate: false,
-			expectedLoadError:  io.ErrUnexpectedEOF,
-			expectedSaveError:  nil,
+			openError:          io.ErrUnexpectedEOF,
+			saveError:          nil,
 			expectedError:      io.ErrUnexpectedEOF,
+			expectedResponse:   nil,
 		},
 		{
-			caseName:           "Closed Pipe",
+			name:               "Closed Pipe on Save",
 			recipeID:           1,
 			originalName:       "img.jpeg",
 			expectedName:       "img.jpeg",
+			expectOpen:         true,
+			expectSave:         true,
 			expectRecipeUpdate: false,
-			expectedLoadError:  nil,
-			expectedSaveError:  io.ErrClosedPipe,
+			openError:          nil,
+			saveError:          io.ErrClosedPipe,
 			expectedError:      io.ErrClosedPipe,
+			expectedResponse:   nil,
+		},
+		{
+			name:               "Unsafe Name",
+			recipeID:           1,
+			originalName:       "../img.jpeg",
+			expectedName:       "../img.jpeg",
+			expectOpen:         false,
+			expectSave:         false,
+			expectRecipeUpdate: false,
+			openError:          nil,
+			saveError:          nil,
+			expectedError:      nil,
+			expectedResponse:   OptimizeImage400Response{},
+		},
+		{
+			name:               "Not Found",
+			recipeID:           1,
+			originalName:       "img.jpeg",
+			expectedName:       "img.jpeg",
+			expectOpen:         true,
+			expectSave:         false,
+			expectRecipeUpdate: false,
+			openError:          fs.ErrNotExist,
+			saveError:          nil,
+			expectedError:      nil,
+			expectedResponse:   OptimizeImage404Response{},
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.caseName, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
-			if test.expectedLoadError != nil {
-				uplDriver.EXPECT().Open(gomock.Any()).Return(nil, test.expectedLoadError)
+			if test.expectOpen && test.openError != nil {
+				uplDriver.EXPECT().Open(gomock.Any()).Return(nil, test.openError)
 			} else {
 				buf := bytes.NewBuffer([]byte{})
 				jpeg.Encode(buf, image.NewGray(image.Rect(0, 0, 1, 1)), nil)
@@ -338,17 +484,21 @@ func Test_OptimizeImage(t *testing.T) {
 						ModTime: time.Now(),
 					},
 				}
-				uplDriver.EXPECT().Open(gomock.Any()).Return(fs.Open(test.originalName))
+				if test.expectOpen {
+					uplDriver.EXPECT().Open(gomock.Any()).Return(fs.Open(test.originalName))
+				}
 
 				if test.originalName != test.expectedName {
 					uplDriver.EXPECT().Delete(gomock.Any()).Return(nil).Times(2)
 				}
 
-				if test.expectedSaveError != nil {
-					uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.expectedSaveError)
-				} else {
-					// 2 times; once for original, once for thumbnail
-					uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Times(2).Return(nil)
+				if test.expectSave {
+					if test.saveError != nil {
+						uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Return(test.saveError)
+					} else {
+						// 2 times; once for original, once for thumbnail
+						uplDriver.EXPECT().Save(gomock.Any(), gomock.Any()).Times(2).Return(nil)
+					}
 				}
 
 				if test.expectRecipeUpdate {
@@ -364,9 +514,27 @@ func Test_OptimizeImage(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(OptimizeImage200Response)
-				if !ok {
-					t.Error("invalid response")
+				switch test.expectedResponse.(type) {
+				case OptimizeImage204Response:
+					resp, ok := resp.(OptimizeImage204Response)
+					if !ok {
+						t.Errorf("expected OptimizeImage204Response, got %T", resp)
+					}
+					if resp.Headers.Location == "" {
+						t.Error("expected non-empty Location header")
+					}
+				case OptimizeImage400Response:
+					_, ok := resp.(OptimizeImage400Response)
+					if !ok {
+						t.Errorf("expected OptimizeImage400Response, got %T", resp)
+					}
+				case OptimizeImage404Response:
+					_, ok := resp.(OptimizeImage404Response)
+					if !ok {
+						t.Errorf("expected OptimizeImage404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})

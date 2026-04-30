@@ -60,18 +60,46 @@ func recipeFixtureChickpeaSaladWraps() *models.Recipe {
 
 func Test_GetRecipe(t *testing.T) {
 	type testArgs struct {
-		recipeID      int64
-		recipeName    string
-		expectedError error
+		name             string
+		recipeID         int64
+		recipeName       string
+		dbError          error
+		expectedError    error
+		expectedResponse GetRecipeResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, recipeFixtureLemonGarlicChicken().Name, nil},
-		{2, "", db.ErrNotFound},
+		{
+			name:          "Recipe exists",
+			recipeID:      1,
+			recipeName:    recipeFixtureLemonGarlicChicken().Name,
+			dbError:       nil,
+			expectedError: nil,
+			expectedResponse: GetRecipe200JSONResponse{
+				ID:   utils.GetPtr[int64](1),
+				Name: recipeFixtureLemonGarlicChicken().Name,
+			},
+		},
+		{
+			name:             "Recipe does not exist",
+			recipeID:         2,
+			recipeName:       "",
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: GetRecipe404Response{},
+		},
+		{
+			name:             "DB error",
+			recipeID:         2,
+			recipeName:       "",
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -80,8 +108,8 @@ func Test_GetRecipe(t *testing.T) {
 				ID:   &(test.recipeID),
 				Name: test.recipeName,
 			}
-			if test.expectedError != nil {
-				recipesDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.expectedError)
+			if test.dbError != nil {
+				recipesDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.dbError)
 			} else {
 				recipesDriver.EXPECT().Read(t.Context(), test.recipeID).Return(&expectedRecipe, nil)
 			}
@@ -91,19 +119,29 @@ func Test_GetRecipe(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test: %v, expected error: %v, received error: %v", test, test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(GetRecipe200JSONResponse)
-				if !ok {
-					t.Errorf("test %v: invalid response", test)
-				}
-				if resp.ID == nil {
-					t.Error("expected non-null id")
-				} else if *resp.ID != *expectedRecipe.ID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedRecipe.ID, *resp.ID)
-				}
-				if resp.Name != expectedRecipe.Name {
-					t.Errorf("expected name: %s, actual name: %s", expectedRecipe.Name, resp.Name)
+				switch expected := test.expectedResponse.(type) {
+				case GetRecipe200JSONResponse:
+					got, ok := resp.(GetRecipe200JSONResponse)
+					if !ok {
+						t.Errorf("expected GetRecipe200JSONResponse, got %T", resp)
+					}
+					if got.ID == nil {
+						t.Error("expected non-null id")
+					} else if *got.ID != *expected.ID {
+						t.Errorf("expected id: %d, actual id: %d", *expected.ID, *got.ID)
+					}
+					if got.Name != expected.Name {
+						t.Errorf("expected name: %s, actual name: %s", expected.Name, got.Name)
+					}
+				case GetRecipe404Response:
+					_, ok := resp.(GetRecipe404Response)
+					if !ok {
+						t.Errorf("expected GetRecipe404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})
@@ -140,11 +178,11 @@ func Test_AddRecipe(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test: %v, expected error: %v, received error: %v", test, test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
 				resp, ok := resp.(AddRecipe201JSONResponse)
 				if !ok {
-					t.Errorf("test %v: invalid response", test)
+					t.Errorf("expected AddRecipe201JSONResponse, got %T", resp)
 				}
 				if resp.Name != test.recipe.Name {
 					t.Errorf("expected name: %s, actual name: %s", test.recipe.Name, resp.Name)
@@ -156,45 +194,73 @@ func Test_AddRecipe(t *testing.T) {
 
 func Test_SaveRecipe(t *testing.T) {
 	type testArgs struct {
-		recipeID        int64
-		recipe          *models.Recipe
-		expectedDbError error
-		expectedError   error
+		name             string
+		recipeID         int64
+		recipe           *models.Recipe
+		dbError          error
+		expectedError    error
+		expectedResponse SaveRecipeResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
 		{
-			1, recipeFixtureLemonGarlicChicken(), nil, nil,
+			name:             "Recipe exists with matching ID in body",
+			recipeID:         1,
+			recipe:           recipeFixtureLemonGarlicChicken(),
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveRecipe204Response{},
 		},
 		{
-			1,
-			func() *models.Recipe {
+			name:     "Recipe exists with null ID in body",
+			recipeID: 1,
+			recipe: func() *models.Recipe {
 				recipe := recipeFixtureSheetPanSausage()
 				recipe.ID = utils.GetPtr[int64](1)
 				return recipe
-			}(), nil, nil,
+			}(),
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveRecipe204Response{},
 		},
 		{
-			1,
-			func() *models.Recipe {
+			name:     "Recipe exists with mismatched ID in body",
+			recipeID: 1,
+			recipe: func() *models.Recipe {
 				recipe := recipeFixtureChickpeaSaladWraps()
 				recipe.ID = utils.GetPtr[int64](2)
 				return recipe
-			}(), nil, errMismatchedID,
+			}(),
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveRecipe400Response{},
 		},
 		{
-			2, recipeFixtureSheetPanSausage(), db.ErrNotFound, db.ErrNotFound,
+			name:             "Recipe does not exist",
+			recipeID:         2,
+			recipe:           recipeFixtureSheetPanSausage(),
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: SaveRecipe404Response{},
+		},
+		{
+			name:             "DB error",
+			recipeID:         2,
+			recipe:           recipeFixtureSheetPanSausage(),
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
-			if test.expectedDbError != nil {
-				recipesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				recipesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(test.dbError)
 			} else {
 				recipesDriver.EXPECT().Update(t.Context(), test.recipe).MaxTimes(1).Return(nil)
 			}
@@ -204,11 +270,26 @@ func Test_SaveRecipe(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test: %v, expected error: %v, received error: %v", test, test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(SaveRecipe204Response)
-				if !ok {
-					t.Errorf("test %v: invalid response", test)
+				switch test.expectedResponse.(type) {
+				case SaveRecipe204Response:
+					_, ok := resp.(SaveRecipe204Response)
+					if !ok {
+						t.Errorf("expected SaveRecipe204Response, got %T", resp)
+					}
+				case SaveRecipe400Response:
+					_, ok := resp.(SaveRecipe400Response)
+					if !ok {
+						t.Errorf("expected SaveRecipe400Response, got %T", resp)
+					}
+				case SaveRecipe404Response:
+					_, ok := resp.(SaveRecipe404Response)
+					if !ok {
+						t.Errorf("expected SaveRecipe404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})
@@ -217,24 +298,37 @@ func Test_SaveRecipe(t *testing.T) {
 
 func Test_PatchRecipe(t *testing.T) {
 	type testArgs struct {
-		name            string
-		recipeID        int64
-		patch           *models.RecipePatch
-		expectedDbError error
-		expectedError   error
+		name             string
+		recipeID         int64
+		patch            *models.RecipePatch
+		dbError          error
+		expectedError    error
+		expectedResponse PatchRecipeResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
 		{
-			name:     "Nominal",
+			name:     "Recipe exists",
 			recipeID: 1,
 			patch: &models.RecipePatch{
 				State:         utils.GetPtr(models.Archived),
 				MainImageName: utils.GetPtr("new-image.jpg"),
 			},
-			expectedDbError: nil,
-			expectedError:   nil,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: PatchRecipe204Response{},
+		},
+		{
+			name:     "Recipe does not exist",
+			recipeID: 1,
+			patch: &models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new-image.jpg"),
+			},
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: PatchRecipe404Response{},
 		},
 		{
 			name:     "DB error",
@@ -243,8 +337,9 @@ func Test_PatchRecipe(t *testing.T) {
 				State:         utils.GetPtr(models.Archived),
 				MainImageName: utils.GetPtr("new-image.jpg"),
 			},
-			expectedDbError: sql.ErrConnDone,
-			expectedError:   sql.ErrConnDone,
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
 		},
 	}
 	for _, test := range tests {
@@ -253,18 +348,28 @@ func Test_PatchRecipe(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
-			recipesDriver.EXPECT().Patch(t.Context(), test.recipeID, test.patch).Return(test.expectedDbError)
+			recipesDriver.EXPECT().Patch(t.Context(), test.recipeID, test.patch).Return(test.dbError)
 
 			// Act
 			resp, err := api.PatchRecipe(t.Context(), PatchRecipeRequestObject{RecipeID: test.recipeID, Body: test.patch})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test: %v, expected error: %v, received error: %v", test, test.expectedError, err)
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(PatchRecipe204Response)
-				if !ok {
-					t.Errorf("test %v: invalid response", test)
+				switch test.expectedResponse.(type) {
+				case PatchRecipe204Response:
+					_, ok := resp.(PatchRecipe204Response)
+					if !ok {
+						t.Errorf("expected PatchRecipe204Response, got %T", resp)
+					}
+				case PatchRecipe404Response:
+					_, ok := resp.(PatchRecipe404Response)
+					if !ok {
+						t.Errorf("expected PatchRecipe404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})
@@ -273,15 +378,36 @@ func Test_PatchRecipe(t *testing.T) {
 
 func Test_DeleteRecipe(t *testing.T) {
 	type testArgs struct {
-		recipeID      int64
-		expectedError error
+		name             string
+		recipeID         int64
+		dbError          error
+		expectedError    error
+		expectedResponse DeleteRecipeResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, nil},
-		{1, nil},
-		{1, db.ErrNotFound},
+		{
+			name:             "Recipe exists",
+			recipeID:         1,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: DeleteRecipe204Response{},
+		},
+		{
+			name:             "Recipe does not exist",
+			recipeID:         1,
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: DeleteRecipe404Response{},
+		},
+		{
+			name:             "DB error",
+			recipeID:         1,
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -289,8 +415,8 @@ func Test_DeleteRecipe(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, recipesDriver, uplDriver := getMockRecipesAPI(ctrl)
-			if test.expectedError != nil {
-				recipesDriver.EXPECT().Delete(t.Context(), gomock.Any()).Return(test.expectedError)
+			if test.dbError != nil {
+				recipesDriver.EXPECT().Delete(t.Context(), gomock.Any()).Return(test.dbError)
 			} else {
 				recipesDriver.EXPECT().Delete(t.Context(), test.recipeID).Return(nil)
 				uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(nil)
@@ -301,11 +427,21 @@ func Test_DeleteRecipe(t *testing.T) {
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
-				t.Errorf("test %v: expected error: %v, received error '%v'", test, test.expectedError, err)
+				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(DeleteRecipe204Response)
-				if !ok {
-					t.Errorf("test %v: invalid response", test)
+				switch test.expectedResponse.(type) {
+				case DeleteRecipe204Response:
+					_, ok := resp.(DeleteRecipe204Response)
+					if !ok {
+						t.Errorf("expected DeleteRecipe204Response, got %T", resp)
+					}
+				case DeleteRecipe404Response:
+					_, ok := resp.(DeleteRecipe404Response)
+					if !ok {
+						t.Errorf("expected DeleteRecipe404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
 				}
 			}
 		})

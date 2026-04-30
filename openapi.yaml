@@ -169,6 +169,8 @@ paths:
           description: No Content
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     delete:
@@ -181,6 +183,8 @@ paths:
           description: No Content
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
   /recipes:
@@ -293,6 +297,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipe"
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     put:
@@ -309,6 +315,10 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: recipe
@@ -326,6 +336,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: recipePatch
@@ -337,6 +349,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/images:
@@ -361,6 +375,8 @@ paths:
                 type: array
                 items:
                   type: string
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     post:
@@ -385,6 +401,8 @@ paths:
                 type: string
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/images/{name}:
@@ -408,14 +426,16 @@ paths:
       description: optimize an existing image from a recipe
       operationId: optimizeImage
       responses:
-        200:
-          description: OK
+        204:
+          description: No Content
           headers:
             Location:
               schema:
                 type: string
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     delete:
@@ -428,6 +448,8 @@ paths:
           description: No Content
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/links:
@@ -452,6 +474,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/recipeCompact"
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
   /recipes/{recipeId}/links/{destRecipeId}:
@@ -476,6 +500,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
     delete:
@@ -486,6 +512,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/notes:
@@ -510,6 +538,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/note"
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     post:
@@ -530,6 +560,10 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/note"
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: note
@@ -561,6 +595,10 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: note
@@ -572,6 +610,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /tags:
