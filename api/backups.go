@@ -158,10 +158,10 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.FileName))
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			logger.WarnContext(ctx, "Backup file to delete does not exist", "backupFileName", request.FileName)
+			logger.WarnContext(ctx, "Backup file to delete does not exist", "name", request.FileName)
 			return DeleteBackup404Response{}, nil
 		}
-		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "backupFileName", request.FileName)
+		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "name", request.FileName)
 		return DeleteBackup400Response{}, nil
 	}
 	return DeleteBackup204Response{}, nil
