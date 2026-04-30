@@ -4,56 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 )
-
-func Test_getStatusFromError(t *testing.T) {
-	type getStatusFromErrorTest struct {
-		err            error
-		fallbackStatus int
-		expectedStatus int
-	}
-
-	// Arrange
-	tests := []getStatusFromErrorTest{
-		{db.ErrNotFound, http.StatusNotFound, http.StatusNotFound},
-		{db.ErrNotFound, http.StatusForbidden, http.StatusNotFound},
-		{db.ErrNotFound, http.StatusConflict, http.StatusNotFound},
-		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusNotFound, http.StatusNotFound},
-		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusForbidden, http.StatusNotFound},
-		{fmt.Errorf("some error: %w", db.ErrNotFound), http.StatusConflict, http.StatusNotFound},
-		{errMismatchedID, http.StatusBadRequest, http.StatusBadRequest},
-		{errMismatchedID, http.StatusForbidden, http.StatusBadRequest},
-		{errMismatchedID, http.StatusConflict, http.StatusBadRequest},
-		{fmt.Errorf("some error: %w", errMismatchedID), http.StatusBadRequest, http.StatusBadRequest},
-		{fmt.Errorf("some error: %w", errMismatchedID), http.StatusForbidden, http.StatusBadRequest},
-		{fmt.Errorf("some error: %w", errMismatchedID), http.StatusConflict, http.StatusBadRequest},
-		{errors.New("some error"), http.StatusForbidden, http.StatusForbidden},
-		{errors.New("some error"), http.StatusBadRequest, http.StatusBadRequest},
-		{errors.New("some error"), http.StatusInternalServerError, http.StatusInternalServerError},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Act
-			if actualStatus := getStatusFromError(test.err, test.fallbackStatus); actualStatus != test.expectedStatus {
-				// Assert
-				t.Errorf("actual '%s' not equal to expected '%s'. err: %v, fallback: %s",
-					http.StatusText(actualStatus),
-					http.StatusText(test.expectedStatus),
-					test.err,
-					http.StatusText(test.fallbackStatus))
-			}
-		})
-	}
-}
 
 func Test_getResourceIDFromCtx(t *testing.T) {
 	type getResourceIDFromCtxTest struct {
@@ -120,19 +77,8 @@ func Test_writeErrorResponse(t *testing.T) {
 
 			// Assert
 			actualCode := w.Result().StatusCode
-			expectedCode := getStatusFromError(test.err, test.code)
-			if actualCode != expectedCode {
-				t.Errorf("expected code: %d, received code: %d", expectedCode, actualCode)
-			}
-
-			actualBodyBytes, err := io.ReadAll(w.Result().Body)
-			if err != nil {
-				t.Fatal(err)
-			}
-			actualBody := strings.TrimSpace(string(actualBodyBytes))
-			expectedBody := strings.TrimSpace(fmt.Sprintf("\"%s\"", http.StatusText(expectedCode)))
-			if actualBody != expectedBody {
-				t.Errorf("expected: %s, received: %s", expectedBody, actualBody)
+			if actualCode != test.code {
+				t.Errorf("expected code: %d, received code: %d", test.code, actualCode)
 			}
 		})
 	}

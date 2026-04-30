@@ -12,6 +12,7 @@ export class RecipeEditor {
   @Prop() recipe: Recipe = {
     name: '',
     state: RecipeState.Active,
+    rating: 0,
     servingSize: '',
     time: '',
     nutritionInfo: '',

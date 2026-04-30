@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -9,26 +11,44 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/utils"
+	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
 func Test_GetNotes(t *testing.T) {
 	type getNotesTest struct {
-		recipeID    int64
-		notes       []models.Note
-		expectError bool
+		name             string
+		recipeID         int64
+		notes            []models.Note
+		dbError          error
+		expectedError    error
+		expectedResponse GetNotesResponseObject
 	}
 
 	tests := []getNotesTest{
 		{
-			1,
-			[]models.Note{
+			name:     "Notes found",
+			recipeID: 1,
+			notes: []models.Note{
 				{Text: "Note 1"},
 				{Text: "Note 2"},
 			},
-			false,
+			dbError:       nil,
+			expectedError: nil,
+			expectedResponse: GetNotes200JSONResponse{
+				{Text: "Note 1"},
+				{Text: "Note 2"},
+			},
 		},
-		{2, []models.Note{}, true},
+		{
+			name:             "Recipe not found",
+			recipeID:         2,
+			notes:            []models.Note{},
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: GetNotes404Response{},
+		},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -37,8 +57,8 @@ func Test_GetNotes(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesAPI(ctrl)
-			if test.expectError {
-				notesDriver.EXPECT().List(t.Context(), test.recipeID).Return(nil, db.ErrNotFound)
+			if test.dbError != nil {
+				notesDriver.EXPECT().List(t.Context(), test.recipeID).Return(nil, test.dbError)
 			} else {
 				notesDriver.EXPECT().List(t.Context(), test.recipeID).Return(&test.notes, nil)
 			}
@@ -47,15 +67,31 @@ func Test_GetNotes(t *testing.T) {
 			resp, err := api.GetNotes(t.Context(), GetNotesRequestObject{RecipeID: test.recipeID})
 
 			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("received error: %v", err)
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				typedResp, ok := resp.(GetNotes200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if len(typedResp) != len(test.notes) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.notes), len(typedResp))
+				switch expected := test.expectedResponse.(type) {
+				case GetNotes200JSONResponse:
+					got, ok := resp.(GetNotes200JSONResponse)
+					if !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+					if len(got) != len(expected) {
+						t.Errorf("expected length: %d, actual length: %d", len(expected), len(got))
+					}
+					missingNotes, unexpectedNotes := lo.Difference(got, expected)
+					if len(missingNotes) > 0 {
+						t.Errorf("missing notes: %v", missingNotes)
+					}
+					if len(unexpectedNotes) > 0 {
+						t.Errorf("unexpected notes: %v", unexpectedNotes)
+					}
+				case GetNotes404Response:
+					if _, ok := resp.(GetNotes404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", resp)
 				}
 			}
 		})
@@ -64,71 +100,107 @@ func Test_GetNotes(t *testing.T) {
 
 func Test_AddNote(t *testing.T) {
 	type addNoteTest struct {
-		recipeID    int64
-		note        models.Note
-		expectError bool
+		name             string
+		recipeID         int64
+		note             models.Note
+		expectCreate     bool
+		dbError          error
+		expectedError    error
+		expectedResponse AddNoteResponseObject
 	}
 
 	tests := []addNoteTest{
-		{1, models.Note{Text: "Add chopped parsley right before serving."}, false},
-		{2, models.Note{Text: "Refrigerate leftovers within 2 hours."}, false},
-		{3, models.Note{Text: "Intentional failing note fixture"}, true},
+		{
+			name:             "Valid note with matching recipe ID",
+			recipeID:         1,
+			note:             models.Note{RecipeID: utils.GetPtr[int64](1), Text: "Add chopped parsley right before serving."},
+			expectCreate:     true,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: AddNote201JSONResponse{RecipeID: utils.GetPtr[int64](1), Text: "Add chopped parsley right before serving."},
+		},
+		{
+			name:             "Valid note without recipe ID",
+			recipeID:         2,
+			note:             models.Note{Text: "Refrigerate leftovers within 2 hours."},
+			expectCreate:     true,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: AddNote201JSONResponse{RecipeID: utils.GetPtr[int64](2), Text: "Refrigerate leftovers within 2 hours."},
+		},
+		{
+			name:             "Mismatched recipe ID",
+			recipeID:         3,
+			note:             models.Note{RecipeID: utils.GetPtr[int64](4), Text: "Mismatched recipe ID note fixture."},
+			expectCreate:     false,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: AddNote400Response{},
+		},
+		{
+			name:             "Recipe not found",
+			recipeID:         4,
+			note:             models.Note{Text: "Recipe not found note fixture."},
+			expectCreate:     true,
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: AddNote404Response{},
+		},
+		{
+			name:             "Database error",
+			recipeID:         4,
+			note:             models.Note{Text: "Intentional failing note fixture."},
+			expectCreate:     true,
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesAPI(ctrl)
-			if test.expectError {
-				notesDriver.EXPECT().Create(t.Context(), gomock.Any()).Return(db.ErrNotFound)
-			} else {
-				notesDriver.EXPECT().Create(t.Context(), &test.note).Return(nil)
+			if test.expectCreate {
+				if test.dbError != nil {
+					notesDriver.EXPECT().Create(t.Context(), gomock.Any()).Return(test.dbError)
+				} else {
+					notesDriver.EXPECT().Create(t.Context(), &test.note).Return(nil)
+				}
 			}
 
 			// Act
 			resp, err := api.AddNote(t.Context(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
 
 			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("received error: %v", err)
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(AddNote201JSONResponse)
-				if !ok {
-					t.Error("invalid response")
+				switch expected := test.expectedResponse.(type) {
+				case AddNote201JSONResponse:
+					got, ok := resp.(AddNote201JSONResponse)
+					if !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+					if got.Text != expected.Text {
+						t.Errorf("expected text: %s, actual text: %s", expected.Text, got.Text)
+					}
+					if (got.RecipeID == nil) != (expected.RecipeID == nil) || (got.RecipeID != nil && *got.RecipeID != *expected.RecipeID) {
+						t.Errorf("expected recipe ID: %v, actual recipe ID: %v", expected.RecipeID, got.RecipeID)
+					}
+				case AddNote400Response:
+					if _, ok := resp.(AddNote400Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case AddNote404Response:
+					if _, ok := resp.(AddNote404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", resp)
 				}
-			}
-		})
-	}
-}
-
-func Test_AddNote_MismatchedID(t *testing.T) {
-	type addNoteTest struct {
-		recipeID int64
-		note     models.Note
-	}
-
-	tests := []addNoteTest{
-		{1, models.Note{RecipeID: new(int64), Text: "Add chopped parsley right before serving."}},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, notesDriver := getMockNotesAPI(ctrl)
-			notesDriver.EXPECT().Create(t.Context(), test.note).Times(0).Return(nil)
-
-			// Act
-			_, err := api.AddNote(t.Context(), AddNoteRequestObject{RecipeID: test.recipeID, Body: &test.note})
-
-			// Assert
-			if err == nil {
-				t.Error("expected error")
-			} else if err != errMismatchedID {
-				t.Errorf("expected error: %v, received error: %v", errMismatchedID, err)
 			}
 		})
 	}
@@ -136,74 +208,106 @@ func Test_AddNote_MismatchedID(t *testing.T) {
 
 func Test_SaveNote(t *testing.T) {
 	type addNoteTest struct {
-		recipeID    int64
-		noteID      int64
-		note        models.Note
-		expectError bool
+		name             string
+		recipeID         int64
+		noteID           int64
+		note             models.Note
+		expectUpdate     bool
+		dbError          error
+		expectedError    error
+		expectedResponse SaveNoteResponseObject
 	}
 
 	tests := []addNoteTest{
-		{1, 1, models.Note{Text: "Add chopped parsley right before serving."}, false},
-		{2, 3, models.Note{Text: "Refrigerate leftovers within 2 hours."}, false},
-		{3, 7, models.Note{Text: "Intentional failing note fixture"}, true},
+		{
+			name:             "Valid note update",
+			recipeID:         1,
+			noteID:           2,
+			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](1), Text: "Updated note text."},
+			expectUpdate:     true,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveNote204Response{},
+		},
+		{
+			name:             "Recipe or note not found",
+			recipeID:         1,
+			noteID:           2,
+			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](1), Text: "Note fixture for not found case."},
+			expectUpdate:     true,
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: SaveNote404Response{},
+		},
+		{
+			name:             "Mismatched note ID",
+			recipeID:         1,
+			noteID:           2,
+			note:             models.Note{ID: utils.GetPtr[int64](3), RecipeID: utils.GetPtr[int64](1), Text: "Mismatched note ID fixture."},
+			expectUpdate:     false,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveNote400Response{},
+		},
+		{
+			name:             "Mismatched recipe ID",
+			recipeID:         1,
+			noteID:           2,
+			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](3), Text: "Mismatched recipe ID fixture."},
+			expectUpdate:     false,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveNote400Response{},
+		},
+		{
+			name:             "Database error",
+			recipeID:         1,
+			noteID:           2,
+			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](1), Text: "Intentional failing note fixture."},
+			expectUpdate:     true,
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesAPI(ctrl)
-			if test.expectError {
-				notesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(db.ErrNotFound)
-			} else {
-				notesDriver.EXPECT().Update(t.Context(), &test.note).Return(nil)
+			if test.expectUpdate {
+				if test.dbError != nil {
+					notesDriver.EXPECT().Update(t.Context(), gomock.Any()).Return(test.dbError)
+				} else {
+					notesDriver.EXPECT().Update(t.Context(), &test.note).Return(nil)
+				}
 			}
 
 			// Act
 			resp, err := api.SaveNote(t.Context(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
 
 			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("received error: %v", err)
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(SaveNote204Response)
-				if !ok {
-					t.Error("invalid response")
+				switch test.expectedResponse.(type) {
+				case SaveNote204Response:
+					if _, ok := resp.(SaveNote204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case SaveNote400Response:
+					if _, ok := resp.(SaveNote400Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case SaveNote404Response:
+					if _, ok := resp.(SaveNote404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", resp)
 				}
-			}
-		})
-	}
-}
-
-func Test_SaveNote_MismatchedID(t *testing.T) {
-	type addNoteTest struct {
-		recipeID int64
-		noteID   int64
-		note     models.Note
-	}
-
-	tests := []addNoteTest{
-		{1, 1, models.Note{RecipeID: new(int64), Text: "Add chopped parsley right before serving."}},
-		{1, 1, models.Note{ID: new(int64), Text: "Refrigerate leftovers within 2 hours."}},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, notesDriver := getMockNotesAPI(ctrl)
-			notesDriver.EXPECT().Update(t.Context(), test.note).Times(0).Return(nil)
-
-			// Act
-			_, err := api.SaveNote(t.Context(), SaveNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID, Body: &test.note})
-
-			// Assert
-			if err == nil {
-				t.Error("expected error")
-			} else if err != errMismatchedID {
-				t.Errorf("expected error: %v, received error: %v", errMismatchedID, err)
 			}
 		})
 	}
@@ -211,17 +315,39 @@ func Test_SaveNote_MismatchedID(t *testing.T) {
 
 func Test_DeleteNote(t *testing.T) {
 	type deleteLinkTest struct {
-		recipeID    int64
-		noteID      int64
-		expectError bool
+		name             string
+		recipeID         int64
+		noteID           int64
+		dbError          error
+		expectedError    error
+		expectedResponse DeleteNoteResponseObject
 	}
 
 	tests := []deleteLinkTest{
-		{1, 2, false},
-		{4, 7, false},
-		{3, 1, false},
-		{2, 9, false},
-		{8, 2, true},
+		{
+			name:             "Valid note deletion",
+			recipeID:         1,
+			noteID:           2,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: DeleteNote204Response{},
+		},
+		{
+			name:             "Note not found",
+			recipeID:         1,
+			noteID:           2,
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: DeleteNote404Response{},
+		},
+		{
+			name:             "Database error",
+			recipeID:         1,
+			noteID:           2,
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -230,8 +356,8 @@ func Test_DeleteNote(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, notesDriver := getMockNotesAPI(ctrl)
-			if test.expectError {
-				notesDriver.EXPECT().Delete(t.Context(), gomock.Any(), gomock.Any()).Return(db.ErrNotFound)
+			if test.dbError != nil {
+				notesDriver.EXPECT().Delete(t.Context(), gomock.Any(), gomock.Any()).Return(test.dbError)
 			} else {
 				notesDriver.EXPECT().Delete(t.Context(), test.recipeID, test.noteID).Return(nil)
 			}
@@ -240,12 +366,20 @@ func Test_DeleteNote(t *testing.T) {
 			resp, err := api.DeleteNote(t.Context(), DeleteNoteRequestObject{RecipeID: test.recipeID, NoteID: test.noteID})
 
 			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("received error: %v", err)
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				_, ok := resp.(DeleteNote204Response)
-				if !ok {
-					t.Error("invalid response")
+				switch test.expectedResponse.(type) {
+				case DeleteNote204Response:
+					if _, ok := resp.(DeleteNote204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case DeleteNote404Response:
+					if _, ok := resp.(DeleteNote404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", resp)
 				}
 			}
 		})

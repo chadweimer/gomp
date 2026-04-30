@@ -13,13 +13,14 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/utils"
-	"github.com/jmoiron/sqlx"
 	"go.uber.org/mock/gomock"
 )
 
 func recipeFixtureLemonGarlicChicken() models.Recipe {
 	return models.Recipe{
 		Name:                "Lemon Garlic Chicken",
+		State:               models.Active,
+		Rating:              utils.GetPtr[float32](4.5),
 		Ingredients:         "1.5 lb chicken thighs\n2 tbsp olive oil\n3 cloves garlic\n1 lemon",
 		Directions:          "Marinate chicken, then roast at 400F until cooked through.",
 		NutritionInfo:       "420 kcal per serving",
@@ -34,6 +35,8 @@ func recipeFixtureLemonGarlicChicken() models.Recipe {
 func recipeFixtureSheetPanSausage() models.Recipe {
 	return models.Recipe{
 		Name:                "Sheet Pan Sausage and Peppers",
+		State:               models.Active,
+		Rating:              utils.GetPtr[float32](2.5),
 		Ingredients:         "12 oz smoked sausage\n2 bell peppers\n1 red onion\n2 tbsp olive oil",
 		Directions:          "Slice the vegetables and sausage, toss with oil, and roast until browned.",
 		NutritionInfo:       "510 kcal per serving",
@@ -48,6 +51,8 @@ func recipeFixtureSheetPanSausage() models.Recipe {
 func recipeFixtureChickpeaSaladWraps() models.Recipe {
 	return models.Recipe{
 		Name:                "Chickpea Salad Wraps",
+		State:               models.Archived,
+		Rating:              utils.GetPtr[float32](0),
 		Ingredients:         "2 cans chickpeas\n3 tbsp mayo\n1 celery stalk\n4 tortillas",
 		Directions:          "Mash the chickpeas, mix with the remaining ingredients, and roll into wraps.",
 		NutritionInfo:       "390 kcal per serving",
@@ -158,12 +163,12 @@ func Test_Recipe_Read(t *testing.T) {
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, main_image_name, created_at, modified_at FROM recipe WHERE id = \\$1").
+			query := dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.serving_size, r\\.nutrition_info, r\\.ingredients, r\\.directions, r\\.storage_instructions, r\\.source_url, r\\.recipe_time, r\\.current_state, r\\.main_image_name, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.created_at, r\\.modified_at FROM recipe as r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.id = \\$1").
 				WithArgs(test.recipeID)
 			if test.dbError == nil {
 				fixture := recipeFixtureLemonGarlicChicken()
-				rows := sqlmock.NewRows([]string{"id", "name", "serving_size", "nutrition_info", "ingredients", "directions", "storage_instructions", "source_url", "recipe_time", "current_state", "main_image_name", "created_at", "modified_at"}).
-					AddRow(test.recipeID, fixture.Name, fixture.ServingSize, fixture.NutritionInfo, fixture.Ingredients, fixture.Directions, fixture.StorageInstructions, fixture.SourceURL, fixture.Time, models.Active, fixture.MainImageName, time.Now(), time.Now())
+				rows := sqlmock.NewRows([]string{"id", "name", "serving_size", "nutrition_info", "ingredients", "directions", "storage_instructions", "source_url", "recipe_time", "current_state", "main_image_name", "rating", "created_at", "modified_at"}).
+					AddRow(test.recipeID, fixture.Name, fixture.ServingSize, fixture.NutritionInfo, fixture.Ingredients, fixture.Directions, fixture.StorageInstructions, fixture.SourceURL, fixture.Time, models.Active, fixture.MainImageName, fixture.Rating, time.Now(), time.Now())
 				query.WillReturnRows(rows)
 				dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID).WillReturnRows(&sqlmock.Rows{})
 			} else {
@@ -271,6 +276,189 @@ func Test_Recipe_Update(t *testing.T) {
 	}
 }
 
+func Test_Recipe_Patch(t *testing.T) {
+	type testArgs struct {
+		name             string
+		recipeID         int64
+		hasCurrentRating bool
+		patch            models.RecipePatch
+		expectedState    *models.RecipeState
+		expectedImage    *string
+		expectedRating   *float32
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{
+			name:             "Patch with rating only and no existing rating",
+			recipeID:         1,
+			hasCurrentRating: false,
+			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](3.5)},
+			expectedRating:   utils.GetPtr[float32](3.5),
+		},
+		{
+			name:             "Patch with rating only and existing rating",
+			recipeID:         1,
+			hasCurrentRating: true,
+			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](3.5)},
+			expectedRating:   utils.GetPtr[float32](3.5),
+		},
+		{
+			name:             "Patch with rating only with zero value and existing rating",
+			recipeID:         0,
+			hasCurrentRating: true,
+			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](0)},
+			expectedRating:   utils.GetPtr[float32](0),
+		},
+		{
+			name:             "Patch with all fields",
+			recipeID:         1,
+			hasCurrentRating: true,
+			patch: models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new_image.jpg"),
+				Rating:        utils.GetPtr[float32](4.0),
+			},
+			expectedState:  utils.GetPtr(models.Archived),
+			expectedImage:  utils.GetPtr("new_image.jpg"),
+			expectedRating: utils.GetPtr[float32](4.0),
+		},
+		{
+			name:     "Patch with state and image",
+			recipeID: 1,
+			patch: models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new_image.jpg"),
+			},
+			expectedState: utils.GetPtr(models.Archived),
+			expectedImage: utils.GetPtr("new_image.jpg"),
+		},
+		{
+			name:     "Patch with state only",
+			recipeID: 1,
+			patch: models.RecipePatch{
+				State: utils.GetPtr(models.Archived),
+			},
+			expectedState: utils.GetPtr(models.Archived),
+		},
+		{
+			name:     "Patch with image only",
+			recipeID: 1,
+			patch: models.RecipePatch{
+				MainImageName: utils.GetPtr("new_image.jpg"),
+			},
+			expectedImage: utils.GetPtr("new_image.jpg"),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t, nil)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			if test.expectedState != nil || test.expectedImage != nil {
+				stmt := "UPDATE recipe SET "
+				fields := ""
+				args := make([]driver.Value, 0)
+				if test.expectedState != nil {
+					fields += "current_state = \\?"
+					args = append(args, *test.expectedState)
+				}
+				if test.expectedImage != nil {
+					if fields != "" {
+						fields += ", "
+					}
+					fields += "main_image_name = \\?"
+					args = append(args, *test.expectedImage)
+				}
+				stmt += fields + " WHERE id = \\?"
+				args = append(args, test.recipeID)
+				dbmock.ExpectExec(stmt).WithArgs(args...).
+					WillReturnResult(driver.RowsAffected(1))
+			}
+			if test.expectedRating != nil {
+				ratingSelect := dbmock.ExpectQuery("SELECT count\\(\\*\\) FROM recipe_rating WHERE recipe_id = \\$1")
+				if test.hasCurrentRating {
+					ratingSelect.WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+					dbmock.ExpectExec("UPDATE recipe_rating SET rating = \\$1 WHERE recipe_id = \\$2").
+						WithArgs(*test.expectedRating, test.recipeID).
+						WillReturnResult(driver.RowsAffected(1))
+				} else {
+					ratingSelect.WillReturnRows(&sqlmock.Rows{})
+					dbmock.ExpectExec("INSERT INTO recipe_rating \\(recipe_id, rating\\) VALUES \\(\\$1, \\$2\\)").
+						WithArgs(test.recipeID, *test.expectedRating).
+						WillReturnResult(driver.RowsAffected(1))
+				}
+			}
+			dbmock.ExpectCommit()
+
+			// Act
+			err := sut.Recipes().Patch(t.Context(), test.recipeID, &test.patch)
+
+			// Assert
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+// func Test_Recipe_SetState(t *testing.T) {
+// 	type testArgs struct {
+// 		recipeID      int64
+// 		expectedState models.RecipeState
+// 		dbError       error
+// 		expectedError error
+// 	}
+
+// 	// Arrange
+// 	tests := []testArgs{
+// 		{1, models.Active, nil, nil},
+// 		{1, models.Archived, nil, nil},
+// 		{0, models.Active, sql.ErrNoRows, ErrNotFound},
+// 		{0, models.Active, sql.ErrConnDone, sql.ErrConnDone},
+// 	}
+// 	for i, test := range tests {
+// 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+// 			// Arrange
+// 			ctrl := gomock.NewController(t)
+// 			defer ctrl.Finish()
+
+// 			sut, dbmock := getMockDb(t, nil)
+// 			defer sut.Close()
+
+// 			dbmock.ExpectBegin()
+// 			exec := dbmock.ExpectExec("UPDATE recipe SET current_state = \\$1 WHERE id = \\$2").
+// 				WithArgs(test.expectedState, test.recipeID)
+// 			if test.dbError == nil {
+// 				exec.WillReturnResult(driver.RowsAffected(1))
+// 				dbmock.ExpectCommit()
+// 			} else {
+// 				exec.WillReturnError(test.dbError)
+// 				dbmock.ExpectRollback()
+// 			}
+
+// 			// Act
+// 			err := sut.Recipes().SetState(t.Context(), test.recipeID, test.expectedState)
+
+// 			// Assert
+// 			if !errors.Is(err, test.expectedError) {
+// 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+// 			}
+// 			if err := dbmock.ExpectationsWereMet(); err != nil {
+// 				t.Errorf("there were unfulfilled expectations: %s", err)
+// 			}
+// 		})
+// 	}
+// }
+
 func Test_Recipe_Delete(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
@@ -312,384 +500,6 @@ func Test_Recipe_Delete(t *testing.T) {
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func Test_Recipe_GetRating(t *testing.T) {
-	type testArgs struct {
-		recipeID       int64
-		expectedRating float32
-		dbError        error
-		expectedError  error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, 2.5, nil, nil},
-		{0, 0, sql.ErrNoRows, ErrNotFound},
-		{0, 0, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			query := dbmock.ExpectQuery("SELECT COALESCE\\(g\\.rating, 0\\) AS avg_rating FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.id = \\$1").
-				WithArgs(test.recipeID)
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"avg_rating"}).AddRow(test.expectedRating)
-				query.WillReturnRows(rows)
-			} else {
-				query.WillReturnError(test.dbError)
-			}
-
-			// Act
-			rating, err := sut.Recipes().GetRating(t.Context(), test.recipeID)
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-			if test.expectedError == nil && *rating != test.expectedRating {
-				t.Errorf("ratings don't match, expected: %f, received: %f", test.expectedRating, *rating)
-			}
-		})
-	}
-}
-
-func Test_Recipe_SetRating(t *testing.T) {
-	type testArgs struct {
-		recipeID         int64
-		hasCurrentRating bool
-		expectedRating   float32
-		dbError          error
-		expectedError    error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, false, 3.5, nil, nil},
-		{1, true, 3.5, nil, nil},
-		{0, false, 0, sql.ErrNoRows, ErrNotFound},
-		{0, true, 0, sql.ErrNoRows, ErrNotFound},
-		{0, false, 0, sql.ErrConnDone, sql.ErrConnDone},
-		{0, true, 0, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			dbmock.ExpectBegin()
-			ratingSelect := dbmock.ExpectQuery("SELECT count\\(\\*\\) FROM recipe_rating WHERE recipe_id = \\$1")
-			var updateExec *sqlmock.ExpectedExec
-			if test.hasCurrentRating {
-				ratingSelect.WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-				updateExec = dbmock.ExpectExec("UPDATE recipe_rating SET rating = \\$1 WHERE recipe_id = \\$2").WithArgs(test.expectedRating, test.recipeID)
-			} else {
-				ratingSelect.WillReturnRows(&sqlmock.Rows{})
-				updateExec = dbmock.ExpectExec("INSERT INTO recipe_rating \\(recipe_id, rating\\) VALUES \\(\\$1, \\$2\\)").WithArgs(test.recipeID, test.expectedRating)
-			}
-			if test.dbError == nil {
-				updateExec.WillReturnResult(driver.RowsAffected(1))
-				dbmock.ExpectCommit()
-			} else {
-				updateExec.WillReturnError(test.dbError)
-				dbmock.ExpectRollback()
-			}
-
-			// Act
-			err := sut.Recipes().SetRating(t.Context(), test.recipeID, test.expectedRating)
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func Test_Recipe_SetState(t *testing.T) {
-	type testArgs struct {
-		recipeID      int64
-		expectedState models.RecipeState
-		dbError       error
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, models.Active, nil, nil},
-		{1, models.Archived, nil, nil},
-		{0, models.Active, sql.ErrNoRows, ErrNotFound},
-		{0, models.Active, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("UPDATE recipe SET current_state = \\$1 WHERE id = \\$2").
-				WithArgs(test.expectedState, test.recipeID)
-			if test.dbError == nil {
-				exec.WillReturnResult(driver.RowsAffected(1))
-				dbmock.ExpectCommit()
-			} else {
-				exec.WillReturnError(test.dbError)
-				dbmock.ExpectRollback()
-			}
-
-			// Act
-			err := sut.Recipes().SetState(t.Context(), test.recipeID, test.expectedState)
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func Test_Recipe_createTagImpl(t *testing.T) {
-	type testArgs struct {
-		recipeID      int64
-		tag           string
-		dbError       error
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, "weeknight", nil, nil},
-		{1, "weeknight", sql.ErrNoRows, ErrNotFound},
-		{1, "weeknight", sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("INSERT INTO recipe_tag \\(recipe_id, tag\\) VALUES \\(\\$1, \\$2\\)").
-				WithArgs(test.recipeID, test.tag)
-			if test.dbError == nil {
-				exec.WillReturnResult(driver.RowsAffected(1))
-				dbmock.ExpectCommit()
-			} else {
-				exec.WillReturnError(test.dbError)
-				dbmock.ExpectRollback()
-			}
-
-			// Act
-			err := tx(t.Context(), sut.Db, func(db *sqlx.Tx) error {
-				return sut.recipes.createTagImpl(t.Context(), test.recipeID, test.tag, db)
-			})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func Test_Recipe_deleteAllTagsImpl(t *testing.T) {
-	type testArgs struct {
-		recipeID      int64
-		dbError       error
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, nil, nil},
-		{0, sql.ErrNoRows, ErrNotFound},
-		{0, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			dbmock.ExpectBegin()
-			exec := dbmock.ExpectExec("DELETE FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID)
-			if test.dbError == nil {
-				exec.WillReturnResult(driver.RowsAffected(1))
-				dbmock.ExpectCommit()
-			} else {
-				exec.WillReturnError(test.dbError)
-				dbmock.ExpectRollback()
-			}
-
-			// Act
-			err := tx(t.Context(), sut.Db, func(db *sqlx.Tx) error {
-				return sut.recipes.deleteAllTagsImpl(t.Context(), test.recipeID, db)
-			})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func Test_Recipe_ListTags(t *testing.T) {
-	type testArgs struct {
-		recipeID       int64
-		expectedResult []string
-		dbError        error
-		expectedError  error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, []string{"weeknight", "high-protein"}, nil, nil},
-		{0, nil, sql.ErrNoRows, ErrNotFound},
-		{0, nil, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			query := dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID)
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"tag"})
-				for _, tag := range test.expectedResult {
-					rows.AddRow(tag)
-				}
-				query.WillReturnRows(rows)
-			} else {
-				query.WillReturnError(test.dbError)
-			}
-
-			// Act
-			result, err := sut.Recipes().ListTags(t.Context(), test.recipeID)
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-			if test.expectedResult == nil {
-				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
-				}
-			} else {
-				if result == nil {
-					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
-				} else {
-					for i, tag := range test.expectedResult {
-						if tag != (*result)[i] {
-							t.Errorf("tags don't match, expected: %s, received: %s", tag, (*result)[i])
-						}
-					}
-				}
-			}
-		})
-	}
-}
-
-func Test_Recipe_ListAllTags(t *testing.T) {
-	type testArgs struct {
-		expectedResult map[string]int
-		dbError        error
-		expectedError  error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{map[string]int{"tag1": 2, "tag2": 3}, nil, nil},
-		{nil, sql.ErrNoRows, ErrNotFound},
-		{nil, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
-
-			query := dbmock.ExpectQuery("SELECT tag, count\\(tag\\) as num FROM recipe_tag GROUP BY tag")
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"tag", "count"})
-				for tag, count := range test.expectedResult {
-					rows.AddRow(tag, count)
-				}
-				query.WillReturnRows(rows)
-			} else {
-				query.WillReturnError(test.dbError)
-			}
-
-			// Act
-			result, err := sut.Recipes().ListAllTags(t.Context())
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-			if test.expectedResult == nil {
-				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
-				}
-			} else {
-				if result == nil {
-					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if !reflect.DeepEqual(*result, test.expectedResult) {
-					t.Errorf("got = %v, want %v", result, test.expectedResult)
-				}
 			}
 		})
 	}
@@ -965,7 +775,7 @@ func Test_getOrderStmt(t *testing.T) {
 				sortBy:  models.SortByRating,
 				sortDir: models.Asc,
 			},
-			want: "ORDER BY avg_rating, r.modified_at DESC",
+			want: "ORDER BY rating, r.modified_at DESC",
 		},
 		{
 			name: "Rating, DESC",
@@ -973,7 +783,7 @@ func Test_getOrderStmt(t *testing.T) {
 				sortBy:  models.SortByRating,
 				sortDir: models.Desc,
 			},
-			want: "ORDER BY avg_rating DESC, r.modified_at DESC",
+			want: "ORDER BY rating DESC, r.modified_at DESC",
 		},
 		{
 			name: "Random, ASC",
@@ -1028,16 +838,16 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL").
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
 				// Select query
-				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs(2, 0).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "main_image_name"}).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(1, "Recipe1", models.Active, time.Now(), time.Now(), 4.5, "url1").
 						AddRow(2, "Recipe2", models.Active, time.Now(), time.Now(), 3.0, "url2"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](1), Name: "Recipe1", State: models.Active, AverageRating: utils.GetPtr[float32](4.5), MainImageName: "url1"},
-				{ID: utils.GetPtr[int64](2), Name: "Recipe2", State: models.Active, AverageRating: utils.GetPtr[float32](3.0), MainImageName: "url2"},
+				{ID: utils.GetPtr[int64](1), Name: "Recipe1", State: models.Active, Rating: utils.GetPtr[float32](4.5), MainImageName: "url1"},
+				{ID: utils.GetPtr[int64](2), Name: "Recipe2", State: models.Active, Rating: utils.GetPtr[float32](3.0), MainImageName: "url2"},
 			},
 			expectedTotal: 2,
 		},
@@ -1053,14 +863,14 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IN \\(\\?, \\?\\)").
 					WithArgs(models.Active, models.Archived).
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IN \\(\\?, \\?\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IN \\(\\?, \\?\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs(models.Active, models.Archived, 1, 0).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "main_image_name"}).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(3, "Recipe3", models.Archived, time.Now(), time.Now(), 2.0, "url3"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](3), Name: "Recipe3", State: models.Archived, AverageRating: utils.GetPtr[float32](2.0), MainImageName: "url3"},
+				{ID: utils.GetPtr[int64](3), Name: "Recipe3", State: models.Archived, Rating: utils.GetPtr[float32](2.0), MainImageName: "url3"},
 			},
 			expectedTotal: 1,
 		},
@@ -1076,14 +886,14 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_tag AS t WHERE t\\.recipe_id = r\\.id AND t.tag IN \\(\\?, \\?\\)\\)\\)").
 					WithArgs("tag1", "tag2").
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_tag AS t WHERE t\\.recipe_id = r\\.id AND t\\.tag IN \\(\\?, \\?\\)\\)\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL AND \\(EXISTS \\(SELECT 1 FROM recipe_tag AS t WHERE t\\.recipe_id = r\\.id AND t\\.tag IN \\(\\?, \\?\\)\\)\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs("tag1", "tag2", 1, 0).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "main_image_name"}).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(4, "Recipe4", models.Active, time.Now(), time.Now(), 5.0, "url4"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](4), Name: "Recipe4", State: models.Active, AverageRating: utils.GetPtr[float32](5.0), MainImageName: "url4"},
+				{ID: utils.GetPtr[int64](4), Name: "Recipe4", State: models.Active, Rating: utils.GetPtr[float32](5.0), MainImageName: "url4"},
 			},
 			expectedTotal: 1,
 		},
@@ -1097,14 +907,14 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			setupMock: func(dbmock sqlmock.Sqlmock) {
 				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL AND r\\.main_image_name != ''\\)").
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL AND r\\.main_image_name != ''\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL AND \\(r\\.main_image_name IS NOT NULL AND r\\.main_image_name != ''\\) ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs(1, 0).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "avg_rating", "main_image_name"}).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(5, "Recipe5", models.Active, time.Now(), time.Now(), 1.0, "url5"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](5), Name: "Recipe5", State: models.Active, AverageRating: utils.GetPtr[float32](1.0), MainImageName: "url5"},
+				{ID: utils.GetPtr[int64](5), Name: "Recipe5", State: models.Active, Rating: utils.GetPtr[float32](1.0), MainImageName: "url5"},
 			},
 			expectedTotal: 1,
 		},
@@ -1133,7 +943,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			setupMock: func(dbmock sqlmock.Sqlmock) {
 				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL").
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS avg_rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs(1, 0).
 					WillReturnError(sql.ErrConnDone)
 			},
@@ -1175,8 +985,8 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					if gotItem.State != wantItem.State {
 						t.Errorf("result at index %d: State mismatch: got %v, want %v", i, gotItem.State, wantItem.State)
 					}
-					if (gotItem.AverageRating == nil && wantItem.AverageRating != nil) || (gotItem.AverageRating != nil && wantItem.AverageRating == nil) || (gotItem.AverageRating != nil && wantItem.AverageRating != nil && *gotItem.AverageRating != *wantItem.AverageRating) {
-						t.Errorf("result at index %d: AverageRating mismatch: got %v, want %v", i, gotItem.AverageRating, wantItem.AverageRating)
+					if (gotItem.Rating == nil && wantItem.Rating != nil) || (gotItem.Rating != nil && wantItem.Rating == nil) || (gotItem.Rating != nil && wantItem.Rating != nil && *gotItem.Rating != *wantItem.Rating) {
+						t.Errorf("result at index %d: Rating mismatch: got %v, want %v", i, gotItem.Rating, wantItem.Rating)
 					}
 					if gotItem.MainImageName != wantItem.MainImageName {
 						t.Errorf("result at index %d: MainImageName mismatch: got %v, want %v", i, gotItem.MainImageName, wantItem.MainImageName)

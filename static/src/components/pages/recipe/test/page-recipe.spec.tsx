@@ -12,6 +12,7 @@ describe('page-recipe', () => {
           id: 1,
           name: 'Pancakes',
           state: RecipeState.Active,
+          rating: 0,
           servingSize: '4',
           time: '30 minutes',
           nutritionInfo: '...',

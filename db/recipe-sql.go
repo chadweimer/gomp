@@ -33,7 +33,7 @@ func (d *sqlRecipeDriver) Create(ctx context.Context, recipe *models.Recipe) err
 	})
 }
 
-func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExtContext) error {
+func (*sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExtContext) error {
 	stmt := "INSERT INTO recipe (name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time) " +
 		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
 
@@ -44,7 +44,7 @@ func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe,
 	}
 
 	for _, tag := range recipe.Tags {
-		if err := d.createTagImpl(ctx, *recipe.ID, tag, db); err != nil {
+		if err := createTagForRecipe(ctx, *recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("adding tags to new recipe: %w", err)
 		}
 	}
@@ -54,14 +54,16 @@ func (d *sqlRecipeDriver) createImpl(ctx context.Context, recipe *models.Recipe,
 
 func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, error) {
 	return get(d.Db, func(q sqlx.QueryerContext) (*models.Recipe, error) {
-		stmt := "SELECT id, name, serving_size, nutrition_info, ingredients, directions, storage_instructions, source_url, recipe_time, current_state, main_image_name, created_at, modified_at " +
-			"FROM recipe WHERE id = $1"
+		stmt := "SELECT r.id, r.name, r.serving_size, r.nutrition_info, r.ingredients, r.directions, r.storage_instructions, r.source_url, r.recipe_time, r.current_state, r.main_image_name, COALESCE(g.rating, 0) AS rating, r.created_at, r.modified_at " +
+			"FROM recipe as r " +
+			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+			"WHERE r.id = $1"
 		recipe := new(models.Recipe)
 		if err := sqlx.GetContext(ctx, q, recipe, stmt, id); err != nil {
 			return nil, err
 		}
 
-		tags, err := d.ListTags(ctx, id)
+		tags, err := listTagsForRecipe(ctx, id, q)
 		if err != nil {
 			return nil, fmt.Errorf("reading tags for recipe: %w", err)
 		}
@@ -77,7 +79,7 @@ func (d *sqlRecipeDriver) Update(ctx context.Context, recipe *models.Recipe) err
 	})
 }
 
-func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExecerContext) error {
+func (*sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe, db sqlx.ExecerContext) error {
 	if recipe.ID == nil {
 		return ErrMissingID
 	}
@@ -92,12 +94,56 @@ func (d *sqlRecipeDriver) updateImpl(ctx context.Context, recipe *models.Recipe,
 	}
 
 	// Deleting and recreating seems inefficient. Maybe make this smarter.
-	if err = d.deleteAllTagsImpl(ctx, *recipe.ID, db); err != nil {
+	if err = deleteAllTagsFromRecipe(ctx, *recipe.ID, db); err != nil {
 		return fmt.Errorf("deleting tags before updating on recipe: %w", err)
 	}
 	for _, tag := range recipe.Tags {
-		if err = d.createTagImpl(ctx, *recipe.ID, tag, db); err != nil {
+		if err = createTagForRecipe(ctx, *recipe.ID, tag, db); err != nil {
 			return fmt.Errorf("updating tags on recipe: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlRecipeDriver) Patch(ctx context.Context, id int64, patch *models.RecipePatch) error {
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
+		return d.patchImpl(ctx, id, patch, db)
+	})
+}
+
+func (d *sqlRecipeDriver) patchImpl(ctx context.Context, id int64, patch *models.RecipePatch, db *sqlx.Tx) error {
+	if patch == nil {
+		return nil
+	}
+
+	if patch.State != nil || patch.MainImageName != nil {
+		stmt := "UPDATE recipe SET "
+		fields := ""
+		args := make([]any, 0)
+		if patch.State != nil {
+			fields += "current_state = ?"
+			args = append(args, *patch.State)
+		}
+		if patch.MainImageName != nil {
+			if fields != "" {
+				fields += ", "
+			}
+			fields += "main_image_name = ?"
+			args = append(args, *patch.MainImageName)
+		}
+		stmt += fields + " WHERE id = ?"
+		args = append(args, id)
+
+		_, err := db.ExecContext(ctx, d.Db.Rebind(stmt), args...)
+		if err != nil {
+			return fmt.Errorf("updating recipe: %w", err)
+		}
+	}
+
+	if patch.Rating != nil {
+		if err := d.setRatingImpl(ctx, id, *patch.Rating, db); err != nil {
+			return fmt.Errorf("updating recipe rating: %w", err)
 		}
 	}
 
@@ -118,55 +164,26 @@ func (*sqlRecipeDriver) deleteImpl(ctx context.Context, id int64, db sqlx.Execer
 	return nil
 }
 
-func (d *sqlRecipeDriver) GetRating(ctx context.Context, id int64) (*float32, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*float32, error) {
-		var rating float32
-		err := sqlx.GetContext(ctx, db, &rating,
-			"SELECT COALESCE(g.rating, 0) AS avg_rating FROM recipe AS r "+
-				"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id "+
-				"WHERE r.id = $1", id)
+func (*sqlRecipeDriver) setRatingImpl(ctx context.Context, id int64, rating float32, db *sqlx.Tx) error {
+	count := -1
+	err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
+
+	if errors.Is(err, sql.ErrNoRows) || count == 0 {
+		_, err = db.ExecContext(ctx,
+			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
 		if err != nil {
-			return nil, fmt.Errorf("updating recipe state: %w", err)
+			return fmt.Errorf("creating recipe rating: %w", err)
 		}
+	} else if err == nil {
+		_, err = db.ExecContext(ctx,
+			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
+	}
 
-		return &rating, nil
-	})
-}
+	if err != nil {
+		return fmt.Errorf("updating recipe rating: %w", err)
+	}
 
-func (d *sqlRecipeDriver) SetRating(ctx context.Context, id int64, rating float32) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		count := -1
-		err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
-
-		if errors.Is(err, sql.ErrNoRows) || count == 0 {
-			_, err = db.ExecContext(ctx,
-				"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
-			if err != nil {
-				return fmt.Errorf("creating recipe rating: %w", err)
-			}
-		} else if err == nil {
-			_, err = db.ExecContext(ctx,
-				"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
-		}
-
-		if err != nil {
-			return fmt.Errorf("updating recipe rating: %w", err)
-		}
-
-		return nil
-	})
-}
-
-func (d *sqlRecipeDriver) SetState(ctx context.Context, id int64, state models.RecipeState) error {
-	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
-		_, err := db.ExecContext(ctx,
-			"UPDATE recipe SET current_state = $1 WHERE id = $2", state, id)
-		if err != nil {
-			return fmt.Errorf("updating recipe state: %w", err)
-		}
-
-		return nil
-	})
+	return nil
 }
 
 func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
@@ -219,7 +236,7 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 	}
 
 	combinedStr :=
-		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS avg_rating, r.main_image_name " +
+		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS rating, r.main_image_name " +
 			"FROM recipe AS r " +
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
@@ -279,7 +296,7 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 	case models.SortByModified:
 		stmt += "r.modified_at"
 	case models.SortByRating:
-		stmt += "avg_rating"
+		stmt += "rating"
 	case models.SortByRandom:
 		stmt += "RANDOM()"
 	case models.SortByName:
@@ -300,51 +317,4 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 	}
 
 	return stmt
-}
-
-func (*sqlRecipeDriver) createTagImpl(ctx context.Context, recipeID int64, tag string, db sqlx.ExecerContext) error {
-	_, err := db.ExecContext(ctx,
-		"INSERT INTO recipe_tag (recipe_id, tag) VALUES ($1, $2)",
-		recipeID, tag)
-	return err
-}
-
-func (*sqlRecipeDriver) deleteAllTagsImpl(ctx context.Context, recipeID int64, db sqlx.ExecerContext) error {
-	_, err := db.ExecContext(ctx,
-		"DELETE FROM recipe_tag WHERE recipe_id = $1",
-		recipeID)
-	return err
-}
-
-func (d *sqlRecipeDriver) ListTags(ctx context.Context, recipeID int64) (*[]string, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*[]string, error) {
-		tags := make([]string, 0)
-		if err := sqlx.SelectContext(ctx, db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
-			return nil, err
-		}
-
-		return &tags, nil
-	})
-}
-
-func (d *sqlRecipeDriver) ListAllTags(ctx context.Context) (*map[string]int, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*map[string]int, error) {
-		rows, err := db.QueryContext(ctx, "SELECT tag, count(tag) as num FROM recipe_tag GROUP BY tag")
-		if err != nil {
-			return nil, err
-		}
-		defer rows.Close()
-
-		tags := make(map[string]int)
-		for rows.Next() {
-			var tag string
-			var count int
-			if err := rows.Scan(&tag, &count); err != nil {
-				return nil, fmt.Errorf("scanning tag row: %w", err)
-			}
-			tags[tag] = count
-		}
-
-		return &tags, nil
-	})
 }

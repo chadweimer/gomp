@@ -26,7 +26,7 @@ describe('recipe-card', () => {
       name: 'Some Recipe',
       state: RecipeState.Active,
       mainImageName: '',
-      averageRating: 2
+      rating: 2
     };
     const { root } = await render(<recipe-card recipe={recipe} />);
     expect(root).toHaveProperty('recipe', recipe);
@@ -37,6 +37,6 @@ describe('recipe-card', () => {
     expect(node).toEqualText(recipe.name);
     const rating = root.shadowRoot?.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
-    expect(rating).toEqualAttribute('value', recipe.averageRating?.toString() ?? '0');
+    expect(rating).toEqualAttribute('value', recipe.rating?.toString() ?? '0');
   });
 });

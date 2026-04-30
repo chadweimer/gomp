@@ -10,7 +10,6 @@ import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty } f
 export class RecipeViewer {
   @Prop() recipe: Recipe | null = null;
   @Prop() links: RecipeCompact[] = [];
-  @Prop() rating = 0;
   @Prop() readonly = false;
 
   @Event() ratingSelected!: EventEmitter<number>;
@@ -41,7 +40,7 @@ export class RecipeViewer {
           <ion-card-header>
             <ion-card-title>{this.recipe?.name}</ion-card-title>
             <ion-card-subtitle>
-              <five-star-rating value={this.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
+              <five-star-rating value={this.recipe?.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
               {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
               {!isNullOrEmpty(this.recipe?.time) && <div>Time: {this.recipe?.time}</div>}
               <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>

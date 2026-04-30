@@ -2,9 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -18,19 +17,43 @@ import (
 
 func Test_GetUser(t *testing.T) {
 	type testArgs struct {
-		userID        int64
-		username      string
-		expectedError error
+		name             string
+		userID           int64
+		username         string
+		dbError          error
+		expectedError    error
+		expectedResponse GetUserResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, "user1", nil},
-		{2, "user2", nil},
-		{3, "", db.ErrNotFound},
+		{
+			name:             "success",
+			userID:           1,
+			username:         "user1",
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetUser200JSONResponse{ID: utils.GetPtr[int64](1), Username: "user1"},
+		},
+		{
+			name:             "not found",
+			userID:           2,
+			username:         "",
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: GetUser404Response{},
+		},
+		{
+			name:             "db error",
+			userID:           3,
+			username:         "",
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -41,8 +64,8 @@ func Test_GetUser(t *testing.T) {
 					Username: test.username,
 				},
 			}
-			if test.expectedError != nil {
-				usersDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.expectedError)
+			if test.dbError != nil {
+				usersDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.dbError)
 			} else {
 				usersDriver.EXPECT().Read(t.Context(), test.userID).Return(expectedUser, nil)
 			}
@@ -54,17 +77,26 @@ func Test_GetUser(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(GetUser200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if resp.ID == nil {
-					t.Error("expected non-null id")
-				} else if *resp.ID != *expectedUser.ID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedUser.ID, *resp.ID)
-				}
-				if resp.Username != expectedUser.Username {
-					t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
+				switch expected := test.expectedResponse.(type) {
+				case GetUser200JSONResponse:
+					got, ok := resp.(GetUser200JSONResponse)
+					if !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+					if got.ID == nil {
+						t.Error("expected non-null id")
+					} else if *got.ID != *expected.ID {
+						t.Errorf("expected id: %d, actual id: %d", *expected.ID, *got.ID)
+					}
+					if got.Username != expected.Username {
+						t.Errorf("expected username: %s, actual username: %s", expected.Username, got.Username)
+					}
+				case GetUser404Response:
+					if _, ok := resp.(GetUser404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", expected)
 				}
 			}
 		})
@@ -73,20 +105,39 @@ func Test_GetUser(t *testing.T) {
 
 func Test_GetCurrentUser(t *testing.T) {
 	type testArgs struct {
+		name             string
 		userID           *int64
 		username         string
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse GetCurrentUserResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{utils.GetPtr[int64](1), "user1", nil, reflect.TypeOf(GetCurrentUser200JSONResponse{})},
-		{nil, "", nil, reflect.TypeOf(GetCurrentUser401Response{})},
-		{utils.GetPtr[int64](3), "", db.ErrNotFound, nil},
+		{
+			name:             "success",
+			userID:           utils.GetPtr[int64](1),
+			username:         "user1",
+			expectedError:    nil,
+			expectedResponse: GetCurrentUser200JSONResponse{},
+		},
+		{
+			name:             "unauthorized",
+			userID:           nil,
+			username:         "",
+			expectedError:    nil,
+			expectedResponse: GetCurrentUser401Response{},
+		},
+		{
+			name:             "not found",
+			userID:           utils.GetPtr[int64](3),
+			username:         "",
+			expectedError:    db.ErrNotFound,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -114,22 +165,26 @@ func Test_GetCurrentUser(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
-				}
-				if test.expectedResponse == reflect.TypeOf(GetCurrentUser200JSONResponse{}) {
-					resp, ok := resp.(GetCurrentUser200JSONResponse)
+				switch expected := test.expectedResponse.(type) {
+				case GetCurrentUser200JSONResponse:
+					got, ok := resp.(GetCurrentUser200JSONResponse)
 					if !ok {
-						t.Error("invalid response")
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
-					if resp.ID == nil {
+					if got.ID == nil {
 						t.Error("expected non-null id")
-					} else if *resp.ID != *expectedUser.ID {
-						t.Errorf("expected id: %d, actual id: %d", *expectedUser.ID, *resp.ID)
+					} else if *got.ID != *expectedUser.ID {
+						t.Errorf("expected id: %d, actual id: %d", *expectedUser.ID, *got.ID)
 					}
-					if resp.Username != expectedUser.Username {
-						t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, resp.Username)
+					if got.Username != expectedUser.Username {
+						t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, got.Username)
 					}
+				case GetCurrentUser401Response:
+					if _, ok := resp.(GetCurrentUser401Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", expected)
 				}
 			}
 		})
@@ -138,22 +193,31 @@ func Test_GetCurrentUser(t *testing.T) {
 
 func Test_GetAllUsers(t *testing.T) {
 	type testArgs struct {
-		users         []models.User
-		expectedError error
+		name             string
+		users            []models.User
+		expectedError    error
+		expectedResponse GetAllUsersResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
 		{
-			[]models.User{
+			name: "success",
+			users: []models.User{
 				{Username: "user1"},
 			},
-			nil,
+			expectedError:    nil,
+			expectedResponse: GetAllUsers200JSONResponse{},
 		},
-		{[]models.User{}, errors.New("something failed")},
+		{
+			name:             "failure",
+			users:            []models.User{},
+			expectedError:    errors.New("something failed"),
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -171,12 +235,17 @@ func Test_GetAllUsers(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				typedResp, ok := resp.(GetAllUsers200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if len(typedResp) != len(test.users) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.users), len(typedResp))
+				switch test.expectedResponse.(type) {
+				case GetAllUsers200JSONResponse:
+					got, ok := resp.(GetAllUsers200JSONResponse)
+					if !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+					if len(got) != len(test.users) {
+						t.Errorf("expected length: %d, actual length: %d", len(test.users), len(got))
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -185,20 +254,43 @@ func Test_GetAllUsers(t *testing.T) {
 
 func Test_AddUser(t *testing.T) {
 	type testArgs struct {
-		username      string
-		accessLevel   models.AccessLevel
-		password      string
-		expectedError error
+		name             string
+		username         string
+		accessLevel      models.AccessLevel
+		password         string
+		expectedError    error
+		expectedResponse AddUserResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{"user1", models.Editor, "password", nil},
-		{"user2", models.Admin, "password", nil},
-		{"", models.Viewer, "", db.ErrAuthenticationFailed},
+		{
+			name:             "Editor user",
+			username:         "user1",
+			accessLevel:      models.Editor,
+			password:         "password",
+			expectedError:    nil,
+			expectedResponse: AddUser201JSONResponse{Username: "user1", AccessLevel: models.Editor},
+		},
+		{
+			name:             "Admin user",
+			username:         "user2",
+			accessLevel:      models.Admin,
+			password:         "password",
+			expectedError:    nil,
+			expectedResponse: AddUser201JSONResponse{Username: "user2", AccessLevel: models.Admin},
+		},
+		{
+			name:             "failure",
+			username:         "",
+			accessLevel:      models.Viewer,
+			password:         "",
+			expectedError:    db.ErrAuthenticationFailed,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -220,12 +312,19 @@ func Test_AddUser(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				resp, ok := resp.(AddUser201JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if models.User(resp) != expectedUser {
-					t.Errorf("expected user: %v, actual user: %v", expectedUser, resp)
+				switch test.expectedResponse.(type) {
+				case AddUser201JSONResponse:
+					got, ok := resp.(AddUser201JSONResponse)
+					if !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+					if got.Username != expectedUser.Username {
+						t.Errorf("expected username: %s, actual username: %s", expectedUser.Username, got.Username)
+					} else if got.AccessLevel != expectedUser.AccessLevel {
+						t.Errorf("expected access level: %v, actual access level: %v", expectedUser.AccessLevel, got.AccessLevel)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -234,38 +333,108 @@ func Test_AddUser(t *testing.T) {
 
 func Test_SaveUser(t *testing.T) {
 	type testArgs struct {
+		name             string
 		currentUserID    int64
 		requestUserID    int64
 		user             models.User
-		expectedDbError  error
+		dbError          error
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse SaveUserResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Admin}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
-		{1, 1, models.User{ID: nil, Username: "user1", AccessLevel: models.Admin}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
-
-		{1, 1, models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser403Response{})},
-		{1, 1, models.User{ID: nil, Username: "user1", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser403Response{})},
-
-		{1, 2, models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
-		{1, 2, models.User{ID: nil, Username: "user2", AccessLevel: models.Editor}, nil, nil, reflect.TypeOf(SaveUser204Response{})},
-
-		{1, 2, models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer}, db.ErrNotFound, db.ErrNotFound, nil},
-
-		{1, 3, models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer}, nil, errMismatchedID, nil},
+		{
+			name:             "admin updating self",
+			currentUserID:    1,
+			requestUserID:    1,
+			user:             models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Admin},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser204Response{},
+		},
+		{
+			name:             "admin updating self with nil ID",
+			currentUserID:    1,
+			requestUserID:    1,
+			user:             models.User{ID: nil, Username: "user1", AccessLevel: models.Admin},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser204Response{},
+		},
+		{
+			name:             "admin updating self with editor access",
+			currentUserID:    1,
+			requestUserID:    1,
+			user:             models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Editor},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser403Response{},
+		},
+		{
+			name:             "admin updating self with nil ID and editor access",
+			currentUserID:    1,
+			requestUserID:    1,
+			user:             models.User{ID: nil, Username: "user1", AccessLevel: models.Editor},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser403Response{},
+		},
+		{
+			name:             "admin updating another user with editor access",
+			currentUserID:    1,
+			requestUserID:    2,
+			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Editor},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser204Response{},
+		},
+		{
+			name:             "admin updating another user with nil ID and editor access",
+			currentUserID:    1,
+			requestUserID:    2,
+			user:             models.User{ID: nil, Username: "user2", AccessLevel: models.Editor},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser204Response{},
+		},
+		{
+			name:             "admin updating a non-existent user",
+			currentUserID:    1,
+			requestUserID:    2,
+			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer},
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: SaveUser404Response{},
+		},
+		{
+			name:             "admin updating another user with mismatched ID",
+			currentUserID:    1,
+			requestUserID:    3,
+			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUser400Response{},
+		},
+		{
+			name:             "DB error when updating user",
+			currentUserID:    1,
+			requestUserID:    2,
+			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				usersDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.dbError)
 			} else {
 				usersDriver.EXPECT().Update(ctx, &test.user).MaxTimes(1).Return(nil)
 			}
@@ -277,8 +446,25 @@ func Test_SaveUser(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
+				switch test.expectedResponse.(type) {
+				case SaveUser204Response:
+					if _, ok := resp.(SaveUser204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case SaveUser400Response:
+					if _, ok := resp.(SaveUser400Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case SaveUser403Response:
+					if _, ok := resp.(SaveUser403Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case SaveUser404Response:
+					if _, ok := resp.(SaveUser404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -287,30 +473,58 @@ func Test_SaveUser(t *testing.T) {
 
 func Test_DeleteUser(t *testing.T) {
 	type testArgs struct {
+		name             string
 		currentUserID    int64
 		userID           int64
-		expectedDbError  error
+		dbError          error
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse DeleteUserResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, nil, nil, reflect.TypeOf(DeleteUser403Response{})},
-
-		{1, 2, nil, nil, reflect.TypeOf(DeleteUser204Response{})},
-
-		{1, 2, db.ErrNotFound, db.ErrNotFound, nil},
+		{
+			name:             "admin deleting self",
+			currentUserID:    1,
+			userID:           1,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: DeleteUser403Response{},
+		},
+		{
+			name:             "admin deleting another user",
+			currentUserID:    1,
+			userID:           2,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: DeleteUser204Response{},
+		},
+		{
+			name:             "admin deleting non-existent user",
+			currentUserID:    1,
+			userID:           2,
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: DeleteUser404Response{},
+		},
+		{
+			name:             "DB error when deleting user",
+			currentUserID:    1,
+			userID:           2,
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().Delete(ctx, gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				usersDriver.EXPECT().Delete(ctx, gomock.Any()).Return(test.dbError)
 			} else {
 				usersDriver.EXPECT().Delete(ctx, test.userID).MaxTimes(1).Return(nil)
 			}
@@ -322,8 +536,21 @@ func Test_DeleteUser(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
+				switch test.expectedResponse.(type) {
+				case DeleteUser204Response:
+					if _, ok := resp.(DeleteUser204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case DeleteUser403Response:
+					if _, ok := resp.(DeleteUser403Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case DeleteUser404Response:
+					if _, ok := resp.(DeleteUser404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -332,28 +559,50 @@ func Test_DeleteUser(t *testing.T) {
 
 func Test_ChangePassword(t *testing.T) {
 	type testArgs struct {
+		name             string
 		currentUserID    int64
 		request          UserPasswordRequest
-		expectedDbError  error
+		dbError          error
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse ChangePasswordResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"}, nil, nil, reflect.TypeOf(ChangePassword204Response{})},
-		{1, UserPasswordRequest{CurrentPassword: "wrongpassword", NewPassword: "newpassword"}, db.ErrAuthenticationFailed, nil, reflect.TypeOf(ChangePassword403Response{})},
-		{2, UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"}, db.ErrNotFound, nil, reflect.TypeOf(ChangePassword403Response{})},
+		{
+			name:             "Change password successfully",
+			currentUserID:    1,
+			request:          UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: ChangePassword204Response{},
+		},
+		{
+			name:             "Change password with wrong current password",
+			currentUserID:    1,
+			request:          UserPasswordRequest{CurrentPassword: "wrongpassword", NewPassword: "newpassword"},
+			dbError:          db.ErrAuthenticationFailed,
+			expectedError:    nil,
+			expectedResponse: ChangePassword403Response{},
+		},
+		{
+			name:             "DB error when changing password",
+			currentUserID:    1,
+			request:          UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.dbError)
 			} else {
 				usersDriver.EXPECT().UpdatePassword(ctx, test.currentUserID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
 			}
@@ -365,8 +614,17 @@ func Test_ChangePassword(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
+				switch test.expectedResponse.(type) {
+				case ChangePassword204Response:
+					if _, ok := resp.(ChangePassword204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case ChangePassword403Response:
+					if _, ok := resp.(ChangePassword403Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -375,30 +633,72 @@ func Test_ChangePassword(t *testing.T) {
 
 func Test_ChangeUserPassword(t *testing.T) {
 	type testArgs struct {
+		name             string
 		currentUserID    int64
 		userID           int64
 		request          UserPasswordRequest
-		expectedDbError  error
+		dbError          error
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse ChangeUserPasswordResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"}, nil, nil, reflect.TypeOf(ChangeUserPassword204Response{})},
-		{1, 1, UserPasswordRequest{CurrentPassword: "wrongpassword", NewPassword: "newpassword"}, db.ErrAuthenticationFailed, nil, reflect.TypeOf(ChangeUserPassword403Response{})},
-		{1, 2, UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"}, nil, nil, reflect.TypeOf(ChangeUserPassword204Response{})},
-		{2, 2, UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"}, db.ErrNotFound, nil, reflect.TypeOf(ChangeUserPassword403Response{})},
+		{
+			name:             "Change password successfully",
+			currentUserID:    1,
+			userID:           1,
+			request:          UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: ChangeUserPassword204Response{},
+		},
+		{
+			name:             "Change password with wrong current password",
+			currentUserID:    1,
+			userID:           1,
+			request:          UserPasswordRequest{CurrentPassword: "wrongpassword", NewPassword: "newpassword"},
+			dbError:          db.ErrAuthenticationFailed,
+			expectedError:    nil,
+			expectedResponse: ChangeUserPassword403Response{},
+		},
+		{
+			name:             "Change password for another user successfully",
+			currentUserID:    1,
+			userID:           2,
+			request:          UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: ChangeUserPassword204Response{},
+		},
+		{
+			name:             "Change password for non-existent user",
+			currentUserID:    2,
+			userID:           2,
+			request:          UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"},
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: ChangeUserPassword404Response{},
+		},
+		{
+			name:             "DB error when changing password",
+			currentUserID:    1,
+			userID:           2,
+			request:          UserPasswordRequest{CurrentPassword: "password", NewPassword: "newpassword"},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.dbError)
 			} else {
 				usersDriver.EXPECT().UpdatePassword(ctx, test.userID, test.request.CurrentPassword, test.request.NewPassword).Return(nil)
 			}
@@ -410,748 +710,21 @@ func Test_ChangeUserPassword(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
-				}
-			}
-		})
-	}
-}
-
-func Test_GetUserSettings(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		homeTitle     string
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, "My home", nil},
-		{2, "It's mine", nil},
-		{3, "", db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			expectedSettings := &models.UserSettings{
-				UserID:    &test.userID,
-				HomeTitle: &test.homeTitle,
-			}
-			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSettings(t.Context(), gomock.Any()).Return(nil, test.expectedError)
-			} else {
-				usersDriver.EXPECT().ReadSettings(t.Context(), test.userID).Return(expectedSettings, nil)
-			}
-
-			// Act
-			resp, err := api.GetUserSettings(t.Context(), GetUserSettingsRequestObject{UserID: test.userID})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				resp, ok := resp.(GetUserSettings200JSONResponse)
-				if !ok {
-					t.Error("nvalid response")
-				}
-				if resp.UserID == nil {
-					t.Error("expected non-null id")
-				} else if *resp.UserID != *expectedSettings.UserID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *resp.UserID)
-				}
-				if resp.HomeTitle == nil {
-					t.Error("expected non-null title")
-				} else if resp.HomeTitle != expectedSettings.HomeTitle {
-					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *resp.HomeTitle)
-				}
-			}
-		})
-	}
-}
-
-func Test_GetSettings(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		homeTitle     string
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, "My home", nil},
-		{2, "It's mine", nil},
-		{3, "", db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			expectedSettings := &models.UserSettings{
-				UserID:    &test.userID,
-				HomeTitle: &test.homeTitle,
-			}
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSettings(ctx, gomock.Any()).Return(nil, test.expectedError)
-			} else {
-				usersDriver.EXPECT().ReadSettings(ctx, test.userID).Return(expectedSettings, nil)
-			}
-
-			// Act
-			resp, err := api.GetSettings(ctx, GetSettingsRequestObject{})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				resp, ok := resp.(GetSettings200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if resp.UserID == nil {
-					t.Error("expected non-null id")
-				} else if *resp.UserID != *expectedSettings.UserID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *resp.UserID)
-				}
-				if resp.HomeTitle == nil {
-					t.Error("expected non-null title")
-				} else if resp.HomeTitle != expectedSettings.HomeTitle {
-					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *resp.HomeTitle)
-				}
-			}
-		})
-	}
-}
-
-func Test_SaveSettings(t *testing.T) {
-	type testArgs struct {
-		currentUserID    int64
-		userSettings     models.UserSettings
-		expectedDbError  error
-		expectedError    error
-		expectedResponse reflect.Type
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, db.ErrNotFound, db.ErrNotFound, nil},
-		{1, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, errMismatchedID, nil},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdateSettings(ctx, gomock.Any()).Return(test.expectedDbError)
-			} else {
-				usersDriver.EXPECT().UpdateSettings(ctx, &test.userSettings).MaxTimes(1).Return(nil)
-			}
-
-			// Act
-			resp, err := api.SaveSettings(ctx, SaveSettingsRequestObject{Body: &test.userSettings})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
-			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
-				}
-			}
-		})
-	}
-}
-
-func Test_SaveUserSettings(t *testing.T) {
-	type testArgs struct {
-		currentUserID    int64
-		requestUserID    int64
-		userSettings     models.UserSettings
-		expectedDbError  error
-		expectedError    error
-		expectedResponse reflect.Type
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, 1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-
-		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 2, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-
-		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, db.ErrNotFound, db.ErrNotFound, nil},
-
-		{1, 3, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, errMismatchedID, nil},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().UpdateSettings(ctx, gomock.Any()).Return(test.expectedDbError)
-			} else {
-				usersDriver.EXPECT().UpdateSettings(ctx, &test.userSettings).MaxTimes(1).Return(nil)
-			}
-
-			// Act
-			resp, err := api.SaveUserSettings(ctx, SaveUserSettingsRequestObject{UserID: test.requestUserID, Body: &test.userSettings})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
-			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
-				}
-			}
-		})
-	}
-}
-
-func Test_GetUserSearchFilters(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		filters       []models.SavedSearchFilterCompact
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{
-			1,
-			[]models.SavedSearchFilterCompact{
-				{Name: "Filter 1"},
-				{Name: "Filter 2"},
-			},
-			nil,
-		},
-		{2, []models.SavedSearchFilterCompact{}, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().ListSearchFilters(ctx, gomock.Any()).Return(nil, test.expectedError)
-			} else {
-				usersDriver.EXPECT().ListSearchFilters(ctx, test.userID).Return(&test.filters, nil)
-			}
-
-			// Act
-			resp, err := api.GetSearchFilters(ctx, GetSearchFiltersRequestObject{})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				typedResp, ok := resp.(GetSearchFilters200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if len(typedResp) != len(test.filters) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(typedResp))
-				}
-			}
-		})
-	}
-}
-
-func Test_GetSearchFilters(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		filters       []models.SavedSearchFilterCompact
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{
-			1,
-			[]models.SavedSearchFilterCompact{
-				{Name: "Filter 1"},
-				{Name: "Filter 2"},
-			},
-			nil,
-		},
-		{2, []models.SavedSearchFilterCompact{}, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().ListSearchFilters(t.Context(), gomock.Any()).Return(nil, test.expectedError)
-			} else {
-				usersDriver.EXPECT().ListSearchFilters(t.Context(), test.userID).Return(&test.filters, nil)
-			}
-
-			// Act
-			resp, err := api.GetUserSearchFilters(t.Context(), GetUserSearchFiltersRequestObject{UserID: test.userID})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				typedResp, ok := resp.(GetUserSearchFilters200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if len(typedResp) != len(test.filters) {
-					t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(typedResp))
-				}
-			}
-		})
-	}
-}
-
-func Test_GetUserSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		filterID      int64
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, 1, nil},
-		{1, 2, nil},
-		{2, 3, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
-			} else {
-				usersDriver.EXPECT().ReadSearchFilter(t.Context(), test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
-			}
-
-			// Act
-			resp, err := api.GetUserSearchFilter(t.Context(), GetUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(GetUserSearchFilter200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_GetSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		filterID      int64
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, 1, nil},
-		{1, 2, nil},
-		{2, 3, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(ctx, gomock.Any(), gomock.Any()).Return(nil, test.expectedError)
-			} else {
-				usersDriver.EXPECT().ReadSearchFilter(ctx, test.userID, test.filterID).Return(&models.SavedSearchFilter{}, nil)
-			}
-
-			// Act
-			resp, err := api.GetSearchFilter(ctx, GetSearchFilterRequestObject{FilterID: test.filterID})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(GetSearchFilter200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_AddUserSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID          int64
-		filter          models.SavedSearchFilter
-		expectedDbError error
-		expectedError   error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{
-			1,
-			models.SavedSearchFilter{},
-			nil,
-			nil,
-		},
-		{
-			1,
-			models.SavedSearchFilter{},
-			db.ErrMissingID,
-			db.ErrMissingID,
-		},
-		{
-			1,
-			models.SavedSearchFilter{
-				UserID: utils.GetPtr(int64(2)),
-			},
-			nil,
-			errMismatchedID,
-		},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().CreateSearchFilter(t.Context(), gomock.Any()).Return(test.expectedDbError)
-			} else {
-				usersDriver.EXPECT().CreateSearchFilter(t.Context(), &test.filter).MaxTimes(1).Return(nil)
-			}
-
-			// Act
-			resp, err := api.AddUserSearchFilter(t.Context(), AddUserSearchFilterRequestObject{UserID: test.userID, Body: &test.filter})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf(" expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(AddUserSearchFilter201JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_AddSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID          int64
-		filter          models.SavedSearchFilter
-		expectedDbError error
-		expectedError   error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{
-			1,
-			models.SavedSearchFilter{},
-			nil,
-			nil,
-		},
-		{
-			1,
-			models.SavedSearchFilter{},
-			db.ErrMissingID,
-			db.ErrMissingID,
-		},
-		{
-			1,
-			models.SavedSearchFilter{
-				UserID: utils.GetPtr(int64(2)),
-			},
-			nil,
-			errMismatchedID,
-		},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().CreateSearchFilter(ctx, gomock.Any()).Return(test.expectedDbError)
-			} else {
-				usersDriver.EXPECT().CreateSearchFilter(ctx, &test.filter).MaxTimes(1).Return(nil)
-			}
-
-			// Act
-			resp, err := api.AddSearchFilter(ctx, AddSearchFilterRequestObject{Body: &test.filter})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf(" expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(AddSearchFilter201JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_SaveUserSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID          int64
-		filterID        int64
-		filter          models.SavedSearchFilter
-		expectedDbError error
-		expectedError   error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{
-			1,
-			1,
-			models.SavedSearchFilter{},
-			nil,
-			nil,
-		},
-		{
-			1,
-			1,
-			models.SavedSearchFilter{},
-			db.ErrMissingID,
-			db.ErrMissingID,
-		},
-		{
-			1,
-			1,
-			models.SavedSearchFilter{
-				UserID: utils.GetPtr(int64(2)),
-			},
-			nil,
-			errMismatchedID,
-		},
-		{
-			1,
-			1,
-			models.SavedSearchFilter{
-				ID: utils.GetPtr(int64(2)),
-			},
-			nil,
-			errMismatchedID,
-		},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(t.Context(), gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
-				usersDriver.EXPECT().UpdateSearchFilter(t.Context(), gomock.Any()).Times(0).Return(test.expectedDbError)
-			} else {
-				usersDriver.EXPECT().ReadSearchFilter(t.Context(), gomock.Any(), gomock.Any()).MaxTimes(1).Return(&models.SavedSearchFilter{}, nil)
-				usersDriver.EXPECT().UpdateSearchFilter(t.Context(), &test.filter).MaxTimes(1).Return(nil)
-			}
-
-			// Act
-			resp, err := api.SaveUserSearchFilter(t.Context(), SaveUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID, Body: &test.filter})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf(" expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(SaveUserSearchFilter204Response)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_SaveSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID          int64
-		filterID        int64
-		filter          models.SavedSearchFilter
-		expectedDbError error
-		expectedError   error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{
-			1,
-			1,
-			models.SavedSearchFilter{},
-			nil,
-			nil,
-		},
-		{
-			1,
-			1,
-			models.SavedSearchFilter{},
-			db.ErrMissingID,
-			db.ErrMissingID,
-		},
-		{
-			1,
-			1,
-			models.SavedSearchFilter{
-				UserID: utils.GetPtr(int64(2)),
-			},
-			nil,
-			errMismatchedID,
-		},
-		{
-			1,
-			1,
-			models.SavedSearchFilter{
-				ID: utils.GetPtr(int64(2)),
-			},
-			nil,
-			errMismatchedID,
-		},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
-			if test.expectedDbError != nil {
-				usersDriver.EXPECT().ReadSearchFilter(ctx, gomock.Any(), gomock.Any()).Return(nil, test.expectedDbError)
-				usersDriver.EXPECT().UpdateSearchFilter(ctx, gomock.Any()).Times(0).Return(test.expectedDbError)
-			} else {
-				usersDriver.EXPECT().ReadSearchFilter(ctx, gomock.Any(), gomock.Any()).MaxTimes(1).Return(&models.SavedSearchFilter{}, nil)
-				usersDriver.EXPECT().UpdateSearchFilter(ctx, &test.filter).MaxTimes(1).Return(nil)
-			}
-
-			// Act
-			resp, err := api.SaveSearchFilter(ctx, SaveSearchFilterRequestObject{Body: &test.filter})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf(" expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(SaveSearchFilter204Response)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_DeleteUserSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		filterID      int64
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, 1, nil},
-		{1, 2, nil},
-		{2, 3, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().DeleteSearchFilter(t.Context(), gomock.Any(), gomock.Any()).Return(test.expectedError)
-			} else {
-				usersDriver.EXPECT().DeleteSearchFilter(t.Context(), test.userID, test.filterID).Return(nil)
-			}
-
-			// Act
-			resp, err := api.DeleteUserSearchFilter(t.Context(), DeleteUserSearchFilterRequestObject{UserID: test.userID, FilterID: test.filterID})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(DeleteUserSearchFilter204Response)
-				if !ok {
-					t.Error("invalid response")
-				}
-			}
-		})
-	}
-}
-
-func Test_DeleteSearchFilter(t *testing.T) {
-	type testArgs struct {
-		userID        int64
-		filterID      int64
-		expectedError error
-	}
-
-	// Arrange
-	tests := []testArgs{
-		{1, 1, nil},
-		{1, 2, nil},
-		{2, 3, db.ErrNotFound},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
-			if test.expectedError != nil {
-				usersDriver.EXPECT().DeleteSearchFilter(ctx, gomock.Any(), gomock.Any()).Return(test.expectedError)
-			} else {
-				usersDriver.EXPECT().DeleteSearchFilter(ctx, test.userID, test.filterID).Return(nil)
-			}
-
-			// Act
-			resp, err := api.DeleteSearchFilter(ctx, DeleteSearchFilterRequestObject{FilterID: test.filterID})
-
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			} else if err == nil {
-				_, ok := resp.(DeleteSearchFilter204Response)
-				if !ok {
-					t.Error("invalid response")
+				switch test.expectedResponse.(type) {
+				case ChangeUserPassword204Response:
+					if _, ok := resp.(ChangeUserPassword204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case ChangeUserPassword403Response:
+					if _, ok := resp.(ChangeUserPassword403Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case ChangeUserPassword404Response:
+					if _, ok := resp.(ChangeUserPassword404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)
 				}
 			}
 		})

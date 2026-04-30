@@ -64,12 +64,12 @@ func Test_Login(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 			} else {
-				typedResp, ok := resp.(Login200JSONResponse)
+				got, ok := resp.(Login200JSONResponse)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
+				err := checkToken(got.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -130,12 +130,12 @@ func Test_RefreshToken(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 			} else {
-				typedResp, ok := resp.(RefreshToken200JSONResponse)
+				got, ok := resp.(RefreshToken200JSONResponse)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(typedResp.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
+				err := checkToken(got.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -158,12 +158,12 @@ func Test_Logout(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	typedResp, ok := resp.(Logout204Response)
+	got, ok := resp.(Logout204Response)
 	if !ok {
 		t.Fatalf("invalid response: %v", resp)
 	}
 
-	cookieStr := typedResp.Headers.SetCookie
+	cookieStr := got.Headers.SetCookie
 	cookie, err := http.ParseSetCookie(cookieStr)
 	if err != nil {
 		t.Fatalf("failed to parse cookie: %v", err)

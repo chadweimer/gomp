@@ -12,7 +12,7 @@ export class RecipeCard {
     name: '',
     state: RecipeState.Active,
     mainImageName: '',
-    averageRating: 0,
+    rating: 0,
   };
   @Prop() size: 'large' | 'small' = 'large';
 
@@ -27,7 +27,7 @@ export class RecipeCard {
             </ion-card-title>
           </ion-card-header>
           <ion-card-content class="no-overflow content">
-            <five-star-rating value={this.recipe?.averageRating ?? 0} disabled />
+            <five-star-rating value={this.recipe?.rating ?? 0} disabled />
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived &&
             <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>}

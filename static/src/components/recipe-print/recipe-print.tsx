@@ -9,14 +9,13 @@ import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 })
 export class RecipePrint {
   @Prop() recipe: Recipe | null = null;
-  @Prop() rating = 0;
 
   render() {
     return (
       <Host>
         <div class="print-header">
           <h1>{this.recipe?.name}</h1>
-          <five-star-rating value={this.rating} disabled={true} />
+          <five-star-rating value={this.recipe?.rating} disabled={true} />
           <div class="meta">
             {!isNullOrEmpty(this.recipe?.servingSize) && <span>Servings: {this.recipe?.servingSize}</span>}
             &nbsp;

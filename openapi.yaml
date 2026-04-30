@@ -49,6 +49,27 @@ paths:
         - Cookie: [ admin ]
       x-codegen-request-body-name: appConfiguration
   /auth:
+    get:
+      tags: [ app ]
+      summary: Refresh auth token
+      description: refresh the current authentication token and set the new token via
+        the Set-Cookie response header
+      operationId: refreshToken
+      responses:
+        200:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/authenticationResponse"
+        401:
+          description: Unauthorized
+      security:
+        - Cookie: []
     post:
       tags: [ app ]
       summary: Authenticate user and set auth cookie
@@ -87,28 +108,6 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-  /auth/refresh:
-    get:
-      tags: [ app ]
-      summary: Refresh auth token
-      description: refresh the current authentication token and set the new token via
-        the Set-Cookie response header
-      operationId: refreshToken
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/authenticationResponse"
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-        401:
-          description: Unauthorized
-      security:
-        - Cookie: []
   /backups:
     get:
       tags: [ app ]
@@ -152,13 +151,15 @@ paths:
           description: Internal Server Error
       security:
         - Cookie: [ admin ]
-  /backups/{fileName}:
+  /backups/{name}:
     parameters:
-      - name: fileName
+      - name: name
         in: path
         required: true
         schema:
           type: string
+          # Disallow path separator characters and ..
+          pattern: "^(?!.*[\\/]|\\.\\.).*$"
     post:
       tags: [ app ]
       summary: Restore from backup
@@ -169,6 +170,8 @@ paths:
           description: No Content
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     delete:
@@ -181,6 +184,8 @@ paths:
           description: No Content
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
   /recipes:
@@ -293,6 +298,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/recipe"
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     put:
@@ -309,9 +316,32 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: recipe
+    patch:
+      tags: [ recipes ]
+      summary: Patch recipe
+      description: partially modify an existing recipe
+      operationId: patchRecipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./models.yaml#/components/schemas/recipePatch"
+        required: true
+      responses:
+        204:
+          description: No Content
+        404:
+          description: Not Found
+      security:
+        - Cookie: [ editor ]
+      x-codegen-request-body-name: recipePatch
     delete:
       tags: [ recipes ]
       summary: Delete recipe
@@ -320,6 +350,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/images:
@@ -344,6 +376,8 @@ paths:
                 type: array
                 items:
                   type: string
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     post:
@@ -368,6 +402,8 @@ paths:
                 type: string
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/images/{name}:
@@ -391,14 +427,16 @@ paths:
       description: optimize an existing image from a recipe
       operationId: optimizeImage
       responses:
-        200:
-          description: OK
+        204:
+          description: No Content
           headers:
             Location:
               schema:
                 type: string
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     delete:
@@ -411,6 +449,8 @@ paths:
           description: No Content
         400:
           description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/links:
@@ -435,6 +475,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/recipeCompact"
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
   /recipes/{recipeId}/links/{destRecipeId}:
@@ -459,6 +501,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
     delete:
@@ -469,6 +513,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
   /recipes/{recipeId}/notes:
@@ -493,6 +539,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/note"
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     post:
@@ -513,6 +561,10 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/note"
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: note
@@ -544,6 +596,10 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
       x-codegen-request-body-name: note
@@ -555,74 +611,10 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ editor ]
-  /recipes/{recipeId}/rating:
-    parameters:
-      - name: recipeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-    get:
-      tags: [ recipes ]
-      summary: Get recipe rating
-      description: get the current rating of a recipe
-      operationId: getRating
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: number
-                format: float
-      security:
-        - Cookie: [ viewer ]
-    put:
-      tags: [ recipes ]
-      summary: Set recipe rating
-      description: modify the rating of a recipe
-      operationId: setRating
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: number
-              format: float
-        required: true
-      responses:
-        204:
-          description: No Content
-      security:
-        - Cookie: [ editor ]
-      x-codegen-request-body-name: rating
-  /recipes/{recipeId}/state:
-    parameters:
-      - name: recipeId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-    put:
-      tags: [ recipes ]
-      summary: Set recipe state
-      description: modify the state of a recipe
-      operationId: setState
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "./models.yaml#/components/schemas/recipeState"
-        required: true
-      responses:
-        204:
-          description: No Content
-      security:
-        - Cookie: [ editor ]
-      x-codegen-request-body-name: state
   /tags:
     get:
       tags: [ recipes ]
@@ -757,6 +749,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        400:
+          description: Bad Request
         401:
           description: Unauthorized
       security:
@@ -784,6 +778,8 @@ paths:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
         401:
           description: Unauthorized
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
     put:
@@ -800,8 +796,12 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
         401:
           description: Unauthorized
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
       x-codegen-request-body-name: searchFilter
@@ -815,6 +815,8 @@ paths:
           description: No Content
         401:
           description: Unauthorized
+        404:
+          description: Not Found
       security:
         - Cookie: [ viewer ]
   /users/current/password:
@@ -870,6 +872,8 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
         401:
           description: Unauthorized
       security:
@@ -895,6 +899,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/user"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     put:
@@ -911,10 +917,14 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
         401:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: user
@@ -930,6 +940,8 @@ paths:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
   /users/{userId}/filters:
@@ -954,6 +966,8 @@ paths:
                 type: array
                 items:
                   $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     post:
@@ -974,6 +988,10 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: searchFilter
@@ -1003,6 +1021,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     put:
@@ -1019,6 +1039,10 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: searchFilter
@@ -1030,6 +1054,8 @@ paths:
       responses:
         204:
           description: No Content
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
   /users/{userId}/password:
@@ -1058,6 +1084,8 @@ paths:
           description: Unauthorized
         403:
           description: Forbidden
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: userPasswordRequest
@@ -1081,6 +1109,8 @@ paths:
             application/json:
               schema:
                 $ref: "./models.yaml#/components/schemas/userSettings"
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
     put:
@@ -1097,6 +1127,10 @@ paths:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
       security:
         - Cookie: [ admin ]
       x-codegen-request-body-name: settings
