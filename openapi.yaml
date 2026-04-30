@@ -49,6 +49,27 @@ paths:
         - Cookie: [ admin ]
       x-codegen-request-body-name: appConfiguration
   /auth:
+    get:
+      tags: [ app ]
+      summary: Refresh auth token
+      description: refresh the current authentication token and set the new token via
+        the Set-Cookie response header
+      operationId: refreshToken
+      responses:
+        200:
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/authenticationResponse"
+        401:
+          description: Unauthorized
+      security:
+        - Cookie: []
     post:
       tags: [ app ]
       summary: Authenticate user and set auth cookie
@@ -87,28 +108,6 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-  /auth/refresh:
-    get:
-      tags: [ app ]
-      summary: Refresh auth token
-      description: refresh the current authentication token and set the new token via
-        the Set-Cookie response header
-      operationId: refreshToken
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/authenticationResponse"
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-        401:
-          description: Unauthorized
-      security:
-        - Cookie: []
   /backups:
     get:
       tags: [ app ]
