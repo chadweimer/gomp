@@ -2,9 +2,8 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -18,19 +17,43 @@ import (
 
 func Test_GetUserSettings(t *testing.T) {
 	type testArgs struct {
-		userID        int64
-		homeTitle     string
-		expectedError error
+		name             string
+		userID           int64
+		homeTitle        string
+		dbError          error
+		expectedError    error
+		expectedResponse GetUserSettingsResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My home", nil},
-		{2, "It's mine", nil},
-		{3, "", db.ErrNotFound},
+		{
+			name:             "Success",
+			userID:           1,
+			homeTitle:        "My home",
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetUserSettings200JSONResponse{},
+		},
+		{
+			name:             "Not found",
+			userID:           3,
+			homeTitle:        "",
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: GetUserSettings404Response{},
+		},
+		{
+			name:             "DB error",
+			userID:           4,
+			homeTitle:        "",
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -39,8 +62,8 @@ func Test_GetUserSettings(t *testing.T) {
 				UserID:    &test.userID,
 				HomeTitle: &test.homeTitle,
 			}
-			if test.expectedError != nil {
-				userSettingsDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.expectedError)
+			if test.dbError != nil {
+				userSettingsDriver.EXPECT().Read(t.Context(), gomock.Any()).Return(nil, test.dbError)
 			} else {
 				userSettingsDriver.EXPECT().Read(t.Context(), test.userID).Return(expectedSettings, nil)
 			}
@@ -52,19 +75,28 @@ func Test_GetUserSettings(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				got, ok := resp.(GetUserSettings200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if got.UserID == nil {
-					t.Error("expected non-null id")
-				} else if *got.UserID != *expectedSettings.UserID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *got.UserID)
-				}
-				if got.HomeTitle == nil {
-					t.Error("expected non-null title")
-				} else if *got.HomeTitle != *expectedSettings.HomeTitle {
-					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *got.HomeTitle)
+				switch test.expectedResponse.(type) {
+				case GetUserSettings200JSONResponse:
+					got, ok := resp.(GetUserSettings200JSONResponse)
+					if !ok {
+						t.Fatalf("expected GetUserSettings200JSONResponse, got %T", resp)
+					}
+					if got.UserID == nil {
+						t.Error("expected non-null id")
+					} else if *got.UserID != *expectedSettings.UserID {
+						t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *got.UserID)
+					}
+					if got.HomeTitle == nil {
+						t.Error("expected non-null title")
+					} else if *got.HomeTitle != *expectedSettings.HomeTitle {
+						t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *got.HomeTitle)
+					}
+				case GetUserSettings404Response:
+					if _, ok := resp.(GetUserSettings404Response); !ok {
+						t.Fatalf("expected GetUserSettings404Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -73,19 +105,35 @@ func Test_GetUserSettings(t *testing.T) {
 
 func Test_GetSettings(t *testing.T) {
 	type testArgs struct {
-		userID        int64
-		homeTitle     string
-		expectedError error
+		name             string
+		userID           int64
+		homeTitle        string
+		dbError          error
+		expectedError    error
+		expectedResponse GetSettingsResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, "My home", nil},
-		{2, "It's mine", nil},
-		{3, "", db.ErrNotFound},
+		{
+			name:             "Success",
+			userID:           1,
+			homeTitle:        "My home",
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetSettings200JSONResponse{},
+		},
+		{
+			name:             "DB error",
+			userID:           4,
+			homeTitle:        "",
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -108,19 +156,24 @@ func Test_GetSettings(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
 			} else if err == nil {
-				got, ok := resp.(GetSettings200JSONResponse)
-				if !ok {
-					t.Error("invalid response")
-				}
-				if got.UserID == nil {
-					t.Error("expected non-null id")
-				} else if *got.UserID != *expectedSettings.UserID {
-					t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *got.UserID)
-				}
-				if got.HomeTitle == nil {
-					t.Error("expected non-null title")
-				} else if *got.HomeTitle != *expectedSettings.HomeTitle {
-					t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *got.HomeTitle)
+				switch test.expectedResponse.(type) {
+				case GetSettings200JSONResponse:
+					got, ok := resp.(GetSettings200JSONResponse)
+					if !ok {
+						t.Fatalf("expected GetUserSettings200JSONResponse, got %T", resp)
+					}
+					if got.UserID == nil {
+						t.Error("expected non-null id")
+					} else if *got.UserID != *expectedSettings.UserID {
+						t.Errorf("expected id: %d, actual id: %d", *expectedSettings.UserID, *got.UserID)
+					}
+					if got.HomeTitle == nil {
+						t.Error("expected non-null title")
+					} else if *got.HomeTitle != *expectedSettings.HomeTitle {
+						t.Errorf("expected title %s, actual title: %s", *expectedSettings.HomeTitle, *got.HomeTitle)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -129,29 +182,58 @@ func Test_GetSettings(t *testing.T) {
 
 func Test_SaveSettings(t *testing.T) {
 	type testArgs struct {
+		name             string
 		currentUserID    int64
 		userSettings     models.UserSettings
-		expectedDbError  error
+		dbError          error
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse SaveSettingsResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveSettings204Response{})},
-		{2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, db.ErrNotFound, db.ErrNotFound, nil},
-		{1, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, errMismatchedID, nil},
+		{
+			name:             "Success with matching user ID",
+			currentUserID:    1,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveSettings204Response{},
+		},
+		{
+			name:             "Success with nil user ID",
+			currentUserID:    1,
+			userSettings:     models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveSettings204Response{},
+		},
+		{
+			name:             "Mismatched user ID",
+			currentUserID:    1,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveSettings400Response{},
+		},
+		{
+			name:             "DB error",
+			currentUserID:    1,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, userSettingsDriver := getMockUserSettingsAPI(ctrl)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				userSettingsDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				userSettingsDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.dbError)
 			} else {
 				userSettingsDriver.EXPECT().Update(ctx, &test.userSettings).MaxTimes(1).Return(nil)
 			}
@@ -163,8 +245,17 @@ func Test_SaveSettings(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
+				switch test.expectedResponse.(type) {
+				case SaveSettings204Response:
+					if _, ok := resp.(SaveSettings204Response); !ok {
+						t.Fatalf("expected response type SaveSettings204Response, got %T", resp)
+					}
+				case SaveSettings400Response:
+					if _, ok := resp.(SaveSettings400Response); !ok {
+						t.Fatalf("expected response type SaveSettings400Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", test.expectedResponse)
 				}
 			}
 		})
@@ -173,35 +264,90 @@ func Test_SaveSettings(t *testing.T) {
 
 func Test_SaveUserSettings(t *testing.T) {
 	type testArgs struct {
+		name             string
 		currentUserID    int64
 		requestUserID    int64
 		userSettings     models.UserSettings
-		expectedDbError  error
+		dbError          error
 		expectedError    error
-		expectedResponse reflect.Type
+		expectedResponse SaveUserSettingsResponseObject
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, 1, models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 1, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-
-		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-		{1, 2, models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, nil, reflect.TypeOf(SaveUserSettings204Response{})},
-
-		{1, 2, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, db.ErrNotFound, db.ErrNotFound, nil},
-
-		{1, 3, models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}}, nil, errMismatchedID, nil},
+		{
+			name:             "Success with matching user ID",
+			currentUserID:    1,
+			requestUserID:    1,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUserSettings204Response{},
+		},
+		{
+			name:             "Success with nil user ID",
+			currentUserID:    1,
+			requestUserID:    1,
+			userSettings:     models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUserSettings204Response{},
+		},
+		{
+			name:             "Success with different user ID",
+			currentUserID:    1,
+			requestUserID:    2,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUserSettings204Response{},
+		},
+		{
+			name:             "Success with nil user ID and different request ID",
+			currentUserID:    1,
+			requestUserID:    2,
+			userSettings:     models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUserSettings204Response{},
+		},
+		{
+			name:             "Not found error",
+			currentUserID:    1,
+			requestUserID:    2,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          db.ErrNotFound,
+			expectedError:    nil,
+			expectedResponse: SaveUserSettings404Response{},
+		},
+		{
+			name:             "Mismatched ID error",
+			currentUserID:    1,
+			requestUserID:    3,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: SaveUserSettings400Response{},
+		},
+		{
+			name:             "DB error",
+			currentUserID:    1,
+			requestUserID:    1,
+			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, userSettingsDriver := getMockUserSettingsAPI(ctrl)
 			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
-			if test.expectedDbError != nil {
-				userSettingsDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.expectedDbError)
+			if test.dbError != nil {
+				userSettingsDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.dbError)
 			} else {
 				userSettingsDriver.EXPECT().Update(ctx, &test.userSettings).MaxTimes(1).Return(nil)
 			}
@@ -213,8 +359,21 @@ func Test_SaveUserSettings(t *testing.T) {
 			if !errors.Is(err, test.expectedError) {
 				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
 			} else if err == nil {
-				if reflect.TypeOf(resp) != test.expectedResponse {
-					t.Errorf("expected response: %v, actual response: %v", test.expectedResponse, reflect.TypeOf(resp))
+				switch test.expectedResponse.(type) {
+				case SaveUserSettings204Response:
+					if _, ok := resp.(SaveUserSettings204Response); !ok {
+						t.Fatalf("expected response type SaveUserSettings204Response, got %T", resp)
+					}
+				case SaveUserSettings404Response:
+					if _, ok := resp.(SaveUserSettings404Response); !ok {
+						t.Fatalf("expected response type SaveUserSettings404Response, got %T", resp)
+					}
+				case SaveUserSettings400Response:
+					if _, ok := resp.(SaveUserSettings400Response); !ok {
+						t.Fatalf("expected response type SaveUserSettings400Response, got %T", resp)
+					}
+				default:
+					t.Errorf("unexpected response type: %T", test.expectedResponse)
 				}
 			}
 		})
