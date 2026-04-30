@@ -28,6 +28,9 @@ func (d *sqlTagDriver) List(ctx context.Context) (*map[string]int, error) {
 			}
 			tags[tag] = count
 		}
+		if err := rows.Err(); err != nil {
+			return nil, fmt.Errorf("iterating tag rows: %w", err)
+		}
 
 		return &tags, nil
 	})

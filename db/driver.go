@@ -149,6 +149,13 @@ type RecipeDriver interface {
 	// Update stores the specified recipe in the database by updating the
 	// existing record with the specified id using a dedicated transaction
 	// that is committed if there are not errors.
+	//
+	// This operation ignores the following fields on the recipe, since they are not expected to be updated by this method:
+	// - CreatedAt: this field is set when the recipe is created and should not be updated after that
+	// - ModifiedAt: this field is set when the recipe is updated and should not be updated directly by this method
+	// - State: this field is expected to be updated using the Patch method, not this method
+	// - MainImageName: this field is expected to be updated using the Patch method, not this method
+	// - Rating: this field is expected to be updated using the Patch method, not this method
 	Update(ctx context.Context, recipe *models.Recipe) error
 
 	// Patch updates the specified fields on the recipe in the database by updating the

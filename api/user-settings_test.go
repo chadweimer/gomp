@@ -54,7 +54,7 @@ func Test_GetUserSettings(t *testing.T) {
 			} else if err == nil {
 				resp, ok := resp.(GetUserSettings200JSONResponse)
 				if !ok {
-					t.Error("nvalid response")
+					t.Error("invalid response")
 				}
 				if resp.UserID == nil {
 					t.Error("expected non-null id")

@@ -71,7 +71,7 @@ func Test_Tag_List(t *testing.T) {
 	}
 }
 
-func Test_createTagsForRecipe(t *testing.T) {
+func Test_createTagForRecipe(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
 		tag           string

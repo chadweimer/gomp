@@ -276,6 +276,189 @@ func Test_Recipe_Update(t *testing.T) {
 	}
 }
 
+func Test_Recipe_Patch(t *testing.T) {
+	type testArgs struct {
+		name             string
+		recipeID         int64
+		hasCurrentRating bool
+		patch            models.RecipePatch
+		expectedState    *models.RecipeState
+		expectedImage    *string
+		expectedRating   *float32
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{
+			name:             "Patch with rating only and no existing rating",
+			recipeID:         1,
+			hasCurrentRating: false,
+			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](3.5)},
+			expectedRating:   utils.GetPtr[float32](3.5),
+		},
+		{
+			name:             "Patch with rating only and existing rating",
+			recipeID:         1,
+			hasCurrentRating: true,
+			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](3.5)},
+			expectedRating:   utils.GetPtr[float32](3.5),
+		},
+		{
+			name:             "Patch with rating only with zero value and existing rating",
+			recipeID:         0,
+			hasCurrentRating: true,
+			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](0)},
+			expectedRating:   utils.GetPtr[float32](0),
+		},
+		{
+			name:             "Patch with all fields",
+			recipeID:         1,
+			hasCurrentRating: true,
+			patch: models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new_image.jpg"),
+				Rating:        utils.GetPtr[float32](4.0),
+			},
+			expectedState:  utils.GetPtr(models.Archived),
+			expectedImage:  utils.GetPtr("new_image.jpg"),
+			expectedRating: utils.GetPtr[float32](4.0),
+		},
+		{
+			name:     "Patch with state and image",
+			recipeID: 1,
+			patch: models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new_image.jpg"),
+			},
+			expectedState: utils.GetPtr(models.Archived),
+			expectedImage: utils.GetPtr("new_image.jpg"),
+		},
+		{
+			name:     "Patch with state only",
+			recipeID: 1,
+			patch: models.RecipePatch{
+				State: utils.GetPtr(models.Archived),
+			},
+			expectedState: utils.GetPtr(models.Archived),
+		},
+		{
+			name:     "Patch with image only",
+			recipeID: 1,
+			patch: models.RecipePatch{
+				MainImageName: utils.GetPtr("new_image.jpg"),
+			},
+			expectedImage: utils.GetPtr("new_image.jpg"),
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			sut, dbmock := getMockDb(t, nil)
+			defer sut.Close()
+
+			dbmock.ExpectBegin()
+			if test.expectedState != nil || test.expectedImage != nil {
+				stmt := "UPDATE recipe SET "
+				fields := ""
+				args := make([]driver.Value, 0)
+				if test.expectedState != nil {
+					fields += "current_state = \\?"
+					args = append(args, *test.expectedState)
+				}
+				if test.expectedImage != nil {
+					if fields != "" {
+						fields += ", "
+					}
+					fields += "main_image_name = \\?"
+					args = append(args, *test.expectedImage)
+				}
+				stmt += fields + " WHERE id = \\?"
+				args = append(args, test.recipeID)
+				dbmock.ExpectExec(stmt).WithArgs(args...).
+					WillReturnResult(driver.RowsAffected(1))
+			}
+			if test.expectedRating != nil {
+				ratingSelect := dbmock.ExpectQuery("SELECT count\\(\\*\\) FROM recipe_rating WHERE recipe_id = \\$1")
+				if test.hasCurrentRating {
+					ratingSelect.WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+					dbmock.ExpectExec("UPDATE recipe_rating SET rating = \\$1 WHERE recipe_id = \\$2").
+						WithArgs(*test.expectedRating, test.recipeID).
+						WillReturnResult(driver.RowsAffected(1))
+				} else {
+					ratingSelect.WillReturnRows(&sqlmock.Rows{})
+					dbmock.ExpectExec("INSERT INTO recipe_rating \\(recipe_id, rating\\) VALUES \\(\\$1, \\$2\\)").
+						WithArgs(test.recipeID, *test.expectedRating).
+						WillReturnResult(driver.RowsAffected(1))
+				}
+			}
+			dbmock.ExpectCommit()
+
+			// Act
+			err := sut.Recipes().Patch(t.Context(), test.recipeID, &test.patch)
+
+			// Assert
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := dbmock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+// func Test_Recipe_SetState(t *testing.T) {
+// 	type testArgs struct {
+// 		recipeID      int64
+// 		expectedState models.RecipeState
+// 		dbError       error
+// 		expectedError error
+// 	}
+
+// 	// Arrange
+// 	tests := []testArgs{
+// 		{1, models.Active, nil, nil},
+// 		{1, models.Archived, nil, nil},
+// 		{0, models.Active, sql.ErrNoRows, ErrNotFound},
+// 		{0, models.Active, sql.ErrConnDone, sql.ErrConnDone},
+// 	}
+// 	for i, test := range tests {
+// 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+// 			// Arrange
+// 			ctrl := gomock.NewController(t)
+// 			defer ctrl.Finish()
+
+// 			sut, dbmock := getMockDb(t, nil)
+// 			defer sut.Close()
+
+// 			dbmock.ExpectBegin()
+// 			exec := dbmock.ExpectExec("UPDATE recipe SET current_state = \\$1 WHERE id = \\$2").
+// 				WithArgs(test.expectedState, test.recipeID)
+// 			if test.dbError == nil {
+// 				exec.WillReturnResult(driver.RowsAffected(1))
+// 				dbmock.ExpectCommit()
+// 			} else {
+// 				exec.WillReturnError(test.dbError)
+// 				dbmock.ExpectRollback()
+// 			}
+
+// 			// Act
+// 			err := sut.Recipes().SetState(t.Context(), test.recipeID, test.expectedState)
+
+// 			// Assert
+// 			if !errors.Is(err, test.expectedError) {
+// 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
+// 			}
+// 			if err := dbmock.ExpectationsWereMet(); err != nil {
+// 				t.Errorf("there were unfulfilled expectations: %s", err)
+// 			}
+// 		})
+// 	}
+// }
+
 func Test_Recipe_Delete(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64

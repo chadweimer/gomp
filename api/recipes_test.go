@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
@@ -206,6 +207,62 @@ func Test_SaveRecipe(t *testing.T) {
 				t.Errorf("test: %v, expected error: %v, received error: %v", test, test.expectedError, err)
 			} else if err == nil {
 				_, ok := resp.(SaveRecipe204Response)
+				if !ok {
+					t.Errorf("test %v: invalid response", test)
+				}
+			}
+		})
+	}
+}
+
+func Test_PatchRecipe(t *testing.T) {
+	type testArgs struct {
+		name            string
+		recipeID        int64
+		patch           *models.RecipePatch
+		expectedDbError error
+		expectedError   error
+	}
+
+	// Arrange
+	tests := []testArgs{
+		{
+			name:     "Nominal",
+			recipeID: 1,
+			patch: &models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new-image.jpg"),
+			},
+			expectedDbError: nil,
+			expectedError:   nil,
+		},
+		{
+			name:     "DB error",
+			recipeID: 1,
+			patch: &models.RecipePatch{
+				State:         utils.GetPtr(models.Archived),
+				MainImageName: utils.GetPtr("new-image.jpg"),
+			},
+			expectedDbError: sql.ErrConnDone,
+			expectedError:   sql.ErrConnDone,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
+			recipesDriver.EXPECT().Patch(t.Context(), test.recipeID, test.patch).Return(test.expectedDbError)
+
+			// Act
+			resp, err := api.PatchRecipe(t.Context(), PatchRecipeRequestObject{RecipeID: test.recipeID, Body: test.patch})
+
+			// Assert
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("test: %v, expected error: %v, received error: %v", test, test.expectedError, err)
+			} else if err == nil {
+				_, ok := resp.(PatchRecipe204Response)
 				if !ok {
 					t.Errorf("test %v: invalid response", test)
 				}
