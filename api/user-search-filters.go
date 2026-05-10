@@ -75,21 +75,6 @@ func (h apiHandler) AddUserSearchFilter(ctx context.Context, request AddUserSear
 	return AddUserSearchFilter201JSONResponse(*filter), nil
 }
 
-func (h apiHandler) addUserSearchFilterImpl(ctx context.Context, userID int64, filter *models.SavedSearchFilter) (*models.SavedSearchFilter, error) {
-	// Make sure the ID is set in the object
-	if filter.UserID == nil {
-		filter.UserID = &userID
-	} else if *filter.UserID != userID {
-		return nil, errMismatchedID
-	}
-
-	if err := h.db.UserSearchFilters().Create(ctx, filter); err != nil {
-		return nil, err
-	}
-
-	return filter, nil
-}
-
 func (h apiHandler) GetSearchFilter(ctx context.Context, request GetSearchFilterRequestObject) (GetSearchFilterResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
@@ -166,29 +151,6 @@ func (h apiHandler) SaveUserSearchFilter(ctx context.Context, request SaveUserSe
 	return SaveUserSearchFilter204Response{}, nil
 }
 
-func (h apiHandler) saveUserSearchFilterImpl(ctx context.Context, userID int64, filterID int64, filter *models.SavedSearchFilter) error {
-	// Make sure the ID is set in the object
-	if filter.ID == nil {
-		filter.ID = &filterID
-	} else if *filter.ID != filterID {
-		return errMismatchedID
-	}
-
-	// Make sure the UserID is set in the object
-	if filter.UserID == nil {
-		filter.UserID = &userID
-	} else if *filter.UserID != userID {
-		return errMismatchedID
-	}
-
-	// Check that the filter exists for the specified user
-	if _, err := h.db.UserSearchFilters().Read(ctx, userID, filterID); err != nil {
-		return err
-	}
-
-	return h.db.UserSearchFilters().Update(ctx, filter)
-}
-
 func (h apiHandler) DeleteSearchFilter(ctx context.Context, request DeleteSearchFilterRequestObject) (DeleteSearchFilterResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
@@ -222,4 +184,42 @@ func (h apiHandler) DeleteUserSearchFilter(ctx context.Context, request DeleteUs
 	}
 
 	return DeleteUserSearchFilter204Response{}, nil
+}
+
+func (h apiHandler) addUserSearchFilterImpl(ctx context.Context, userID int64, filter *models.SavedSearchFilter) (*models.SavedSearchFilter, error) {
+	// Make sure the ID is set in the object
+	if filter.UserID == nil {
+		filter.UserID = &userID
+	} else if *filter.UserID != userID {
+		return nil, errMismatchedID
+	}
+
+	if err := h.db.UserSearchFilters().Create(ctx, filter); err != nil {
+		return nil, err
+	}
+
+	return filter, nil
+}
+
+func (h apiHandler) saveUserSearchFilterImpl(ctx context.Context, userID int64, filterID int64, filter *models.SavedSearchFilter) error {
+	// Make sure the ID is set in the object
+	if filter.ID == nil {
+		filter.ID = &filterID
+	} else if *filter.ID != filterID {
+		return errMismatchedID
+	}
+
+	// Make sure the UserID is set in the object
+	if filter.UserID == nil {
+		filter.UserID = &userID
+	} else if *filter.UserID != userID {
+		return errMismatchedID
+	}
+
+	// Check that the filter exists for the specified user
+	if _, err := h.db.UserSearchFilters().Read(ctx, userID, filterID); err != nil {
+		return err
+	}
+
+	return h.db.UserSearchFilters().Update(ctx, filter)
 }

@@ -410,55 +410,6 @@ func Test_Recipe_Patch(t *testing.T) {
 	}
 }
 
-// func Test_Recipe_SetState(t *testing.T) {
-// 	type testArgs struct {
-// 		recipeID      int64
-// 		expectedState models.RecipeState
-// 		dbError       error
-// 		expectedError error
-// 	}
-
-// 	// Arrange
-// 	tests := []testArgs{
-// 		{1, models.Active, nil, nil},
-// 		{1, models.Archived, nil, nil},
-// 		{0, models.Active, sql.ErrNoRows, ErrNotFound},
-// 		{0, models.Active, sql.ErrConnDone, sql.ErrConnDone},
-// 	}
-// 	for i, test := range tests {
-// 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-// 			// Arrange
-// 			ctrl := gomock.NewController(t)
-// 			defer ctrl.Finish()
-
-// 			sut, dbmock := getMockDb(t, nil)
-// 			defer sut.Close()
-
-// 			dbmock.ExpectBegin()
-// 			exec := dbmock.ExpectExec("UPDATE recipe SET current_state = \\$1 WHERE id = \\$2").
-// 				WithArgs(test.expectedState, test.recipeID)
-// 			if test.dbError == nil {
-// 				exec.WillReturnResult(driver.RowsAffected(1))
-// 				dbmock.ExpectCommit()
-// 			} else {
-// 				exec.WillReturnError(test.dbError)
-// 				dbmock.ExpectRollback()
-// 			}
-
-// 			// Act
-// 			err := sut.Recipes().SetState(t.Context(), test.recipeID, test.expectedState)
-
-// 			// Assert
-// 			if !errors.Is(err, test.expectedError) {
-// 				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-// 			}
-// 			if err := dbmock.ExpectationsWereMet(); err != nil {
-// 				t.Errorf("there were unfulfilled expectations: %s", err)
-// 			}
-// 		})
-// 	}
-// }
-
 func Test_Recipe_Delete(t *testing.T) {
 	type testArgs struct {
 		recipeID      int64
