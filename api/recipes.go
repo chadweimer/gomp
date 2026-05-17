@@ -2,7 +2,10 @@ package api
 
 import (
 	"context"
+	"errors"
 
+	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 )
 
@@ -70,8 +73,16 @@ func (h apiHandler) Find(ctx context.Context, request FindRequestObject) (FindRe
 }
 
 func (h apiHandler) GetRecipe(ctx context.Context, request GetRecipeRequestObject) (GetRecipeResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	recipe, err := h.db.Recipes().Read(ctx, request.RecipeID)
 	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return GetRecipe404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to get recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
 		return nil, err
 	}
 
@@ -79,8 +90,11 @@ func (h apiHandler) GetRecipe(ctx context.Context, request GetRecipeRequestObjec
 }
 
 func (h apiHandler) AddRecipe(ctx context.Context, request AddRecipeRequestObject) (AddRecipeResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	recipe := request.Body
 	if err := h.db.Recipes().Create(ctx, recipe); err != nil {
+		logger.ErrorContext(ctx, "Failed to add recipe", "error", err)
 		return nil, err
 	}
 
@@ -88,22 +102,58 @@ func (h apiHandler) AddRecipe(ctx context.Context, request AddRecipeRequestObjec
 }
 
 func (h apiHandler) SaveRecipe(ctx context.Context, request SaveRecipeRequestObject) (SaveRecipeResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	recipe := request.Body
 	if recipe.ID == nil {
 		recipe.ID = &request.RecipeID
 	} else if *recipe.ID != request.RecipeID {
-		return nil, errMismatchedID
+		logger.ErrorContext(ctx, "Request ID does not match recipe ID",
+			"request-id", request.RecipeID,
+			"recipe-id", *recipe.ID)
+		return SaveRecipe400Response{}, nil
 	}
 
 	if err := h.db.Recipes().Update(ctx, recipe); err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return SaveRecipe404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to update recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
 		return nil, err
 	}
 
 	return SaveRecipe204Response{}, nil
 }
 
+func (h apiHandler) PatchRecipe(ctx context.Context, request PatchRecipeRequestObject) (PatchRecipeResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
+	patch := request.Body
+	if err := h.db.Recipes().Patch(ctx, request.RecipeID, patch); err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return PatchRecipe404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to patch recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
+		return nil, err
+	}
+
+	return PatchRecipe204Response{}, nil
+}
+
 func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeRequestObject) (DeleteRecipeResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	if err := h.db.Recipes().Delete(ctx, request.RecipeID); err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return DeleteRecipe404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to delete recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
 		return nil, err
 	}
 
@@ -113,38 +163,4 @@ func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeReques
 	}
 
 	return DeleteRecipe204Response{}, nil
-}
-
-func (h apiHandler) SetState(ctx context.Context, request SetStateRequestObject) (SetStateResponseObject, error) {
-	if err := h.db.Recipes().SetState(ctx, request.RecipeID, *request.Body); err != nil {
-		return nil, err
-	}
-
-	return SetState204Response{}, nil
-}
-
-func (h apiHandler) GetRating(ctx context.Context, request GetRatingRequestObject) (GetRatingResponseObject, error) {
-	rating, err := h.db.Recipes().GetRating(ctx, request.RecipeID)
-	if err != nil {
-		return nil, err
-	}
-
-	return GetRating200JSONResponse(*rating), nil
-}
-
-func (h apiHandler) SetRating(ctx context.Context, request SetRatingRequestObject) (SetRatingResponseObject, error) {
-	if err := h.db.Recipes().SetRating(ctx, request.RecipeID, *request.Body); err != nil {
-		return nil, err
-	}
-
-	return SetRating204Response{}, nil
-}
-
-func (h apiHandler) GetAllTags(ctx context.Context, _ GetAllTagsRequestObject) (GetAllTagsResponseObject, error) {
-	tags, err := h.db.Recipes().ListAllTags(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return GetAllTags200JSONResponse(*tags), nil
 }

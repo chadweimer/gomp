@@ -3,9 +3,7 @@ package api
 //go:generate go tool oapi-codegen --config cfg.yaml ../openapi.yaml
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -63,29 +61,9 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 		})
 }
 
-func writeJSONResponse(w http.ResponseWriter, r *http.Request, status int, v any) {
-	buf := new(bytes.Buffer)
-	if err := json.NewEncoder(buf).Encode(v); err != nil {
-		infra.GetLoggerFromContext(r.Context()).
-			Error("Failed to encode response",
-				"error", err,
-				"original-status", status)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(status)
-	if _, err := w.Write(buf.Bytes()); err != nil {
-		// We tried everything. Time to panic
-		panic(err)
-	}
-}
-
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
 	infra.GetLoggerFromContext(r.Context()).Error("failure on request", "error", err)
-	status = getStatusFromError(err, status)
-	writeJSONResponse(w, r, status, http.StatusText(status))
+	w.WriteHeader(status)
 }
 
 func getResourceIDFromCtx(ctx context.Context, idKey infra.ContextKey) (int64, error) {
@@ -102,14 +80,4 @@ func getResourceIDFromCtx(ctx context.Context, idKey infra.ContextKey) (int64, e
 	}
 
 	return 0, fmt.Errorf("value of %s is not an integer", idKey)
-}
-
-func getStatusFromError(err error, fallback int) int {
-	if errors.Is(err, db.ErrNotFound) {
-		return http.StatusNotFound
-	} else if errors.Is(err, errMismatchedID) {
-		return http.StatusBadRequest
-	}
-
-	return fallback
 }

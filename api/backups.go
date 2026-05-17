@@ -87,15 +87,25 @@ func (h apiHandler) GetBackups(ctx context.Context, _ GetBackupsRequestObject) (
 func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBackupRequestObject) (RestoreFromBackupResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, request.FileName)
+	// Validate the backup name to prevent path traversal attacks
+	if !isNameSafe(request.Name) {
+		logger.WarnContext(ctx, "invalid backup name", "name", request.Name)
+		return RestoreFromBackup400Response{}, nil
+	}
+
+	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, request.Name)
 
 	info, err := h.fs.Stat(backupFilePath)
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to stat backup file", "error", err, "name", request.FileName)
+		if errors.Is(err, fs.ErrNotExist) {
+			logger.WarnContext(ctx, "Backup file to restore from does not exist", "name", request.Name)
+			return RestoreFromBackup404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to stat backup file", "error", err, "name", request.Name)
 		return RestoreFromBackup400Response{}, nil
 	}
 	if info.IsDir() {
-		logger.ErrorContext(ctx, "Backup file is a directory", "name", request.FileName)
+		logger.ErrorContext(ctx, "Backup file is a directory", "name", request.Name)
 		return RestoreFromBackup400Response{}, nil
 	}
 
@@ -106,7 +116,7 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	defer file.Close()
 
 	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
-		_, err := getMetadata(ctx, logger, reader, request.FileName)
+		_, err := getMetadata(ctx, logger, reader, request.Name)
 		if err != nil {
 			return err
 		}
@@ -118,12 +128,12 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 		// the file copy won't be attempted and the database won't be left in a partially restored state.
 		databaseData, err := readJSONFileFromZip[models.BackupData](reader, databaseFileName)
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to read backup data", "error", err, "name", request.FileName)
+			logger.ErrorContext(ctx, "Failed to read backup data", "error", err, "name", request.Name)
 			return err
 		}
 		err = h.db.Backups().Import(ctx, databaseData)
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to import backup data", "error", err, "name", request.FileName)
+			logger.ErrorContext(ctx, "Failed to import backup data", "error", err, "name", request.Name)
 			return err
 		}
 
@@ -134,14 +144,14 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 		}
 		err = fileaccess.CopyDirectoryFromZip(h.fs, fileaccess.UploadDirectoryName, fileaccess.UploadDirectoryName, reader)
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to copy files from backup", "error", err, "name", request.FileName)
+			logger.ErrorContext(ctx, "Failed to copy files from backup", "error", err, "name", request.Name)
 			return err
 		}
 
 		return nil
 	})
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to read backup zip file", "error", err, "name", request.FileName)
+		logger.ErrorContext(ctx, "Failed to read backup zip file", "error", err, "name", request.Name)
 		return RestoreFromBackup400Response{}, nil
 	}
 
@@ -151,9 +161,19 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.FileName))
+	// Validate the backup name to prevent path traversal attacks
+	if !isNameSafe(request.Name) {
+		logger.WarnContext(ctx, "invalid backup name", "name", request.Name)
+		return DeleteBackup400Response{}, nil
+	}
+
+	err := h.fs.Delete(filepath.Join(fileaccess.BackupDirectoryName, request.Name))
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "backupFileName", request.FileName)
+		if errors.Is(err, fs.ErrNotExist) {
+			logger.WarnContext(ctx, "Backup file to delete does not exist", "name", request.Name)
+			return DeleteBackup404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to delete backup file", "error", err, "name", request.Name)
 		return DeleteBackup400Response{}, nil
 	}
 	return DeleteBackup204Response{}, nil

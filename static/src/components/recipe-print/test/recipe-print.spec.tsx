@@ -12,6 +12,7 @@ describe('recipe-print', () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
       state: RecipeState.Active,
+      rating: 0,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -33,6 +34,7 @@ describe('recipe-print', () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
       state: RecipeState.Active,
+      rating: 0,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -120,6 +122,7 @@ describe('recipe-print', () => {
       id: 1,
       name: 'recipe with image',
       state: RecipeState.Active,
+      rating: 0,
       servingSize: '',
       time: '',
       nutritionInfo: '',

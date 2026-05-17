@@ -199,7 +199,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async deleteBackup(backup: Backup) {
     try {
       await showLoading(
-        async () => await appApi.deleteBackup({ fileName: backup.fileName }), 'Deleting backup...');
+        async () => await appApi.deleteBackup({ name: backup.fileName }), 'Deleting backup...');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete backup.');
@@ -231,7 +231,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async restoreBackup(backupFileName: string) {
     try {
       await showLoading(
-        async () => await appApi.restoreFromBackup({ fileName: backupFileName }), 'Restoring backup...');
+        async () => await appApi.restoreFromBackup({ name: backupFileName }), 'Restoring backup...');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to restore from backup.');

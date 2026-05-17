@@ -12,6 +12,7 @@ describe('recipe-viewer', () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
       state: RecipeState.Active,
+      rating: 0,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -33,6 +34,7 @@ describe('recipe-viewer', () => {
     const recipe: Recipe = {
       name: 'Some Recipe',
       state: RecipeState.Active,
+      rating: 0,
       servingSize: '',
       time: '',
       ingredients: '',
@@ -140,6 +142,7 @@ describe('recipe-viewer', () => {
       const recipe: Recipe = {
         name: 'Some Recipe',
         state: RecipeState.Active,
+        rating: 0,
         servingSize: '',
         time: '',
         ingredients: '',
@@ -164,6 +167,7 @@ describe('recipe-viewer', () => {
       id: 1,
       name: 'image',
       state: RecipeState.Active,
+      rating: 0,
       servingSize: '',
       time: '',
       nutritionInfo: '',
@@ -188,7 +192,8 @@ describe('recipe-viewer', () => {
         id: i,
         name: `recipe ${i}`,
         state: RecipeState.Active,
-        mainImageName: `${i}.jpg`
+        mainImageName: `${i}.jpg`,
+        rating: 0
       });
     }
     const { root } = await render(<recipe-viewer links={links}></recipe-viewer>);

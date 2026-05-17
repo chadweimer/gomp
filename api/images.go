@@ -2,15 +2,23 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"path/filepath"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 )
 
-func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
+func (h apiHandler) GetImages(ctx context.Context, request GetImagesRequestObject) (GetImagesResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	images, err := h.upl.List(request.RecipeID)
 	if err != nil {
+		logger.ErrorContext(ctx, "Failed to get images for recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
 		return nil, err
 	}
 
@@ -18,6 +26,8 @@ func (h apiHandler) GetImages(_ context.Context, request GetImagesRequestObject)
 }
 
 func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestObject) (UploadImageResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
 	uploadedFileData, imageName, err := readFile(request.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read uploaded file: %w", err)
@@ -26,7 +36,13 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 	// Save the image itself
 	res, err := h.upl.Save(request.RecipeID, imageName, uploadedFileData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to save image file: %w", err)
+		if errors.Is(err, db.ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
+			return UploadImage404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to save image for recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
+		return nil, err
 	}
 
 	// Update main image if necessary
@@ -51,7 +67,14 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 	}
 
 	if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
-		return nil, fmt.Errorf("failed to delete image file: %w", err)
+		if errors.Is(err, db.ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
+			return DeleteImage404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to delete image for recipe",
+			"error", err,
+			"recipe-id", request.RecipeID,
+			"image-name", request.Name)
+		return nil, err
 	}
 
 	// Update main image if necessary
@@ -74,7 +97,14 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 	// Load the current original
 	data, err := h.upl.Load(request.RecipeID, request.Name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read existing image data: %w", err)
+		if errors.Is(err, db.ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
+			return OptimizeImage404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to optimize image",
+			"error", err,
+			"recipe-id", request.RecipeID,
+			"image-name", request.Name)
+		return nil, err
 	}
 
 	// Resave it, which will downscale if larger than the threshold,
@@ -104,8 +134,8 @@ func (h apiHandler) OptimizeImage(ctx context.Context, request OptimizeImageRequ
 		}
 	}
 
-	return OptimizeImage200Response{
-		Headers: OptimizeImage200ResponseHeaders{
+	return OptimizeImage204Response{
+		Headers: OptimizeImage204ResponseHeaders{
 			Location: res.URL,
 		},
 	}, nil

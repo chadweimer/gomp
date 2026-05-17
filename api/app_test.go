@@ -26,12 +26,12 @@ func Test_GetInfo(t *testing.T) {
 	if err != nil {
 		t.Errorf("received error: %v", err)
 	} else {
-		typedResp, ok := resp.(GetInfo200JSONResponse)
+		got, ok := resp.(GetInfo200JSONResponse)
 		if !ok {
 			t.Fatal("invalid response")
 		}
-		if typedResp.Version != metadata.BuildVersion {
-			t.Errorf("unexpected version: %s", typedResp.Version)
+		if got.Version != metadata.BuildVersion {
+			t.Errorf("unexpected version: %s", got.Version)
 		}
 	}
 }
@@ -60,12 +60,12 @@ func Test_GetConfiguration(t *testing.T) {
 		if (err != nil) != expectError {
 			t.Errorf("error expected?: %v, received error: %v", expectError, err)
 		} else if err == nil {
-			typedResp, ok := resp.(GetConfiguration200JSONResponse)
+			got, ok := resp.(GetConfiguration200JSONResponse)
 			if !ok {
 				t.Fatal("invalid response")
 			}
-			if typedResp.Title != expectedTitle {
-				t.Errorf("expected title: %s, received title: %s", expectedTitle, typedResp.Title)
+			if got.Title != expectedTitle {
+				t.Errorf("expected title: %s, received title: %s", expectedTitle, got.Title)
 			}
 		}
 	}

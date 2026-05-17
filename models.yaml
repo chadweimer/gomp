@@ -141,19 +141,38 @@ components:
           x-oapi-codegen-extra-tags:
             db: modified_at
           x-go-type: time.Time
-    recipeBase:
-      description: Shared recipe metadata used by full and compact recipe payloads.
+    recipePatch:
+      description: Partial recipe update used for PATCH requests.
+      example:
+        state: archived
+        rating: 4
+        mainImageName: old-image.jpg
+      type: object
+      properties:
+        state:
+          $ref: "#/components/schemas/recipeState"
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+        mainImageName:
+          type: string
+    recipeCompact:
+      description: Compact recipe representation used when returning lists.
       example:
         id: 3
         name: Lemon Garlic Chicken
         state: active
+        mainImageName: lemon-garlic-chicken.jpg
+        rating: 4.5
         createdAt: "2026-04-19T09:00:00Z"
         modifiedAt: "2026-04-20T18:15:00Z"
+      type: object
       required:
         - name
         - state
         - mainImageName
-      type: object
+        - rating
       properties:
         id:
           type: integer
@@ -173,6 +192,12 @@ components:
           x-go-custom-tag: db:"main_image_name"
           x-oapi-codegen-extra-tags:
             db: main_image_name
+        rating:
+          type: number
+          readOnly: true
+          x-go-custom-tag: db:"rating"
+          x-oapi-codegen-extra-tags:
+            db: rating
         createdAt:
           type: string
           format: date-time
@@ -195,6 +220,7 @@ components:
         id: 3
         name: Lemon Garlic Chicken
         state: active
+        mainImageName: lemon-garlic-chicken.jpg
         servingSize: 4 servings
         time: 45 minutes
         nutritionInfo: 420 kcal per serving
@@ -209,7 +235,7 @@ components:
         createdAt: "2026-04-19T09:00:00Z"
         modifiedAt: "2026-04-20T18:15:00Z"
       allOf:
-        - $ref: "#/components/schemas/recipeBase"
+        - $ref: "#/components/schemas/recipeCompact"
         - type: object
           required:
             - servingSize
@@ -263,26 +289,6 @@ components:
               x-go-custom-tag: db:"tags"
               x-oapi-codegen-extra-tags:
                 db: tags
-    recipeCompact:
-      description: Compact recipe representation used when returning lists.
-      example:
-        id: 3
-        name: Lemon Garlic Chicken
-        state: active
-        thumbnailUrl: /uploads/recipes/3/plated-dish-thumb.jpg
-        averageRating: 4.5
-        createdAt: "2026-04-19T09:00:00Z"
-        modifiedAt: "2026-04-20T18:15:00Z"
-      allOf:
-        - $ref: "#/components/schemas/recipeBase"
-        - type: object
-          properties:
-            averageRating:
-              type: number
-              readOnly: true
-              x-go-custom-tag: db:"avg_rating"
-              x-oapi-codegen-extra-tags:
-                db: avg_rating
     searchFilter:
       description: Search filter criteria used to find recipes.
       example:
