@@ -12,7 +12,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -20,7 +19,7 @@ func recipeFixtureLemonGarlicChicken() models.Recipe {
 	return models.Recipe{
 		Name:                "Lemon Garlic Chicken",
 		State:               models.Active,
-		Rating:              utils.GetPtr[float32](4.5),
+		Rating:              new(float32(4.5)),
 		Ingredients:         "1.5 lb chicken thighs\n2 tbsp olive oil\n3 cloves garlic\n1 lemon",
 		Directions:          "Marinate chicken, then roast at 400F until cooked through.",
 		NutritionInfo:       "420 kcal per serving",
@@ -36,7 +35,7 @@ func recipeFixtureSheetPanSausage() models.Recipe {
 	return models.Recipe{
 		Name:                "Sheet Pan Sausage and Peppers",
 		State:               models.Active,
-		Rating:              utils.GetPtr[float32](2.5),
+		Rating:              new(float32(2.5)),
 		Ingredients:         "12 oz smoked sausage\n2 bell peppers\n1 red onion\n2 tbsp olive oil",
 		Directions:          "Slice the vegetables and sausage, toss with oil, and roast until browned.",
 		NutritionInfo:       "510 kcal per serving",
@@ -52,7 +51,7 @@ func recipeFixtureChickpeaSaladWraps() models.Recipe {
 	return models.Recipe{
 		Name:                "Chickpea Salad Wraps",
 		State:               models.Archived,
-		Rating:              utils.GetPtr[float32](0),
+		Rating:              new(float32(0)),
 		Ingredients:         "2 cans chickpeas\n3 tbsp mayo\n1 celery stalk\n4 tortillas",
 		Directions:          "Mash the chickpeas, mix with the remaining ingredients, and roll into wraps.",
 		NutritionInfo:       "390 kcal per serving",
@@ -204,28 +203,28 @@ func Test_Recipe_Update(t *testing.T) {
 		{
 			func() models.Recipe {
 				recipe := recipeFixtureLemonGarlicChicken()
-				recipe.ID = utils.GetPtr[int64](1)
+				recipe.ID = new(int64(1))
 				return recipe
 			}(), nil, nil,
 		},
 		{
 			func() models.Recipe {
 				recipe := recipeFixtureSheetPanSausage()
-				recipe.ID = utils.GetPtr[int64](1)
+				recipe.ID = new(int64(1))
 				return recipe
 			}(), nil, nil,
 		},
 		{
 			func() models.Recipe {
 				recipe := recipeFixtureChickpeaSaladWraps()
-				recipe.ID = utils.GetPtr[int64](2)
+				recipe.ID = new(int64(2))
 				return recipe
 			}(), sql.ErrNoRows, ErrNotFound,
 		},
 		{
 			func() models.Recipe {
 				recipe := recipeFixtureSheetPanSausage()
-				recipe.ID = utils.GetPtr[int64](3)
+				recipe.ID = new(int64(3))
 				return recipe
 			}(), sql.ErrConnDone, sql.ErrConnDone,
 		},
@@ -293,61 +292,61 @@ func Test_Recipe_Patch(t *testing.T) {
 			name:             "Patch with rating only and no existing rating",
 			recipeID:         1,
 			hasCurrentRating: false,
-			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](3.5)},
-			expectedRating:   utils.GetPtr[float32](3.5),
+			patch:            models.RecipePatch{Rating: new(float32(3.5))},
+			expectedRating:   new(float32(3.5)),
 		},
 		{
 			name:             "Patch with rating only and existing rating",
 			recipeID:         1,
 			hasCurrentRating: true,
-			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](3.5)},
-			expectedRating:   utils.GetPtr[float32](3.5),
+			patch:            models.RecipePatch{Rating: new(float32(3.5))},
+			expectedRating:   new(float32(3.5)),
 		},
 		{
 			name:             "Patch with rating only with zero value and existing rating",
 			recipeID:         0,
 			hasCurrentRating: true,
-			patch:            models.RecipePatch{Rating: utils.GetPtr[float32](0)},
-			expectedRating:   utils.GetPtr[float32](0),
+			patch:            models.RecipePatch{Rating: new(float32(0))},
+			expectedRating:   new(float32(0)),
 		},
 		{
 			name:             "Patch with all fields",
 			recipeID:         1,
 			hasCurrentRating: true,
 			patch: models.RecipePatch{
-				State:         utils.GetPtr(models.Archived),
-				MainImageName: utils.GetPtr("new_image.jpg"),
-				Rating:        utils.GetPtr[float32](4.0),
+				State:         new(models.Archived),
+				MainImageName: new("new_image.jpg"),
+				Rating:        new(float32(4.0)),
 			},
-			expectedState:  utils.GetPtr(models.Archived),
-			expectedImage:  utils.GetPtr("new_image.jpg"),
-			expectedRating: utils.GetPtr[float32](4.0),
+			expectedState:  new(models.Archived),
+			expectedImage:  new("new_image.jpg"),
+			expectedRating: new(float32(4.0)),
 		},
 		{
 			name:     "Patch with state and image",
 			recipeID: 1,
 			patch: models.RecipePatch{
-				State:         utils.GetPtr(models.Archived),
-				MainImageName: utils.GetPtr("new_image.jpg"),
+				State:         new(models.Archived),
+				MainImageName: new("new_image.jpg"),
 			},
-			expectedState: utils.GetPtr(models.Archived),
-			expectedImage: utils.GetPtr("new_image.jpg"),
+			expectedState: new(models.Archived),
+			expectedImage: new("new_image.jpg"),
 		},
 		{
 			name:     "Patch with state only",
 			recipeID: 1,
 			patch: models.RecipePatch{
-				State: utils.GetPtr(models.Archived),
+				State: new(models.Archived),
 			},
-			expectedState: utils.GetPtr(models.Archived),
+			expectedState: new(models.Archived),
 		},
 		{
 			name:     "Patch with image only",
 			recipeID: 1,
 			patch: models.RecipePatch{
-				MainImageName: utils.GetPtr("new_image.jpg"),
+				MainImageName: new("new_image.jpg"),
 			},
-			expectedImage: utils.GetPtr("new_image.jpg"),
+			expectedImage: new("new_image.jpg"),
 		},
 	}
 	for _, test := range tests {
@@ -624,14 +623,14 @@ func Test_getPicturesStmt(t *testing.T) {
 		{
 			name: "Yes",
 			args: args{
-				withPictures: utils.GetPtr(true),
+				withPictures: new(true),
 			},
 			want: "r.main_image_name IS NOT NULL AND r.main_image_name != ''",
 		},
 		{
 			name: "No",
 			args: args{
-				withPictures: utils.GetPtr(false),
+				withPictures: new(false),
 			},
 			want: "r.main_image_name IS NULL OR r.main_image_name = ''",
 		},
@@ -797,8 +796,8 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](1), Name: "Recipe1", State: models.Active, Rating: utils.GetPtr[float32](4.5), MainImageName: "url1"},
-				{ID: utils.GetPtr[int64](2), Name: "Recipe2", State: models.Active, Rating: utils.GetPtr[float32](3.0), MainImageName: "url2"},
+				{ID: new(int64(1)), Name: "Recipe1", State: models.Active, Rating: new(float32(4.5)), MainImageName: "url1"},
+				{ID: new(int64(2)), Name: "Recipe2", State: models.Active, Rating: new(float32(3.0)), MainImageName: "url2"},
 			},
 			expectedTotal: 2,
 		},
@@ -821,7 +820,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](3), Name: "Recipe3", State: models.Archived, Rating: utils.GetPtr[float32](2.0), MainImageName: "url3"},
+				{ID: new(int64(3)), Name: "Recipe3", State: models.Archived, Rating: new(float32(2.0)), MainImageName: "url3"},
 			},
 			expectedTotal: 1,
 		},
@@ -844,14 +843,14 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](4), Name: "Recipe4", State: models.Active, Rating: utils.GetPtr[float32](5.0), MainImageName: "url4"},
+				{ID: new(int64(4)), Name: "Recipe4", State: models.Active, Rating: new(float32(5.0)), MainImageName: "url4"},
 			},
 			expectedTotal: 1,
 		},
 		{
 			name: "Find with withPictures true",
 			args: args{
-				filter: &models.SearchFilter{WithPictures: utils.GetPtr(true)},
+				filter: &models.SearchFilter{WithPictures: new(true)},
 				page:   1,
 				count:  1,
 			},
@@ -865,7 +864,7 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: utils.GetPtr[int64](5), Name: "Recipe5", State: models.Active, Rating: utils.GetPtr[float32](1.0), MainImageName: "url5"},
+				{ID: new(int64(5)), Name: "Recipe5", State: models.Active, Rating: new(float32(1.0)), MainImageName: "url5"},
 			},
 			expectedTotal: 1,
 		},

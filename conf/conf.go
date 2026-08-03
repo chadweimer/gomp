@@ -9,8 +9,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/samber/lo"
 )
 
 var (
@@ -154,7 +152,7 @@ func convertSlice(str string, val reflect.Value) error {
 	return convertAndSet(str, func(str string) (reflect.Value, error) {
 		valType := val.Type()
 		newVal := reflect.MakeSlice(valType, 0, 0)
-		if !lo.IsEmpty(str) {
+		if str != "" {
 			segments := strings.Split(str, ",")
 			newVal = reflect.MakeSlice(valType, 0, len(segments))
 			for _, segment := range segments {

@@ -10,7 +10,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -26,10 +25,10 @@ func Test_UserSearchFilter_Create(t *testing.T) {
 	tests := []testArgs{
 		{
 			&models.SavedSearchFilter{
-				UserID:       utils.GetPtr[int64](1),
+				UserID:       new(int64(1)),
 				Name:         "My Filter",
 				Query:        "My Query",
-				WithPictures: utils.GetPtr[bool](true),
+				WithPictures: new(bool(true)),
 				SortBy:       models.SortByCreated,
 				SortDir:      models.Desc,
 				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
@@ -48,7 +47,7 @@ func Test_UserSearchFilter_Create(t *testing.T) {
 		},
 		{
 			&models.SavedSearchFilter{
-				UserID: utils.GetPtr[int64](1),
+				UserID: new(int64(1)),
 			},
 			nil,
 			sql.ErrNoRows,
@@ -56,7 +55,7 @@ func Test_UserSearchFilter_Create(t *testing.T) {
 		},
 		{
 			&models.SavedSearchFilter{
-				UserID: utils.GetPtr[int64](1),
+				UserID: new(int64(1)),
 			},
 			nil,
 			sql.ErrConnDone,
@@ -212,11 +211,11 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 	tests := []testArgs{
 		{
 			&models.SavedSearchFilter{
-				UserID:       utils.GetPtr[int64](1),
-				ID:           utils.GetPtr[int64](2),
+				UserID:       new(int64(1)),
+				ID:           new(int64(2)),
 				Name:         "My Filter",
 				Query:        "My Query",
-				WithPictures: utils.GetPtr[bool](true),
+				WithPictures: new(bool(true)),
 				SortBy:       models.SortByCreated,
 				SortDir:      models.Desc,
 				Fields:       []models.SearchField{models.SearchFieldName, models.SearchFieldIngredients},
@@ -229,7 +228,7 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 		},
 		{
 			&models.SavedSearchFilter{
-				ID: utils.GetPtr[int64](2),
+				ID: new(int64(2)),
 			},
 			ErrMissingID,
 			nil,
@@ -237,7 +236,7 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 		},
 		{
 			&models.SavedSearchFilter{
-				UserID: utils.GetPtr[int64](1),
+				UserID: new(int64(1)),
 			},
 			ErrMissingID,
 			nil,
@@ -245,8 +244,8 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 		},
 		{
 			&models.SavedSearchFilter{
-				UserID: utils.GetPtr[int64](1),
-				ID:     utils.GetPtr[int64](2),
+				UserID: new(int64(1)),
+				ID:     new(int64(2)),
 			},
 			nil,
 			sql.ErrNoRows,
@@ -254,8 +253,8 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 		},
 		{
 			&models.SavedSearchFilter{
-				UserID: utils.GetPtr[int64](1),
-				ID:     utils.GetPtr[int64](2),
+				UserID: new(int64(1)),
+				ID:     new(int64(2)),
 			},
 			nil,
 			sql.ErrConnDone,
@@ -400,14 +399,14 @@ func Test_UserSearchFilter_List(t *testing.T) {
 	tests := []testArgs{
 		{1, []models.SavedSearchFilterCompact{
 			{
-				ID:     utils.GetPtr[int64](1),
+				ID:     new(int64(1)),
 				Name:   "Filter 1",
-				UserID: utils.GetPtr[int64](1),
+				UserID: new(int64(1)),
 			},
 			{
-				ID:     utils.GetPtr[int64](2),
+				ID:     new(int64(2)),
 				Name:   "Filter 2",
-				UserID: utils.GetPtr[int64](1),
+				UserID: new(int64(1)),
 			},
 		}, nil, nil},
 		{0, nil, sql.ErrNoRows, ErrNotFound},

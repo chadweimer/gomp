@@ -11,7 +11,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -356,7 +355,7 @@ func Test_AddUserSearchFilter(t *testing.T) {
 		{
 			name:             "Mismatched user ID",
 			userID:           1,
-			filter:           models.SavedSearchFilter{UserID: utils.GetPtr(int64(2))},
+			filter:           models.SavedSearchFilter{UserID: new(int64(2))},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: AddUserSearchFilter400Response{},
@@ -433,7 +432,7 @@ func Test_AddSearchFilter(t *testing.T) {
 		{
 			name:             "Mismatched user ID",
 			userID:           1,
-			filter:           models.SavedSearchFilter{UserID: utils.GetPtr(int64(2))},
+			filter:           models.SavedSearchFilter{UserID: new(int64(2))},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: AddSearchFilter400Response{},
@@ -511,7 +510,7 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 			name:             "Mismatched user ID",
 			userID:           1,
 			filterID:         1,
-			filter:           models.SavedSearchFilter{UserID: utils.GetPtr(int64(2))},
+			filter:           models.SavedSearchFilter{UserID: new(int64(2))},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSearchFilter400Response{},
@@ -520,7 +519,7 @@ func Test_SaveUserSearchFilter(t *testing.T) {
 			name:             "Mismatched filter ID",
 			userID:           1,
 			filterID:         1,
-			filter:           models.SavedSearchFilter{ID: utils.GetPtr(int64(2))},
+			filter:           models.SavedSearchFilter{ID: new(int64(2))},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSearchFilter400Response{},
@@ -612,7 +611,7 @@ func Test_SaveSearchFilter(t *testing.T) {
 			name:             "Mismatched user ID",
 			userID:           1,
 			filterID:         1,
-			filter:           models.SavedSearchFilter{UserID: utils.GetPtr(int64(2))},
+			filter:           models.SavedSearchFilter{UserID: new(int64(2))},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveSearchFilter400Response{},
@@ -621,7 +620,7 @@ func Test_SaveSearchFilter(t *testing.T) {
 			name:             "Mismatched filter ID",
 			userID:           1,
 			filterID:         1,
-			filter:           models.SavedSearchFilter{ID: utils.GetPtr(int64(2))},
+			filter:           models.SavedSearchFilter{ID: new(int64(2))},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveSearchFilter400Response{},

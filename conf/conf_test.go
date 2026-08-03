@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/chadweimer/gomp/utils"
 )
 
 func TestBind_Defaults(t *testing.T) {
@@ -67,10 +65,10 @@ func TestBind_Defaults(t *testing.T) {
 				TestInt32:          -4,
 				TestInt64:          -5,
 				TestIntArray:       []int{-1, -2},
-				TestIntPtrArray:    []*int{utils.GetPtr(-1), utils.GetPtr(-2)},
-				TestIntPtrPtrArray: []**int{utils.GetPtr(utils.GetPtr(-1)), utils.GetPtr(utils.GetPtr(-2))},
-				TestIntPtr:         utils.GetPtr(-1),
-				TestIntPtrPtr:      utils.GetPtr(utils.GetPtr(-1)),
+				TestIntPtrArray:    []*int{new(-1), new(-2)},
+				TestIntPtrPtrArray: []**int{new(new(-1)), new(new(-2))},
+				TestIntPtr:         new(-1),
+				TestIntPtrPtr:      new(new(-1)),
 
 				TestUint:      1,
 				TestUint8:     2,
@@ -93,7 +91,7 @@ func TestBind_Defaults(t *testing.T) {
 				TestStringEmptyArray: []string{},
 
 				TestTime:    time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC),
-				TestTimePtr: utils.GetPtr(time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)),
+				TestTimePtr: new(time.Date(2000, 1, 2, 3, 4, 5, 0, time.UTC)),
 
 				TestURL: url.URL{Scheme: "https", Host: "example.com"},
 				TestURLArray: []url.URL{
@@ -230,7 +228,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "a",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -246,7 +244,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "a",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -258,7 +256,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "b",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -270,7 +268,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "c",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -282,7 +280,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "d",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -294,7 +292,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "e",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -306,7 +304,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 					Num:  "f",
 					Err:  errors.New(""),
 				}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -314,7 +312,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 			arg:  &badMap{},
 			errChecker: func(got error) (error, bool) {
 				want := &errUnsupportedType{}
-				return want, errors.As(got, utils.GetPtr(want))
+				return want, errors.As(got, new(want))
 			},
 		},
 		{
@@ -327,7 +325,7 @@ func TestBind_BadValuesReturnError(t *testing.T) {
 		},
 		{
 			name: "Not a struct",
-			arg:  utils.GetPtr("foobar"),
+			arg:  new("foobar"),
 			errChecker: func(got error) (error, bool) {
 				want := errStructRequired
 				return want, errors.Is(got, want)
