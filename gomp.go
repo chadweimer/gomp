@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/api"
-	"github.com/chadweimer/gomp/conf"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/vary"
 )
 
 func main() {
@@ -31,8 +31,9 @@ func main() {
 	slog.Info("Starting application", "version", metadata.BuildVersion)
 
 	// Load configuration
+	vary.SetPrefix("GOMP")
 	cfg := &Config{}
-	if err := conf.Bind(cfg); err != nil {
+	if err := vary.Bind(cfg); err != nil {
 		slog.Error("Failed to load configuration. Exiting...", "error", err)
 		os.Exit(1)
 	}

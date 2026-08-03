@@ -12,7 +12,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -77,7 +76,7 @@ func Test_GetRecipe(t *testing.T) {
 			dbError:       nil,
 			expectedError: nil,
 			expectedResponse: GetRecipe200JSONResponse{
-				ID:   utils.GetPtr[int64](1),
+				ID:   new(int64(1)),
 				Name: recipeFixtureLemonGarlicChicken().Name,
 			},
 		},
@@ -216,7 +215,7 @@ func Test_SaveRecipe(t *testing.T) {
 			recipeID: 1,
 			recipe: func() *models.Recipe {
 				recipe := recipeFixtureSheetPanSausage()
-				recipe.ID = utils.GetPtr[int64](1)
+				recipe.ID = new(int64(1))
 				return recipe
 			}(),
 			dbError:          nil,
@@ -228,7 +227,7 @@ func Test_SaveRecipe(t *testing.T) {
 			recipeID: 1,
 			recipe: func() *models.Recipe {
 				recipe := recipeFixtureChickpeaSaladWraps()
-				recipe.ID = utils.GetPtr[int64](2)
+				recipe.ID = new(int64(2))
 				return recipe
 			}(),
 			dbError:          nil,
@@ -308,8 +307,8 @@ func Test_PatchRecipe(t *testing.T) {
 			name:     "Recipe exists",
 			recipeID: 1,
 			patch: &models.RecipePatch{
-				State:         utils.GetPtr(models.Archived),
-				MainImageName: utils.GetPtr("new-image.jpg"),
+				State:         new(models.Archived),
+				MainImageName: new("new-image.jpg"),
 			},
 			dbError:          nil,
 			expectedError:    nil,
@@ -319,8 +318,8 @@ func Test_PatchRecipe(t *testing.T) {
 			name:     "Recipe does not exist",
 			recipeID: 1,
 			patch: &models.RecipePatch{
-				State:         utils.GetPtr(models.Archived),
-				MainImageName: utils.GetPtr("new-image.jpg"),
+				State:         new(models.Archived),
+				MainImageName: new("new-image.jpg"),
 			},
 			dbError:          db.ErrNotFound,
 			expectedError:    nil,
@@ -330,8 +329,8 @@ func Test_PatchRecipe(t *testing.T) {
 			name:     "DB error",
 			recipeID: 1,
 			patch: &models.RecipePatch{
-				State:         utils.GetPtr(models.Archived),
-				MainImageName: utils.GetPtr("new-image.jpg"),
+				State:         new(models.Archived),
+				MainImageName: new("new-image.jpg"),
 			},
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,

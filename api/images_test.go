@@ -16,7 +16,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
@@ -129,7 +128,7 @@ func Test_UploadImage(t *testing.T) {
 		{
 			name: "Nominal",
 			recipe: models.Recipe{
-				ID:            utils.GetPtr[int64](1),
+				ID:            new(int64(1)),
 				MainImageName: "some-image.jpeg",
 			},
 			mockFS: fstest.MapFS{
@@ -147,7 +146,7 @@ func Test_UploadImage(t *testing.T) {
 		{
 			name: "No Main Image",
 			recipe: models.Recipe{
-				ID: utils.GetPtr[int64](1),
+				ID: new(int64(1)),
 			},
 			mockFS: fstest.MapFS{
 				"new-image.jpg": &fstest.MapFile{
@@ -164,7 +163,7 @@ func Test_UploadImage(t *testing.T) {
 		{
 			name: "Not Found",
 			recipe: models.Recipe{
-				ID: utils.GetPtr[int64](2),
+				ID: new(int64(2)),
 			},
 			expectUpdateMainImage: false,
 			saveError:             fs.ErrNotExist,
@@ -174,7 +173,7 @@ func Test_UploadImage(t *testing.T) {
 		{
 			name: "Save Error",
 			recipe: models.Recipe{
-				ID: utils.GetPtr[int64](3),
+				ID: new(int64(3)),
 			},
 			expectUpdateMainImage: false,
 			saveError:             io.ErrClosedPipe,
@@ -249,7 +248,7 @@ func Test_DeleteImage(t *testing.T) {
 	tests := []testArgs{
 		{
 			name:                  "Nominal",
-			recipe:                models.Recipe{ID: utils.GetPtr[int64](1)},
+			recipe:                models.Recipe{ID: new(int64(1))},
 			imageName:             "img.jpeg",
 			expectDelete:          true,
 			expectUpdateMainImage: false,
@@ -259,7 +258,7 @@ func Test_DeleteImage(t *testing.T) {
 		},
 		{
 			name:                  "Not Found",
-			recipe:                models.Recipe{ID: utils.GetPtr[int64](2)},
+			recipe:                models.Recipe{ID: new(int64(2))},
 			imageName:             "img.jpeg",
 			expectDelete:          false,
 			expectUpdateMainImage: false,
@@ -269,7 +268,7 @@ func Test_DeleteImage(t *testing.T) {
 		},
 		{
 			name:                  "Error",
-			recipe:                models.Recipe{ID: utils.GetPtr[int64](2)},
+			recipe:                models.Recipe{ID: new(int64(2))},
 			imageName:             "img.jpeg",
 			expectDelete:          false,
 			expectUpdateMainImage: false,
@@ -280,7 +279,7 @@ func Test_DeleteImage(t *testing.T) {
 		{
 			name: "Main Image Deleted",
 			recipe: models.Recipe{
-				ID:            utils.GetPtr[int64](2),
+				ID:            new(int64(2)),
 				MainImageName: "img.jpeg",
 			},
 			imageName:             "img.jpeg",
@@ -293,7 +292,7 @@ func Test_DeleteImage(t *testing.T) {
 		{
 			name: "Unsafe name",
 			recipe: models.Recipe{
-				ID: utils.GetPtr[int64](2),
+				ID: new(int64(2)),
 			},
 			imageName:             "../img.jpeg",
 			expectDelete:          false,
@@ -497,7 +496,7 @@ func Test_OptimizeImage(t *testing.T) {
 				}
 
 				if test.expectRecipeUpdate {
-					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&models.Recipe{ID: utils.GetPtr(test.recipeID), MainImageName: test.originalName}, nil)
+					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&models.Recipe{ID: new(test.recipeID), MainImageName: test.originalName}, nil)
 					dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
 				}
 			}

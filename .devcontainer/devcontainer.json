@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json.
 {
   "name": "Go",
-  "image": "golang:1.25",
+  "image": "golang:1.26",
   "containerUser": "vscode",
   "customizations": {
     "vscode": {

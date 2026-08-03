@@ -11,7 +11,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -195,7 +194,7 @@ func Test_SaveSettings(t *testing.T) {
 		{
 			name:             "Success with matching user ID",
 			currentUserID:    1,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(1)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveSettings204Response{},
@@ -203,7 +202,7 @@ func Test_SaveSettings(t *testing.T) {
 		{
 			name:             "Success with nil user ID",
 			currentUserID:    1,
-			userSettings:     models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: nil, HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveSettings204Response{},
@@ -211,7 +210,7 @@ func Test_SaveSettings(t *testing.T) {
 		{
 			name:             "Mismatched user ID",
 			currentUserID:    1,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(2)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveSettings400Response{},
@@ -219,7 +218,7 @@ func Test_SaveSettings(t *testing.T) {
 		{
 			name:             "DB error",
 			currentUserID:    1,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(1)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,
 			expectedResponse: nil,
@@ -279,7 +278,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "Success with matching user ID",
 			currentUserID:    1,
 			requestUserID:    1,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(1)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSettings204Response{},
@@ -288,7 +287,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "Success with nil user ID",
 			currentUserID:    1,
 			requestUserID:    1,
-			userSettings:     models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: nil, HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSettings204Response{},
@@ -297,7 +296,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "Success with different user ID",
 			currentUserID:    1,
 			requestUserID:    2,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(2)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSettings204Response{},
@@ -306,7 +305,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "Success with nil user ID and different request ID",
 			currentUserID:    1,
 			requestUserID:    2,
-			userSettings:     models.UserSettings{UserID: nil, HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: nil, HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSettings204Response{},
@@ -315,7 +314,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "Not found error",
 			currentUserID:    1,
 			requestUserID:    2,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(2)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          db.ErrNotFound,
 			expectedError:    nil,
 			expectedResponse: SaveUserSettings404Response{},
@@ -324,7 +323,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "Mismatched ID error",
 			currentUserID:    1,
 			requestUserID:    3,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](2), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(2)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUserSettings400Response{},
@@ -333,7 +332,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			name:             "DB error",
 			currentUserID:    1,
 			requestUserID:    1,
-			userSettings:     models.UserSettings{UserID: utils.GetPtr[int64](1), HomeTitle: utils.GetPtr("My Home Title"), HomeImageURL: utils.GetPtr("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
+			userSettings:     models.UserSettings{UserID: new(int64(1)), HomeTitle: new("My Home Title"), HomeImageURL: new("https://example.com/my-image.jpg"), FavoriteTags: []string{"quick", "kid-friendly"}},
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,
 			expectedResponse: nil,

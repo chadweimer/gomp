@@ -11,7 +11,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -33,7 +32,7 @@ func Test_GetUser(t *testing.T) {
 			username:         "user1",
 			dbError:          nil,
 			expectedError:    nil,
-			expectedResponse: GetUser200JSONResponse{ID: utils.GetPtr[int64](1), Username: "user1"},
+			expectedResponse: GetUser200JSONResponse{ID: new(int64(1)), Username: "user1"},
 		},
 		{
 			name:             "not found",
@@ -116,7 +115,7 @@ func Test_GetCurrentUser(t *testing.T) {
 	tests := []testArgs{
 		{
 			name:             "success",
-			userID:           utils.GetPtr[int64](1),
+			userID:           new(int64(1)),
 			username:         "user1",
 			expectedError:    nil,
 			expectedResponse: GetCurrentUser200JSONResponse{},
@@ -130,7 +129,7 @@ func Test_GetCurrentUser(t *testing.T) {
 		},
 		{
 			name:             "not found",
-			userID:           utils.GetPtr[int64](3),
+			userID:           new(int64(3)),
 			username:         "",
 			expectedError:    db.ErrNotFound,
 			expectedResponse: nil,
@@ -348,7 +347,7 @@ func Test_SaveUser(t *testing.T) {
 			name:             "admin updating self",
 			currentUserID:    1,
 			requestUserID:    1,
-			user:             models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Admin},
+			user:             models.User{ID: new(int64(1)), Username: "user1", AccessLevel: models.Admin},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUser204Response{},
@@ -366,7 +365,7 @@ func Test_SaveUser(t *testing.T) {
 			name:             "admin updating self with editor access",
 			currentUserID:    1,
 			requestUserID:    1,
-			user:             models.User{ID: utils.GetPtr[int64](1), Username: "user1", AccessLevel: models.Editor},
+			user:             models.User{ID: new(int64(1)), Username: "user1", AccessLevel: models.Editor},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUser403Response{},
@@ -384,7 +383,7 @@ func Test_SaveUser(t *testing.T) {
 			name:             "admin updating another user with editor access",
 			currentUserID:    1,
 			requestUserID:    2,
-			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Editor},
+			user:             models.User{ID: new(int64(2)), Username: "user2", AccessLevel: models.Editor},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUser204Response{},
@@ -402,7 +401,7 @@ func Test_SaveUser(t *testing.T) {
 			name:             "admin updating a non-existent user",
 			currentUserID:    1,
 			requestUserID:    2,
-			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer},
+			user:             models.User{ID: new(int64(2)), Username: "user2", AccessLevel: models.Viewer},
 			dbError:          db.ErrNotFound,
 			expectedError:    nil,
 			expectedResponse: SaveUser404Response{},
@@ -411,7 +410,7 @@ func Test_SaveUser(t *testing.T) {
 			name:             "admin updating another user with mismatched ID",
 			currentUserID:    1,
 			requestUserID:    3,
-			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer},
+			user:             models.User{ID: new(int64(2)), Username: "user2", AccessLevel: models.Viewer},
 			dbError:          nil,
 			expectedError:    nil,
 			expectedResponse: SaveUser400Response{},
@@ -420,7 +419,7 @@ func Test_SaveUser(t *testing.T) {
 			name:             "DB error when updating user",
 			currentUserID:    1,
 			requestUserID:    2,
-			user:             models.User{ID: utils.GetPtr[int64](2), Username: "user2", AccessLevel: models.Viewer},
+			user:             models.User{ID: new(int64(2)), Username: "user2", AccessLevel: models.Viewer},
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,
 			expectedResponse: nil,

@@ -12,7 +12,6 @@ import (
 	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/mock/gomock"
 )
@@ -30,70 +29,70 @@ func Test_VerifyScopes(t *testing.T) {
 		{
 			name:                "Admin access required, user is admin",
 			requiredScopes:      []string{string(models.Admin)},
-			user:                &models.User{ID: utils.GetPtr[int64](1), AccessLevel: models.Admin},
+			user:                &models.User{ID: new(int64(1)), AccessLevel: models.Admin},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusOK,
 		},
 		{
 			name:                "Admin access required, user is editor",
 			requiredScopes:      []string{string(models.Admin)},
-			user:                &models.User{ID: utils.GetPtr[int64](2), AccessLevel: models.Editor},
+			user:                &models.User{ID: new(int64(2)), AccessLevel: models.Editor},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusForbidden,
 		},
 		{
 			name:                "Admin access required, user is viewer",
 			requiredScopes:      []string{string(models.Admin)},
-			user:                &models.User{ID: utils.GetPtr[int64](3), AccessLevel: models.Viewer},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusForbidden,
 		},
 		{
 			name:                "Editor access required, user is admin",
 			requiredScopes:      []string{string(models.Editor)},
-			user:                &models.User{ID: utils.GetPtr[int64](1), AccessLevel: models.Admin},
+			user:                &models.User{ID: new(int64(1)), AccessLevel: models.Admin},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusOK,
 		},
 		{
 			name:                "Editor access required, user is editor",
 			requiredScopes:      []string{string(models.Editor)},
-			user:                &models.User{ID: utils.GetPtr[int64](2), AccessLevel: models.Editor},
+			user:                &models.User{ID: new(int64(2)), AccessLevel: models.Editor},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusOK,
 		},
 		{
 			name:                "Editor access required, user is viewer",
 			requiredScopes:      []string{string(models.Editor)},
-			user:                &models.User{ID: utils.GetPtr[int64](3), AccessLevel: models.Viewer},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusForbidden,
 		},
 		{
 			name:                "Viewer access required, user is admin",
 			requiredScopes:      []string{string(models.Viewer)},
-			user:                &models.User{ID: utils.GetPtr[int64](1), AccessLevel: models.Admin},
+			user:                &models.User{ID: new(int64(1)), AccessLevel: models.Admin},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusOK,
 		},
 		{
 			name:                "Viewer access required, user is editor",
 			requiredScopes:      []string{string(models.Viewer)},
-			user:                &models.User{ID: utils.GetPtr[int64](2), AccessLevel: models.Editor},
+			user:                &models.User{ID: new(int64(2)), AccessLevel: models.Editor},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusOK,
 		},
 		{
 			name:                "Viewer access required, user is viewer",
 			requiredScopes:      []string{string(models.Viewer)},
-			user:                &models.User{ID: utils.GetPtr[int64](3), AccessLevel: models.Viewer},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
 			tokenIncludesScopes: true,
 			expectStatus:        http.StatusOK,
 		},
 		{
 			name:                "Viewer access required, user is viewer, token missing scopes",
 			requiredScopes:      []string{string(models.Viewer)},
-			user:                &models.User{ID: utils.GetPtr[int64](3), AccessLevel: models.Viewer},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
 			tokenIncludesScopes: false,
 			expectStatus:        http.StatusForbidden,
 		},

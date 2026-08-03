@@ -11,7 +11,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
@@ -113,11 +112,11 @@ func Test_AddNote(t *testing.T) {
 		{
 			name:             "Valid note with matching recipe ID",
 			recipeID:         1,
-			note:             models.Note{RecipeID: utils.GetPtr[int64](1), Text: "Add chopped parsley right before serving."},
+			note:             models.Note{RecipeID: new(int64(1)), Text: "Add chopped parsley right before serving."},
 			expectCreate:     true,
 			dbError:          nil,
 			expectedError:    nil,
-			expectedResponse: AddNote201JSONResponse{RecipeID: utils.GetPtr[int64](1), Text: "Add chopped parsley right before serving."},
+			expectedResponse: AddNote201JSONResponse{RecipeID: new(int64(1)), Text: "Add chopped parsley right before serving."},
 		},
 		{
 			name:             "Valid note without recipe ID",
@@ -126,12 +125,12 @@ func Test_AddNote(t *testing.T) {
 			expectCreate:     true,
 			dbError:          nil,
 			expectedError:    nil,
-			expectedResponse: AddNote201JSONResponse{RecipeID: utils.GetPtr[int64](2), Text: "Refrigerate leftovers within 2 hours."},
+			expectedResponse: AddNote201JSONResponse{RecipeID: new(int64(2)), Text: "Refrigerate leftovers within 2 hours."},
 		},
 		{
 			name:             "Mismatched recipe ID",
 			recipeID:         3,
-			note:             models.Note{RecipeID: utils.GetPtr[int64](4), Text: "Mismatched recipe ID note fixture."},
+			note:             models.Note{RecipeID: new(int64(4)), Text: "Mismatched recipe ID note fixture."},
 			expectCreate:     false,
 			dbError:          nil,
 			expectedError:    nil,
@@ -223,7 +222,7 @@ func Test_SaveNote(t *testing.T) {
 			name:             "Valid note update",
 			recipeID:         1,
 			noteID:           2,
-			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](1), Text: "Updated note text."},
+			note:             models.Note{ID: new(int64(2)), RecipeID: new(int64(1)), Text: "Updated note text."},
 			expectUpdate:     true,
 			dbError:          nil,
 			expectedError:    nil,
@@ -233,7 +232,7 @@ func Test_SaveNote(t *testing.T) {
 			name:             "Recipe or note not found",
 			recipeID:         1,
 			noteID:           2,
-			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](1), Text: "Note fixture for not found case."},
+			note:             models.Note{ID: new(int64(2)), RecipeID: new(int64(1)), Text: "Note fixture for not found case."},
 			expectUpdate:     true,
 			dbError:          db.ErrNotFound,
 			expectedError:    nil,
@@ -243,7 +242,7 @@ func Test_SaveNote(t *testing.T) {
 			name:             "Mismatched note ID",
 			recipeID:         1,
 			noteID:           2,
-			note:             models.Note{ID: utils.GetPtr[int64](3), RecipeID: utils.GetPtr[int64](1), Text: "Mismatched note ID fixture."},
+			note:             models.Note{ID: new(int64(3)), RecipeID: new(int64(1)), Text: "Mismatched note ID fixture."},
 			expectUpdate:     false,
 			dbError:          nil,
 			expectedError:    nil,
@@ -253,7 +252,7 @@ func Test_SaveNote(t *testing.T) {
 			name:             "Mismatched recipe ID",
 			recipeID:         1,
 			noteID:           2,
-			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](3), Text: "Mismatched recipe ID fixture."},
+			note:             models.Note{ID: new(int64(2)), RecipeID: new(int64(3)), Text: "Mismatched recipe ID fixture."},
 			expectUpdate:     false,
 			dbError:          nil,
 			expectedError:    nil,
@@ -263,7 +262,7 @@ func Test_SaveNote(t *testing.T) {
 			name:             "Database error",
 			recipeID:         1,
 			noteID:           2,
-			note:             models.Note{ID: utils.GetPtr[int64](2), RecipeID: utils.GetPtr[int64](1), Text: "Intentional failing note fixture."},
+			note:             models.Note{ID: new(int64(2)), RecipeID: new(int64(1)), Text: "Intentional failing note fixture."},
 			expectUpdate:     true,
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,

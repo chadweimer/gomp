@@ -11,7 +11,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -178,13 +177,13 @@ func Test_Note_List(t *testing.T) {
 	tests := []testArgs{
 		{1, []models.Note{
 			{
-				ID:         utils.GetPtr[int64](1),
+				ID:         new(int64(1)),
 				Text:       "My Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,
 			},
 			{
-				ID:         utils.GetPtr[int64](2),
+				ID:         new(int64(2)),
 				Text:       "My Other Note",
 				CreatedAt:  &now,
 				ModifiedAt: &now,

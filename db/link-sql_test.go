@@ -10,7 +10,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/gomp/utils"
 	"go.uber.org/mock/gomock"
 )
 
@@ -121,21 +120,21 @@ func Test_Link_List(t *testing.T) {
 	tests := []testArgs{
 		{1, []models.RecipeCompact{
 			{
-				ID:            utils.GetPtr[int64](1),
+				ID:            new(int64(1)),
 				Name:          "My Linked Recipe",
 				State:         models.Active,
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
-				Rating:        utils.GetPtr[float32](2.5),
+				Rating:        new(float32(2.5)),
 				MainImageName: "",
 			},
 			{
-				ID:            utils.GetPtr[int64](2),
+				ID:            new(int64(2)),
 				Name:          "My Other Linked Recipe",
 				State:         models.Archived,
 				CreatedAt:     &now,
 				ModifiedAt:    &now,
-				Rating:        utils.GetPtr[float32](4),
+				Rating:        new(float32(4)),
 				MainImageName: "",
 			},
 		}, nil, nil},
