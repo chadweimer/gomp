@@ -138,7 +138,7 @@ ENV                     |Value(s)                   |Default                    
 BASE_ASSETS_PATH        |string                     |static                                   |The base path to the client assets.
 DATABASE_DRIVER         |postgres, sqlite           |&lt;empty&gt;                            |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL.
 DATABASE_URL            |string                     |file:data/data.db?_pragma=foreign_keys(1)|The url (path, connection string, etc) to use with the associated database driver when opening the database connection.
-IS_DEVELOPMENT          |0, 1                       |0                                        |Defines whether to run the application in "development mode". Development mode turns on additional features, such as logging, that may not be desirable in a production environment.
+LOG_LEVEL               |debug,info,warn,error      |info                                     |Defines the logging level for the application.
 MIGRATIONS_FORCE_VERSION|int                        |-1                                       |A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version.
 MIGRATIONS_TABLE_NAME   |string                     |&lt;empty&gt;                            |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
 PORT                    |uint                       |5000                                     |The port number under which the site is being hosted.
@@ -150,7 +150,7 @@ IMAGE_SIZE              |uint                       |2000                       
 THUMBNAIL_QUALITY       |high, medium, low          |medium                                   |The quality level for the thumbnails of recipe images. JPEG Qualities: High == 92, Medium == 80, Low == 70. Low also uses the Nearest Neighbor instead of the Box resizing algorithm.
 THUMBNAIL_SIZE          |uint                       |500                                      |The size of the bounding box to fit the thumbnails of recipe images to.
 
-All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_IS_DEVELOPMENT=1) in cases where there is a need to avoid collisions with other applications.
+All environment variables can also be prefixed with "GOMP_" (e.g., GOMP_PORT=1234) in cases where there is a need to avoid collisions with other applications.
 The name with "GOMP_" is prefered if both are present.
 
 For values that allow releative paths (e.g., BASE_ASSETS_PATH, DATABASE_URL for SQLite, and FILES_PATH), they are always relative to the application working directory.

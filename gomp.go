@@ -39,9 +39,7 @@ func main() {
 	}
 
 	// Reconfigure the logger now that we've loaded the main application configuation
-	if cfg.IsDevelopment {
-		logLevel.Set(slog.LevelDebug)
-	}
+	logLevel.Set(cfg.LogLevel.ToSlog())
 
 	// Now it's OK to log what was loaded
 	slog.Debug("Loaded application configuration", "cfg", cfg)
@@ -108,9 +106,6 @@ func main() {
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
 	timeout := 10 * time.Second
-	if cfg.IsDevelopment {
-		timeout = 1 * time.Second
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 

@@ -3,8 +3,10 @@ package main
 import (
 	"encoding"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
+	"strings"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
@@ -24,10 +26,8 @@ type Config struct {
 	// Port gets the port number under which the site is being hosted.
 	Port int `env:"PORT" default:"5000"`
 
-	// IsDevelopment defines whether to run the application in "development mode".
-	// Development mode turns on additional features, such as logging, that may
-	// not be desirable in a production environment.
-	IsDevelopment bool `env:"IS_DEVELOPMENT" default:"false"`
+	// LogLevel defines the logging level for the application. Valid values are "debug", "info", "warn", and "error".
+	LogLevel LogLevel `env:"LOG_LEVEL" default:"info"`
 
 	// BaseAssetsPath gets the base path to the client assets.
 	BaseAssetsPath string `env:"BASE_ASSETS_PATH" default:"static"`
@@ -57,6 +57,11 @@ func (c Config) validate() error {
 		errs = append(errs, errors.New("secure keys must be specified with 1 or more keys separated by a comma"))
 	} else if len(c.SecureKeys) == 1 && c.SecureKeys[0] == defaultSecureKey {
 		slog.Warn("Using default secure key. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
+	}
+
+	allowedLogLevels := []LogLevel{LogLevelDebug, LogLevelInfo, LogLevelWarn, LogLevelError}
+	if !lo.Contains(allowedLogLevels, c.LogLevel) {
+		errs = append(errs, fmt.Errorf("log level must be one of ('%s')", strings.Join(lo.Map(allowedLogLevels, func(l LogLevel, _ int) string { return string(l) }), "', '")))
 	}
 
 	return errors.Join(errs...)
@@ -95,4 +100,35 @@ func (tp *TrustedProxy) UnmarshalText(text []byte) error {
 		tp.IPNet = *ipNet
 	}
 	return nil
+}
+
+// LogLevel represents the logging level for the application. Valid values are "debug", "info", "warn", and "error".
+type LogLevel string
+
+const (
+	// LogLevelDebug represents the debug logging level.
+	LogLevelDebug LogLevel = "debug"
+
+	// LogLevelInfo represents the info logging level.
+	LogLevelInfo LogLevel = "info"
+
+	// LogLevelWarn represents the warn logging level.
+	LogLevelWarn LogLevel = "warn"
+
+	// LogLevelError represents the error logging level.
+	LogLevelError LogLevel = "error"
+)
+
+// ToSlog converts the custom LogLevel to the corresponding slog.Level. If the LogLevel is unknown, it defaults to slog.LevelInfo.
+func (l LogLevel) ToSlog() slog.Level {
+	switch l {
+	case LogLevelDebug:
+		return slog.LevelDebug
+	case LogLevelWarn:
+		return slog.LevelWarn
+	case LogLevelError:
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
 }

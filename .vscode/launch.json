@@ -12,7 +12,7 @@
       "program": "${workspaceFolder}",
       "env": {
         "PORT": "5678",
-        "IS_DEVELOPMENT": "1",
+        "LOG_LEVEL": "debug",
         "BASE_ASSETS_PATH": "static/www/static"
       },
       "buildFlags": "-ldflags '-X github.com/chadweimer/gomp/metadata.BuildVersion=DEBUG'",
