@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log/slog"
 	"net"
 	"testing"
 )
@@ -11,14 +10,12 @@ func TestConfig_validate(t *testing.T) {
 		Port           int
 		BaseAssetsPath string
 		SecureKeys     []string
-		LogLevel       LogLevel
 	}
 	init := func(opts ...func(f *fields)) fields {
 		f := fields{
 			Port:           1234,
 			BaseAssetsPath: "/path/to/assets",
 			SecureKeys:     []string{"secure key"},
-			LogLevel:       LogLevelInfo,
 		}
 		for _, opt := range opts {
 			opt(&f)
@@ -56,13 +53,6 @@ func TestConfig_validate(t *testing.T) {
 			}),
 			wantErr: true,
 		},
-		{
-			name: "Bad Log Level",
-			fields: init(func(f *fields) {
-				f.LogLevel = "bad"
-			}),
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -70,7 +60,6 @@ func TestConfig_validate(t *testing.T) {
 				Port:           tt.fields.Port,
 				BaseAssetsPath: tt.fields.BaseAssetsPath,
 				SecureKeys:     tt.fields.SecureKeys,
-				LogLevel:       tt.fields.LogLevel,
 			}
 			if got := c.validate(); tt.wantErr != (got != nil) {
 				t.Errorf("Config.validate() = %v, want error? %v", got, tt.wantErr)
@@ -126,48 +115,6 @@ func TestTrustedProxy_UnmarshalText(t *testing.T) {
 			}
 			if tt.wantErr {
 				t.Fatal("UnmarshalText() succeeded unexpectedly")
-			}
-		})
-	}
-}
-
-func TestLogLevel_ToSlog(t *testing.T) {
-	tests := []struct {
-		name  string
-		value LogLevel
-		want  slog.Level
-	}{
-		{
-			name:  "Info Level",
-			value: LogLevelInfo,
-			want:  slog.LevelInfo,
-		},
-		{
-			name:  "Debug Level",
-			value: LogLevelDebug,
-			want:  slog.LevelDebug,
-		},
-		{
-			name:  "Warn Level",
-			value: LogLevelWarn,
-			want:  slog.LevelWarn,
-		},
-		{
-			name:  "Error Level",
-			value: LogLevelError,
-			want:  slog.LevelError,
-		},
-		{
-			name:  "Unknown Level",
-			value: LogLevel("unknown"),
-			want:  slog.LevelInfo, // default to Info level for unknown values
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.value.ToSlog()
-			if got != tt.want {
-				t.Errorf("ToSlog() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// Reconfigure the logger now that we've loaded the main application configuation
-	logLevel.Set(cfg.LogLevel.ToSlog())
+	logLevel.Set(cfg.LogLevel.Level)
 
 	// Now it's OK to log what was loaded
 	slog.Debug("Loaded application configuration", "cfg", cfg)

@@ -3,10 +3,8 @@ package main
 import (
 	"encoding"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net"
-	"strings"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
@@ -59,11 +57,6 @@ func (c Config) validate() error {
 		slog.Warn("Using default secure key. It is highly recommended that this be changed to something unique.", slog.String("value", defaultSecureKey))
 	}
 
-	allowedLogLevels := []LogLevel{LogLevelDebug, LogLevelInfo, LogLevelWarn, LogLevelError}
-	if !lo.Contains(allowedLogLevels, c.LogLevel) {
-		errs = append(errs, fmt.Errorf("log level must be one of ('%s')", strings.Join(lo.Map(allowedLogLevels, func(l LogLevel, _ int) string { return string(l) }), "', '")))
-	}
-
 	return errors.Join(errs...)
 }
 
@@ -103,32 +96,8 @@ func (tp *TrustedProxy) UnmarshalText(text []byte) error {
 }
 
 // LogLevel represents the logging level for the application. Valid values are "debug", "info", "warn", and "error".
-type LogLevel string
-
-const (
-	// LogLevelDebug represents the debug logging level.
-	LogLevelDebug LogLevel = "debug"
-
-	// LogLevelInfo represents the info logging level.
-	LogLevelInfo LogLevel = "info"
-
-	// LogLevelWarn represents the warn logging level.
-	LogLevelWarn LogLevel = "warn"
-
-	// LogLevelError represents the error logging level.
-	LogLevelError LogLevel = "error"
-)
-
-// ToSlog converts the custom LogLevel to the corresponding slog.Level. If the LogLevel is unknown, it defaults to slog.LevelInfo.
-func (l LogLevel) ToSlog() slog.Level {
-	switch l {
-	case LogLevelDebug:
-		return slog.LevelDebug
-	case LogLevelWarn:
-		return slog.LevelWarn
-	case LogLevelError:
-		return slog.LevelError
-	default:
-		return slog.LevelInfo
-	}
+type LogLevel struct {
+	slog.Level
 }
+
+var _ encoding.TextUnmarshaler = (*LogLevel)(nil)
