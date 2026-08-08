@@ -9,8 +9,12 @@ describe('user-editor', () => {
   });
 
   it('defaults', async () => {
+    const user: User = {
+      username: '',
+      accessLevel: AccessLevel.Editor
+    };
     const { root } = await render<HTMLUserEditorElement>(<user-editor />);
-    expect(root.user).toBeNullable();
+    expect(root.user).toEqual(user);
     const usernameInput = root.shadowRoot?.querySelector('ion-input[type=\'email\']');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput).toEqualAttribute('value', '');

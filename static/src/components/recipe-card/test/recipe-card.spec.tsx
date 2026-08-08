@@ -8,9 +8,15 @@ describe('recipe-card', () => {
     expect(root).toHaveClass('hydrated');
   });
 
-  it('no initial value', async () => {
+  it('defaults', async () => {
+    const recipe: RecipeCompact = {
+      name: '',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 0,
+    };
     const { root } = await render<HTMLRecipeCardElement>(<recipe-card />);
-    expect(root.recipe).toBeNullable();
+    expect(root.recipe).toEqual(recipe);
     const image = root.shadowRoot?.querySelector('ion-img.hidden');
     expect(image).not.toBeNull();
     const node = root.shadowRoot?.querySelector('ion-card-title');
