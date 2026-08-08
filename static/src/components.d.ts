@@ -46,7 +46,7 @@ export namespace Components {
     }
     interface HtmlEditor {
         "label"?: string;
-        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
           * @default ''
          */
@@ -196,7 +196,7 @@ export namespace Components {
     interface TagsInput {
         "addTag": (tag: string) => Promise<void>;
         "label"?: string;
-        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
           * @default []
          */
@@ -551,7 +551,7 @@ declare namespace LocalJSX {
     }
     interface HtmlEditor {
         "label"?: string;
-        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
         /**
           * @default ''
@@ -698,7 +698,7 @@ declare namespace LocalJSX {
     }
     interface TagsInput {
         "label"?: string;
-        "labelPlacement"?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: TagsInputCustomEvent<string[]>) => void;
         /**
           * @default []
@@ -730,7 +730,7 @@ declare namespace LocalJSX {
     interface HtmlEditorAttributes {
         "value": string;
         "label": string;
-        "labelPlacement": 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "labelPlacement": 'fixed' | 'floating' | 'stacked';
     }
     interface HtmlViewerAttributes {
         "value": string;
@@ -765,7 +765,7 @@ declare namespace LocalJSX {
     }
     interface TagsInputAttributes {
         "label": string;
-        "labelPlacement": 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+        "labelPlacement": 'fixed' | 'floating' | 'stacked';
     }
 
     interface IntrinsicElements {
