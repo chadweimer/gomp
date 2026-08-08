@@ -1,6 +1,6 @@
 package fileaccess
 
-//go:generate go tool mockgen -destination=../mocks/fileaccess/mocks.gen.go -package=fileaccess . Driver
+//go:generate go tool mockgen -destination=../mocks/fileaccess/mocks.gen.go -package=fileaccess . Driver,RootFS
 
 import (
 	"io"

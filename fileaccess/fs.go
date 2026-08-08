@@ -13,9 +13,30 @@ import (
 	"github.com/samber/lo"
 )
 
+// RootFS defines the interface for the root file system operations used by the fileSystemDriver.
+type RootFS interface {
+	// Open opens the named file for reading.
+	Open(name string) (*os.File, error)
+
+	// MkdirAll creates a directory named path, along with any necessary parents, and returns an error, if any.
+	MkdirAll(path string, perm fs.FileMode) error
+
+	// Create creates the named file for writing, truncating it if it already exists.
+	Create(name string) (*os.File, error)
+
+	// Remove removes the named file.
+	Remove(name string) error
+
+	// RemoveAll removes the named directory and any children it contains.
+	RemoveAll(path string) error
+
+	// Stat returns a FileInfo describing the named file.
+	Stat(name string) (fs.FileInfo, error)
+}
+
 // fileSystemDriver is an implementation of Driver that uses the local file system.
 type fileSystemDriver struct {
-	root *os.Root
+	root RootFS
 }
 
 func newFileSystemDriver(rootPath string) (Driver, error) {
