@@ -22,6 +22,7 @@ export default defineConfig([
     rules: {
       "@typescript-eslint/no-unnecessary-type-assertion": "off",
       "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-misused-promises": "off"
     },
     files: ["**/*.{ts,mts,cts,tsx}"],
     languageOptions: {

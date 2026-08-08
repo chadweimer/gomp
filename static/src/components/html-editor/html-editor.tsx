@@ -11,7 +11,7 @@ export class HTMLEditor {
 
   @Prop() value: string = '';
   @Prop() label?: string;
-  @Prop() labelPlacement?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+  @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
 
   @Event() valueChanged!: EventEmitter<string>;
 

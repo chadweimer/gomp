@@ -8,7 +8,7 @@ import { isNullOrEmpty } from '../../helpers/utils';
 })
 export class TagsInput {
   @Prop() label?: string;
-  @Prop() labelPlacement?: 'end' | 'fixed' | 'floating' | 'stacked' | 'start';
+  @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @Prop() value: string[] = [];
   @Prop() suggestions: string[] = [];
 
