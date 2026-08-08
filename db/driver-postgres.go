@@ -3,15 +3,12 @@ package db
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
-	"path/filepath"
 	"time"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
@@ -155,25 +152,7 @@ func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrations
 		return err
 	}
 
-	migrationPath := "file://" + filepath.Join("db", "migrations", PostgresDriverName)
-	m, err := migrate.NewWithDatabaseInstance(
-		migrationPath,
-		PostgresDriverName,
-		driver)
-	if err != nil {
-		return err
-	}
-
-	if migrationsForceVersion > 0 {
-		err = m.Force(migrationsForceVersion)
-	} else {
-		err = m.Up()
-	}
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return err
-	}
-
-	return nil
+	return migrateDatabase(driver, PostgresDriverName, migrationsForceVersion)
 }
 
 func lockPostgres(conn *sql.Conn) error {

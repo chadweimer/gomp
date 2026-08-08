@@ -8,8 +8,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net/url"
+	"path/filepath"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database"
 )
 
 // ---- Begin Standard Errors ----
@@ -50,39 +54,64 @@ func CreateDriver(cfg Config) (Driver, error) {
 	driver := cfg.Driver
 	if driver == "" {
 		slog.Debug("Database driver is empty. Will attempt to infer...")
-		switch cfg.URL.Scheme {
-		case "file":
-			driver = SQLiteDriverName
-		case "postgres":
-			driver = PostgresDriverName
-		default:
-			return nil, errors.New("unable to infer a value for database driver")
+		var err error
+		driver, err = getDbDriverFromURL(cfg.URL)
+		if err != nil {
+			return nil, err
 		}
 	}
 	slog.Debug("Using database driver", "value", driver)
 
 	switch driver {
 	case PostgresDriverName:
-		drv, err := openPostgres(
+		return openPostgres(
 			cfg.URL,
 			cfg.MigrationsTableName,
 			cfg.MigrationsForceVersion)
-		if err != nil {
-			return nil, err
-		}
-		return drv, nil
 	case SQLiteDriverName:
-		drv, err := openSQLite(
+		return openSQLite(
 			cfg.URL,
 			cfg.MigrationsTableName,
 			cfg.MigrationsForceVersion)
-		if err != nil {
-			return nil, err
-		}
-		return drv, nil
 	default:
 		return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 	}
+}
+
+func getDbDriverFromURL(connectionURL url.URL) (string, error) {
+	switch connectionURL.Scheme {
+	case "file":
+		return SQLiteDriverName, nil
+	case "postgres":
+		return PostgresDriverName, nil
+	default:
+		return "", errors.New("unable to infer a value for database driver")
+	}
+}
+
+func migrateDatabase(driver database.Driver, driverName string, migrationsForceVersion int) error {
+	migrationPath := url.URL{
+		Scheme: "file",
+		Path:   filepath.Join("db", "migrations", driverName),
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		migrationPath.String(),
+		driverName,
+		driver)
+	if err != nil {
+		return err
+	}
+
+	if migrationsForceVersion > 0 {
+		err = m.Force(migrationsForceVersion)
+	} else {
+		err = m.Up()
+	}
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return nil
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.

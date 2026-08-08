@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
@@ -119,23 +118,5 @@ func migrateSqliteDatabase(db *sqlx.DB, migrationsTableName string, migrationsFo
 		return err
 	}
 
-	migrationPath := "file://" + filepath.Join("db", "migrations", SQLiteDriverName)
-	m, err := migrate.NewWithDatabaseInstance(
-		migrationPath,
-		SQLiteDriverName,
-		driver)
-	if err != nil {
-		return err
-	}
-
-	if migrationsForceVersion > 0 {
-		err = m.Force(migrationsForceVersion)
-	} else {
-		err = m.Up()
-	}
-	if err != nil && err != migrate.ErrNoChange {
-		return err
-	}
-
-	return nil
+	return migrateDatabase(driver, SQLiteDriverName, migrationsForceVersion)
 }
