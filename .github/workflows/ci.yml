@@ -38,7 +38,7 @@ jobs:
             build/coverage/*
       - name: SonarCloud Scan
         if: success() || steps.lint-test.outcome == 'failure'
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   build:
