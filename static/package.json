@@ -33,7 +33,7 @@
     "eslint-plugin-react": "^7.37.5",
     "globals": "^17.5.0",
     "jsdom": "^29.0.1",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.2",
     "vitest-fetch-mock": "^0.4.5"
