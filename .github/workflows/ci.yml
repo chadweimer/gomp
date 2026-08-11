@@ -1,11 +1,11 @@
 name: Continuous Integration
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   release:
-    types: [ published ]
+    types: [published]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,26 +19,26 @@ jobs:
     name: Check
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - run: make install
       - id: lint-test
         run: make lint test
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: |
             build/coverage/*
       - name: SonarCloud Scan
         if: success() || steps.lint-test.outcome == 'failure'
-        uses: SonarSource/sonarqube-scan-action@v7
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   build:
@@ -46,17 +46,17 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        os: [ linux ]
-        arch: [ amd64, arm64, arm ]
+        os: [linux]
+        arch: [amd64, arm64, arm]
     env:
       TARGETOS: ${{ matrix.os }}
       TARGETARCH: ${{ matrix.arch }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 'lts/*'
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
 
@@ -74,7 +74,7 @@ jobs:
       - name: Build
         run: make build archive
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}
           path: |
@@ -88,7 +88,7 @@ jobs:
       CONTAINER_REGISTRY: ghcr.io
       DOCKER_BASE_ARGS: --push --platform linux/amd64,linux/arm64,linux/arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
       - uses: docker/setup-qemu-action@v4
         with:
