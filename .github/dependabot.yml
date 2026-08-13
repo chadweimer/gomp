@@ -15,7 +15,6 @@ updates:
       interval: 'monthly'
   - package-ecosystem: 'gomod'
     directory: '/'
-    versioning-strategy: 'lockfile-only'
     schedule:
       interval: 'monthly'
   - package-ecosystem: 'npm'
