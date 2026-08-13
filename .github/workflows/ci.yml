@@ -82,7 +82,7 @@ jobs:
           compression-level: 0
   publish:
     name: Publish
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' || github.actor != 'dependabot[bot]'
     needs: build
     runs-on: ubuntu-24.04
     env:
