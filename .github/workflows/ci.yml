@@ -31,7 +31,7 @@ jobs:
       - run: make install
       - id: lint-test
         run: make lint test
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: |
@@ -74,7 +74,7 @@ jobs:
       - name: Build
         run: make build archive
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: gomp-${{ matrix.os }}-${{ matrix.arch }}-${{ env.BUILD_VERSION }}
           path: |
