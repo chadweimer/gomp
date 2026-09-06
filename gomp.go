@@ -17,7 +17,7 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/vary"
+	"github.com/chadweimer/vary/v2"
 )
 
 func main() {
@@ -31,9 +31,11 @@ func main() {
 	slog.Info("Starting application", "version", metadata.BuildVersion)
 
 	// Load configuration
-	vary.SetPrefix("GOMP")
+	cfgBinder := vary.New(vary.WithLookup(
+		vary.CompositeLookup(vary.PrefixedLookup("GOMP_", os.LookupEnv), os.LookupEnv),
+	))
 	cfg := &Config{}
-	if err := vary.Bind(cfg); err != nil {
+	if err := cfgBinder.Bind(cfg); err != nil {
 		slog.Error("Failed to load configuration. Exiting...", "error", err)
 		os.Exit(1)
 	}
