@@ -2,10 +2,9 @@ module github.com/chadweimer/gomp
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/chadweimer/vary/v2 v2.0.1
+	github.com/chadweimer/vary/v2 v2.2.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/golang-migrate/migrate/v4 v4.19.1
-	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lib/pq v1.12.3
 	github.com/oapi-codegen/runtime v1.6.0
@@ -38,6 +37,7 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
 	github.com/gookit/color v1.6.0 // indirect
@@ -92,7 +92,7 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 )
 
-go 1.26.0
+go 1.27.0
 
 tool (
 	github.com/mgechev/revive
