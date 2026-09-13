@@ -40,7 +40,7 @@ func TestCreateZip(t *testing.T) {
 				return err
 			},
 			wantErr:           false,
-			wantContentLength: 141,
+			wantContentLength: 142,
 		},
 		{
 			name: "Error - writeContent returns error",

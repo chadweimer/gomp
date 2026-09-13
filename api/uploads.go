@@ -6,9 +6,9 @@ import (
 	"io"
 	"mime/multipart"
 	"path/filepath"
+	"uuid"
 
 	"github.com/chadweimer/gomp/fileaccess"
-	"github.com/google/uuid"
 )
 
 func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (UploadResponseObject, error) {
