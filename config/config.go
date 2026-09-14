@@ -15,17 +15,23 @@ const defaultSecureKey = "ChangeMe"
 
 // Config represents the application configuration settings
 type Config struct {
+	// LogLevel defines the logging level for the application. Valid values are "debug", "info", "warn", and "error".
+	LogLevel LogLevel `env:"LOG_LEVEL" default:"info"`
+
+	// Server contains the server configuration settings.
+	Server ServerConfig
+
 	// FileAccess contains the file access configuration settings
 	FileAccess fileaccess.Config
 
 	// Database contains the database configuration settings
 	Database db.Config
+}
 
+// ServerConfig represents the server configuration settings.
+type ServerConfig struct {
 	// Port gets the port number under which the site is being hosted.
 	Port int `env:"PORT" default:"5000"`
-
-	// LogLevel defines the logging level for the application. Valid values are "debug", "info", "warn", and "error".
-	LogLevel LogLevel `env:"LOG_LEVEL" default:"info"`
 
 	// BaseAssetsPath gets the base path to the client assets.
 	BaseAssetsPath string `env:"BASE_ASSETS_PATH" default:"static"`
@@ -41,7 +47,7 @@ type Config struct {
 }
 
 // Validate checks the configuration for any invalid or missing settings and returns an error if any issues are found.
-func (c Config) Validate() error {
+func (c ServerConfig) Validate() error {
 	errs := make([]error, 0)
 
 	if c.Port <= 0 {
@@ -62,7 +68,7 @@ func (c Config) Validate() error {
 }
 
 // GetTrustedProxies returns the list of trusted proxies as a slice of net.IPNet.
-func (c Config) GetTrustedProxies() []net.IPNet {
+func (c ServerConfig) GetTrustedProxies() []net.IPNet {
 	return lo.Map(c.TrustedProxies, func(tp TrustedProxy, _ int) net.IPNet {
 		return tp.IPNet
 	})

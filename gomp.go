@@ -7,7 +7,6 @@ import (
 
 	"github.com/chadweimer/gomp/cmds"
 	"github.com/chadweimer/gomp/config"
-	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/vary/v2"
 )
 
@@ -19,9 +18,6 @@ func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevel,
 	})))
-
-	// Write the app metadata to logs
-	slog.Info("Starting application", "version", metadata.BuildVersion)
 
 	// Load configuration
 	cfgBinder := vary.New(vary.WithLookup(
@@ -36,16 +32,8 @@ func main() {
 	// Reconfigure the logger now that we've loaded the main application configuation
 	logLevel.Set(cfg.LogLevel.Level)
 
-	// Now it's OK to log what was loaded
-	slog.Debug("Loaded application configuration", "cfg", cfg)
-
-	if err := cfg.Validate(); err != nil {
-		slog.Error("Invalid configuration. Exiting...", "error", err)
-		os.Exit(1)
-	}
-
 	if err := cmds.RootCmd(cfg).Run(ctx, os.Args); err != nil {
-		slog.Error("Failed to run root command. Exiting...", "error", err)
+		slog.Error("Failed to run command. Exiting...", "error", err)
 		os.Exit(1)
 	}
 }

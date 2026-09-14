@@ -3,6 +3,7 @@ package cmds
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
@@ -43,13 +44,19 @@ func databaseCmd(cfg config.Config) *cli.Command {
 
 func migrateDatabaseUp(cfg config.Config) func(context.Context, *cli.Command) error {
 	return func(_ context.Context, _ *cli.Command) error {
+		slog.Info("Migrating database up")
+
 		dbDriver, err := db.CreateDriver(cfg.Database)
 		if err != nil {
 			return fmt.Errorf("establishing database driver: %w", err)
 		}
 		defer dbDriver.Close()
 
-		return dbDriver.MigrateUp()
+		if err := dbDriver.MigrateUp(); err == nil {
+			slog.Info("Database migrated up successfully")
+		}
+
+		return err
 	}
 }
 
@@ -57,12 +64,18 @@ func migrateDatabaseDown(cfg config.Config) func(context.Context, *cli.Command) 
 	return func(_ context.Context, cmd *cli.Command) error {
 		steps := cmd.Int("steps")
 
+		slog.Info("Migrating database down", "steps", steps)
+
 		dbDriver, err := db.CreateDriver(cfg.Database)
 		if err != nil {
 			return fmt.Errorf("establishing database driver: %w", err)
 		}
 		defer dbDriver.Close()
 
-		return dbDriver.MigrateDown(steps)
+		if err := dbDriver.MigrateDown(steps); err == nil {
+			slog.Info("Database migrated down successfully")
+		}
+
+		return err
 	}
 }

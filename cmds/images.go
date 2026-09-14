@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
@@ -17,8 +18,10 @@ func imagesCmd(cfg config.Config) *cli.Command {
 		Usage: "Image related commands",
 		Commands: []*cli.Command{
 			{
-				Name:   "optimize",
-				Usage:  "Optimize images",
+				Name:  "optimize",
+				Usage: "Optimize images",
+				Description: "Optimizing images will load and re-save all uploaded recipe images using the latest configuration settings, " +
+					"including regenerating thumbnails. If this was already run and the settings have not changed, it will have no effect.",
 				Action: optimizeImages(cfg),
 			},
 		},
@@ -27,6 +30,8 @@ func imagesCmd(cfg config.Config) *cli.Command {
 
 func optimizeImages(cfg config.Config) func(ctx context.Context, _ *cli.Command) error {
 	return func(ctx context.Context, _ *cli.Command) error {
+		slog.Info("Optimizing images")
+
 		fsDriver, err := fileaccess.CreateDriver(cfg.FileAccess.Files)
 		if err != nil {
 			return fmt.Errorf("establishing file access driver: %w", err)
@@ -49,12 +54,16 @@ func optimizeImages(cfg config.Config) func(ctx context.Context, _ *cli.Command)
 		}
 
 		for recipeID, images := range images {
+			slog.Debug("Optimizing images for recipe", "recipeID", recipeID)
 			for _, imageName := range images {
+				slog.Debug("Optimizing image", "recipeID", recipeID, "imageName", imageName)
+
 				if err := optimizeImage(ctx, dbDriver, uploader, recipeID, imageName); err != nil {
 					return err
 				}
 			}
 		}
+		slog.Info("Successfully optimized images")
 
 		return nil
 	}

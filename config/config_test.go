@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestConfig_Validate(t *testing.T) {
+func TestServerConfig_Validate(t *testing.T) {
 	type fields struct {
 		Port           int
 		BaseAssetsPath string
@@ -56,7 +56,7 @@ func TestConfig_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Config{
+			c := &ServerConfig{
 				Port:           tt.fields.Port,
 				BaseAssetsPath: tt.fields.BaseAssetsPath,
 				SecureKeys:     tt.fields.SecureKeys,
