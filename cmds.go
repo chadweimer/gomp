@@ -25,7 +25,7 @@ var rootCmd = &cli.Command{
 		{
 			Name:   "serve",
 			Usage:  "Serve the application",
-			Action: ServerApplication,
+			Action: serverApplication,
 		},
 		{
 			Name:  "db",
@@ -38,12 +38,12 @@ var rootCmd = &cli.Command{
 						{
 							Name:   "up",
 							Usage:  "Apply all up migrations",
-							Action: nil,
+							Action: migrateDatabaseUp,
 						},
 						{
 							Name:   "down",
 							Usage:  "Apply all down migrations",
-							Action: nil,
+							Action: migrateDatabaseDown,
 						},
 					},
 				},
@@ -63,7 +63,7 @@ var rootCmd = &cli.Command{
 	},
 }
 
-func ServerApplication(ctx context.Context, _ *cli.Command) error {
+func serverApplication(ctx context.Context, _ *cli.Command) error {
 	cfg, ok := ConfigFromContext(ctx)
 	if !ok {
 		return errors.New("failed to retrieve configuration from context")
@@ -139,4 +139,35 @@ func ServerApplication(ctx context.Context, _ *cli.Command) error {
 
 	// Shutdown the http server
 	return srv.Shutdown(ctx)
+}
+
+func migrateDatabaseUp(ctx context.Context, _ *cli.Command) error {
+	slog.Info("Migrating database up")
+	cfg, ok := ConfigFromContext(ctx)
+	if !ok {
+		return errors.New("failed to retrieve configuration from context")
+	}
+
+	dbDriver, err := db.CreateDriver(cfg.Database)
+	if err != nil {
+		return fmt.Errorf("establishing database driver: %w", err)
+	}
+	defer dbDriver.Close()
+
+	return dbDriver.MigrateUp()
+}
+
+func migrateDatabaseDown(ctx context.Context, _ *cli.Command) error {
+	cfg, ok := ConfigFromContext(ctx)
+	if !ok {
+		return errors.New("failed to retrieve configuration from context")
+	}
+
+	dbDriver, err := db.CreateDriver(cfg.Database)
+	if err != nil {
+		return fmt.Errorf("establishing database driver: %w", err)
+	}
+	defer dbDriver.Close()
+
+	return dbDriver.MigrateDown()
 }

@@ -139,8 +139,6 @@ BASE_ASSETS_PATH        |string                     |static                     
 DATABASE_DRIVER         |postgres, sqlite           |&lt;empty&gt;                            |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL.
 DATABASE_URL            |string                     |file:data/data.db?_pragma=foreign_keys(1)|The url (path, connection string, etc) to use with the associated database driver when opening the database connection.
 LOG_LEVEL               |debug,info,warn,error      |info                                     |Defines the logging level for the application.
-MIGRATIONS_FORCE_VERSION|int                        |-1                                       |A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version.
-MIGRATIONS_TABLE_NAME   |string                     |&lt;empty&gt;                            |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
 PORT                    |uint                       |5000                                     |The port number under which the site is being hosted.
 SECURE_KEY              |[]string                   |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters.
 TRUSTED_PROXIES         |[]string                   |&lt;empty&gt;                            |List of IP addresses or CIDR ranges that are considered trusted proxies. When determining the client IP address, if the request comes from a trusted proxy, the `X-Forwarded-For` header will be used to determine the original client IP.

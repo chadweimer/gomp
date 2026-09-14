@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
@@ -24,6 +25,9 @@ import (
 const PostgresDriverName string = "postgres"
 
 type postgresDriverAdapter struct{}
+type postgresDriver struct {
+	*sqlDriver
+}
 
 func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
@@ -89,7 +93,7 @@ func (postgresDriverAdapter) StandardizeExport(_ context.Context, backup *models
 	}
 }
 
-func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
+func openPostgres(connectionURL url.URL) (Driver, error) {
 	// In docker, on first bring up, the DB takes a little while.
 	// Let's try a few times to establish connection before giving up.
 	const maxAttempts = 20
@@ -113,20 +117,23 @@ func openPostgres(connectionURL url.URL, migrationsTableName string, migrationsF
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	// If the migrations table name was not specificed, use the default from the migrate library
-	if migrationsTableName == "" {
-		migrationsTableName = postgres.DefaultMigrationsTable
-	}
-
-	if err := migratePostgresDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
-	}
-
-	drv := newSQLDriver(db, postgresDriverAdapter{}, migrationsTableName)
-	return drv, nil
+	drv := newSQLDriver(db, postgresDriverAdapter{}, postgres.DefaultMigrationsTable)
+	return &postgresDriver{drv}, nil
 }
 
-func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
+func (drv *postgresDriver) MigrateUp() error {
+	return migratePostgresDatabase(drv.Db, func(m *migrate.Migrate) error {
+		return m.Up()
+	})
+}
+
+func (drv *postgresDriver) MigrateDown() error {
+	return migratePostgresDatabase(drv.Db, func(m *migrate.Migrate) error {
+		return m.Down()
+	})
+}
+
+func migratePostgresDatabase(db *sqlx.DB, op func(m *migrate.Migrate) error) error {
 	// Lock the database while we're migrating so that multiple instances
 	// don't attempt to migrate simultaneously. This requires the same connection
 	// to be used for both locking and unlocking.
@@ -145,14 +152,12 @@ func migratePostgresDatabase(db *sqlx.DB, migrationsTableName string, migrations
 		}
 	}()
 
-	driver, err := postgres.WithInstance(db.DB, &postgres.Config{
-		MigrationsTable: migrationsTableName,
-	})
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}
 
-	return migrateDatabase(driver, PostgresDriverName, migrationsForceVersion)
+	return migrateDatabase(driver, PostgresDriverName, op)
 }
 
 func lockPostgres(conn *sql.Conn) error {

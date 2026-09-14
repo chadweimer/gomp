@@ -34,6 +34,9 @@ var ErrMissingID = errors.New("id is required")
 type Driver interface {
 	io.Closer
 
+	MigrateUp() error
+	MigrateDown() error
+
 	AppConfiguration() AppConfigurationDriver
 	Backups() BackupDriver
 	Links() LinkDriver
@@ -64,15 +67,9 @@ func CreateDriver(cfg Config) (Driver, error) {
 
 	switch driver {
 	case PostgresDriverName:
-		return openPostgres(
-			cfg.URL,
-			cfg.MigrationsTableName,
-			cfg.MigrationsForceVersion)
+		return openPostgres(cfg.URL)
 	case SQLiteDriverName:
-		return openSQLite(
-			cfg.URL,
-			cfg.MigrationsTableName,
-			cfg.MigrationsForceVersion)
+		return openSQLite(cfg.URL)
 	default:
 		return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 	}
@@ -89,7 +86,7 @@ func getDbDriverFromURL(connectionURL url.URL) (string, error) {
 	}
 }
 
-func migrateDatabase(driver database.Driver, driverName string, migrationsForceVersion int) error {
+func migrateDatabase(driver database.Driver, driverName string, op func(*migrate.Migrate) error) error {
 	migrationPath := url.URL{
 		Scheme: "file",
 		Path:   filepath.Join("db", "migrations", driverName),
@@ -102,12 +99,7 @@ func migrateDatabase(driver database.Driver, driverName string, migrationsForceV
 		return err
 	}
 
-	if migrationsForceVersion > 0 {
-		err = m.Force(migrationsForceVersion)
-	} else {
-		err = m.Up()
-	}
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+	if err := op(m); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 

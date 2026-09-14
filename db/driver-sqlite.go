@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
 	"github.com/samber/lo"
@@ -24,6 +25,9 @@ import (
 const SQLiteDriverName string = "sqlite"
 
 type sqliteDriverAdapter struct{}
+type sqliteDriver struct {
+	*sqlDriver
+}
 
 func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
 	fieldStr := ""
@@ -69,7 +73,7 @@ func (sqliteDriverAdapter) StandardizeExport(_ context.Context, _ *models.Backup
 	// Nothing to do for SQLite; it does not have any special types that need to be handled during export
 }
 
-func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsForceVersion int) (Driver, error) {
+func openSQLite(connectionURL url.URL) (Driver, error) {
 	// Attempt to create the base path, if necessary
 	if connectionURL.Scheme == "file" {
 		fullPath, err := filepath.Abs(filepath.Clean(connectionURL.RequestURI()))
@@ -90,33 +94,29 @@ func openSQLite(connectionURL url.URL, migrationsTableName string, migrationsFor
 	// This is meant to mitigate connection drops
 	db.SetConnMaxLifetime(time.Minute * 15)
 
-	// If the migrations table name was not specificed, use the default from the migrate library
-	if migrationsTableName == "" {
-		migrationsTableName = sqlite.DefaultMigrationsTable
-	}
-
-	if err := migrateSqliteDatabase(db, migrationsTableName, migrationsForceVersion); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: '%w'", err)
-	}
-
-	drv := newSQLDriver(db, sqliteDriverAdapter{}, migrationsTableName)
-	return drv, nil
+	drv := newSQLDriver(db, sqliteDriverAdapter{}, sqlite.DefaultMigrationsTable)
+	return &sqliteDriver{drv}, nil
 }
 
-func migrateSqliteDatabase(db *sqlx.DB, migrationsTableName string, migrationsForceVersion int) error {
-	conn, err := db.Conn(context.Background())
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+func (drv *sqliteDriver) MigrateUp() error {
+	return migrateSqliteDatabase(drv.Db, func(m *migrate.Migrate) error {
+		return m.Up()
+	})
+}
 
+func (drv *sqliteDriver) MigrateDown() error {
+	return migrateSqliteDatabase(drv.Db, func(m *migrate.Migrate) error {
+		return m.Down()
+	})
+}
+
+func migrateSqliteDatabase(db *sqlx.DB, op func(m *migrate.Migrate) error) error {
 	driver, err := sqlite.WithInstance(db.DB, &sqlite.Config{
-		MigrationsTable: migrationsTableName,
-		NoTxWrap:        true,
+		NoTxWrap: true,
 	})
 	if err != nil {
 		return err
 	}
 
-	return migrateDatabase(driver, SQLiteDriverName, migrationsForceVersion)
+	return migrateDatabase(driver, SQLiteDriverName, op)
 }
