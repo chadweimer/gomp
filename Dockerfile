@@ -14,7 +14,7 @@ EXPOSE 5000
 WORKDIR /var/app/gomp
 VOLUME /var/app/gomp/data
 
-ADD --chmod=0755 docker-entrypoint.sh ./docker-entrypoint.sh
+COPY --chmod=+x docker-entrypoint.sh ./docker-entrypoint.sh
 ADD build/gomp-$TARGETOS-$TARGETARCH$ARCHIVE_SUFFIX.tar.gz ./
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
