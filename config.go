@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding"
 	"errors"
 	"log/slog"
@@ -12,6 +13,8 @@ import (
 )
 
 const defaultSecureKey = "ChangeMe"
+
+type ConfigKey struct{}
 
 // Config represents the application configuration settings
 type Config struct {
@@ -38,6 +41,15 @@ type Config struct {
 	// When determining the client IP address, if the request comes from a trusted proxy,
 	// the X-Forwarded-For header will be used to determine the original client IP.
 	TrustedProxies []TrustedProxy `env:"TRUSTED_PROXIES" default:""`
+}
+
+func (c Config) AddToContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, ConfigKey{}, c)
+}
+
+func ConfigFromContext(ctx context.Context) (Config, bool) {
+	c, ok := ctx.Value(ConfigKey{}).(Config)
+	return c, ok
 }
 
 func (c Config) validate() error {
