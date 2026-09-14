@@ -1,13 +1,13 @@
 openapi: 3.0.1
 info:
   title: GOMP
-  version: "1.0"
+  version: '1.0'
 servers:
   - url: /api/v1
 paths:
   /app/info:
     get:
-      tags: [ app ]
+      tags: [app]
       summary: Get application info
       description: get application info
       operationId: getInfo
@@ -17,10 +17,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/appInfo"
+                $ref: './models.yaml#/components/schemas/appInfo'
   /app/configuration:
     get:
-      tags: [ app ]
+      tags: [app]
       summary: Get application configuration
       description: get application configuration
       operationId: getConfiguration
@@ -30,9 +30,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/appConfiguration"
+                $ref: './models.yaml#/components/schemas/appConfiguration'
     put:
-      tags: [ app ]
+      tags: [app]
       summary: Save application configuration
       description: modify application configuration
       operationId: saveConfiguration
@@ -40,19 +40,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/appConfiguration"
+              $ref: './models.yaml#/components/schemas/appConfiguration'
         required: true
       responses:
         204:
           description: No Content
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: appConfiguration
   /auth:
     get:
-      tags: [ app ]
+      tags: [app]
       summary: Refresh auth token
-      description: refresh the current authentication token and set the new token via
+      description:
+        refresh the current authentication token and set the new token via
         the Set-Cookie response header
       operationId: refreshToken
       responses:
@@ -65,13 +66,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/authenticationResponse"
+                $ref: '#/components/schemas/authenticationResponse'
         401:
           description: Unauthorized
       security:
         - Cookie: []
     post:
-      tags: [ app ]
+      tags: [app]
       summary: Authenticate user and set auth cookie
       description: authenticate a user with username and password and set the
         authentication cookie via the Set-Cookie response header
@@ -80,7 +81,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/credentials"
+              $ref: '#/components/schemas/credentials'
         required: true
       responses:
         200:
@@ -92,12 +93,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/authenticationResponse"
+                $ref: '#/components/schemas/authenticationResponse'
         401:
           description: Unauthorized
       x-codegen-request-body-name: credentials
     delete:
-      tags: [ app ]
+      tags: [app]
       summary: Logout user
       description: invalidate the current cookie
       operationId: logout
@@ -110,7 +111,7 @@ paths:
                 type: string
   /backups:
     get:
-      tags: [ app ]
+      tags: [app]
       description: get list of backups
       operationId: getBackups
       responses:
@@ -121,13 +122,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/backup"
+                  $ref: './models.yaml#/components/schemas/backup'
         500:
           description: Internal Server Error
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     post:
-      tags: [ app ]
+      tags: [app]
       description: create a backup of the application
       operationId: createBackup
       requestBody:
@@ -150,7 +151,7 @@ paths:
         500:
           description: Internal Server Error
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
   /backups/{name}:
     parameters:
       - name: name
@@ -161,7 +162,7 @@ paths:
           # Disallow path separator characters and ..
           pattern: "^(?!.*[\\/]|\\.\\.).*$"
     post:
-      tags: [ app ]
+      tags: [app]
       summary: Restore from backup
       description: restore from an existing backup
       operationId: restoreFromBackup
@@ -173,9 +174,9 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     delete:
-      tags: [ app ]
+      tags: [app]
       summary: Delete backup
       description: delete an existing backup
       operationId: deleteBackup
@@ -187,10 +188,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
   /recipes:
     get:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Find recipes
       description: list the recipes
       operationId: find
@@ -202,7 +203,7 @@ paths:
         - name: pictures
           in: query
           schema:
-            $ref: "#/components/schemas/yesNoAny"
+            $ref: '#/components/schemas/yesNoAny'
         - name: fields[]
           in: query
           style: form
@@ -210,7 +211,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: "./models.yaml#/components/schemas/searchField"
+              $ref: './models.yaml#/components/schemas/searchField'
         - name: states[]
           in: query
           style: form
@@ -218,7 +219,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: "./models.yaml#/components/schemas/recipeState"
+              $ref: './models.yaml#/components/schemas/recipeState'
         - name: tags[]
           in: query
           style: form
@@ -230,11 +231,11 @@ paths:
         - name: sort
           in: query
           schema:
-            $ref: "./models.yaml#/components/schemas/sortBy"
+            $ref: './models.yaml#/components/schemas/sortBy'
         - name: dir
           in: query
           schema:
-            $ref: "./models.yaml#/components/schemas/sortDir"
+            $ref: './models.yaml#/components/schemas/sortDir'
         - name: page
           in: query
           schema:
@@ -254,11 +255,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/searchResult"
+                $ref: '#/components/schemas/searchResult'
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     post:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Add recipe
       description: add a recipe
       operationId: addRecipe
@@ -266,7 +267,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/recipe"
+              $ref: './models.yaml#/components/schemas/recipe'
         required: true
       responses:
         201:
@@ -274,9 +275,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/recipe"
+                $ref: './models.yaml#/components/schemas/recipe'
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
       x-codegen-request-body-name: recipe
   /recipes/{recipeId}:
     parameters:
@@ -287,7 +288,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Get recipe
       description: get a single recipe
       operationId: getRecipe
@@ -297,13 +298,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/recipe"
+                $ref: './models.yaml#/components/schemas/recipe'
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     put:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Save recipe
       description: modify an existing recipe
       operationId: saveRecipe
@@ -311,7 +312,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/recipe"
+              $ref: './models.yaml#/components/schemas/recipe'
         required: true
       responses:
         204:
@@ -321,10 +322,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
       x-codegen-request-body-name: recipe
     patch:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Patch recipe
       description: partially modify an existing recipe
       operationId: patchRecipe
@@ -332,7 +333,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/recipePatch"
+              $ref: './models.yaml#/components/schemas/recipePatch'
         required: true
       responses:
         204:
@@ -340,10 +341,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
       x-codegen-request-body-name: recipePatch
     delete:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Delete recipe
       description: delete an existing recipe
       operationId: deleteRecipe
@@ -353,7 +354,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
   /recipes/{recipeId}/images:
     parameters:
       - name: recipeId
@@ -363,7 +364,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: List recipe images
       description: get the images on a recipe
       operationId: getImages
@@ -379,9 +380,9 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     post:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Upload recipe image
       description: add an image to a recipe
       operationId: uploadImage
@@ -405,7 +406,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
   /recipes/{recipeId}/images/{name}:
     parameters:
       - name: recipeId
@@ -421,26 +422,8 @@ paths:
           type: string
           # Disallow path separator characters and ..
           pattern: "^(?!.*[\\/]|\\.\\.).*$"
-    patch:
-      tags: [ recipes ]
-      summary: Optimize recipe image
-      description: optimize an existing image from a recipe
-      operationId: optimizeImage
-      responses:
-        204:
-          description: No Content
-          headers:
-            Location:
-              schema:
-                type: string
-        400:
-          description: Bad Request
-        404:
-          description: Not Found
-      security:
-        - Cookie: [ admin ]
     delete:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Delete recipe image
       description: delete an existing image from a recipe
       operationId: deleteImage
@@ -452,7 +435,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
   /recipes/{recipeId}/links:
     parameters:
       - name: recipeId
@@ -462,7 +445,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: List recipe links
       description: get the links on a recipe
       operationId: getLinks
@@ -474,11 +457,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/recipeCompact"
+                  $ref: './models.yaml#/components/schemas/recipeCompact'
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
   /recipes/{recipeId}/links/{destRecipeId}:
     parameters:
       - name: recipeId
@@ -494,7 +477,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Add recipe link
       description: add a link to a recipe
       operationId: addLink
@@ -504,9 +487,9 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
     delete:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Delete recipe link
       description: delete an existing link
       operationId: deleteLink
@@ -516,7 +499,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
   /recipes/{recipeId}/notes:
     parameters:
       - name: recipeId
@@ -526,7 +509,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: List recipe notes
       description: get the notes on a recipe
       operationId: getNotes
@@ -538,13 +521,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/note"
+                  $ref: './models.yaml#/components/schemas/note'
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     post:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Add recipe note
       description: add a note to a recipe
       operationId: addNote
@@ -552,7 +535,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/note"
+              $ref: './models.yaml#/components/schemas/note'
         required: true
       responses:
         201:
@@ -560,13 +543,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/note"
+                $ref: './models.yaml#/components/schemas/note'
         400:
           description: Bad Request
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
       x-codegen-request-body-name: note
   /recipes/{recipeId}/notes/{noteId}:
     parameters:
@@ -583,7 +566,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Save recipe note
       description: modify a note
       operationId: saveNote
@@ -591,7 +574,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/note"
+              $ref: './models.yaml#/components/schemas/note'
         required: true
       responses:
         204:
@@ -601,10 +584,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
       x-codegen-request-body-name: note
     delete:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: Delete recipe note
       description: delete an existing note
       operationId: deleteNote
@@ -614,10 +597,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ editor ]
+        - Cookie: [editor]
   /tags:
     get:
-      tags: [ recipes ]
+      tags: [recipes]
       summary: List tags
       description: get list of tags
       operationId: getAllTags
@@ -631,10 +614,10 @@ paths:
                 additionalProperties:
                   type: integer
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
   /uploads:
     post:
-      tags: [ app ]
+      tags: [app]
       summary: Upload file
       description: Upload a file
       operationId: upload
@@ -656,10 +639,10 @@ paths:
         400:
           description: Bad Request
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
   /users:
     get:
-      tags: [ users ]
+      tags: [users]
       summary: List users
       description: get list of users
       operationId: getAllUsers
@@ -671,11 +654,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/user"
+                  $ref: './models.yaml#/components/schemas/user'
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     post:
-      tags: [ users ]
+      tags: [users]
       summary: Add user
       description: add a user
       operationId: addUser
@@ -683,7 +666,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/userWithPassword"
+              $ref: '#/components/schemas/userWithPassword'
         required: true
       responses:
         201:
@@ -691,13 +674,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/user"
+                $ref: './models.yaml#/components/schemas/user'
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: user
   /users/current:
     get:
-      tags: [ users ]
+      tags: [users]
       summary: Get current user
       description: get the current user
       operationId: getCurrentUser
@@ -707,14 +690,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/user"
+                $ref: './models.yaml#/components/schemas/user'
         401:
           description: Unauthorized
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
   /users/current/filters:
     get:
-      tags: [ users ]
+      tags: [users]
       summary: List current user search filters
       description: get a list of search filters
       operationId: getSearchFilters
@@ -726,13 +709,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+                  $ref: './models.yaml#/components/schemas/savedSearchFilterCompact'
         401:
           description: Unauthorized
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     post:
-      tags: [ users ]
+      tags: [users]
       summary: Add current user search filter
       description: add a search filter
       operationId: addSearchFilter
@@ -740,7 +723,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+              $ref: './models.yaml#/components/schemas/savedSearchFilter'
         required: true
       responses:
         201:
@@ -748,13 +731,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+                $ref: './models.yaml#/components/schemas/savedSearchFilter'
         400:
           description: Bad Request
         401:
           description: Unauthorized
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
       x-codegen-request-body-name: searchFilter
   /users/current/filters/{filterId}:
     parameters:
@@ -765,7 +748,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ users ]
+      tags: [users]
       summary: Get current user search filter
       description: get a search filter
       operationId: getSearchFilter
@@ -775,15 +758,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+                $ref: './models.yaml#/components/schemas/savedSearchFilter'
         401:
           description: Unauthorized
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Save current user search filter
       description: modify the search filter
       operationId: saveSearchFilter
@@ -791,7 +774,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+              $ref: './models.yaml#/components/schemas/savedSearchFilter'
         required: true
       responses:
         204:
@@ -803,10 +786,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
       x-codegen-request-body-name: searchFilter
     delete:
-      tags: [ users ]
+      tags: [users]
       summary: Delete current user search filter
       description: delete a search filter
       operationId: deleteSearchFilter
@@ -818,10 +801,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
   /users/current/password:
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Change current user password
       description: update the current user's password
       operationId: changePassword
@@ -829,7 +812,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/userPasswordRequest"
+              $ref: '#/components/schemas/userPasswordRequest'
         required: true
       responses:
         204:
@@ -839,11 +822,11 @@ paths:
         403:
           description: Forbidden
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
       x-codegen-request-body-name: userPasswordRequest
   /users/current/settings:
     get:
-      tags: [ users ]
+      tags: [users]
       summary: Get current user settings
       description: get the settings of the current user
       operationId: getSettings
@@ -853,13 +836,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/userSettings"
+                $ref: './models.yaml#/components/schemas/userSettings'
         401:
           description: Unauthorized
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Save current user settings
       description: modify the settings of the current user
       operationId: saveSettings
@@ -867,7 +850,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/userSettings"
+              $ref: './models.yaml#/components/schemas/userSettings'
         required: true
       responses:
         204:
@@ -877,7 +860,7 @@ paths:
         401:
           description: Unauthorized
       security:
-        - Cookie: [ viewer ]
+        - Cookie: [viewer]
       x-codegen-request-body-name: settings
   /users/{userId}:
     parameters:
@@ -888,7 +871,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ users ]
+      tags: [users]
       summary: Get user
       description: get a user
       operationId: getUser
@@ -898,13 +881,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/user"
+                $ref: './models.yaml#/components/schemas/user'
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Save user
       description: modify a user
       operationId: saveUser
@@ -912,7 +895,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/user"
+              $ref: './models.yaml#/components/schemas/user'
         required: true
       responses:
         204:
@@ -926,10 +909,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: user
     delete:
-      tags: [ users ]
+      tags: [users]
       summary: Delete user
       description: delete an existing user
       operationId: deleteUser
@@ -943,7 +926,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
   /users/{userId}/filters:
     parameters:
       - name: userId
@@ -953,7 +936,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ users ]
+      tags: [users]
       summary: List user search filters
       description: get a list of search filters
       operationId: getUserSearchFilters
@@ -965,13 +948,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./models.yaml#/components/schemas/savedSearchFilterCompact"
+                  $ref: './models.yaml#/components/schemas/savedSearchFilterCompact'
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     post:
-      tags: [ users ]
+      tags: [users]
       summary: Add user search filter
       description: add a search filter
       operationId: addUserSearchFilter
@@ -979,7 +962,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+              $ref: './models.yaml#/components/schemas/savedSearchFilter'
         required: true
       responses:
         201:
@@ -987,13 +970,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+                $ref: './models.yaml#/components/schemas/savedSearchFilter'
         400:
           description: Bad Request
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: searchFilter
   /users/{userId}/filters/{filterId}:
     parameters:
@@ -1010,7 +993,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ users ]
+      tags: [users]
       summary: Get user search filter
       description: get a search filter
       operationId: getUserSearchFilter
@@ -1020,13 +1003,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+                $ref: './models.yaml#/components/schemas/savedSearchFilter'
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Save user search filter
       description: modify the search filter
       operationId: saveUserSearchFilter
@@ -1034,7 +1017,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/savedSearchFilter"
+              $ref: './models.yaml#/components/schemas/savedSearchFilter'
         required: true
       responses:
         204:
@@ -1044,10 +1027,10 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: searchFilter
     delete:
-      tags: [ users ]
+      tags: [users]
       summary: Delete user search filter
       description: delete a search filter
       operationId: deleteUserSearchFilter
@@ -1057,7 +1040,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
   /users/{userId}/password:
     parameters:
       - name: userId
@@ -1067,7 +1050,7 @@ paths:
           type: integer
           format: int64
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Change user password
       description: update a user's password
       operationId: changeUserPassword
@@ -1075,7 +1058,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/userPasswordRequest"
+              $ref: '#/components/schemas/userPasswordRequest'
         required: true
       responses:
         204:
@@ -1087,7 +1070,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: userPasswordRequest
   /users/{userId}/settings:
     parameters:
@@ -1098,7 +1081,7 @@ paths:
           type: integer
           format: int64
     get:
-      tags: [ users ]
+      tags: [users]
       summary: Get user settings
       description: get the settings of a user
       operationId: getUserSettings
@@ -1108,13 +1091,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./models.yaml#/components/schemas/userSettings"
+                $ref: './models.yaml#/components/schemas/userSettings'
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
     put:
-      tags: [ users ]
+      tags: [users]
       summary: Save user settings
       description: modify the settings of a user
       operationId: saveUserSettings
@@ -1122,7 +1105,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./models.yaml#/components/schemas/userSettings"
+              $ref: './models.yaml#/components/schemas/userSettings'
         required: true
       responses:
         204:
@@ -1132,7 +1115,7 @@ paths:
         404:
           description: Not Found
       security:
-        - Cookie: [ admin ]
+        - Cookie: [admin]
       x-codegen-request-body-name: settings
 components:
   schemas:
@@ -1143,14 +1126,14 @@ components:
           id: 1
           username: admin
           accessLevel: admin
-          createdAt: "2026-04-21T12:00:00Z"
-          modifiedAt: "2026-04-21T12:00:00Z"
+          createdAt: '2026-04-21T12:00:00Z'
+          modifiedAt: '2026-04-21T12:00:00Z'
       type: object
       required:
         - user
       properties:
         user:
-          $ref: "./models.yaml#/components/schemas/user"
+          $ref: './models.yaml#/components/schemas/user'
     credentials:
       description: Username and password used to authenticate a user.
       example:
@@ -1177,7 +1160,7 @@ components:
         recipes:
           type: array
           items:
-            $ref: "./models.yaml#/components/schemas/recipeCompact"
+            $ref: './models.yaml#/components/schemas/recipeCompact'
     userPasswordRequest:
       description: Password change request containing current and new password values.
       example:
@@ -1194,7 +1177,7 @@ components:
           type: string
     userWithPassword:
       allOf:
-        - $ref: "./models.yaml#/components/schemas/user"
+        - $ref: './models.yaml#/components/schemas/user'
         - type: object
           required:
             - password
@@ -1204,14 +1187,15 @@ components:
     yesNoAny:
       type: string
       enum:
-        - "yes"
-        - "no"
+        - 'yes'
+        - 'no'
         - any
   securitySchemes:
     Cookie:
       type: apiKey
       in: cookie
       name: auth_token
-      description: Authentication is done via a cookie. To authenticate, send a POST
+      description:
+        Authentication is done via a cookie. To authenticate, send a POST
         request to /auth with the username and password to receive the
         authentication cookie in the Set-Cookie response header.
