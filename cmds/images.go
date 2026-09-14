@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/chadweimer/gomp/config"
@@ -81,15 +82,16 @@ func optimizeImage(ctx context.Context, dbDriver db.Driver, uploader *fileaccess
 		}
 
 		recipe, err := dbDriver.Recipes().Read(ctx, recipeID)
-		if err != nil {
-			return fmt.Errorf("failed to get recipe %d: %w", recipeID, err)
-		}
-		if recipe.MainImageName == imageName {
-			// Update the main image name if it was pointing to the original
-			recipe.MainImageName = res.Name
-			if err := dbDriver.Recipes().Update(ctx, recipe); err != nil {
-				return fmt.Errorf("failed to update recipe %d with new main image name: %w", recipeID, err)
+		if err == nil {
+			if recipe.MainImageName == imageName {
+				// Update the main image name if it was pointing to the original
+				recipe.MainImageName = res.Name
+				if err := dbDriver.Recipes().Update(ctx, recipe); err != nil {
+					return fmt.Errorf("failed to update recipe %d with new main image name: %w", recipeID, err)
+				}
 			}
+		} else if !errors.Is(err, db.ErrNotFound) {
+			return fmt.Errorf("failed to get recipe %d: %w", recipeID, err)
 		}
 	}
 
