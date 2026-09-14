@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/chadweimer/gomp/cmds"
+	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/vary/v2"
 )
@@ -25,8 +27,8 @@ func main() {
 	cfgBinder := vary.New(vary.WithLookup(
 		vary.CompositeLookup(vary.PrefixedLookup("GOMP_", os.LookupEnv), os.LookupEnv),
 	))
-	cfg := &Config{}
-	if err := cfgBinder.Bind(cfg); err != nil {
+	cfg := config.Config{}
+	if err := cfgBinder.Bind(&cfg); err != nil {
 		slog.Error("Failed to load configuration. Exiting...", "error", err)
 		os.Exit(1)
 	}
@@ -37,14 +39,12 @@ func main() {
 	// Now it's OK to log what was loaded
 	slog.Debug("Loaded application configuration", "cfg", cfg)
 
-	if err := cfg.validate(); err != nil {
+	if err := cfg.Validate(); err != nil {
 		slog.Error("Invalid configuration. Exiting...", "error", err)
 		os.Exit(1)
 	}
 
-	ctx = cfg.AddToContext(ctx)
-
-	if err := rootCmd.Run(ctx, os.Args); err != nil {
+	if err := cmds.RootCmd(cfg).Run(ctx, os.Args); err != nil {
 		slog.Error("Failed to run root command. Exiting...", "error", err)
 		os.Exit(1)
 	}

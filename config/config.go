@@ -1,7 +1,6 @@
-package main
+package config
 
 import (
-	"context"
 	"encoding"
 	"errors"
 	"log/slog"
@@ -13,8 +12,6 @@ import (
 )
 
 const defaultSecureKey = "ChangeMe"
-
-type ConfigKey struct{}
 
 // Config represents the application configuration settings
 type Config struct {
@@ -43,16 +40,8 @@ type Config struct {
 	TrustedProxies []TrustedProxy `env:"TRUSTED_PROXIES" default:""`
 }
 
-func (c Config) AddToContext(ctx context.Context) context.Context {
-	return context.WithValue(ctx, ConfigKey{}, c)
-}
-
-func ConfigFromContext(ctx context.Context) (Config, bool) {
-	c, ok := ctx.Value(ConfigKey{}).(Config)
-	return c, ok
-}
-
-func (c Config) validate() error {
+// Validate checks the configuration for any invalid or missing settings and returns an error if any issues are found.
+func (c Config) Validate() error {
 	errs := make([]error, 0)
 
 	if c.Port <= 0 {
@@ -72,8 +61,8 @@ func (c Config) validate() error {
 	return errors.Join(errs...)
 }
 
-// getTrustedProxies returns the list of trusted proxies as a slice of net.IPNet.
-func (c Config) getTrustedProxies() []net.IPNet {
+// GetTrustedProxies returns the list of trusted proxies as a slice of net.IPNet.
+func (c Config) GetTrustedProxies() []net.IPNet {
 	return lo.Map(c.TrustedProxies, func(tp TrustedProxy, _ int) net.IPNet {
 		return tp.IPNet
 	})
@@ -86,6 +75,7 @@ type TrustedProxy struct {
 
 var _ encoding.TextUnmarshaler = (*TrustedProxy)(nil)
 
+// UnmarshalText implements the encoding.TextUnmarshaler interface for TrustedProxy. It supports both single IP addresses and CIDR notation.
 func (tp *TrustedProxy) UnmarshalText(text []byte) error {
 	var str = string(text)
 	// First check if it's a single IP address, and if so, convert it to a CIDR with a full mask
