@@ -20,12 +20,19 @@ func databaseCmd(cfg config.Config) *cli.Command {
 				Commands: []*cli.Command{
 					{
 						Name:   "up",
-						Usage:  "Apply all up migrations",
+						Usage:  "Migrate the database up by applying all pending migrations",
 						Action: migrateDatabaseUp(cfg),
 					},
 					{
-						Name:   "down",
-						Usage:  "Apply all down migrations",
+						Name:  "down",
+						Usage: "Migrate the database down by the specified number of steps (default 1)",
+						Flags: []cli.Flag{
+							&cli.IntFlag{
+								Name:  "steps",
+								Usage: "Number of steps to migrate down",
+								Value: 1,
+							},
+						},
 						Action: migrateDatabaseDown(cfg),
 					},
 				},
@@ -47,13 +54,15 @@ func migrateDatabaseUp(cfg config.Config) func(context.Context, *cli.Command) er
 }
 
 func migrateDatabaseDown(cfg config.Config) func(context.Context, *cli.Command) error {
-	return func(_ context.Context, _ *cli.Command) error {
+	return func(_ context.Context, cmd *cli.Command) error {
+		steps := cmd.Int("steps")
+
 		dbDriver, err := db.CreateDriver(cfg.Database)
 		if err != nil {
 			return fmt.Errorf("establishing database driver: %w", err)
 		}
 		defer dbDriver.Close()
 
-		return dbDriver.MigrateDown()
+		return dbDriver.MigrateDown(steps)
 	}
 }

@@ -35,7 +35,7 @@ type Driver interface {
 	io.Closer
 
 	MigrateUp() error
-	MigrateDown() error
+	MigrateDown(steps int) error
 
 	AppConfiguration() AppConfigurationDriver
 	Backups() BackupDriver
