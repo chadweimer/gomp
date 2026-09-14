@@ -83,7 +83,7 @@ You will obviously want to cater the values (e.g., passwords) for your deploymen
 
 ### Manual
 
-> [!INFO]
+> [!NOTE]
 > All `gomp` CLI commands referenced here rely on the [configuration](#configuration) documented in the next section.
 
 To launch the server, execute the following:
