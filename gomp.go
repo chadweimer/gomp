@@ -7,6 +7,7 @@ import (
 
 	"github.com/chadweimer/gomp/cmds"
 	"github.com/chadweimer/gomp/config"
+	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/vary/v2"
 )
 
@@ -16,6 +17,8 @@ func main() {
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevel,
 	})))
+
+	slog.Info("gomp", "version", metadata.BuildVersion)
 
 	// Load configuration
 	cfgBinder := vary.New(vary.WithLookup(

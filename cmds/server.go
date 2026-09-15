@@ -15,7 +15,6 @@ import (
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
-	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
 	"github.com/urfave/cli/v3"
@@ -31,7 +30,6 @@ func serveApplicationCmd(cfg config.Config) *cli.Command {
 
 func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Command) error {
 	return func(ctx context.Context, _ *cli.Command) error {
-		slog.Info("Starting server", "version", metadata.BuildVersion)
 		slog.Debug("Loaded configuration", "cfg", cfg)
 
 		if err := cfg.Server.Validate(); err != nil {
