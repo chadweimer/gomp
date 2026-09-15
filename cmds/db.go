@@ -7,6 +7,7 @@ import (
 
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v3"
 )
 
@@ -54,6 +55,9 @@ func migrateDatabaseUp(cfg config.Config) func(context.Context, *cli.Command) er
 
 		if err := dbDriver.MigrateUp(); err == nil {
 			slog.Info("Database migrated up successfully")
+		} else if err == migrate.ErrNoChange {
+			slog.Info("No changes to migrate up")
+			return nil
 		}
 
 		return err
@@ -74,6 +78,9 @@ func migrateDatabaseDown(cfg config.Config) func(context.Context, *cli.Command) 
 
 		if err := dbDriver.MigrateDown(steps); err == nil {
 			slog.Info("Database migrated down successfully")
+		} else if err == migrate.ErrNoChange {
+			slog.Info("No changes to migrate down")
+			return nil
 		}
 
 		return err

@@ -99,11 +99,7 @@ func migrateDatabase(driver database.Driver, driverName string, op func(*migrate
 		return err
 	}
 
-	if err := op(m); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return err
-	}
-
-	return nil
+	return op(m)
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.
