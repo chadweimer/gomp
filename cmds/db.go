@@ -29,7 +29,7 @@ func databaseCmd(cfg config.Config) *cli.Command {
 						Name:  "down",
 						Usage: "Migrate the database down by the specified number of steps (default 1)",
 						Flags: []cli.Flag{
-							&cli.IntFlag{
+							&cli.UintFlag{
 								Name:  "steps",
 								Usage: "Number of steps to migrate down",
 								Value: 1,

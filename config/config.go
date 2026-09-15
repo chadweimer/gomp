@@ -3,11 +3,14 @@ package config
 import (
 	"encoding"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
+	"os"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/vary/v2"
 	"github.com/samber/lo"
 )
 
@@ -72,6 +75,19 @@ func (c ServerConfig) GetTrustedProxies() []net.IPNet {
 	return lo.Map(c.TrustedProxies, func(tp TrustedProxy, _ int) net.IPNet {
 		return tp.IPNet
 	})
+}
+
+// Load hydrates the application configuration from any configured sources.
+func Load() (Config, error) {
+	cfgBinder := vary.New(vary.WithLookup(
+		vary.CompositeLookup(vary.PrefixedLookup("GOMP_", os.LookupEnv), os.LookupEnv),
+	))
+	var cfg Config
+	if err := cfgBinder.Bind(&cfg); err != nil {
+		return Config{}, fmt.Errorf("loading configuration: %w", err)
+	}
+
+	return cfg, nil
 }
 
 // TrustedProxy wraps a net.IPNet to implement the encoding.TextUnmarshaler interface.

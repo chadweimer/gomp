@@ -7,8 +7,6 @@ import (
 
 	"github.com/chadweimer/gomp/cmds"
 	"github.com/chadweimer/gomp/config"
-	"github.com/chadweimer/gomp/metadata"
-	"github.com/chadweimer/vary/v2"
 )
 
 func main() {
@@ -18,23 +16,17 @@ func main() {
 		Level: logLevel,
 	})))
 
-	slog.Info("gomp", "version", metadata.BuildVersion)
-
-	// Load configuration
-	cfgBinder := vary.New(vary.WithLookup(
-		vary.CompositeLookup(vary.PrefixedLookup("GOMP_", os.LookupEnv), os.LookupEnv),
-	))
-	cfg := config.Config{}
-	if err := cfgBinder.Bind(&cfg); err != nil {
-		slog.Error("Failed to load configuration. Exiting...", "error", err)
-		os.Exit(1)
+	cfg, err := config.Load()
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(2)
 	}
 
-	// Reconfigure the logger now that we've loaded the main application configuation
+	// Reconfigure the logger now that we've loaded the configuation
 	logLevel.Set(cfg.LogLevel.Level)
 
 	if err := cmds.RootCmd(cfg).Run(context.Background(), os.Args); err != nil {
-		slog.Error("Failed to run command. Exiting...", "error", err)
+		slog.Error(err.Error())
 		os.Exit(1)
 	}
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
 	"github.com/urfave/cli/v3"
@@ -35,6 +36,8 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 		if err := cfg.Server.Validate(); err != nil {
 			return fmt.Errorf("invalid server configuration: %w", err)
 		}
+
+		slog.Info("Starting server", "port", cfg.Server.Port, "version", metadata.BuildVersion)
 
 		fsDriver, err := fileaccess.CreateDriver(cfg.FileAccess.Files)
 		if err != nil {
@@ -92,7 +95,6 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
-		slog.Info("Starting server", "port", cfg.Server.Port)
 		srv := &http.Server{
 			ReadHeaderTimeout: 10 * time.Second,
 			Addr:              fmt.Sprintf(":%d", cfg.Server.Port),
