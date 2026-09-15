@@ -11,8 +11,6 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-
 	// Start with a logger that defaults to the info level, until we load configuration
 	var logLevel = new(slog.LevelVar)
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -32,7 +30,7 @@ func main() {
 	// Reconfigure the logger now that we've loaded the main application configuation
 	logLevel.Set(cfg.LogLevel.Level)
 
-	if err := cmds.RootCmd(cfg).Run(ctx, os.Args); err != nil {
+	if err := cmds.RootCmd(cfg).Run(context.Background(), os.Args); err != nil {
 		slog.Error("Failed to run command. Exiting...", "error", err)
 		os.Exit(1)
 	}

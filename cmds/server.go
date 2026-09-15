@@ -91,7 +91,7 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 		signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
 		timeout := 10 * time.Second
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
 		slog.Info("Starting server", "port", cfg.Server.Port)
