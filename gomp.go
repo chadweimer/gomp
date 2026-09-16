@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -18,7 +19,7 @@ func main() {
 
 	cfg, err := config.Load()
 	if err != nil {
-		slog.Error(err.Error())
+		slog.Error(fmt.Sprintf("%s", err))
 		os.Exit(2)
 	}
 
@@ -26,7 +27,7 @@ func main() {
 	logLevel.Set(cfg.LogLevel.Level)
 
 	if err := cmds.RootCmd(cfg).Run(context.Background(), os.Args); err != nil {
-		slog.Error(err.Error())
+		slog.Error(fmt.Sprintf("%s", err))
 		os.Exit(1)
 	}
 }
