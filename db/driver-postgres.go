@@ -127,9 +127,9 @@ func (drv *postgresDriver) MigrateUp() error {
 	})
 }
 
-func (drv *postgresDriver) MigrateDown(steps int) error {
+func (drv *postgresDriver) MigrateDown(steps uint16) error {
 	return migratePostgresDatabase(drv.Db, func(m *migrate.Migrate) error {
-		return m.Steps(-steps)
+		return m.Steps(-int(steps))
 	})
 }
 
