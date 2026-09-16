@@ -16,13 +16,13 @@ import (
 // RootFS defines the interface for the root file system operations used by the fileSystemDriver.
 type RootFS interface {
 	// Open opens the named file for reading.
-	Open(name string) (*os.File, error)
+	Open(name string) (fs.ReadDirFile, error)
 
 	// MkdirAll creates a directory named path, along with any necessary parents, and returns an error, if any.
 	MkdirAll(path string, perm fs.FileMode) error
 
 	// Create creates the named file for writing, truncating it if it already exists.
-	Create(name string) (*os.File, error)
+	Create(name string) (io.WriteCloser, error)
 
 	// Remove removes the named file.
 	Remove(name string) error
@@ -32,6 +32,18 @@ type RootFS interface {
 
 	// Stat returns a FileInfo describing the named file.
 	Stat(name string) (fs.FileInfo, error)
+}
+
+type osRootFS struct {
+	*os.Root
+}
+
+func (r osRootFS) Open(name string) (fs.ReadDirFile, error) {
+	return r.Root.Open(name)
+}
+
+func (r osRootFS) Create(name string) (io.WriteCloser, error) {
+	return r.Root.Create(name)
 }
 
 // fileSystemDriver is an implementation of Driver that uses the local file system.
@@ -53,7 +65,7 @@ func newFileSystemDriver(rootPath string) (Driver, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &fileSystemDriver{root}, nil
+	return &fileSystemDriver{osRootFS{root}}, nil
 }
 
 func (u *fileSystemDriver) Open(filePath string) (fs.File, error) {

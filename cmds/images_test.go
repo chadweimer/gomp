@@ -11,12 +11,20 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
 )
+
+func TestImagesCmd(t *testing.T) {
+	got := imagesCmd(config.Config{})
+	if got == nil {
+		t.Error("imagesCmd() returned nil")
+	}
+}
 
 func Test_optimizeImage(t *testing.T) {
 	type testArgs struct {
