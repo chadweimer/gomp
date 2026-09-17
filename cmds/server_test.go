@@ -20,9 +20,8 @@ import (
 )
 
 type mockServer struct {
-	addr             string
 	listenAndServeFn func() error
-	shutdownFn       func(ctx context.Context) error
+	shutdownFn       func() error
 	closeFn          func() error
 
 	mu          sync.Mutex
@@ -37,12 +36,12 @@ func (m *mockServer) ListenAndServe() error {
 	return nil
 }
 
-func (m *mockServer) Shutdown(ctx context.Context) error {
+func (m *mockServer) Shutdown(_ context.Context) error {
 	m.mu.Lock()
 	m.shutdownHit = true
 	m.mu.Unlock()
 	if m.shutdownFn != nil {
-		return m.shutdownFn(ctx)
+		return m.shutdownFn()
 	}
 	return nil
 }
@@ -241,12 +240,11 @@ func TestListenAndServe(t *testing.T) {
 			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
-					addr: ":8080",
 					listenAndServeFn: func() error {
 						close(started)
 						return http.ErrServerClosed
 					},
-					shutdownFn: func(_ context.Context) error {
+					shutdownFn: func() error {
 						return nil
 					},
 				}
@@ -262,12 +260,11 @@ func TestListenAndServe(t *testing.T) {
 			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
-					addr: ":8080",
 					listenAndServeFn: func() error {
 						close(started)
 						return errors.New("bind: address already in use")
 					},
-					shutdownFn: func(_ context.Context) error {
+					shutdownFn: func() error {
 						return nil
 					},
 				}
@@ -283,12 +280,11 @@ func TestListenAndServe(t *testing.T) {
 			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
-					addr: ":8080",
 					listenAndServeFn: func() error {
 						close(started)
 						return http.ErrServerClosed
 					},
-					shutdownFn: func(_ context.Context) error {
+					shutdownFn: func() error {
 						return errors.New("shutdown timeout")
 					},
 					closeFn: func() error {
@@ -307,12 +303,11 @@ func TestListenAndServe(t *testing.T) {
 			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
-					addr: ":8080",
 					listenAndServeFn: func() error {
 						close(started)
 						return http.ErrServerClosed
 					},
-					shutdownFn: func(_ context.Context) error {
+					shutdownFn: func() error {
 						return errors.New("shutdown timeout")
 					},
 					closeFn: func() error {
