@@ -3,11 +3,11 @@ package cmds
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 
@@ -43,7 +43,6 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 		if err != nil {
 			return fmt.Errorf("establishing file access driver: %w", err)
 		}
-		fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
 
 		uploader, err := fileaccess.CreateImageUploader(fsDriver, cfg.FileAccess.Image)
 		if err != nil {
@@ -61,26 +60,13 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			return fmt.Errorf("opening base assets path: %w", err)
 		}
 
-		handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
-			mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
-		}
-		handlePrefixStripped := func(mux *http.ServeMux, prefix string, handler http.Handler) {
-			handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
-		}
-
-		mux := http.NewServeMux()
-		handlePrefixStripped(mux, "api", api.NewHandler(cfg.Server.SecureKeys, uploader, dbDriver, fsDriver))
-		handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(baseAssetsRoot.FS())))
-		// Uploaded files require authentication
-		handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
-			[]string{string(models.Viewer)}, cfg.Server.SecureKeys, dbDriver.Users())(fileServer))
-		// Backups require admin access
-		handlePrefixed(mux, fileaccess.BackupDirectoryName, middleware.VerifyScopes(
-			[]string{string(models.Admin)}, cfg.Server.SecureKeys, dbDriver.Users())(fileServer))
-		mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(cfg.Server.BaseAssetsPath, "index.html"))
-		}))
-
+		mux := createMux(
+			cfg.Server.SecureKeys,
+			uploader,
+			dbDriver,
+			fsDriver,
+			baseAssetsRoot.FS(),
+		)
 		r := middleware.Wrap(
 			mux,
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
@@ -88,25 +74,80 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 		)
 
 		// subscribe to SIGINT signals
-		stopChan := make(chan os.Signal, 1)
-		signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
-
-		timeout := 10 * time.Second
-		ctx, cancel := context.WithTimeout(ctx, timeout)
-		defer cancel()
+		ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+		defer stop()
 
 		srv := &http.Server{
 			ReadHeaderTimeout: 10 * time.Second,
 			Addr:              fmt.Sprintf(":%d", cfg.Server.Port),
 			Handler:           r,
 		}
-		go srv.ListenAndServe()
-
-		// Wait for a stop signal
-		<-stopChan
-		slog.Info("Shutting down server...")
-
-		// Shutdown the http server
-		return srv.Shutdown(ctx)
+		return listenAndServe(ctx, srv)
 	}
+}
+
+func createMux(
+	secureKeys []string,
+	uploader *fileaccess.ImageUploader,
+	dbDriver db.Driver,
+	fsDriver fileaccess.Driver,
+	assetsFS fs.FS) *http.ServeMux {
+	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
+		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
+	}
+	handlePrefixStripped := func(mux *http.ServeMux, prefix string, handler http.Handler) {
+		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
+	}
+
+	fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
+
+	mux := http.NewServeMux()
+	handlePrefixStripped(mux, "api", api.NewHandler(secureKeys, uploader, dbDriver, fsDriver))
+	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(assetsFS)))
+	// Uploaded files require authentication
+	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
+		[]string{string(models.Viewer)}, secureKeys, dbDriver.Users())(fileServer))
+	// Backups require admin access
+	handlePrefixed(mux, fileaccess.BackupDirectoryName, middleware.VerifyScopes(
+		[]string{string(models.Admin)}, secureKeys, dbDriver.Users())(fileServer))
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFileFS(w, r, assetsFS, "index.html")
+	}))
+	return mux
+}
+
+func listenAndServe(ctx context.Context, srv httpServer) error {
+	// Start server in background
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("Server failed", "error", err)
+		}
+	}()
+	slog.Info("Server started")
+
+	// Wait for context cancellation
+	<-ctx.Done()
+	slog.Info("Context cancelled, shutting down gracefully...")
+
+	timeout := 10 * time.Second
+	shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), timeout)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		slog.Error("Graceful shutdown failed", "error", err)
+		// Force immediate close if timeout exceeded
+		if closeErr := srv.Close(); closeErr != nil {
+			slog.Error("Forced shutdown failed", "error", closeErr)
+		}
+		return err
+	}
+
+	slog.Info("Server shut down successfully")
+	return nil
+}
+
+type httpServer interface {
+	ListenAndServe() error
+	Shutdown(ctx context.Context) error
+	Close() error
 }
