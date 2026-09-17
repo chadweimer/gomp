@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -119,7 +120,7 @@ func createMux(
 func listenAndServe(ctx context.Context, srv httpServer) error {
 	// Start server in background
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Server failed", "error", err)
 		}
 	}()
