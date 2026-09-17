@@ -12,6 +12,10 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/config"
+	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/infra"
+	dbmock "github.com/chadweimer/gomp/mocks/db"
+	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
 )
 
@@ -66,6 +70,7 @@ func Test_createMux(t *testing.T) {
 		secureKeys  []string
 		assetsFS    fs.FS
 		requestPath string
+		requestUser *models.User
 		wantCode    int
 		wantContent string
 	}{
@@ -106,12 +111,76 @@ func Test_createMux(t *testing.T) {
 			wantContent: "",
 		},
 		{
+			name:       "Uploads succeed with any authorized user",
+			secureKeys: []string{"key"},
+			assetsFS: fstest.MapFS{
+				"uploads/file.jpg": &fstest.MapFile{
+					Data:    []byte("uploaded content"),
+					Mode:    0644,
+					ModTime: time.Now(),
+				},
+			},
+			requestPath: "/uploads/file.jpg",
+			requestUser: &models.User{
+				ID:          new(int64(1)),
+				Username:    "user",
+				AccessLevel: models.Viewer,
+			},
+			wantCode:    http.StatusOK,
+			wantContent: "uploaded content",
+		},
+		{
 			name:        "Backups require auth",
 			secureKeys:  []string{},
 			assetsFS:    fstest.MapFS{},
 			requestPath: "/backups/file.zip",
 			wantCode:    http.StatusUnauthorized,
 			wantContent: "",
+		},
+		{
+			name:        "Backups fail for viewer",
+			secureKeys:  []string{"key"},
+			assetsFS:    fstest.MapFS{},
+			requestPath: "/backups/file.zip",
+			requestUser: &models.User{
+				ID:          new(int64(1)),
+				Username:    "user",
+				AccessLevel: models.Viewer,
+			},
+			wantCode:    http.StatusForbidden,
+			wantContent: "",
+		},
+		{
+			name:        "Backups fail for editor",
+			secureKeys:  []string{"key"},
+			assetsFS:    fstest.MapFS{},
+			requestPath: "/backups/file.zip",
+			requestUser: &models.User{
+				ID:          new(int64(1)),
+				Username:    "user",
+				AccessLevel: models.Editor,
+			},
+			wantCode:    http.StatusForbidden,
+			wantContent: "",
+		},
+		{
+			name:       "Backups succeed for admin",
+			secureKeys: []string{"key"},
+			assetsFS: fstest.MapFS{
+				"backups/file.zip": &fstest.MapFile{
+					Data:    []byte("backup content"),
+					Mode:    0644,
+					ModTime: time.Now(),
+				},
+			},
+			requestPath: "/backups/file.zip",
+			requestUser: &models.User{
+				ID:          new(int64(1)),
+				Username:    "user",
+				AccessLevel: models.Admin,
+			},
+			wantCode:    http.StatusOK,
+			wantContent: "backup content",
 		},
 	}
 	for _, tt := range tests {
@@ -120,9 +189,20 @@ func Test_createMux(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			dbDriver, _, uplDriver, uploader := getMocks(ctrl)
-			dbDriver.EXPECT().Users().AnyTimes()
+			dbDriver, uplDriver, uploader := getMocks(ctrl)
+			usersDriver := dbmock.NewMockUserDriver(ctrl)
+			dbDriver.EXPECT().Users().AnyTimes().Return(usersDriver)
 			req := httptest.NewRequest("GET", tt.requestPath, nil)
+			if tt.requestUser != nil {
+				usersDriver.EXPECT().Read(gomock.Any(), *tt.requestUser.ID).Return(&db.UserWithPasswordHash{User: *tt.requestUser}, nil)
+				jwt, _, _ := infra.CreateToken(
+					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), tt.secureKeys)
+				cookie := infra.CreateAuthCookie(jwt, time.Now().Add(time.Duration(24)*time.Hour))
+				req.AddCookie(cookie)
+			}
+			uplDriver.EXPECT().Open(gomock.Any()).AnyTimes().DoAndReturn(func(name string) (fs.File, error) {
+				return tt.assetsFS.Open(name)
+			})
 			resp := httptest.NewRecorder()
 
 			// Act
