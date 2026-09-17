@@ -189,7 +189,8 @@ func Test_createMux(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			dbDriver, uplDriver, uploader := getMocks(ctrl)
+			uplDriver, uploader := getUploadMocks(ctrl)
+			dbDriver := dbmock.NewMockDriver(ctrl)
 			usersDriver := dbmock.NewMockUserDriver(ctrl)
 			dbDriver.EXPECT().Users().AnyTimes().Return(usersDriver)
 			req := httptest.NewRequest("GET", tt.requestPath, nil)

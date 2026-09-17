@@ -12,9 +12,7 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/config"
-	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
 )
@@ -120,7 +118,8 @@ func Test_optimizeImage(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			dbDriver, uplDriver, uploader := getMocks(ctrl)
+			uplDriver, uploader := getUploadMocks(ctrl)
+			dbDriver := dbmock.NewMockDriver(ctrl)
 			recipeDriver := dbmock.NewMockRecipeDriver(ctrl)
 			dbDriver.EXPECT().Recipes().AnyTimes().Return(recipeDriver)
 			if test.expectOpen && test.openError != nil {
@@ -167,18 +166,4 @@ func Test_optimizeImage(t *testing.T) {
 			}
 		})
 	}
-}
-
-func getMocks(ctrl *gomock.Controller) (*dbmock.MockDriver, *fileaccessmock.MockDriver, *fileaccess.ImageUploader) {
-	dbDriver := dbmock.NewMockDriver(ctrl)
-	uplDriver := fileaccessmock.NewMockDriver(ctrl)
-	imgCfg := fileaccess.ImageConfig{
-		ImageQuality:     models.ImageQualityOriginal,
-		ImageSize:        2000,
-		ThumbnailQuality: models.ImageQualityMedium,
-		ThumbnailSize:    500,
-	}
-	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
-
-	return dbDriver, uplDriver, upl
 }
