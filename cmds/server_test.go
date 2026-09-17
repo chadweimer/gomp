@@ -227,7 +227,6 @@ func Test_createMux(t *testing.T) {
 func TestListenAndServe(t *testing.T) {
 	tests := []struct {
 		name          string
-		triggerStop   func(t *testing.T, cancel context.CancelFunc)
 		mockSetup     func(started chan struct{}) *mockServer
 		wantErr       bool
 		checkShutdown bool
@@ -235,9 +234,6 @@ func TestListenAndServe(t *testing.T) {
 	}{
 		{
 			name: "Graceful shutdown via context cancellation",
-			triggerStop: func(_ *testing.T, cancel context.CancelFunc) {
-				cancel()
-			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
 					listenAndServeFn: func() error {
@@ -255,9 +251,6 @@ func TestListenAndServe(t *testing.T) {
 		},
 		{
 			name: "Server startup error",
-			triggerStop: func(_ *testing.T, cancel context.CancelFunc) {
-				cancel()
-			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
 					listenAndServeFn: func() error {
@@ -275,9 +268,6 @@ func TestListenAndServe(t *testing.T) {
 		},
 		{
 			name: "Forced close when shutdown fails",
-			triggerStop: func(_ *testing.T, cancel context.CancelFunc) {
-				cancel()
-			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
 					listenAndServeFn: func() error {
@@ -298,9 +288,6 @@ func TestListenAndServe(t *testing.T) {
 		},
 		{
 			name: "Forced close error is logged when shutdown fails",
-			triggerStop: func(_ *testing.T, cancel context.CancelFunc) {
-				cancel()
-			},
 			mockSetup: func(started chan struct{}) *mockServer {
 				return &mockServer{
 					listenAndServeFn: func() error {
@@ -341,7 +328,7 @@ func TestListenAndServe(t *testing.T) {
 				t.Fatal("timed out waiting for mock server to start")
 			}
 
-			tt.triggerStop(t, cancel)
+			cancel()
 
 			select {
 			case err := <-errChan:
