@@ -1,8 +1,5 @@
 BEGIN;
 
-DROP TYPE user_level;
-DROP TYPE recipe_state;
-
 DROP TABLE app_user;
 DROP TABLE app_user_settings;
 DROP TABLE recipe;
