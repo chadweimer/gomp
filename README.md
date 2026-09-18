@@ -117,6 +117,7 @@ ENV                     |Value(s)                   |Default                    
 ------------------------|---------------------------|-----------------------------------------|------------
 BASE_ASSETS_PATH        |string                     |static                                   |The base path to the client assets.
 DATABASE_DRIVER         |postgres, sqlite           |&lt;empty&gt;                            |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL.
+DATABASE_SKIP_MIGRATION |boolean                    |false                                    |**Only used by the docker image.** If set to "true", skips the `gomp db migration up` on container startup. Can be useful when overriding the default container command.
 DATABASE_URL            |string                     |file:data/data.db?_pragma=foreign_keys(1)|The url (path, connection string, etc) to use with the associated database driver when opening the database connection. When using the provided docker image, the `DATABASE_URL_FILE` variable can be set to the path to a file containing the value.
 LOG_LEVEL               |debug,info,warn,error      |info                                     |Defines the logging level for the application.
 PORT                    |uint                       |5000                                     |The port number under which the site is being hosted.
