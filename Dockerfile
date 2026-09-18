@@ -18,3 +18,4 @@ COPY --chmod=+x docker-entrypoint.sh ./docker-entrypoint.sh
 ADD build/gomp-$TARGETOS-$TARGETARCH$ARCHIVE_SUFFIX.tar.gz ./
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["serve"]
