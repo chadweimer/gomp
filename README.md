@@ -101,7 +101,7 @@ To provision a new database, or run migrations on an existing database, execute 
 ./gomp db migrate up
 ```
 
-There are also commands to migrate the database down (running all migrations) or a specific number of steps (positive to go up, and negative to down) (e.g., after a failed version upgrade):
+There are also commands to migrate the database down (running all migrations) or a specific number of steps (positive to go up, and negative to go down) (e.g., after a failed version upgrade):
 
 ```bash
 ./gomp db migrate down
