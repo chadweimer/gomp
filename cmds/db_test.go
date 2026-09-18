@@ -63,7 +63,48 @@ func Test_migrateDatabaseUp(t *testing.T) {
 func Test_migrateDatabaseDown(t *testing.T) {
 	tests := []struct {
 		name        string
-		steps       uint16
+		err         error
+		expectedErr error
+	}{
+		{
+			name:        "no error",
+			err:         nil,
+			expectedErr: nil,
+		},
+		{
+			name:        "error",
+			err:         sql.ErrConnDone,
+			expectedErr: sql.ErrConnDone,
+		},
+		{
+			name:        "no change",
+			err:         migrate.ErrNoChange,
+			expectedErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			dbDriver := dbmock.NewMockDriver(ctrl)
+			dbDriver.EXPECT().MigrateDown().Return(tt.err)
+
+			// Act
+			gotErr := migrateDatabaseDown(t.Context(), nil, dbDriver)
+
+			// Assert
+			if !errors.Is(gotErr, tt.expectedErr) {
+				t.Errorf("migrateDatabaseDown() = %v, expectedErr %v", gotErr, tt.expectedErr)
+			}
+		})
+	}
+}
+
+func Test_migrateDatabaseSteps(t *testing.T) {
+	tests := []struct {
+		name        string
+		steps       int
 		err         error
 		expectedErr error
 	}{
@@ -92,10 +133,10 @@ func Test_migrateDatabaseDown(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			dbDriver := dbmock.NewMockDriver(ctrl)
-			dbDriver.EXPECT().MigrateDown(tt.steps).Return(tt.err)
+			dbDriver.EXPECT().MigrateSteps(tt.steps).Return(tt.err)
 			cmd := &cli.Command{
 				Flags: []cli.Flag{
-					&cli.Uint16Flag{
+					&cli.IntFlag{
 						Name:  "steps",
 						Value: tt.steps,
 					},
@@ -103,11 +144,11 @@ func Test_migrateDatabaseDown(t *testing.T) {
 			}
 
 			// Act
-			gotErr := migrateDatabaseDown(t.Context(), cmd, dbDriver)
+			gotErr := migrateDatabaseSteps(t.Context(), cmd, dbDriver)
 
 			// Assert
 			if !errors.Is(gotErr, tt.expectedErr) {
-				t.Errorf("migrateDatabaseDown() = %v, expectedErr %v", gotErr, tt.expectedErr)
+				t.Errorf("migrateDatabaseSteps() = %v, expectedErr %v", gotErr, tt.expectedErr)
 			}
 		})
 	}

@@ -26,16 +26,21 @@ func databaseCmd(cfg config.Config) *cli.Command {
 						Action: withDatabase(cfg, migrateDatabaseUp),
 					},
 					{
-						Name:  "down",
-						Usage: "Migrate the database down by the specified number of steps (default 1)",
+						Name:   "down",
+						Usage:  "Migrate the database down down by applying all pending migrations",
+						Action: withDatabase(cfg, migrateDatabaseDown),
+					},
+					{
+						Name:  "steps",
+						Usage: "Migrate the database by the specified number of steps. The steps can be positive (up) or negative (down) (default 1)",
 						Flags: []cli.Flag{
-							&cli.Uint16Flag{
+							&cli.IntFlag{
 								Name:  "steps",
-								Usage: "Number of steps to migrate down",
+								Usage: "Number of steps to migrate",
 								Value: 1,
 							},
 						},
-						Action: withDatabase(cfg, migrateDatabaseDown),
+						Action: withDatabase(cfg, migrateDatabaseSteps),
 					},
 				},
 			},
@@ -71,17 +76,33 @@ func migrateDatabaseUp(_ context.Context, _ *cli.Command, dbDriver db.Driver) er
 	}
 }
 
-func migrateDatabaseDown(_ context.Context, cmd *cli.Command, dbDriver db.Driver) error {
-	steps := cmd.Uint16("steps")
-	slog.Info("Migrating database down", "steps", steps)
+func migrateDatabaseDown(_ context.Context, _ *cli.Command, dbDriver db.Driver) error {
+	slog.Info("Migrating database down")
 
-	err := dbDriver.MigrateDown(steps)
+	err := dbDriver.MigrateDown()
 	switch err {
 	case nil:
 		slog.Info("Database migrated down successfully")
 		return nil
 	case migrate.ErrNoChange:
 		slog.Info("No changes to migrate down")
+		return nil
+	default:
+		return err
+	}
+}
+
+func migrateDatabaseSteps(_ context.Context, cmd *cli.Command, dbDriver db.Driver) error {
+	steps := cmd.Int("steps")
+	slog.Info("Migrating database by steps", "steps", steps)
+
+	err := dbDriver.MigrateSteps(steps)
+	switch err {
+	case nil:
+		slog.Info("Database migrated successfully")
+		return nil
+	case migrate.ErrNoChange:
+		slog.Info("No changes to migrate")
 		return nil
 	default:
 		return err

@@ -104,9 +104,15 @@ func (drv *sqliteDriver) MigrateUp() error {
 	})
 }
 
-func (drv *sqliteDriver) MigrateDown(steps uint16) error {
+func (drv *sqliteDriver) MigrateDown() error {
 	return migrateSqliteDatabase(drv.Db, func(m *migrate.Migrate) error {
-		return m.Steps(-int(steps))
+		return m.Down()
+	})
+}
+
+func (drv *sqliteDriver) MigrateSteps(steps int) error {
+	return migrateSqliteDatabase(drv.Db, func(m *migrate.Migrate) error {
+		return m.Steps(steps)
 	})
 }
 
