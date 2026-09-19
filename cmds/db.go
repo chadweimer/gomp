@@ -2,11 +2,14 @@ package cmds
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
 
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v3"
 )
@@ -16,6 +19,38 @@ func databaseCmd(cfg config.Config) *cli.Command {
 		Name:  "db",
 		Usage: "Database related commands",
 		Commands: []*cli.Command{
+			{
+				Name:  "export",
+				Usage: "Export the database",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:      "output",
+						Aliases:   []string{"o"},
+						Usage:     "Path to output JSON file for the exported database (required)",
+						TakesFile: true,
+						Required:  true,
+					},
+					&cli.BoolFlag{
+						Name:  "pretty",
+						Usage: "Pretty-print the exported JSON",
+					},
+				},
+				Action: withDatabase(cfg, exportDatabase),
+			},
+			{
+				Name:  "import",
+				Usage: "Import the database",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:      "input",
+						Aliases:   []string{"i"},
+						Usage:     "Path to input JSON file for the database import (required)",
+						TakesFile: true,
+						Required:  true,
+					},
+				},
+				Action: withDatabase(cfg, importDatabase),
+			},
 			{
 				Name:  "migrate",
 				Usage: "Run database migrations",
@@ -58,6 +93,60 @@ func withDatabase(cfg config.Config, op func(_ context.Context, _ *cli.Command, 
 
 		return op(ctx, cmd, dbDriver)
 	}
+}
+
+func exportDatabase(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) error {
+	output := cmd.String("output")
+	pretty := cmd.Bool("pretty")
+	slog.Info("Exporting database", "output", output)
+
+	backupData, err := dbDriver.Backups().Export(ctx)
+	if err != nil {
+		return fmt.Errorf("exporting database: %w", err)
+	}
+
+	f, err := os.Create(output)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	encoder := json.NewEncoder(f)
+	if pretty {
+		encoder.SetIndent("", "  ")
+	}
+	err = encoder.Encode(backupData)
+	if err != nil {
+		return fmt.Errorf("writing exported database to file: %w", err)
+	}
+
+	slog.Info("Database exported successfully")
+	return nil
+}
+
+func importDatabase(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) error {
+	input := cmd.String("input")
+	slog.Info("Importing database", "input", input)
+
+	f, err := os.Open(input)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	backupData := new(models.BackupData)
+	err = json.NewDecoder(f).Decode(backupData)
+	if err != nil {
+		return fmt.Errorf("decoding backup data: %w", err)
+	}
+
+	err = dbDriver.Backups().Import(ctx, backupData)
+	if err != nil {
+		return fmt.Errorf("importing database: %w", err)
+	}
+
+	slog.Info("Database imported successfully")
+	return nil
 }
 
 func migrateDatabaseUp(_ context.Context, _ *cli.Command, dbDriver db.Driver) error {
