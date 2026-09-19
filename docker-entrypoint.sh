@@ -14,10 +14,12 @@ load_secret_file() {
 }
 
 # Load any secret files specified
-[ -n "$DATABASE_URL_FILE" ] && load_secret_file "DATABASE_URL" "$DATABASE_URL_FILE"
-[ -n "$SECURE_KEY_FILE"   ] && load_secret_file "SECURE_KEY"   "$SECURE_KEY_FILE"
+[ -n "$GOMP_DATABASE_URL_FILE" ] && load_secret_file "GOMP_DATABASE_URL" "$GOMP_DATABASE_URL_FILE"
+[ -n "$DATABASE_URL_FILE"      ] && load_secret_file "DATABASE_URL"      "$DATABASE_URL_FILE"
+[ -n "$GOMP_SECURE_KEY_FILE"   ] && load_secret_file "GOMP_SECURE_KEY"   "$GOMP_SECURE_KEY_FILE"
+[ -n "$SECURE_KEY_FILE"        ] && load_secret_file "SECURE_KEY"        "$SECURE_KEY_FILE"
 
-if [ "${DATABASE_SKIP_MIGRATION:-false}" != "true" ]; then
+if [ "${GOMP_DATABASE_SKIP_MIGRATION:-${DATABASE_SKIP_MIGRATION:-false}}" != "true" ]; then
   ./gomp db migrate up
 fi
 
