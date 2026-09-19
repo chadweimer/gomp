@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 
@@ -13,6 +14,26 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v3"
 )
+
+type creator interface {
+	Create(name string) (io.WriteCloser, error)
+}
+
+type opener interface {
+	Open(name string) (io.ReadCloser, error)
+}
+
+type rootOpenCreator struct {
+	*os.Root
+}
+
+func (r rootOpenCreator) Create(name string) (io.WriteCloser, error) {
+	return r.Root.Create(name)
+}
+
+func (r rootOpenCreator) Open(name string) (io.ReadCloser, error) {
+	return r.Root.Open(name)
+}
 
 func databaseCmd(cfg config.Config) *cli.Command {
 	return &cli.Command{
@@ -35,7 +56,18 @@ func databaseCmd(cfg config.Config) *cli.Command {
 						Usage: "Pretty-print the exported JSON",
 					},
 				},
-				Action: withDatabase(cfg, exportDatabase),
+				Action: withDatabase(cfg, func(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) error {
+					output := cmd.String("output")
+					indent := ""
+					if cmd.Bool("pretty") {
+						indent = "  "
+					}
+					root, err := os.OpenRoot(".")
+					if err != nil {
+						return err
+					}
+					return exportDatabase(ctx, dbDriver, rootOpenCreator{Root: root}, output, indent)
+				}),
 			},
 			{
 				Name:  "import",
@@ -49,7 +81,14 @@ func databaseCmd(cfg config.Config) *cli.Command {
 						Required:  true,
 					},
 				},
-				Action: withDatabase(cfg, importDatabase),
+				Action: withDatabase(cfg, func(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) error {
+					input := cmd.String("input")
+					root, err := os.OpenRoot(".")
+					if err != nil {
+						return err
+					}
+					return importDatabase(ctx, dbDriver, rootOpenCreator{Root: root}, input)
+				}),
 			},
 			{
 				Name:  "migrate",
@@ -95,9 +134,7 @@ func withDatabase(cfg config.Config, op func(_ context.Context, _ *cli.Command, 
 	}
 }
 
-func exportDatabase(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) error {
-	output := cmd.String("output")
-	pretty := cmd.Bool("pretty")
+func exportDatabase(ctx context.Context, dbDriver db.Driver, creator creator, output, indent string) error {
 	slog.Info("Exporting database", "output", output)
 
 	backupData, err := dbDriver.Backups().Export(ctx)
@@ -105,16 +142,14 @@ func exportDatabase(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) e
 		return fmt.Errorf("exporting database: %w", err)
 	}
 
-	f, err := os.Create(output)
+	f, err := creator.Create(output)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	encoder := json.NewEncoder(f)
-	if pretty {
-		encoder.SetIndent("", "  ")
-	}
+	encoder.SetIndent("", indent)
 	err = encoder.Encode(backupData)
 	if err != nil {
 		return fmt.Errorf("writing exported database to file: %w", err)
@@ -124,11 +159,10 @@ func exportDatabase(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) e
 	return nil
 }
 
-func importDatabase(ctx context.Context, cmd *cli.Command, dbDriver db.Driver) error {
-	input := cmd.String("input")
+func importDatabase(ctx context.Context, dbDriver db.Driver, opener opener, input string) error {
 	slog.Info("Importing database", "input", input)
 
-	f, err := os.Open(input)
+	f, err := opener.Open(input)
 	if err != nil {
 		return err
 	}
