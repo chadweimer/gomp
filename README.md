@@ -101,12 +101,7 @@ To provision a new database, or run migrations on an existing database, execute 
 ./gomp db migrate up
 ```
 
-There are also commands to migrate the database down (running all migrations) or a specific number of steps (positive to go up, and negative to go down) (e.g., after a failed version upgrade):
-
-```bash
-./gomp db migrate down
-./gomp db migrate steps --steps <num>
-```
+See [Command Line Interface](#command-line-interface) for more on the available commands.
 
 ## Configuration
 
@@ -135,9 +130,15 @@ The name with "GOMP_" is prefered if both are present.
 For values that allow releative paths (e.g., BASE_ASSETS_PATH, DATABASE_URL for SQLite, and FILES_PATH), they are always relative to the application working directory.
 When using docker, this is "/var/app/gomp", so anything at or below the "data/" relative path is in the exposed "/var/app/gomp/data" volume.
 
-## Database Support
+## Command Line Interface
 
-Currently PostgreSQL and SQLite are supported.
+- `serve` - Runs the web server. This is the primary command to run the application
+- `db export --output <path>` - Export the database to JSON
+- `db import --input <path>` - Import a JSON database export, overwriting any existing data
+- `db migrate up` - Migrate the database up
+- `db migrate down` - Migrate the database down
+- `db migrate steps --steps <num>` - Migrate the database the specified number of steps relative to the current state (up or down based on if the steps is positive or negative)
+- `images optimize` - Optimize all uploaded recipe images using the currently configured settings
 
 ## Building
 
