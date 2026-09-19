@@ -8,9 +8,7 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/config"
-	"github.com/chadweimer/gomp/mocks/db"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
-	mockfileaccess "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/urfave/cli/v3"
@@ -94,11 +92,10 @@ func Test_exportDatabase(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockDB := dbmock.NewMockDriver(ctrl)
-			mockBackupDriver := db.NewMockBackupDriver(ctrl)
+			mockBackupDriver := dbmock.NewMockBackupDriver(ctrl)
 			mockBackupDriver.EXPECT().Export(gomock.Any()).Return(tt.backupData, tt.dbErr).AnyTimes()
 			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
-			root := mockfileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().Create(tt.output).DoAndReturn(func(path string) (io.WriteCloser, error) {
+			creator := func(path string) (io.WriteCloser, error) {
 				if path != tt.output {
 					t.Errorf("Create() called with path = %v, want %v", path, tt.output)
 				}
@@ -110,10 +107,10 @@ func Test_exportDatabase(t *testing.T) {
 					Writer: buf,
 					Closer: io.NopCloser(buf),
 				}, tt.createErr
-			}).AnyTimes()
+			}
 
 			// Act
-			gotErr := exportDatabase(t.Context(), mockDB, root, tt.output, tt.indent)
+			gotErr := exportDatabase(t.Context(), mockDB, creator, tt.output, tt.indent)
 
 			// Assert
 			if (gotErr != nil) != tt.wantErr {
@@ -186,12 +183,15 @@ func Test_importDatabase(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockDB := dbmock.NewMockDriver(ctrl)
-			mockBackupDriver := db.NewMockBackupDriver(ctrl)
+			mockBackupDriver := dbmock.NewMockBackupDriver(ctrl)
 			mockBackupDriver.EXPECT().Import(gomock.Any(), tt.wantBackupData).Return(tt.dbErr).AnyTimes()
 			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
+			opener := func(_ string) (io.ReadCloser, error) {
+				return io.NopCloser(buf), tt.openErr
+			}
 
 			// Act
-			gotErr := importDatabase(t.Context(), mockDB, testOpener{ReadCloser: io.NopCloser(buf), err: tt.openErr}, tt.input)
+			gotErr := importDatabase(t.Context(), mockDB, opener, tt.input)
 
 			// Assert
 			if (gotErr != nil) != tt.wantErr {
@@ -334,13 +334,4 @@ func Test_migrateDatabaseSteps(t *testing.T) {
 			}
 		})
 	}
-}
-
-type testOpener struct {
-	io.ReadCloser
-	err error
-}
-
-func (t testOpener) Open(_ string) (io.ReadCloser, error) {
-	return t.ReadCloser, t.err
 }

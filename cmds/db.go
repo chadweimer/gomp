@@ -15,26 +15,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-type creator interface {
-	Create(name string) (io.WriteCloser, error)
-}
-
-type opener interface {
-	Open(name string) (io.ReadCloser, error)
-}
-
-type rootOpenCreator struct {
-	*os.Root
-}
-
-func (r rootOpenCreator) Create(name string) (io.WriteCloser, error) {
-	return r.Root.Create(name)
-}
-
-func (r rootOpenCreator) Open(name string) (io.ReadCloser, error) {
-	return r.Root.Open(name)
-}
-
 func databaseCmd(cfg config.Config) *cli.Command {
 	return &cli.Command{
 		Name:  "db",
@@ -66,7 +46,9 @@ func databaseCmd(cfg config.Config) *cli.Command {
 					if err != nil {
 						return err
 					}
-					return exportDatabase(ctx, dbDriver, rootOpenCreator{Root: root}, output, indent)
+					return exportDatabase(ctx, dbDriver, func(name string) (io.WriteCloser, error) {
+						return root.Create(name)
+					}, output, indent)
 				}),
 			},
 			{
@@ -87,7 +69,9 @@ func databaseCmd(cfg config.Config) *cli.Command {
 					if err != nil {
 						return err
 					}
-					return importDatabase(ctx, dbDriver, rootOpenCreator{Root: root}, input)
+					return importDatabase(ctx, dbDriver, func(name string) (io.ReadCloser, error) {
+						return root.Open(name)
+					}, input)
 				}),
 			},
 			{
@@ -134,7 +118,7 @@ func withDatabase(cfg config.Config, op func(_ context.Context, _ *cli.Command, 
 	}
 }
 
-func exportDatabase(ctx context.Context, dbDriver db.Driver, creator creator, output, indent string) error {
+func exportDatabase(ctx context.Context, dbDriver db.Driver, creator func(string) (io.WriteCloser, error), output, indent string) error {
 	slog.Info("Exporting database", "output", output)
 
 	backupData, err := dbDriver.Backups().Export(ctx)
@@ -142,7 +126,7 @@ func exportDatabase(ctx context.Context, dbDriver db.Driver, creator creator, ou
 		return fmt.Errorf("exporting database: %w", err)
 	}
 
-	f, err := creator.Create(output)
+	f, err := creator(output)
 	if err != nil {
 		return err
 	}
@@ -159,10 +143,10 @@ func exportDatabase(ctx context.Context, dbDriver db.Driver, creator creator, ou
 	return nil
 }
 
-func importDatabase(ctx context.Context, dbDriver db.Driver, opener opener, input string) error {
+func importDatabase(ctx context.Context, dbDriver db.Driver, opener func(string) (io.ReadCloser, error), input string) error {
 	slog.Info("Importing database", "input", input)
 
-	f, err := opener.Open(input)
+	f, err := opener(input)
 	if err != nil {
 		return err
 	}
