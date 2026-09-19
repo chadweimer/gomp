@@ -81,52 +81,32 @@ volumes:
 
 You will obviously want to cater the values (e.g., passwords) for your deployment.
 
-### Kubernetes
-
-A basic manifest is shown below. This manifest is roughly equivalent to the first docker command shown in the [Docker](#docker) section above, and is thus not recommended for production use.
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.service: web
-  name: web
-spec:
-  selector:
-    matchLabels:
-      app.service: web
-  template:
-    metadata:
-      labels:
-        app.service: web
-    spec:
-      containers:
-      - image: ghcr.io/chadweimer/gomp
-        name: web
-        ports:
-        - containerPort: 5000
-        restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.service: web
-  name: web
-spec:
-  ports:
-  - port: 5000
-    targetPort: 5000
-  selector:
-    app.service: web
-```
-
-:construction: TODO
-
 ### Manual
 
-:construction: TODO
+> [!NOTE]
+> All `gomp` CLI commands referenced here rely on the [configuration](#configuration) documented in the next section.
+
+To launch the server, execute the following:
+
+```bash
+./gomp serve
+```
+
+#### Database Migration
+
+When running the process manually as above, database migrations are not automatically executed like they are when leveraging the provided docker image.
+To provision a new database, or run migrations on an existing database, execute the following:
+
+```bash
+./gomp db migrate up
+```
+
+There are also commands to migrate the database down (running all migrations) or a specific number of steps (positive to go up, and negative to go down) (e.g., after a failed version upgrade):
+
+```bash
+./gomp db migrate down
+./gomp db migrate steps --steps <num>
+```
 
 ## Configuration
 
@@ -137,12 +117,11 @@ ENV                     |Value(s)                   |Default                    
 ------------------------|---------------------------|-----------------------------------------|------------
 BASE_ASSETS_PATH        |string                     |static                                   |The base path to the client assets.
 DATABASE_DRIVER         |postgres, sqlite           |&lt;empty&gt;                            |Which database/sql driver to use. If blank, the app will attempt to infer it based on the value of DATABASE_URL.
-DATABASE_URL            |string                     |file:data/data.db?_pragma=foreign_keys(1)|The url (path, connection string, etc) to use with the associated database driver when opening the database connection.
+DATABASE_SKIP_MIGRATION |boolean                    |false                                    |**Only used by the docker image.** If set to "true", skips the `gomp db migration up` on container startup. Can be useful when overriding the default container command.
+DATABASE_URL            |string                     |file:data/data.db?_pragma=foreign_keys(1)|The url (path, connection string, etc) to use with the associated database driver when opening the database connection. When using the provided docker image, the `DATABASE_URL_FILE` variable can be set to the path to a file containing the value.
 LOG_LEVEL               |debug,info,warn,error      |info                                     |Defines the logging level for the application.
-MIGRATIONS_FORCE_VERSION|int                        |-1                                       |A version to force the migrations to on startup (will not run any of the migrations themselves). Set to a negative number to skip forcing a version.
-MIGRATIONS_TABLE_NAME   |string                     |&lt;empty&gt;                            |The name of the database migrations table to use. Leave blank to use the default from <https://github.com/golang-migrate/migrate.>
 PORT                    |uint                       |5000                                     |The port number under which the site is being hosted.
-SECURE_KEY              |[]string                   |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters.
+SECURE_KEY              |[]string                   |ChangeMe                                 |Used for session authentication. Recommended to be 32 or 64 ASCII characters. When using the provided docker image, the `SECURE_KEY_FILE` variable can be set to the path to a file containing the value.
 TRUSTED_PROXIES         |[]string                   |&lt;empty&gt;                            |List of IP addresses or CIDR ranges that are considered trusted proxies. When determining the client IP address, if the request comes from a trusted proxy, the `X-Forwarded-For` header will be used to determine the original client IP.
 FILES_PATH              |string                     |data                                     |The path (full or relative) under which to store file data.
 IMAGE_QUALITY           |original, high, medium, low|original                                 |The quality level for recipe images. Original quality falls back to High if the uploaded image is not a JPEG. JPEG Qualities: High == 92, Medium == 80, Low == 70. Resizing Algorithm: High = CatmullRom, Medium = BiLinear, Low = NearestNeighbor.

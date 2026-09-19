@@ -122,6 +122,40 @@ func (u ImageUploader) DeleteAll(recipeID int64) error {
 	return err
 }
 
+// ListAll returns a map of recipe IDs to their corresponding image names for which images exist in the upload store.
+func (u ImageUploader) ListAll() (map[int64][]string, error) {
+	result := make(map[int64][]string)
+	dirPath := getDirPathForRecipes()
+	entries, err := u.driver.List(dirPath)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return result, nil
+		}
+		return nil, fmt.Errorf("failed to list recipes: %w", err)
+	}
+
+	recipeIDs := lo.FilterMap(entries, func(entry fs.DirEntry, _ int) (int64, bool) {
+		if !entry.IsDir() {
+			return 0, false
+		}
+
+		if recipeID, err := strconv.ParseInt(entry.Name(), 10, 64); err == nil {
+			return recipeID, true
+		}
+
+		return 0, false
+	})
+
+	for _, recipeID := range recipeIDs {
+		images, err := u.List(recipeID)
+		if err != nil {
+			return nil, err
+		}
+		result[recipeID] = images
+	}
+	return result, nil
+}
+
 // List returns a list of image names for the specified recipe
 func (u ImageUploader) List(recipeID int64) ([]string, error) {
 	dirPath := getDirPathForImage(recipeID)
@@ -192,8 +226,12 @@ func (u ImageUploader) saveImage(reader io.ReadSeeker, baseDir string, imageName
 	return url, nil
 }
 
+func getDirPathForRecipes() string {
+	return filepath.Join(UploadDirectoryName, "recipes")
+}
+
 func getDirPathForRecipe(recipeID int64) string {
-	return filepath.Join(UploadDirectoryName, "recipes", strconv.FormatInt(recipeID, 10))
+	return filepath.Join(getDirPathForRecipes(), strconv.FormatInt(recipeID, 10))
 }
 
 func getDirPathForImage(recipeID int64) string {

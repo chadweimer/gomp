@@ -1,13 +1,16 @@
-package main
+package config
 
 import (
 	"encoding"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net"
+	"os"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/vary/v2"
 	"github.com/samber/lo"
 )
 
@@ -15,17 +18,23 @@ const defaultSecureKey = "ChangeMe"
 
 // Config represents the application configuration settings
 type Config struct {
+	// LogLevel defines the logging level for the application. Valid values are "debug", "info", "warn", and "error".
+	LogLevel LogLevel `env:"LOG_LEVEL" default:"info"`
+
+	// Server contains the server configuration settings.
+	Server ServerConfig
+
 	// FileAccess contains the file access configuration settings
 	FileAccess fileaccess.Config
 
 	// Database contains the database configuration settings
 	Database db.Config
+}
 
+// ServerConfig represents the server configuration settings.
+type ServerConfig struct {
 	// Port gets the port number under which the site is being hosted.
 	Port int `env:"PORT" default:"5000"`
-
-	// LogLevel defines the logging level for the application. Valid values are "debug", "info", "warn", and "error".
-	LogLevel LogLevel `env:"LOG_LEVEL" default:"info"`
 
 	// BaseAssetsPath gets the base path to the client assets.
 	BaseAssetsPath string `env:"BASE_ASSETS_PATH" default:"static"`
@@ -40,7 +49,8 @@ type Config struct {
 	TrustedProxies []TrustedProxy `env:"TRUSTED_PROXIES" default:""`
 }
 
-func (c Config) validate() error {
+// Validate checks the configuration for any invalid or missing settings and returns an error if any issues are found.
+func (c ServerConfig) Validate() error {
 	errs := make([]error, 0)
 
 	if c.Port <= 0 {
@@ -60,11 +70,24 @@ func (c Config) validate() error {
 	return errors.Join(errs...)
 }
 
-// getTrustedProxies returns the list of trusted proxies as a slice of net.IPNet.
-func (c Config) getTrustedProxies() []net.IPNet {
+// GetTrustedProxies returns the list of trusted proxies as a slice of net.IPNet.
+func (c ServerConfig) GetTrustedProxies() []net.IPNet {
 	return lo.Map(c.TrustedProxies, func(tp TrustedProxy, _ int) net.IPNet {
 		return tp.IPNet
 	})
+}
+
+// Load hydrates the application configuration from any configured sources.
+func Load() (Config, error) {
+	cfgBinder := vary.New(vary.WithLookup(
+		vary.CompositeLookup(vary.PrefixedLookup("GOMP_", os.LookupEnv), os.LookupEnv),
+	))
+	var cfg Config
+	if err := cfgBinder.Bind(&cfg); err != nil {
+		return Config{}, fmt.Errorf("loading configuration: %w", err)
+	}
+
+	return cfg, nil
 }
 
 // TrustedProxy wraps a net.IPNet to implement the encoding.TextUnmarshaler interface.
@@ -74,6 +97,7 @@ type TrustedProxy struct {
 
 var _ encoding.TextUnmarshaler = (*TrustedProxy)(nil)
 
+// UnmarshalText implements the encoding.TextUnmarshaler interface for TrustedProxy. It supports both single IP addresses and CIDR notation.
 func (tp *TrustedProxy) UnmarshalText(text []byte) error {
 	var str = string(text)
 	// First check if it's a single IP address, and if so, convert it to a CIDR with a full mask

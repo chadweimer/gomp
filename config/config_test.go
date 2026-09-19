@@ -1,11 +1,11 @@
-package main
+package config
 
 import (
 	"net"
 	"testing"
 )
 
-func TestConfig_validate(t *testing.T) {
+func TestServerConfig_Validate(t *testing.T) {
 	type fields struct {
 		Port           int
 		BaseAssetsPath string
@@ -56,12 +56,12 @@ func TestConfig_validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &Config{
+			c := &ServerConfig{
 				Port:           tt.fields.Port,
 				BaseAssetsPath: tt.fields.BaseAssetsPath,
 				SecureKeys:     tt.fields.SecureKeys,
 			}
-			if got := c.validate(); tt.wantErr != (got != nil) {
+			if got := c.Validate(); tt.wantErr != (got != nil) {
 				t.Errorf("Config.validate() = %v, want error? %v", got, tt.wantErr)
 			}
 		})

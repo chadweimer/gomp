@@ -4,20 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
-	"os/signal"
-	"path/filepath"
-	"syscall"
-	"time"
 
-	"github.com/chadweimer/gomp/api"
-	"github.com/chadweimer/gomp/db"
-	"github.com/chadweimer/gomp/fileaccess"
-	"github.com/chadweimer/gomp/metadata"
-	"github.com/chadweimer/gomp/middleware"
-	"github.com/chadweimer/gomp/models"
-	"github.com/chadweimer/vary/v2"
+	"github.com/chadweimer/gomp/cmds"
+	"github.com/chadweimer/gomp/config"
 )
 
 func main() {
@@ -27,105 +17,17 @@ func main() {
 		Level: logLevel,
 	})))
 
-	// Write the app metadata to logs
-	slog.Info("Starting application", "version", metadata.BuildVersion)
-
-	// Load configuration
-	cfgBinder := vary.New(vary.WithLookup(
-		vary.CompositeLookup(vary.PrefixedLookup("GOMP_", os.LookupEnv), os.LookupEnv),
-	))
-	cfg := &Config{}
-	if err := cfgBinder.Bind(cfg); err != nil {
-		slog.Error("Failed to load configuration. Exiting...", "error", err)
-		os.Exit(1)
+	cfg, err := config.Load()
+	if err != nil {
+		slog.Error(fmt.Sprintf("%s", err))
+		os.Exit(2)
 	}
 
-	// Reconfigure the logger now that we've loaded the main application configuation
+	// Reconfigure the logger now that we've loaded the configuation
 	logLevel.Set(cfg.LogLevel.Level)
 
-	// Now it's OK to log what was loaded
-	slog.Debug("Loaded application configuration", "cfg", cfg)
-
-	if err := cfg.validate(); err != nil {
-		slog.Error("Invalid configuration. Exiting...", "error", err)
+	if err := cmds.RootCmd(cfg).Run(context.Background(), os.Args); err != nil {
+		slog.Error(fmt.Sprintf("%s", err))
 		os.Exit(1)
-	}
-
-	fsDriver, err := fileaccess.CreateDriver(cfg.FileAccess.Files)
-	if err != nil {
-		slog.Error("Establishing file access driver failed. Exiting...", "error", err)
-		os.Exit(1)
-	}
-	fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
-
-	uploader, err := fileaccess.CreateImageUploader(fsDriver, cfg.FileAccess.Image)
-	if err != nil {
-		slog.Error("Establishing uploader failed. Exiting...", "error", err)
-		os.Exit(1)
-	}
-
-	dbDriver, err := db.CreateDriver(cfg.Database)
-	if err != nil {
-		slog.Error("Establishing database driver failed. Exiting...", "error", err)
-		os.Exit(1)
-	}
-	defer dbDriver.Close()
-
-	baseAssetsRoot, err := os.OpenRoot(cfg.BaseAssetsPath)
-	if err != nil {
-		slog.Error("Opening base assets path failed. Exiting...", "error", err)
-		os.Exit(1)
-	}
-
-	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
-		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
-	}
-	handlePrefixStripped := func(mux *http.ServeMux, prefix string, handler http.Handler) {
-		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
-	}
-
-	mux := http.NewServeMux()
-	handlePrefixStripped(mux, "api", api.NewHandler(cfg.SecureKeys, uploader, dbDriver, fsDriver))
-	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(baseAssetsRoot.FS())))
-	// Uploaded files require authentication
-	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
-		[]string{string(models.Viewer)}, cfg.SecureKeys, dbDriver.Users())(fileServer))
-	// Backups require admin access
-	handlePrefixed(mux, fileaccess.BackupDirectoryName, middleware.VerifyScopes(
-		[]string{string(models.Admin)}, cfg.SecureKeys, dbDriver.Users())(fileServer))
-	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(cfg.BaseAssetsPath, "index.html"))
-	}))
-
-	r := middleware.Wrap(
-		mux,
-		middleware.LogRequests(slog.Default(), cfg.getTrustedProxies()),
-		middleware.Recover("Recovered from panic"),
-	)
-
-	// subscribe to SIGINT signals
-	stopChan := make(chan os.Signal, 1)
-	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
-
-	timeout := 10 * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	slog.Info("Starting server", "port", cfg.Port)
-	srv := &http.Server{
-		ReadHeaderTimeout: 10 * time.Second,
-		Addr:              fmt.Sprintf(":%d", cfg.Port),
-		Handler:           r,
-	}
-	go srv.ListenAndServe()
-
-	// Wait for a stop signal
-	<-stopChan
-	slog.Info("Shutting down server...")
-
-	// Shutdown the http server
-	if err := srv.Shutdown(ctx); err != nil {
-		// We're already going down. Time to panic
-		panic(err)
 	}
 }

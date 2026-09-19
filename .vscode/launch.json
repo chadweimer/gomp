@@ -10,12 +10,45 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}",
+      "args": [
+        "serve"
+      ],
       "env": {
         "PORT": "5678",
         "LOG_LEVEL": "debug",
         "BASE_ASSETS_PATH": "static/www/static"
       },
       "buildFlags": "-ldflags '-X github.com/chadweimer/gomp/metadata.BuildVersion=DEBUG'",
+    },
+    {
+      "name": "Migrate DB Up",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": [
+        "db",
+        "migrate",
+        "up"
+      ],
+      "env": {
+        "LOG_LEVEL": "debug",
+      },
+    },
+    {
+      "name": "Migrate DB Down",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "args": [
+        "db",
+        "migrate",
+        "down"
+      ],
+      "env": {
+        "LOG_LEVEL": "debug",
+      },
     }
   ]
 }

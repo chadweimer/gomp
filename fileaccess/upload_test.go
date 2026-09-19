@@ -8,10 +8,12 @@ import (
 	"image/png"
 	"io/fs"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
@@ -272,34 +274,219 @@ func Test_DeleteAll(t *testing.T) {
 	}
 }
 
+func Test_ListAll(t *testing.T) {
+	tests := []struct {
+		name        string
+		entries     []testDirEntry
+		listErr     error
+		expectError bool
+		expected    map[int64][]string
+	}{
+		{name: "No Recipes", entries: []testDirEntry{}, expected: map[int64][]string{}},
+		{
+			name: "Single Recipe, No Files",
+			entries: []testDirEntry{
+				{
+					name: "1",
+					dir:  true,
+					children: []testDirEntry{
+						{
+							name: "images",
+							dir:  true,
+						},
+					},
+				},
+			},
+			expected: map[int64][]string{1: {}},
+		},
+		{
+			name: "Single Recipe, With Files",
+			entries: []testDirEntry{
+				{
+					name: "1",
+					dir:  true,
+					children: []testDirEntry{
+						{
+							name: "images",
+							dir:  true,
+							children: []testDirEntry{
+								{name: "a.jpeg", dir: false},
+								{name: "b.png", dir: false},
+								{name: "c.png", dir: false},
+							},
+						},
+					},
+				},
+			},
+			expected: map[int64][]string{1: {"a.jpeg", "b.png", "c.png"}},
+		},
+		{
+			name: "Multiple Recipes, No Files",
+			entries: []testDirEntry{
+				{
+					name: "1",
+					dir:  true,
+					children: []testDirEntry{
+						{
+							name: "images",
+							dir:  true,
+						},
+					},
+				},
+				{
+					name: "2",
+					dir:  true,
+					children: []testDirEntry{
+						{
+							name: "images",
+							dir:  true,
+						},
+					},
+				},
+			},
+			expected: map[int64][]string{1: {}, 2: {}},
+		},
+		{
+			name: "Multiple Recipes, With Files",
+			entries: []testDirEntry{
+				{
+					name: "1",
+					dir:  true,
+					children: []testDirEntry{
+						{
+							name: "images",
+							dir:  true,
+							children: []testDirEntry{
+								{name: "a.jpeg", dir: false},
+								{name: "b.png", dir: false},
+								{name: "c.png", dir: false},
+							},
+						},
+					},
+				},
+				{
+					name: "2",
+					dir:  true,
+					children: []testDirEntry{
+						{
+							name: "images",
+							dir:  true,
+							children: []testDirEntry{
+								{name: "d.jpeg", dir: false},
+								{name: "e.png", dir: false},
+								{name: "f.png", dir: false},
+							},
+						},
+					},
+				},
+			},
+			expected: map[int64][]string{1: {"a.jpeg", "b.png", "c.png"}, 2: {"d.jpeg", "e.png", "f.png"}},
+		},
+		{
+			name: "Other Files Ignored",
+			entries: []testDirEntry{
+				{name: "a.txt", dir: false},
+				{name: "b.csv", dir: false},
+			},
+			expected: map[int64][]string{},
+		},
+		{
+			name: "Non-integer Directories Ignored",
+			entries: []testDirEntry{
+				{name: "a", dir: true},
+				{name: "b", dir: true},
+			},
+			expected: map[int64][]string{},
+		},
+		{name: "Error", listErr: errors.New("driver failure"), expectError: true},
+		{name: "Not Found", listErr: fs.ErrNotExist, expectError: false, expected: map[int64][]string{}},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			drv := fileaccessmock.NewMockDriver(ctrl)
+			dirPath := getDirPathForRecipes()
+
+			if tt.listErr != nil {
+				drv.EXPECT().List(dirPath).Return(nil, tt.listErr).Times(1)
+			} else {
+				mockFileSystemEntries(drv, dirPath, tt.entries)
+			}
+
+			imgCfg := ImageConfig{
+				ImageQuality:     models.ImageQualityOriginal,
+				ImageSize:        200,
+				ThumbnailQuality: models.ImageQualityMedium,
+				ThumbnailSize:    50,
+			}
+			uploader, err := CreateImageUploader(drv, imgCfg)
+			if err != nil {
+				t.Fatalf("CreateImageUploader: %v", err)
+			}
+
+			got, err := uploader.ListAll()
+			if tt.expectError {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				if !errors.Is(err, tt.listErr) {
+					t.Fatalf("expected wrapped error to be testErr, got: %v", err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("List returned error: %v", err)
+			}
+			if len(got) != len(tt.expected) {
+				t.Fatalf("expected %d files, got %d: %v", len(tt.expected), len(got), got)
+			}
+			for recipeID, images := range tt.expected {
+				if !reflect.DeepEqual(got[recipeID], images) {
+					t.Fatalf("unexpected file list for recipe %d: got %v, want %v", recipeID, got[recipeID], images)
+				}
+			}
+		})
+	}
+}
+
 func Test_List(t *testing.T) {
 	tests := []struct {
 		name        string
 		recipeID    int64
-		entries     []fs.DirEntry
+		entries     []testDirEntry
 		listErr     error
 		expectError bool
 		expected    []string
 	}{
-		{name: "No Files", recipeID: 123, entries: []fs.DirEntry{}, expected: []string{}},
+		{name: "No Files", recipeID: 123, entries: []testDirEntry{}, expected: []string{}},
 		{
 			name:     "With Files",
 			recipeID: 42,
-			entries: []fs.DirEntry{
-				testDirEntry{name: "a.jpeg", dir: false},
-				testDirEntry{name: "b.png", dir: false},
-				testDirEntry{name: "c.png", dir: false},
+			entries: []testDirEntry{
+				{name: "a.jpeg", dir: false},
+				{name: "b.png", dir: false},
+				{name: "c.png", dir: false},
 			},
 			expected: []string{"a.jpeg", "b.png", "c.png"},
 		},
 		{
 			name:     "With Files and Dirs",
 			recipeID: 42,
-			entries: []fs.DirEntry{
-				testDirEntry{name: "a.jpeg", dir: false},
-				testDirEntry{name: "b.png", dir: false},
-				testDirEntry{name: "subdir", dir: true},
-				testDirEntry{name: "subdir/c.png", dir: true},
+			entries: []testDirEntry{
+				{name: "a.jpeg", dir: false},
+				{name: "b.png", dir: false},
+				{
+					name: "subdir",
+					dir:  true,
+					children: []testDirEntry{
+						{name: "c.png", dir: false},
+					},
+				},
 			},
 			expected: []string{"a.jpeg", "b.png"},
 		},
@@ -319,7 +506,7 @@ func Test_List(t *testing.T) {
 			if tt.listErr != nil {
 				drv.EXPECT().List(dirPath).Return(nil, tt.listErr).Times(1)
 			} else {
-				drv.EXPECT().List(dirPath).Return(tt.entries, nil).Times(1)
+				mockFileSystemEntries(drv, dirPath, tt.entries)
 			}
 
 			imgCfg := ImageConfig{
@@ -447,8 +634,9 @@ func Test_cover(t *testing.T) {
 }
 
 type testDirEntry struct {
-	name string
-	dir  bool
+	name     string
+	dir      bool
+	children []testDirEntry
 }
 
 func (t testDirEntry) Name() string { return t.name }
@@ -460,3 +648,15 @@ func (t testDirEntry) Type() fs.FileMode {
 	return 0
 }
 func (testDirEntry) Info() (fs.FileInfo, error) { return nil, nil }
+
+func mockFileSystemEntries(drv *fileaccessmock.MockDriver, basePath string, entries []testDirEntry) {
+	mappedEntries := lo.Map(entries, func(entry testDirEntry, _ int) fs.DirEntry {
+		return entry
+	})
+	drv.EXPECT().List(basePath).Return(mappedEntries, nil).AnyTimes()
+	for _, entry := range entries {
+		if entry.IsDir() {
+			mockFileSystemEntries(drv, filepath.Join(basePath, entry.name), entry.children)
+		}
+	}
+}

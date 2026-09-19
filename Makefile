@@ -97,7 +97,6 @@ lint-server: $(CODEGEN_FILES)
 clean:
 	rm -rf $(ROOT_BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
-	rm -rf $(MOCKS_CODEGEN_DIR)
 	cd static && npm run clean
 	$(GO_ENV) go clean -i ./...
 

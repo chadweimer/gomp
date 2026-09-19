@@ -34,6 +34,10 @@ var ErrMissingID = errors.New("id is required")
 type Driver interface {
 	io.Closer
 
+	MigrateUp() error
+	MigrateDown() error
+	MigrateSteps(steps int) error
+
 	AppConfiguration() AppConfigurationDriver
 	Backups() BackupDriver
 	Links() LinkDriver
@@ -64,15 +68,9 @@ func CreateDriver(cfg Config) (Driver, error) {
 
 	switch driver {
 	case PostgresDriverName:
-		return openPostgres(
-			cfg.URL,
-			cfg.MigrationsTableName,
-			cfg.MigrationsForceVersion)
+		return openPostgres(cfg.URL)
 	case SQLiteDriverName:
-		return openSQLite(
-			cfg.URL,
-			cfg.MigrationsTableName,
-			cfg.MigrationsForceVersion)
+		return openSQLite(cfg.URL)
 	default:
 		return nil, fmt.Errorf("invalid DatabaseDriver '%s' specified", driver)
 	}
@@ -89,7 +87,7 @@ func getDbDriverFromURL(connectionURL url.URL) (string, error) {
 	}
 }
 
-func migrateDatabase(driver database.Driver, driverName string, migrationsForceVersion int) error {
+func migrateDatabase(driver database.Driver, driverName string, op func(*migrate.Migrate) error) error {
 	migrationPath := url.URL{
 		Scheme: "file",
 		Path:   filepath.Join("db", "migrations", driverName),
@@ -102,16 +100,7 @@ func migrateDatabase(driver database.Driver, driverName string, migrationsForceV
 		return err
 	}
 
-	if migrationsForceVersion > 0 {
-		err = m.Force(migrationsForceVersion)
-	} else {
-		err = m.Up()
-	}
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return err
-	}
-
-	return nil
+	return op(m)
 }
 
 // AppConfigurationDriver provides functionality to edit and retrieve application configuration.
@@ -172,7 +161,7 @@ type RecipeDriver interface {
 	Create(ctx context.Context, recipe *models.Recipe) error
 
 	// Read retrieves the information about the recipe from the database, if found.
-	// If no recipe exists with the specified ID, a NoRecordFound error is returned.
+	// If no recipe exists with the specified ID, a ErrNotFound error is returned.
 	Read(ctx context.Context, id int64) (*models.Recipe, error)
 
 	// Update stores the specified recipe in the database by updating the
@@ -213,7 +202,7 @@ type UserDriver interface {
 	Create(ctx context.Context, user *models.User, password string) error
 
 	// Read retrieves the information about the user from the database, if found.
-	// If no user exists with the specified ID, a NoRecordFound error is returned.
+	// If no user exists with the specified ID, a ErrNotFound error is returned.
 	Read(ctx context.Context, id int64) (*UserWithPasswordHash, error)
 
 	// Update stores the user in the database by updating the existing record with the specified
@@ -239,7 +228,7 @@ type UserSearchFilterDriver interface {
 	Create(ctx context.Context, filter *models.SavedSearchFilter) error
 
 	// Read retrieves the information about the search filter from the database, if found.
-	// If no filter exists with the specified ID, a NoRecordFound error is returned.
+	// If no filter exists with the specified ID, a ErrNotFound error is returned.
 	Read(ctx context.Context, userID int64, filterID int64) (*models.SavedSearchFilter, error)
 
 	// Update stores the filter in the database by updating the existing record with the specified
@@ -257,7 +246,7 @@ type UserSearchFilterDriver interface {
 // UserSettingsDriver provides functionality to edit and retrieve user settings.
 type UserSettingsDriver interface {
 	// Read retrieves the settings for the specified user from the database, if found.
-	// If no user exists with the specified ID, a NoRecordFound error is returned.
+	// If no user exists with the specified ID, a ErrNotFound error is returned.
 	Read(ctx context.Context, id int64) (*models.UserSettings, error)
 
 	// Update stores the specified user settings in the database by updating the
