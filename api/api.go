@@ -11,9 +11,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/infra"
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3filter"
-	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
 
 // ---- Begin Standard Errors ----
@@ -105,42 +102,4 @@ func addUserIDToContext(secureKeys []string) func(next http.Handler) http.Handle
 			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
-	return nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
-		Prefix:               routePrefix,
-		DoNotValidateServers: true,
-		Options: openapi3filter.Options{
-			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
-				// This shouldn't be called without a security scheme, but still double check
-				if input.SecurityScheme == nil {
-					return nil
-				}
-
-				userID, token, err := infra.IsAuthenticated(ctx, input.RequestValidationInput.Request, secureKeys)
-				if err != nil {
-					return input.NewError(err)
-				}
-
-				user, err := dbDriver.Read(ctx, *userID)
-				if err != nil {
-					if !errors.Is(err, db.ErrNotFound) {
-						infra.GetLoggerFromContext(ctx).Error("Error retrieving user info", "error", err)
-					}
-
-					return input.NewError(err)
-				}
-
-				// We know there are scopes because isAuthenticated would have returned an error if there were not
-				// revive:disable-next-line:unchecked-type-assertion
-				claims := token.Claims.(*infra.GompClaims)
-				if err := infra.CheckScopes(input.Scopes, &user.User, claims); err != nil {
-					return input.NewError(err)
-				}
-
-				return nil
-			},
-		},
-	})
 }

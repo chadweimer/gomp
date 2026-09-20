@@ -12,6 +12,8 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
@@ -176,6 +178,139 @@ func Test_Logout(t *testing.T) {
 	}
 	if !cookie.Expires.Before(time.Now()) {
 		t.Fatalf("expected expiration in the past, got: %s", cookie.Expires)
+	}
+}
+
+func Test_authenticationFunc(t *testing.T) {
+	type testArgs struct {
+		name                string
+		requiredScopes      []string
+		user                *models.User
+		dbError             error
+		tokenIncludesScopes bool
+		wantErr             bool
+	}
+
+	tests := []testArgs{
+		{
+			name:                "Admin access required, user is admin",
+			requiredScopes:      []string{string(models.Admin)},
+			user:                &models.User{ID: new(int64(1)), AccessLevel: models.Admin},
+			tokenIncludesScopes: true,
+		},
+		{
+			name:                "Admin access required, user is editor",
+			requiredScopes:      []string{string(models.Admin)},
+			user:                &models.User{ID: new(int64(2)), AccessLevel: models.Editor},
+			tokenIncludesScopes: true,
+			wantErr:             true,
+		},
+		{
+			name:                "Admin access required, user is viewer",
+			requiredScopes:      []string{string(models.Admin)},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
+			tokenIncludesScopes: true,
+			wantErr:             true,
+		},
+		{
+			name:                "Editor access required, user is admin",
+			requiredScopes:      []string{string(models.Editor)},
+			user:                &models.User{ID: new(int64(1)), AccessLevel: models.Admin},
+			tokenIncludesScopes: true,
+		},
+		{
+			name:                "Editor access required, user is editor",
+			requiredScopes:      []string{string(models.Editor)},
+			user:                &models.User{ID: new(int64(2)), AccessLevel: models.Editor},
+			tokenIncludesScopes: true,
+		},
+		{
+			name:                "Editor access required, user is viewer",
+			requiredScopes:      []string{string(models.Editor)},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
+			tokenIncludesScopes: true,
+			wantErr:             true,
+		},
+		{
+			name:                "Viewer access required, user is admin",
+			requiredScopes:      []string{string(models.Viewer)},
+			user:                &models.User{ID: new(int64(1)), AccessLevel: models.Admin},
+			tokenIncludesScopes: true,
+		},
+		{
+			name:                "Viewer access required, user is editor",
+			requiredScopes:      []string{string(models.Viewer)},
+			user:                &models.User{ID: new(int64(2)), AccessLevel: models.Editor},
+			tokenIncludesScopes: true,
+		},
+		{
+			name:                "Viewer access required, user is viewer",
+			requiredScopes:      []string{string(models.Viewer)},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
+			tokenIncludesScopes: true,
+		},
+		{
+			name:                "Viewer access required, user is viewer, token missing scopes",
+			requiredScopes:      []string{string(models.Viewer)},
+			user:                &models.User{ID: new(int64(3)), AccessLevel: models.Viewer},
+			tokenIncludesScopes: false,
+			wantErr:             true,
+		},
+		{
+			name:           "Viewer access required, no user",
+			requiredScopes: []string{string(models.Viewer)},
+			user:           nil,
+			wantErr:        true,
+		},
+		{
+			name:                "Database error when reading user",
+			requiredScopes:      []string{string(models.Viewer)},
+			user:                &models.User{ID: new(int64(4)), AccessLevel: models.Viewer},
+			tokenIncludesScopes: true,
+			dbError:             errors.New("database error"),
+			wantErr:             true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			_, userDriver := getMockUsersAPI(ctrl)
+			if test.user != nil && test.tokenIncludesScopes {
+				userDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&db.UserWithPasswordHash{User: *test.user}, test.dbError)
+			}
+
+			secureKeys := []string{"secure-key"}
+
+			req, _ := http.NewRequest("GET", "http://example.com", nil)
+			if test.user != nil {
+				var tokenStr string
+				if test.tokenIncludesScopes {
+					tokenStr, _, _ = infra.CreateToken(
+						*test.user.ID, infra.GetScopes(test.user.AccessLevel), secureKeys)
+				} else {
+					tokenStr, _, _ = infra.CreateToken(
+						*test.user.ID, []string{}, secureKeys)
+				}
+				req.AddCookie(&http.Cookie{Name: "auth_token", Value: tokenStr})
+			}
+
+			input := &openapi3filter.AuthenticationInput{
+				SecurityScheme: &openapi3.SecurityScheme{},
+				Scopes:         test.requiredScopes,
+				RequestValidationInput: &openapi3filter.RequestValidationInput{
+					Request: req,
+				},
+			}
+
+			err := authenticationFunc(t.Context(), input, secureKeys, userDriver)
+
+			if (err != nil) != test.wantErr {
+				t.Errorf("expected error: %v, got: %v", test.wantErr, err)
+			}
+		})
 	}
 }
 
