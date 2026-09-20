@@ -12,6 +12,9 @@ import (
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/middleware"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
+	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
 
 // ---- Begin Standard Errors ----
@@ -60,8 +63,11 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 			},
 		}),
 		StdHTTPServerOptions{
-			BaseURL:     routePrefix,
-			Middlewares: []MiddlewareFunc{middleware.VerifyAPIScopes(spec, routePrefix, h.secureKeys, h.db.Users())},
+			BaseURL: routePrefix,
+			Middlewares: []MiddlewareFunc{
+				addUserIDToContext(h.secureKeys, h.db.Users()),
+				verifyScopes(spec, routePrefix, h.secureKeys, h.db.Users()),
+			},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
@@ -87,4 +93,46 @@ func getResourceIDFromCtx(ctx context.Context, idKey infra.ContextKey) (int64, e
 	}
 
 	return 0, fmt.Errorf("value of %s is not an integer", idKey)
+}
+
+func addUserIDToContext(secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if user, _, err := middleware.IsAuthenticated(r.Context(), r, secureKeys, dbDriver); err == nil {
+				// Add the user's ID to the list of params
+				r = r.WithContext(context.WithValue(r.Context(), currentUserIDCtxKey, user.ID))
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+	return nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
+		Prefix:               routePrefix,
+		DoNotValidateServers: true,
+		Options: openapi3filter.Options{
+			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
+				// This shouldn't be called without a security scheme, but still double check
+				if input.SecurityScheme == nil {
+					return nil
+				}
+
+				user, token, err := middleware.IsAuthenticated(ctx, input.RequestValidationInput.Request, secureKeys, dbDriver)
+				if err != nil {
+					return input.NewError(err)
+				}
+
+				// We know there are scopes because isAuthenticated would have returned an error if there were not
+				// revive:disable-next-line:unchecked-type-assertion
+				claims := token.Claims.(*infra.GompClaims)
+				if err := infra.CheckScopes(input.Scopes, user, claims); err != nil {
+					return input.NewError(err)
+				}
+
+				return nil
+			},
+		},
+	})
 }

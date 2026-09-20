@@ -2,12 +2,15 @@ package infra
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
+	"reflect"
 	"strconv"
 	"time"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/samber/lo"
 )
 
 // GompClaims is the struct that represents the claims in the JWT token used for authentication and authorization in Gomp.
@@ -89,4 +92,28 @@ func GetScopes(accessLevel models.AccessLevel) []string {
 	}
 
 	return scopes
+}
+
+// CheckScopes verifies that the user has the required scopes.
+func CheckScopes(requiredScopes []string, user *models.User, claims *GompClaims) error {
+	// If the route requires scopes, check them
+	if len(requiredScopes) > 0 && (len(requiredScopes) != 1 || requiredScopes[0] != "") {
+		// If the user has been modified since issuing the token,
+		// we need to check if the scopes are still the same
+		if user.ModifiedAt != nil && claims.IssuedAt.Time.Before(*user.ModifiedAt) {
+			// If the scopes of the token don't match the latest scopes of the user,
+			// don't proceed. The client should refresh the token and try again.
+			userScopes := GetScopes(user.AccessLevel)
+			if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
+				return errors.New("user scopes have changed")
+			}
+		}
+
+		missingScopes, _ := lo.Difference(requiredScopes, claims.Scopes)
+		if len(missingScopes) > 0 {
+			return fmt.Errorf("missing scopes: %v", missingScopes)
+		}
+	}
+
+	return nil
 }
