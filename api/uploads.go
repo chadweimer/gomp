@@ -24,7 +24,7 @@ func (h apiHandler) Upload(_ context.Context, request UploadRequestObject) (Uplo
 
 	return Upload201Response{
 		Headers: Upload201ResponseHeaders{
-			Location: filepath.ToSlash(filepath.Join("/", imagePath)),
+			Location: new(filepath.ToSlash(filepath.Join("/", imagePath))),
 		},
 	}, nil
 }

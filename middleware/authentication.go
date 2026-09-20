@@ -11,7 +11,10 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/golang-jwt/jwt/v4"
+	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/samber/lo"
 )
 
@@ -26,6 +29,24 @@ var errMissingScopes = errors.New("token had no scopes")
 const currentUserIDCtxKey = infra.ContextKey("current-user-id")
 
 // ---- End Context Keys ----
+
+// CurrentUser is a middleware that checks if the user is authenticated and adds the user's ID to the request context.
+func CurrentUser(secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
+
+			user, _, err := isAuthenticated(ctx, r, secureKeys, dbDriver)
+			if err == nil {
+				// Add the user's ID to the list of params
+				ctx = context.WithValue(ctx, currentUserIDCtxKey, user.ID)
+				r = r.WithContext(ctx)
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
 
 // VerifyScopes is a middleware that checks if the user is authenticated and has the required scopes to access the route
 func VerifyScopes(requiredScopes []string, secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
@@ -43,10 +64,6 @@ func VerifyScopes(requiredScopes []string, secureKeys []string, dbDriver db.User
 				return
 			}
 
-			// Add the user's ID to the list of params
-			ctx = context.WithValue(ctx, currentUserIDCtxKey, user.ID)
-			r = r.WithContext(ctx)
-
 			// We know there are scopes because isAuthenticated would have returned an error if there were not
 			// revive:disable-next-line:unchecked-type-assertion
 			claims := token.Claims.(*infra.GompClaims)
@@ -58,6 +75,31 @@ func VerifyScopes(requiredScopes []string, secureKeys []string, dbDriver db.User
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// VerifyAPIScopes is a middleware that checks if the user is authenticated and has the required scopes to access the route
+func VerifyAPIScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+	return nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
+		Prefix:               routePrefix,
+		DoNotValidateServers: true,
+		Options: openapi3filter.Options{
+			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
+				user, token, err := isAuthenticated(ctx, input.RequestValidationInput.Request, secureKeys, dbDriver)
+				if err != nil {
+					return input.NewError(err)
+				}
+
+				// We know there are scopes because isAuthenticated would have returned an error if there were not
+				// revive:disable-next-line:unchecked-type-assertion
+				claims := token.Claims.(*infra.GompClaims)
+				if err := checkScopes(input.Scopes, user, claims); err != nil {
+					return input.NewError(err)
+				}
+
+				return nil
+			},
+		},
+	})
 }
 
 func isAuthenticated(ctx context.Context, r *http.Request, secureKeys []string, dbDriver db.UserDriver) (*models.User, *jwt.Token, error) {

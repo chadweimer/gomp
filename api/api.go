@@ -11,6 +11,7 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/infra"
+	"github.com/chadweimer/gomp/middleware"
 )
 
 // ---- Begin Standard Errors ----
@@ -41,6 +42,12 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 		db:         drDriver,
 	}
 
+	spec, err := GetSpec()
+	if err != nil {
+		panic(fmt.Sprintf("failed to get OpenAPI spec: %v", err))
+	}
+	routePrefix := "/v1"
+
 	return HandlerWithOptions(NewStrictHandlerWithOptions(
 		h,
 		[]StrictMiddlewareFunc{},
@@ -53,8 +60,8 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 			},
 		}),
 		StdHTTPServerOptions{
-			BaseURL:     "/v1",
-			Middlewares: []MiddlewareFunc{h.checkScopes},
+			BaseURL:     routePrefix,
+			Middlewares: []MiddlewareFunc{middleware.VerifyAPIScopes(spec, routePrefix, h.secureKeys, h.db.Users())},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},

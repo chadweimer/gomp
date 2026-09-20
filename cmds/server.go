@@ -72,6 +72,7 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			mux,
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
 			middleware.Recover("Recovered from panic"),
+			middleware.CurrentUser(cfg.Server.SecureKeys, dbDriver.Users()),
 		)
 
 		// subscribe to SIGINT signals

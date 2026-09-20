@@ -163,8 +163,10 @@ func Test_Logout(t *testing.T) {
 		t.Fatalf("invalid response: %v", resp)
 	}
 
-	cookieStr := got.Headers.SetCookie
-	cookie, err := http.ParseSetCookie(cookieStr)
+	if got.Headers.SetCookie == nil {
+		t.Fatal("cookie string is nil")
+	}
+	cookie, err := http.ParseSetCookie(*got.Headers.SetCookie)
 	if err != nil {
 		t.Fatalf("failed to parse cookie: %v", err)
 	}
@@ -177,8 +179,12 @@ func Test_Logout(t *testing.T) {
 	}
 }
 
-func checkToken(cookieStr string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
-	cookie, err := http.ParseSetCookie(cookieStr)
+func checkToken(cookieStr *string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel) error {
+	if cookieStr == nil {
+		return errors.New("cookie string is nil")
+	}
+
+	cookie, err := http.ParseSetCookie(*cookieStr)
 	if err != nil {
 		return fmt.Errorf("failed to parse cookie: %w", err)
 	}

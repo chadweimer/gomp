@@ -51,7 +51,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 
 	return CreateBackup201Response{
 		Headers: CreateBackup201ResponseHeaders{
-			Location: filepath.ToSlash(filepath.Join("/", backupFilePath)),
+			Location: new(filepath.ToSlash(filepath.Join("/", backupFilePath))),
 		},
 	}, nil
 }

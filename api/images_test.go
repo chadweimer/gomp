@@ -218,7 +218,7 @@ func Test_UploadImage(t *testing.T) {
 					if !ok {
 						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
-					if got.Headers.Location == "" {
+					if got.Headers.Location == nil {
 						t.Error("expected non-empty Location header")
 					}
 				case UploadImage404Response:
