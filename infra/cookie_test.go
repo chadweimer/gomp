@@ -88,13 +88,15 @@ func Test_IsAuthenticated(t *testing.T) {
 		name          string
 		includeCookie bool
 		cookieName    string
+		invalidToken  bool
 		expectError   bool
 	}
 
 	tests := []testArgs{
-		{"Valid cookie and user exists", true, "auth_token", false},
-		{"Invalid cookie name", true, "invalid-name", true},
-		{"No cookie provided", false, "", true},
+		{"Valid cookie and user exists", true, "auth_token", false, false},
+		{"Invalid cookie name", true, "invalid-name", false, true},
+		{"No cookie provided", false, "", false, true},
+		{"Invalid token", true, "auth_token", true, true},
 	}
 
 	for _, test := range tests {
@@ -109,11 +111,16 @@ func Test_IsAuthenticated(t *testing.T) {
 				AccessLevel: models.Admin,
 			}
 
-			secureKeys := []string{"secure-key"}
+			secureKeys := []string{"secure-key1", "secure-key2"}
 
 			req, _ := http.NewRequest("GET", "http://example.com", nil)
 			if test.includeCookie {
-				tokenStr, _, _ := CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), secureKeys)
+				var tokenStr string
+				if test.invalidToken {
+					tokenStr = "invalid-token"
+				} else {
+					tokenStr, _, _ = CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), secureKeys)
+				}
 				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
 			}
 

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,6 +18,7 @@ func Test_VerifyScopes(t *testing.T) {
 		name                string
 		requiredScopes      []string
 		user                *models.User
+		dbError             error
 		tokenIncludesScopes bool
 		expectStatus        int
 	}
@@ -98,6 +100,14 @@ func Test_VerifyScopes(t *testing.T) {
 			user:           nil,
 			expectStatus:   http.StatusUnauthorized,
 		},
+		{
+			name:                "Database error when reading user",
+			requiredScopes:      []string{string(models.Viewer)},
+			user:                &models.User{ID: new(int64(4)), AccessLevel: models.Viewer},
+			tokenIncludesScopes: true,
+			dbError:             errors.New("database error"),
+			expectStatus:        http.StatusUnauthorized,
+		},
 	}
 
 	for _, test := range tests {
@@ -107,7 +117,7 @@ func Test_VerifyScopes(t *testing.T) {
 
 			userDriver := getMockUsersAPI(ctrl)
 			if test.user != nil && test.tokenIncludesScopes {
-				userDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&db.UserWithPasswordHash{User: *test.user}, nil)
+				userDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&db.UserWithPasswordHash{User: *test.user}, test.dbError)
 			}
 
 			secureKeys := []string{"secure-key"}
