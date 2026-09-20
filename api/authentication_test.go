@@ -12,8 +12,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
-	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
@@ -297,15 +295,7 @@ func Test_checkScopes(t *testing.T) {
 				req.AddCookie(&http.Cookie{Name: "auth_token", Value: tokenStr})
 			}
 
-			input := &openapi3filter.AuthenticationInput{
-				SecurityScheme: &openapi3.SecurityScheme{},
-				Scopes:         test.requiredScopes,
-				RequestValidationInput: &openapi3filter.RequestValidationInput{
-					Request: req,
-				},
-			}
-
-			err := checkScopes(t.Context(), input, secureKeys, userDriver)
+			err := checkScopes(t.Context(), req, test.requiredScopes, secureKeys, userDriver)
 
 			if (err != nil) != test.wantErr {
 				t.Errorf("expected error: %v, got: %v", test.wantErr, err)

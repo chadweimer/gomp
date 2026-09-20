@@ -84,21 +84,25 @@ func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbD
 		DoNotValidateServers: true,
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
-				return checkScopes(ctx, input, secureKeys, dbDriver)
+				// This shouldn't be called without a security scheme, but still double check
+				if input.SecurityScheme == nil {
+					return nil
+				}
+
+				if err := checkScopes(ctx, input.RequestValidationInput.Request, input.Scopes, secureKeys, dbDriver); err != nil {
+					return input.NewError(err)
+				}
+
+				return nil
 			},
 		},
 	})
 }
 
-func checkScopes(ctx context.Context, input *openapi3filter.AuthenticationInput, secureKeys []string, dbDriver db.UserDriver) error {
-	// This shouldn't be called without a security scheme, but still double check
-	if input.SecurityScheme == nil {
-		return nil
-	}
-
-	userID, token, err := infra.IsAuthenticated(ctx, input.RequestValidationInput.Request, secureKeys)
+func checkScopes(ctx context.Context, r *http.Request, requiredScopes, secureKeys []string, dbDriver db.UserDriver) error {
+	userID, token, err := infra.IsAuthenticated(ctx, r, secureKeys)
 	if err != nil {
-		return input.NewError(err)
+		return err
 	}
 
 	user, err := dbDriver.Read(ctx, *userID)
@@ -107,15 +111,11 @@ func checkScopes(ctx context.Context, input *openapi3filter.AuthenticationInput,
 			infra.GetLoggerFromContext(ctx).Error("Error retrieving user info", "error", err)
 		}
 
-		return input.NewError(err)
+		return err
 	}
 
 	// We know there are scopes because isAuthenticated would have returned an error if there were not
 	// revive:disable-next-line:unchecked-type-assertion
 	claims := token.Claims.(*infra.GompClaims)
-	if err := infra.CheckScopes(input.Scopes, &user.User, claims); err != nil {
-		return input.NewError(err)
-	}
-
-	return nil
+	return infra.CheckScopes(requiredScopes, &user.User, claims)
 }
