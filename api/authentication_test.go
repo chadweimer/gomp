@@ -181,7 +181,7 @@ func Test_Logout(t *testing.T) {
 	}
 }
 
-func Test_authenticationFunc(t *testing.T) {
+func Test_checkScopes(t *testing.T) {
 	type testArgs struct {
 		name                string
 		requiredScopes      []string
@@ -305,7 +305,7 @@ func Test_authenticationFunc(t *testing.T) {
 				},
 			}
 
-			err := authenticationFunc(t.Context(), input, secureKeys, userDriver)
+			err := checkScopes(t.Context(), input, secureKeys, userDriver)
 
 			if (err != nil) != test.wantErr {
 				t.Errorf("expected error: %v, got: %v", test.wantErr, err)

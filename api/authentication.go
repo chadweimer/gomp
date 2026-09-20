@@ -84,13 +84,13 @@ func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbD
 		DoNotValidateServers: true,
 		Options: openapi3filter.Options{
 			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
-				return authenticationFunc(ctx, input, secureKeys, dbDriver)
+				return checkScopes(ctx, input, secureKeys, dbDriver)
 			},
 		},
 	})
 }
 
-func authenticationFunc(ctx context.Context, input *openapi3filter.AuthenticationInput, secureKeys []string, dbDriver db.UserDriver) error {
+func checkScopes(ctx context.Context, input *openapi3filter.AuthenticationInput, secureKeys []string, dbDriver db.UserDriver) error {
 	// This shouldn't be called without a security scheme, but still double check
 	if input.SecurityScheme == nil {
 		return nil
