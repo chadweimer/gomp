@@ -13,6 +13,13 @@ import (
 	"github.com/samber/lo"
 )
 
+// ---- Begin Standard Errors ----
+
+// ErrMissingScopes is returned when a token does not have any scopes.
+var ErrMissingScopes = errors.New("token had no scopes")
+
+// ---- End Standard Errors ----
+
 // GompClaims is the struct that represents the claims in the JWT token used for authentication and authorization in Gomp.
 // It includes the standard registered claims as well as a custom "Scopes" claim that lists the scopes associated with the token.
 type GompClaims struct {

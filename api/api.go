@@ -11,7 +11,6 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/infra"
-	"github.com/chadweimer/gomp/middleware"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
@@ -37,7 +36,7 @@ type apiHandler struct {
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) (http.Handler, error) {
 	h := apiHandler{
 		secureKeys: secureKeys,
 		fs:         fs,
@@ -47,7 +46,7 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 
 	spec, err := GetSpec()
 	if err != nil {
-		panic(fmt.Sprintf("failed to get OpenAPI spec: %v", err))
+		return nil, fmt.Errorf("failed to get OpenAPI spec: %v", err)
 	}
 	routePrefix := "/v1"
 
@@ -65,13 +64,13 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 		StdHTTPServerOptions{
 			BaseURL: routePrefix,
 			Middlewares: []MiddlewareFunc{
-				addUserIDToContext(h.secureKeys, h.db.Users()),
+				addUserIDToContext(h.secureKeys),
 				verifyScopes(spec, routePrefix, h.secureKeys, h.db.Users()),
 			},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
-		})
+		}), nil
 }
 
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
@@ -95,12 +94,12 @@ func getResourceIDFromCtx(ctx context.Context, idKey infra.ContextKey) (int64, e
 	return 0, fmt.Errorf("value of %s is not an integer", idKey)
 }
 
-func addUserIDToContext(secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+func addUserIDToContext(secureKeys []string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if user, _, err := middleware.IsAuthenticated(r.Context(), r, secureKeys, dbDriver); err == nil {
+			if userID, _, err := infra.IsAuthenticated(r.Context(), r, secureKeys); err == nil {
 				// Add the user's ID to the list of params
-				r = r.WithContext(context.WithValue(r.Context(), currentUserIDCtxKey, user.ID))
+				r = r.WithContext(context.WithValue(r.Context(), currentUserIDCtxKey, *userID))
 			}
 
 			next.ServeHTTP(w, r)
@@ -119,15 +118,24 @@ func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbD
 					return nil
 				}
 
-				user, token, err := middleware.IsAuthenticated(ctx, input.RequestValidationInput.Request, secureKeys, dbDriver)
+				userID, token, err := infra.IsAuthenticated(ctx, input.RequestValidationInput.Request, secureKeys)
 				if err != nil {
+					return input.NewError(err)
+				}
+
+				user, err := dbDriver.Read(ctx, *userID)
+				if err != nil {
+					if !errors.Is(err, db.ErrNotFound) {
+						infra.GetLoggerFromContext(ctx).Error("Error retrieving user info", "error", err)
+					}
+
 					return input.NewError(err)
 				}
 
 				// We know there are scopes because isAuthenticated would have returned an error if there were not
 				// revive:disable-next-line:unchecked-type-assertion
 				claims := token.Claims.(*infra.GompClaims)
-				if err := infra.CheckScopes(input.Scopes, user, claims); err != nil {
+				if err := infra.CheckScopes(input.Scopes, &user.User, claims); err != nil {
 					return input.NewError(err)
 				}
 

@@ -140,68 +140,6 @@ func Test_VerifyScopes(t *testing.T) {
 	}
 }
 
-func Test_IsAuthenticated(t *testing.T) {
-	type testArgs struct {
-		name          string
-		includeCookie bool
-		cookieName    string
-		userExists    bool
-		expectError   bool
-	}
-
-	tests := []testArgs{
-		{"Valid cookie and user exists", true, "auth_token", true, false},
-		{"Invalid cookie name", true, "invalid-name", true, true},
-		{"Valid cookie but user does not exist", true, "auth_token", false, true},
-		{"No cookie provided", false, "", true, true},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			expectedUserID := int64(1)
-			expectedUser := db.UserWithPasswordHash{
-				User: models.User{
-					ID:          &expectedUserID,
-					AccessLevel: models.Admin,
-				},
-			}
-			userDriver := getMockUsersAPI(ctrl)
-			if test.userExists {
-				userDriver.EXPECT().Read(t.Context(), gomock.Any()).AnyTimes().Return(&expectedUser, nil)
-			} else {
-				userDriver.EXPECT().Read(t.Context(), gomock.Any()).AnyTimes().Return(nil, db.ErrNotFound)
-			}
-
-			secureKeys := []string{"secure-key"}
-
-			req, _ := http.NewRequest("GET", "http://example.com", nil)
-			if test.includeCookie {
-				tokenStr, _, _ := infra.CreateToken(*expectedUser.ID, infra.GetScopes(expectedUser.AccessLevel), secureKeys)
-				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
-			}
-
-			// Act
-			user, token, err := IsAuthenticated(t.Context(), req, secureKeys, userDriver)
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			} else if err == nil {
-				if user.ID == nil || *user.ID != expectedUserID {
-					t.Errorf("expected user ID: %v, received user ID: %v", expectedUserID, user.ID)
-				}
-				if token == nil {
-					t.Error("expected token to be returned, got nil")
-				}
-			}
-		})
-	}
-}
-
 func getMockUsersAPI(ctrl *gomock.Controller) *dbmock.MockUserDriver {
 	dbDriver := dbmock.NewMockDriver(ctrl)
 	userDriver := dbmock.NewMockUserDriver(ctrl)

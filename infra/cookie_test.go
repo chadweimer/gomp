@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/chadweimer/gomp/models"
+	"go.uber.org/mock/gomock"
 )
 
 func TestCreateAuthCookie(t *testing.T) {
@@ -75,6 +78,58 @@ func TestGetAuthCookieFromRequest(t *testing.T) {
 			}
 			if cookie != nil && cookie.Value != test.expectedValue {
 				t.Errorf("expected cookie value %s, got %s", test.expectedValue, cookie.Value)
+			}
+		})
+	}
+}
+
+func Test_IsAuthenticated(t *testing.T) {
+	type testArgs struct {
+		name          string
+		includeCookie bool
+		cookieName    string
+		expectError   bool
+	}
+
+	tests := []testArgs{
+		{"Valid cookie and user exists", true, "auth_token", false},
+		{"Invalid cookie name", true, "invalid-name", true},
+		{"No cookie provided", false, "", true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			// Arrange
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			expectedUserID := int64(1)
+			expectedUser := models.User{
+				ID:          &expectedUserID,
+				AccessLevel: models.Admin,
+			}
+
+			secureKeys := []string{"secure-key"}
+
+			req, _ := http.NewRequest("GET", "http://example.com", nil)
+			if test.includeCookie {
+				tokenStr, _, _ := CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), secureKeys)
+				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
+			}
+
+			// Act
+			userID, token, err := IsAuthenticated(t.Context(), req, secureKeys)
+
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
+			} else if err == nil {
+				if userID == nil || *userID != expectedUserID {
+					t.Errorf("expected user ID: %v, received user ID: %v", expectedUserID, userID)
+				}
+				if token == nil {
+					t.Error("expected token to be returned, got nil")
+				}
 			}
 		})
 	}
