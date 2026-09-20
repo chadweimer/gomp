@@ -52,7 +52,7 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 
 	return UploadImage201Response{
 		Headers: UploadImage201ResponseHeaders{
-			Location: res.URL,
+			Location: &res.URL,
 		},
 	}, nil
 }

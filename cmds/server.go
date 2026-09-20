@@ -61,13 +61,17 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			return fmt.Errorf("opening base assets path: %w", err)
 		}
 
-		mux := createMux(
+		mux, err := createMux(
 			cfg.Server.SecureKeys,
 			uploader,
 			dbDriver,
 			fsDriver,
 			baseAssetsRoot.FS(),
 		)
+		if err != nil {
+			return fmt.Errorf("creating mux: %w", err)
+		}
+
 		r := middleware.Wrap(
 			mux,
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
@@ -92,7 +96,7 @@ func createMux(
 	uploader *fileaccess.ImageUploader,
 	dbDriver db.Driver,
 	fsDriver fileaccess.Driver,
-	assetsFS fs.FS) *http.ServeMux {
+	assetsFS fs.FS) (*http.ServeMux, error) {
 	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
 		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
 	}
@@ -100,10 +104,15 @@ func createMux(
 		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 	}
 
+	apiHandler, err := api.NewHandler(secureKeys, uploader, dbDriver, fsDriver)
+	if err != nil {
+		return nil, fmt.Errorf("creating API handler: %w", err)
+	}
+
 	fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
 
 	mux := http.NewServeMux()
-	handlePrefixStripped(mux, "api", api.NewHandler(secureKeys, uploader, dbDriver, fsDriver))
+	handlePrefixStripped(mux, "api", apiHandler)
 	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(assetsFS)))
 	// Uploaded files require authentication
 	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
@@ -114,7 +123,7 @@ func createMux(
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, assetsFS, "index.html")
 	}))
-	return mux
+	return mux, nil
 }
 
 func listenAndServe(ctx context.Context, srv httpServer) error {

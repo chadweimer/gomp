@@ -206,7 +206,7 @@ func Test_createMux(t *testing.T) {
 			resp := httptest.NewRecorder()
 
 			// Act
-			mux := createMux(tt.secureKeys, uploader, dbDriver, uplDriver, tt.assetsFS)
+			mux, _ := createMux(tt.secureKeys, uploader, dbDriver, uplDriver, tt.assetsFS)
 			mux.ServeHTTP(resp, req)
 
 			// Assert

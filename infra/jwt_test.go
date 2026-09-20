@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"testing"
+	"time"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
@@ -64,6 +65,83 @@ func Test_GetUserIdFromClaims(t *testing.T) {
 			}
 			if actualID != test.expectedID {
 				t.Errorf("expected id: %d, actual id: %d", test.expectedID, actualID)
+			}
+		})
+	}
+}
+
+func Test_CheckScopes(t *testing.T) {
+	type testArgs struct {
+		routeScopes []string
+		accessLevel models.AccessLevel
+		expectError bool
+	}
+
+	tests := []testArgs{
+		{[]string{string(models.Admin)}, models.Admin, false},
+		{[]string{string(models.Admin)}, models.Editor, true},
+		{[]string{string(models.Admin)}, models.Viewer, true},
+		{[]string{string(models.Editor)}, models.Admin, false},
+		{[]string{string(models.Editor)}, models.Editor, false},
+		{[]string{string(models.Editor)}, models.Viewer, true},
+		{[]string{string(models.Viewer)}, models.Admin, false},
+		{[]string{string(models.Viewer)}, models.Editor, false},
+		{[]string{string(models.Viewer)}, models.Viewer, false},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			now := time.Now()
+			user := models.User{AccessLevel: test.accessLevel, ModifiedAt: &now}
+			claims := GompClaims{
+				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, 1))},
+				Scopes:           GetScopes(test.accessLevel),
+			}
+
+			// Act
+			err := CheckScopes(test.routeScopes, &user, &claims)
+
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
+			}
+		})
+	}
+}
+
+func Test_CheckScopes_UserUpdated(t *testing.T) {
+	type testArgs struct {
+		routeScopes    []string
+		issuedAtDelta  int
+		accessLevel    models.AccessLevel
+		newAccessLevel models.AccessLevel
+		expectError    bool
+	}
+
+	tests := []testArgs{
+		{[]string{string(models.Editor)}, 1, models.Admin, models.Admin, false},
+		{[]string{string(models.Editor)}, 1, models.Admin, models.Editor, false},
+		{[]string{string(models.Editor)}, -1, models.Admin, models.Admin, false},
+		{[]string{string(models.Editor)}, -1, models.Admin, models.Editor, true},
+	}
+
+	for i, test := range tests {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			// Arrange
+			now := time.Now()
+			user := models.User{AccessLevel: test.newAccessLevel, ModifiedAt: &now}
+			claims := GompClaims{
+				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, test.issuedAtDelta))},
+				Scopes:           GetScopes(test.accessLevel),
+			}
+
+			// Act
+			err := CheckScopes(test.routeScopes, &user, &claims)
+
+			// Assert
+			if (err != nil) != test.expectError {
+				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
 			}
 		})
 	}

@@ -2,11 +2,15 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
-	"github.com/chadweimer/gomp/middleware"
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/getkin/kin-openapi/openapi3filter"
+	nethttpmiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
 
 func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (LoginResponseObject, error) {
@@ -27,7 +31,7 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 			User: *user,
 		},
 		Headers: Login200ResponseHeaders{
-			SetCookie: infra.CreateAuthCookie(tokenStr, *expiresAt).String(),
+			SetCookie: new(infra.CreateAuthCookie(tokenStr, *expiresAt).String()),
 		},
 	}, nil
 }
@@ -50,7 +54,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 				User: user.User,
 			},
 			Headers: RefreshToken200ResponseHeaders{
-				SetCookie: infra.CreateAuthCookie(tokenStr, *expiresAt).String(),
+				SetCookie: new(infra.CreateAuthCookie(tokenStr, *expiresAt).String()),
 			},
 		}, nil
 	})
@@ -59,20 +63,9 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 func (apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutResponseObject, error) {
 	return Logout204Response{
 		Headers: Logout204ResponseHeaders{
-			SetCookie: infra.CreateAuthCookie("", time.Now().Add(-1*time.Hour)).String(),
+			SetCookie: new(infra.CreateAuthCookie("", time.Now().Add(-1*time.Hour)).String()),
 		},
 	}, nil
-}
-
-func (h apiHandler) checkScopes(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		routeScopes, ok := r.Context().Value(CookieScopes).([]string)
-		if ok {
-			next = middleware.VerifyScopes(routeScopes, h.secureKeys, h.db.Users())(next)
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
 
 func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TResponse, do func(userID int64) (TResponse, error)) (TResponse, error) {
@@ -83,4 +76,46 @@ func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TRe
 	}
 
 	return do(userID)
+}
+
+func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+	return nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
+		Prefix:               routePrefix,
+		DoNotValidateServers: true,
+		Options: openapi3filter.Options{
+			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
+				// This shouldn't be called without a security scheme, but still double check
+				if input.SecurityScheme == nil {
+					return nil
+				}
+
+				if err := checkScopes(ctx, input.RequestValidationInput.Request, input.Scopes, secureKeys, dbDriver); err != nil {
+					return input.NewError(err)
+				}
+
+				return nil
+			},
+		},
+	})
+}
+
+func checkScopes(ctx context.Context, r *http.Request, requiredScopes, secureKeys []string, dbDriver db.UserDriver) error {
+	userID, token, err := infra.IsAuthenticated(ctx, r, secureKeys)
+	if err != nil {
+		return err
+	}
+
+	user, err := dbDriver.Read(ctx, *userID)
+	if err != nil {
+		if !errors.Is(err, db.ErrNotFound) {
+			infra.GetLoggerFromContext(ctx).Error("Error retrieving user info", "error", err)
+		}
+
+		return err
+	}
+
+	// We know there are scopes because isAuthenticated would have returned an error if there were not
+	// revive:disable-next-line:unchecked-type-assertion
+	claims := token.Claims.(*infra.GompClaims)
+	return infra.CheckScopes(requiredScopes, &user.User, claims)
 }

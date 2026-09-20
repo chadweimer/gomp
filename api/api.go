@@ -33,13 +33,19 @@ type apiHandler struct {
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) http.Handler {
+func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) (http.Handler, error) {
 	h := apiHandler{
 		secureKeys: secureKeys,
 		fs:         fs,
 		upl:        upl,
 		db:         drDriver,
 	}
+
+	spec, err := GetSpec()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get OpenAPI spec: %v", err)
+	}
+	routePrefix := "/v1"
 
 	return HandlerWithOptions(NewStrictHandlerWithOptions(
 		h,
@@ -53,12 +59,15 @@ func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.
 			},
 		}),
 		StdHTTPServerOptions{
-			BaseURL:     "/v1",
-			Middlewares: []MiddlewareFunc{h.checkScopes},
+			BaseURL: routePrefix,
+			Middlewares: []MiddlewareFunc{
+				addUserIDToContext(h.secureKeys),
+				verifyScopes(spec, routePrefix, h.secureKeys, h.db.Users()),
+			},
 			ErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
 				writeErrorResponse(w, r, http.StatusBadRequest, err)
 			},
-		})
+		}), nil
 }
 
 func writeErrorResponse(w http.ResponseWriter, r *http.Request, status int, err error) {
@@ -80,4 +89,17 @@ func getResourceIDFromCtx(ctx context.Context, idKey infra.ContextKey) (int64, e
 	}
 
 	return 0, fmt.Errorf("value of %s is not an integer", idKey)
+}
+
+func addUserIDToContext(secureKeys []string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if userID, _, err := infra.IsAuthenticated(r.Context(), r, secureKeys); err == nil {
+				// Add the user's ID to the list of params
+				r = r.WithContext(context.WithValue(r.Context(), currentUserIDCtxKey, *userID))
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

@@ -1,7 +1,8 @@
 package: models
 generate:
   models: true
+  embedded-spec: true
 output-options:
   skip-prune: true
-  name-normalizer: "ToCamelCaseWithInitialisms"
+  name-normalizer: 'ToCamelCaseWithInitialisms'
 output: models.gen.go
