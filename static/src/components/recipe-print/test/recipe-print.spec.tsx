@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Recipe, RecipeState } from '../../../generated';
+import { Recipe, RecipeState } from '../../../api/schema.gen';
 import '../recipe-print';
 
 describe('recipe-print', () => {

@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
-import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../generated';
+import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../api/schema.gen';
 import { performRecipeSearch } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 

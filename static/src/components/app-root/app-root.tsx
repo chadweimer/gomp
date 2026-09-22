@@ -1,11 +1,10 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
 import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
-import { AccessLevel, SearchFilter } from '../../generated';
-import { appApi, refreshSearchResults } from '../../helpers/api';
+import { AccessLevel, SearchFilter } from '../../api/schema.gen';
+import { apiClient, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
-import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState } from '../../stores/state';
+import state, { clearState, getDefaultSearchFilter } from '../../stores/state';
 import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 
 @Component({
@@ -55,9 +54,8 @@ export class AppRoot {
       const response = await originalFetch(input, init);
       if (response.status === 401) {
         // Make sure we don't recursively call ourselves if the logout also triggers a 401
-        const logoutOptions = await appApi.logoutRequestOpts();
         const url = input instanceof Request ? input.url : input.toString();
-        if (!url.endsWith(logoutOptions.path) || init?.method !== logoutOptions.method) {
+        if (!url.endsWith('/auth') || init?.method?.toLowerCase() !== 'delete') {
           await this.logout();
         }
       }
@@ -243,8 +241,18 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      appConfig.info = await appApi.getInfo();
-      appConfig.config = await appApi.getConfiguration();
+      const { data: info, error: infoError } = await apiClient.GET('/app/info');
+      if (infoError || !info) {
+        throw new Error('Failed to load app info');
+      }
+
+      const { data: config, error: configError } = await apiClient.GET('/app/configuration');
+      if (configError || !config) {
+        throw new Error('Failed to load app configuration');
+      }
+
+      appConfig.info = info;
+      appConfig.config = config;
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
@@ -262,7 +270,7 @@ export class AppRoot {
 
   private async logout() {
     clearState();
-    await appApi.logout();
+    await apiClient.DELETE('/auth');
     await redirect('/login');
   }
 

@@ -1,8 +1,8 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../generated';
-import { loadSearchFilters, loadUserSettings, usersApi } from '../../helpers/api';
+import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../api/schema.gen';
+import { apiClient, loadSearchFilters, loadUserSettings } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
-import { getDefaultSearchFilter } from '../../models';
+import { getDefaultSearchFilter } from '../../stores/state';
 
 @Component({
   tag: 'search-filter-editor',
@@ -157,9 +157,18 @@ export class SearchFilterEditor {
     }
 
     try {
-      this.searchFilter = await usersApi.getSearchFilter({
-        filterId: this.selectedFilterId
+      const { data: filter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+        params: {
+          path: {
+            filterId: this.selectedFilterId
+          }
+        }
       });
+
+      if (error || !filter) {
+        throw new Error('Failed to load search filter');
+      }
+      this.searchFilter = filter;
       this.selectedFilterId = null;
     } catch (ex) {
       console.error(ex);

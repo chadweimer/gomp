@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { User } from '../../../generated';
-import { usersApi } from '../../../helpers/api';
+import { User } from '../../../api/schema.gen';
+import { apiClient } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -57,7 +57,13 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async loadUsers() {
     try {
-      this.users = await usersApi.getAllUsers();
+      const { data: users, error } = await apiClient.GET('/users');
+
+      if (error || !users) {
+        throw new Error('Failed to load users.');
+      }
+
+      this.users = users;
     } catch (ex) {
       console.error(ex);
     }
@@ -65,7 +71,13 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async saveNewUser(user: User, password: string) {
     try {
-      await usersApi.addUser({ user: { ...user, password } });
+      const { error } = await apiClient.POST('/users', {
+        body: { ...user, password }
+      });
+
+      if (error) {
+        throw new Error('Failed to create new user.');
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create new user.');
@@ -78,10 +90,14 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         throw new Error('Cannot save user: user ID is null.');
       }
 
-      await usersApi.saveUser({
-        userId: user.id,
-        user: user
+      const { error } = await apiClient.PUT('/users/{userId}', {
+        params: { path: { userId: user.id } },
+        body: user
       });
+
+      if (error) {
+        throw new Error('Failed to save user.');
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save user.');
@@ -94,7 +110,13 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         throw new Error('Cannot delete user: user ID is null.');
       }
 
-      await usersApi.deleteUser({ userId: user.id });
+      const { error } = await apiClient.DELETE('/users/{userId}', {
+        params: { path: { userId: user.id } }
+      });
+
+      if (error) {
+        throw new Error('Failed to delete user.');
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete user.');

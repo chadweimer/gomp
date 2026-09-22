@@ -1,6 +1,6 @@
 import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
 import DOMPurify from 'dompurify';
-import { AccessLevel, User, YesNoAny } from '../generated';
+import { AccessLevel, User, YesNoAny } from '../api/schema.gen';
 import { SwipeDirection } from '../models';
 
 export interface ComponentWithActivatedCallback {
@@ -15,10 +15,15 @@ export function isNullOrEmpty(val: string | null | undefined): val is '' | null 
   return isNull(val) || val === '';
 }
 
-export function formatDate(date: Date | null | undefined) {
+export function formatDate(date: string | Date | null | undefined) {
   if (isNull(date)) {
     return '';
   }
+
+  if (typeof date === 'string') {
+    date = new Date(date);
+  }
+
   const userLocale = navigator.languages?.length > 0
     ? navigator.languages[0]
     : navigator.language;

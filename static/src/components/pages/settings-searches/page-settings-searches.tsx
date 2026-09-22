@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
-import { loadSearchFilters, usersApi } from '../../../helpers/api';
+import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../api/schema.gen';
+import { apiClient, loadSearchFilters } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -60,26 +60,25 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   }
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
-    try {
-      await usersApi.addSearchFilter({ searchFilter });
-    } catch (ex) {
-      console.error(ex);
+    const { error } = await apiClient.POST('/users/current/filters', {
+      body: searchFilter
+    });
+
+    if (error) {
       await showToast('Failed to create search filter.');
     }
   }
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
-    try {
-      if (isNull(searchFilter.id)) {
-        throw new Error('Cannot save search filter: filter ID is null.');
-      }
+    if (isNull(searchFilter.id)) {
+      throw new Error('Cannot save search filter: filter ID is null.');
+    }
+    const { error } = await apiClient.PUT('/users/current/filters/{filterId}', {
+      params: { path: { filterId: searchFilter.id } },
+      body: searchFilter
+    });
 
-      await usersApi.saveSearchFilter({
-        filterId: searchFilter.id,
-        searchFilter: searchFilter
-      });
-    } catch (ex) {
-      console.error(ex);
+    if (error) {
       await showToast('Failed to save search filter.');
     }
   }
@@ -89,10 +88,11 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       return;
     }
 
-    try {
-      await usersApi.deleteSearchFilter({ filterId: id });
-    } catch (ex) {
-      console.error(ex);
+    const { error } = await apiClient.DELETE('/users/current/filters/{filterId}', {
+      params: { path: { filterId: id } }
+    });
+
+    if (error) {
       await showToast('Failed to delete search filter.');
     }
   }
@@ -125,7 +125,13 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     await enableBackForOverlay(async () => {
-      const searchFilter = await usersApi.getSearchFilter({ filterId: id });
+      const { data: searchFilter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+        params: { path: { filterId: id } }
+      });
+
+      if (error || !searchFilter) {
+        return;
+      }
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
@@ -178,7 +184,15 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     try {
-      state.searchFilter = await usersApi.getSearchFilter({ filterId: id });
+      const { data: searchFilter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+        params: { path: { filterId: id } }
+      });
+
+      if (error || !searchFilter) {
+        return;
+      }
+
+      state.searchFilter = searchFilter;
       await redirect('/recipes');
     } catch (ex) {
       console.error(ex);

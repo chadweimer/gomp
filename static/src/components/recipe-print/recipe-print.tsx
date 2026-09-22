@@ -1,5 +1,5 @@
 import { Component, h, Host, Prop } from '@stencil/core';
-import { Recipe } from '../../generated';
+import { Recipe } from '../../api/schema.gen';
 import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({

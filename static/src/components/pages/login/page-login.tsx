@@ -1,5 +1,5 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { appApi } from '../../../helpers/api';
+import { apiClient } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -65,10 +65,16 @@ export class PageLogin {
       this.errorMessage = '';
       const username = this.usernameInput.value as string;
       const password = this.passwordInput.value as string;
-      const { user } = await appApi.login({ credentials: { username, password } });
+      const { data: user, error } = await apiClient.POST('/auth', {
+        body: { username, password }
+      });
+
+      if (error || !user) {
+        throw new Error('Failed to login.');
+      }
 
       // Store the user so we stay logged in
-      state.currentUser = user;
+      state.currentUser = user.user;
 
       // Clear the username so it's not left around when the next login is needed
       this.usernameInput.value = '';

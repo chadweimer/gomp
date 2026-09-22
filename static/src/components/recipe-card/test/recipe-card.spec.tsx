@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { RecipeCompact, RecipeState } from '../../../generated';
+import { RecipeCompact, RecipeState } from '../../../api/schema.gen';
 import '../recipe-card';
 
 describe('recipe-card', () => {

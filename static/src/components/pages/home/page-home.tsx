@@ -1,10 +1,9 @@
 import { Component, Element, Fragment, h, Host, Method, State } from '@stencil/core';
-import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { loadUserSettings, performRecipeSearch, recipesApi, refreshSearchResults, usersApi } from '../../../helpers/api';
+import { apiClient, loadUserSettings, performRecipeSearch, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized } from '../../../helpers/utils';
-import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
+import state, { getDefaultSearchFilter } from '../../../stores/state';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../api/schema.gen';
 
 @Component({
   tag: 'page-home',
@@ -96,11 +95,22 @@ export class PageHome implements ComponentWithActivatedCallback {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = await usersApi.getSearchFilters();
+      const { data: savedFilters, error } = await apiClient.GET('/users/current/filters');
+
+      if (error || !savedFilters) {
+        throw new Error('Failed to load saved filters.');
+      }
+
       for (const savedFilter of savedFilters) {
         if (isNull(savedFilter.id)) continue;
+        const { data: savedSearchFilter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+          params: { path: { filterId: savedFilter.id } }
+        });
 
-        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id });
+        if (error || !savedSearchFilter) {
+          throw new Error('Failed to load saved search filter.');
+        }
+
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
           title: savedSearchFilter.name,
@@ -133,7 +143,12 @@ export class PageHome implements ComponentWithActivatedCallback {
 
   private async saveNewRecipe(recipe: Recipe, file: File | null) {
     try {
-      const newRecipe = await recipesApi.addRecipe({ recipe });
+      const { data: newRecipe, error } = await apiClient.POST('/recipes', {
+        body: recipe
+      });
+      if (error || !newRecipe) {
+        throw new Error('Failed to create new recipe.');
+      }
 
       if (!isNull(file)) {
         await showLoading(
@@ -142,9 +157,9 @@ export class PageHome implements ComponentWithActivatedCallback {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            await recipesApi.uploadImage({
-              recipeId: newRecipe.id,
-              fileContent: file
+            await apiClient.POST('/recipes/{recipeId}/images', {
+              params: { path: { recipeId: newRecipe.id } },
+              body: file
             });
           },
           'Uploading picture...');

@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { UserSettings } from '../../../generated';
-import { appApi, loadUserSettings, usersApi } from '../../../helpers/api';
+import { UserSettings } from '../../../api/schema.gen';
+import { apiClient, loadUserSettings } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -77,7 +77,13 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     }
 
     try {
-      await usersApi.saveSettings({ settings: this.settings });
+      const { data: user, error } = await apiClient.PUT('/users/current/settings', {
+        body: this.settings
+      });
+
+      if (error || !user) {
+        throw new Error('Failed to save preferences');
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save preferences.');
@@ -92,12 +98,12 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     if ((this.imageInput?.files?.length ?? 0) > 0) {
       await showLoading(
         async () => {
-          const resp = await appApi.uploadRaw({
-            fileContent: this.imageInput.files?.[0]
+          const { response: resp } = await apiClient.POST('/uploads', {
+            body: this.imageInput.files?.[0]
           });
           this.settings = {
             ...this.settings,
-            homeImageUrl: resp.raw.headers.get('location') ?? '',
+            homeImageUrl: resp.headers.get('location') ?? '',
             favoriteTags: this.settings?.favoriteTags ?? []
           }
         },

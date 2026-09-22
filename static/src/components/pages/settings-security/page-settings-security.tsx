@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { AccessLevel, User } from '../../../generated';
-import { usersApi } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
+import { User } from '../../../api/schema.gen';
+import { apiClient } from '../../../helpers/api';
+import { ComponentWithActivatedCallback, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-security',
@@ -36,7 +36,7 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
                         <ion-input label="Email" label-placement="stacked" type="email" value={this.currentUser?.username} disabled />
                       </ion-item>
                       <ion-item lines="full">
-                        <ion-input label="Access Level" label-placement="stacked" value={insertSpacesBetweenWords(enumKeyFromValue(AccessLevel, this.currentUser?.accessLevel))} disabled />
+                        <ion-input label="Access Level" label-placement="stacked" value={insertSpacesBetweenWords(this.currentUser?.accessLevel)} disabled />
                       </ion-item>
                       <ion-item lines="full">
                         <ion-input label="Current Password" label-placement="stacked" type="password" value={this.currentPassword}
@@ -74,19 +74,24 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
 
   private async loadUser() {
     try {
-      this.currentUser = await usersApi.getCurrentUser();
+      const { data: user, error } = await apiClient.GET('/users/current');
+
+      if (error || !user) {
+        throw new Error('Failed to load current user');
+      }
+
+      this.currentUser = user;
     } catch (ex) {
       console.error(ex);
     }
   }
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
-    try {
-      await usersApi.changePassword({
-        userPasswordRequest: { currentPassword, newPassword }
-      });
-    } catch (ex) {
-      console.error(ex);
+    const { error } = await apiClient.PUT('/users/current/password', {
+      body: { currentPassword, newPassword }
+    });
+
+    if (error) {
       await showToast('Failed to update password.');
     }
   }
