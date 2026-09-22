@@ -98,8 +98,12 @@ export class PageHome implements ComponentWithActivatedCallback {
       // Then load all the user's saved filters
       const { data: savedFilters, error } = await apiClient.GET('/users/current/filters');
 
-      if (error || !savedFilters) {
-        throw new Error('Failed to load saved filters.');
+      if (error) {
+        throw new Error('Failed to load saved filters.', { cause: error });
+      }
+
+      if (!savedFilters) {
+        return;
       }
 
       for (const savedFilter of savedFilters) {
@@ -108,8 +112,12 @@ export class PageHome implements ComponentWithActivatedCallback {
           params: { path: { filterId: savedFilter.id } }
         });
 
-        if (error || !savedSearchFilter) {
-          throw new Error('Failed to load saved search filter.');
+        if (error) {
+          throw new Error('Failed to load saved search filter.', { cause: error });
+        }
+
+        if (!savedSearchFilter) {
+          return;
         }
 
         const { total, recipes } = await this.performSearch(savedSearchFilter);
@@ -147,8 +155,9 @@ export class PageHome implements ComponentWithActivatedCallback {
       const { data: newRecipe, error } = await apiClient.POST('/recipes', {
         body: recipe
       });
-      if (error || !newRecipe) {
-        throw new Error('Failed to create new recipe.');
+
+      if (error) {
+        throw new Error('Failed to create new recipe.', { cause: error });
       }
 
       if (!isNull(file)) {
@@ -158,10 +167,14 @@ export class PageHome implements ComponentWithActivatedCallback {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            await apiClient.POST('/recipes/{recipeId}/images', {
+            const { error } = await apiClient.POST('/recipes/{recipeId}/images', {
               params: { path: { recipeId: newRecipe.id } },
               body: file
             });
+
+            if (error) {
+              throw new Error('Failed to create new recipe.', { cause: error });
+            }
           },
           'Uploading picture...');
       }

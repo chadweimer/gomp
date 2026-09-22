@@ -77,12 +77,12 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     }
 
     try {
-      const { data: user, error } = await apiClient.PUT('/users/current/settings', {
+      const { error } = await apiClient.PUT('/users/current/settings', {
         body: this.settings
       });
 
-      if (error || !user) {
-        throw new Error('Failed to save preferences');
+      if (error) {
+        throw new Error('Failed to save preferences.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);

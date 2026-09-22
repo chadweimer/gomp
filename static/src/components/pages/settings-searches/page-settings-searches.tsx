@@ -66,7 +66,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to create search filter.');
+        throw new Error('Failed to create search filter.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -85,7 +85,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save search filter.');
+        throw new Error('Failed to save search filter.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -104,7 +104,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to delete search filter.');
+        throw new Error('Failed to delete search filter.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -203,15 +203,16 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
         params: { path: { filterId: id } }
       });
 
-      if (error || !searchFilter) {
-        throw new Error('Failed to load search filter.');
+      if (error) {
+        throw new Error('Failed to load search filter.', { cause: error });
       }
 
-      state.searchFilter = searchFilter;
+      if (searchFilter) {
+        state.searchFilter = searchFilter;
+      }
       await redirect('/recipes');
     } catch (ex) {
       console.error(ex);
     }
   }
-
 }

@@ -69,12 +69,12 @@ export class PageLogin {
         body: { username, password }
       });
 
-      if (error || !user) {
-        throw new Error('Failed to login.');
+      if (error) {
+        throw new Error('Failed to login.', { cause: error });
       }
 
       // Store the user so we stay logged in
-      state.currentUser = user.user;
+      state.currentUser = user!.user;
 
       // Clear the username so it's not left around when the next login is needed
       this.usernameInput.value = '';

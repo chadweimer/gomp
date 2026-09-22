@@ -66,8 +66,8 @@ export class PageTags implements ComponentWithActivatedCallback {
     try {
       const { data: tags, error } = await apiClient.GET('/tags');
 
-      if (error || !tags) {
-        throw new Error('Failed to load tags');
+      if (error) {
+        throw new Error('Failed to load tags.', { cause: error });
       }
 
       this.tags = tags;

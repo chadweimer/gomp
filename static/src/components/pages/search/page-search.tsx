@@ -164,8 +164,8 @@ export class PageSearch {
         body: recipe
       });
 
-      if (error || !newRecipe) {
-        throw new Error('Failed to create new recipe');
+      if (error) {
+        throw new Error('Failed to create new recipe', { cause: error });
       }
 
       if (!isNull(file)) {
@@ -175,10 +175,14 @@ export class PageSearch {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            await apiClient.POST('/recipes/{recipeId}/images', {
+            const { error } = await apiClient.POST('/recipes/{recipeId}/images', {
               params: { path: { recipeId: newRecipe.id } },
               body: file
             });
+
+            if (error) {
+              throw new Error('Failed to create new recipe.', { cause: error });
+            }
           },
           'Uploading picture...');
       }

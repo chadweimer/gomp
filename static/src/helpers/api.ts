@@ -1,5 +1,5 @@
 import createClient from 'openapi-fetch';
-import { paths, SavedSearchFilterCompact, SearchFilter, UserSettings } from '../api/schema.gen';
+import { paths, SavedSearchFilterCompact, SearchFilter, SearchResult, UserSettings } from '../api/schema.gen';
 import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNull, toYesNoAny } from './utils';
@@ -30,10 +30,10 @@ async function customFetch(input: Request, init?: RequestInit): Promise<Response
           baseUrl: `${globalThis.location.origin}/api/v1`
         });
         const { data: user, error } = await localClient.GET('/auth');
-        if (error || !user) {
-          throw new Error('Failed to refresh token');
+        if (error) {
+          throw new Error('Failed to refresh token.', { cause: error });
         }
-        state.currentUser = user.user;
+        state.currentUser = user!.user;
         response = await globalThis.fetch(input, init);
       } catch (retryError) {
         // Just log this; let the original error propagate
@@ -53,33 +53,37 @@ export const apiClient = createClient<paths>({
   fetch: customFetch
 });
 
-export async function loadUserSettings(): Promise<UserSettings | null> {
+export async function loadUserSettings() {
   try {
     const { data: settings, error } = await apiClient.GET('/users/current/settings');
-    if (error || !settings) {
-      throw new Error('Failed to load user settings');
+
+    if (error) {
+      throw new Error('Failed to load user settings.', { cause: error });
     }
-    return settings;
+
+    return settings ?? null;
   } catch (ex) {
     console.error(ex);
     return null;
   }
 }
 
-export async function loadSearchFilters(): Promise<SavedSearchFilterCompact[]> {
+export async function loadSearchFilters() {
   try {
     const { data: filters, error } = await apiClient.GET('/users/current/filters');
-    if (error || !filters) {
-      throw new Error('Failed to load search filters');
+
+    if (error) {
+      throw new Error('Failed to load search filters.', { cause: error });
     }
-    return filters;
+
+    return filters ?? [];
   } catch (ex) {
     console.error(ex);
     return [];
   }
 }
 
-export async function performRecipeSearch(filter: SearchFilter, page: number, count: number) {
+export async function performRecipeSearch(filter: SearchFilter, page: number, count: number): Promise<SearchResult> {
   // Make sure to fill in any missing fields
   const defaultFilter = getDefaultSearchFilter();
   filter = { ...defaultFilter, ...filter };
@@ -100,9 +104,10 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
     }
   });
 
-  if (error || !recipes) {
-    throw new Error('Failed to perform recipe search');
+  if (error) {
+    throw new Error('Failed to perform recipe search.', { cause: error });
   }
+
   return recipes;
 }
 
@@ -129,8 +134,8 @@ export async function refreshSearchResults() {
   try {
     const { data: results, error } = await apiClient.GET('/recipes', { params: { query: { count: 0, } } });
 
-    if (error || !results) {
-      throw new Error('Failed to fetch total recipe count');
+    if (error) {
+      throw new Error('Failed to fetch total recipe count.', { cause: error });
     }
 
     state.totalRecipeCount = results.total;

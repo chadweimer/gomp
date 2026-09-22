@@ -59,8 +59,8 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
     try {
       const { data: users, error } = await apiClient.GET('/users');
 
-      if (error || !users) {
-        throw new Error('Failed to load users.');
+      if (error) {
+        throw new Error('Failed to load users.', { cause: error });
       }
 
       this.users = users;
@@ -76,7 +76,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to create new user.');
+        throw new Error('Failed to create new user.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -96,7 +96,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save user.');
+        throw new Error('Failed to save user.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -115,7 +115,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to delete user.');
+        throw new Error('Failed to delete user.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);

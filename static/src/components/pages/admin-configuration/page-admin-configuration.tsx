@@ -61,8 +61,8 @@ export class PageAdminConfiguration implements ComponentWithActivatedCallback {
     try {
       const { data: config, error } = await apiClient.GET('/app/configuration');
 
-      if (error || !config) {
-        throw new Error('Failed to load configuration.');
+      if (error) {
+        throw new Error('Failed to load configuration.', { cause: error });
       }
 
       this.appConfig = config;
@@ -82,7 +82,7 @@ export class PageAdminConfiguration implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save configuration.');
+        throw new Error('Failed to save configuration.', { cause: error });
       }
 
       appConfig.config = this.appConfig;

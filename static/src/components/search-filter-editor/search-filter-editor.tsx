@@ -161,12 +161,14 @@ export class SearchFilterEditor {
         params: { path: { filterId: this.selectedFilterId } }
       });
 
-      if (error || !filter) {
-        throw new Error('Failed to load search filter');
+      if (error) {
+        throw new Error('Failed to load search filter.', { cause: error });
       }
-      
-      this.searchFilter = filter;
-      this.selectedFilterId = null;
+
+      if (filter) {
+        this.searchFilter = filter;
+        this.selectedFilterId = null;
+      }
     } catch (ex) {
       console.error(ex);
     }

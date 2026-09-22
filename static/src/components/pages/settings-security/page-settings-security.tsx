@@ -76,8 +76,8 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
     try {
       const { data: user, error } = await apiClient.GET('/users/current');
 
-      if (error || !user) {
-        throw new Error('Failed to load current user');
+      if (error) {
+        throw new Error('Failed to load current user', { cause: error });
       }
 
       this.currentUser = user;
@@ -93,7 +93,7 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to update password.');
+        throw new Error('Failed to update password.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);

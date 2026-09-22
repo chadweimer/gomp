@@ -243,13 +243,13 @@ export class AppRoot {
   private async loadAppConfiguration() {
     try {
       const { data: info, error: infoError } = await apiClient.GET('/app/info');
-      if (infoError || !info) {
-        throw new Error('Failed to load app info');
+      if (infoError) {
+        throw new Error('Failed to load app info', { cause: infoError });
       }
 
       const { data: config, error: configError } = await apiClient.GET('/app/configuration');
-      if (configError || !config) {
-        throw new Error('Failed to load app configuration');
+      if (configError) {
+        throw new Error('Failed to load app configuration', { cause: configError });
       }
 
       appConfig.info = info;
@@ -271,8 +271,17 @@ export class AppRoot {
 
   private async logout() {
     clearState();
-    await apiClient.DELETE('/auth');
-    await redirect('/login');
+    try {
+      const { error } = await apiClient.DELETE('/auth');
+
+      if (error) {
+        throw new Error('Failed to logout.', { cause: error })
+      }
+
+      await redirect('/login');
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 
   private isLoggedIn() {

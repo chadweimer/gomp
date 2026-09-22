@@ -188,11 +188,11 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         params: { path: { recipeId: this.recipeId } }
       });
 
-      if (error || !recipe) {
-        throw new Error('Failed to load recipe.');
+      if (error) {
+        throw new Error('Failed to load recipe.', { cause: error });
       }
 
-      this.recipe = recipe;
+      this.recipe = recipe ?? null;
     } catch (ex) {
       this.recipe = null;
       console.error(ex);
@@ -205,10 +205,10 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         params: { path: { recipeId: this.recipeId } }
       });
 
-      if (error || !links) {
-        throw new Error('Failed to load links.');
+      if (error) {
+        throw new Error('Failed to load links.', { cause: error });
       }
-      this.links = links;
+      this.links = links ?? [];
     } catch (ex) {
       this.links = [];
       console.error(ex);
@@ -221,10 +221,11 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         params: { path: { recipeId: this.recipeId } }
       });
 
-      if (error || !images) {
-        throw new Error('Failed to load images.');
+      if (error) {
+        throw new Error('Failed to load images.', { cause: error });
       }
-      this.images = images;
+
+      this.images = images ?? [];
     } catch (ex) {
       this.images = [];
       console.error(ex);
@@ -237,10 +238,10 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         params: { path: { recipeId: this.recipeId } }
       });
 
-      if (error || !notes) {
-        throw new Error('Failed to load notes.');
+      if (error) {
+        throw new Error('Failed to load notes.', { cause: error });
       }
-      this.notes = notes;
+      this.notes = notes ?? [];
     } catch (ex) {
       this.notes = [];
       console.error(ex);
@@ -255,7 +256,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save recipe.');
+        throw new Error('Failed to save recipe.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -270,7 +271,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to delete recipe.');
+        throw new Error('Failed to delete recipe.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -286,7 +287,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save recipe state.');
+        throw new Error('Failed to save recipe state.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -301,7 +302,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to add link to recipe.');
+        throw new Error('Failed to add link to recipe.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -320,7 +321,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to delete link from recipe.');
+        throw new Error('Failed to delete link from recipe.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -336,7 +337,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to create note.');
+        throw new Error('Failed to create note.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -356,7 +357,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save note.');
+        throw new Error('Failed to save note.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -375,7 +376,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to delete note.');
+        throw new Error('Failed to delete note.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -406,7 +407,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to delete image.');
+        throw new Error('Failed to delete image.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -422,7 +423,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to save recipe rating.');
+        throw new Error('Failed to save recipe rating.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
@@ -438,7 +439,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       });
 
       if (error) {
-        throw new Error('Failed to set main picture.');
+        throw new Error('Failed to set main picture.', { cause: error });
       }
     } catch (ex) {
       console.error(ex);
