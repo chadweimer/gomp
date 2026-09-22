@@ -48,7 +48,7 @@ export class UserEditor {
                 autofocus />
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Access Level" label-placement="stacked" value={this.user?.accessLevel ?? AccessLevel.Editor} disabled={!isNull(this.user?.id)}
+              <ion-select label="Access Level" label-placement="stacked" value={this.user?.accessLevel ?? AccessLevel.Editor}
                 onIonChange={(e: CustomEvent<{ value: AccessLevel }>) => this.user = { ...this.user, accessLevel: e.detail.value }}>
                 {Object.keys(AccessLevel).map(item =>
                   <ion-select-option key={item} value={AccessLevel[item as keyof typeof AccessLevel]}>{insertSpacesBetweenWords(item)}</ion-select-option>
