@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { User } from '../../../api/schema.gen';
+import { AccessLevel, User } from '../../../api/schema.gen';
 import { apiClient } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-security',
@@ -36,7 +36,7 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
                         <ion-input label="Email" label-placement="stacked" type="email" value={this.currentUser?.username} disabled />
                       </ion-item>
                       <ion-item lines="full">
-                        <ion-input label="Access Level" label-placement="stacked" value={insertSpacesBetweenWords(this.currentUser?.accessLevel)} disabled />
+                        <ion-input label="Access Level" label-placement="stacked" value={insertSpacesBetweenWords(enumKeyFromValue(AccessLevel, this.currentUser?.accessLevel))} disabled />
                       </ion-item>
                       <ion-item lines="full">
                         <ion-input label="Current Password" label-placement="stacked" type="password" value={this.currentPassword}

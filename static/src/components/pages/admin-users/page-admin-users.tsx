@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { User } from '../../../api/schema.gen';
+import { AccessLevel, User } from '../../../api/schema.gen';
 import { apiClient } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-users',
@@ -29,7 +29,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
                   <ion-card class="zoom">
                     <ion-card-header>
                       <ion-card-title>{user.username}</ion-card-title>
-                      <ion-card-subtitle>{user.accessLevel}</ion-card-subtitle>
+                      <ion-card-subtitle>{enumKeyFromValue(AccessLevel, user.accessLevel)}</ion-card-subtitle>
                     </ion-card-header>
                     <ion-button size="small" fill="clear" onClick={() => this.onEditUserClicked(user)}>
                       <ion-icon slot="start" name="create" />
