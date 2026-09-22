@@ -66,7 +66,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/authenticationResponse'
+                $ref: './models.yaml#/components/schemas/user'
         '401':
           description: Unauthorized
       security:
@@ -93,7 +93,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/authenticationResponse'
+                $ref: './models.yaml#/components/schemas/user'
         '401':
           description: Unauthorized
       x-codegen-request-body-name: credentials
@@ -1119,21 +1119,6 @@ paths:
       x-codegen-request-body-name: settings
 components:
   schemas:
-    authenticationResponse:
-      description: Authentication payload containing the authenticated user.
-      example:
-        user:
-          id: 1
-          username: admin
-          accessLevel: admin
-          createdAt: '2026-04-21T12:00:00Z'
-          modifiedAt: '2026-04-21T12:00:00Z'
-      type: object
-      required:
-        - user
-      properties:
-        user:
-          $ref: './models.yaml#/components/schemas/user'
     credentials:
       description: Username and password used to authenticate a user.
       example:

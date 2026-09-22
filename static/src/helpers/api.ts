@@ -33,7 +33,7 @@ async function customFetch(input: Request, init?: RequestInit): Promise<Response
         if (error) {
           throw new Error('Failed to refresh token.', { cause: error });
         }
-        state.currentUser = user!.user;
+        state.currentUser = user;
         response = await globalThis.fetch(input, init);
       } catch (retryError) {
         // Just log this; let the original error propagate
