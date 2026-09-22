@@ -109,7 +109,7 @@ export class RecipeViewer {
               )}
             </div>
           </ion-card-content>
-          {this.recipe?.state === 'archived' &&
+          {this.recipe?.state === RecipeState.Archived &&
             <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>}
         </ion-card>
       </Host>
