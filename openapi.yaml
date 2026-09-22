@@ -204,7 +204,7 @@ paths:
           in: query
           schema:
             $ref: '#/components/schemas/yesNoAny'
-        - name: fields[]
+        - name: fields
           in: query
           style: form
           explode: true
@@ -212,7 +212,7 @@ paths:
             type: array
             items:
               $ref: './models.yaml#/components/schemas/searchField'
-        - name: states[]
+        - name: states
           in: query
           style: form
           explode: true
@@ -220,7 +220,7 @@ paths:
             type: array
             items:
               $ref: './models.yaml#/components/schemas/recipeState'
-        - name: tags[]
+        - name: tags
           in: query
           style: form
           explode: true
