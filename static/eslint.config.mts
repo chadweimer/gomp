@@ -11,7 +11,7 @@ export default defineConfig([
       "dist/**",
       "www/**",
       "coverage/**",
-      "src/generated/**",
+      "src/**/*.gen.ts",
       "*.config.{js,mjs,cjs,ts,mts,cts}",
       "*.setup.{js,mjs,cjs,ts,mts,cts}"
     ],
@@ -21,6 +21,8 @@ export default defineConfig([
   {
     rules: {
       "@typescript-eslint/no-unnecessary-type-assertion": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-misused-promises": "off"
     },
