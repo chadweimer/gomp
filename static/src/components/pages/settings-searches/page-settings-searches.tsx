@@ -94,11 +94,11 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   }
 
   private async deleteSearchFilter(id: number | null | undefined) {
-    try {
-      if (isNull(id)) {
-        return;
-      }
+    if (isNull(id)) {
+      return;
+    }
 
+    try {
       const { error } = await apiClient.DELETE('/users/current/filters/{filterId}', {
         params: { path: { filterId: id } }
       });
