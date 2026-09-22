@@ -2,7 +2,7 @@ import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../api/schema.gen';
 import { apiClient, loadSearchFilters, loadUserSettings } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
-import { getDefaultSearchFilter } from '../../stores/state';
+import { getDefaultSearchFilter } from '../../models';
 
 @Component({
   tag: 'search-filter-editor',

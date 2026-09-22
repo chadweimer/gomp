@@ -1,15 +1,33 @@
-export const SearchViewMode = {
-  Card: 'card',
-  List: 'list'
-} as const;
-export type SearchViewMode = typeof SearchViewMode[keyof typeof SearchViewMode];
+import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from "./api/schema.gen";
 
-export const SwipeDirection = {
-  Left: 'left',
-  Right: 'right'
-} as const;
-export type SwipeDirection = typeof SwipeDirection[keyof typeof SwipeDirection];
+export enum SearchViewMode {
+  Card = 'card',
+  List = 'list'
+}
+
+export enum SwipeDirection {
+  Left = 'left',
+  Right = 'right'
+}
 
 export interface SearchSettings {
   viewMode: SearchViewMode;
+}
+
+export function getDefaultSearchFilter(): SearchFilter {
+  return {
+    query: '',
+    withPictures: null,
+    fields: [SearchField.Name, SearchField.Ingredients, SearchField.Directions],
+    states: [RecipeState.Active],
+    tags: [],
+    sortBy: SortBy.Name,
+    sortDir: SortDir.Asc
+  };
+}
+
+export function getDefaultSearchSettings(): SearchSettings {
+  return {
+    viewMode: SearchViewMode.Card
+  };
 }

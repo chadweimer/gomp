@@ -3,7 +3,8 @@ import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@ste
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../api/schema.gen';
 import { apiClient, refreshSearchResults } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
-import state, { getDefaultSearchFilter } from '../../../stores/state';
+import state from '../../../stores/state';
+import { getDefaultSearchFilter } from '../../../models';
 
 @Component({
   tag: 'page-recipe',

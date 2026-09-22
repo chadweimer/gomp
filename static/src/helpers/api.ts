@@ -1,6 +1,7 @@
 import createClient from 'openapi-fetch';
 import { paths, SavedSearchFilterCompact, SearchFilter, UserSettings } from '../api/schema.gen';
-import state, { getDefaultSearchFilter, onStateChange } from '../stores/state';
+import { getDefaultSearchFilter } from '../models';
+import state, { onStateChange } from '../stores/state';
 import { isNull, toYesNoAny } from './utils';
 
 // Retrieve search results when search filters change

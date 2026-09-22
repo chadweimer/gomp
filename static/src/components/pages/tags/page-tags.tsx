@@ -2,7 +2,8 @@ import { Component, h, Host, Method, State } from '@stencil/core';
 import { SortDir } from '../../../api/schema.gen';
 import { apiClient } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, isNull } from '../../../helpers/utils';
-import state, { getDefaultSearchFilter } from '../../../stores/state';
+import state from '../../../stores/state';
+import { getDefaultSearchFilter } from '../../../models';
 
 @Component({
   tag: 'page-tags',

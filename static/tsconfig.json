@@ -20,6 +20,6 @@
   ],
   "exclude": [
     "node_modules",
-    "src/generated"
+    "src/api/schema.gen.ts"
   ]
 }

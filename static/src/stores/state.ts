@@ -1,7 +1,7 @@
 import { createStore } from '@stencil/store';
-import { RecipeCompact, RecipeState, SearchField, SearchFilter, SortBy, SortDir, User } from '../api/schema.gen';
+import { RecipeCompact, SearchFilter, User } from '../api/schema.gen';
 import { isNull } from '../helpers/utils';
-import { SearchSettings, SearchViewMode } from '../models';
+import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 
 interface AppState {
   currentUser?: User;
@@ -15,24 +15,6 @@ interface AppState {
   searchScrollPosition?: number;
   loadingCount: number;
   totalRecipeCount?: number;
-}
-
-export function getDefaultSearchFilter(): SearchFilter {
-  return {
-    query: '',
-    withPictures: null,
-    fields: [SearchField.Name, SearchField.Ingredients, SearchField.Directions],
-    states: [RecipeState.Active],
-    tags: [],
-    sortBy: SortBy.Name,
-    sortDir: SortDir.Asc
-  };
-}
-
-export function getDefaultSearchSettings(): SearchSettings {
-  return {
-    viewMode: SearchViewMode.Card
-  };
 }
 
 // Start with an empty state

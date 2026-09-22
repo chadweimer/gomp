@@ -3,8 +3,9 @@ import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../api/schema.gen';
 import { apiClient, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
+import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
-import state, { clearState, getDefaultSearchFilter } from '../../stores/state';
+import state, { clearState } from '../../stores/state';
 import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 
 @Component({
