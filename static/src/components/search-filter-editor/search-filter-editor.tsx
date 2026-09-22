@@ -158,16 +158,13 @@ export class SearchFilterEditor {
 
     try {
       const { data: filter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
-        params: {
-          path: {
-            filterId: this.selectedFilterId
-          }
-        }
+        params: { path: { filterId: this.selectedFilterId } }
       });
 
       if (error || !filter) {
         throw new Error('Failed to load search filter');
       }
+      
       this.searchFilter = filter;
       this.selectedFilterId = null;
     } catch (ex) {
