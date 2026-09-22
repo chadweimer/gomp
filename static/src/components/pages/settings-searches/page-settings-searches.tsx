@@ -60,39 +60,54 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   }
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
-    const { error } = await apiClient.POST('/users/current/filters', {
-      body: searchFilter
-    });
+    try {
+      const { error } = await apiClient.POST('/users/current/filters', {
+        body: searchFilter
+      });
 
-    if (error) {
+      if (error) {
+        throw new Error('Failed to create search filter.');
+      }
+    } catch (ex) {
+      console.error(ex);
       await showToast('Failed to create search filter.');
     }
   }
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
-    if (isNull(searchFilter.id)) {
-      throw new Error('Cannot save search filter: filter ID is null.');
-    }
-    const { error } = await apiClient.PUT('/users/current/filters/{filterId}', {
-      params: { path: { filterId: searchFilter.id } },
-      body: searchFilter
-    });
+    try {
+      if (isNull(searchFilter.id)) {
+        throw new Error('Cannot save search filter: filter ID is null.');
+      }
+      const { error } = await apiClient.PUT('/users/current/filters/{filterId}', {
+        params: { path: { filterId: searchFilter.id } },
+        body: searchFilter
+      });
 
-    if (error) {
+      if (error) {
+        throw new Error('Failed to save search filter.');
+      }
+    } catch (ex) {
+      console.error(ex);
       await showToast('Failed to save search filter.');
     }
   }
 
   private async deleteSearchFilter(id: number | null | undefined) {
-    if (isNull(id)) {
-      return;
-    }
+    try {
+      if (isNull(id)) {
+        return;
+      }
 
-    const { error } = await apiClient.DELETE('/users/current/filters/{filterId}', {
-      params: { path: { filterId: id } }
-    });
+      const { error } = await apiClient.DELETE('/users/current/filters/{filterId}', {
+        params: { path: { filterId: id } }
+      });
 
-    if (error) {
+      if (error) {
+        throw new Error('Failed to delete search filter.');
+      }
+    } catch (ex) {
+      console.error(ex);
       await showToast('Failed to delete search filter.');
     }
   }
@@ -189,7 +204,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       });
 
       if (error || !searchFilter) {
-        return;
+        throw new Error('Failed to load search filter.');
       }
 
       state.searchFilter = searchFilter;

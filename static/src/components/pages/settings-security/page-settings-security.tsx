@@ -87,11 +87,16 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
   }
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
-    const { error } = await apiClient.PUT('/users/current/password', {
-      body: { currentPassword, newPassword }
-    });
+    try {
+      const { error } = await apiClient.PUT('/users/current/password', {
+        body: { currentPassword, newPassword }
+      });
 
-    if (error) {
+      if (error) {
+        throw new Error('Failed to update password.');
+      }
+    } catch (ex) {
+      console.error(ex);
       await showToast('Failed to update password.');
     }
   }
