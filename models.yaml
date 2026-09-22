@@ -1,8 +1,7 @@
-openapi: 3.0.4
+openapi: 3.1.0
 info:
   title: GOMP
   version: '1.0'
-paths: {}
 components:
   schemas:
     accessLevel:
@@ -337,8 +336,7 @@ components:
           x-oapi-codegen-extra-tags:
             db: query
         withPictures:
-          type: boolean
-          nullable: true
+          type: [boolean, 'null']
           x-go-custom-tag: db:"with_pictures"
           x-oapi-codegen-extra-tags:
             db: with_pictures
@@ -473,14 +471,12 @@ components:
           x-oapi-codegen-extra-tags:
             db: user_id
         homeTitle:
-          type: string
-          nullable: true
+          type: [string, 'null']
           x-go-custom-tag: db:"home_title"
           x-oapi-codegen-extra-tags:
             db: home_title
         homeImageUrl:
-          type: string
-          nullable: true
+          type: [string, 'null']
           x-go-custom-tag: db:"home_image_url"
           x-oapi-codegen-extra-tags:
             db: home_image_url
