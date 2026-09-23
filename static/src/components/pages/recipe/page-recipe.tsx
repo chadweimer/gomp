@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../api/schema.gen';
-import { apiClient, refreshSearchResults } from '../../../helpers/api';
+import { apiClient, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
@@ -390,7 +390,10 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         async () => {
           await apiClient.POST('/recipes/{recipeId}/images', {
             params: { path: { recipeId: this.recipeId } },
-            body: file
+            body: file,
+            bodySerializer(body) {
+              return fileContentSerializer(body)
+            }
           });
         },
         'Uploading picture...');

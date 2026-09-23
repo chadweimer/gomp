@@ -1,5 +1,5 @@
 import createClient from 'openapi-fetch';
-import { paths, SavedSearchFilterCompact, SearchFilter, SearchResult, UserSettings } from '../api/schema.gen';
+import { paths, SearchFilter, SearchResult } from '../api/schema.gen';
 import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNull, toYesNoAny } from './utils';
@@ -143,4 +143,11 @@ export async function refreshSearchResults() {
     console.error(ex);
     state.totalRecipeCount = undefined;
   }
+}
+export function fileContentSerializer(body?: { file_content?: string }) {
+  const fd = new FormData();
+  if (body) {
+    Object.entries(body).forEach(([key, value]) => fd.append(key, value));
+  }
+  return fd;
 }

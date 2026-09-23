@@ -1,7 +1,7 @@
 import { alertController, Gesture, modalController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../api/schema.gen';
-import { apiClient, refreshSearchResults } from '../../../helpers/api';
+import { apiClient, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
@@ -177,7 +177,10 @@ export class PageSearch {
 
             const { error } = await apiClient.POST('/recipes/{recipeId}/images', {
               params: { path: { recipeId: newRecipe.id } },
-              body: file
+              body: file,
+              bodySerializer(body) {
+                return fileContentSerializer(body)
+              }
             });
 
             if (error) {

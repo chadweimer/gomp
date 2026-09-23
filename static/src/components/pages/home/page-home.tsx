@@ -1,7 +1,7 @@
-import { Component, Element, Fragment, h, Host, Method, State } from '@stencil/core';
+import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { apiClient, loadUserSettings, performRecipeSearch, refreshSearchResults } from '../../../helpers/api';
+import { apiClient, fileContentSerializer, loadUserSettings, performRecipeSearch, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../api/schema.gen';
@@ -36,29 +36,27 @@ export class PageHome implements ComponentWithActivatedCallback {
               <ion-col>
                 <header class="ion-text-center">
                   <h1>{this.currentUserSettings?.homeTitle}</h1>
-                  <img alt="Home Image" src={this.currentUserSettings?.homeImageUrl} hidden={isNullOrEmpty(this.currentUserSettings?.homeImageUrl)} />
+                  <img alt="Home" src={this.currentUserSettings?.homeImageUrl ?? ''} hidden={isNullOrEmpty(this.currentUserSettings?.homeImageUrl)} />
                 </header>
               </ion-col>
             </ion-row>
-            {this.searches?.map(search =>
-              <Fragment>
-                <ion-row key={search.title}>
-                  <ion-col>
-                    <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
-                      <ion-label>{search.title}</ion-label>
-                      <ion-label slot="end">{search.count}</ion-label>
-                    </ion-item>
+            {this.searches?.map(search => [
+              <ion-row key={search.title}>
+                <ion-col>
+                  <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
+                    <ion-label>{search.title}</ion-label>
+                    <ion-label slot="end">{search.count}</ion-label>
+                  </ion-item>
+                </ion-col>
+              </ion-row>,
+              <ion-row key={`${search.title}-list`}>
+                {search.results.map(recipe =>
+                  <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
+                    <recipe-card recipe={recipe} size="small" />
                   </ion-col>
-                </ion-row>
-                <ion-row key={`${search.title}-list`}>
-                  {search.results.map(recipe =>
-                    <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
-                      <recipe-card recipe={recipe} size="small" />
-                    </ion-col>
-                  )}
-                </ion-row>
-              </Fragment>
-            )}
+                )}
+              </ion-row>
+            ])}
           </ion-grid>
         </ion-content>
 
@@ -169,7 +167,10 @@ export class PageHome implements ComponentWithActivatedCallback {
 
             const { error } = await apiClient.POST('/recipes/{recipeId}/images', {
               params: { path: { recipeId: newRecipe.id } },
-              body: file
+              body: file,
+              bodySerializer(body) {
+                return fileContentSerializer(body)
+              }
             });
 
             if (error) {
