@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../api/schema.gen';
-import { apiClient, loadUserSettings } from '../../../helpers/api';
+import { apiClient, fileContentSerializer, loadUserSettings } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -96,10 +96,14 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     }
 
     if ((this.imageInput?.files?.length ?? 0) > 0) {
+      const file = this.imageInput.files![0];
       await showLoading(
         async () => {
           const { response: resp } = await apiClient.POST('/uploads', {
-            body: this.imageInput.files?.[0]
+            body: file,
+            bodySerializer(body) {
+              return fileContentSerializer(body, file)
+            }
           });
           this.settings = {
             ...this.settings,

@@ -169,7 +169,7 @@ export class PageHome implements ComponentWithActivatedCallback {
               params: { path: { recipeId: newRecipe.id } },
               body: file,
               bodySerializer(body) {
-                return fileContentSerializer(body)
+                return fileContentSerializer(body, file)
               }
             });
 

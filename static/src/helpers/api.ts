@@ -144,10 +144,12 @@ export async function refreshSearchResults() {
     state.totalRecipeCount = undefined;
   }
 }
-export function fileContentSerializer(body?: { file_content?: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function fileContentSerializer(_body: { file_content?: string } | undefined, file: File) {
+  // The unused _body parameter is required to match the expected signature for bodySerializer,
+  // so that we know we're using the right part name in the form data
+
   const fd = new FormData();
-  if (body) {
-    Object.entries(body).forEach(([key, value]) => fd.append(key, value));
-  }
+  fd.append('file_content', file);
   return fd;
 }
