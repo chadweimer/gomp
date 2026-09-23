@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { fetchMocker } from '../../../../vitest.setup';
-import { AppConfiguration, AppInfo } from '../../../api/schema.gen';
+import { AppConfiguration, AppInfo } from '../../../helpers/schema.gen';
 import '../app-root';
 
 describe('app-root', () => {

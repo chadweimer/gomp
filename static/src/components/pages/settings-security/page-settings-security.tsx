@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { AccessLevel, User } from '../../../api/schema.gen';
-import { apiClient } from '../../../helpers/api';
+import { AccessLevel, User } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -74,7 +74,7 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
 
   private async loadUser() {
     try {
-      const { data: user, error } = await apiClient.GET('/users/current');
+      const { data: user, error } = await api.client.GET('/users/current');
 
       if (error) {
         throw new Error('Failed to load current user', { cause: error });
@@ -88,7 +88,7 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
     try {
-      const { error } = await apiClient.PUT('/users/current/password', {
+      const { error } = await api.client.PUT('/users/current/password', {
         body: { currentPassword, newPassword }
       });
 

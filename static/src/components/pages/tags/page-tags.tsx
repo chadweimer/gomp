@@ -1,6 +1,6 @@
 import { Component, h, Host, Method, State } from '@stencil/core';
-import { SortDir } from '../../../api/schema.gen';
-import { apiClient } from '../../../helpers/api';
+import { SortDir } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, isNull } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
@@ -64,7 +64,7 @@ export class PageTags implements ComponentWithActivatedCallback {
 
   private async load() {
     try {
-      const { data: tags, error } = await apiClient.GET('/tags');
+      const { data: tags, error } = await api.client.GET('/tags');
 
       if (error) {
         throw new Error('Failed to load tags.', { cause: error });

@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
-import { Note } from '../../api/schema.gen';
+import { Note } from '../../helpers/schema.gen';
 import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
 
 @Component({

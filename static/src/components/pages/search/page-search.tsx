@@ -1,7 +1,7 @@
 import { alertController, Gesture, modalController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
-import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../api/schema.gen';
-import { apiClient, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
+import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
@@ -160,7 +160,7 @@ export class PageSearch {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const { data: newRecipe, error } = await apiClient.POST('/recipes', {
+      const { data: newRecipe, error } = await api.client.POST('/recipes', {
         body: recipe
       });
 
@@ -175,7 +175,7 @@ export class PageSearch {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            const { error } = await apiClient.POST('/recipes/{recipeId}/images', {
+            const { error } = await api.client.POST('/recipes/{recipeId}/images', {
               params: { path: { recipeId: newRecipe.id } },
               body: file,
               bodySerializer(body) {

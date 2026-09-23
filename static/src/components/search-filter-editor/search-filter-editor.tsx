@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../api/schema.gen';
-import { apiClient, loadSearchFilters, loadUserSettings } from '../../helpers/api';
+import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
+import { api, loadSearchFilters, loadUserSettings } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
@@ -157,7 +157,7 @@ export class SearchFilterEditor {
     }
 
     try {
-      const { data: filter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+      const { data: filter, error } = await api.client.GET('/users/current/filters/{filterId}', {
         params: { path: { filterId: this.selectedFilterId } }
       });
 

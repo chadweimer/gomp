@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { AccessLevel, User } from '../../../api/schema.gen';
-import { apiClient } from '../../../helpers/api';
+import { AccessLevel, User } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -57,7 +57,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async loadUsers() {
     try {
-      const { data: users, error } = await apiClient.GET('/users');
+      const { data: users, error } = await api.client.GET('/users');
 
       if (error) {
         throw new Error('Failed to load users.', { cause: error });
@@ -71,7 +71,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async saveNewUser(user: User, password: string) {
     try {
-      const { error } = await apiClient.POST('/users', {
+      const { error } = await api.client.POST('/users', {
         body: { ...user, password }
       });
 
@@ -90,7 +90,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         throw new Error('Cannot save user: user ID is null.');
       }
 
-      const { error } = await apiClient.PUT('/users/{userId}', {
+      const { error } = await api.client.PUT('/users/{userId}', {
         params: { path: { userId: user.id } },
         body: user
       });
@@ -110,7 +110,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         throw new Error('Cannot delete user: user ID is null.');
       }
 
-      const { error } = await apiClient.DELETE('/users/{userId}', {
+      const { error } = await api.client.DELETE('/users/{userId}', {
         params: { path: { userId: user.id } }
       });
 

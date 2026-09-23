@@ -1,8 +1,9 @@
-import createClient from 'openapi-fetch';
-import { paths, SearchFilter, SearchResult } from '../api/schema.gen';
+import createClient, { Client } from 'openapi-fetch';
+import { paths, SearchFilter, SearchResult } from './schema.gen';
 import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNull, toYesNoAny } from './utils';
+import { Subject } from 'rxjs';
 
 // Retrieve search results when search filters change
 const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
@@ -17,45 +18,56 @@ for (const prop of propsToSearch) {
   });
 }
 
-async function customFetch(input: Request, init?: RequestInit): Promise<Response> {
-  state.loadingCount++;
-  try {
-    let response = await globalThis.fetch(input, init);
-    if (response.status === 403) {
-      // Try refreshing the token and repeating the request
-      // This can fix the situation where the access level of
-      // the user has been changed and requires a new token
-      try {
-        const localClient = createClient<paths>({
-          baseUrl: `${globalThis.location.origin}/api/v1`
-        });
-        const { data: user, error } = await localClient.GET('/auth');
-        if (error) {
-          throw new Error('Failed to refresh token.', { cause: error });
+class Api {
+  readonly client: Client<paths, `${string}/${string}`>;
+  readonly responses: Subject<{ request: Request, response: Response }>;
+
+  constructor() {
+    this.client = createClient<paths>({
+      baseUrl: `${globalThis.location.origin}/api/v1`,
+      fetch: this.fetch
+    });
+    this.responses = new Subject<{ request: Request, response: Response }>();
+  }
+
+  private readonly fetch = async (input: Request, init?: RequestInit): Promise<Response> => {
+    state.loadingCount++;
+    try {
+      let response = await globalThis.fetch(input, init);
+      if (response.status === 403) {
+        // Try refreshing the token and repeating the request
+        // This can fix the situation where the access level of
+        // the user has been changed and requires a new token
+        try {
+          const refreshClient = createClient<paths>({
+            baseUrl: `${globalThis.location.origin}/api/v1`
+          });
+          const { data: user, error } = await refreshClient.GET('/auth');
+          if (error) {
+            throw new Error('Failed to refresh token.', { cause: error });
+          }
+          state.currentUser = user;
+          response = await globalThis.fetch(input, init);
+        } catch (retryError) {
+          // Just log this; let the original error propagate
+          console.error(retryError);
         }
-        state.currentUser = user;
-        response = await globalThis.fetch(input, init);
-      } catch (retryError) {
-        // Just log this; let the original error propagate
-        console.error(retryError);
+      }
+      this.responses.next({ request: input, response });
+      return response;
+    } finally {
+      if (state.loadingCount > 0) {
+        state.loadingCount--;
       }
     }
-    return response;
-  } finally {
-    if (state.loadingCount > 0) {
-      state.loadingCount--;
-    }
   }
-};
+}
 
-export const apiClient = createClient<paths>({
-  baseUrl: `${globalThis.location.origin}/api/v1`,
-  fetch: customFetch
-});
+export const api = new Api();
 
 export async function loadUserSettings() {
   try {
-    const { data: settings, error } = await apiClient.GET('/users/current/settings');
+    const { data: settings, error } = await api.client.GET('/users/current/settings');
 
     if (error) {
       throw new Error('Failed to load user settings.', { cause: error });
@@ -70,7 +82,7 @@ export async function loadUserSettings() {
 
 export async function loadSearchFilters() {
   try {
-    const { data: filters, error } = await apiClient.GET('/users/current/filters');
+    const { data: filters, error } = await api.client.GET('/users/current/filters');
 
     if (error) {
       throw new Error('Failed to load search filters.', { cause: error });
@@ -88,7 +100,7 @@ export async function performRecipeSearch(filter: SearchFilter, page: number, co
   const defaultFilter = getDefaultSearchFilter();
   filter = { ...defaultFilter, ...filter };
 
-  const { data: recipes, error } = await apiClient.GET('/recipes', {
+  const { data: recipes, error } = await api.client.GET('/recipes', {
     params: {
       query: {
         sort: filter.sortBy,
@@ -132,7 +144,7 @@ export async function refreshSearchResults() {
 
   // Also populate total recipe count
   try {
-    const { data: results, error } = await apiClient.GET('/recipes', { params: { query: { count: 0, } } });
+    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0, } } });
 
     if (error) {
       throw new Error('Failed to fetch total recipe count.', { cause: error });

@@ -1,5 +1,5 @@
 import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
-import { Note } from '../../api/schema.gen';
+import { Note } from '../../helpers/schema.gen';
 import { formatDate } from '../../helpers/utils';
 
 @Component({

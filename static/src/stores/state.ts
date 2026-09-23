@@ -1,5 +1,5 @@
 import { createStore } from '@stencil/store';
-import { RecipeCompact, SearchFilter, User } from '../api/schema.gen';
+import { RecipeCompact, SearchFilter, User } from '../helpers/schema.gen';
 import { isNull } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 

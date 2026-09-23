@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { AccessLevel, User } from '../../api/schema.gen';
+import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalAutofocus, dismissContainingModal, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({

@@ -1,6 +1,6 @@
 import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
 import DOMPurify from 'dompurify';
-import { AccessLevel, User, YesNoAny } from '../api/schema.gen';
+import { AccessLevel, User, YesNoAny } from '../helpers/schema.gen';
 import { SwipeDirection } from '../models';
 
 export interface ComponentWithActivatedCallback {

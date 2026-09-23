@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
-import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../api/schema.gen';
-import { apiClient, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
+import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
@@ -184,7 +184,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async loadRecipe() {
     try {
-      const { data: recipe, error } = await apiClient.GET('/recipes/{recipeId}', {
+      const { data: recipe, error } = await api.client.GET('/recipes/{recipeId}', {
         params: { path: { recipeId: this.recipeId } }
       });
 
@@ -201,7 +201,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async loadLinks() {
     try {
-      const { data: links, error } = await apiClient.GET('/recipes/{recipeId}/links', {
+      const { data: links, error } = await api.client.GET('/recipes/{recipeId}/links', {
         params: { path: { recipeId: this.recipeId } }
       });
 
@@ -217,7 +217,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async loadImages() {
     try {
-      const { data: images, error } = await apiClient.GET('/recipes/{recipeId}/images', {
+      const { data: images, error } = await api.client.GET('/recipes/{recipeId}/images', {
         params: { path: { recipeId: this.recipeId } }
       });
 
@@ -234,7 +234,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async loadNotes() {
     try {
-      const { data: notes, error } = await apiClient.GET('/recipes/{recipeId}/notes', {
+      const { data: notes, error } = await api.client.GET('/recipes/{recipeId}/notes', {
         params: { path: { recipeId: this.recipeId } }
       });
 
@@ -250,7 +250,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async saveRecipe(recipe: Recipe) {
     try {
-      const { error } = await apiClient.PUT('/recipes/{recipeId}', {
+      const { error } = await api.client.PUT('/recipes/{recipeId}', {
         params: { path: { recipeId: this.recipeId } },
         body: recipe
       });
@@ -266,7 +266,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async deleteRecipe() {
     try {
-      const { error } = await apiClient.DELETE('/recipes/{recipeId}', {
+      const { error } = await api.client.DELETE('/recipes/{recipeId}', {
         params: { path: { recipeId: this.recipeId } }
       });
 
@@ -281,7 +281,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async setRecipeState(state: RecipeState) {
     try {
-      const { error } = await apiClient.PATCH('/recipes/{recipeId}', {
+      const { error } = await api.client.PATCH('/recipes/{recipeId}', {
         params: { path: { recipeId: this.recipeId } },
         body: { state: state }
       });
@@ -297,7 +297,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async addLink(recipeId: number) {
     try {
-      const { error } = await apiClient.PUT('/recipes/{recipeId}/links/{destRecipeId}', {
+      const { error } = await api.client.PUT('/recipes/{recipeId}/links/{destRecipeId}', {
         params: { path: { recipeId: this.recipeId, destRecipeId: recipeId } }
       });
 
@@ -316,7 +316,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         throw new Error('Cannot delete link: linked recipe ID is null.');
       }
 
-      const { error } = await apiClient.DELETE('/recipes/{recipeId}/links/{destRecipeId}', {
+      const { error } = await api.client.DELETE('/recipes/{recipeId}/links/{destRecipeId}', {
         params: { path: { recipeId: this.recipeId, destRecipeId: link.id } }
       });
 
@@ -331,7 +331,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async saveNewNote(note: Note) {
     try {
-      const { error } = await apiClient.POST('/recipes/{recipeId}/notes', {
+      const { error } = await api.client.POST('/recipes/{recipeId}/notes', {
         params: { path: { recipeId: this.recipeId } },
         body: note
       });
@@ -351,7 +351,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         throw new Error('Cannot save note: note ID is null.');
       }
 
-      const { error } = await apiClient.PUT('/recipes/{recipeId}/notes/{noteId}', {
+      const { error } = await api.client.PUT('/recipes/{recipeId}/notes/{noteId}', {
         params: { path: { recipeId: this.recipeId, noteId: note.id } },
         body: note
       });
@@ -371,7 +371,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         throw new Error('Cannot delete note: note ID is null.');
       }
 
-      const { error } = await apiClient.DELETE('/recipes/{recipeId}/notes/{noteId}', {
+      const { error } = await api.client.DELETE('/recipes/{recipeId}/notes/{noteId}', {
         params: { path: { recipeId: this.recipeId, noteId: note.id } }
       });
 
@@ -388,7 +388,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          await apiClient.POST('/recipes/{recipeId}/images', {
+          await api.client.POST('/recipes/{recipeId}/images', {
             params: { path: { recipeId: this.recipeId } },
             body: file,
             bodySerializer(body) {
@@ -405,7 +405,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async deleteImage(image: string) {
     try {
-      const { error } = await apiClient.DELETE('/recipes/{recipeId}/images/{name}', {
+      const { error } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
         params: { path: { recipeId: this.recipeId, name: image } }
       });
 
@@ -420,7 +420,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async setRating(value: number) {
     try {
-      const { error } = await apiClient.PATCH('/recipes/{recipeId}', {
+      const { error } = await api.client.PATCH('/recipes/{recipeId}', {
         params: { path: { recipeId: this.recipeId } },
         body: { rating: value }
       });
@@ -436,7 +436,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async setMainImage(image: string) {
     try {
-      const { error } = await apiClient.PATCH('/recipes/{recipeId}', {
+      const { error } = await api.client.PATCH('/recipes/{recipeId}', {
         params: { path: { recipeId: this.recipeId } },
         body: { mainImageName: image }
       });

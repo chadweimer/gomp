@@ -5,9 +5,9 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { Note, Recipe, RecipeCompact, SearchFilter, User } from "./api/schema.gen";
+import { Note, Recipe, RecipeCompact, SearchFilter, User } from "./helpers/schema.gen";
 import { Color } from "@ionic/core";
-export { Note, Recipe, RecipeCompact, SearchFilter, User } from "./api/schema.gen";
+export { Note, Recipe, RecipeCompact, SearchFilter, User } from "./helpers/schema.gen";
 export { Color } from "@ionic/core";
 export namespace Components {
     interface AppRoot {

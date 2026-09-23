@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Host, Method, State, h } from '@stencil/core';
-import { Backup } from '../../../api/schema.gen';
-import { apiClient } from '../../../helpers/api';
+import { Backup } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, scaleValue, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -84,7 +84,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
 
   private async loadBackups() {
     try {
-      const { data: backups, error } = await apiClient.GET('/backups');
+      const { data: backups, error } = await api.client.GET('/backups');
 
       if (error) {
         throw new Error('Failed to load backups.', { cause: error });
@@ -101,7 +101,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          const { error } = await apiClient.POST('/backups');
+          const { error } = await api.client.POST('/backups');
 
           if (error) {
             throw new Error('Failed to create backup.', { cause: error });
@@ -139,7 +139,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          const { error } = await apiClient.DELETE('/backups/{name}', {
+          const { error } = await api.client.DELETE('/backups/{name}', {
             params: { path: { name: backup.fileName } }
           });
 
@@ -179,7 +179,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          const { error } = await apiClient.POST('/backups/{name}', {
+          const { error } = await api.client.POST('/backups/{name}', {
             params: { path: { name: backupFileName } }
           });
 
@@ -219,7 +219,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          const { error } = await apiClient.POST('/backups', {
+          const { error } = await api.client.POST('/backups', {
             body: { fileContent: file }
           });
 

@@ -1,7 +1,7 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../api/schema.gen';
-import { apiClient, loadSearchFilters } from '../../../helpers/api';
+import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
+import { api, loadSearchFilters } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -61,7 +61,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      const { error } = await apiClient.POST('/users/current/filters', {
+      const { error } = await api.client.POST('/users/current/filters', {
         body: searchFilter
       });
 
@@ -79,7 +79,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       if (isNull(searchFilter.id)) {
         throw new Error('Cannot save search filter: filter ID is null.');
       }
-      const { error } = await apiClient.PUT('/users/current/filters/{filterId}', {
+      const { error } = await api.client.PUT('/users/current/filters/{filterId}', {
         params: { path: { filterId: searchFilter.id } },
         body: searchFilter
       });
@@ -99,7 +99,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     try {
-      const { error } = await apiClient.DELETE('/users/current/filters/{filterId}', {
+      const { error } = await api.client.DELETE('/users/current/filters/{filterId}', {
         params: { path: { filterId: id } }
       });
 
@@ -140,7 +140,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     await enableBackForOverlay(async () => {
-      const { data: searchFilter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+      const { data: searchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
         params: { path: { filterId: id } }
       });
 
@@ -199,7 +199,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     try {
-      const { data: searchFilter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+      const { data: searchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
         params: { path: { filterId: id } }
       });
 

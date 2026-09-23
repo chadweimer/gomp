@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { AccessLevel, User } from '../../../api/schema.gen';
+import { AccessLevel, User } from '../../../helpers/schema.gen';
 import '../user-editor';
 
 describe('user-editor', () => {

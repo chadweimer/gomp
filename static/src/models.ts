@@ -1,4 +1,4 @@
-import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from "./api/schema.gen";
+import { RecipeState, SearchField, SearchFilter, SortBy, SortDir } from './helpers/schema.gen';
 
 export enum SearchViewMode {
   Card = 'card',

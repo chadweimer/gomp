@@ -1,10 +1,10 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { apiClient, fileContentSerializer, loadUserSettings, performRecipeSearch, refreshSearchResults } from '../../../helpers/api';
+import { api, fileContentSerializer, loadUserSettings, performRecipeSearch, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized } from '../../../helpers/utils';
 import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../api/schema.gen';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
 
 @Component({
   tag: 'page-home',
@@ -94,7 +94,7 @@ export class PageHome implements ComponentWithActivatedCallback {
       });
 
       // Then load all the user's saved filters
-      const { data: savedFilters, error } = await apiClient.GET('/users/current/filters');
+      const { data: savedFilters, error } = await api.client.GET('/users/current/filters');
 
       if (error) {
         throw new Error('Failed to load saved filters.', { cause: error });
@@ -106,7 +106,7 @@ export class PageHome implements ComponentWithActivatedCallback {
 
       for (const savedFilter of savedFilters) {
         if (isNull(savedFilter.id)) continue;
-        const { data: savedSearchFilter, error } = await apiClient.GET('/users/current/filters/{filterId}', {
+        const { data: savedSearchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
           params: { path: { filterId: savedFilter.id } }
         });
 
@@ -150,7 +150,7 @@ export class PageHome implements ComponentWithActivatedCallback {
 
   private async saveNewRecipe(recipe: Recipe, file: File | null) {
     try {
-      const { data: newRecipe, error } = await apiClient.POST('/recipes', {
+      const { data: newRecipe, error } = await api.client.POST('/recipes', {
         body: recipe
       });
 
@@ -165,7 +165,7 @@ export class PageHome implements ComponentWithActivatedCallback {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            const { error } = await apiClient.POST('/recipes/{recipeId}/images', {
+            const { error } = await api.client.POST('/recipes/{recipeId}/images', {
               params: { path: { recipeId: newRecipe.id } },
               body: file,
               bodySerializer(body) {

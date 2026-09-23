@@ -1,5 +1,5 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { Recipe, RecipeState, UserSettings } from '../../api/schema.gen';
+import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { loadUserSettings } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
 

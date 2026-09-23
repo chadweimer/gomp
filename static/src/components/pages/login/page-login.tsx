@@ -1,5 +1,5 @@
 import { Component, Element, h, State } from '@stencil/core';
-import { apiClient } from '../../../helpers/api';
+import { api } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
@@ -65,7 +65,7 @@ export class PageLogin {
       this.errorMessage = '';
       const username = this.usernameInput.value as string;
       const password = this.passwordInput.value as string;
-      const { data: user, error } = await apiClient.POST('/auth', {
+      const { data: user, error } = await api.client.POST('/auth', {
         body: { username, password }
       });
 
