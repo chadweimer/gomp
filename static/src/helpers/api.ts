@@ -156,7 +156,7 @@ export async function refreshSearchResults() {
     state.totalRecipeCount = undefined;
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function fileContentSerializer(_body: { file_content?: string } | undefined, file: File) {
   // The unused _body parameter is required to match the expected signature for bodySerializer,
   // so that we know we're using the right part name in the form data
