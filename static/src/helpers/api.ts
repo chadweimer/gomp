@@ -1,5 +1,5 @@
 import createClient, { Client } from 'openapi-fetch';
-import { paths, SearchFilter, SearchResult } from './schema.gen';
+import { paths, SavedSearchFilterCompact, SearchFilter, SearchResult, UserSettings } from './schema.gen';
 import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNull, toYesNoAny } from './utils';
@@ -61,12 +61,8 @@ class Api {
       }
     }
   }
-}
 
-export const api = new Api();
-
-export async function loadUserSettings() {
-  try {
+  readonly loadUserSettings = async (): Promise<UserSettings | null> => {
     const { data: settings, error } = await api.client.GET('/users/current/settings');
 
     if (error) {
@@ -74,14 +70,9 @@ export async function loadUserSettings() {
     }
 
     return settings ?? null;
-  } catch (ex) {
-    console.error(ex);
-    return null;
   }
-}
 
-export async function loadSearchFilters() {
-  try {
+  readonly loadSearchFilters = async (): Promise<SavedSearchFilterCompact[]> => {
     const { data: filters, error } = await api.client.GET('/users/current/filters');
 
     if (error) {
@@ -89,45 +80,44 @@ export async function loadSearchFilters() {
     }
 
     return filters ?? [];
-  } catch (ex) {
-    console.error(ex);
-    return [];
   }
-}
 
-export async function performRecipeSearch(filter: SearchFilter, page: number, count: number): Promise<SearchResult> {
-  // Make sure to fill in any missing fields
-  const defaultFilter = getDefaultSearchFilter();
-  filter = { ...defaultFilter, ...filter };
+  readonly performRecipeSearch = async (filter: SearchFilter, page: number, count: number): Promise<SearchResult> => {
+    // Make sure to fill in any missing fields
+    const defaultFilter = getDefaultSearchFilter();
+    filter = { ...defaultFilter, ...filter };
 
-  const { data: recipes, error } = await api.client.GET('/recipes', {
-    params: {
-      query: {
-        sort: filter.sortBy,
-        dir: filter.sortDir,
-        page: page,
-        count: count,
-        q: filter.query,
-        pictures: toYesNoAny(filter.withPictures),
-        fields: filter.fields.length > 0 ? filter.fields : undefined,
-        states: filter.states.length > 0 ? filter.states : undefined,
-        tags: filter.tags.length > 0 ? filter.tags : undefined
+    const { data: recipes, error } = await api.client.GET('/recipes', {
+      params: {
+        query: {
+          sort: filter.sortBy,
+          dir: filter.sortDir,
+          page: page,
+          count: count,
+          q: filter.query,
+          pictures: toYesNoAny(filter.withPictures),
+          fields: filter.fields.length > 0 ? filter.fields : undefined,
+          states: filter.states.length > 0 ? filter.states : undefined,
+          tags: filter.tags.length > 0 ? filter.tags : undefined
+        }
       }
+    });
+
+    if (error) {
+      throw new Error('Failed to perform recipe search.', { cause: error });
     }
-  });
 
-  if (error) {
-    throw new Error('Failed to perform recipe search.', { cause: error });
+    return recipes;
   }
-
-  return recipes;
 }
+
+export const api = new Api();
 
 export async function refreshSearchResults() {
   if (isNull(state.currentUser)) return;
 
   try {
-    const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
+    const { total, recipes } = await api.performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
     state.searchResults = recipes ?? [];
     state.searchResultCount = total;
     state.searchNumPages = Math.max(Math.ceil(total / state.searchResultsPerPage), 1);

@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
-import { api, loadSearchFilters, loadUserSettings } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
+import { api } from '../../helpers/api';
+import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
 @Component({
@@ -26,9 +26,9 @@ export class SearchFilterEditor {
 
   async connectedCallback() {
     configureModalAutofocus(this.el);
-    this.currentUserSettings = await loadUserSettings();
+    this.currentUserSettings = await trap(api.loadUserSettings, null);
     if (this.showSavedLoader) {
-      this.filters = await loadSearchFilters();
+      this.filters = await trap(api.loadSearchFilters, []);
     }
   }
 

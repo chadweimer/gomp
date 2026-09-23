@@ -1,8 +1,8 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { api, fileContentSerializer, loadUserSettings, performRecipeSearch, refreshSearchResults } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized } from '../../../helpers/utils';
+import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
 
@@ -23,7 +23,7 @@ export class PageHome implements ComponentWithActivatedCallback {
 
   @Method()
   async activatedCallback() {
-    this.currentUserSettings = await loadUserSettings();
+    this.currentUserSettings = await trap(api.loadUserSettings, null);
     await this.loadSearchFilters();
   }
 
@@ -139,7 +139,7 @@ export class PageHome implements ComponentWithActivatedCallback {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      const resp = await performRecipeSearch(filter, 1, 6);
+      const resp = await api.performRecipeSearch(filter, 1, 6);
       return resp;
     } catch (ex) {
       console.error(ex);
@@ -212,5 +212,4 @@ export class PageHome implements ComponentWithActivatedCallback {
     };
     await redirect('/recipes');
   }
-
 }

@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
-import { api, loadSearchFilters } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { api } from '../../../helpers/api';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast, trap } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -16,7 +16,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
   @Method()
   async activatedCallback() {
-    this.filters = await loadSearchFilters();
+    this.filters = await trap(api.loadSearchFilters, []);
   }
 
   render() {
@@ -129,7 +129,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           ...data.searchFilter,
           name: data.name
         });
-        this.filters = await loadSearchFilters();
+        this.filters = await trap(api.loadSearchFilters, []);
       }
     });
   }
@@ -166,7 +166,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           ...data.searchFilter,
           name: data.name
         });
-        this.filters = await loadSearchFilters();
+        this.filters = await trap(api.loadSearchFilters, []);
       }
     });
   }
@@ -188,7 +188,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
       if (role === 'confirm') {
         await this.deleteSearchFilter(searchFilter.id);
-        this.filters = await loadSearchFilters();
+        this.filters = await trap(api.loadSearchFilters, []);
       }
     });
   }

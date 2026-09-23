@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../helpers/schema.gen';
-import { api, fileContentSerializer, loadUserSettings } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
+import { api, fileContentSerializer } from '../../../helpers/api';
+import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast, trap } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-preferences',
@@ -16,7 +16,7 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
 
   @Method()
   async activatedCallback() {
-    this.settings = await loadUserSettings();
+    this.settings = await trap(api.loadUserSettings, null);
   }
 
   render() {
@@ -42,7 +42,7 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
                           <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el!} />
                         </form>
                         <ion-thumbnail>
-                          <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
+                          <img alt="Home" src={this.settings?.homeImageUrl ?? ''} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
                         </ion-thumbnail>
                       </ion-item>
                       <ion-item lines="full">
@@ -56,7 +56,7 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
                       <ion-icon slot="start" name="save" />
                       Save
                     </ion-button>
-                    <ion-button fill="clear" color="danger" onClick={async () => this.settings = await loadUserSettings()}>
+                    <ion-button fill="clear" color="danger" onClick={async () => this.settings = await trap(api.loadUserSettings, null)}>
                       <ion-icon slot="start" name="arrow-undo" />
                       Reset
                     </ion-button>

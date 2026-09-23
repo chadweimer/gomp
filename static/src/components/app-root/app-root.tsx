@@ -346,7 +346,7 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
       if (isNull(state.searchResults)) {
-        await refreshSearchResults();
+        await refreshSearchResults().catch(console.error);
       }
     }
 

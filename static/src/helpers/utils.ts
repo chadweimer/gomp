@@ -278,3 +278,12 @@ export function getRecipeThumbnailUrl(recipeId: number | null | undefined, image
   const encodedName = encodeURIComponent(imageName);
   return `/uploads/recipes/${recipeId}/thumbs/${encodedName}`;
 }
+
+export async function trap<T>(op: () => Promise<T>, failVal: T): Promise<T> {
+  try {
+    return await op();
+  } catch (ex) {
+    console.error(ex);
+    return failVal;
+  }
+}
