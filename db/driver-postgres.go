@@ -44,6 +44,29 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
+func (postgresDriverAdapter) PreExport(_ context.Context, _ sqlx.ExecerContext) error {
+	return nil
+}
+
+func (postgresDriverAdapter) PostExport(_ context.Context, _ sqlx.ExecerContext, backup *models.BackupData) error {
+	for _, table := range *backup {
+		for _, row := range table.Data {
+			for key, value := range row {
+				if byteValue, ok := value.([]byte); ok {
+					// Postgres can return []byte for enum fields, which isn't JSON serializable. Convert those to strings.
+					// In a general purpose implementation, we'd want to check the column type to make sure we're only converting enum fields,
+					// but since we don't otherwise store binary data, we can get away with just converting any []byte we encounter.
+					row[key] = string(byteValue)
+				} else {
+					row[key] = value
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
 	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
@@ -87,23 +110,6 @@ func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerC
 	}
 
 	return tables, nil
-}
-
-func (postgresDriverAdapter) StandardizeExport(_ context.Context, backup *models.BackupData) {
-	for _, table := range *backup {
-		for _, row := range table.Data {
-			for key, value := range row {
-				if byteValue, ok := value.([]byte); ok {
-					// Postgres can return []byte for enum fields, which isn't JSON serializable. Convert those to strings.
-					// In a general purpose implementation, we'd want to check the column type to make sure we're only converting enum fields,
-					// but since we don't otherwise store binary data, we can get away with just converting any []byte we encounter.
-					row[key] = string(byteValue)
-				} else {
-					row[key] = value
-				}
-			}
-		}
-	}
 }
 
 func openPostgres(connectionURL url.URL) (Driver, error) {

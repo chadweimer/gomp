@@ -11,11 +11,12 @@ import (
 )
 
 type sqlBackupDriverAdapter interface {
+	PreExport(ctx context.Context, db sqlx.ExecerContext) error
+	PostExport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
 	PreImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
 	PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
 	GetImportInsertStatement() string
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
-	StandardizeExport(ctx context.Context, backup *models.BackupData)
 }
 
 type sqlBackupDriver struct {
@@ -27,6 +28,10 @@ type sqlBackupDriver struct {
 func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error) {
 	backup := models.BackupData(make([]models.TableData, 0))
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
+		if err := b.adapter.PreExport(ctx, db); err != nil {
+			return fmt.Errorf("pre export: %w", err)
+		}
+
 		// Get all table names
 		tables, err := b.adapter.GetTableNames(ctx, db)
 		if err != nil {
@@ -51,14 +56,15 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 			})
 		}
 
+		if err := b.adapter.PostExport(ctx, db, &backup); err != nil {
+			return fmt.Errorf("post export: %w", err)
+		}
+
 		return nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("exporting database: %w", err)
 	}
-
-	// Standardize the backup data; this allows us to handle special cases for each database driver
-	b.adapter.StandardizeExport(ctx, &backup)
 
 	return &backup, nil
 }
