@@ -45,7 +45,7 @@ func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, qu
 	return fieldStr, fieldArgs
 }
 
-func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
+func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
 	if _, err := db.ExecContext(ctx, "PRAGMA defer_foreign_keys = on"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
 	}
@@ -56,10 +56,6 @@ func (sqliteDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT OR REPLACE"
 }
 
-func (sqliteDriverAdapter) PostImport(_ context.Context, _ sqlx.ExecerContext) error {
-	return nil
-}
-
 func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
 	tables := make([]string, 0)
 	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
@@ -67,10 +63,6 @@ func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerCon
 	}
 
 	return tables, nil
-}
-
-func (sqliteDriverAdapter) StandardizeExport(_ context.Context, _ *models.BackupData) {
-	// Nothing to do for SQLite; it does not have any special types that need to be handled during export
 }
 
 func openSQLite(connectionURL url.URL) (Driver, error) {

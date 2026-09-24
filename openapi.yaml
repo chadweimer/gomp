@@ -159,8 +159,6 @@ paths:
         required: true
         schema:
           type: string
-          # Disallow path separator characters and ..
-          pattern: "^(?!.*[\\/]|\\.\\.).*$"
     post:
       tags: [app]
       summary: Restore from backup
@@ -420,8 +418,6 @@ paths:
         required: true
         schema:
           type: string
-          # Disallow path separator characters and ..
-          pattern: "^(?!.*[\\/]|\\.\\.).*$"
     delete:
       tags: [recipes]
       summary: Delete recipe image

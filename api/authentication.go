@@ -83,6 +83,13 @@ func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbD
 		Prefix:               routePrefix,
 		DoNotValidateServers: true,
 		Options: openapi3filter.Options{
+			// We're not using this for validation
+			ExcludeRequestBody:          true,
+			ExcludeRequestQueryParams:   true,
+			ExcludeResponseBody:         true,
+			ExcludeReadOnlyValidations:  true,
+			ExcludeWriteOnlyValidations: true,
+
 			AuthenticationFunc: func(ctx context.Context, input *openapi3filter.AuthenticationInput) error {
 				// This shouldn't be called without a security scheme, but still double check
 				if input.SecurityScheme == nil {
