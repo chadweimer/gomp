@@ -45,7 +45,7 @@ func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, qu
 	return fieldStr, fieldArgs
 }
 
-func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
+func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExtContext, _ *models.BackupData) error {
 	if _, err := db.ExecContext(ctx, "PRAGMA defer_foreign_keys = on"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
 	}
@@ -56,7 +56,7 @@ func (sqliteDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT OR REPLACE"
 }
 
-func (sqliteDriverAdapter) PostImport(_ context.Context, _ sqlx.ExecerContext) error {
+func (sqliteDriverAdapter) PostImport(_ context.Context, _ sqlx.ExtContext, _ *models.BackupData) error {
 	return nil
 }
 

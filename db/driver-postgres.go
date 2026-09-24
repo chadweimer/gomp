@@ -44,7 +44,7 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
-func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
+func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExtContext, _ *models.BackupData) error {
 	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
 	}
@@ -59,7 +59,26 @@ func (postgresDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT"
 }
 
-func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext) error {
+func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error {
+	// We need to special-case PostgreSQL because of it having sequences that need to be reset after import
+	// Loop over each table, and check if it has a sequence that needs to be reset
+	for _, table := range *backup {
+		table := table.TableName
+		// First check if the table has a sequence
+		var sequenceName string
+		err := sqlx.SelectContext(ctx, db, &sequenceName, "SELECT sequence_name FROM information_schema.sequences WHERE sequence_name LIKE '%$1_id%'", table)
+		if err != nil {
+			slog.Warn("failed to find sequence for table %s; continuing assuming it does not exist: %v", table, err)
+			continue
+		}
+
+		// Now that found the sequence, we can reset it
+		_, err = db.ExecContext(ctx, fmt.Sprintf("SELECT setval(pg_get_serial_sequence('%s', 'id'), COALESCE(MAX(id), 1), false) FROM %s", table, table))
+		if err != nil {
+			return fmt.Errorf("resetting sequence for table %s: %w", table, err)
+		}
+	}
+
 	// Re-enable triggers after the import
 	if _, err := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); err != nil {
 		return fmt.Errorf("enabling triggers: %w", err)

@@ -12,8 +12,8 @@ import (
 )
 
 type sqlBackupDriverAdapter interface {
-	PreImport(ctx context.Context, db sqlx.ExecerContext) error
-	PostImport(ctx context.Context, db sqlx.ExecerContext) error
+	PreImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error
+	PostImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error
 	GetImportInsertStatement() string
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
 	StandardizeExport(ctx context.Context, backup *models.BackupData)
@@ -69,11 +69,11 @@ func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData)
 
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
-		if err := b.adapter.PreImport(ctx, db); err != nil {
+		if err := b.adapter.PreImport(ctx, db, backup); err != nil {
 			return fmt.Errorf("pre import: %w", err)
 		}
 		defer func() {
-			if err := b.adapter.PostImport(ctx, db); err != nil {
+			if err := b.adapter.PostImport(ctx, db, backup); err != nil {
 				logger.ErrorContext(ctx, "Failed running post import", "error", err)
 			}
 		}()
