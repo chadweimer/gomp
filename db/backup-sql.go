@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -65,18 +64,11 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 }
 
 func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
-	logger := infra.GetLoggerFromContext(ctx)
-
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
 		if err := b.adapter.PreImport(ctx, db, backup); err != nil {
 			return fmt.Errorf("pre import: %w", err)
 		}
-		defer func() {
-			if err := b.adapter.PostImport(ctx, db, backup); err != nil {
-				logger.ErrorContext(ctx, "Failed running post import", "error", err)
-			}
-		}()
 
 		// Sanitize all the table names,
 		// and remove the migrations table if it exists in the backup,
@@ -105,6 +97,10 @@ func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData)
 			if err := insertRows(ctx, db, tableName, rows, b.adapter.GetImportInsertStatement()); err != nil {
 				return fmt.Errorf("importing table %s: %w", tableName, err)
 			}
+		}
+
+		if err := b.adapter.PostImport(ctx, db, backup); err != nil {
+			return fmt.Errorf("post import: %w", err)
 		}
 
 		return nil

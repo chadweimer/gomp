@@ -49,7 +49,7 @@ func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContex
 		return fmt.Errorf("deferring constraints: %w", err)
 	}
 	// Disable triggers during the import
-	if _, err := db.ExecContext(ctx, "SET session_replication_role = replica"); err != nil {
+	if _, err := db.ExecContext(ctx, "SET LOCAL session_replication_role = replica"); err != nil {
 		return fmt.Errorf("disabling triggers: %w", err)
 	}
 	return nil
@@ -59,14 +59,7 @@ func (postgresDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT"
 }
 
-func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) (err error) {
-	defer func() {
-		// Re-enable triggers after the import
-		if _, deferredErr := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); deferredErr != nil {
-			err = fmt.Errorf("enabling triggers: %w", deferredErr)
-		}
-	}()
-
+func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error {
 	// We need to special-case PostgreSQL because of it having sequences that need to be reset after import
 	for _, table := range *backup {
 		tableName := table.TableName
@@ -75,16 +68,16 @@ func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerConte
 			// Get column names from the first row
 			for columnName := range table.Data[0] {
 				// This uses a stored procedure that already handles treating the string names safely for SQL execution.
-				_, seqErr := db.ExecContext(ctx, fmt.Sprintf("SELECT sync_seq('%s', '%s')", tableName, columnName))
-				if seqErr != nil {
-					slog.ErrorContext(ctx, "failed to sync sequence for column", "table", tableName, "column", columnName, "error", seqErr)
-					err = fmt.Errorf("syncing sequence for table %s column %s: %w", tableName, columnName, seqErr)
+				_, err := db.ExecContext(ctx, fmt.Sprintf("SELECT sync_seq('%s', '%s')", tableName, columnName))
+				if err != nil {
+					slog.ErrorContext(ctx, "failed to sync sequence for column", "table", tableName, "column", columnName, "error", err)
+					return fmt.Errorf("syncing sequence for table %s column %s: %w", tableName, columnName, err)
 				}
 			}
 		}
 	}
 
-	return err
+	return nil
 }
 
 func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
