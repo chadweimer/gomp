@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -45,7 +44,7 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
-func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExtContext, _ *models.BackupData) error {
+func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
 	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
 		return fmt.Errorf("deferring constraints: %w", err)
 	}
@@ -60,47 +59,32 @@ func (postgresDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT"
 }
 
-func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error {
+func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) (err error) {
+	defer func() {
+		// Re-enable triggers after the import
+		if _, deferredErr := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); deferredErr != nil {
+			err = fmt.Errorf("enabling triggers: %w", deferredErr)
+		}
+	}()
+
 	// We need to special-case PostgreSQL because of it having sequences that need to be reset after import
-	// Loop over each table, and check if it has a sequence that needs to be reset
-	var sequenceErrs []error
 	for _, table := range *backup {
-		table := table.TableName
-		// First check if the table has a sequence
-		var sequenceNames []string
-		err := sqlx.SelectContext(
-			ctx, db, &sequenceNames, "SELECT sequence_name FROM information_schema.sequences WHERE sequence_name LIKE $1 || '_id%'", "%"+table)
-		if err != nil {
-			slog.ErrorContext(ctx, "failed to find sequence for table", "table", table, "error", err)
-			sequenceErrs = append(sequenceErrs, fmt.Errorf("finding sequence for table %s: %w", table, err))
-		}
+		tableName := table.TableName
 
-		// Now that we know there's a sequence, we can reset it
-		numSequences := len(sequenceNames)
-		if numSequences > 0 {
-			if numSequences > 1 {
-				slog.WarnContext(ctx, "multiple sequences found for table", "table", table, "sequences", sequenceNames)
-			}
-
-			_, err = db.ExecContext(
-				ctx, fmt.Sprintf("SELECT setval(pg_get_serial_sequence('%s', 'id'), COALESCE(MAX(id), 1), false) FROM %s", table, table))
-			if err != nil {
-				slog.ErrorContext(ctx, "failed to reset sequence for table", "table", table, "error", err)
-				sequenceErrs = append(sequenceErrs, fmt.Errorf("resetting sequence for table %s: %w", table, err))
+		if len(table.Data) > 0 {
+			// Get column names from the first row
+			for columnName := range table.Data[0] {
+				// This uses a stored procedure that already handles treating the string names safely for SQL execution.
+				_, seqErr := db.ExecContext(ctx, fmt.Sprintf("SELECT sync_seq('%s', '%s')", tableName, columnName))
+				if seqErr != nil {
+					slog.ErrorContext(ctx, "failed to sync sequence for column", "table", tableName, "column", columnName, "error", seqErr)
+					err = fmt.Errorf("syncing sequence for table %s column %s: %w", tableName, columnName, seqErr)
+				}
 			}
 		}
 	}
 
-	// Re-enable triggers after the import
-	if _, err := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); err != nil {
-		return fmt.Errorf("enabling triggers: %w", err)
-	}
-
-	if len(sequenceErrs) > 0 {
-		return errors.Join(sequenceErrs...)
-	}
-
-	return nil
+	return err
 }
 
 func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {

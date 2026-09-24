@@ -12,8 +12,8 @@ import (
 )
 
 type sqlBackupDriverAdapter interface {
-	PreImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error
-	PostImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error
+	PreImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
+	PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
 	GetImportInsertStatement() string
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
 	StandardizeExport(ctx context.Context, backup *models.BackupData)
