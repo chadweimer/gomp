@@ -44,39 +44,7 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
-func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext) error {
-	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
-		return fmt.Errorf("deferring constraints: %w", err)
-	}
-	// Disable triggers during the import
-	if _, err := db.ExecContext(ctx, "SET session_replication_role = replica"); err != nil {
-		return fmt.Errorf("disabling triggers: %w", err)
-	}
-	return nil
-}
-
-func (postgresDriverAdapter) GetImportInsertStatement() string {
-	return "INSERT"
-}
-
-func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext) error {
-	// Re-enable triggers after the import
-	if _, err := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); err != nil {
-		return fmt.Errorf("enabling triggers: %w", err)
-	}
-	return nil
-}
-
-func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
-	tables := make([]string, 0)
-	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"); err != nil {
-		return nil, err
-	}
-
-	return tables, nil
-}
-
-func (postgresDriverAdapter) StandardizeExport(_ context.Context, backup *models.BackupData) {
+func (postgresDriverAdapter) PostExport(_ context.Context, _ sqlx.ExecerContext, backup *models.BackupData) error {
 	for _, table := range *backup {
 		for _, row := range table.Data {
 			for key, value := range row {
@@ -91,6 +59,53 @@ func (postgresDriverAdapter) StandardizeExport(_ context.Context, backup *models
 			}
 		}
 	}
+
+	return nil
+}
+
+func (postgresDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
+	if _, err := db.ExecContext(ctx, "SET CONSTRAINTS ALL DEFERRED"); err != nil {
+		return fmt.Errorf("deferring constraints: %w", err)
+	}
+	// Disable triggers during the import
+	if _, err := db.ExecContext(ctx, "SET LOCAL session_replication_role = replica"); err != nil {
+		return fmt.Errorf("disabling triggers: %w", err)
+	}
+	return nil
+}
+
+func (postgresDriverAdapter) GetImportInsertStatement() string {
+	return "INSERT"
+}
+
+func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error {
+	// We need to special-case PostgreSQL because of it having sequences that need to be reset after import
+	for _, table := range *backup {
+		tableName := table.TableName
+
+		if len(table.Data) > 0 {
+			// Get column names from the first row
+			for columnName := range table.Data[0] {
+				// This uses a stored procedure that already handles treating the string names safely for SQL execution.
+				_, err := db.ExecContext(ctx, fmt.Sprintf("SELECT sync_seq('%s', '%s')", tableName, columnName))
+				if err != nil {
+					slog.ErrorContext(ctx, "failed to sync sequence for column", "table", tableName, "column", columnName, "error", err)
+					return fmt.Errorf("syncing sequence for table %s column %s: %w", tableName, columnName, err)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
+	tables := make([]string, 0)
+	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
 }
 
 func openPostgres(connectionURL url.URL) (Driver, error) {

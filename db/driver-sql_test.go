@@ -34,7 +34,15 @@ func (m mockDriverAdapter) GetTableNames(_ context.Context, _ sqlx.QueryerContex
 	return m.tableNames, nil
 }
 
-func (mockDriverAdapter) PreImport(_ context.Context, _ sqlx.ExecerContext) error {
+func (mockDriverAdapter) PreExport(_ context.Context, _ sqlx.ExecerContext) error {
+	return nil
+}
+
+func (mockDriverAdapter) PostExport(_ context.Context, _ sqlx.ExecerContext, _ *models.BackupData) error {
+	return nil
+}
+
+func (mockDriverAdapter) PreImport(_ context.Context, _ sqlx.ExecerContext, _ *models.BackupData) error {
 	return nil
 }
 
@@ -42,9 +50,6 @@ func (mockDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT"
 }
 
-func (mockDriverAdapter) PostImport(_ context.Context, _ sqlx.ExecerContext) error {
+func (mockDriverAdapter) PostImport(_ context.Context, _ sqlx.ExecerContext, _ *models.BackupData) error {
 	return nil
-}
-
-func (mockDriverAdapter) StandardizeExport(_ context.Context, _ *models.BackupData) {
 }
