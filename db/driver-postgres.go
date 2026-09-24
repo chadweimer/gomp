@@ -66,9 +66,11 @@ func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExtContext,
 		table := table.TableName
 		// First check if the table has a sequence
 		var sequenceName string
-		err := sqlx.SelectContext(ctx, db, &sequenceName, "SELECT sequence_name FROM information_schema.sequences WHERE sequence_name LIKE '%$1_id%'", table)
+		err := sqlx.SelectContext(ctx, db, &sequenceName, "SELECT sequence_name FROM information_schema.sequences WHERE sequence_name LIKE $1 || '_id%'", "%"+table)
 		if err != nil {
-			slog.Warn("failed to find sequence for table %s; continuing assuming it does not exist: %v", table, err)
+			slog.Warn("failed to find sequence for table; continuing assuming it does not exist",
+				"table", table,
+				"error", err)
 			continue
 		}
 
