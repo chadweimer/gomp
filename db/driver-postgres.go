@@ -62,11 +62,12 @@ func (postgresDriverAdapter) GetImportInsertStatement() string {
 func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExtContext, backup *models.BackupData) error {
 	// We need to special-case PostgreSQL because of it having sequences that need to be reset after import
 	// Loop over each table, and check if it has a sequence that needs to be reset
+	var sequenceErr error
 	for _, table := range *backup {
 		table := table.TableName
 		// First check if the table has a sequence
-		var sequenceName string
-		err := sqlx.SelectContext(ctx, db, &sequenceName, "SELECT sequence_name FROM information_schema.sequences WHERE sequence_name LIKE $1 || '_id%'", "%"+table)
+		var sequenceNames []string
+		err := sqlx.SelectContext(ctx, db, &sequenceNames, "SELECT sequence_name FROM information_schema.sequences WHERE sequence_name LIKE $1 || '_id%'", "%"+table)
 		if err != nil {
 			slog.Warn("failed to find sequence for table; continuing assuming it does not exist",
 				"table", table,
@@ -75,9 +76,12 @@ func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExtContext,
 		}
 
 		// Now that found the sequence, we can reset it
-		_, err = db.ExecContext(ctx, fmt.Sprintf("SELECT setval(pg_get_serial_sequence('%s', 'id'), COALESCE(MAX(id), 1), false) FROM %s", table, table))
-		if err != nil {
-			return fmt.Errorf("resetting sequence for table %s: %w", table, err)
+		if len(sequenceNames) == 1 {
+			_, err = db.ExecContext(ctx, fmt.Sprintf("SELECT setval(pg_get_serial_sequence('%s', 'id'), COALESCE(MAX(id), 1), false) FROM %s", table, table))
+			if err != nil {
+				sequenceErr = fmt.Errorf("resetting sequence for table %s: %w", table, err)
+				break
+			}
 		}
 	}
 
@@ -85,7 +89,8 @@ func (postgresDriverAdapter) PostImport(ctx context.Context, db sqlx.ExtContext,
 	if _, err := db.ExecContext(ctx, "SET session_replication_role = DEFAULT"); err != nil {
 		return fmt.Errorf("enabling triggers: %w", err)
 	}
-	return nil
+
+	return sequenceErr
 }
 
 func (postgresDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
