@@ -44,10 +44,6 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return fieldStr, fieldArgs
 }
 
-func (postgresDriverAdapter) PreExport(_ context.Context, _ sqlx.ExecerContext) error {
-	return nil
-}
-
 func (postgresDriverAdapter) PostExport(_ context.Context, _ sqlx.ExecerContext, backup *models.BackupData) error {
 	for _, table := range *backup {
 		for _, row := range table.Data {

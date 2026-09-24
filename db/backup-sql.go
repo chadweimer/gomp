@@ -11,12 +11,20 @@ import (
 )
 
 type sqlBackupDriverAdapter interface {
-	PreExport(ctx context.Context, db sqlx.ExecerContext) error
-	PostExport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
-	PreImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
-	PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
 	GetImportInsertStatement() string
 	GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error)
+}
+type sqlBackupPreExporter interface {
+	PreExport(ctx context.Context, db sqlx.ExecerContext) error
+}
+type sqlBackupPostExporter interface {
+	PostExport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
+}
+type sqlBackupPreImporter interface {
+	PreImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
+}
+type sqlBackupPostImporter interface {
+	PostImport(ctx context.Context, db sqlx.ExecerContext, backup *models.BackupData) error
 }
 
 type sqlBackupDriver struct {
@@ -28,8 +36,10 @@ type sqlBackupDriver struct {
 func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error) {
 	backup := models.BackupData(make([]models.TableData, 0))
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
-		if err := b.adapter.PreExport(ctx, db); err != nil {
-			return fmt.Errorf("pre export: %w", err)
+		if preExporter, ok := b.adapter.(sqlBackupPreExporter); ok {
+			if err := preExporter.PreExport(ctx, db); err != nil {
+				return fmt.Errorf("pre export: %w", err)
+			}
 		}
 
 		// Get all table names
@@ -56,8 +66,10 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 			})
 		}
 
-		if err := b.adapter.PostExport(ctx, db, &backup); err != nil {
-			return fmt.Errorf("post export: %w", err)
+		if postExporter, ok := b.adapter.(sqlBackupPostExporter); ok {
+			if err := postExporter.PostExport(ctx, db, &backup); err != nil {
+				return fmt.Errorf("post export: %w", err)
+			}
 		}
 
 		return nil
@@ -72,8 +84,10 @@ func (b *sqlBackupDriver) Export(ctx context.Context) (*models.BackupData, error
 func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData) error {
 	// Import data from all tables in the backup
 	err := tx(ctx, b.db, func(db *sqlx.Tx) error {
-		if err := b.adapter.PreImport(ctx, db, backup); err != nil {
-			return fmt.Errorf("pre import: %w", err)
+		if preImporter, ok := b.adapter.(sqlBackupPreImporter); ok {
+			if err := preImporter.PreImport(ctx, db, backup); err != nil {
+				return fmt.Errorf("pre import: %w", err)
+			}
 		}
 
 		// Sanitize all the table names,
@@ -105,8 +119,10 @@ func (b *sqlBackupDriver) Import(ctx context.Context, backup *models.BackupData)
 			}
 		}
 
-		if err := b.adapter.PostImport(ctx, db, backup); err != nil {
-			return fmt.Errorf("post import: %w", err)
+		if postImporter, ok := b.adapter.(sqlBackupPostImporter); ok {
+			if err := postImporter.PostImport(ctx, db, backup); err != nil {
+				return fmt.Errorf("post import: %w", err)
+			}
 		}
 
 		return nil
