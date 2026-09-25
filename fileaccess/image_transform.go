@@ -56,7 +56,7 @@ func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *imag
 	return dst
 }
 
-// applyOrientation reads EXIF orientation from JPEG bytes and returns a corrected image
+// rotateImage reads EXIF orientation from the raw bytes and returns a corrected image
 func rotateImage(raw []byte, format string, img image.Image) image.Image {
 	var imageFormat imagemeta.ImageFormat
 	switch format {
@@ -96,32 +96,32 @@ func rotateImage(raw []byte, format string, img image.Image) image.Image {
 		return img
 	}
 
-	// 0 = unknown, 1 = normal (no rotation needed)
-	if orientation == 0 || orientation == 1 {
+	mapper := getOrientationMapper(orientation)
+	if mapper == nil {
 		return img
 	}
+	return applyTransform(img, mapper)
+}
 
-	var mapper pixelMapper
+func getOrientationMapper(orientation uint16) pixelMapper {
 	switch orientation {
 	case 2:
-		mapper = flipHorizontal()
+		return flipHorizontal()
 	case 3:
-		mapper = rotate180()
+		return rotate180()
 	case 4:
-		mapper = flipVertical()
+		return flipVertical()
 	case 5:
-		mapper = compose(rotate90CCW(), flipHorizontal())
+		return compose(rotate90CCW(), flipHorizontal())
 	case 6:
-		mapper = rotate90CCW()
+		return rotate90CCW()
 	case 7:
-		mapper = compose(rotate90CW(), flipHorizontal())
+		return compose(rotate90CW(), flipHorizontal())
 	case 8:
-		mapper = rotate90CW()
+		return rotate90CW()
 	default:
-		return img
+		return nil
 	}
-
-	return applyTransform(img, mapper)
 }
 
 func applyTransform(img image.Image, mapper pixelMapper) image.Image {
