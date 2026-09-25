@@ -8,7 +8,6 @@ import (
 	"image/jpeg"
 	"io"
 	"io/fs"
-	"math"
 	"path/filepath"
 	"strconv"
 
@@ -85,14 +84,14 @@ func (u ImageUploader) Save(recipeID int64, imageName string, data []byte) (resu
 		imageURL, err = u.saveImage(dataReader, imgDir, imageName)
 	} else {
 		// Resize and save as jpeg
-		imageURL, err = u.generateFitted(original, imgDir, imageName)
+		imageURL, err = u.generateFitted(data, format, original, imgDir, imageName)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	// And generate a thumbnail and save it
-	thumbURL, err := u.generateThumbnail(original, getDirPathForThumbnail(recipeID), imageName)
+	thumbURL, err := u.generateThumbnail(data, format, original, getDirPathForThumbnail(recipeID), imageName)
 	if err != nil {
 		return nil, err
 	}
@@ -181,9 +180,10 @@ func (u ImageUploader) Load(recipeID int64, imageName string) ([]byte, error) {
 	return fs.ReadFile(u.driver, origPath)
 }
 
-func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, imageName string) (string, error) {
-	resize, crop := cover(original.Bounds(), u.imgCfg.ThumbnailSize)
-	resizedImage := resizeImage(original, resize, getScaler(u.imgCfg.ThumbnailQuality))
+func (u ImageUploader) generateThumbnail(raw []byte, format string, original image.Image, saveDir string, imageName string) (string, error) {
+	rotatedImage := rotateImage(raw, format, original)
+	resize, crop := cover(rotatedImage.Bounds(), u.imgCfg.ThumbnailSize)
+	resizedImage := resizeImage(rotatedImage, resize, getScaler(u.imgCfg.ThumbnailQuality))
 	croppedImage := resizedImage.SubImage(crop)
 
 	thumbBuf := new(bytes.Buffer)
@@ -195,7 +195,7 @@ func (u ImageUploader) generateThumbnail(original image.Image, saveDir string, i
 	return u.saveImage(bytes.NewReader(thumbBuf.Bytes()), saveDir, imageName)
 }
 
-func (u ImageUploader) generateFitted(original image.Image, saveDir string, imageName string) (string, error) {
+func (u ImageUploader) generateFitted(raw []byte, format string, original image.Image, saveDir string, imageName string) (string, error) {
 	var fittedImage image.Image
 
 	bounds := original.Bounds()
@@ -203,8 +203,9 @@ func (u ImageUploader) generateFitted(original image.Image, saveDir string, imag
 		(bounds.Dx() <= u.imgCfg.ImageSize && bounds.Dy() <= u.imgCfg.ImageSize) {
 		fittedImage = original
 	} else {
-		resize := fit(bounds, u.imgCfg.ImageSize)
-		fittedImage = resizeImage(original, resize, getScaler(u.imgCfg.ImageQuality))
+		rotatedImage := rotateImage(raw, format, original)
+		resize := fit(rotatedImage.Bounds(), u.imgCfg.ImageSize)
+		fittedImage = resizeImage(rotatedImage, resize, getScaler(u.imgCfg.ImageQuality))
 	}
 
 	fittedBuf := new(bytes.Buffer)
@@ -240,51 +241,6 @@ func getDirPathForImage(recipeID int64) string {
 
 func getDirPathForThumbnail(recipeID int64) string {
 	return filepath.Join(getDirPathForRecipe(recipeID), "thumbs")
-}
-
-func fit(src image.Rectangle, size int) (resize image.Rectangle) {
-	srcW := src.Dx()
-	srcH := src.Dy()
-
-	// Compute the two possible scale factors.
-	scaleW := float64(size) / float64(srcW)
-	scaleH := float64(size) / float64(srcH)
-
-	// Pick the *smaller* factor so the whole image stays visible.
-	scale := math.Min(scaleW, scaleH)
-
-	newW := int(math.Round(float64(srcW) * scale))
-	newH := int(math.Round(float64(srcH) * scale))
-	return image.Rect(0, 0, newW, newH)
-}
-
-func cover(src image.Rectangle, size int) (resize image.Rectangle, crop image.Rectangle) {
-	srcW := src.Dx()
-	srcH := src.Dy()
-
-	// Compute the two possible scale factors.
-	scaleW := float64(size) / float64(srcW)
-	scaleH := float64(size) / float64(srcH)
-
-	// Pick the *larger* factor so the image fills the box.
-	scale := math.Max(scaleW, scaleH)
-
-	newW := int(math.Round(float64(srcW) * scale))
-	newH := int(math.Round(float64(srcH) * scale))
-
-	// Offsets for a centred crop.
-	offsetX := (newW - size) / 2
-	offsetY := (newH - size) / 2
-
-	resize = image.Rect(0, 0, newW, newH)
-	crop = image.Rect(offsetX, offsetY, size+offsetX, size+offsetY)
-	return resize, crop
-}
-
-func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *image.RGBA {
-	dst := image.NewRGBA(box)
-	scaler.Scale(dst, dst.Bounds(), src, src.Bounds(), draw.Src, nil)
-	return dst
 }
 
 func getScaler(quality models.ImageQualityLevel) draw.Scaler {
