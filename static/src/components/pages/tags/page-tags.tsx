@@ -1,6 +1,6 @@
 import { Component, h, Host, Method, State } from '@stencil/core';
-import { SortDir } from '../../../generated';
-import { recipesApi } from '../../../helpers/api';
+import { SortDir } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, isNull } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
@@ -64,7 +64,13 @@ export class PageTags implements ComponentWithActivatedCallback {
 
   private async load() {
     try {
-      this.tags = await recipesApi.getAllTags();
+      const { data: tags, error } = await api.client.GET('/tags');
+
+      if (error) {
+        throw new Error('Failed to load tags.', { cause: error });
+      }
+
+      this.tags = tags;
     } catch (ex) {
       this.tags = null;
       console.error(ex);

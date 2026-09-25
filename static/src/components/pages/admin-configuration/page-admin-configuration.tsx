@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { AppConfiguration } from '../../../generated';
-import { appApi } from '../../../helpers/api';
+import { AppConfiguration } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, showToast } from '../../../helpers/utils';
 import appConfig from '../../../stores/config';
 
@@ -59,7 +59,13 @@ export class PageAdminConfiguration implements ComponentWithActivatedCallback {
 
   private async loadAppConfiguration() {
     try {
-      this.appConfig = await appApi.getConfiguration();
+      const { data: config, error } = await api.client.GET('/app/configuration');
+
+      if (error) {
+        throw new Error('Failed to load configuration.', { cause: error });
+      }
+
+      this.appConfig = config;
     } catch (ex) {
       console.error(ex);
     }
@@ -71,7 +77,14 @@ export class PageAdminConfiguration implements ComponentWithActivatedCallback {
     }
 
     try {
-      await appApi.saveConfiguration({ appConfiguration: this.appConfig });
+      const { error } = await api.client.PUT('/app/configuration', {
+        body: this.appConfig
+      });
+
+      if (error) {
+        throw new Error('Failed to save configuration.', { cause: error });
+      }
+
       appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);

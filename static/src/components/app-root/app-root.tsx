@@ -1,12 +1,13 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
 import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
-import { AccessLevel, SearchFilter } from '../../generated';
-import { appApi, refreshSearchResults } from '../../helpers/api';
+import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
+import { api, refreshSearchResults } from '../../helpers/api';
 import { redirect, enableBackForOverlay, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
 import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
+import { Subscription } from 'rxjs/internal/Subscription';
 
 @Component({
   tag: 'app-root',
@@ -16,6 +17,7 @@ export class AppRoot {
   @Element() el!: HTMLAppRootElement;
   private routerOutlet!: HTMLIonRouterOutletElement;
   private menu!: HTMLIonMenuElement;
+  private readonly subscriptions: Subscription[] = [];
 
   private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
@@ -48,22 +50,23 @@ export class AppRoot {
 
   @State() pageTitle: string = '';
 
-  async componentWillLoad() {
+  connectedCallback() {
     // Automatically trigger a logout if an API returns a 401
-    const { fetch: originalFetch } = globalThis;
-    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      const response = await originalFetch(input, init);
+    this.subscriptions.push(api.responses.subscribe(async ({ request, response }) => {
       if (response.status === 401) {
         // Make sure we don't recursively call ourselves if the logout also triggers a 401
-        const logoutOptions = await appApi.logoutRequestOpts();
-        const url = input instanceof Request ? input.url : input.toString();
-        if (!url.endsWith(logoutOptions.path) || init?.method !== logoutOptions.method) {
+        if (!request.url.endsWith('/auth') || request.method.toLowerCase() !== 'delete') {
           await this.logout();
         }
       }
-      return response;
-    };
+    }));
+  }
 
+  disconnectedCallback() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  async componentWillLoad() {
     await this.loadAppConfiguration();
   }
 
@@ -165,6 +168,7 @@ export class AppRoot {
                     .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
                     .map(link => (
                       <ion-button
+                        key={link.url}
                         class={{ active: this.pageTitle === link.title }}
                         href={link.url}
                       >
@@ -243,8 +247,18 @@ export class AppRoot {
 
   private async loadAppConfiguration() {
     try {
-      appConfig.info = await appApi.getInfo();
-      appConfig.config = await appApi.getConfiguration();
+      const { data: info, error: infoError } = await api.client.GET('/app/info');
+      if (infoError) {
+        throw new Error('Failed to load app info', { cause: infoError });
+      }
+
+      const { data: config, error: configError } = await api.client.GET('/app/configuration');
+      if (configError) {
+        throw new Error('Failed to load app configuration', { cause: configError });
+      }
+
+      appConfig.info = info;
+      appConfig.config = config;
 
       document.title = appConfig.config.title;
       const appName = document.querySelector('meta[name="application-name"]');
@@ -262,8 +276,17 @@ export class AppRoot {
 
   private async logout() {
     clearState();
-    await appApi.logout();
-    await redirect('/login');
+    try {
+      const { error } = await api.client.DELETE('/auth');
+
+      if (error) {
+        throw new Error('Failed to logout.', { cause: error })
+      }
+
+      await redirect('/login');
+    } catch (ex) {
+      console.error(ex);
+    }
   }
 
   private isLoggedIn() {
@@ -323,7 +346,7 @@ export class AppRoot {
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
       if (isNull(state.searchResults)) {
-        await refreshSearchResults();
+        await refreshSearchResults().catch(console.error);
       }
     }
 

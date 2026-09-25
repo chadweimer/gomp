@@ -1,7 +1,9 @@
-import { AppApi, Configuration, FetchAPI, FetchParams, Middleware, RecipesApi, SearchFilter, UsersApi } from '../generated';
+import createClient, { Client } from 'openapi-fetch';
+import { paths, SavedSearchFilterCompact, SearchFilter, SearchResult, UserSettings } from './schema.gen';
 import { getDefaultSearchFilter } from '../models';
 import state, { onStateChange } from '../stores/state';
 import { isNull, toYesNoAny } from './utils';
+import { Subject } from 'rxjs';
 
 // Retrieve search results when search filters change
 const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
@@ -16,96 +18,106 @@ for (const prop of propsToSearch) {
   });
 }
 
-class LoadingMiddleware implements Middleware {
-  pre(): Promise<void | FetchParams> {
+class Api {
+  readonly client: Client<paths, `${string}/${string}`>;
+  readonly responses: Subject<{ request: Request, response: Response }>;
+
+  constructor() {
+    this.client = createClient<paths>({
+      baseUrl: `${globalThis.location.origin}/api/v1`,
+      fetch: this.fetch
+    });
+    this.responses = new Subject<{ request: Request, response: Response }>();
+  }
+
+  private readonly fetch = async (input: Request, init?: RequestInit): Promise<Response> => {
     state.loadingCount++;
-    return Promise.resolve();
-  }
-
-  post(): Promise<void | Response> {
-    if (state.loadingCount > 0) {
-      state.loadingCount--;
-    }
-    return Promise.resolve();
-  }
-
-  onError(): Promise<void | Response> {
-    return this.post();
-  }
-}
-
-const customFetch: FetchAPI = async (input: RequestInfo | URL, init?: RequestInit) => {
-  let response = await globalThis.fetch(input, init);
-  if (response.status === 403) {
-    // Try refreshing the token and repeating the request
-    // This can fix the situation where the access level of
-    // the user has been changed and requires a new token
     try {
-      const localAppApi = new AppApi(new Configuration({
-        basePath: `${globalThis.location.origin}/api/v1`
-      }));
-      const { user } = await localAppApi.refreshToken();
-      state.currentUser = user;
-      response = await globalThis.fetch(input, init);
-    } catch (retryError) {
-      // Just log this; let the original error propagate
-      console.error(retryError);
+      let response = await globalThis.fetch(input, init);
+      if (response.status === 403) {
+        // Try refreshing the token and repeating the request
+        // This can fix the situation where the access level of
+        // the user has been changed and requires a new token
+        try {
+          const refreshClient = createClient<paths>({
+            baseUrl: `${globalThis.location.origin}/api/v1`
+          });
+          const { data: user, error } = await refreshClient.GET('/auth');
+          if (error) {
+            throw new Error('Failed to refresh token.', { cause: error });
+          }
+          state.currentUser = user;
+          response = await globalThis.fetch(input, init);
+        } catch (retryError) {
+          // Just log this; let the original error propagate
+          console.error(retryError);
+        }
+      }
+      this.responses.next({ request: input, response });
+      return response;
+    } finally {
+      if (state.loadingCount > 0) {
+        state.loadingCount--;
+      }
     }
   }
-  return response;
-};
 
-const configuration = new Configuration({
-  basePath: `${globalThis.location.origin}/api/v1`,
-  fetchApi: customFetch,
-  middleware: [new LoadingMiddleware()]
-});
+  readonly loadUserSettings = async (): Promise<UserSettings | null> => {
+    const { data: settings, error } = await api.client.GET('/users/current/settings');
 
-export const appApi = new AppApi(configuration);
-export const recipesApi = new RecipesApi(configuration);
-export const usersApi = new UsersApi(configuration);
+    if (error) {
+      throw new Error('Failed to load user settings.', { cause: error });
+    }
 
-export async function loadUserSettings() {
-  try {
-    return await usersApi.getSettings();
-  } catch (ex) {
-    console.error(ex);
-    return null
+    return settings ?? null;
+  }
+
+  readonly loadSearchFilters = async (): Promise<SavedSearchFilterCompact[]> => {
+    const { data: filters, error } = await api.client.GET('/users/current/filters');
+
+    if (error) {
+      throw new Error('Failed to load search filters.', { cause: error });
+    }
+
+    return filters ?? [];
+  }
+
+  readonly performRecipeSearch = async (filter: SearchFilter, page: number, count: number): Promise<SearchResult> => {
+    // Make sure to fill in any missing fields
+    const defaultFilter = getDefaultSearchFilter();
+    filter = { ...defaultFilter, ...filter };
+
+    const { data: recipes, error } = await api.client.GET('/recipes', {
+      params: {
+        query: {
+          sort: filter.sortBy,
+          dir: filter.sortDir,
+          page: page,
+          count: count,
+          q: filter.query,
+          pictures: toYesNoAny(filter.withPictures),
+          fields: filter.fields.length > 0 ? filter.fields : undefined,
+          states: filter.states.length > 0 ? filter.states : undefined,
+          tags: filter.tags.length > 0 ? filter.tags : undefined
+        }
+      }
+    });
+
+    if (error) {
+      throw new Error('Failed to perform recipe search.', { cause: error });
+    }
+
+    return recipes;
   }
 }
 
-export async function loadSearchFilters() {
-  try {
-    return await usersApi.getSearchFilters();
-  } catch (ex) {
-    console.error(ex);
-    return [];
-  }
-}
-
-export async function performRecipeSearch(filter: SearchFilter, page: number, count: number) {
-  // Make sure to fill in any missing fields
-  const defaultFilter = getDefaultSearchFilter();
-  filter = { ...defaultFilter, ...filter };
-
-  return recipesApi.find({
-    sort: filter.sortBy,
-    dir: filter.sortDir,
-    page: page,
-    count: count,
-    q: filter.query,
-    pictures: toYesNoAny(filter.withPictures),
-    fields: filter.fields.length > 0 ? filter.fields : undefined,
-    states: filter.states.length > 0 ? filter.states : undefined,
-    tags: filter.tags.length > 0 ? filter.tags : undefined
-  });
-}
+export const api = new Api();
 
 export async function refreshSearchResults() {
   if (isNull(state.currentUser)) return;
 
   try {
-    const { total, recipes } = await performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
+    const { total, recipes } = await api.performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
     state.searchResults = recipes ?? [];
     state.searchResultCount = total;
     state.searchNumPages = Math.max(Math.ceil(total / state.searchResultsPerPage), 1);
@@ -122,10 +134,24 @@ export async function refreshSearchResults() {
 
   // Also populate total recipe count
   try {
-    const { total } = await recipesApi.find({ count: 0 });
-    state.totalRecipeCount = total;
+    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0, } } });
+
+    if (error) {
+      throw new Error('Failed to fetch total recipe count.', { cause: error });
+    }
+
+    state.totalRecipeCount = results.total;
   } catch (ex) {
     console.error(ex);
     state.totalRecipeCount = undefined;
   }
+}
+
+export function fileContentSerializer(_body: { file_content?: string } | undefined, file: File) {
+  // The unused _body parameter is required to match the expected signature for bodySerializer,
+  // so that we know we're using the right part name in the form data
+
+  const fd = new FormData();
+  fd.append('file_content', file);
+  return fd;
 }

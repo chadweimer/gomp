@@ -1,8 +1,7 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: GOMP
-  version: "1.0"
-paths: {}
+  version: '1.0'
 components:
   schemas:
     accessLevel:
@@ -13,6 +12,10 @@ components:
         - admin
         - editor
         - viewer
+      x-enum-varnames:
+        - Admin
+        - Editor
+        - Viewer
       x-go-custom-tag: db:"access_level"
       x-oapi-codegen-extra-tags:
         db: access_level
@@ -23,6 +26,9 @@ components:
       enum:
         - active
         - archived
+      x-enum-varnames:
+        - Active
+        - Archived
       x-go-custom-tag: db:"current_state"
       x-oapi-codegen-extra-tags:
         db: current_state
@@ -53,6 +59,13 @@ components:
         - created
         - modified
         - random
+      x-enum-varnames:
+        - Name
+        - Id
+        - Rating
+        - Created
+        - Modified
+        - Random
       x-go-custom-tag: db:"sort_by"
       x-oapi-codegen-extra-tags:
         db: sort_by
@@ -63,6 +76,9 @@ components:
       enum:
         - asc
         - desc
+      x-enum-varnames:
+        - Asc
+        - Desc
       x-go-custom-tag: db:"sort_dir"
       x-oapi-codegen-extra-tags:
         db: sort_dir
@@ -99,8 +115,8 @@ components:
         id: 14
         recipeId: 3
         text: Add chopped parsley right before serving.
-        createdAt: "2026-04-21T14:05:00Z"
-        modifiedAt: "2026-04-21T14:05:00Z"
+        createdAt: '2026-04-21T14:05:00Z'
+        modifiedAt: '2026-04-21T14:05:00Z'
       required:
         - text
       type: object
@@ -150,7 +166,7 @@ components:
       type: object
       properties:
         state:
-          $ref: "#/components/schemas/recipeState"
+          $ref: '#/components/schemas/recipeState'
         rating:
           type: number
           minimum: 0
@@ -165,8 +181,8 @@ components:
         state: active
         mainImageName: lemon-garlic-chicken.jpg
         rating: 4.5
-        createdAt: "2026-04-19T09:00:00Z"
-        modifiedAt: "2026-04-20T18:15:00Z"
+        createdAt: '2026-04-19T09:00:00Z'
+        modifiedAt: '2026-04-20T18:15:00Z'
       type: object
       required:
         - name
@@ -186,7 +202,7 @@ components:
           type: string
           x-go-custom-tag: db:"name"
         state:
-          $ref: "#/components/schemas/recipeState"
+          $ref: '#/components/schemas/recipeState'
         mainImageName:
           type: string
           x-go-custom-tag: db:"main_image_name"
@@ -232,10 +248,10 @@ components:
           - weeknight
           - chicken
           - high-protein
-        createdAt: "2026-04-19T09:00:00Z"
-        modifiedAt: "2026-04-20T18:15:00Z"
+        createdAt: '2026-04-19T09:00:00Z'
+        modifiedAt: '2026-04-20T18:15:00Z'
       allOf:
-        - $ref: "#/components/schemas/recipeCompact"
+        - $ref: '#/components/schemas/recipeCompact'
         - type: object
           required:
             - servingSize
@@ -320,27 +336,26 @@ components:
           x-oapi-codegen-extra-tags:
             db: query
         withPictures:
-          type: boolean
-          nullable: true
+          type: [boolean, 'null']
           x-go-custom-tag: db:"with_pictures"
           x-oapi-codegen-extra-tags:
             db: with_pictures
         fields:
           type: array
           items:
-            $ref: "#/components/schemas/searchField"
+            $ref: '#/components/schemas/searchField'
         states:
           type: array
           items:
-            $ref: "#/components/schemas/recipeState"
+            $ref: '#/components/schemas/recipeState'
         tags:
           type: array
           items:
             type: string
         sortBy:
-          $ref: "#/components/schemas/sortBy"
+          $ref: '#/components/schemas/sortBy'
         sortDir:
-          $ref: "#/components/schemas/sortDir"
+          $ref: '#/components/schemas/sortDir'
     savedSearchFilterCompact:
       description: Compact saved search representation used when returning lists.
       example:
@@ -389,16 +404,16 @@ components:
         sortBy: modified
         sortDir: desc
       allOf:
-        - $ref: "#/components/schemas/savedSearchFilterCompact"
-        - $ref: "#/components/schemas/searchFilter"
+        - $ref: '#/components/schemas/savedSearchFilterCompact'
+        - $ref: '#/components/schemas/searchFilter'
     user:
       description: User account details and authorization level.
       example:
         id: 1
         username: user1
         accessLevel: admin
-        createdAt: "2026-04-21T12:00:00Z"
-        modifiedAt: "2026-04-21T12:00:00Z"
+        createdAt: '2026-04-21T12:00:00Z'
+        modifiedAt: '2026-04-21T12:00:00Z'
       type: object
       required:
         - username
@@ -417,7 +432,7 @@ components:
           x-oapi-codegen-extra-tags:
             db: username
         accessLevel:
-          $ref: "#/components/schemas/accessLevel"
+          $ref: '#/components/schemas/accessLevel'
         createdAt:
           type: string
           format: date-time
@@ -456,14 +471,12 @@ components:
           x-oapi-codegen-extra-tags:
             db: user_id
         homeTitle:
-          type: string
-          nullable: true
+          type: [string, 'null']
           x-go-custom-tag: db:"home_title"
           x-oapi-codegen-extra-tags:
             db: home_title
         homeImageUrl:
-          type: string
-          nullable: true
+          type: [string, 'null']
           x-go-custom-tag: db:"home_image_url"
           x-oapi-codegen-extra-tags:
             db: home_image_url
@@ -492,7 +505,7 @@ components:
           type: integer
           format: int64
         metadata:
-          $ref: "#/components/schemas/backupMetadata"
+          $ref: '#/components/schemas/backupMetadata'
         fileName:
           type: string
         fileUrl:

@@ -1,5 +1,5 @@
 import { createStore } from '@stencil/store';
-import { AppConfiguration, AppInfo } from '../generated';
+import { AppConfiguration, AppInfo } from '../helpers/schema.gen';
 
 interface AppConfig {
   info: AppInfo;

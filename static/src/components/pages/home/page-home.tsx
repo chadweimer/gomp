@@ -1,10 +1,10 @@
-import { Component, Element, Fragment, h, Host, Method, State } from '@stencil/core';
+import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
 import { modalController } from '@ionic/core';
-import { loadUserSettings, performRecipeSearch, recipesApi, refreshSearchResults, usersApi } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized } from '../../../helpers/utils';
+import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { redirect, showToast, enableBackForOverlay, showLoading, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
 import state from '../../../stores/state';
-import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
 
 @Component({
   tag: 'page-home',
@@ -23,7 +23,7 @@ export class PageHome implements ComponentWithActivatedCallback {
 
   @Method()
   async activatedCallback() {
-    this.currentUserSettings = await loadUserSettings();
+    this.currentUserSettings = await trap(api.loadUserSettings, null);
     await this.loadSearchFilters();
   }
 
@@ -36,29 +36,27 @@ export class PageHome implements ComponentWithActivatedCallback {
               <ion-col>
                 <header class="ion-text-center">
                   <h1>{this.currentUserSettings?.homeTitle}</h1>
-                  <img alt="Home Image" src={this.currentUserSettings?.homeImageUrl} hidden={isNullOrEmpty(this.currentUserSettings?.homeImageUrl)} />
+                  <img alt="Home" src={this.currentUserSettings?.homeImageUrl ?? ''} hidden={isNullOrEmpty(this.currentUserSettings?.homeImageUrl)} />
                 </header>
               </ion-col>
             </ion-row>
-            {this.searches?.map(search =>
-              <Fragment>
-                <ion-row key={search.title}>
-                  <ion-col>
-                    <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
-                      <ion-label>{search.title}</ion-label>
-                      <ion-label slot="end">{search.count}</ion-label>
-                    </ion-item>
+            {this.searches?.map(search => [
+              <ion-row key={search.title}>
+                <ion-col>
+                  <ion-item lines="full" button detail onClick={() => this.onFilterClicked(search.filter)}>
+                    <ion-label>{search.title}</ion-label>
+                    <ion-label slot="end">{search.count}</ion-label>
+                  </ion-item>
+                </ion-col>
+              </ion-row>,
+              <ion-row key={`${search.title}-list`}>
+                {search.results.map(recipe =>
+                  <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
+                    <recipe-card recipe={recipe} size="small" />
                   </ion-col>
-                </ion-row>
-                <ion-row key={`${search.title}-list`}>
-                  {search.results.map(recipe =>
-                    <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
-                      <recipe-card recipe={recipe} size="small" />
-                    </ion-col>
-                  )}
-                </ion-row>
-              </Fragment>
-            )}
+                )}
+              </ion-row>
+            ])}
           </ion-grid>
         </ion-content>
 
@@ -96,11 +94,30 @@ export class PageHome implements ComponentWithActivatedCallback {
       });
 
       // Then load all the user's saved filters
-      const savedFilters = await usersApi.getSearchFilters();
+      const { data: savedFilters, error } = await api.client.GET('/users/current/filters');
+
+      if (error) {
+        throw new Error('Failed to load saved filters.', { cause: error });
+      }
+
+      if (!savedFilters) {
+        return;
+      }
+
       for (const savedFilter of savedFilters) {
         if (isNull(savedFilter.id)) continue;
+        const { data: savedSearchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
+          params: { path: { filterId: savedFilter.id } }
+        });
 
-        const savedSearchFilter = await usersApi.getSearchFilter({ filterId: savedFilter.id });
+        if (error) {
+          throw new Error('Failed to load saved search filter.', { cause: error });
+        }
+
+        if (!savedSearchFilter) {
+          return;
+        }
+
         const { total, recipes } = await this.performSearch(savedSearchFilter);
         searches.push({
           title: savedSearchFilter.name,
@@ -122,7 +139,7 @@ export class PageHome implements ComponentWithActivatedCallback {
     filter = { ...defaultFilter, ...filter };
 
     try {
-      const resp = await performRecipeSearch(filter, 1, 6);
+      const resp = await api.performRecipeSearch(filter, 1, 6);
       return resp;
     } catch (ex) {
       console.error(ex);
@@ -133,7 +150,13 @@ export class PageHome implements ComponentWithActivatedCallback {
 
   private async saveNewRecipe(recipe: Recipe, file: File | null) {
     try {
-      const newRecipe = await recipesApi.addRecipe({ recipe });
+      const { data: newRecipe, error } = await api.client.POST('/recipes', {
+        body: recipe
+      });
+
+      if (error) {
+        throw new Error('Failed to create new recipe.', { cause: error });
+      }
 
       if (!isNull(file)) {
         await showLoading(
@@ -142,10 +165,17 @@ export class PageHome implements ComponentWithActivatedCallback {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            await recipesApi.uploadImage({
-              recipeId: newRecipe.id,
-              fileContent: file
+            const { error } = await api.client.POST('/recipes/{recipeId}/images', {
+              params: { path: { recipeId: newRecipe.id } },
+              body: file,
+              bodySerializer(body) {
+                return fileContentSerializer(body, file)
+              }
             });
+
+            if (error) {
+              throw new Error('Failed to create new recipe.', { cause: error });
+            }
           },
           'Uploading picture...');
       }
@@ -182,5 +212,4 @@ export class PageHome implements ComponentWithActivatedCallback {
     };
     await redirect('/recipes');
   }
-
 }

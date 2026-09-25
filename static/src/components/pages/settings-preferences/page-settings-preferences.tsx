@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { UserSettings } from '../../../generated';
-import { appApi, loadUserSettings, usersApi } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast } from '../../../helpers/utils';
+import { UserSettings } from '../../../helpers/schema.gen';
+import { api, fileContentSerializer } from '../../../helpers/api';
+import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast, trap } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-preferences',
@@ -16,7 +16,7 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
 
   @Method()
   async activatedCallback() {
-    this.settings = await loadUserSettings();
+    this.settings = await trap(api.loadUserSettings, null);
   }
 
   render() {
@@ -42,7 +42,7 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
                           <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" ref={el => this.imageInput = el!} />
                         </form>
                         <ion-thumbnail>
-                          <img alt="Home Image" src={this.settings?.homeImageUrl} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
+                          <img alt="Home" src={this.settings?.homeImageUrl ?? ''} hidden={isNullOrEmpty(this.settings?.homeImageUrl)} />
                         </ion-thumbnail>
                       </ion-item>
                       <ion-item lines="full">
@@ -56,7 +56,7 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
                       <ion-icon slot="start" name="save" />
                       Save
                     </ion-button>
-                    <ion-button fill="clear" color="danger" onClick={async () => this.settings = await loadUserSettings()}>
+                    <ion-button fill="clear" color="danger" onClick={async () => this.settings = await trap(api.loadUserSettings, null)}>
                       <ion-icon slot="start" name="arrow-undo" />
                       Reset
                     </ion-button>
@@ -77,7 +77,13 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     }
 
     try {
-      await usersApi.saveSettings({ settings: this.settings });
+      const { error } = await api.client.PUT('/users/current/settings', {
+        body: this.settings
+      });
+
+      if (error) {
+        throw new Error('Failed to save preferences.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save preferences.');
@@ -90,14 +96,18 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     }
 
     if ((this.imageInput?.files?.length ?? 0) > 0) {
+      const file = this.imageInput.files![0];
       await showLoading(
         async () => {
-          const resp = await appApi.uploadRaw({
-            fileContent: this.imageInput.files?.[0]
+          const { response: resp } = await api.client.POST('/uploads', {
+            body: file,
+            bodySerializer(body) {
+              return fileContentSerializer(body, file)
+            }
           });
           this.settings = {
             ...this.settings,
-            homeImageUrl: resp.raw.headers.get('location') ?? '',
+            homeImageUrl: resp.headers.get('location') ?? '',
             favoriteTags: this.settings?.favoriteTags ?? []
           }
         },

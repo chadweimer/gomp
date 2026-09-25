@@ -9,3 +9,6 @@ insert_final_newline = true
 
 [{*.go,Makefile}]
 indent_style = tab
+
+[*.{yaml,yml}]
+quote_type = single

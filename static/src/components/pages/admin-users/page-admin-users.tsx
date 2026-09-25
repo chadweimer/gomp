@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { User } from '../../../generated';
-import { usersApi } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, showToast } from '../../../helpers/utils';
+import { AccessLevel, User } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
+import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-users',
@@ -29,7 +29,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
                   <ion-card class="zoom">
                     <ion-card-header>
                       <ion-card-title>{user.username}</ion-card-title>
-                      <ion-card-subtitle>{user.accessLevel}</ion-card-subtitle>
+                      <ion-card-subtitle>{enumKeyFromValue(AccessLevel, user.accessLevel)}</ion-card-subtitle>
                     </ion-card-header>
                     <ion-button size="small" fill="clear" onClick={() => this.onEditUserClicked(user)}>
                       <ion-icon slot="start" name="create" />
@@ -57,7 +57,13 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async loadUsers() {
     try {
-      this.users = await usersApi.getAllUsers();
+      const { data: users, error } = await api.client.GET('/users');
+
+      if (error) {
+        throw new Error('Failed to load users.', { cause: error });
+      }
+
+      this.users = users;
     } catch (ex) {
       console.error(ex);
     }
@@ -65,7 +71,13 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async saveNewUser(user: User, password: string) {
     try {
-      await usersApi.addUser({ user: { ...user, password } });
+      const { error } = await api.client.POST('/users', {
+        body: { ...user, password }
+      });
+
+      if (error) {
+        throw new Error('Failed to create new user.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create new user.');
@@ -78,10 +90,14 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         throw new Error('Cannot save user: user ID is null.');
       }
 
-      await usersApi.saveUser({
-        userId: user.id,
-        user: user
+      const { error } = await api.client.PUT('/users/{userId}', {
+        params: { path: { userId: user.id } },
+        body: user
       });
+
+      if (error) {
+        throw new Error('Failed to save user.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save user.');
@@ -94,7 +110,13 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         throw new Error('Cannot delete user: user ID is null.');
       }
 
-      await usersApi.deleteUser({ userId: user.id });
+      const { error } = await api.client.DELETE('/users/{userId}', {
+        params: { path: { userId: user.id } }
+      });
+
+      if (error) {
+        throw new Error('Failed to delete user.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete user.');

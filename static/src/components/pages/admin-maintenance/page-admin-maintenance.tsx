@@ -1,7 +1,7 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Host, Method, State, h } from '@stencil/core';
-import { Backup } from '../../../generated';
-import { appApi } from '../../../helpers/api';
+import { Backup } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, scaleValue, showLoading, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -84,7 +84,13 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
 
   private async loadBackups() {
     try {
-      this.backups = await appApi.getBackups();
+      const { data: backups, error } = await api.client.GET('/backups');
+
+      if (error) {
+        throw new Error('Failed to load backups.', { cause: error });
+      }
+
+      this.backups = backups ?? [];
     } catch (ex) {
       this.backups = [];
       console.error(ex);
@@ -94,7 +100,13 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async createBackup() {
     try {
       await showLoading(
-        async () => await appApi.createBackup(), 'Creating backup...');
+        async () => {
+          const { error } = await api.client.POST('/backups');
+
+          if (error) {
+            throw new Error('Failed to create backup.', { cause: error });
+          }
+        }, 'Creating backup...');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create backup.');
@@ -126,7 +138,15 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async deleteBackup(backup: Backup) {
     try {
       await showLoading(
-        async () => await appApi.deleteBackup({ name: backup.fileName }), 'Deleting backup...');
+        async () => {
+          const { error } = await api.client.DELETE('/backups/{name}', {
+            params: { path: { name: backup.fileName } }
+          });
+
+          if (error) {
+            throw new Error('Failed to delete backup.', { cause: error })
+          }
+        }, 'Deleting backup...');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete backup.');
@@ -158,7 +178,15 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async restoreBackup(backupFileName: string) {
     try {
       await showLoading(
-        async () => await appApi.restoreFromBackup({ name: backupFileName }), 'Restoring backup...');
+        async () => {
+          const { error } = await api.client.POST('/backups/{name}', {
+            params: { path: { name: backupFileName } }
+          });
+
+          if (error) {
+            throw new Error('Failed to restore from backup.', { cause: error })
+          }
+        }, 'Restoring backup...');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to restore from backup.');
@@ -190,7 +218,15 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async uploadBackup(file: File) {
     try {
       await showLoading(
-        async () => await appApi.createBackup({ fileContent: file }), 'Uploading backup....');
+        async () => {
+          const { error } = await api.client.POST('/backups', {
+            body: { fileContent: file }
+          });
+
+          if (error) {
+            throw new Error('Failed to upload backup.', { cause: error })
+          }
+        }, 'Uploading backup....');
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to upload backup.');

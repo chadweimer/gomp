@@ -2,7 +2,7 @@ import { render, h, describe, it, expect } from '@stencil/vitest';
 import { fetchMocker } from '../../../../../vitest.setup';
 import { Recipe } from '../../../../components';
 import '../page-recipe';
-import { RecipeState } from '../../../../generated';
+import { RecipeState } from '../../../../helpers/schema.gen';
 
 describe('page-recipe', () => {
   it('builds', async () => {

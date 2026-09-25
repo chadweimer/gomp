@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
-import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../generated';
-import { performRecipeSearch } from '../../helpers/api';
+import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
+import { api } from '../../helpers/api';
 import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -91,7 +91,7 @@ export class RecipeLinkEditor {
     if (this.includeArchived) {
       states = [...states, RecipeState.Archived];
     }
-    const { recipes } = await performRecipeSearch({
+    const { recipes } = await api.performRecipeSearch({
       sortBy: SortBy.Modified,
       sortDir: SortDir.Desc,
       query: this.query,
