@@ -13,12 +13,12 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/samber/lo"
+	"golang.org/x/image/draw"
 
 	_ "image/gif" // Register GIF format
 	_ "image/png" // Register PNG format
 
-	_ "golang.org/x/image/bmp" // Register BMP format
-	"golang.org/x/image/draw"
+	_ "golang.org/x/image/bmp"  // Register BMP format
 	_ "golang.org/x/image/tiff" // Register TIFF format
 	_ "golang.org/x/image/webp" // Register WEBP format
 )
