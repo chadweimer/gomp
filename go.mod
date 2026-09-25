@@ -2,6 +2,7 @@ module github.com/chadweimer/gomp
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/bep/imagemeta v1.0.1
 	github.com/chadweimer/vary/v2 v2.2.0
 	github.com/getkin/kin-openapi v0.142.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
