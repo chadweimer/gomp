@@ -58,6 +58,14 @@ func resizeImage(src image.Image, box image.Rectangle, scaler draw.Scaler) *imag
 
 // rotateImage reads EXIF orientation from the raw bytes and returns a corrected image
 func rotateImage(raw []byte, format string, img image.Image) image.Image {
+	mapper := getOrientationMapper(getOrientation(raw, format))
+	if mapper == nil {
+		return img
+	}
+	return applyTransform(img, mapper)
+}
+
+func getOrientation(raw []byte, format string) uint16 {
 	var imageFormat imagemeta.ImageFormat
 	switch format {
 	case "jpeg":
@@ -70,7 +78,7 @@ func rotateImage(raw []byte, format string, img image.Image) image.Image {
 		imageFormat = imagemeta.WebP
 	default:
 		// Unsupport format - return the original image unchanged
-		return img
+		return 1
 	}
 
 	// Parse metadata to get EXIF orientation
@@ -93,14 +101,9 @@ func rotateImage(raw []byte, format string, img image.Image) image.Image {
 	})
 	if err != nil {
 		// No valid metadata - return original image unchanged
-		return img
+		return 1
 	}
-
-	mapper := getOrientationMapper(orientation)
-	if mapper == nil {
-		return img
-	}
-	return applyTransform(img, mapper)
+	return orientation
 }
 
 func getOrientationMapper(orientation uint16) pixelMapper {
