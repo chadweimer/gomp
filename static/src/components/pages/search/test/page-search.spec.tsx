@@ -2,7 +2,7 @@ import { render, h, describe, it, expect, beforeEach, afterEach } from '@stencil
 import { vi } from 'vitest';
 import { AlertButton, alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SearchResult, SortBy, SortDir } from '../../../../generated';
 import { SearchViewMode, SwipeDirection } from '../../../../models';
 import state, { clearState } from '../../../../stores/state';
 import '../page-search';
@@ -106,7 +106,7 @@ describe('page-search', () => {
       if (url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
         return {
           status: 200,
-          body: JSON.stringify({ total: mockRecipes.length, recipes: mockRecipes }),
+          body: JSON.stringify({ total: mockRecipes.length, recipes: mockRecipes } as SearchResult),
         };
       }
       return {
