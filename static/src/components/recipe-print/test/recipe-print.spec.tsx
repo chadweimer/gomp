@@ -49,32 +49,32 @@ describe('recipe-print', () => {
     let items = root.shadowRoot?.querySelectorAll('h2');
 
     // By default, there should be no items since the fields except name are null
-    expect(items?.length).toBe(0);
+    expect(items).toHaveLength(0);
     const heading = root.shadowRoot?.querySelector('h1');
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
     let subtitle = root.shadowRoot?.querySelector('.meta');
-    expect(subtitle?.textContent.includes('Servings:')).toBe(false);
-    expect(subtitle?.textContent.includes('Time:')).toBe(false);
+    expect(subtitle).not.toHaveTextContent('Servings:');
+    expect(subtitle).not.toHaveTextContent('Time:');
 
     // Serving Size
     await setProps({ recipe: { ...recipe, servingSize: 'serving size' } });
     await waitForChanges();
     subtitle = root.shadowRoot?.querySelector('.meta');
-    expect(subtitle?.textContent.includes('Servings: serving size')).toBe(true);
+    expect(subtitle).toHaveTextContent('Servings: serving size');
 
     // Time
     await setProps({ recipe: { ...recipe, time: 'time' } });
     await waitForChanges();
     subtitle = root.shadowRoot?.querySelector('.meta');
-    expect(subtitle?.textContent.includes('Time: time')).toBe(true);
+    expect(subtitle).toHaveTextContent('Time: time');
 
     // Ingredients
     await setProps({ recipe: { ...recipe, ingredients: 'ingredients' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
-    expect(items?.length).toBe(1);
+    expect(items).toHaveLength(1);
     let node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.ingredients);
@@ -84,7 +84,7 @@ describe('recipe-print', () => {
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
-    expect(items?.length).toBe(1);
+    expect(items).toHaveLength(1);
     node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.directions);
@@ -94,14 +94,14 @@ describe('recipe-print', () => {
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
-    expect(items?.length).toBe(0);
+    expect(items).toHaveLength(0);
 
     // Storage Instructions
     await setProps({ recipe: { ...recipe, storageInstructions: 'storage' } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
-    expect(items?.length).toBe(1);
+    expect(items).toHaveLength(1);
     node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualAttribute('value', root.recipe!.storageInstructions);
@@ -111,7 +111,7 @@ describe('recipe-print', () => {
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
     items = root.shadowRoot?.querySelectorAll('h2');
-    expect(items?.length).toBe(1);
+    expect(items).toHaveLength(1);
     node = items?.[0].parentElement?.lastElementChild;
     expect(node).not.toBeNull();
     expect(node).toEqualText(root.recipe!.sourceUrl);

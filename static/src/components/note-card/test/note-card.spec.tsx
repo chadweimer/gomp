@@ -22,7 +22,7 @@ describe('note-card', () => {
       const { root } = await render(<note-card readonly={readonly}></note-card>);
       const buttons = root.shadowRoot?.querySelectorAll('ion-button');
       expect(buttons).not.toBeNull();
-      expect(buttons?.length).toBe(readonly ? 0 : 2);
+      expect(buttons).toHaveLength(readonly ? 0 : 2);
     }
   });
 
@@ -38,7 +38,7 @@ describe('note-card', () => {
       const label = root.shadowRoot?.querySelector('ion-card-header ion-card-subtitle');
       if (modified) {
         expect(label).not.toBeNull();
-        expect(label?.textContent.includes('Last Modified')).toBe(true);
+        expect(label).toHaveTextContent('Last Modified');
       } else {
         expect(label).toBeNull();
       }
