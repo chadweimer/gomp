@@ -220,12 +220,14 @@ describe('page-recipe', () => {
     it('reloads recipe, links, images, and notes on activatedCallback', async () => {
       const { root } = await render<HTMLPageRecipeElement>(<page-recipe recipeId={1} />);
 
-      const initialGetCount = fetchMocker.requests().filter((r: Request) => r.method === 'GET').length;
+      let requests = fetchMocker.requests() as Request[];
+      const initialGetCount = requests.filter((r: Request) => r.method === 'GET').length;
       expect(initialGetCount).toBeGreaterThanOrEqual(4);
 
       await root.activatedCallback();
 
-      const totalGetCount = fetchMocker.requests().filter((r: Request) => r.method === 'GET').length;
+      requests = fetchMocker.requests() as Request[];
+      const totalGetCount = requests.filter((r: Request) => r.method === 'GET').length;
       expect(totalGetCount).toBeGreaterThanOrEqual(initialGetCount + 4);
     });
   });
