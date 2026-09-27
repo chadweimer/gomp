@@ -115,7 +115,7 @@ export class PageHome implements ComponentWithActivatedCallback {
         }
 
         if (!savedSearchFilter) {
-          return;
+          continue;
         }
 
         const { total, recipes } = await this.performSearch(savedSearchFilter);
