@@ -38,7 +38,7 @@ describe('note-card', () => {
       const label = root.shadowRoot?.querySelector('ion-card-header ion-card-subtitle');
       if (modified) {
         expect(label).not.toBeNull();
-        expect(label?.textContent.includes('Last Modified')).toBe(true);
+        expect(label).toHaveTextContent('Last Modified');
       } else {
         expect(label).toBeNull();
       }

@@ -166,14 +166,14 @@ describe('page-search', () => {
       expect(img1).not.toBeNull();
       expect(img1?.getAttribute('src')).toBe('/uploads/recipes/1/thumbs/pancakes.jpg');
       const label1 = items[0].querySelector('ion-label');
-      expect(label1?.textContent).toBe('Pancakes');
+      expect(label1).toEqualText('Pancakes');
 
       // Second item has no mainImageName -> no ion-img
       expect(items[1].getAttribute('href')).toBe('/recipes/2');
       const img2 = items[1].querySelector('ion-img');
       expect(img2).toBeNull();
       const label2 = items[1].querySelector('ion-label');
-      expect(label2?.textContent).toBe('Waffles');
+      expect(label2).toEqualText('Waffles');
     });
 
     it('handles empty and null search results safely', async () => {
@@ -492,25 +492,25 @@ describe('page-search', () => {
       state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active, RecipeState.Archived] };
       const { root: rootAll } = await render(<page-search />);
       const btnAll = rootAll.querySelectorAll('ion-header ion-button')[0];
-      expect(btnAll.textContent).toContain('All');
+      expect(btnAll).toHaveTextContent('All');
 
       // 2. Active only -> 'Active'
       state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active] };
       const { root: rootActive } = await render(<page-search />);
       const btnActive = rootActive.querySelectorAll('ion-header ion-button')[0];
-      expect(btnActive.textContent).toContain('Active');
+      expect(btnActive).toHaveTextContent('Active');
 
       // 3. Archived only -> 'Archived'
       state.searchFilter = { ...state.searchFilter, states: [RecipeState.Archived] };
       const { root: rootArchived } = await render(<page-search />);
       const btnArchived = rootArchived.querySelectorAll('ion-header ion-button')[0];
-      expect(btnArchived.textContent).toContain('Archived');
+      expect(btnArchived).toHaveTextContent('Archived');
 
       // 4. Neither -> 'All'
       state.searchFilter = { ...state.searchFilter, states: [] };
       const { root: rootEmpty } = await render(<page-search />);
       const btnEmpty = rootEmpty.querySelectorAll('ion-header ion-button')[0];
-      expect(btnEmpty.textContent).toContain('All');
+      expect(btnEmpty).toHaveTextContent('All');
     });
 
     it('opens states filter alert and updates state on OK confirmation', async () => {
@@ -545,7 +545,7 @@ describe('page-search', () => {
 
       const { root } = await render(<page-search />);
       const sortByBtn = root.querySelectorAll('ion-header ion-button')[1] as HTMLIonButtonElement;
-      expect(sortByBtn.textContent).toContain('Name');
+      expect(sortByBtn).toHaveTextContent('Name');
 
       sortByBtn.click();
 
@@ -586,7 +586,7 @@ describe('page-search', () => {
 
       const { root } = await render(<page-search />);
       const resultsPerPageBtn = root.querySelectorAll('ion-header ion-button')[4] as HTMLIonButtonElement;
-      expect(resultsPerPageBtn.textContent).toContain('36');
+      expect(resultsPerPageBtn).toHaveTextContent('36');
 
       resultsPerPageBtn.click();
 

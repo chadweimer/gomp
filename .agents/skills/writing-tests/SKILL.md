@@ -48,7 +48,7 @@ Use this guide for component tests under `static/src/components/**/test/*.spec.t
   - `clearState()` from `stores/state` to reset global app state between tests.
   - Restore `globalThis.fetch` and call `vi.restoreAllMocks()`.
   - Clean up any manually mounted DOM elements (e.g., mock router) in `afterEach`.
-- Always use specific matchers (e.g., `toHaveLength`, `toBeNull`, `toEqualText`, `toEqualAttribute`) instead of generic assertions like `expect(x).toBe(y)`.
+- Always use specific matchers (e.g., `toHaveLength`, `toBeNull`, `toEqualText`, `toEqualAttribute`, `toHaveTextContent`, etc) instead of generic assertions like `expect(x).toBe(y)`.
 
 ### Mocking HTTP Requests (`fetchMocker`)
 - Import `fetchMocker` from `../../../../../vitest.setup` (or relative path to `static/vitest.setup.ts`).

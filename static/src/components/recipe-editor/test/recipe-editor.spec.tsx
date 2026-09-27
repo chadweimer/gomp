@@ -66,13 +66,13 @@ describe('recipe-editor', () => {
       expect(root).toHaveClass('hydrated');
 
       const title = root.shadowRoot?.querySelector('ion-title');
-      expect(title?.textContent).toBe('New Recipe');
+      expect(title).toEqualText('New Recipe');
 
       const saveBtn = root.shadowRoot?.querySelector('ion-button[color="primary"]');
-      expect(saveBtn?.textContent).toBe('Save');
+      expect(saveBtn).toEqualText('Save');
 
       const cancelBtn = root.shadowRoot?.querySelector('ion-button[color="danger"]');
-      expect(cancelBtn?.textContent).toBe('Cancel');
+      expect(cancelBtn).toEqualText('Cancel');
 
       const fileInput = root.shadowRoot?.querySelector('input[type="file"]');
       expect(fileInput).not.toBeNull();
@@ -130,7 +130,7 @@ describe('recipe-editor', () => {
       const { root } = await render<HTMLRecipeEditorElement>(<recipe-editor recipe={mockRecipe} />);
 
       const title = root.shadowRoot?.querySelector('ion-title');
-      expect(title?.textContent).toBe('Edit Recipe');
+      expect(title).toEqualText('Edit Recipe');
 
       const fileInput = root.shadowRoot?.querySelector('input[type="file"]');
       expect(fileInput).toBeNull();

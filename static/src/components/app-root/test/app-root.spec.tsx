@@ -81,7 +81,7 @@ describe('app-root', () => {
 
       const recipesLink = root.querySelector('ion-item[href="/recipes"]');
       expect(recipesLink).not.toBeNull();
-      expect(recipesLink?.textContent).toContain('42');
+      expect(recipesLink).toHaveTextContent('42');
 
       const settingsLink = root.querySelector('ion-item[href="/settings"]');
       expect(settingsLink).not.toBeNull();

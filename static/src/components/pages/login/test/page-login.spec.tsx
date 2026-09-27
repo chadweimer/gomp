@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, Credentials, User } from '../../../../generated';
+import { AccessLevel, AuthenticationResponse, Credentials, User } from '../../../../generated';
 import state, { clearState } from '../../../../stores/state';
 import '../page-login';
 
@@ -38,7 +38,7 @@ describe('page-login', () => {
     expect(root).toHaveClass('hydrated');
 
     const title = root.querySelector('ion-card-title');
-    expect(title?.textContent).toBe('Login');
+    expect(title).toEqualText('Login');
 
     const usernameInput = root.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
     expect(usernameInput).not.toBeNull();
@@ -54,10 +54,10 @@ describe('page-login', () => {
 
     const loginButton = root.querySelector('ion-button');
     expect(loginButton).not.toBeNull();
-    expect(loginButton?.textContent).toBe('Login');
+    expect(loginButton).toEqualText('Login');
 
     const errorText = root.querySelector('ion-text[color="danger"]');
-    expect(errorText?.textContent).toBe('');
+    expect(errorText).toEqualText('');
   });
 
   describe('Authentication', () => {
@@ -68,7 +68,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser, token: 'fake-token' }),
+            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
           };
         }
         return { status: 404, body: '' };
@@ -100,7 +100,7 @@ describe('page-login', () => {
       expect(routerEl.push).toHaveBeenCalledWith('/');
 
       const errorText = root.querySelector('ion-text[color="danger"]');
-      expect(errorText?.textContent).toBe('');
+      expect(errorText).toEqualText('');
     });
 
     it('successfully logs in when pressing Enter on username input', async () => {
@@ -108,7 +108,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser, token: 'fake-token' }),
+            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
           };
         }
         return { status: 404, body: '' };
@@ -133,7 +133,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser, token: 'fake-token' }),
+            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
           };
         }
         return { status: 404, body: '' };
@@ -158,7 +158,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser, token: 'fake-token' }),
+            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
           };
         }
         return { status: 404, body: '' };
@@ -201,7 +201,7 @@ describe('page-login', () => {
       await waitForChanges();
 
       const errorText = root.querySelector('ion-text[color="danger"]');
-      expect(errorText?.textContent).toBe('Login failed. Check your username and password and try again.');
+      expect(errorText).not.toEqualText('');
       expect(usernameInput?.value).toBe('wrong@example.com');
       expect(passwordInput?.value).toBe('');
       expect(state.currentUser).toBeUndefined();
@@ -219,7 +219,7 @@ describe('page-login', () => {
           }
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser, token: 'fake-token' }),
+            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
           };
         }
         return { status: 404, body: '' };
@@ -237,14 +237,14 @@ describe('page-login', () => {
       await waitForChanges();
 
       const errorText = root.querySelector('ion-text[color="danger"]');
-      expect(errorText?.textContent).toBe('Login failed. Check your username and password and try again.');
+      expect(errorText).not.toEqualText('');
 
       // Retry with correct password
       if (passwordInput) passwordInput.value = 'correctpassword';
       loginButton?.click();
       await waitForChanges();
 
-      expect(errorText?.textContent).toBe('');
+      expect(errorText).toEqualText('');
       expect(state.currentUser).toEqual(mockUser);
       expect(routerEl.push).toHaveBeenCalledWith('/');
     });

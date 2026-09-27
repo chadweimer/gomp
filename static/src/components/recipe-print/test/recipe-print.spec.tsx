@@ -54,20 +54,20 @@ describe('recipe-print', () => {
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
     let subtitle = root.shadowRoot?.querySelector('.meta');
-    expect(subtitle?.textContent.includes('Servings:')).toBe(false);
-    expect(subtitle?.textContent.includes('Time:')).toBe(false);
+    expect(subtitle).not.toHaveTextContent('Servings:');
+    expect(subtitle).not.toHaveTextContent('Time:');
 
     // Serving Size
     await setProps({ recipe: { ...recipe, servingSize: 'serving size' } });
     await waitForChanges();
     subtitle = root.shadowRoot?.querySelector('.meta');
-    expect(subtitle?.textContent.includes('Servings: serving size')).toBe(true);
+    expect(subtitle).toHaveTextContent('Servings: serving size');
 
     // Time
     await setProps({ recipe: { ...recipe, time: 'time' } });
     await waitForChanges();
     subtitle = root.shadowRoot?.querySelector('.meta');
-    expect(subtitle?.textContent.includes('Time: time')).toBe(true);
+    expect(subtitle).toHaveTextContent('Time: time');
 
     // Ingredients
     await setProps({ recipe: { ...recipe, ingredients: 'ingredients' } });

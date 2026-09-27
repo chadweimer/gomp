@@ -141,7 +141,7 @@ describe('page-home', () => {
       expect(root).toHaveClass('hydrated');
 
       const title = root.querySelector('header h1');
-      expect(title?.textContent).toBe('');
+      expect(title).toEqualText('');
 
       const items = root.querySelectorAll('ion-item');
       expect(items).toHaveLength(0);
@@ -153,7 +153,7 @@ describe('page-home', () => {
       await waitForChanges();
 
       const title = root.querySelector('header h1');
-      expect(title?.textContent).toBe('Welcome to GOMP');
+      expect(title).toEqualText('Welcome to GOMP');
 
       const img = root.querySelector('header img');
       expect(img).not.toBeNull();
@@ -461,7 +461,7 @@ describe('page-home', () => {
       await waitForChanges();
 
       const title = root.querySelector('header h1');
-      expect(title?.textContent).toBe('');
+      expect(title).toEqualText('');
       // Search filters still loaded
       const items = root.querySelectorAll('ion-item');
       expect(items.length).toBeGreaterThanOrEqual(1);
@@ -525,7 +525,7 @@ describe('page-home', () => {
       const items = root.querySelectorAll('ion-item');
       expect(items).toHaveLength(1);
       const countLabel = items[0].querySelector('ion-label[slot="end"]');
-      expect(countLabel?.textContent).toBe('0');
+      expect(countLabel).toEqualText('0');
       const recipeCards = root.querySelectorAll('recipe-card');
       expect(recipeCards).toHaveLength(0);
     });
