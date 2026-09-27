@@ -11,7 +11,7 @@ describe('five-star-rating', () => {
     const { root } = await render(<five-star-rating />);
     const icons = root.shadowRoot?.querySelectorAll('ion-icon');
     expect(icons).not.toBeNull();
-    expect(icons?.length).toBe(10);
+    expect(icons).toHaveLength(10);
     // Check that the icons alternate between whole and half icons
     for (let i = 0; i < icons!.length; i++) {
       const icon = icons![i];
@@ -25,7 +25,7 @@ describe('five-star-rating', () => {
     const { root } = await render(<five-star-rating value={3.5} />);
     const icons = root.shadowRoot?.querySelectorAll('ion-icon');
     expect(icons).not.toBeNull();
-    expect(icons?.length).toBe(10);
+    expect(icons).toHaveLength(10);
     // Check that only the last 7 icons are selected
     for (let i = 0; i < 3; i++) {
       const icon = icons![i];

@@ -388,13 +388,17 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          await api.client.POST('/recipes/{recipeId}/images', {
+          const { error } = await api.client.POST('/recipes/{recipeId}/images', {
             params: { path: { recipeId: this.recipeId } },
             body: file,
             bodySerializer(body) {
               return fileContentSerializer(body, file)
             }
           });
+
+          if (error) {
+            throw new Error('Failed to upload picture.', { cause: error });
+          }
         },
         'Uploading picture...');
     } catch (ex) {
