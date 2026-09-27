@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { AccessLevel, User } from '../../../generated';
+import { AccessLevel, User } from '../../../helpers/schema.gen';
 import '../user-editor';
 
 describe('user-editor', () => {
@@ -11,7 +11,7 @@ describe('user-editor', () => {
   it('defaults', async () => {
     const user: User = {
       username: '',
-      accessLevel: AccessLevel.Editor
+      accessLevel: AccessLevel.Editor,
     };
     const { root } = await render<HTMLUserEditorElement>(<user-editor />);
     expect(root.user).toEqual(user);

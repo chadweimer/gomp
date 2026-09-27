@@ -1,10 +1,11 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
 import { fetchMocker } from '../../../../vitest.setup';
-import { AccessLevel, AppConfiguration, AppInfo } from '../../../generated';
+import { AccessLevel, AppConfiguration, AppInfo } from '../../../helpers/schema.gen';
 import { getDefaultSearchFilter } from '../../../models';
 import appConfig from '../../../stores/config';
 import state, { clearState } from '../../../stores/state';
 import '../app-root';
+import { api } from '../../../helpers/api';
 
 describe('app-root', () => {
   const originalFetch = globalThis.fetch;
@@ -175,7 +176,7 @@ describe('app-root', () => {
         return { status: 404 };
       });
 
-      const { root } = await render(<app-root />);
+      const { root, waitForChanges } = await render(<app-root />);
       expect(root).toBeDefined();
 
       const router = root.querySelector<HTMLIonRouterElement>('ion-router');
@@ -184,7 +185,9 @@ describe('app-root', () => {
       }
 
       // Trigger a request that returns 401
-      await globalThis.fetch('/api/v1/users/current/settings');
+      const { response } = await api.client.GET('/users/current/settings');
+      expect(response.status).toBe(401);
+      await waitForChanges();
 
       // State should be cleared and redirect triggered
       expect(state.currentUser).toBeUndefined();

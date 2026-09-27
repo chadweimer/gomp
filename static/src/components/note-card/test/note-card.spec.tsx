@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Note } from '../../../generated';
+import { Note } from '../../../helpers/schema.gen';
 import '../note-card';
 
 describe('note-card', () => {
@@ -9,7 +9,7 @@ describe('note-card', () => {
   });
 
   it('bind to note', async () => {
-    const note: Note = { text: 'Some text', createdAt: new Date() };
+    const note: Note = { text: 'Some text', createdAt: new Date().toISOString() };
     const { root } = await render(<note-card note={note}></note-card>);
     const node = root.shadowRoot?.querySelector('html-viewer');
     expect(node).not.toBeNull();
@@ -33,7 +33,7 @@ describe('note-card', () => {
       let modifiedAt = new Date();
       modifiedAt.setDate(modifiedAt.getDate() + 1);
       modifiedAt = modified ? modifiedAt : createdAt;
-      const note: Note = { text: 'Some text', createdAt: createdAt, modifiedAt: modifiedAt };
+      const note: Note = { text: 'Some text', createdAt: createdAt.toISOString(), modifiedAt: modifiedAt.toISOString() };
       const { root } = await render(<note-card note={note}></note-card>);
       const label = root.shadowRoot?.querySelector('ion-card-header ion-card-subtitle');
       if (modified) {

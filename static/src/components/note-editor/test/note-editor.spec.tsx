@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Note } from '../../../generated';
+import { Note } from '../../../helpers/schema.gen';
 import '../note-editor';
 
 describe('note-editor', () => {

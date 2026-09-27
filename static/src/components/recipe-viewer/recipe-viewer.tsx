@@ -1,5 +1,5 @@
 import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
-import { Recipe, RecipeCompact, RecipeState } from '../../generated';
+import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -116,7 +116,16 @@ export class RecipeViewer {
     );
   }
 
-  private getRecipeDatesText(createdAt: Date | null | undefined, modifiedAt: Date | null | undefined) {
+  private getRecipeDatesText(createdAt: string | Date | null | undefined, modifiedAt: string | Date | null | undefined) {
+    // If createdAt is a string, convert it to a Date object
+    if (typeof createdAt === 'string') {
+      createdAt = new Date(createdAt);
+    }
+
+    if (typeof modifiedAt === 'string') {
+      modifiedAt = new Date(modifiedAt);
+    }
+
     if (createdAt?.getTime() !== modifiedAt?.getTime()) {
       return (
         <span>

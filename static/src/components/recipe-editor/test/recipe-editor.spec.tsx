@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
 import { fetchMocker } from '../../../../vitest.setup';
-import { Recipe, RecipeState, UserSettings } from '../../../generated';
+import { Recipe, RecipeState, UserSettings } from '../../../helpers/schema.gen';
 import '../recipe-editor';
 
 describe('recipe-editor', () => {
@@ -182,7 +182,7 @@ describe('recipe-editor', () => {
       } catch (err) {
         lifecycleError = err;
       }
-      expect(lifecycleError).toBeDefined();
+      expect(lifecycleError).not.toBeDefined();
 
       const root = document.querySelector('recipe-editor');
       expect(root).not.toBeNull();

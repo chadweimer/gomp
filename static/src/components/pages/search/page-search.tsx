@@ -1,7 +1,7 @@
 import { alertController, Gesture, modalController, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
-import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../generated';
-import { recipesApi, refreshSearchResults } from '../../../helpers/api';
+import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
+import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
 import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
@@ -160,7 +160,13 @@ export class PageSearch {
 
   private async saveNewRecipe(recipe: Recipe, file: File) {
     try {
-      const newRecipe = await recipesApi.addRecipe({ recipe });
+      const { data: newRecipe, error } = await api.client.POST('/recipes', {
+        body: recipe
+      });
+
+      if (error) {
+        throw new Error('Failed to create new recipe', { cause: error });
+      }
 
       if (!isNull(file)) {
         await showLoading(
@@ -169,10 +175,17 @@ export class PageSearch {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
-            await recipesApi.uploadImage({
-              recipeId: newRecipe.id,
-              fileContent: file
+            const { error } = await api.client.POST('/recipes/{recipeId}/images', {
+              params: { path: { recipeId: newRecipe.id } },
+              body: file,
+              bodySerializer(body) {
+                return fileContentSerializer(body, file)
+              }
             });
+
+            if (error) {
+              throw new Error('Failed to create new recipe.', { cause: error });
+            }
           },
           'Uploading picture...');
       }

@@ -27,9 +27,7 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 	}
 
 	return Login200JSONResponse{
-		Body: AuthenticationResponse{
-			User: *user,
-		},
+		Body: *user,
 		Headers: Login200ResponseHeaders{
 			SetCookie: new(infra.CreateAuthCookie(tokenStr, *expiresAt).String()),
 		},
@@ -50,9 +48,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 		}
 
 		return RefreshToken200JSONResponse{
-			Body: AuthenticationResponse{
-				User: user.User,
-			},
+			Body: user.User,
 			Headers: RefreshToken200ResponseHeaders{
 				SetCookie: new(infra.CreateAuthCookie(tokenStr, *expiresAt).String()),
 			},

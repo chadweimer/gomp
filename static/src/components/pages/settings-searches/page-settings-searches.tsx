@@ -1,8 +1,8 @@
 import { alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../generated';
-import { loadSearchFilters, usersApi } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast, trap } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -16,7 +16,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
   @Method()
   async activatedCallback() {
-    this.filters = await loadSearchFilters();
+    this.filters = await trap(api.loadSearchFilters, []);
   }
 
   render() {
@@ -61,7 +61,13 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      await usersApi.addSearchFilter({ searchFilter });
+      const { error } = await api.client.POST('/users/current/filters', {
+        body: searchFilter
+      });
+
+      if (error) {
+        throw new Error('Failed to create search filter.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create search filter.');
@@ -73,11 +79,14 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       if (isNull(searchFilter.id)) {
         throw new Error('Cannot save search filter: filter ID is null.');
       }
-
-      await usersApi.saveSearchFilter({
-        filterId: searchFilter.id,
-        searchFilter: searchFilter
+      const { error } = await api.client.PUT('/users/current/filters/{filterId}', {
+        params: { path: { filterId: searchFilter.id } },
+        body: searchFilter
       });
+
+      if (error) {
+        throw new Error('Failed to save search filter.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save search filter.');
@@ -90,7 +99,13 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     try {
-      await usersApi.deleteSearchFilter({ filterId: id });
+      const { error } = await api.client.DELETE('/users/current/filters/{filterId}', {
+        params: { path: { filterId: id } }
+      });
+
+      if (error) {
+        throw new Error('Failed to delete search filter.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to delete search filter.');
@@ -114,7 +129,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           ...data.searchFilter,
           name: data.name
         });
-        this.filters = await loadSearchFilters();
+        this.filters = await trap(api.loadSearchFilters, []);
       }
     });
   }
@@ -125,7 +140,13 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     await enableBackForOverlay(async () => {
-      const searchFilter = await usersApi.getSearchFilter({ filterId: id });
+      const { data: searchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
+        params: { path: { filterId: id } }
+      });
+
+      if (error || !searchFilter) {
+        return;
+      }
 
       const modal = await modalController.create({
         component: 'search-filter-editor',
@@ -145,7 +166,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           ...data.searchFilter,
           name: data.name
         });
-        this.filters = await loadSearchFilters();
+        this.filters = await trap(api.loadSearchFilters, []);
       }
     });
   }
@@ -167,7 +188,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
       if (role === 'confirm') {
         await this.deleteSearchFilter(searchFilter.id);
-        this.filters = await loadSearchFilters();
+        this.filters = await trap(api.loadSearchFilters, []);
       }
     });
   }
@@ -178,11 +199,20 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
     }
 
     try {
-      state.searchFilter = await usersApi.getSearchFilter({ filterId: id });
+      const { data: searchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
+        params: { path: { filterId: id } }
+      });
+
+      if (error) {
+        throw new Error('Failed to load search filter.', { cause: error });
+      }
+
+      if (searchFilter) {
+        state.searchFilter = searchFilter;
+      }
       await redirect('/recipes');
     } catch (ex) {
       console.error(ex);
     }
   }
-
 }

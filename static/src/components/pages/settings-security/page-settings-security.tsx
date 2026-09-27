@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
-import { AccessLevel, User } from '../../../generated';
-import { usersApi } from '../../../helpers/api';
+import { AccessLevel, User } from '../../../helpers/schema.gen';
+import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
 
 @Component({
@@ -74,7 +74,13 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
 
   private async loadUser() {
     try {
-      this.currentUser = await usersApi.getCurrentUser();
+      const { data: user, error } = await api.client.GET('/users/current');
+
+      if (error) {
+        throw new Error('Failed to load current user', { cause: error });
+      }
+
+      this.currentUser = user;
     } catch (ex) {
       console.error(ex);
     }
@@ -82,9 +88,13 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
 
   private async updateUserPassword(currentPassword: string, newPassword: string) {
     try {
-      await usersApi.changePassword({
-        userPasswordRequest: { currentPassword, newPassword }
+      const { error } = await api.client.PUT('/users/current/password', {
+        body: { currentPassword, newPassword }
       });
+
+      if (error) {
+        throw new Error('Failed to update password.', { cause: error });
+      }
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to update password.');

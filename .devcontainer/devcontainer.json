@@ -42,7 +42,7 @@
       "version": "none"
     },
     "ghcr.io/devcontainers/features/node:2": {},
-    // Need for openapi-generator
+    // Needed for SonarQube extension
     "ghcr.io/devcontainers/features/java:1": {}
   },
   "forwardPorts": [

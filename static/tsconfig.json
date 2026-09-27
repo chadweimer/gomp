@@ -6,11 +6,11 @@
     "experimentalDecorators": true,
     "lib": [
       "dom",
-      "es2017"
+      "es2022"
     ],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "module": "esnext",
-    "target": "es2018",
+    "target": "es2022",
     "jsx": "react",
     "jsxFactory": "h",
     "skipLibCheck": true
@@ -20,6 +20,6 @@
   ],
   "exclude": [
     "node_modules",
-    "src/generated"
+    "src/**/*.gen.ts"
   ]
 }

@@ -15,4 +15,5 @@
     "connectionId": "chadweimer",
     "projectKey": "chadweimer_gomp"
   },
+  "yaml.format.singleQuote": true,
 }

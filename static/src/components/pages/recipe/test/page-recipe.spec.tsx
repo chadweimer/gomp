@@ -1,7 +1,7 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
 import { actionSheetController, alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, Note, Recipe, RecipeCompact, RecipePatch, RecipeState } from '../../../../generated';
+import { AccessLevel, Note, Recipe, RecipeCompact, RecipePatch, RecipeState } from '../../../../helpers/schema.gen';
 import state, { clearState } from '../../../../stores/state';
 import '../page-recipe';
 
@@ -220,12 +220,14 @@ describe('page-recipe', () => {
     it('reloads recipe, links, images, and notes on activatedCallback', async () => {
       const { root } = await render<HTMLPageRecipeElement>(<page-recipe recipeId={1} />);
 
-      const initialGetCount = fetchMocker.requests().filter((r: Request) => r.method === 'GET').length;
+      let requests = fetchMocker.requests() as Request[];
+      const initialGetCount = requests.filter((r: Request) => r.method === 'GET').length;
       expect(initialGetCount).toBeGreaterThanOrEqual(4);
 
       await root.activatedCallback();
 
-      const totalGetCount = fetchMocker.requests().filter((r: Request) => r.method === 'GET').length;
+      requests = fetchMocker.requests() as Request[];
+      const totalGetCount = requests.filter((r: Request) => r.method === 'GET').length;
       expect(totalGetCount).toBeGreaterThanOrEqual(initialGetCount + 4);
     });
   });

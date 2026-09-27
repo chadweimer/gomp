@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
-import { Recipe, RecipeCompact, RecipeState } from '../../../generated';
+import { Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
 import '../recipe-viewer';
 
 describe('recipe-viewer', () => {
@@ -152,8 +152,8 @@ describe('recipe-viewer', () => {
         sourceUrl: '',
         mainImageName: '',
         tags: [],
-        createdAt: createdAt,
-        modifiedAt: modifiedAt
+        createdAt: createdAt.toISOString(),
+        modifiedAt: modifiedAt.toISOString()
       };
       const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
       const label = root.shadowRoot?.querySelector('ion-card-subtitle');

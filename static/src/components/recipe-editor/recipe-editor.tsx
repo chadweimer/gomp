@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
-import { Recipe, RecipeState, UserSettings } from '../../generated';
-import { loadUserSettings } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
+import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
+import { api } from '../../helpers/api';
+import { configureModalAutofocus, dismissContainingModal, isNull, trap } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-editor',
@@ -32,7 +32,7 @@ export class RecipeEditor {
 
   async connectedCallback() {
     configureModalAutofocus(this.el);
-    this.currentUserSettings = await loadUserSettings();
+    this.currentUserSettings = await trap(api.loadUserSettings, null);
   }
 
   render() {

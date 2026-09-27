@@ -1,7 +1,7 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
 import { loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, Recipe, RecipeCompact, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SortBy, SortDir, UserSettings } from '../../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SortBy, SortDir, UserSettings } from '../../../../helpers/schema.gen';
 import state, { clearState } from '../../../../stores/state';
 import '../page-home';
 

@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect } from '@stencil/vitest';
 import { fetchMocker } from '../../../../vitest.setup';
-import { UserSettings } from '../../../generated';
+import { UserSettings } from '../../../helpers/schema.gen';
 import '../search-filter-editor';
 
 describe('search-filter-editor', () => {

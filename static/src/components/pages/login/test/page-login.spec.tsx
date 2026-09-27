@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, AuthenticationResponse, Credentials, User } from '../../../../generated';
+import { AccessLevel, Credentials, User } from '../../../../helpers/schema.gen';
 import state, { clearState } from '../../../../stores/state';
 import '../page-login';
 
@@ -68,7 +68,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
+            body: JSON.stringify(mockUser),
           };
         }
         return { status: 404, body: '' };
@@ -108,7 +108,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
+            body: JSON.stringify(mockUser),
           };
         }
         return { status: 404, body: '' };
@@ -133,7 +133,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
+            body: JSON.stringify(mockUser),
           };
         }
         return { status: 404, body: '' };
@@ -158,7 +158,7 @@ describe('page-login', () => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
+            body: JSON.stringify(mockUser),
           };
         }
         return { status: 404, body: '' };
@@ -219,7 +219,7 @@ describe('page-login', () => {
           }
           return {
             status: 200,
-            body: JSON.stringify({ user: mockUser } as AuthenticationResponse),
+            body: JSON.stringify(mockUser),
           };
         }
         return { status: 404, body: '' };

@@ -1,5 +1,5 @@
 import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
-import { Note } from '../../generated';
+import { Note } from '../../helpers/schema.gen';
 import { formatDate } from '../../helpers/utils';
 
 @Component({
@@ -22,7 +22,7 @@ export class NoteCard {
             <ion-card-title class="title">
               <ion-icon icon="chatbox" />&nbsp;{formatDate(this.note?.createdAt)}
             </ion-card-title>
-            {this.note?.createdAt?.getTime() !== this.note?.modifiedAt?.getTime() &&
+            {this.note?.createdAt !== this.note?.modifiedAt &&
               <ion-card-subtitle>Last Modified: {formatDate(this.note?.modifiedAt)}</ion-card-subtitle>}
           </ion-card-header>
           <ion-card-content>

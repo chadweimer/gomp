@@ -2,7 +2,7 @@ import { render, h, describe, it, expect, beforeEach, afterEach } from '@stencil
 import { vi } from 'vitest';
 import { AlertButton, alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, Recipe, RecipeCompact, RecipeState, SearchResult, SortBy, SortDir } from '../../../../generated';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SearchResult, SortBy, SortDir } from '../../../../helpers/schema.gen';
 import { SearchViewMode, SwipeDirection } from '../../../../models';
 import state, { clearState } from '../../../../stores/state';
 import '../page-search';
