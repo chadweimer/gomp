@@ -201,8 +201,8 @@ describe('app-root', () => {
 
       const progressBar = root.querySelector('ion-progress-bar');
       expect(progressBar).not.toBeNull();
-      expect(progressBar?.getAttribute('type')).toBe('indeterminate');
-      expect(progressBar?.getAttribute('color')).toBe('secondary');
+      expect(progressBar).toEqualAttribute('type', 'indeterminate');
+      expect(progressBar).toEqualAttribute('color', 'secondary');
     });
 
     it('renders static 100% progress bar when nothing is loading', async () => {
@@ -211,8 +211,8 @@ describe('app-root', () => {
 
       const progressBar = root.querySelector('ion-progress-bar');
       expect(progressBar).not.toBeNull();
-      expect(progressBar?.getAttribute('value')).toBe('100');
-      expect(progressBar?.getAttribute('color')).toBe('primary');
+      expect(progressBar).toEqualAttribute('value', '100');
+      expect(progressBar).toEqualAttribute('color', 'primary');
     });
   });
 

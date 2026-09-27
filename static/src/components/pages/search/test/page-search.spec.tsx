@@ -141,7 +141,7 @@ describe('page-search', () => {
       const cards = root.querySelectorAll('recipe-card');
       expect(cards).toHaveLength(2);
       expect((cards[0] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[0]);
-      expect(cards[0].getAttribute('size')).toBe('small');
+      expect(cards[0]).toEqualAttribute('size', 'small');
       expect((cards[1] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[1]);
 
       const items = root.querySelectorAll('ion-item');
@@ -161,15 +161,15 @@ describe('page-search', () => {
       expect(items).toHaveLength(2);
 
       // First item has mainImageName -> renders ion-img
-      expect(items[0].getAttribute('href')).toBe('/recipes/1');
+      expect(items[0]).toEqualAttribute('href', '/recipes/1');
       const img1 = items[0].querySelector('ion-img');
       expect(img1).not.toBeNull();
-      expect(img1?.getAttribute('src')).toBe('/uploads/recipes/1/thumbs/pancakes.jpg');
+      expect(img1).toEqualAttribute('src', '/uploads/recipes/1/thumbs/pancakes.jpg');
       const label1 = items[0].querySelector('ion-label');
       expect(label1).toEqualText('Pancakes');
 
       // Second item has no mainImageName -> no ion-img
-      expect(items[1].getAttribute('href')).toBe('/recipes/2');
+      expect(items[1]).toEqualAttribute('href', '/recipes/2');
       const img2 = items[1].querySelector('ion-img');
       expect(img2).toBeNull();
       const label2 = items[1].querySelector('ion-label');
@@ -196,7 +196,7 @@ describe('page-search', () => {
       const buttons = root.querySelectorAll('ion-header ion-button');
       const viewModeBtn = buttons[3] as HTMLIonButtonElement;
       const icon = viewModeBtn.querySelector('ion-icon');
-      expect(icon?.getAttribute('icon')).toBe('grid');
+      expect(icon).toEqualAttribute('icon', 'grid');
 
       viewModeBtn.click();
       expect(state.searchSettings.viewMode).toBe(SearchViewMode.List);
@@ -570,7 +570,7 @@ describe('page-search', () => {
 
       const sortDirBtn = root.querySelectorAll('ion-header ion-button')[2] as HTMLIonButtonElement;
       const icon = sortDirBtn.querySelector('ion-icon');
-      expect(icon?.getAttribute('icon')).toBe('arrow-up');
+      expect(icon).toEqualAttribute('icon', 'arrow-up');
 
       sortDirBtn.click();
       expect(state.searchFilter.sortDir).toBe(SortDir.Desc);
@@ -615,8 +615,8 @@ describe('page-search', () => {
       const { root } = await render(<page-search />);
       const navigator = root.querySelector('page-navigator');
       expect(navigator).not.toBeNull();
-      expect(navigator?.getAttribute('page')).toBe('1');
-      expect(navigator?.getAttribute('numpages')).toBe('5');
+      expect(navigator).toEqualAttribute('page', '1');
+      expect(navigator).toEqualAttribute('numpages', '5');
 
       navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 3 }));
       expect(state.searchPage).toBe(3);
