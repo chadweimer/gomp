@@ -96,25 +96,35 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
     }
 
     if ((this.imageInput?.files?.length ?? 0) > 0) {
-      const file = this.imageInput.files![0];
-      await showLoading(
-        async () => {
-          const { response: resp } = await api.client.POST('/uploads', {
-            body: file,
-            bodySerializer(body) {
-              return fileContentSerializer(body, file)
-            }
-          });
-          this.settings = {
-            ...this.settings,
-            homeImageUrl: resp.headers.get('location') ?? '',
-            favoriteTags: this.settings?.favoriteTags ?? []
-          }
-        },
-        'Uploading picture...');
+      try {
+        const file = this.imageInput.files![0];
+        await showLoading(
+          async () => {
+            const { error, response: resp } = await api.client.POST('/uploads', {
+              body: file,
+              bodySerializer(body) {
+                return fileContentSerializer(body, file)
+              }
+            });
 
-      // Clear the form
-      this.imageInput.value = '';
+            if (error) {
+              throw new Error('Failed to upload image.', { cause: error });
+            }
+
+            this.settings = {
+              ...this.settings,
+              homeImageUrl: resp.headers.get('location') ?? '',
+              favoriteTags: this.settings?.favoriteTags ?? []
+            }
+          },
+          'Uploading image...');
+
+        // Clear the form
+        this.imageInput.value = '';
+      } catch (ex) {
+        console.error(ex);
+        await showToast('Failed to upload image.');
+      }
     }
 
     await this.saveUserSettings();
