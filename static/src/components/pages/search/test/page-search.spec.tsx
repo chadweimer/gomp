@@ -139,13 +139,13 @@ describe('page-search', () => {
       const { root } = await render(<page-search />);
 
       const cards = root.querySelectorAll('recipe-card');
-      expect(cards.length).toBe(2);
+      expect(cards).toHaveLength(2);
       expect((cards[0] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[0]);
       expect(cards[0].getAttribute('size')).toBe('small');
       expect((cards[1] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[1]);
 
       const items = root.querySelectorAll('ion-item');
-      expect(items.length).toBe(0);
+      expect(items).toHaveLength(0);
     });
 
     it('renders recipes as list items when in List view mode with and without images', async () => {
@@ -155,10 +155,10 @@ describe('page-search', () => {
       const { root } = await render(<page-search />);
 
       const cards = root.querySelectorAll('recipe-card');
-      expect(cards.length).toBe(0);
+      expect(cards).toHaveLength(0);
 
       const items = root.querySelectorAll('ion-item');
-      expect(items.length).toBe(2);
+      expect(items).toHaveLength(2);
 
       // First item has mainImageName -> renders ion-img
       expect(items[0].getAttribute('href')).toBe('/recipes/1');
@@ -179,13 +179,13 @@ describe('page-search', () => {
     it('handles empty and null search results safely', async () => {
       state.searchResults = [];
       const { root: rootEmpty } = await render(<page-search />);
-      expect(rootEmpty.querySelectorAll('recipe-card').length).toBe(0);
-      expect(rootEmpty.querySelectorAll('ion-item').length).toBe(0);
+      expect(rootEmpty.querySelectorAll('recipe-card')).toHaveLength(0);
+      expect(rootEmpty.querySelectorAll('ion-item')).toHaveLength(0);
 
       state.searchResults = undefined;
       const { root: rootNull } = await render(<page-search />);
-      expect(rootNull.querySelectorAll('recipe-card').length).toBe(0);
-      expect(rootNull.querySelectorAll('ion-item').length).toBe(0);
+      expect(rootNull.querySelectorAll('recipe-card')).toHaveLength(0);
+      expect(rootNull.querySelectorAll('ion-item')).toHaveLength(0);
     });
 
     it('toggles view mode between Card and List on button click', async () => {
@@ -523,7 +523,7 @@ describe('page-search', () => {
 
       const alertOptions = createAlertSpy.mock.calls[0][0];
       expect(alertOptions.header).toBe('States');
-      expect(alertOptions.inputs?.length).toBe(2);
+      expect(alertOptions.inputs).toHaveLength(2);
       expect(alertOptions.inputs?.[0].value).toBe(RecipeState.Active);
       expect(alertOptions.inputs?.[0].checked).toBe(true);
       expect(alertOptions.inputs?.[1].value).toBe(RecipeState.Archived);
@@ -551,7 +551,7 @@ describe('page-search', () => {
 
       const alertOptions = createAlertSpy.mock.calls[0][0];
       expect(alertOptions.header).toBe('Sort By');
-      expect(alertOptions.inputs?.length).toBe(Object.keys(SortBy).length);
+      expect(alertOptions.inputs).toHaveLength(Object.keys(SortBy).length);
       expect(alertOptions.inputs?.[0].value).toBe(SortBy.Name);
       expect(alertOptions.inputs?.[0].checked).toBe(true);
 
@@ -592,7 +592,7 @@ describe('page-search', () => {
 
       const alertOptions = createAlertSpy.mock.calls[0][0];
       expect(alertOptions.header).toBe('Results Per Page');
-      expect(alertOptions.inputs?.length).toBe(5);
+      expect(alertOptions.inputs).toHaveLength(5);
       expect(alertOptions.inputs?.[0].value).toBe(24);
       expect(alertOptions.inputs?.[1].value).toBe(36);
       expect(alertOptions.inputs?.[1].checked).toBe(true);

@@ -22,7 +22,7 @@ describe('note-card', () => {
       const { root } = await render(<note-card readonly={readonly}></note-card>);
       const buttons = root.shadowRoot?.querySelectorAll('ion-button');
       expect(buttons).not.toBeNull();
-      expect(buttons?.length).toBe(readonly ? 0 : 2);
+      expect(buttons).toHaveLength(readonly ? 0 : 2);
     }
   });
 

@@ -1235,7 +1235,7 @@ describe('page-recipe', () => {
         vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet(role));
         const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
         const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(null));
-        const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+        const printSpy = vi.spyOn(window, 'print').mockImplementation(() => { });
 
         const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
