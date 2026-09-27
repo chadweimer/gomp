@@ -5,8 +5,10 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { HtmlEditorImage } from "./models";
 import { Note, Recipe, RecipeCompact, SearchFilter, User } from "./helpers/schema.gen";
 import { Color } from "@ionic/core";
+export { HtmlEditorImage } from "./models";
 export { Note, Recipe, RecipeCompact, SearchFilter, User } from "./helpers/schema.gen";
 export { Color } from "@ionic/core";
 export namespace Components {
@@ -45,6 +47,7 @@ export namespace Components {
         "value": number;
     }
     interface HtmlEditor {
+        "images"?: HtmlEditorImage[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
@@ -140,6 +143,10 @@ export namespace Components {
           * @default {     name: '',     state: RecipeState.Active,     rating: 0,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe": Recipe;
+        /**
+          * @default []
+         */
+        "recipeImages": string[];
     }
     interface RecipeLinkEditor {
         /**
@@ -550,6 +557,7 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface HtmlEditor {
+        "images"?: HtmlEditorImage[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
@@ -640,6 +648,10 @@ declare namespace LocalJSX {
           * @default {     name: '',     state: RecipeState.Active,     rating: 0,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe"?: Recipe;
+        /**
+          * @default []
+         */
+        "recipeImages"?: string[];
     }
     interface RecipeLinkEditor {
         /**

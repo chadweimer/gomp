@@ -14,6 +14,11 @@ export interface SearchSettings {
   viewMode: SearchViewMode;
 }
 
+export interface HtmlEditorImage {
+  name: string;
+  url: string;
+}
+
 export function getDefaultSearchFilter(): SearchFilter {
   return {
     query: '',

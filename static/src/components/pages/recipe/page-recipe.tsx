@@ -99,7 +99,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                         <ion-card class="zoom">
                           <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
                             <ion-thumbnail class="upload">
-                              <ion-img alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
+                              <img loading="lazy" alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
                             </ion-thumbnail>
                           </a>
                           {isAuthorized(state.currentUser, AccessLevel.Editor) &&
@@ -511,7 +511,8 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       const modal = await modalController.create({
         component: 'recipe-editor',
         componentProps: {
-          recipe: this.recipe
+          recipe: this.recipe,
+          recipeImages: this.images
         },
         backdropDismiss: false,
       });

@@ -1,5 +1,6 @@
 import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
 import { isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
+import { HtmlEditorImage } from '../../models';
 
 @Component({
   tag: 'html-editor',
@@ -12,6 +13,7 @@ export class HTMLEditor {
   @Prop() value: string = '';
   @Prop() label?: string;
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
+  @Prop() images?: HtmlEditorImage[];
 
   @Event() valueChanged!: EventEmitter<string>;
 
@@ -20,9 +22,11 @@ export class HTMLEditor {
   @State() isUnderlineActive: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
+  @State() isImagePickerOpen: boolean = false;
   @State() activeHeading: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null = null;
 
   private editorContentRef!: HTMLElement;
+  private savedRange: Range | null = null;
 
   @Watch('value')
   onValueChange() {
@@ -87,7 +91,39 @@ export class HTMLEditor {
             >
               <ion-icon icon="list" />
             </ion-button>
+            {(this.images?.length ?? 0) > 0 && (
+              <ion-button
+                onClick={() => this.toggleImagePicker()}
+                size="default"
+                fill={this.isImagePickerOpen ? 'solid' : 'clear'}
+                tabindex="-1"
+              >
+                <ion-icon icon="image" />
+              </ion-button>
+            )}
           </ion-buttons>
+          {this.isImagePickerOpen && (
+            <div class="image-picker-panel">
+              <div class="image-picker-header">
+                <span>Insert Image</span>
+                <ion-button size="small" fill="clear" onClick={() => (this.isImagePickerOpen = false)}>
+                  <ion-icon slot="icon-only" icon="close" />
+                </ion-button>
+              </div>
+              <div class="image-picker-grid">
+                {this.images?.map(image => (
+                  <ion-button
+                    key={image.name}
+                    fill="clear"
+                    class="image-picker-item"
+                    onClick={() => this.insertImage(image)}
+                  >
+                    <img slot="icon-only" src={image.url} alt={image.name} />
+                  </ion-button>
+                ))}
+              </div>
+            </div>
+          )}
         </ion-toolbar>
         <div
           ref={el => (this.editorContentRef = el!)}
@@ -108,6 +144,64 @@ export class HTMLEditor {
   // It's important for this to be a property so that it can be used in the event listeners
   private readonly onSelectionChange = () => {
     this.updateButtonStates();
+    this.saveSelection();
+  }
+
+  private saveSelection() {
+    const selection = this.el.ownerDocument.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      if (this.editorContentRef?.contains(range.commonAncestorContainer)) {
+        this.savedRange = range.cloneRange();
+      }
+    }
+  }
+
+  private toggleImagePicker() {
+    this.saveSelection();
+    this.isImagePickerOpen = !this.isImagePickerOpen;
+  }
+
+  private insertImage(image: HtmlEditorImage) {
+    this.isImagePickerOpen = false;
+    this.editorContentRef.focus();
+
+    const img = this.el.ownerDocument.createElement('img');
+    img.src = image.url;
+    img.alt = image.name;
+
+    const selection = this.el.ownerDocument.getSelection();
+    let inserted = false;
+
+    if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(this.savedRange);
+      }
+      this.savedRange.deleteContents();
+      this.savedRange.insertNode(img);
+
+      this.savedRange.setStartAfter(img);
+      this.savedRange.setEndAfter(img);
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(this.savedRange);
+      }
+      inserted = true;
+    }
+
+    if (!inserted) {
+      this.editorContentRef.appendChild(img);
+    }
+
+    if (!img.nextSibling) {
+      const br = this.el.ownerDocument.createElement('br');
+      img.parentNode?.insertBefore(br, img.nextSibling);
+    }
+
+    this.saveSelection();
+    this.updateButtonStates();
+    this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
   }
 
   private handleBlur(e: FocusEvent) {
@@ -117,6 +211,7 @@ export class HTMLEditor {
       return;
     }
 
+    this.isImagePickerOpen = false;
     this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
   }
 

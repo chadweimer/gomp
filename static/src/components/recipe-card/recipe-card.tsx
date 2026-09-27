@@ -20,7 +20,7 @@ export class RecipeCard {
     return (
       <Host>
         <ion-card href={isNull(this.recipe?.id) ? '' : `/recipes/${this.recipe?.id}`} class={{ zoom: true, [this.size]: true }}>
-          <ion-img class={{ image: true, hidden: isNullOrEmpty(this.recipe?.mainImageName) }} alt="" src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)} />
+          <img loading="lazy" class={{ image: true, hidden: isNullOrEmpty(this.recipe?.mainImageName) }} alt="" src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)} />
           <ion-card-header class="header">
             <ion-card-title class="single-line title">
               {this.recipe?.name}

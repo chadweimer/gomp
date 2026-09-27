@@ -160,17 +160,17 @@ describe('page-search', () => {
       const items = root.querySelectorAll('ion-item');
       expect(items).toHaveLength(2);
 
-      // First item has mainImageName -> renders ion-img
+      // First item has mainImageName -> renders img
       expect(items[0]).toEqualAttribute('href', '/recipes/1');
-      const img1 = items[0].querySelector('ion-img');
+      const img1 = items[0].querySelector('img');
       expect(img1).not.toBeNull();
       expect(img1).toEqualAttribute('src', '/uploads/recipes/1/thumbs/pancakes.jpg');
       const label1 = items[0].querySelector('ion-label');
       expect(label1).toEqualText('Pancakes');
 
-      // Second item has no mainImageName -> no ion-img
+      // Second item has no mainImageName -> no img
       expect(items[1]).toEqualAttribute('href', '/recipes/2');
-      const img2 = items[1].querySelector('ion-img');
+      const img2 = items[1].querySelector('img');
       expect(img2).toBeNull();
       const label2 = items[1].querySelector('ion-label');
       expect(label2).toEqualText('Waffles');

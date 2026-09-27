@@ -86,7 +86,7 @@ export class RecipeViewer {
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(link.mainImageName) && <ion-img alt="" src={getRecipeThumbnailUrl(link.id, link.mainImageName)} />}
+                        {!isNullOrEmpty(link.mainImageName) && <img loading="lazy" alt="" src={getRecipeThumbnailUrl(link.id, link.mainImageName)} />}
                       </ion-thumbnail>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">

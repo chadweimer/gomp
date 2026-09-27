@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, isNull, trap } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, trap } from '../../helpers/utils';
+import { HtmlEditorImage } from '../../models';
 
 @Component({
   tag: 'recipe-editor',
@@ -23,6 +24,7 @@ export class RecipeEditor {
     mainImageName: '',
     tags: []
   };
+  @Prop() recipeImages: string[] = [];
 
   @State() currentUserSettings: UserSettings | null = null;
 
@@ -85,7 +87,7 @@ export class RecipeEditor {
                 onValueChanged={e => this.recipe = { ...this.recipe, ingredients: e.detail }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Directions" label-placement="stacked" value={this.recipe?.directions}
+              <html-editor label="Directions" label-placement="stacked" value={this.recipe?.directions} images={this.getEditorImages(this.recipe?.id, this.recipeImages)}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
             </ion-item>
             <ion-item lines="full">
@@ -127,5 +129,18 @@ export class RecipeEditor {
 
   private async onCancelClicked() {
     await dismissContainingModal(this.el);
+  }
+
+  private getEditorImages(recipeId: number | undefined, images: string[]): HtmlEditorImage[] {
+    if (!recipeId) {
+      return [];
+    }
+
+    return images.map(image => {
+      return {
+        name: image,
+        url: getRecipeThumbnailUrl(recipeId, image),
+      } as HtmlEditorImage;
+    });
   }
 }
