@@ -409,11 +409,16 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async deleteImage(image: string) {
     try {
-      const { error } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
+      const { error, response } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
         params: { path: { recipeId: this.recipeId, name: image } }
       });
 
       if (error) {
+        if (response?.status === 409) {
+          await showToast('Cannot delete this image because it is referenced in the recipe directions.');
+          return;
+        }
+
         throw new Error('Failed to delete image.', { cause: error });
       }
     } catch (ex) {

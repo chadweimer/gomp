@@ -12,6 +12,7 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
@@ -238,8 +239,9 @@ func Test_DeleteImage(t *testing.T) {
 		name                  string
 		recipe                models.Recipe
 		imageName             string
+		readError             error
 		expectDelete          bool
-		expectedUpdatedRecipe *models.Recipe
+		expectUpdateMainImage bool
 		deleteError           error
 		expectedError         error
 		expectedResponse      DeleteImageResponseObject
@@ -251,27 +253,75 @@ func Test_DeleteImage(t *testing.T) {
 			recipe:                models.Recipe{ID: new(int64(1))},
 			imageName:             "img.jpeg",
 			expectDelete:          true,
-			expectedUpdatedRecipe: nil,
+			expectUpdateMainImage: false,
 			deleteError:           nil,
 			expectedError:         nil,
 			expectedResponse:      DeleteImage204Response{},
 		},
 		{
-			name:                  "Not Found",
+			name:                  "Recipe Not Found",
+			recipe:                models.Recipe{ID: new(int64(2))},
+			imageName:             "img.jpeg",
+			readError:             db.ErrNotFound,
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage404Response{},
+		},
+		{
+			name:                  "Recipe Read Error",
+			recipe:                models.Recipe{ID: new(int64(2))},
+			imageName:             "img.jpeg",
+			readError:             io.ErrClosedPipe,
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         io.ErrClosedPipe,
+			expectedResponse:      nil,
+		},
+		{
+			name: "Image Referenced in Directions Returns 409 Conflict",
+			recipe: models.Recipe{
+				ID:         new(int64(3)),
+				Directions: "Step 1: Mix. {{image:img.jpeg}} Step 2: Bake.",
+			},
+			imageName:             "img.jpeg",
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage409Response{},
+		},
+		{
+			name: "Different Image Referenced in Directions Deletes Successfully",
+			recipe: models.Recipe{
+				ID:         new(int64(3)),
+				Directions: "Step 1: Mix. {{image:other.jpeg}} Step 2: Bake.",
+			},
+			imageName:             "img.jpeg",
+			expectDelete:          true,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage204Response{},
+		},
+		{
+			name:                  "Image File Not Found",
 			recipe:                models.Recipe{ID: new(int64(2))},
 			imageName:             "img.jpeg",
 			expectDelete:          false,
-			expectedUpdatedRecipe: nil,
+			expectUpdateMainImage: false,
 			deleteError:           fs.ErrNotExist,
 			expectedError:         nil,
 			expectedResponse:      DeleteImage404Response{},
 		},
 		{
-			name:                  "Error",
+			name:                  "Delete Error",
 			recipe:                models.Recipe{ID: new(int64(2))},
 			imageName:             "img.jpeg",
 			expectDelete:          false,
-			expectedUpdatedRecipe: nil,
+			expectUpdateMainImage: false,
 			deleteError:           io.ErrClosedPipe,
 			expectedError:         io.ErrClosedPipe,
 			expectedResponse:      nil,
@@ -282,49 +332,12 @@ func Test_DeleteImage(t *testing.T) {
 				ID:            new(int64(2)),
 				MainImageName: "img.jpeg",
 			},
-			imageName:    "img.jpeg",
-			expectDelete: true,
-			expectedUpdatedRecipe: &models.Recipe{
-				ID:            new(int64(2)),
-				MainImageName: "",
-			},
-			deleteError:      nil,
-			expectedError:    nil,
-			expectedResponse: DeleteImage204Response{},
-		},
-		{
-			name: "Directions Sentinel Removed",
-			recipe: models.Recipe{
-				ID:         new(int64(3)),
-				Directions: "Step 1: Prep. {{image:img.jpeg}} Step 2: Cook.",
-			},
-			imageName:    "img.jpeg",
-			expectDelete: true,
-			expectedUpdatedRecipe: &models.Recipe{
-				ID:         new(int64(3)),
-				Directions: "Step 1: Prep.  Step 2: Cook.",
-			},
-			deleteError:      nil,
-			expectedError:    nil,
-			expectedResponse: DeleteImage204Response{},
-		},
-		{
-			name: "Main Image and Directions Sentinel Both Removed",
-			recipe: models.Recipe{
-				ID:            new(int64(4)),
-				MainImageName: "img.jpeg",
-				Directions:    "Instructions: {{image:img.jpeg}} and {{image:other.jpeg}}",
-			},
-			imageName:    "img.jpeg",
-			expectDelete: true,
-			expectedUpdatedRecipe: &models.Recipe{
-				ID:            new(int64(4)),
-				MainImageName: "",
-				Directions:    "Instructions:  and {{image:other.jpeg}}",
-			},
-			deleteError:      nil,
-			expectedError:    nil,
-			expectedResponse: DeleteImage204Response{},
+			imageName:             "img.jpeg",
+			expectDelete:          true,
+			expectUpdateMainImage: true,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage204Response{},
 		},
 		{
 			name: "Unsafe name",
@@ -333,7 +346,7 @@ func Test_DeleteImage(t *testing.T) {
 			},
 			imageName:             "../img.jpeg",
 			expectDelete:          false,
-			expectedUpdatedRecipe: nil,
+			expectUpdateMainImage: false,
 			deleteError:           nil,
 			expectedError:         nil,
 			expectedResponse:      DeleteImage400Response{},
@@ -346,17 +359,24 @@ func Test_DeleteImage(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
-			if test.deleteError != nil {
-				uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
+			if !isNameSafe(test.imageName) {
+				// No calls expected
+			} else if test.readError != nil {
+				dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(nil, test.readError)
 			} else {
-				if test.expectDelete {
+				dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
+				if isImageReferencedInDirections(test.recipe.Directions, test.imageName) {
+					// 409 conflict, upl.Delete not called
+				} else if test.deleteError != nil {
+					uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
+				} else if test.expectDelete {
 					// 2 times; once for original, once for thumbnail
 					uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
 					uplDriver.EXPECT().List(gomock.Any())
 					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
-				}
-				if test.expectedUpdatedRecipe != nil {
-					dbDriver.EXPECT().Update(gomock.Any(), test.expectedUpdatedRecipe).Return(nil)
+					if test.expectUpdateMainImage {
+						dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+					}
 				}
 			}
 
@@ -378,6 +398,10 @@ func Test_DeleteImage(t *testing.T) {
 					}
 				case DeleteImage404Response:
 					if _, ok := resp.(DeleteImage404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case DeleteImage409Response:
+					if _, ok := resp.(DeleteImage409Response); !ok {
 						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
@@ -409,50 +433,56 @@ func getMockImagesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDr
 	return api, recipeDriver, uplDriver
 }
 
-func Test_removeImageFromDirections(t *testing.T) {
+func Test_isImageReferencedInDirections(t *testing.T) {
 	tests := []struct {
 		name       string
 		directions string
 		imageName  string
-		expected   string
+		expected   bool
 	}{
 		{
 			name:       "empty directions",
 			directions: "",
 			imageName:  "foo.jpg",
-			expected:   "",
+			expected:   false,
 		},
 		{
-			name:       "single sentinel removed",
-			directions: "Step 1: Prep. {{image:foo.jpg}} Done.",
+			name:       "exact sentinel match",
+			directions: "{{image:foo.jpg}}",
 			imageName:  "foo.jpg",
-			expected:   "Step 1: Prep.  Done.",
+			expected:   true,
 		},
 		{
-			name:       "multiple sentinels of same image removed",
-			directions: "{{image:foo.jpg}} Step 1 {{image:foo.jpg}}",
+			name:       "sentinel embedded in text",
+			directions: "Step 1: Mix well. {{image:foo.jpg}} Step 2: Bake.",
 			imageName:  "foo.jpg",
-			expected:   " Step 1 ",
+			expected:   true,
 		},
 		{
-			name:       "different image sentinel preserved",
-			directions: "{{image:foo.jpg}} and {{image:bar.jpg}}",
+			name:       "different image sentinel",
+			directions: "Step 1: {{image:bar.jpg}}",
 			imageName:  "foo.jpg",
-			expected:   " and {{image:bar.jpg}}",
+			expected:   false,
 		},
 		{
-			name:       "no match",
-			directions: "Step 1: Mix well.",
+			name:       "filename prefix match without sentinel closing",
+			directions: "{{image:foo.jpg.backup}}",
 			imageName:  "foo.jpg",
-			expected:   "Step 1: Mix well.",
+			expected:   false,
+		},
+		{
+			name:       "plain text filename without sentinel syntax",
+			directions: "Check out foo.jpg on your screen",
+			imageName:  "foo.jpg",
+			expected:   false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := removeImageFromDirections(tt.directions, tt.imageName)
+			got := isImageReferencedInDirections(tt.directions, tt.imageName)
 			if got != tt.expected {
-				t.Errorf("removeImageFromDirections() = %q, want %q", got, tt.expected)
+				t.Errorf("isImageReferencedInDirections() = %v, want %v", got, tt.expected)
 			}
 		})
 	}

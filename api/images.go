@@ -47,7 +47,7 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 	}
 
 	// Update main image if necessary
-	if err := h.setMainImageIfNecessary(ctx, request.RecipeID); err != nil {
+	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, nil); err != nil {
 		return nil, fmt.Errorf("failed to update main image after upload: %w", err)
 	}
 
@@ -67,6 +67,24 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 		return DeleteImage400Response{}, nil
 	}
 
+	recipe, err := h.db.Recipes().Read(ctx, request.RecipeID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return DeleteImage404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to get recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
+		return nil, err
+	}
+
+	if isImageReferencedInDirections(recipe.Directions, request.Name) {
+		logger.WarnContext(ctx, "Cannot delete image referenced in directions",
+			"recipe-id", request.RecipeID,
+			"image-name", request.Name)
+		return DeleteImage409Response{}, nil
+	}
+
 	if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
 		if errors.Is(err, db.ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
 			return DeleteImage404Response{}, nil
@@ -78,35 +96,19 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 		return nil, err
 	}
 
-	// Update recipe if necessary (main image and/or directions)
-	if err := h.updateRecipeAfterImageDeletion(ctx, request.RecipeID, request.Name); err != nil {
-		return nil, fmt.Errorf("failed to update recipe after image deletion: %w", err)
+	// Update main image if necessary
+	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, &request.Name); err != nil {
+		return nil, fmt.Errorf("failed to update main image before deletion: %w", err)
 	}
 
 	return DeleteImage204Response{}, nil
 }
 
-func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64) error {
-	images, err := h.upl.List(recipeID)
-	if err != nil {
-		return fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
-	}
-	recipe, err := h.db.Recipes().Read(ctx, recipeID)
-	if err != nil {
-		return fmt.Errorf("failed to get recipe %d: %w", recipeID, err)
-	}
-
-	if len(images) > 0 && recipe.MainImageName == "" {
-		recipe.MainImageName = images[0]
-		if err := h.db.Recipes().Update(ctx, recipe); err != nil {
-			return fmt.Errorf("failed to update recipe %d with main image: %w", recipeID, err)
-		}
-	}
-
-	return nil
+func isImageReferencedInDirections(directions string, imageName string) bool {
+	return strings.Contains(directions, fmt.Sprintf("{{image:%s}}", imageName))
 }
 
-func (h apiHandler) updateRecipeAfterImageDeletion(ctx context.Context, recipeID int64, deletedImageName string) error {
+func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64, justDeletedImageName *string) error {
 	images, err := h.upl.List(recipeID)
 	if err != nil {
 		return fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
@@ -120,28 +122,18 @@ func (h apiHandler) updateRecipeAfterImageDeletion(ctx context.Context, recipeID
 	if len(images) == 0 && recipe.MainImageName != "" {
 		recipe.MainImageName = ""
 		saveNeeded = true
-	} else if len(images) > 0 && recipe.MainImageName == deletedImageName {
+	} else if len(images) > 0 && (recipe.MainImageName == "" || (justDeletedImageName != nil && recipe.MainImageName == *justDeletedImageName)) {
 		recipe.MainImageName = images[0]
-		saveNeeded = true
-	}
-
-	newDirections := removeImageFromDirections(recipe.Directions, deletedImageName)
-	if newDirections != recipe.Directions {
-		recipe.Directions = newDirections
 		saveNeeded = true
 	}
 
 	if saveNeeded {
 		if err := h.db.Recipes().Update(ctx, recipe); err != nil {
-			return fmt.Errorf("failed to update recipe %d after image deletion: %w", recipeID, err)
+			return fmt.Errorf("failed to update recipe %d with main image: %w", recipeID, err)
 		}
 	}
 
 	return nil
-}
-
-func removeImageFromDirections(directions string, imageName string) string {
-	return strings.ReplaceAll(directions, fmt.Sprintf("{{image:%s}}", imageName), "")
 }
 
 func isNameSafe(name string) bool {
