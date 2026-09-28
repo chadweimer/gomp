@@ -33,6 +33,23 @@ export class HTMLEditor {
     this.updateButtonStates();
   }
 
+  @Watch('images')
+  onImagesChange() {
+    if (this.editorContentRef) {
+      const imgs = this.editorContentRef.querySelectorAll('img');
+      imgs.forEach(img => {
+        const imageName = img.dataset.image || img.getAttribute('data-image');
+        if (imageName && (!img.src || img.src === window.location.href)) {
+          const imgItem = this.images?.find(i => i.name === imageName);
+          const src = imgItem?.url ?? '';
+          if (src) {
+            img.src = src;
+          }
+        }
+      });
+    }
+  }
+
   componentWillLoad() {
     this.updateButtonStates();
   }
@@ -134,7 +151,7 @@ export class HTMLEditor {
           onBlur={(e: FocusEvent) => this.handleBlur(e)}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
-          innerHTML={sanitizeHTML(preProcessMultilineText(this.value))}
+          innerHTML={sanitizeHTML(preProcessMultilineText(this.toEditorHtml(this.value)))}
         >
         </div>
       </Host>
@@ -169,6 +186,7 @@ export class HTMLEditor {
     const img = this.el.ownerDocument.createElement('img');
     img.src = image.url;
     img.alt = image.name;
+    img.dataset.image = image.name;
 
     const selection = this.el.ownerDocument.getSelection();
     let inserted = false;
@@ -201,7 +219,7 @@ export class HTMLEditor {
 
     this.saveSelection();
     this.updateButtonStates();
-    this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
+    this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
   }
 
   private handleBlur(e: FocusEvent) {
@@ -212,7 +230,46 @@ export class HTMLEditor {
     }
 
     this.isImagePickerOpen = false;
-    this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
+    this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
+  }
+
+  private toEditorHtml(value: string | null | undefined): string {
+    if (isNullOrEmpty(value)) {
+      return '';
+    }
+
+    return value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
+      const imgItem = this.images?.find(i => i.name === imageName);
+      const src = imgItem?.url ?? '';
+      const safeAlt = imageName.replace(/"/g, '&quot;');
+      const safeData = imageName.replace(/"/g, '&quot;');
+      return `<img src="${src}" alt="${safeAlt}" data-image="${safeData}">`;
+    });
+  }
+
+  private toStorageHtml(html: string): string {
+    if (isNullOrEmpty(html)) {
+      return '';
+    }
+
+    const template = this.el.ownerDocument.createElement('template');
+    template.innerHTML = html;
+    const images = template.content.querySelectorAll('img');
+    images.forEach(img => {
+      let imageName = img.dataset.image || img.getAttribute('data-image');
+      if (!imageName && this.images) {
+        const found = this.images.find(
+          i => i.name === img.alt || (i.url && img.src.includes(i.url)),
+        );
+        if (found) {
+          imageName = found.name;
+        }
+      }
+      if (imageName) {
+        img.replaceWith(`{{image:${imageName}}}`);
+      }
+    });
+    return template.innerHTML;
   }
 
   private updateButtonStates() {

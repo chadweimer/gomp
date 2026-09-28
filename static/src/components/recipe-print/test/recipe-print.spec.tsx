@@ -137,4 +137,29 @@ describe('recipe-print', () => {
     const img = root.shadowRoot?.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
     expect(img).not.toBeNull();
   });
+
+  it('renders directions with unclickable inline image thumbnails when sentinels are present', async () => {
+    const recipe: Recipe = {
+      id: 9,
+      name: 'Waffles',
+      state: RecipeState.Active,
+      rating: 4,
+      servingSize: '2',
+      time: '15m',
+      ingredients: '',
+      directions: '<p>Pour mix {{image:waffle.jpg}}</p>',
+      nutritionInfo: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      mainImageName: '',
+      tags: [],
+    };
+    const { root } = await render(<recipe-print recipe={recipe} />);
+    const htmlViewer = root.shadowRoot?.querySelector('html-viewer[value*="recipe-inline-image"]');
+    expect(htmlViewer).not.toBeNull();
+    expect(htmlViewer).toEqualAttribute(
+      'value',
+      '<p>Pour mix <img src="/uploads/recipes/9/thumbs/waffle.jpg" alt="waffle.jpg" class="recipe-inline-image"></p>',
+    );
+  });
 });

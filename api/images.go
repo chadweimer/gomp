@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
@@ -46,7 +47,7 @@ func (h apiHandler) UploadImage(ctx context.Context, request UploadImageRequestO
 	}
 
 	// Update main image if necessary
-	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, nil); err != nil {
+	if err := h.setMainImageIfNecessary(ctx, request.RecipeID); err != nil {
 		return nil, fmt.Errorf("failed to update main image after upload: %w", err)
 	}
 
@@ -77,15 +78,35 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 		return nil, err
 	}
 
-	// Update main image if necessary
-	if err := h.setMainImageIfNecessary(ctx, request.RecipeID, &request.Name); err != nil {
-		return nil, fmt.Errorf("failed to update main image before deletion: %w", err)
+	// Update recipe if necessary (main image and/or directions)
+	if err := h.updateRecipeAfterImageDeletion(ctx, request.RecipeID, request.Name); err != nil {
+		return nil, fmt.Errorf("failed to update recipe after image deletion: %w", err)
 	}
 
 	return DeleteImage204Response{}, nil
 }
 
-func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64, justDeletedImageName *string) error {
+func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64) error {
+	images, err := h.upl.List(recipeID)
+	if err != nil {
+		return fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
+	}
+	recipe, err := h.db.Recipes().Read(ctx, recipeID)
+	if err != nil {
+		return fmt.Errorf("failed to get recipe %d: %w", recipeID, err)
+	}
+
+	if len(images) > 0 && recipe.MainImageName == "" {
+		recipe.MainImageName = images[0]
+		if err := h.db.Recipes().Update(ctx, recipe); err != nil {
+			return fmt.Errorf("failed to update recipe %d with main image: %w", recipeID, err)
+		}
+	}
+
+	return nil
+}
+
+func (h apiHandler) updateRecipeAfterImageDeletion(ctx context.Context, recipeID int64, deletedImageName string) error {
 	images, err := h.upl.List(recipeID)
 	if err != nil {
 		return fmt.Errorf("failed to list images for recipe %d: %w", recipeID, err)
@@ -99,18 +120,28 @@ func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64,
 	if len(images) == 0 && recipe.MainImageName != "" {
 		recipe.MainImageName = ""
 		saveNeeded = true
-	} else if len(images) > 0 && (recipe.MainImageName == "" || (justDeletedImageName != nil && recipe.MainImageName == *justDeletedImageName)) {
+	} else if len(images) > 0 && recipe.MainImageName == deletedImageName {
 		recipe.MainImageName = images[0]
+		saveNeeded = true
+	}
+
+	newDirections := removeImageFromDirections(recipe.Directions, deletedImageName)
+	if newDirections != recipe.Directions {
+		recipe.Directions = newDirections
 		saveNeeded = true
 	}
 
 	if saveNeeded {
 		if err := h.db.Recipes().Update(ctx, recipe); err != nil {
-			return fmt.Errorf("failed to update recipe %d with main image: %w", recipeID, err)
+			return fmt.Errorf("failed to update recipe %d after image deletion: %w", recipeID, err)
 		}
 	}
 
 	return nil
+}
+
+func removeImageFromDirections(directions string, imageName string) string {
+	return strings.ReplaceAll(directions, fmt.Sprintf("{{image:%s}}", imageName), "")
 }
 
 func isNameSafe(name string) bool {

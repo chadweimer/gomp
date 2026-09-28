@@ -140,7 +140,7 @@ export class RecipeEditor {
       return {
         name: image,
         url: getRecipeThumbnailUrl(recipeId, image),
-      } as HtmlEditorImage;
+      };
     });
   }
 }

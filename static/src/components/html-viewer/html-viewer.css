@@ -5,3 +5,26 @@
   overflow-wrap: anywhere;
   word-break: normal;
 }
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+img.recipe-inline-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;
+  margin: 0.5rem 0;
+}
+
+a img.recipe-inline-image {
+  cursor: pointer;
+}
+
+a img.recipe-inline-image:hover {
+  opacity: 0.85;
+  transition: opacity 0.15s ease-in-out;
+}

@@ -106,11 +106,39 @@ describe('html-editor', () => {
     expect(img).not.toBeNull();
     expect(img).toEqualAttribute('src', mockImages[0].url);
     expect(img).toEqualAttribute('alt', mockImages[0].name);
+    expect(img).toEqualAttribute('data-image', mockImages[0].name);
 
-    // Event should be emitted
+    // Event should be emitted with sentinel
     expect(valueChangedSpy).toHaveBeenCalledTimes(1);
     const eventArg = valueChangedSpy.mock.calls[0][0] as CustomEvent<string>;
-    expect(eventArg.detail).toContain(`<img src="${mockImages[0].url}" alt="${mockImages[0].name}">`);
+    expect(eventArg.detail).toContain(`{{image:${mockImages[0].name}}}`);
+  });
+
+  it('renders image sentinel as img element in editor on load and serializes back on blur', async () => {
+    const { root, waitForChanges } = await render(
+      <html-editor images={mockImages} value="<p>Step 1: {{image:step1.jpg}}</p>" />,
+    );
+
+    const editorContent = root.querySelector('.editor-content');
+    const img = editorContent?.querySelector('img');
+    expect(img).not.toBeNull();
+    expect(img).toEqualAttribute('src', mockImages[0].url);
+    expect(img).toEqualAttribute('alt', 'step1.jpg');
+    expect(img).toEqualAttribute('data-image', 'step1.jpg');
+
+    const valueChangedSpy = vi.fn();
+    root.addEventListener('valueChanged', valueChangedSpy);
+
+    const outsideEl = document.createElement('div');
+    document.body.appendChild(outsideEl);
+
+    editorContent?.dispatchEvent(new FocusEvent('blur', { relatedTarget: outsideEl }));
+    await waitForChanges();
+
+    expect(valueChangedSpy).toHaveBeenCalledTimes(1);
+    const eventArg = valueChangedSpy.mock.calls[0][0] as CustomEvent<string>;
+    expect(eventArg.detail).toContain('{{image:step1.jpg}}');
+    outsideEl.remove();
   });
 
   it('closes picker on blur when focus moves outside the component', async () => {

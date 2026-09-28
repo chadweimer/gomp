@@ -254,7 +254,38 @@ export function sanitizeHTML(html: string) {
   // Sanitize the HTML using DOMPurify to prevent XSS attacks.
   // Forbid the use of style attributes and style tags.
   // Also forbid span tags to prevent inline styles.
-  return DOMPurify.sanitize(html, { FORBID_ATTR: ['style'], FORBID_TAGS: ['style', 'span'] });
+  return DOMPurify.sanitize(html, {
+    FORBID_ATTR: ['style'],
+    FORBID_TAGS: ['style', 'span'],
+    ADD_ATTR: ['target', 'data-image'],
+  });
+}
+
+export interface FormatRecipeDirectionsOptions {
+  makeClickable?: boolean;
+}
+
+export function formatRecipeDirections(
+  directions: string | null | undefined,
+  recipeId: number | null | undefined,
+  options: FormatRecipeDirectionsOptions = {},
+): string {
+  if (isNullOrEmpty(directions)) {
+    return '';
+  }
+
+  const { makeClickable = true } = options;
+
+  return directions.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
+    const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
+    const imgHtml = `<img src="${thumbUrl}" alt="${imageName}" class="recipe-inline-image">`;
+
+    if (makeClickable) {
+      const fullUrl = getRecipeImageUrl(recipeId, imageName);
+      return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer">${imgHtml}</a>`;
+    }
+    return imgHtml;
+  });
 }
 
 export function scaleValue(value: number | null | undefined, divider: number, decimalPlaces: number) {

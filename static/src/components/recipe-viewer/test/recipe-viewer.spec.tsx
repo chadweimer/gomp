@@ -218,4 +218,29 @@ describe('recipe-viewer', () => {
       expect(router).toEqualText(link.name);
     }
   });
+
+  it('renders directions with clickable inline image thumbnails when sentinels are present', async () => {
+    const recipe: Recipe = {
+      id: 7,
+      name: 'Pancakes',
+      state: RecipeState.Active,
+      rating: 5,
+      servingSize: '4',
+      time: '30m',
+      ingredients: '',
+      directions: '<p>Step 1: Mix {{image:batter.jpg}}</p>',
+      nutritionInfo: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      mainImageName: '',
+      tags: [],
+    };
+    const { root } = await render(<recipe-viewer recipe={recipe} />);
+    const htmlViewer = root.shadowRoot?.querySelector('html-viewer[value*="recipe-inline-image"]');
+    expect(htmlViewer).not.toBeNull();
+    expect(htmlViewer).toEqualAttribute(
+      'value',
+      '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/7/thumbs/batter.jpg" alt="batter.jpg" class="recipe-inline-image"></a></p>',
+    );
+  });
 });

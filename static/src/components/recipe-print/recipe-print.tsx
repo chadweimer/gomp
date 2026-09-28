@@ -1,6 +1,6 @@
 import { Component, h, Host, Prop } from '@stencil/core';
 import { Recipe } from '../../helpers/schema.gen';
-import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
+import { formatRecipeDirections, getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-print',
@@ -37,7 +37,7 @@ export class RecipePrint {
           {this.recipe?.directions && (
             <section>
               <h2>Directions</h2>
-              <html-viewer value={this.recipe?.directions} />
+              <html-viewer value={formatRecipeDirections(this.recipe?.directions, this.recipe?.id, { makeClickable: false })} />
             </section>
           )}
           {this.recipe?.storageInstructions && (
