@@ -1,4 +1,4 @@
-import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
 import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import { formatDate, formatRecipeDirections, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 
@@ -11,6 +11,7 @@ export class RecipeViewer {
   @Prop() recipe: Recipe | null = null;
   @Prop() links: RecipeCompact[] = [];
   @Prop() readonly = false;
+  @Element() el!: HTMLRecipeViewerElement;
 
   @Event() ratingSelected!: EventEmitter<number>;
   @Event() deleteLinkClicked!: EventEmitter<RecipeCompact>;
@@ -56,7 +57,7 @@ export class RecipeViewer {
             {!isNullOrEmpty(this.recipe?.directions) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
-                <html-viewer class="ion-padding" value={formatRecipeDirections(this.recipe?.directions, this.recipe?.id)} />
+                <html-viewer class="ion-padding" value={formatRecipeDirections(this.el, this.recipe?.directions, this.recipe?.id)} />
               </ion-item>
             }
             {!isNullOrEmpty(this.recipe?.storageInstructions) &&

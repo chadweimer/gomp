@@ -1,5 +1,5 @@
 import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
-import { isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
+import { createImageElement, isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
 import { HtmlEditorImage } from '../../models';
 
 @Component({
@@ -160,10 +160,7 @@ export class HTMLEditor {
     this.isImagePickerOpen = false;
     this.editorContentRef.focus();
 
-    const img = this.el.ownerDocument.createElement('img');
-    img.src = image.url;
-    img.alt = image.name;
-    img.dataset.image = image.name;
+    const img = createImageElement(this.el, image.name, image.url);
 
     const selection = this.el.ownerDocument.getSelection();
     let inserted = false;
@@ -189,11 +186,6 @@ export class HTMLEditor {
       this.editorContentRef.appendChild(img);
     }
 
-    if (!img.nextSibling) {
-      const br = this.el.ownerDocument.createElement('br');
-      img.parentNode?.insertBefore(br, img.nextSibling);
-    }
-
     this.saveSelection();
     this.updateButtonStates();
     this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
@@ -217,10 +209,10 @@ export class HTMLEditor {
 
     return value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
       const imgItem = this.images?.find(i => i.name === imageName);
-      const src = imgItem?.url ?? '';
-      const safeAlt = imageName.replace(/"/g, '&quot;');
-      const safeData = imageName.replace(/"/g, '&quot;');
-      return `<img src="${src}" alt="${safeAlt}" data-image="${safeData}">`;
+      const template = this.el.ownerDocument.createElement('template');
+      const img = createImageElement(this.el, imageName, imgItem?.url ?? '');
+      template.content.appendChild(img);
+      return template.innerHTML;
     });
   }
 

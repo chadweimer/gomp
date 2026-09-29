@@ -261,22 +261,43 @@ export function sanitizeHTML(html: string) {
   });
 }
 
-export function formatRecipeDirections(directions: string | null | undefined, recipeId: number | null | undefined, clickable = true): string {
+export function formatRecipeDirections(
+  host: Element,
+  directions: string | null | undefined,
+  recipeId: number | null | undefined,
+  clickable = true
+): string {
   if (isNullOrEmpty(directions)) {
     return '';
   }
 
   return directions.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
     const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
-    const safeAlt = imageName.replace(/"/g, '&quot;');
-    const imgHtml = `<img loading="lazy" src="${thumbUrl}" alt="${safeAlt}">`;
+    const template = host.ownerDocument.createElement('template');
+    const img = createImageElement(host, imageName, thumbUrl);
 
-    if (clickable) {
+    if (!clickable) {
+      template.content.appendChild(img);
+    } else {
       const fullUrl = getRecipeImageUrl(recipeId, imageName);
-      return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer">${imgHtml}</a>`;
+      const a = host.ownerDocument.createElement('a');
+      a.href = fullUrl;
+      a.target = '_blank';
+      a.relList.add('noopener', 'noreferrer');
+      a.appendChild(img);
+      template.content.appendChild(a);
     }
-    return imgHtml;
+    return template.innerHTML;;
   });
+}
+
+export function createImageElement(host: Element, imageName: string, src: string): HTMLImageElement {
+  const img = host.ownerDocument.createElement('img');
+  img.loading = 'lazy';
+  img.src = src;
+  img.alt = imageName;
+  img.dataset.image = imageName;
+  return img;
 }
 
 export function scaleValue(value: number | null | undefined, divider: number, decimalPlaces: number) {

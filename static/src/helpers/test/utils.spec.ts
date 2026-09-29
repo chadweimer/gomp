@@ -20,32 +20,32 @@ describe('utils', () => {
 
   describe('formatRecipeDirections', () => {
     it('returns empty string for null or empty directions', () => {
-      expect(formatRecipeDirections(null, 1)).toBe('');
-      expect(formatRecipeDirections('', 1)).toBe('');
-      expect(formatRecipeDirections(undefined, 1)).toBe('');
+      expect(formatRecipeDirections(globalThis.document.body, null, 1)).toBe('');
+      expect(formatRecipeDirections(globalThis.document.body, '', 1)).toBe('');
+      expect(formatRecipeDirections(globalThis.document.body, undefined, 1)).toBe('');
     });
 
     it('replaces image sentinels with clickable thumbnail images by default', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
-      const output = formatRecipeDirections(directions, 42);
-      expect(output).toBe(
-        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img loading="lazy" src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg"></a> Step 2: Cook.',
+      const output = formatRecipeDirections(globalThis.document.body, directions, 42);
+      expect(output).toEqualHtml(
+        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"></a> Step 2: Cook.',
       );
     });
 
     it('replaces image sentinels with plain thumbnail images when makeClickable is false', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
-      const output = formatRecipeDirections(directions, 42, false);
-      expect(output).toBe(
-        'Step 1: Mix. <img loading="lazy" src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg"> Step 2: Cook.',
+      const output = formatRecipeDirections(globalThis.document.body, directions, 42, false);
+      expect(output).toEqualHtml(
+        'Step 1: Mix. <img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.',
       );
     });
 
     it('handles multiple image sentinels', () => {
       const directions = '{{image:first.png}} then {{image:second.png}}';
-      const output = formatRecipeDirections(directions, 10, false);
-      expect(output).toBe(
-        '<img loading="lazy" src="/uploads/recipes/10/thumbs/first.png" alt="first.png"> then <img loading="lazy" src="/uploads/recipes/10/thumbs/second.png" alt="second.png">',
+      const output = formatRecipeDirections(globalThis.document.body, directions, 10, false);
+      expect(output).toEqualHtml(
+        '<img src="/uploads/recipes/10/thumbs/first.png" alt="first.png" data-image="first.png"> then <img src="/uploads/recipes/10/thumbs/second.png" alt="second.png" data-image="second.png">',
       );
     });
   });
