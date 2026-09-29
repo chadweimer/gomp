@@ -236,11 +236,11 @@ describe('recipe-viewer', () => {
       tags: [],
     };
     const { root } = await render(<recipe-viewer recipe={recipe} />);
-    const htmlViewer = root.shadowRoot?.querySelector('html-viewer[value*="recipe-inline-image"]');
+    const htmlViewer = root.shadowRoot?.querySelector('html-viewer');
     expect(htmlViewer).not.toBeNull();
     expect(htmlViewer).toEqualAttribute(
       'value',
-      '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/7/thumbs/batter.jpg" alt="batter.jpg" class="recipe-inline-image"></a></p>',
+      '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img loading="lazy" src="/uploads/recipes/7/thumbs/batter.jpg" alt="batter.jpg"></a></p>',
     );
   });
 });

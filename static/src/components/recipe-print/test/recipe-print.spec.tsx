@@ -155,11 +155,11 @@ describe('recipe-print', () => {
       tags: [],
     };
     const { root } = await render(<recipe-print recipe={recipe} />);
-    const htmlViewer = root.shadowRoot?.querySelector('html-viewer[value*="recipe-inline-image"]');
+    const htmlViewer = root.shadowRoot?.querySelector('html-viewer');
     expect(htmlViewer).not.toBeNull();
     expect(htmlViewer).toEqualAttribute(
       'value',
-      '<p>Pour mix <img src="/uploads/recipes/9/thumbs/waffle.jpg" alt="waffle.jpg" class="recipe-inline-image"></p>',
+      '<p>Pour mix <img loading="lazy" src="/uploads/recipes/9/thumbs/waffle.jpg" alt="waffle.jpg"></p>',
     );
   });
 });

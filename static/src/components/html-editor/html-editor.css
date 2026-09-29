@@ -39,17 +39,6 @@
   position: relative;
 }
 
-.image-picker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 0 4px 4px 4px;
-  border-bottom: 1px solid var(--ion-color-step-150, #eee);
-  margin-bottom: 8px;
-}
-
 .image-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));

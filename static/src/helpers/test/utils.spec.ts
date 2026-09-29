@@ -29,23 +29,23 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = formatRecipeDirections(directions, 42);
       expect(output).toBe(
-        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" class="recipe-inline-image"></a> Step 2: Cook.',
+        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img loading="lazy" src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg"></a> Step 2: Cook.',
       );
     });
 
     it('replaces image sentinels with plain thumbnail images when makeClickable is false', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
-      const output = formatRecipeDirections(directions, 42, { makeClickable: false });
+      const output = formatRecipeDirections(directions, 42, false);
       expect(output).toBe(
-        'Step 1: Mix. <img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" class="recipe-inline-image"> Step 2: Cook.',
+        'Step 1: Mix. <img loading="lazy" src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg"> Step 2: Cook.',
       );
     });
 
     it('handles multiple image sentinels', () => {
       const directions = '{{image:first.png}} then {{image:second.png}}';
-      const output = formatRecipeDirections(directions, 10, { makeClickable: false });
+      const output = formatRecipeDirections(directions, 10, false);
       expect(output).toBe(
-        '<img src="/uploads/recipes/10/thumbs/first.png" alt="first.png" class="recipe-inline-image"> then <img src="/uploads/recipes/10/thumbs/second.png" alt="second.png" class="recipe-inline-image">',
+        '<img loading="lazy" src="/uploads/recipes/10/thumbs/first.png" alt="first.png"> then <img loading="lazy" src="/uploads/recipes/10/thumbs/second.png" alt="second.png">',
       );
     });
   });

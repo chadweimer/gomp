@@ -53,7 +53,7 @@ describe('html-editor', () => {
     expect(picker).toBeNull();
   });
 
-  it('toggles image picker panel open and closed via image button and close button', async () => {
+  it('toggles image picker panel open and closed via image button', async () => {
     const { root, waitForChanges } = await render(<html-editor images={mockImages} />);
 
     const imageBtn = root.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
@@ -72,10 +72,7 @@ describe('html-editor', () => {
     expect(firstImg).toEqualAttribute('src', mockImages[0].url);
     expect(firstImg).toEqualAttribute('alt', mockImages[0].name);
 
-    const closeBtn = picker?.querySelector<HTMLIonButtonElement>('.image-picker-header ion-button');
-    expect(closeBtn).not.toBeNull();
-
-    closeBtn?.click();
+    imageBtn?.click();
     await waitForChanges();
 
     picker = root.querySelector('.image-picker-panel');

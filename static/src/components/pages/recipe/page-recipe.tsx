@@ -413,12 +413,12 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         params: { path: { recipeId: this.recipeId, name: image } }
       });
 
-      if (error) {
-        if (response?.status === 409) {
-          await showToast('Cannot delete this image because it is referenced in the recipe directions.');
-          return;
-        }
+      if (response?.status === 409) {
+        await showToast('Cannot delete this image because it is referenced in the recipe directions.');
+        return;
+      }
 
+      if (error) {
         throw new Error('Failed to delete image.', { cause: error });
       }
     } catch (ex) {

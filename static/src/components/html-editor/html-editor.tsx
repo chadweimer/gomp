@@ -33,23 +33,6 @@ export class HTMLEditor {
     this.updateButtonStates();
   }
 
-  @Watch('images')
-  onImagesChange() {
-    if (this.editorContentRef) {
-      const imgs = this.editorContentRef.querySelectorAll('img');
-      imgs.forEach(img => {
-        const imageName = img.dataset.image || img.getAttribute('data-image');
-        if (imageName && (!img.src || img.src === window.location.href)) {
-          const imgItem = this.images?.find(i => i.name === imageName);
-          const src = imgItem?.url ?? '';
-          if (src) {
-            img.src = src;
-          }
-        }
-      });
-    }
-  }
-
   componentWillLoad() {
     this.updateButtonStates();
   }
@@ -121,12 +104,6 @@ export class HTMLEditor {
           </ion-buttons>
           {this.isImagePickerOpen && (
             <div class="image-picker-panel">
-              <div class="image-picker-header">
-                <span>Insert Image</span>
-                <ion-button size="small" fill="clear" onClick={() => (this.isImagePickerOpen = false)}>
-                  <ion-icon slot="icon-only" icon="close" />
-                </ion-button>
-              </div>
               <div class="image-picker-grid">
                 {this.images?.map(image => (
                   <ion-button
@@ -256,15 +233,7 @@ export class HTMLEditor {
     template.innerHTML = html;
     const images = template.content.querySelectorAll('img');
     images.forEach(img => {
-      let imageName = img.dataset.image || img.getAttribute('data-image');
-      if (!imageName && this.images) {
-        const found = this.images.find(
-          i => i.name === img.alt || (i.url && img.src.includes(i.url)),
-        );
-        if (found) {
-          imageName = found.name;
-        }
-      }
+      const imageName = img.dataset.image || img.getAttribute('data-image');
       if (imageName) {
         img.replaceWith(`{{image:${imageName}}}`);
       }

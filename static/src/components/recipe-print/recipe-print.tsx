@@ -37,7 +37,7 @@ export class RecipePrint {
           {this.recipe?.directions && (
             <section>
               <h2>Directions</h2>
-              <html-viewer value={formatRecipeDirections(this.recipe?.directions, this.recipe?.id, { makeClickable: false })} />
+              <html-viewer value={formatRecipeDirections(this.recipe?.directions, this.recipe?.id, false)} />
             </section>
           )}
           {this.recipe?.storageInstructions && (

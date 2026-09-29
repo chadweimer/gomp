@@ -261,26 +261,17 @@ export function sanitizeHTML(html: string) {
   });
 }
 
-export interface FormatRecipeDirectionsOptions {
-  makeClickable?: boolean;
-}
-
-export function formatRecipeDirections(
-  directions: string | null | undefined,
-  recipeId: number | null | undefined,
-  options: FormatRecipeDirectionsOptions = {},
-): string {
+export function formatRecipeDirections(directions: string | null | undefined, recipeId: number | null | undefined, clickable = true): string {
   if (isNullOrEmpty(directions)) {
     return '';
   }
 
-  const { makeClickable = true } = options;
-
   return directions.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
     const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
-    const imgHtml = `<img src="${thumbUrl}" alt="${imageName}" class="recipe-inline-image">`;
+    const safeAlt = imageName.replace(/"/g, '&quot;');
+    const imgHtml = `<img loading="lazy" src="${thumbUrl}" alt="${safeAlt}">`;
 
-    if (makeClickable) {
+    if (clickable) {
       const fullUrl = getRecipeImageUrl(recipeId, imageName);
       return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer">${imgHtml}</a>`;
     }

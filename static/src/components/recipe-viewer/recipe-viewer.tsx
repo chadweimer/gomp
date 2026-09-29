@@ -56,7 +56,7 @@ export class RecipeViewer {
             {!isNullOrEmpty(this.recipe?.directions) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
-                <html-viewer class="ion-padding" value={formatRecipeDirections(this.recipe?.directions, this.recipe?.id, { makeClickable: true })} />
+                <html-viewer class="ion-padding" value={formatRecipeDirections(this.recipe?.directions, this.recipe?.id)} />
               </ion-item>
             }
             {!isNullOrEmpty(this.recipe?.storageInstructions) &&
