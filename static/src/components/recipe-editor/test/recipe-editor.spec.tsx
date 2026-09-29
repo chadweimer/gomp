@@ -164,7 +164,7 @@ describe('recipe-editor', () => {
       expect(tagsInput?.value).toEqual(mockRecipe.tags);
     });
 
-    it('passes recipe images mapped with url only to Directions html-editor', async () => {
+    it('passes recipe images to Directions html-editor', async () => {
       const { root } = await render<HTMLRecipeEditorElement>(
         <recipe-editor recipe={mockRecipe} recipeImages={['pic1.jpg', 'pic2.png']} />,
       );
