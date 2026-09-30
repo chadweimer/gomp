@@ -104,7 +104,7 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 	return DeleteImage204Response{}, nil
 }
 
-func isImageReferencedInDirections(directions string, imageName string) bool {
+func isImageReferencedInDirections(directions, imageName string) bool {
 	return strings.Contains(directions, fmt.Sprintf("{{image:%s}}", imageName))
 }
 

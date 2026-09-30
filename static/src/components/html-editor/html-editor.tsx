@@ -225,7 +225,7 @@ export class HTMLEditor {
     template.innerHTML = html;
     const images = template.content.querySelectorAll('img');
     images.forEach(img => {
-      const imageName = img.dataset.image || img.getAttribute('data-image');
+      const imageName = img.dataset.image;
       if (imageName) {
         img.replaceWith(`{{image:${imageName}}}`);
       }

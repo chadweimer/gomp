@@ -359,23 +359,24 @@ func Test_DeleteImage(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
-			if !isNameSafe(test.imageName) {
-				// No calls expected
-			} else if test.readError != nil {
-				dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(nil, test.readError)
-			} else {
-				dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
-				if isImageReferencedInDirections(test.recipe.Directions, test.imageName) {
-					// 409 conflict, upl.Delete not called
-				} else if test.deleteError != nil {
-					uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
-				} else if test.expectDelete {
-					// 2 times; once for original, once for thumbnail
-					uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
-					uplDriver.EXPECT().List(gomock.Any())
+			if isNameSafe(test.imageName) {
+				if test.readError != nil {
+					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(nil, test.readError)
+				} else {
 					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
-					if test.expectUpdateMainImage {
-						dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+					// Don't expect Delete to be called if the image is referenced in the directions
+					if !isImageReferencedInDirections(test.recipe.Directions, test.imageName) {
+						if test.deleteError != nil {
+							uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
+						} else if test.expectDelete {
+							// 2 times; once for original, once for thumbnail
+							uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
+							uplDriver.EXPECT().List(gomock.Any())
+							dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
+							if test.expectUpdateMainImage {
+								dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+							}
+						}
 					}
 				}
 			}
