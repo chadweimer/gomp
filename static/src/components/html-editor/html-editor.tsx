@@ -47,7 +47,7 @@ export class HTMLEditor {
 
   render() {
     return (
-      <Host>
+      <div onFocusout={(e: FocusEvent) => this.handleBlur(e)}>
         {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <ion-toolbar class="editor-toolbar">
           <ion-buttons class="prevent-selection">
@@ -125,13 +125,12 @@ export class HTMLEditor {
           contentEditable="true"
           role="textbox"
           tabindex="0"
-          onBlur={(e: FocusEvent) => this.handleBlur(e)}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
           innerHTML={sanitizeHTML(preProcessMultilineText(this.toEditorHtml(this.value)))}
         >
         </div>
-      </Host>
+      </div>
     );
   }
 
@@ -139,56 +138,6 @@ export class HTMLEditor {
   private readonly onSelectionChange = () => {
     this.updateButtonStates();
     this.saveSelection();
-  }
-
-  private saveSelection() {
-    const selection = this.el.ownerDocument.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (this.editorContentRef?.contains(range.commonAncestorContainer)) {
-        this.savedRange = range.cloneRange();
-      }
-    }
-  }
-
-  private toggleImagePicker() {
-    this.saveSelection();
-    this.isImagePickerOpen = !this.isImagePickerOpen;
-  }
-
-  private insertImage(image: HtmlEditorImage) {
-    this.isImagePickerOpen = false;
-    this.editorContentRef.focus();
-
-    const img = createImageElement(this.el, image.name, image.url);
-
-    const selection = this.el.ownerDocument.getSelection();
-    let inserted = false;
-
-    if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
-      }
-      this.savedRange.deleteContents();
-      this.savedRange.insertNode(img);
-
-      this.savedRange.setStartAfter(img);
-      this.savedRange.setEndAfter(img);
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
-      }
-      inserted = true;
-    }
-
-    if (!inserted) {
-      this.editorContentRef.appendChild(img);
-    }
-
-    this.saveSelection();
-    this.updateButtonStates();
-    this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
   }
 
   private handleBlur(e: FocusEvent) {
@@ -199,38 +148,18 @@ export class HTMLEditor {
     }
 
     this.isImagePickerOpen = false;
+    this.savedRange = null;
     this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
   }
 
-  private toEditorHtml(value: string | null | undefined): string {
-    if (isNullOrEmpty(value)) {
-      return '';
-    }
-
-    return value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
-      const imgItem = this.images?.find(i => i.name === imageName);
-      const template = this.el.ownerDocument.createElement('template');
-      const img = createImageElement(this.el, imageName, imgItem?.url ?? '');
-      template.content.appendChild(img);
-      return template.innerHTML;
-    });
-  }
-
-  private toStorageHtml(html: string): string {
-    if (isNullOrEmpty(html)) {
-      return '';
-    }
-
-    const template = this.el.ownerDocument.createElement('template');
-    template.innerHTML = html;
-    const images = template.content.querySelectorAll('img');
-    images.forEach(img => {
-      const imageName = img.dataset.image;
-      if (imageName) {
-        img.replaceWith(`{{image:${imageName}}}`);
+  private saveSelection() {
+    const selection = this.el.ownerDocument.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      if (this.editorContentRef?.contains(range.commonAncestorContainer)) {
+        this.savedRange = range.cloneRange();
       }
-    });
-    return template.innerHTML;
+    }
   }
 
   private updateButtonStates() {
@@ -279,5 +208,70 @@ export class HTMLEditor {
       this.el.ownerDocument.execCommand(command, false, value);
     }
     this.updateButtonStates();
+  }
+
+  private toggleImagePicker() {
+    this.saveSelection();
+    this.isImagePickerOpen = !this.isImagePickerOpen;
+  }
+
+  private insertImage(image: HtmlEditorImage) {
+    this.isImagePickerOpen = false;
+    this.editorContentRef.focus();
+
+    const img = createImageElement(this.el, image.name, image.url);
+    if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
+      const selection = this.el.ownerDocument.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(this.savedRange);
+      }
+      this.savedRange.deleteContents();
+      this.savedRange.insertNode(img);
+
+      this.savedRange.setStartAfter(img);
+      this.savedRange.setEndAfter(img);
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(this.savedRange);
+      }
+    } else {
+      this.editorContentRef.appendChild(img);
+    }
+
+    this.saveSelection();
+    this.updateButtonStates();
+    this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
+  }
+
+  private toEditorHtml(value: string | null | undefined): string {
+    if (isNullOrEmpty(value)) {
+      return '';
+    }
+
+    return value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
+      const imgItem = this.images?.find(i => i.name === imageName);
+      const template = this.el.ownerDocument.createElement('template');
+      const img = createImageElement(this.el, imageName, imgItem?.url ?? '');
+      template.content.appendChild(img);
+      return template.innerHTML;
+    });
+  }
+
+  private toStorageHtml(html: string): string {
+    if (isNullOrEmpty(html)) {
+      return '';
+    }
+
+    const template = this.el.ownerDocument.createElement('template');
+    template.innerHTML = html;
+    const images = template.content.querySelectorAll('img');
+    images.forEach(img => {
+      const imageName = img.dataset.image;
+      if (imageName) {
+        img.replaceWith(`{{image:${imageName}}}`);
+      }
+    });
+    return template.innerHTML;
   }
 }

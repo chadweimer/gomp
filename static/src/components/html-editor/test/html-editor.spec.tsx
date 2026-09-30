@@ -129,7 +129,7 @@ describe('html-editor', () => {
     const outsideEl = document.createElement('div');
     document.body.appendChild(outsideEl);
 
-    editorContent?.dispatchEvent(new FocusEvent('blur', { relatedTarget: outsideEl }));
+    editorContent?.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
     await waitForChanges();
 
     expect(valueChangedSpy).toHaveBeenCalledTimes(1);
@@ -151,7 +151,7 @@ describe('html-editor', () => {
     const outsideEl = document.createElement('div');
     document.body.appendChild(outsideEl);
 
-    editorContent?.dispatchEvent(new FocusEvent('blur', { relatedTarget: outsideEl }));
+    editorContent?.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
     await waitForChanges();
 
     expect(root.querySelector('.image-picker-panel')).toBeNull();
