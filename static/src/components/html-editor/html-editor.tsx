@@ -1,4 +1,4 @@
-import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
+import { Component, h, Prop, State, Event, Watch, EventEmitter, Element } from '@stencil/core';
 import { createImageElement, isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
 import { HtmlEditorImage } from '../../models';
 
