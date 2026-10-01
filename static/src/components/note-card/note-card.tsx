@@ -1,4 +1,4 @@
-import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
 import { Note } from '../../helpers/schema.gen';
 import { formatDate, toPresentationHtml } from '../../helpers/utils';
 
@@ -8,13 +8,13 @@ import { formatDate, toPresentationHtml } from '../../helpers/utils';
   shadow: true,
 })
 export class NoteCard {
+  @Element() el!: HTMLNoteCardElement;
+
   @Prop() note: Note | null = null;
   @Prop() readonly = false;
 
   @Event() editClicked!: EventEmitter<Note>;
   @Event() deleteClicked!: EventEmitter<Note>;
-
-  private el!: HTMLNoteCardElement;
 
   render() {
     return (
