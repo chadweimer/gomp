@@ -89,7 +89,7 @@ export class RecipeEditor {
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Directions" label-placement="stacked"
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
-                images={this.getEditorImages(this.recipe?.id, this.recipeImages)}
+                images={this.recipeImages.map(name => ({ name, url: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: toStorageHtml(this.el, e.detail) }} />
             </ion-item>
             <ion-item lines="full">
@@ -133,18 +133,5 @@ export class RecipeEditor {
 
   private async onCancelClicked() {
     await dismissContainingModal(this.el);
-  }
-
-  private getEditorImages(recipeId: number | undefined, images: string[]) {
-    if (!recipeId) {
-      return [];
-    }
-
-    return images.map(image => {
-      return {
-        name: image,
-        url: getRecipeThumbnailUrl(recipeId, image),
-      };
-    });
   }
 }
