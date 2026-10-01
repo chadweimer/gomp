@@ -261,17 +261,35 @@ export function sanitizeHTML(html: string) {
   });
 }
 
-export function formatRecipeDirections(
-  host: Element,
-  directions: string | null | undefined,
-  recipeId: number | null | undefined,
-  clickable = true
-): string {
-  if (isNullOrEmpty(directions)) {
+export function toStorageHtml(host: Element, value: string | null | undefined): string {
+  if (isNullOrEmpty(value)) {
     return '';
   }
 
-  return directions.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
+  const template = host.ownerDocument.createElement('template');
+  template.innerHTML = value;
+  const images = template.content.querySelectorAll('img');
+  images.forEach(img => {
+    const imageName = img.dataset.image;
+    if (imageName) {
+      img.replaceWith(`{{image:${imageName}}}`);
+    }
+  });
+  return sanitizeHTML(template.innerHTML);
+}
+
+export function toPresentationHtml(
+  host: Element,
+  value: string | null | undefined,
+  recipeId: number | null | undefined,
+  clickable = true
+): string {
+  if (isNullOrEmpty(value)) {
+    return '';
+  }
+
+  value = preProcessMultilineText(value);
+  value = value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
     const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
     const template = host.ownerDocument.createElement('template');
     const img = createImageElement(host, imageName, thumbUrl);
@@ -289,6 +307,7 @@ export function formatRecipeDirections(
     }
     return template.innerHTML;;
   });
+  return sanitizeHTML(value);
 }
 
 export function createImageElement(host: Element, imageName: string, src: string): HTMLImageElement {

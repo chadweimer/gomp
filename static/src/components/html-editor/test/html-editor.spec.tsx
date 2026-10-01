@@ -1,9 +1,8 @@
 import { render, h, describe, it, expect, vi } from '@stencil/vitest';
-import { HtmlEditorImage } from '../../../models';
 import '../html-editor';
 
 describe('html-editor', () => {
-  const mockImages: HtmlEditorImage[] = [
+  const mockImages: { name: string; url: string; }[] = [
     {
       name: 'step1.jpg',
       url: '/uploads/recipes/1/thumbs/step1.jpg',
@@ -108,20 +107,18 @@ describe('html-editor', () => {
     // Event should be emitted with sentinel
     expect(valueChangedSpy).toHaveBeenCalledTimes(1);
     const eventArg = valueChangedSpy.mock.calls[0][0] as CustomEvent<string>;
-    expect(eventArg.detail).toContain(`{{image:${mockImages[0].name}}}`);
+    expect(eventArg.detail).toContain(`src="${mockImages[0].url}"`);
+    expect(eventArg.detail).toContain(`data-image="${mockImages[0].name}"`);
   });
 
-  it('renders image sentinel as img element in editor on load and serializes back on blur', async () => {
+  it('emits valueChanged on blur', async () => {
     const { root, waitForChanges } = await render(
-      <html-editor images={mockImages} value="<p>Step 1: {{image:step1.jpg}}</p>" />,
+      <html-editor images={mockImages} value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" /></p>`} />,
     );
 
     const editorContent = root.querySelector('.editor-content');
     const img = editorContent?.querySelector('img');
     expect(img).not.toBeNull();
-    expect(img).toEqualAttribute('src', mockImages[0].url);
-    expect(img).toEqualAttribute('alt', 'step1.jpg');
-    expect(img).toEqualAttribute('data-image', 'step1.jpg');
 
     const valueChangedSpy = vi.fn();
     root.addEventListener('valueChanged', valueChangedSpy);
@@ -134,7 +131,8 @@ describe('html-editor', () => {
 
     expect(valueChangedSpy).toHaveBeenCalledTimes(1);
     const eventArg = valueChangedSpy.mock.calls[0][0] as CustomEvent<string>;
-    expect(eventArg.detail).toContain('{{image:step1.jpg}}');
+    expect(eventArg.detail).toContain(`src="${mockImages[0].url}"`);
+    expect(eventArg.detail).toContain(`data-image="${mockImages[0].name}"`);
     outsideEl.remove();
   });
 

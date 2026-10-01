@@ -1,6 +1,6 @@
 import { Component, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
 import { Note } from '../../helpers/schema.gen';
-import { formatDate } from '../../helpers/utils';
+import { formatDate, toPresentationHtml } from '../../helpers/utils';
 
 @Component({
   tag: 'note-card',
@@ -14,6 +14,8 @@ export class NoteCard {
   @Event() editClicked!: EventEmitter<Note>;
   @Event() deleteClicked!: EventEmitter<Note>;
 
+  private el!: HTMLNoteCardElement;
+
   render() {
     return (
       <Host>
@@ -26,7 +28,7 @@ export class NoteCard {
               <ion-card-subtitle>Last Modified: {formatDate(this.note?.modifiedAt)}</ion-card-subtitle>}
           </ion-card-header>
           <ion-card-content>
-            <html-viewer value={this.note?.text} />
+            <html-viewer value={toPresentationHtml(this.el, this.note?.text, this.note?.recipeId)} />
           </ion-card-content>
           {!this.readonly &&
             <Fragment>

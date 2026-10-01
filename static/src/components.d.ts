@@ -5,10 +5,8 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { HtmlEditorImage } from "./models";
 import { Note, Recipe, RecipeCompact, SearchFilter, User } from "./helpers/schema.gen";
 import { Color } from "@ionic/core";
-export { HtmlEditorImage } from "./models";
 export { Note, Recipe, RecipeCompact, SearchFilter, User } from "./helpers/schema.gen";
 export { Color } from "@ionic/core";
 export namespace Components {
@@ -47,7 +45,7 @@ export namespace Components {
         "value": number;
     }
     interface HtmlEditor {
-        "images"?: HtmlEditorImage[];
+        "images"?: { name: string; url: string; }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
@@ -557,7 +555,7 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface HtmlEditor {
-        "images"?: HtmlEditorImage[];
+        "images"?: { name: string; url: string; }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;

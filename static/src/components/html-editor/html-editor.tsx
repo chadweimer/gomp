@@ -1,6 +1,5 @@
 import { Component, h, Prop, State, Event, Watch, EventEmitter, Element } from '@stencil/core';
-import { createImageElement, isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
-import { HtmlEditorImage } from '../../models';
+import { createImageElement, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'html-editor',
@@ -13,7 +12,7 @@ export class HTMLEditor {
   @Prop() value: string = '';
   @Prop() label?: string;
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
-  @Prop() images?: HtmlEditorImage[];
+  @Prop() images?: { name: string; url: string; }[];
 
   @Event() valueChanged!: EventEmitter<string>;
 
@@ -127,7 +126,7 @@ export class HTMLEditor {
           tabindex="0"
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
-          innerHTML={sanitizeHTML(preProcessMultilineText(this.toEditorHtml(this.value)))}
+          innerHTML={this.value}
         >
         </div>
       </div>
@@ -149,7 +148,7 @@ export class HTMLEditor {
 
     this.isImagePickerOpen = false;
     this.savedRange = null;
-    this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
+    this.valueChanged.emit(this.editorContentRef.innerHTML);
   }
 
   private saveSelection() {
@@ -215,7 +214,7 @@ export class HTMLEditor {
     this.isImagePickerOpen = !this.isImagePickerOpen;
   }
 
-  private insertImage(image: HtmlEditorImage) {
+  private insertImage(image: { name: string; url: string; }) {
     this.isImagePickerOpen = false;
     this.editorContentRef.focus();
 
@@ -241,37 +240,6 @@ export class HTMLEditor {
 
     this.saveSelection();
     this.updateButtonStates();
-    this.valueChanged.emit(sanitizeHTML(this.toStorageHtml(this.editorContentRef.innerHTML)));
-  }
-
-  private toEditorHtml(value: string | null | undefined): string {
-    if (isNullOrEmpty(value)) {
-      return '';
-    }
-
-    return value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
-      const imgItem = this.images?.find(i => i.name === imageName);
-      const template = this.el.ownerDocument.createElement('template');
-      const img = createImageElement(this.el, imageName, imgItem?.url ?? '');
-      template.content.appendChild(img);
-      return template.innerHTML;
-    });
-  }
-
-  private toStorageHtml(html: string): string {
-    if (isNullOrEmpty(html)) {
-      return '';
-    }
-
-    const template = this.el.ownerDocument.createElement('template');
-    template.innerHTML = html;
-    const images = template.content.querySelectorAll('img');
-    images.forEach(img => {
-      const imageName = img.dataset.image;
-      if (imageName) {
-        img.replaceWith(`{{image:${imageName}}}`);
-      }
-    });
-    return template.innerHTML;
+    this.valueChanged.emit(this.editorContentRef.innerHTML);
   }
 }
