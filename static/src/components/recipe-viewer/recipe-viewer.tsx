@@ -1,6 +1,6 @@
-import { Component, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
 import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
-import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
+import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty, toPresentationHtml } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-viewer',
@@ -11,6 +11,7 @@ export class RecipeViewer {
   @Prop() recipe: Recipe | null = null;
   @Prop() links: RecipeCompact[] = [];
   @Prop() readonly = false;
+  @Element() el!: HTMLRecipeViewerElement;
 
   @Event() ratingSelected!: EventEmitter<number>;
   @Event() deleteLinkClicked!: EventEmitter<RecipeCompact>;
@@ -50,25 +51,25 @@ export class RecipeViewer {
             {!isNullOrEmpty(this.recipe?.ingredients) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Ingredients</ion-label>
-                <html-viewer class="ion-padding" value={this.recipe?.ingredients} />
+                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id)} />
               </ion-item>
             }
             {!isNullOrEmpty(this.recipe?.directions) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Directions</ion-label>
-                <html-viewer class="ion-padding" value={this.recipe?.directions} />
+                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id)} />
               </ion-item>
             }
             {!isNullOrEmpty(this.recipe?.storageInstructions) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Storage Instructions</ion-label>
-                <html-viewer class="ion-padding" value={this.recipe?.storageInstructions} />
+                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id)} />
               </ion-item>
             }
             {!isNullOrEmpty(this.recipe?.nutritionInfo) &&
               <ion-item lines="full">
                 <ion-label position="stacked">Nutrition</ion-label>
-                <html-viewer class="ion-padding" value={this.recipe?.nutritionInfo} />
+                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id)} />
               </ion-item>
             }
             {!isNullOrEmpty(this.recipe?.sourceUrl) &&
@@ -86,7 +87,7 @@ export class RecipeViewer {
                   {this.links.map(link =>
                     <ion-item key={link.id} lines="none">
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(link.mainImageName) && <ion-img alt="" src={getRecipeThumbnailUrl(link.id, link.mainImageName)} />}
+                        {!isNullOrEmpty(link.mainImageName) && <img loading="lazy" alt="" src={getRecipeThumbnailUrl(link.id, link.mainImageName)} />}
                       </ion-thumbnail>
                       <ion-label>
                         <ion-router-link href={`/recipes/${link.id}`} color="dark">

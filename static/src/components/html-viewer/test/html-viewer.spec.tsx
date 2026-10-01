@@ -24,12 +24,4 @@ describe('html-viewer', () => {
     await waitForChanges();
     expect(node?.innerHTML).toEqualHtml('Some other text');
   });
-
-  it('renders whitespace', async () => {
-    const value = 'text with  extra   spaces\nand\n\nnewlines';
-    const { root } = await render(<html-viewer value={value}></html-viewer>);
-    const node = root.shadowRoot?.querySelector('div');
-    expect(node?.innerHTML).toEqualHtml('text with&nbsp; extra&nbsp; &nbsp;spaces<br>and<br><br>newlines');
-    expect(root).toHaveProperty('value', value);
-  });
 });

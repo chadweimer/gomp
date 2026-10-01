@@ -430,6 +430,8 @@ paths:
           description: Bad Request
         '404':
           description: Not Found
+        '409':
+          description: Conflict
       security:
         - Cookie: [editor]
   /recipes/{recipeId}/links:

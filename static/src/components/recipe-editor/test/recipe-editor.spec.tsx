@@ -163,6 +163,27 @@ describe('recipe-editor', () => {
       expect(tagsInput).not.toBeNull();
       expect(tagsInput?.value).toEqual(mockRecipe.tags);
     });
+
+    it('passes recipe images to Directions html-editor', async () => {
+      const { root } = await render<HTMLRecipeEditorElement>(
+        <recipe-editor recipe={mockRecipe} recipeImages={['pic1.jpg', 'pic2.png']} />,
+      );
+
+      const directionsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Directions"]');
+      expect(directionsEditor?.images).toEqual([
+        {
+          name: 'pic1.jpg',
+          url: '/uploads/recipes/1/thumbs/pic1.jpg',
+        },
+        {
+          name: 'pic2.png',
+          url: '/uploads/recipes/1/thumbs/pic2.png',
+        },
+      ]);
+
+      const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Ingredients"]');
+      expect(ingredientsEditor?.images).toBeUndefined();
+    });
   });
 
   describe('Suite 3: User Settings & Suggestions', () => {

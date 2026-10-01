@@ -88,7 +88,7 @@ export class PageSearch {
                   <ion-col key={recipe.id} size="12" size-md="6" size-lg="4" size-xl="3">
                     <ion-item href={`/recipes/${recipe.id}`} lines="none">
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(recipe.mainImageName) && <ion-img alt="" src={getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />}
+                        {!isNullOrEmpty(recipe.mainImageName) && <img loading="lazy" alt="" src={getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />}
                       </ion-thumbnail>
                       <ion-label>{recipe.name}</ion-label>
                     </ion-item>

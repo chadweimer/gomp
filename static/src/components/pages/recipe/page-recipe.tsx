@@ -99,7 +99,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                         <ion-card class="zoom">
                           <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
                             <ion-thumbnail class="upload">
-                              <ion-img alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
+                              <img loading="lazy" alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
                             </ion-thumbnail>
                           </a>
                           {isAuthorized(state.currentUser, AccessLevel.Editor) &&
@@ -409,9 +409,14 @@ export class PageRecipe implements ComponentWithActivatedCallback {
 
   private async deleteImage(image: string) {
     try {
-      const { error } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
+      const { error, response } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
         params: { path: { recipeId: this.recipeId, name: image } }
       });
+
+      if (response?.status === 409) {
+        await showToast('Cannot delete this image because it is referenced in the recipe directions.');
+        return;
+      }
 
       if (error) {
         throw new Error('Failed to delete image.', { cause: error });
@@ -511,7 +516,8 @@ export class PageRecipe implements ComponentWithActivatedCallback {
       const modal = await modalController.create({
         component: 'recipe-editor',
         componentProps: {
-          recipe: this.recipe
+          recipe: this.recipe,
+          recipeImages: this.images
         },
         backdropDismiss: false,
       });

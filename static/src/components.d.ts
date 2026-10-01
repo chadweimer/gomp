@@ -45,6 +45,7 @@ export namespace Components {
         "value": number;
     }
     interface HtmlEditor {
+        "images"?: { name: string; url: string; }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
@@ -140,6 +141,10 @@ export namespace Components {
           * @default {     name: '',     state: RecipeState.Active,     rating: 0,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe": Recipe;
+        /**
+          * @default []
+         */
+        "recipeImages": string[];
     }
     interface RecipeLinkEditor {
         /**
@@ -550,6 +555,7 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface HtmlEditor {
+        "images"?: { name: string; url: string; }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
@@ -640,6 +646,10 @@ declare namespace LocalJSX {
           * @default {     name: '',     state: RecipeState.Active,     rating: 0,     servingSize: '',     time: '',     nutritionInfo: '',     ingredients: '',     directions: '',     storageInstructions: '',     sourceUrl: '',     mainImageName: '',     tags: []   }
          */
         "recipe"?: Recipe;
+        /**
+          * @default []
+         */
+        "recipeImages"?: string[];
     }
     interface RecipeLinkEditor {
         /**
