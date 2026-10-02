@@ -1,13 +1,13 @@
 package api
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -138,7 +138,7 @@ func Test_GetSearchFilters(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
 			if test.expectedError != nil {
 				userSearchFiltersDriver.EXPECT().List(ctx, gomock.Any()).Return(nil, test.expectedError)
 			} else {
@@ -285,7 +285,7 @@ func Test_GetSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
 			if test.dbError != nil {
 				userSearchFiltersDriver.EXPECT().Read(ctx, gomock.Any(), gomock.Any()).Return(nil, test.dbError)
 			} else {
@@ -444,7 +444,7 @@ func Test_AddSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
 			if test.dbError != nil {
 				userSearchFiltersDriver.EXPECT().Create(ctx, gomock.Any()).Return(test.dbError)
 			} else {
@@ -641,7 +641,7 @@ func Test_SaveSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
 			if test.dbError != nil {
 				userSearchFiltersDriver.EXPECT().Read(ctx, gomock.Any(), gomock.Any()).Return(nil, test.dbError)
 				userSearchFiltersDriver.EXPECT().Update(ctx, gomock.Any()).Times(0).Return(test.dbError)
@@ -794,7 +794,7 @@ func Test_DeleteSearchFilter(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
 			if test.dbError != nil {
 				userSearchFiltersDriver.EXPECT().Delete(ctx, gomock.Any(), gomock.Any()).Return(test.dbError)
 			} else {

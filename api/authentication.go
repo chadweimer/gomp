@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -21,7 +20,7 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 		return Login401Response{}, nil
 	}
 
-	tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys)
+	tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys, credentials.RememberMe)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +41,14 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 			return RefreshToken401Response{}, nil
 		}
 
-		tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys)
+		rememberMe := false
+		if token := infra.GetTokenFromContext(ctx); token != nil {
+			if claims, ok := token.Claims.(*infra.GompClaims); ok {
+				rememberMe = claims.RememberMe
+			}
+		}
+
+		tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys, rememberMe)
 		if err != nil {
 			return nil, err
 		}
@@ -65,16 +71,16 @@ func (apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutRespon
 }
 
 func withCurrentUser[TResponse any](ctx context.Context, invalidUserResponse TResponse, do func(userID int64) (TResponse, error)) (TResponse, error) {
-	userID, err := getResourceIDFromCtx(ctx, currentUserIDCtxKey)
-	if err != nil {
-		infra.GetLoggerFromContext(ctx).Error("failed to get current user from request context", "error", err)
+	user := infra.GetUserFromContext(ctx)
+	if user == nil || user.ID == nil {
+		infra.GetLoggerFromContext(ctx).Error("failed to get current user from request context")
 		return invalidUserResponse, nil
 	}
 
-	return do(userID)
+	return do(*user.ID)
 }
 
-func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbDriver db.UserDriver) func(next http.Handler) http.Handler {
+func verifyScopes(spec *openapi3.T, routePrefix string) func(next http.Handler) http.Handler {
 	return nethttpmiddleware.OapiRequestValidatorWithOptions(spec, &nethttpmiddleware.Options{
 		Prefix:               routePrefix,
 		DoNotValidateServers: true,
@@ -92,7 +98,7 @@ func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbD
 					return nil
 				}
 
-				if err := checkScopes(ctx, input.RequestValidationInput.Request, input.Scopes, secureKeys, dbDriver); err != nil {
+				if err := checkScopes(ctx, input.Scopes); err != nil {
 					return input.NewError(err)
 				}
 
@@ -102,23 +108,16 @@ func verifyScopes(spec *openapi3.T, routePrefix string, secureKeys []string, dbD
 	})
 }
 
-func checkScopes(ctx context.Context, r *http.Request, requiredScopes, secureKeys []string, dbDriver db.UserDriver) error {
-	userID, token, err := infra.IsAuthenticated(ctx, r, secureKeys)
-	if err != nil {
-		return err
+func checkScopes(ctx context.Context, requiredScopes []string) error {
+	token := infra.GetTokenFromContext(ctx)
+	if token == nil {
+		return errors.New("unauthenticated")
 	}
 
-	user, err := dbDriver.Read(ctx, *userID)
-	if err != nil {
-		if !errors.Is(err, db.ErrNotFound) {
-			infra.GetLoggerFromContext(ctx).Error("Error retrieving user info", "error", err)
-		}
-
-		return err
+	claims, ok := token.Claims.(*infra.GompClaims)
+	if !ok || len(claims.Scopes) == 0 {
+		return infra.ErrMissingScopes
 	}
 
-	// We know there are scopes because isAuthenticated would have returned an error if there were not
-	// revive:disable-next-line:unchecked-type-assertion
-	claims := token.Claims.(*infra.GompClaims)
-	return infra.CheckScopes(requiredScopes, &user.User, claims)
+	return infra.CheckScopes(requiredScopes, claims)
 }

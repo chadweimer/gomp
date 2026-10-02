@@ -1122,15 +1122,19 @@ components:
       example:
         username: demo
         password: secret-password
+        rememberMe: true
       required:
         - password
         - username
+        - rememberMe
       type: object
       properties:
         username:
           type: string
         password:
           type: string
+        rememberMe:
+          type: boolean
     searchResult:
       type: object
       required:

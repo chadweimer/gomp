@@ -14,6 +14,7 @@ import (
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
+	"github.com/chadweimer/gomp/middleware"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
@@ -196,7 +197,7 @@ func Test_createMux(t *testing.T) {
 			if tt.requestUser != nil {
 				usersDriver.EXPECT().Read(gomock.Any(), *tt.requestUser.ID).Return(&db.UserWithPasswordHash{User: *tt.requestUser}, nil)
 				jwt, _, _ := infra.CreateToken(
-					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), tt.secureKeys)
+					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), tt.secureKeys, false)
 				cookie := infra.CreateAuthCookie(jwt, time.Now().Add(time.Duration(24)*time.Hour))
 				req.AddCookie(cookie)
 			}
@@ -207,7 +208,11 @@ func Test_createMux(t *testing.T) {
 
 			// Act
 			mux, _ := createMux(tt.secureKeys, uploader, dbDriver, uplDriver, tt.assetsFS)
-			mux.ServeHTTP(resp, req)
+			r := middleware.Wrap(
+				mux,
+				middleware.Authenticate(tt.secureKeys, dbDriver.Users()),
+			)
+			r.ServeHTTP(resp, req)
 
 			// Assert
 			if resp.Code != tt.wantCode {

@@ -111,34 +111,37 @@ func (*sqlUserSearchFilterDriver) readImpl(ctx context.Context, userID int64, fi
 	}
 
 	fields := make([]models.SearchField, 0)
-	if err := sqlx.SelectContext(
+	err := sqlx.SelectContext(
 		ctx,
 		db,
 		&fields,
 		"SELECT field_name FROM search_filter_field WHERE search_filter_id = $1",
-		filterID); err != nil && err != sql.ErrNoRows {
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.Fields = fields
 
 	states := make([]models.RecipeState, 0)
-	if err := sqlx.SelectContext(
+	err = sqlx.SelectContext(
 		ctx,
 		db,
 		&states,
 		"SELECT state FROM search_filter_state WHERE search_filter_id = $1",
-		filterID); err != nil && err != sql.ErrNoRows {
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.States = states
 
 	tags := make([]string, 0)
-	if err := sqlx.SelectContext(
+	err = sqlx.SelectContext(
 		ctx,
 		db,
 		&tags,
 		"SELECT tag FROM search_filter_tag WHERE search_filter_id = $1",
-		filterID); err != nil && err != sql.ErrNoRows {
+		filterID)
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	filter.Tags = tags

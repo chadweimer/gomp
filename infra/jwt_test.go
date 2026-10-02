@@ -93,51 +93,13 @@ func Test_CheckScopes(t *testing.T) {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			// Arrange
 			now := time.Now()
-			user := models.User{AccessLevel: test.accessLevel, ModifiedAt: &now}
 			claims := GompClaims{
-				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, 1))},
-				Scopes:           GetScopes(test.accessLevel),
+				IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, 1)),
+				Scopes:   GetScopes(test.accessLevel),
 			}
 
 			// Act
-			err := CheckScopes(test.routeScopes, &user, &claims)
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			}
-		})
-	}
-}
-
-func Test_CheckScopes_UserUpdated(t *testing.T) {
-	type testArgs struct {
-		routeScopes    []string
-		issuedAtDelta  int
-		accessLevel    models.AccessLevel
-		newAccessLevel models.AccessLevel
-		expectError    bool
-	}
-
-	tests := []testArgs{
-		{[]string{string(models.Editor)}, 1, models.Admin, models.Admin, false},
-		{[]string{string(models.Editor)}, 1, models.Admin, models.Editor, false},
-		{[]string{string(models.Editor)}, -1, models.Admin, models.Admin, false},
-		{[]string{string(models.Editor)}, -1, models.Admin, models.Editor, true},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			now := time.Now()
-			user := models.User{AccessLevel: test.newAccessLevel, ModifiedAt: &now}
-			claims := GompClaims{
-				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, test.issuedAtDelta))},
-				Scopes:           GetScopes(test.accessLevel),
-			}
-
-			// Act
-			err := CheckScopes(test.routeScopes, &user, &claims)
+			err := CheckScopes(test.routeScopes, &claims)
 
 			// Assert
 			if (err != nil) != test.expectError {

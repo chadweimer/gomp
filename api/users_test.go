@@ -1,13 +1,13 @@
 package api
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -149,7 +149,7 @@ func Test_GetCurrentUser(t *testing.T) {
 			}
 			ctx := t.Context()
 			if test.userID != nil {
-				ctx = context.WithValue(ctx, currentUserIDCtxKey, *test.userID)
+				ctx = infra.AddUserToContext(ctx, &models.User{ID: test.userID})
 			}
 			if test.expectedError != nil {
 				usersDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.expectedError)
@@ -431,7 +431,7 @@ func Test_SaveUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.currentUserID})
 			if test.dbError != nil {
 				usersDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.dbError)
 			} else {
@@ -521,7 +521,7 @@ func Test_DeleteUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.currentUserID})
 			if test.dbError != nil {
 				usersDriver.EXPECT().Delete(ctx, gomock.Any()).Return(test.dbError)
 			} else {
@@ -599,7 +599,7 @@ func Test_ChangePassword(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.currentUserID})
 			if test.dbError != nil {
 				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.dbError)
 			} else {
@@ -695,7 +695,7 @@ func Test_ChangeUserPassword(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, usersDriver := getMockUsersAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.currentUserID})
 			if test.dbError != nil {
 				usersDriver.EXPECT().UpdatePassword(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(test.dbError)
 			} else {

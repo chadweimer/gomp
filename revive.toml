@@ -16,6 +16,8 @@ Disabled = true
 Disabled = true
 [rule.file-header]
 Disabled = true
+[rule.flag-parameter]
+Disabled = true
 [rule.function-length]
 Disabled = true
 [rule.line-length-limit]

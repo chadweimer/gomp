@@ -76,6 +76,8 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			mux,
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
 			middleware.Recover("Recovered from panic"),
+			middleware.Authenticate(cfg.Server.SecureKeys, dbDriver.Users()),
+			middleware.AutoRefreshToken(cfg.Server.SecureKeys),
 		)
 
 		// subscribe to SIGINT signals
@@ -116,10 +118,10 @@ func createMux(
 	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(assetsFS)))
 	// Uploaded files require authentication
 	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
-		[]string{string(models.Viewer)}, secureKeys, dbDriver.Users())(fileServer))
+		[]string{string(models.Viewer)})(fileServer))
 	// Backups require admin access
 	handlePrefixed(mux, fileaccess.BackupDirectoryName, middleware.VerifyScopes(
-		[]string{string(models.Admin)}, secureKeys, dbDriver.Users())(fileServer))
+		[]string{string(models.Admin)})(fileServer))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, assetsFS, "index.html")
 	}))
