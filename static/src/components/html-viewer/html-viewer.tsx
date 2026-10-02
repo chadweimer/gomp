@@ -1,5 +1,4 @@
 import { Component, Prop, h } from '@stencil/core';
-import { preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
 
 @Component({
   tag: 'html-viewer',
@@ -11,7 +10,7 @@ export class HTMLViewer {
 
   render() {
     return (
-      <div innerHTML={sanitizeHTML(preProcessMultilineText(this.value))} />
+      <div innerHTML={this.value} />
     );
   }
 }

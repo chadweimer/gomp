@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, isNull, trap } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-editor',
@@ -23,6 +23,7 @@ export class RecipeEditor {
     mainImageName: '',
     tags: []
   };
+  @Prop() recipeImages: string[] = [];
 
   @State() currentUserSettings: UserSettings | null = null;
 
@@ -81,20 +82,25 @@ export class RecipeEditor {
                 onIonBlur={(e: Event) => this.recipe = { ...this.recipe, time: (e.currentTarget as HTMLIonInputElement).value as string }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Ingredients" label-placement="stacked" value={this.recipe?.ingredients}
-                onValueChanged={e => this.recipe = { ...this.recipe, ingredients: e.detail }} />
+              <html-editor label="Ingredients" label-placement="stacked"
+                value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)}
+                onValueChanged={e => this.recipe = { ...this.recipe, ingredients: toStorageHtml(this.el, e.detail) }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Directions" label-placement="stacked" value={this.recipe?.directions}
-                onValueChanged={e => this.recipe = { ...this.recipe, directions: e.detail }} />
+              <html-editor label="Directions" label-placement="stacked"
+                value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
+                images={this.recipeImages.map(name => ({ name, url: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
+                onValueChanged={e => this.recipe = { ...this.recipe, directions: toStorageHtml(this.el, e.detail) }} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Storage Instructions" label-placement="stacked" value={this.recipe?.storageInstructions}
-                onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: e.detail }} />
+              <html-editor label="Storage Instructions" label-placement="stacked"
+                value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)}
+                onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this.el, e.detail) }} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Nutrition" label-placement="stacked" value={this.recipe?.nutritionInfo}
-                onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: e.detail }} />
+              <html-editor label="Nutrition" label-placement="stacked"
+                value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id, false)}
+                onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this.el, e.detail) }} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Source" label-placement="stacked" value={this.recipe?.sourceUrl}

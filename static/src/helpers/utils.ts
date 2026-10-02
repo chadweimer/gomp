@@ -254,7 +254,69 @@ export function sanitizeHTML(html: string) {
   // Sanitize the HTML using DOMPurify to prevent XSS attacks.
   // Forbid the use of style attributes and style tags.
   // Also forbid span tags to prevent inline styles.
-  return DOMPurify.sanitize(html, { FORBID_ATTR: ['style'], FORBID_TAGS: ['style', 'span'] });
+  return DOMPurify.sanitize(html, {
+    FORBID_ATTR: ['style'],
+    FORBID_TAGS: ['style', 'span'],
+    ADD_ATTR: ['target', 'data-image'],
+  });
+}
+
+export function toStorageHtml(host: Element, value: string | null | undefined): string {
+  if (isNullOrEmpty(value)) {
+    return '';
+  }
+
+  const template = host.ownerDocument.createElement('template');
+  template.innerHTML = value;
+  const images = template.content.querySelectorAll('img');
+  images.forEach(img => {
+    const imageName = img.dataset.image;
+    if (imageName) {
+      img.replaceWith(`{{image:${imageName}}}`);
+    }
+  });
+  return sanitizeHTML(template.innerHTML);
+}
+
+export function toPresentationHtml(
+  host: Element,
+  value: string | null | undefined,
+  recipeId: number | null | undefined,
+  clickable = true
+): string {
+  if (isNullOrEmpty(value)) {
+    return '';
+  }
+
+  value = preProcessMultilineText(value);
+  value = value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
+    const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
+    const template = host.ownerDocument.createElement('template');
+    const img = createImageElement(host, imageName, thumbUrl);
+
+    if (!clickable) {
+      template.content.appendChild(img);
+    } else {
+      const fullUrl = getRecipeImageUrl(recipeId, imageName);
+      const a = host.ownerDocument.createElement('a');
+      a.href = fullUrl;
+      a.target = '_blank';
+      a.relList.add('noopener', 'noreferrer');
+      a.appendChild(img);
+      template.content.appendChild(a);
+    }
+    return template.innerHTML;;
+  });
+  return sanitizeHTML(value);
+}
+
+export function createImageElement(host: Element, imageName: string, src: string): HTMLImageElement {
+  const img = host.ownerDocument.createElement('img');
+  img.loading = 'lazy';
+  img.src = src;
+  img.alt = imageName;
+  img.dataset.image = imageName;
+  return img;
 }
 
 export function scaleValue(value: number | null | undefined, divider: number, decimalPlaces: number) {

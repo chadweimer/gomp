@@ -1,6 +1,6 @@
-import { Component, h, Host, Prop } from '@stencil/core';
+import { Component, Element, h, Host, Prop } from '@stencil/core';
 import { Recipe } from '../../helpers/schema.gen';
-import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
+import { getRecipeThumbnailUrl, isNullOrEmpty, toPresentationHtml } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-print',
@@ -9,6 +9,8 @@ import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 })
 export class RecipePrint {
   @Prop() recipe: Recipe | null = null;
+
+  @Element() el!: HTMLRecipePrintElement;
 
   render() {
     return (
@@ -31,19 +33,19 @@ export class RecipePrint {
           {this.recipe?.ingredients && (
             <section>
               <h2>Ingredients</h2>
-              <html-viewer value={this.recipe?.ingredients} />
+              <html-viewer value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)} />
             </section>
           )}
           {this.recipe?.directions && (
             <section>
               <h2>Directions</h2>
-              <html-viewer value={this.recipe?.directions} />
+              <html-viewer value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)} />
             </section>
           )}
           {this.recipe?.storageInstructions && (
             <section>
               <h2>Storage Instructions</h2>
-              <html-viewer value={this.recipe?.storageInstructions} />
+              <html-viewer value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)} />
             </section>
           )}
           {this.recipe?.sourceUrl && (

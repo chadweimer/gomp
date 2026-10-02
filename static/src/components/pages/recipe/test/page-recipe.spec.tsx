@@ -179,7 +179,7 @@ describe('page-recipe', () => {
       const pictureCards = root.querySelectorAll('ion-card.zoom');
       expect(pictureCards).toHaveLength(mockImages.length);
 
-      const firstThumb = pictureCards[0].querySelector('ion-img');
+      const firstThumb = pictureCards[0].querySelector('img');
       expect(firstThumb).toEqualAttribute('src', '/uploads/recipes/1/thumbs/pancakes.jpg');
 
       const noteCards = root.querySelectorAll<HTMLNoteCardElement>('note-card');

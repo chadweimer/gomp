@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
@@ -66,6 +67,24 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 		return DeleteImage400Response{}, nil
 	}
 
+	recipe, err := h.db.Recipes().Read(ctx, request.RecipeID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return DeleteImage404Response{}, nil
+		}
+		logger.ErrorContext(ctx, "Failed to get recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
+		return nil, err
+	}
+
+	if isImageReferencedInDirections(recipe.Directions, request.Name) {
+		logger.WarnContext(ctx, "Cannot delete image referenced in directions",
+			"recipe-id", request.RecipeID,
+			"image-name", request.Name)
+		return DeleteImage409Response{}, nil
+	}
+
 	if err := h.upl.Delete(request.RecipeID, request.Name); err != nil {
 		if errors.Is(err, db.ErrNotFound) || errors.Is(err, fs.ErrNotExist) {
 			return DeleteImage404Response{}, nil
@@ -83,6 +102,10 @@ func (h apiHandler) DeleteImage(ctx context.Context, request DeleteImageRequestO
 	}
 
 	return DeleteImage204Response{}, nil
+}
+
+func isImageReferencedInDirections(directions, imageName string) bool {
+	return strings.Contains(directions, fmt.Sprintf("{{image:%s}}", imageName))
 }
 
 func (h apiHandler) setMainImageIfNecessary(ctx context.Context, recipeID int64, justDeletedImageName *string) error {

@@ -1,5 +1,5 @@
-import { Component, h, Prop, State, Event, Watch, Host, EventEmitter, Element } from '@stencil/core';
-import { isNull, isNullOrEmpty, preProcessMultilineText, sanitizeHTML } from '../../helpers/utils';
+import { Component, h, Prop, State, Event, Watch, EventEmitter, Element } from '@stencil/core';
+import { createImageElement, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'html-editor',
@@ -12,6 +12,7 @@ export class HTMLEditor {
   @Prop() value: string = '';
   @Prop() label?: string;
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
+  @Prop() images?: { name: string; url: string; }[];
 
   @Event() valueChanged!: EventEmitter<string>;
 
@@ -20,9 +21,11 @@ export class HTMLEditor {
   @State() isUnderlineActive: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
+  @State() isImagePickerOpen: boolean = false;
   @State() activeHeading: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null = null;
 
   private editorContentRef!: HTMLElement;
+  private savedRange: Range | null = null;
 
   @Watch('value')
   onValueChange() {
@@ -43,7 +46,7 @@ export class HTMLEditor {
 
   render() {
     return (
-      <Host>
+      <div onFocusout={(e: FocusEvent) => this.handleBlur(e)}>
         {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <ion-toolbar class="editor-toolbar">
           <ion-buttons class="prevent-selection">
@@ -87,7 +90,33 @@ export class HTMLEditor {
             >
               <ion-icon icon="list" />
             </ion-button>
+            {(this.images?.length ?? 0) > 0 && (
+              <ion-button
+                onClick={() => this.toggleImagePicker()}
+                size="default"
+                fill={this.isImagePickerOpen ? 'solid' : 'clear'}
+                tabindex="-1"
+              >
+                <ion-icon icon="image" />
+              </ion-button>
+            )}
           </ion-buttons>
+          {this.isImagePickerOpen && (
+            <div class="image-picker-panel">
+              <div class="image-picker-grid">
+                {this.images?.map(image => (
+                  <ion-button
+                    key={image.name}
+                    fill="clear"
+                    class="image-picker-item"
+                    onClick={() => this.insertImage(image)}
+                  >
+                    <img slot="icon-only" src={image.url} alt={image.name} />
+                  </ion-button>
+                ))}
+              </div>
+            </div>
+          )}
         </ion-toolbar>
         <div
           ref={el => (this.editorContentRef = el!)}
@@ -95,19 +124,19 @@ export class HTMLEditor {
           contentEditable="true"
           role="textbox"
           tabindex="0"
-          onBlur={(e: FocusEvent) => this.handleBlur(e)}
           onMouseUp={() => this.updateButtonStates()}
           onKeyUp={() => this.updateButtonStates()}
-          innerHTML={sanitizeHTML(preProcessMultilineText(this.value))}
+          innerHTML={this.value}
         >
         </div>
-      </Host>
+      </div>
     );
   }
 
   // It's important for this to be a property so that it can be used in the event listeners
   private readonly onSelectionChange = () => {
     this.updateButtonStates();
+    this.saveSelection();
   }
 
   private handleBlur(e: FocusEvent) {
@@ -117,7 +146,19 @@ export class HTMLEditor {
       return;
     }
 
-    this.valueChanged.emit(sanitizeHTML(this.editorContentRef.innerHTML));
+    this.isImagePickerOpen = false;
+    this.savedRange = null;
+    this.valueChanged.emit(this.editorContentRef.innerHTML);
+  }
+
+  private saveSelection() {
+    const selection = this.el.ownerDocument.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      if (this.editorContentRef?.contains(range.commonAncestorContainer)) {
+        this.savedRange = range.cloneRange();
+      }
+    }
   }
 
   private updateButtonStates() {
@@ -166,5 +207,39 @@ export class HTMLEditor {
       this.el.ownerDocument.execCommand(command, false, value);
     }
     this.updateButtonStates();
+  }
+
+  private toggleImagePicker() {
+    this.saveSelection();
+    this.isImagePickerOpen = !this.isImagePickerOpen;
+  }
+
+  private insertImage(image: { name: string; url: string; }) {
+    this.isImagePickerOpen = false;
+    this.editorContentRef.focus();
+
+    const img = createImageElement(this.el, image.name, image.url);
+    if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
+      const selection = this.el.ownerDocument.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(this.savedRange);
+      }
+      this.savedRange.deleteContents();
+      this.savedRange.insertNode(img);
+
+      this.savedRange.setStartAfter(img);
+      this.savedRange.setEndAfter(img);
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(this.savedRange);
+      }
+    } else {
+      this.editorContentRef.appendChild(img);
+    }
+
+    this.saveSelection();
+    this.updateButtonStates();
+    this.valueChanged.emit(this.editorContentRef.innerHTML);
   }
 }

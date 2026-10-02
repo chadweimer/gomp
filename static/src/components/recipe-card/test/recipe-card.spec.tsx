@@ -17,7 +17,7 @@ describe('recipe-card', () => {
     };
     const { root } = await render<HTMLRecipeCardElement>(<recipe-card />);
     expect(root.recipe).toEqual(recipe);
-    const image = root.shadowRoot?.querySelector('ion-img.hidden');
+    const image = root.shadowRoot?.querySelector('img.hidden');
     expect(image).not.toBeNull();
     const node = root.shadowRoot?.querySelector('ion-card-title');
     expect(node).not.toBeNull();
@@ -36,7 +36,7 @@ describe('recipe-card', () => {
     };
     const { root } = await render(<recipe-card recipe={recipe} />);
     expect(root).toHaveProperty('recipe', recipe);
-    const image = root.shadowRoot?.querySelector('ion-img.hidden');
+    const image = root.shadowRoot?.querySelector('img.hidden');
     expect(image).not.toBeNull();
     const node = root.shadowRoot?.querySelector('ion-card-title');
     expect(node).not.toBeNull();

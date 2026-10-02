@@ -12,6 +12,7 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
@@ -238,6 +239,7 @@ func Test_DeleteImage(t *testing.T) {
 		name                  string
 		recipe                models.Recipe
 		imageName             string
+		readError             error
 		expectDelete          bool
 		expectUpdateMainImage bool
 		deleteError           error
@@ -257,7 +259,55 @@ func Test_DeleteImage(t *testing.T) {
 			expectedResponse:      DeleteImage204Response{},
 		},
 		{
-			name:                  "Not Found",
+			name:                  "Recipe Not Found",
+			recipe:                models.Recipe{ID: new(int64(2))},
+			imageName:             "img.jpeg",
+			readError:             db.ErrNotFound,
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage404Response{},
+		},
+		{
+			name:                  "Recipe Read Error",
+			recipe:                models.Recipe{ID: new(int64(2))},
+			imageName:             "img.jpeg",
+			readError:             io.ErrClosedPipe,
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         io.ErrClosedPipe,
+			expectedResponse:      nil,
+		},
+		{
+			name: "Image Referenced in Directions Returns 409 Conflict",
+			recipe: models.Recipe{
+				ID:         new(int64(3)),
+				Directions: "Step 1: Mix. {{image:img.jpeg}} Step 2: Bake.",
+			},
+			imageName:             "img.jpeg",
+			expectDelete:          false,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage409Response{},
+		},
+		{
+			name: "Different Image Referenced in Directions Deletes Successfully",
+			recipe: models.Recipe{
+				ID:         new(int64(3)),
+				Directions: "Step 1: Mix. {{image:other.jpeg}} Step 2: Bake.",
+			},
+			imageName:             "img.jpeg",
+			expectDelete:          true,
+			expectUpdateMainImage: false,
+			deleteError:           nil,
+			expectedError:         nil,
+			expectedResponse:      DeleteImage204Response{},
+		},
+		{
+			name:                  "Image File Not Found",
 			recipe:                models.Recipe{ID: new(int64(2))},
 			imageName:             "img.jpeg",
 			expectDelete:          false,
@@ -267,7 +317,7 @@ func Test_DeleteImage(t *testing.T) {
 			expectedResponse:      DeleteImage404Response{},
 		},
 		{
-			name:                  "Error",
+			name:                  "Delete Error",
 			recipe:                models.Recipe{ID: new(int64(2))},
 			imageName:             "img.jpeg",
 			expectDelete:          false,
@@ -309,17 +359,25 @@ func Test_DeleteImage(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, dbDriver, uplDriver := getMockImagesAPI(ctrl)
-			if test.deleteError != nil {
-				uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
-			} else {
-				if test.expectDelete {
-					// 2 times; once for original, once for thumbnail
-					uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
-					uplDriver.EXPECT().List(gomock.Any())
+			if isNameSafe(test.imageName) {
+				if test.readError != nil {
+					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(nil, test.readError)
+				} else {
 					dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
-				}
-				if test.expectUpdateMainImage {
-					dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+					// Don't expect Delete to be called if the image is referenced in the directions
+					if !isImageReferencedInDirections(test.recipe.Directions, test.imageName) {
+						if test.deleteError != nil {
+							uplDriver.EXPECT().Delete(gomock.Any()).Return(test.deleteError)
+						} else if test.expectDelete {
+							// 2 times; once for original, once for thumbnail
+							uplDriver.EXPECT().Delete(gomock.Any()).Times(2).Return(nil)
+							uplDriver.EXPECT().List(gomock.Any())
+							dbDriver.EXPECT().Read(gomock.Any(), gomock.Any()).Return(&test.recipe, nil)
+							if test.expectUpdateMainImage {
+								dbDriver.EXPECT().Update(gomock.Any(), gomock.Any()).Return(nil)
+							}
+						}
+					}
 				}
 			}
 
@@ -341,6 +399,10 @@ func Test_DeleteImage(t *testing.T) {
 					}
 				case DeleteImage404Response:
 					if _, ok := resp.(DeleteImage404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case DeleteImage409Response:
+					if _, ok := resp.(DeleteImage409Response); !ok {
 						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:
@@ -370,4 +432,59 @@ func getMockImagesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeDr
 		db:         dbDriver,
 	}
 	return api, recipeDriver, uplDriver
+}
+
+func Test_isImageReferencedInDirections(t *testing.T) {
+	tests := []struct {
+		name       string
+		directions string
+		imageName  string
+		expected   bool
+	}{
+		{
+			name:       "empty directions",
+			directions: "",
+			imageName:  "foo.jpg",
+			expected:   false,
+		},
+		{
+			name:       "exact sentinel match",
+			directions: "{{image:foo.jpg}}",
+			imageName:  "foo.jpg",
+			expected:   true,
+		},
+		{
+			name:       "sentinel embedded in text",
+			directions: "Step 1: Mix well. {{image:foo.jpg}} Step 2: Bake.",
+			imageName:  "foo.jpg",
+			expected:   true,
+		},
+		{
+			name:       "different image sentinel",
+			directions: "Step 1: {{image:bar.jpg}}",
+			imageName:  "foo.jpg",
+			expected:   false,
+		},
+		{
+			name:       "filename prefix match without sentinel closing",
+			directions: "{{image:foo.jpg.backup}}",
+			imageName:  "foo.jpg",
+			expected:   false,
+		},
+		{
+			name:       "plain text filename without sentinel syntax",
+			directions: "Check out foo.jpg on your screen",
+			imageName:  "foo.jpg",
+			expected:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isImageReferencedInDirections(tt.directions, tt.imageName)
+			if got != tt.expected {
+				t.Errorf("isImageReferencedInDirections() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
 }
