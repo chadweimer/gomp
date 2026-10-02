@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/golang-jwt/jwt/v4"
 )
 
 const (
@@ -26,13 +25,13 @@ func GetUserFromContext(ctx context.Context) *models.User {
 }
 
 // AddTokenToContext adds the JWT token to the context.
-func AddTokenToContext(ctx context.Context, token *jwt.Token) context.Context {
+func AddTokenToContext(ctx context.Context, token *JwtToken) context.Context {
 	return context.WithValue(ctx, currentTokenCtxKey, token)
 }
 
 // GetTokenFromContext retrieves the JWT token from the context, if it exists.
-func GetTokenFromContext(ctx context.Context) *jwt.Token {
-	if token, ok := ctx.Value(currentTokenCtxKey).(*jwt.Token); ok {
+func GetTokenFromContext(ctx context.Context) *JwtToken {
+	if token, ok := ctx.Value(currentTokenCtxKey).(*JwtToken); ok {
 		return token
 	}
 	return nil

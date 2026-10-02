@@ -28,9 +28,15 @@ type GompClaims struct {
 	RememberMe bool             `json:"remember_me,omitempty"`
 }
 
+// JwtToken is a strongly typed representation of the jwt.Token with GompClaims
+type JwtToken struct {
+	*jwt.Token
+	TypedClaims *GompClaims
+}
+
 // CreateToken creates a JWT token for the given user ID and scopes using the provided secure keys.
 // If rememberMe is true, the token is valid for 14 days; otherwise, it is valid for 24 hours.
-func CreateToken(userID int64, scopes []string, rememberMe bool) (*jwt.Token, *time.Time, error) {
+func CreateToken(userID int64, scopes []string, rememberMe bool) (*JwtToken, error) {
 	issuedAt := time.Now()
 	var expiresAt time.Time
 	if rememberMe {
@@ -43,16 +49,17 @@ func CreateToken(userID int64, scopes []string, rememberMe bool) (*jwt.Token, *t
 }
 
 // CreateTokenWithExpiration creates a JWT token with explicit issuedAt and expiresAt timestamps using the provided secure keys.
-func CreateTokenWithExpiration(userID int64, scopes []string, rememberMe bool, issuedAt, expiresAt time.Time) (*jwt.Token, *time.Time, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &GompClaims{
+func CreateTokenWithExpiration(userID int64, scopes []string, rememberMe bool, issuedAt, expiresAt time.Time) (*JwtToken, error) {
+	claims := &GompClaims{
 		ExpiresAt:  jwt.NewNumericDate(expiresAt),
 		IssuedAt:   jwt.NewNumericDate(issuedAt),
 		Subject:    strconv.FormatInt(userID, 10),
 		Scopes:     jwt.ClaimStrings(scopes),
 		RememberMe: rememberMe,
-	})
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token, &expiresAt, nil
+	return &JwtToken{token, claims}, nil
 }
 
 // SignToken signs the given JWT token using the first key in the provided secure keys slice.
@@ -91,8 +98,9 @@ func ShouldRefreshToken(claims *GompClaims, user *models.User) (shouldRefresh bo
 }
 
 // ParseToken parses the given token string using the provided key and returns the token if it's valid
-func ParseToken(tokenStr, key string) (*jwt.Token, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &GompClaims{}, func(token *jwt.Token) (any, error) {
+func ParseToken(tokenStr, key string) (*JwtToken, error) {
+	claims := new(GompClaims)
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) {
 		if token.Method != jwt.SigningMethodHS256 {
 			return nil, errors.New("incorrect signing method")
 		}
@@ -107,7 +115,7 @@ func ParseToken(tokenStr, key string) (*jwt.Token, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	return token, nil
+	return &JwtToken{token, claims}, nil
 }
 
 // GetUserIDFromClaims extracts the user ID from the given JWT claims.

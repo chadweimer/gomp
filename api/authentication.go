@@ -20,11 +20,11 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 		return Login401Response{}, nil
 	}
 
-	token, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), credentials.RememberMe)
+	token, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), credentials.RememberMe)
 	if err != nil {
 		return nil, err
 	}
-	tokenStr, err := infra.SignToken(token, h.secureKeys)
+	tokenStr, err := infra.SignToken(token.Token, h.secureKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 	return Login200JSONResponse{
 		Body: *user,
 		Headers: Login200ResponseHeaders{
-			SetCookie: new(infra.CreateAuthCookie(tokenStr, *expiresAt).String()),
+			SetCookie: new(infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time).String()),
 		},
 	}, nil
 }
@@ -47,16 +47,14 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 
 		rememberMe := false
 		if token := infra.GetTokenFromContext(ctx); token != nil {
-			if claims, ok := token.Claims.(*infra.GompClaims); ok {
-				rememberMe = claims.RememberMe
-			}
+			rememberMe = token.TypedClaims.RememberMe
 		}
 
-		token, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
+		token, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
 		if err != nil {
 			return nil, err
 		}
-		tokenStr, err := infra.SignToken(token, h.secureKeys)
+		tokenStr, err := infra.SignToken(token.Token, h.secureKeys)
 		if err != nil {
 			return nil, err
 		}
@@ -64,7 +62,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 		return RefreshToken200JSONResponse{
 			Body: user.User,
 			Headers: RefreshToken200ResponseHeaders{
-				SetCookie: new(infra.CreateAuthCookie(tokenStr, *expiresAt).String()),
+				SetCookie: new(infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time).String()),
 			},
 		}, nil
 	})
@@ -122,10 +120,9 @@ func checkScopes(ctx context.Context, requiredScopes []string) error {
 		return errors.New("unauthenticated")
 	}
 
-	claims, ok := token.Claims.(*infra.GompClaims)
-	if !ok || len(claims.Scopes) == 0 {
+	if len(token.TypedClaims.Scopes) == 0 {
 		return infra.ErrMissingScopes
 	}
 
-	return infra.CheckScopes(requiredScopes, claims)
+	return infra.CheckScopes(requiredScopes, token.TypedClaims)
 }

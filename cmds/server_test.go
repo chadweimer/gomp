@@ -196,9 +196,9 @@ func Test_createMux(t *testing.T) {
 			req := httptest.NewRequest("GET", tt.requestPath, nil)
 			if tt.requestUser != nil {
 				usersDriver.EXPECT().Read(gomock.Any(), *tt.requestUser.ID).Return(&db.UserWithPasswordHash{User: *tt.requestUser}, nil)
-				jwt, _, _ := infra.CreateToken(
+				jwt, _ := infra.CreateToken(
 					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), false)
-				jwtStr, _ := infra.SignToken(jwt, tt.secureKeys)
+				jwtStr, _ := infra.SignToken(jwt.Token, tt.secureKeys)
 				cookie := infra.CreateAuthCookie(jwtStr, time.Now().Add(time.Duration(24)*time.Hour))
 				req.AddCookie(cookie)
 			}

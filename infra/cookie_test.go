@@ -119,8 +119,8 @@ func Test_IsAuthenticated(t *testing.T) {
 				if test.invalidToken {
 					tokenStr = "invalid-token"
 				} else {
-					token, _, _ := CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), false)
-					tokenStr, _ = SignToken(token, secureKeys)
+					token, _ := CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), false)
+					tokenStr, _ = SignToken(token.Token, secureKeys)
 				}
 				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
 			}

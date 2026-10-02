@@ -30,11 +30,11 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(&db.UserWithPasswordHash{User: *user}, nil)
 
-		token, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		token, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tokenStr, err := infra.SignToken(token, secureKeys)
+		tokenStr, err := infra.SignToken(token.Token, secureKeys)
 		if err != nil {
 			t.Fatalf("failed to sign token: %v", err)
 		}
@@ -70,11 +70,11 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(nil, db.ErrNotFound)
 
-		token, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		token, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tokenStr, err := infra.SignToken(token, secureKeys)
+		tokenStr, err := infra.SignToken(token.Token, secureKeys)
 		if err != nil {
 			t.Fatalf("failed to sign token: %v", err)
 		}
@@ -103,11 +103,11 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(nil, errors.New("db connection failure"))
 
-		token, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		token, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tokenStr, err := infra.SignToken(token, secureKeys)
+		tokenStr, err := infra.SignToken(token.Token, secureKeys)
 		if err != nil {
 			t.Fatalf("failed to sign token: %v", err)
 		}
@@ -166,7 +166,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-8 * 24 * time.Hour)
 		expiresAt := now.Add(6 * 24 * time.Hour)
-		tok, _, err := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
+		tok, err := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
@@ -180,9 +180,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			updatedToken := infra.GetTokenFromContext(r.Context())
 			if updatedToken != nil {
-				if claims, ok := updatedToken.Claims.(*infra.GompClaims); ok {
-					updatedTokenExpiresAt = claims.ExpiresAt.Time
-				}
+				updatedTokenExpiresAt = updatedToken.TypedClaims.ExpiresAt.Time
 			}
 			w.WriteHeader(http.StatusOK)
 		})
@@ -216,7 +214,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-16 * time.Hour)
 		expiresAt := now.Add(8 * time.Hour)
-		tok, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), false, issuedAt, expiresAt)
+		tok, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), false, issuedAt, expiresAt)
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), user)
@@ -244,7 +242,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-1 * 24 * time.Hour)
 		expiresAt := now.Add(13 * 24 * time.Hour)
-		tok, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
+		tok, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), adminUser)
@@ -255,7 +253,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if updatedTok := infra.GetTokenFromContext(r.Context()); updatedTok != nil {
 				// revive:disable-next-line:unchecked-type-assertion
-				updatedClaims, _ = updatedTok.Claims.(*infra.GompClaims)
+				updatedClaims = updatedTok.TypedClaims
 			}
 			w.WriteHeader(http.StatusOK)
 		})
@@ -291,7 +289,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-8 * 24 * time.Hour)
 		expiresAt := now.Add(6 * 24 * time.Hour)
-		tok, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
+		tok, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 
 		for _, path := range []string{"/auth", "/auth/login", "/api/v1/auth"} {
 			req := httptest.NewRequest("GET", "http://example.com"+path, nil)
@@ -367,7 +365,7 @@ func Test_VerifyScopes(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://example.com/recipes", nil)
 			if test.hasAuth {
-				tok, _, _ := infra.CreateToken(*test.user.ID, test.tokenScopes, false)
+				tok, _ := infra.CreateToken(*test.user.ID, test.tokenScopes, false)
 				ctx := infra.AddUserToContext(req.Context(), test.user)
 				ctx = infra.AddTokenToContext(ctx, tok)
 				req = req.WithContext(ctx)

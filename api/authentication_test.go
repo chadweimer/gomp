@@ -117,7 +117,7 @@ func Test_RefreshToken(t *testing.T) {
 			}
 			ctx := infra.AddUserToContext(t.Context(), user)
 
-			token, _, err := infra.CreateToken(expectedUserID, expectedScopes, test.rememberMe)
+			token, err := infra.CreateToken(expectedUserID, expectedScopes, test.rememberMe)
 			if err != nil {
 				t.Fatalf("failed to create token: %v", err)
 			}
@@ -302,7 +302,7 @@ func Test_checkScopes(t *testing.T) {
 				if test.tokenIncludesScopes {
 					tokenScopes = infra.GetScopes(test.user.AccessLevel)
 				}
-				tok, _, _ := infra.CreateToken(*test.user.ID, tokenScopes, false)
+				tok, _ := infra.CreateToken(*test.user.ID, tokenScopes, false)
 				ctx = infra.AddTokenToContext(ctx, tok)
 			}
 
@@ -334,11 +334,7 @@ func checkToken(cookieStr *string, key string, expectedUserID int64, expectedSco
 		return fmt.Errorf("token parsed, but is flagged as not valid: %s", tokenStr)
 	}
 
-	claims, ok := token.Claims.(*infra.GompClaims)
-
-	if !ok {
-		return errors.New("invalid claims")
-	}
+	claims := token.TypedClaims
 	if claims.IssuedAt == nil {
 		return errors.New("token is missing issue date")
 	}

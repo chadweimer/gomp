@@ -31,7 +31,7 @@ func Test_UserAndTokenContext(t *testing.T) {
 	}
 
 	// Add token and retrieve
-	token, _, err := CreateToken(userID, GetScopes(models.Editor), false)
+	token, err := CreateToken(userID, GetScopes(models.Editor), false)
 	if err != nil {
 		t.Fatalf("failed to create token: %v", err)
 	}
