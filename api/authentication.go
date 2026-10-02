@@ -20,7 +20,11 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 		return Login401Response{}, nil
 	}
 
-	tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys, credentials.RememberMe)
+	token, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), credentials.RememberMe)
+	if err != nil {
+		return nil, err
+	}
+	tokenStr, err := infra.SignToken(token, h.secureKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +52,11 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 			}
 		}
 
-		tokenStr, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), h.secureKeys, rememberMe)
+		token, expiresAt, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
+		if err != nil {
+			return nil, err
+		}
+		tokenStr, err := infra.SignToken(token, h.secureKeys)
 		if err != nil {
 			return nil, err
 		}

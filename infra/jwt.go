@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -31,7 +30,7 @@ type GompClaims struct {
 
 // CreateToken creates a JWT token for the given user ID and scopes using the provided secure keys.
 // If rememberMe is true, the token is valid for 14 days; otherwise, it is valid for 24 hours.
-func CreateToken(userID int64, scopes []string, secureKeys []string, rememberMe bool) (string, *time.Time, error) {
+func CreateToken(userID int64, scopes []string, rememberMe bool) (*jwt.Token, *time.Time, error) {
 	issuedAt := time.Now()
 	var expiresAt time.Time
 	if rememberMe {
@@ -40,12 +39,12 @@ func CreateToken(userID int64, scopes []string, secureKeys []string, rememberMe 
 		expiresAt = issuedAt.Add(24 * time.Hour)
 	}
 
-	return CreateTokenWithExpiration(userID, scopes, secureKeys, rememberMe, issuedAt, expiresAt)
+	return CreateTokenWithExpiration(userID, scopes, rememberMe, issuedAt, expiresAt)
 }
 
 // CreateTokenWithExpiration creates a JWT token with explicit issuedAt and expiresAt timestamps using the provided secure keys.
-func CreateTokenWithExpiration(userID int64, scopes []string, secureKeys []string, rememberMe bool, issuedAt, expiresAt time.Time) (string, *time.Time, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, GompClaims{
+func CreateTokenWithExpiration(userID int64, scopes []string, rememberMe bool, issuedAt, expiresAt time.Time) (*jwt.Token, *time.Time, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &GompClaims{
 		ExpiresAt:  jwt.NewNumericDate(expiresAt),
 		IssuedAt:   jwt.NewNumericDate(issuedAt),
 		Subject:    strconv.FormatInt(userID, 10),
@@ -53,12 +52,13 @@ func CreateTokenWithExpiration(userID int64, scopes []string, secureKeys []strin
 		RememberMe: rememberMe,
 	})
 
+	return token, &expiresAt, nil
+}
+
+// SignToken signs the given JWT token using the first key in the provided secure keys slice.
+func SignToken(token *jwt.Token, secureKeys []string) (string, error) {
 	// Always sign using the 0'th key
-	tokenStr, err := token.SignedString([]byte(secureKeys[0]))
-	if err != nil {
-		return "", nil, err
-	}
-	return tokenStr, &expiresAt, nil
+	return token.SignedString([]byte(secureKeys[0]))
 }
 
 // ShouldRefreshToken checks if the token should be refreshed and whether its expiration should be extended.
@@ -83,7 +83,7 @@ func ShouldRefreshToken(claims *GompClaims, user *models.User) (shouldRefresh bo
 	}
 
 	userScopes := GetScopes(user.AccessLevel)
-	if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
+	if !lo.ElementsMatch(userScopes, []string(claims.Scopes)) {
 		shouldRefresh = true
 	}
 

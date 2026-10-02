@@ -30,9 +30,13 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(&db.UserWithPasswordHash{User: *user}, nil)
 
-		tokenStr, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), secureKeys, false)
+		token, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
+		}
+		tokenStr, err := infra.SignToken(token, secureKeys)
+		if err != nil {
+			t.Fatalf("failed to sign token: %v", err)
 		}
 
 		req := httptest.NewRequest("GET", "http://example.com/recipes", nil)
@@ -66,7 +70,14 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(nil, db.ErrNotFound)
 
-		tokenStr, _, _ := infra.CreateToken(userID, infra.GetScopes(models.Viewer), secureKeys, false)
+		token, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		if err != nil {
+			t.Fatalf("failed to create token: %v", err)
+		}
+		tokenStr, err := infra.SignToken(token, secureKeys)
+		if err != nil {
+			t.Fatalf("failed to sign token: %v", err)
+		}
 
 		req := httptest.NewRequest("GET", "http://example.com/recipes", nil)
 		req.AddCookie(&http.Cookie{Name: "auth_token", Value: tokenStr})
@@ -92,7 +103,14 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(nil, errors.New("db connection failure"))
 
-		tokenStr, _, _ := infra.CreateToken(userID, infra.GetScopes(models.Viewer), secureKeys, false)
+		token, _, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		if err != nil {
+			t.Fatalf("failed to create token: %v", err)
+		}
+		tokenStr, err := infra.SignToken(token, secureKeys)
+		if err != nil {
+			t.Fatalf("failed to sign token: %v", err)
+		}
 
 		req := httptest.NewRequest("GET", "http://example.com/recipes", nil)
 		req.AddCookie(&http.Cookie{Name: "auth_token", Value: tokenStr})
@@ -148,11 +166,10 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-8 * 24 * time.Hour)
 		expiresAt := now.Add(6 * 24 * time.Hour)
-		tokenStr, _, err := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), secureKeys, true, issuedAt, expiresAt)
+		tok, _, err := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tok, _ := infra.ParseToken(tokenStr, secureKeys[0])
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), user)
@@ -199,8 +216,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-16 * time.Hour)
 		expiresAt := now.Add(8 * time.Hour)
-		tokenStr, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), secureKeys, false, issuedAt, expiresAt)
-		tok, _ := infra.ParseToken(tokenStr, secureKeys[0])
+		tok, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), false, issuedAt, expiresAt)
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), user)
@@ -228,8 +244,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-1 * 24 * time.Hour)
 		expiresAt := now.Add(13 * 24 * time.Hour)
-		tokenStr, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), secureKeys, true, issuedAt, expiresAt)
-		tok, _ := infra.ParseToken(tokenStr, secureKeys[0])
+		tok, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), adminUser)
@@ -276,8 +291,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-8 * 24 * time.Hour)
 		expiresAt := now.Add(6 * 24 * time.Hour)
-		tokenStr, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), secureKeys, true, issuedAt, expiresAt)
-		tok, _ := infra.ParseToken(tokenStr, secureKeys[0])
+		tok, _, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 
 		for _, path := range []string{"/auth", "/auth/login", "/api/v1/auth"} {
 			req := httptest.NewRequest("GET", "http://example.com"+path, nil)
@@ -349,13 +363,11 @@ func Test_VerifyScopes(t *testing.T) {
 		},
 	}
 
-	secureKeys := []string{"secure-key"}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://example.com/recipes", nil)
 			if test.hasAuth {
-				tokenStr, _, _ := infra.CreateToken(*test.user.ID, test.tokenScopes, secureKeys, false)
-				tok, _ := infra.ParseToken(tokenStr, secureKeys[0])
+				tok, _, _ := infra.CreateToken(*test.user.ID, test.tokenScopes, false)
 				ctx := infra.AddUserToContext(req.Context(), test.user)
 				ctx = infra.AddTokenToContext(ctx, tok)
 				req = req.WithContext(ctx)

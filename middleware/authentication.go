@@ -8,6 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // Authenticate is a middleware that inspects the request for an authentication token,
@@ -51,30 +52,37 @@ func AutoRefreshToken(secureKeys []string) func(http.Handler) http.Handler {
 
 			user := infra.GetUserFromContext(r.Context())
 			token := infra.GetTokenFromContext(r.Context())
-			if user != nil && token != nil && user.ID != nil {
-				if claims, ok := token.Claims.(*infra.GompClaims); ok {
-					shouldRefresh, extendExpiration := infra.ShouldRefreshToken(claims, user)
-					if shouldRefresh {
-						var (
-							tokenStr  string
-							expiresAt *time.Time
-							err       error
-						)
-						scopes := infra.GetScopes(user.AccessLevel)
-						if extendExpiration {
-							tokenStr, expiresAt, err = infra.CreateToken(*user.ID, scopes, secureKeys, claims.RememberMe)
-						} else {
-							tokenStr, expiresAt, err = infra.CreateTokenWithExpiration(*user.ID, scopes, secureKeys, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
-						}
+			if user == nil || token == nil || user.ID == nil {
+				next.ServeHTTP(w, r)
+				return
+			}
 
-						if err == nil {
-							http.SetCookie(w, infra.CreateAuthCookie(tokenStr, *expiresAt))
-							if newToken, err := infra.ParseToken(tokenStr, secureKeys[0]); err == nil {
-								r = r.WithContext(infra.AddTokenToContext(r.Context(), newToken))
-							}
-						} else {
-							infra.GetLoggerFromContext(r.Context()).Error("Error auto-refreshing token", "error", err)
+			if claims, ok := token.Claims.(*infra.GompClaims); ok {
+				shouldRefresh, extendExpiration := infra.ShouldRefreshToken(claims, user)
+				if shouldRefresh {
+					var (
+						token     *jwt.Token
+						tokenStr  string
+						expiresAt *time.Time
+						err       error
+					)
+					scopes := infra.GetScopes(user.AccessLevel)
+					if extendExpiration {
+						token, expiresAt, err = infra.CreateToken(*user.ID, scopes, claims.RememberMe)
+					} else {
+						token, expiresAt, err = infra.CreateTokenWithExpiration(*user.ID, scopes, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
+					}
+					if err == nil {
+						tokenStr, err = infra.SignToken(token, secureKeys)
+					}
+
+					if err == nil {
+						http.SetCookie(w, infra.CreateAuthCookie(tokenStr, *expiresAt))
+						if newToken, err := infra.ParseToken(tokenStr, secureKeys[0]); err == nil {
+							r = r.WithContext(infra.AddTokenToContext(r.Context(), newToken))
 						}
+					} else {
+						infra.GetLoggerFromContext(r.Context()).Error("Error auto-refreshing token", "error", err)
 					}
 				}
 			}

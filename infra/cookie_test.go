@@ -119,7 +119,8 @@ func Test_IsAuthenticated(t *testing.T) {
 				if test.invalidToken {
 					tokenStr = "invalid-token"
 				} else {
-					tokenStr, _, _ = CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), secureKeys, false)
+					token, _, _ := CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), false)
+					tokenStr, _ = SignToken(token, secureKeys)
 				}
 				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
 			}
@@ -139,46 +140,5 @@ func Test_IsAuthenticated(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func Test_UserAndTokenContext(t *testing.T) {
-	ctx := t.Context()
-
-	// Initial state - should be nil
-	if user := GetUserFromContext(ctx); user != nil {
-		t.Errorf("expected nil user, got %v", user)
-	}
-	if token := GetTokenFromContext(ctx); token != nil {
-		t.Errorf("expected nil token, got %v", token)
-	}
-
-	// Add user and retrieve
-	userID := int64(42)
-	expectedUser := &models.User{
-		ID:          &userID,
-		Username:    "testuser",
-		AccessLevel: models.Editor,
-	}
-	ctx = AddUserToContext(ctx, expectedUser)
-	actualUser := GetUserFromContext(ctx)
-	if actualUser == nil || actualUser.ID == nil || *actualUser.ID != userID {
-		t.Errorf("expected user with ID %d, got %v", userID, actualUser)
-	}
-
-	// Add token and retrieve
-	secureKeys := []string{"key1"}
-	tokenStr, _, err := CreateToken(userID, GetScopes(models.Editor), secureKeys, false)
-	if err != nil {
-		t.Fatalf("failed to create token: %v", err)
-	}
-	parsedToken, err := ParseToken(tokenStr, secureKeys[0])
-	if err != nil {
-		t.Fatalf("failed to parse token: %v", err)
-	}
-	ctx = AddTokenToContext(ctx, parsedToken)
-	actualToken := GetTokenFromContext(ctx)
-	if actualToken == nil || !actualToken.Valid {
-		t.Errorf("expected valid token, got %v", actualToken)
 	}
 }

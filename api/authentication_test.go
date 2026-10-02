@@ -117,12 +117,11 @@ func Test_RefreshToken(t *testing.T) {
 			}
 			ctx := infra.AddUserToContext(t.Context(), user)
 
-			tokenStr, _, err := infra.CreateToken(expectedUserID, expectedScopes, api.secureKeys, test.rememberMe)
+			token, _, err := infra.CreateToken(expectedUserID, expectedScopes, test.rememberMe)
 			if err != nil {
 				t.Fatalf("failed to create token: %v", err)
 			}
-			parsedToken, _ := infra.ParseToken(tokenStr, api.secureKeys[0])
-			ctx = infra.AddTokenToContext(ctx, parsedToken)
+			ctx = infra.AddTokenToContext(ctx, token)
 
 			if test.err != nil {
 				userDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.err)
@@ -292,7 +291,6 @@ func Test_checkScopes(t *testing.T) {
 		},
 	}
 
-	secureKeys := []string{"secure-key"}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ctx := t.Context()
@@ -304,8 +302,7 @@ func Test_checkScopes(t *testing.T) {
 				if test.tokenIncludesScopes {
 					tokenScopes = infra.GetScopes(test.user.AccessLevel)
 				}
-				tokenStr, _, _ := infra.CreateToken(*test.user.ID, tokenScopes, secureKeys, false)
-				tok, _ := infra.ParseToken(tokenStr, secureKeys[0])
+				tok, _, _ := infra.CreateToken(*test.user.ID, tokenScopes, false)
 				ctx = infra.AddTokenToContext(ctx, tok)
 			}
 
