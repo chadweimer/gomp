@@ -190,8 +190,7 @@ func Test_createMux(t *testing.T) {
 				usersDriver.EXPECT().Read(gomock.Any(), *tt.requestUser.ID).Return(&db.UserWithPasswordHash{User: *tt.requestUser}, nil)
 				jwt, _ := tokenHandler.Generate(
 					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), false)
-				jwtStr, _ := tokenHandler.Sign(jwt.Token)
-				cookie := infra.CreateAuthCookie(jwtStr, time.Now().Add(time.Duration(24)*time.Hour))
+				cookie, _ := tokenHandler.AsCookie(jwt)
 				req.AddCookie(cookie)
 			}
 			uplDriver.EXPECT().Open(gomock.Any()).AnyTimes().DoAndReturn(func(name string) (fs.File, error) {

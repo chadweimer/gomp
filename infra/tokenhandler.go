@@ -2,11 +2,14 @@ package infra
 
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 )
+
+const cookieName = "auth_token"
 
 // TokenHandler is responsible for generating, signing, and parsing JWT tokens using a set of secure keys.
 type TokenHandler struct {
@@ -63,6 +66,58 @@ func (t *TokenHandler) Parse(tokenStr string) (*JwtToken, error) {
 		}
 	}
 	return nil, errors.New("invalid token")
+}
+
+// AsCookie generates an HTTP cookie from the given JWT token with the appropriate settings for authentication.
+// As a special case, if the token passed is nil, the returned cookie will have an empty value and an expired timestamp.
+func (t *TokenHandler) AsCookie(token *JwtToken) (*http.Cookie, error) {
+	var (
+		err       error
+		tokenStr  string
+		expiresAt time.Time
+	)
+	if token == nil {
+		tokenStr = ""
+		expiresAt = time.Now().Add(-1 * time.Hour)
+	} else {
+		tokenStr, err = t.Sign(token.Token)
+		if err != nil {
+			return nil, err
+		}
+		expiresAt = token.TypedClaims.ExpiresAt.Time
+	}
+
+	return &http.Cookie{ // #nosec G124: Not setting Secure for now to support both HTTP and HTTPS. May revisit this in the future
+		Name:     cookieName,
+		Value:    tokenStr,
+		Path:     "/",
+		Expires:  expiresAt,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}, nil
+}
+
+// FromRequest checks if the user is authenticated and returns the user, JWT token, and any error encountered.
+func (t *TokenHandler) FromRequest(r *http.Request) (*JwtToken, error) {
+	cookie, err := r.Cookie(cookieName)
+	if err != nil {
+		if errors.Is(err, http.ErrNoCookie) {
+			return nil, errors.New("authorization cookie missing")
+		}
+		return nil, errors.New("error retrieving auth cookie")
+	}
+	tokenStr := cookie.Value
+
+	token, err := t.Parse(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(token.TypedClaims.Scopes) == 0 {
+		return nil, ErrMissingScopes
+	}
+
+	return token, nil
 }
 
 func (*TokenHandler) tryParse(tokenStr, key string) (*JwtToken, error) {

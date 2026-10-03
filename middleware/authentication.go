@@ -18,17 +18,20 @@ import (
 func Authenticate(tokenHandler *infra.TokenHandler, dbDriver db.UserDriver) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userID, token, err := infra.IsAuthenticated(r, tokenHandler)
-			if err == nil && userID != nil {
-				user, err := dbDriver.Read(r.Context(), *userID)
-				if err == nil && user != nil {
-					ctx := infra.AddUserToContext(r.Context(), &user.User)
-					ctx = infra.AddTokenToContext(ctx, token)
-					r = r.WithContext(ctx)
-				} else if !errors.Is(err, db.ErrNotFound) {
-					infra.GetLoggerFromContext(r.Context()).Error("Error retrieving user info", "error", err)
-					w.WriteHeader(http.StatusInternalServerError)
-					return
+			token, err := tokenHandler.FromRequest(r)
+			if err == nil {
+				userID, userIDErr := token.TypedClaims.GetUserID()
+				if userIDErr == nil {
+					user, err := dbDriver.Read(r.Context(), userID)
+					if err == nil && user != nil {
+						ctx := infra.AddUserToContext(r.Context(), &user.User)
+						ctx = infra.AddTokenToContext(ctx, token)
+						r = r.WithContext(ctx)
+					} else if !errors.Is(err, db.ErrNotFound) {
+						infra.GetLoggerFromContext(r.Context()).Error("Error retrieving user info", "error", err)
+						w.WriteHeader(http.StatusInternalServerError)
+						return
+					}
 				}
 			}
 
@@ -57,9 +60,10 @@ func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.
 				claims := token.TypedClaims
 				shouldRefresh, extendExpiration := claims.ShouldRefresh(user)
 				if shouldRefresh {
-					newToken, newTokenStr, err := refreshToken(user, extendExpiration, tokenHandler, claims)
+					var cookie *http.Cookie
+					newToken, cookie, err := refreshToken(user, extendExpiration, tokenHandler, claims)
 					if err == nil {
-						http.SetCookie(w, infra.CreateAuthCookie(newTokenStr, newToken.TypedClaims.ExpiresAt.Time))
+						http.SetCookie(w, cookie)
 						r = r.WithContext(infra.AddTokenToContext(r.Context(), newToken))
 					} else {
 						infra.GetLoggerFromContext(r.Context()).Warn("Error auto-refreshing token", "error", err)
@@ -72,7 +76,7 @@ func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.
 	}
 }
 
-func refreshToken(user *models.User, extendExpiration bool, tokenHandler *infra.TokenHandler, claims *infra.GompClaims) (token *infra.JwtToken, tokenStr string, err error) {
+func refreshToken(user *models.User, extendExpiration bool, tokenHandler *infra.TokenHandler, claims *infra.GompClaims) (token *infra.JwtToken, cookie *http.Cookie, err error) {
 	scopes := infra.GetScopes(user.AccessLevel)
 	if extendExpiration {
 		token, err = tokenHandler.Generate(*user.ID, scopes, claims.RememberMe)
@@ -80,10 +84,10 @@ func refreshToken(user *models.User, extendExpiration bool, tokenHandler *infra.
 		token, err = tokenHandler.GenerateWithExpiration(*user.ID, scopes, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
 	}
 	if err == nil {
-		tokenStr, err = tokenHandler.Sign(token.Token)
+		cookie, err = tokenHandler.AsCookie(token)
 	}
 
-	return token, tokenStr, err
+	return token, cookie, err
 }
 
 // VerifyScopes is a middleware that checks if the request context contains an authenticated user
@@ -94,11 +98,6 @@ func VerifyScopes(requiredScopes []string) func(http.Handler) http.Handler {
 			token := infra.GetTokenFromContext(r.Context())
 			if token == nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			if len(token.TypedClaims.Scopes) == 0 {
-				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 

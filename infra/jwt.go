@@ -73,6 +73,20 @@ func (claims *GompClaims) GetUserID() (int64, error) {
 	return userID, nil
 }
 
+// Valid validates the GompClaims, ensuring that the registered claims are valid and that the user ID can be extracted.
+func (claims *GompClaims) Valid() error {
+	if claims == nil {
+		return errors.New("invalid claims")
+	}
+	if err := claims.RegisteredClaims.Valid(); err != nil {
+		return err
+	}
+	if _, err := claims.GetUserID(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetScopes returns a list of scopes that should be included in a token for a given access level.
 func GetScopes(accessLevel models.AccessLevel) []string {
 	scopes := make([]string, 0)
@@ -95,6 +109,10 @@ func GetScopes(accessLevel models.AccessLevel) []string {
 func CheckScopes(requiredScopes []string, claims *GompClaims) error {
 	// If the route requires scopes, check them
 	if len(requiredScopes) > 0 && (len(requiredScopes) != 1 || requiredScopes[0] != "") {
+		if len(claims.Scopes) == 0 {
+			return ErrMissingScopes
+		}
+
 		missingScopes, _ := lo.Difference(requiredScopes, claims.Scopes)
 		if len(missingScopes) > 0 {
 			return fmt.Errorf("missing scopes: %v", missingScopes)

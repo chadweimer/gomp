@@ -23,12 +23,10 @@ func AddLoggerToContext(ctx context.Context, logger *slog.Logger) context.Contex
 
 // GetLoggerFromContext gets the logger from the supplied context
 func GetLoggerFromContext(ctx context.Context) *slog.Logger {
-	logger, ok := ctx.Value(logCtxKey).(*slog.Logger)
-	if !ok {
-		return slog.Default()
+	if logger, ok := ctx.Value(logCtxKey).(*slog.Logger); ok {
+		return logger
 	}
-
-	return logger
+	return slog.Default()
 }
 
 // AddUserToContext adds the user to the context.

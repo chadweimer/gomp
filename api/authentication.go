@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/chadweimer/gomp/infra"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -24,7 +23,7 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 	if err != nil {
 		return nil, err
 	}
-	tokenStr, err := h.tokenHandler.Sign(token.Token)
+	cookie, err := h.tokenHandler.AsCookie(token)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +31,7 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 	return Login200JSONResponse{
 		Body: *user,
 		Headers: Login200ResponseHeaders{
-			SetCookie: new(infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time).String()),
+			SetCookie: new(cookie.String()),
 		},
 	}, nil
 }
@@ -54,7 +53,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 		if err != nil {
 			return nil, err
 		}
-		tokenStr, err := h.tokenHandler.Sign(newToken.Token)
+		cookie, err := h.tokenHandler.AsCookie(newToken)
 		if err != nil {
 			return nil, err
 		}
@@ -62,16 +61,20 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 		return RefreshToken200JSONResponse{
 			Body: user.User,
 			Headers: RefreshToken200ResponseHeaders{
-				SetCookie: new(infra.CreateAuthCookie(tokenStr, newToken.TypedClaims.ExpiresAt.Time).String()),
+				SetCookie: new(cookie.String()),
 			},
 		}, nil
 	})
 }
 
-func (apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutResponseObject, error) {
+func (h apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutResponseObject, error) {
+	cookie, err := h.tokenHandler.AsCookie(nil)
+	if err != nil {
+		return nil, err
+	}
 	return Logout204Response{
 		Headers: Logout204ResponseHeaders{
-			SetCookie: new(infra.CreateAuthCookie("", time.Now().Add(-1*time.Hour)).String()),
+			SetCookie: new(cookie.String()),
 		},
 	}, nil
 }
@@ -118,10 +121,6 @@ func checkScopes(ctx context.Context, requiredScopes []string) error {
 	token := infra.GetTokenFromContext(ctx)
 	if token == nil {
 		return errors.New("unauthenticated")
-	}
-
-	if len(token.TypedClaims.Scopes) == 0 {
-		return infra.ErrMissingScopes
 	}
 
 	return infra.CheckScopes(requiredScopes, token.TypedClaims)
