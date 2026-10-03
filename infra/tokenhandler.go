@@ -65,7 +65,7 @@ func (t *TokenHandler) Parse(tokenStr string) (*JwtToken, error) {
 	return nil, errors.New("invalid token")
 }
 
-func (*TokenHandler) tryParse(tokenStr string, key string) (*JwtToken, error) {
+func (*TokenHandler) tryParse(tokenStr, key string) (*JwtToken, error) {
 	claims := new(GompClaims)
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) {
 		if token.Method != jwt.SigningMethodHS256 {

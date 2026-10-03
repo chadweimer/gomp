@@ -8,6 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
+	"github.com/chadweimer/gomp/models"
 )
 
 // Authenticate is a middleware that inspects the request for an authentication token,
@@ -56,24 +57,10 @@ func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.
 				claims := token.TypedClaims
 				shouldRefresh, extendExpiration := claims.ShouldRefresh(user)
 				if shouldRefresh {
-					var (
-						token    *infra.JwtToken
-						tokenStr string
-						err      error
-					)
-					scopes := infra.GetScopes(user.AccessLevel)
-					if extendExpiration {
-						token, err = tokenHandler.Generate(*user.ID, scopes, claims.RememberMe)
-					} else {
-						token, err = tokenHandler.GenerateWithExpiration(*user.ID, scopes, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
-					}
+					newToken, newTokenStr, err := refreshToken(user, extendExpiration, tokenHandler, claims)
 					if err == nil {
-						tokenStr, err = tokenHandler.Sign(token.Token)
-					}
-
-					if err == nil {
-						http.SetCookie(w, infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time))
-						r = r.WithContext(infra.AddTokenToContext(r.Context(), token))
+						http.SetCookie(w, infra.CreateAuthCookie(newTokenStr, newToken.TypedClaims.ExpiresAt.Time))
+						r = r.WithContext(infra.AddTokenToContext(r.Context(), newToken))
 					} else {
 						infra.GetLoggerFromContext(r.Context()).Warn("Error auto-refreshing token", "error", err)
 					}
@@ -83,6 +70,20 @@ func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func refreshToken(user *models.User, extendExpiration bool, tokenHandler *infra.TokenHandler, claims *infra.GompClaims) (token *infra.JwtToken, tokenStr string, err error) {
+	scopes := infra.GetScopes(user.AccessLevel)
+	if extendExpiration {
+		token, err = tokenHandler.Generate(*user.ID, scopes, claims.RememberMe)
+	} else {
+		token, err = tokenHandler.GenerateWithExpiration(*user.ID, scopes, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
+	}
+	if err == nil {
+		tokenStr, err = tokenHandler.Sign(token.Token)
+	}
+
+	return token, tokenStr, err
 }
 
 // VerifyScopes is a middleware that checks if the request context contains an authenticated user
