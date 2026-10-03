@@ -1,6 +1,6 @@
 import { Component, Element, h, State } from '@stencil/core';
 import { api } from '../../../helpers/api';
-import { redirect } from '../../../helpers/utils';
+import { isNullOrEmpty, redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -9,12 +9,11 @@ import state from '../../../stores/state';
 })
 export class PageLogin {
   @State() errorMessage = '';
+  @State() username: string | null | undefined = '';
+  @State() password: string | null | undefined = '';
   @State() rememberMe = false;
 
   @Element() el!: HTMLPageLoginElement;
-
-  private usernameInput!: HTMLIonInputElement;
-  private passwordInput!: HTMLIonInputElement;
 
   render() {
     return (
@@ -31,8 +30,9 @@ export class PageLogin {
                     <ion-input type="email"
                       label="Email"
                       autocomplete="username"
+                      value={this.username}
+                      onIonInput={e => this.username = e.detail.value}
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
-                      ref={(el: HTMLIonInputElement) => this.usernameInput = el}
                       required />
                   </ion-item>
                   <ion-item>
@@ -40,14 +40,15 @@ export class PageLogin {
                     <ion-input type="password"
                       label="Password"
                       autocomplete="current-password"
+                      value={this.password}
+                      onIonInput={e => this.password = e.detail.value}
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
-                      ref={(el: HTMLIonInputElement) => this.passwordInput = el}
                       required />
                   </ion-item>
                   <ion-item lines="none">
                     <ion-checkbox justify="start"
                       checked={this.rememberMe}
-                      onIonChange={(e: CustomEvent<{ checked: boolean }>) => this.rememberMe = e.detail.checked}>
+                      onIonChange={e => this.rememberMe = e.detail.checked}>
                       Remember Me
                     </ion-checkbox>
                   </ion-item>
@@ -71,11 +72,18 @@ export class PageLogin {
   private async onLoginClicked() {
     try {
       this.errorMessage = '';
-      const username = this.usernameInput.value as string;
-      const password = this.passwordInput.value as string;
-      const { data: user, error } = await api.client.POST('/auth', {
-        body: { username, password, rememberMe: this.rememberMe }
+      if (isNullOrEmpty(this.username) || isNullOrEmpty(this.password)) {
+        this.errorMessage = 'Username and password are required.';
+        return;
+      }
+
+      const { data: user, error, response } = await api.client.POST('/auth', {
+        body: { username: this.username, password: this.password, rememberMe: this.rememberMe }
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to login.');
+      }
 
       if (error) {
         throw new Error('Failed to login.', { cause: error });
@@ -85,7 +93,7 @@ export class PageLogin {
       state.currentUser = user;
 
       // Clear the username so it's not left around when the next login is needed
-      this.usernameInput.value = '';
+      this.username = '';
 
       await redirect('/');
     } catch (ex) {
@@ -93,7 +101,7 @@ export class PageLogin {
       console.error(ex);
     } finally {
       // Clear password no matter what, success or failure
-      this.passwordInput.value = '';
+      this.password = '';
     }
   }
 
