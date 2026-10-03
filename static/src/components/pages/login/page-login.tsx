@@ -1,6 +1,6 @@
 import { Component, Element, h, State } from '@stencil/core';
 import { api } from '../../../helpers/api';
-import { isNullOrEmpty, redirect } from '../../../helpers/utils';
+import { redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -9,11 +9,12 @@ import state from '../../../stores/state';
 })
 export class PageLogin {
   @State() errorMessage = '';
-  @State() username: string | null | undefined = '';
-  @State() password: string | null | undefined = '';
   @State() rememberMe = false;
 
   @Element() el!: HTMLPageLoginElement;
+
+  private usernameInput!: HTMLIonInputElement;
+  private passwordInput!: HTMLIonInputElement;
 
   render() {
     return (
@@ -30,9 +31,8 @@ export class PageLogin {
                     <ion-input type="email"
                       label="Email"
                       autocomplete="username"
-                      value={this.username}
-                      onIonInput={e => this.username = e.detail.value}
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
+                      ref={(el: HTMLIonInputElement) => this.usernameInput = el}
                       required />
                   </ion-item>
                   <ion-item>
@@ -40,9 +40,8 @@ export class PageLogin {
                     <ion-input type="password"
                       label="Password"
                       autocomplete="current-password"
-                      value={this.password}
-                      onIonInput={e => this.password = e.detail.value}
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
+                      ref={(el: HTMLIonInputElement) => this.passwordInput = el}
                       required />
                   </ion-item>
                   <ion-item lines="none">
@@ -72,28 +71,26 @@ export class PageLogin {
   private async onLoginClicked() {
     try {
       this.errorMessage = '';
-      if (isNullOrEmpty(this.username) || isNullOrEmpty(this.password)) {
-        this.errorMessage = 'Username and password are required.';
-        return;
-      }
+      const username = this.usernameInput.value as string;
+      const password = this.passwordInput.value as string;
 
       const { data: user, error, response } = await api.client.POST('/auth', {
-        body: { username: this.username, password: this.password, rememberMe: this.rememberMe }
+        body: { username, password, rememberMe: this.rememberMe }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to login.');
-      }
 
       if (error) {
         throw new Error('Failed to login.', { cause: error });
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to login.');
       }
 
       // Store the user so we stay logged in
       state.currentUser = user;
 
       // Clear the username so it's not left around when the next login is needed
-      this.username = '';
+      this.usernameInput.value = '';
 
       await redirect('/');
     } catch (ex) {
@@ -101,7 +98,7 @@ export class PageLogin {
       console.error(ex);
     } finally {
       // Clear password no matter what, success or failure
-      this.password = '';
+      this.passwordInput.value = '';
     }
   }
 
