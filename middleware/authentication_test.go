@@ -15,7 +15,7 @@ import (
 )
 
 func Test_Authenticate(t *testing.T) {
-	secureKeys := []string{"secure-key"}
+	tokenHandler := infra.NewTokenHandler([]string{"secure-key"})
 	userID := int64(10)
 	user := &models.User{
 		ID:          &userID,
@@ -30,11 +30,11 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(&db.UserWithPasswordHash{User: *user}, nil)
 
-		token, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		token, err := tokenHandler.Generate(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tokenStr, err := infra.SignToken(token.Token, secureKeys)
+		tokenStr, err := tokenHandler.Sign(token.Token)
 		if err != nil {
 			t.Fatalf("failed to sign token: %v", err)
 		}
@@ -51,7 +51,7 @@ func Test_Authenticate(t *testing.T) {
 			}
 		})
 
-		handler := Authenticate(secureKeys, userDriver)(next)
+		handler := Authenticate(tokenHandler, userDriver)(next)
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
@@ -70,11 +70,11 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(nil, db.ErrNotFound)
 
-		token, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		token, err := tokenHandler.Generate(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tokenStr, err := infra.SignToken(token.Token, secureKeys)
+		tokenStr, err := tokenHandler.Sign(token.Token)
 		if err != nil {
 			t.Fatalf("failed to sign token: %v", err)
 		}
@@ -87,7 +87,7 @@ func Test_Authenticate(t *testing.T) {
 			capturedUser = infra.GetUserFromContext(r.Context())
 		})
 
-		handler := Authenticate(secureKeys, userDriver)(next)
+		handler := Authenticate(tokenHandler, userDriver)(next)
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
@@ -103,11 +103,11 @@ func Test_Authenticate(t *testing.T) {
 		userDriver := dbmock.NewMockUserDriver(ctrl)
 		userDriver.EXPECT().Read(gomock.Any(), userID).Return(nil, errors.New("db connection failure"))
 
-		token, err := infra.CreateToken(userID, infra.GetScopes(models.Viewer), false)
+		token, err := tokenHandler.Generate(userID, infra.GetScopes(models.Viewer), false)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
-		tokenStr, err := infra.SignToken(token.Token, secureKeys)
+		tokenStr, err := tokenHandler.Sign(token.Token)
 		if err != nil {
 			t.Fatalf("failed to sign token: %v", err)
 		}
@@ -120,7 +120,7 @@ func Test_Authenticate(t *testing.T) {
 			capturedUser = infra.GetUserFromContext(r.Context())
 		})
 
-		handler := Authenticate(secureKeys, userDriver)(next)
+		handler := Authenticate(tokenHandler, userDriver)(next)
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
@@ -142,7 +142,7 @@ func Test_Authenticate(t *testing.T) {
 			capturedUser = infra.GetUserFromContext(r.Context())
 		})
 
-		handler := Authenticate(secureKeys, userDriver)(next)
+		handler := Authenticate(tokenHandler, userDriver)(next)
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
@@ -153,7 +153,7 @@ func Test_Authenticate(t *testing.T) {
 }
 
 func Test_AutoRefreshToken(t *testing.T) {
-	secureKeys := []string{"secure-key"}
+	tokenHandler := infra.NewTokenHandler([]string{"secure-key"})
 	userID := int64(10)
 	user := &models.User{
 		ID:          &userID,
@@ -166,7 +166,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-8 * 24 * time.Hour)
 		expiresAt := now.Add(6 * 24 * time.Hour)
-		tok, err := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
+		tok, err := tokenHandler.GenerateWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 		if err != nil {
 			t.Fatalf("failed to create token: %v", err)
 		}
@@ -186,7 +186,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		})
 
 		rr := httptest.NewRecorder()
-		handler := AutoRefreshToken(secureKeys)(next)
+		handler := AutoRefreshToken(tokenHandler)(next)
 		handler.ServeHTTP(rr, req)
 
 		// Assert cookie was set
@@ -214,7 +214,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-16 * time.Hour)
 		expiresAt := now.Add(8 * time.Hour)
-		tok, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), false, issuedAt, expiresAt)
+		tok, _ := tokenHandler.GenerateWithExpiration(userID, infra.GetScopes(models.Viewer), false, issuedAt, expiresAt)
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), user)
@@ -225,7 +225,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
-		AutoRefreshToken(secureKeys)(next).ServeHTTP(rr, req)
+		AutoRefreshToken(tokenHandler)(next).ServeHTTP(rr, req)
 
 		if len(rr.Result().Cookies()) > 0 {
 			t.Errorf("expected no Set-Cookie header, got %d cookies", len(rr.Result().Cookies()))
@@ -242,7 +242,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-1 * 24 * time.Hour)
 		expiresAt := now.Add(13 * 24 * time.Hour)
-		tok, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
+		tok, _ := tokenHandler.GenerateWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 
 		req := httptest.NewRequest("GET", "http://example.com/api/v1/recipes", nil)
 		ctx := infra.AddUserToContext(req.Context(), adminUser)
@@ -259,7 +259,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		})
 
 		rr := httptest.NewRecorder()
-		AutoRefreshToken(secureKeys)(next).ServeHTTP(rr, req)
+		AutoRefreshToken(tokenHandler)(next).ServeHTTP(rr, req)
 
 		cookies := rr.Result().Cookies()
 		if len(cookies) == 0 {
@@ -289,7 +289,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 		now := time.Now()
 		issuedAt := now.Add(-8 * 24 * time.Hour)
 		expiresAt := now.Add(6 * 24 * time.Hour)
-		tok, _ := infra.CreateTokenWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
+		tok, _ := tokenHandler.GenerateWithExpiration(userID, infra.GetScopes(models.Viewer), true, issuedAt, expiresAt)
 
 		for _, path := range []string{"/auth", "/auth/login", "/api/v1/auth"} {
 			req := httptest.NewRequest("GET", "http://example.com"+path, nil)
@@ -301,7 +301,7 @@ func Test_AutoRefreshToken(t *testing.T) {
 			next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			})
-			AutoRefreshToken(secureKeys)(next).ServeHTTP(rr, req)
+			AutoRefreshToken(tokenHandler)(next).ServeHTTP(rr, req)
 
 			if len(rr.Result().Cookies()) > 0 {
 				t.Errorf("expected no Set-Cookie for path %s", path)
@@ -365,7 +365,8 @@ func Test_VerifyScopes(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := httptest.NewRequest("GET", "http://example.com/recipes", nil)
 			if test.hasAuth {
-				tok, _ := infra.CreateToken(*test.user.ID, test.tokenScopes, false)
+				tokenHandler := infra.NewTokenHandler([]string{})
+				tok, _ := tokenHandler.Generate(*test.user.ID, test.tokenScopes, false)
 				ctx := infra.AddUserToContext(req.Context(), test.user)
 				ctx = infra.AddTokenToContext(ctx, tok)
 				req = req.WithContext(ctx)

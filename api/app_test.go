@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
@@ -116,9 +117,9 @@ func getMockAppConfigurationAPI(ctrl *gomock.Controller) (apiHandler, *db.MockAp
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
-		secureKeys: []string{},
-		upl:        upl,
-		db:         dbDriver,
+		tokenHandler: infra.NewTokenHandler([]string{}),
+		upl:          upl,
+		db:           dbDriver,
 	}
 	return api, appDriver
 }

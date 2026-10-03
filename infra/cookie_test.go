@@ -111,7 +111,7 @@ func Test_IsAuthenticated(t *testing.T) {
 				AccessLevel: models.Admin,
 			}
 
-			secureKeys := []string{"secure-key1", "secure-key2"}
+			tokenHandler := NewTokenHandler([]string{"secure-key1", "secure-key2"})
 
 			req, _ := http.NewRequest("GET", "http://example.com", nil)
 			if test.includeCookie {
@@ -119,14 +119,14 @@ func Test_IsAuthenticated(t *testing.T) {
 				if test.invalidToken {
 					tokenStr = "invalid-token"
 				} else {
-					token, _ := CreateToken(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), false)
-					tokenStr, _ = SignToken(token.Token, secureKeys)
+					token, _ := tokenHandler.Generate(*expectedUser.ID, GetScopes(expectedUser.AccessLevel), false)
+					tokenStr, _ = tokenHandler.Sign(token.Token)
 				}
 				req.AddCookie(&http.Cookie{Name: test.cookieName, Value: tokenStr})
 			}
 
 			// Act
-			userID, token, err := IsAuthenticated(t.Context(), req, secureKeys)
+			userID, token, err := IsAuthenticated(req, tokenHandler)
 
 			// Assert
 			if (err != nil) != test.expectError {

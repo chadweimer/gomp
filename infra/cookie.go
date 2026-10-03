@@ -1,9 +1,7 @@
 package infra
 
 import (
-	"context"
 	"errors"
-	"log/slog"
 	"net/http"
 	"time"
 )
@@ -28,10 +26,8 @@ func GetAuthCookieFromRequest(r *http.Request) (*http.Cookie, error) {
 }
 
 // IsAuthenticated checks if the user is authenticated and returns the user, JWT token, and any error encountered.
-func IsAuthenticated(ctx context.Context, r *http.Request, secureKeys []string) (*int64, *JwtToken, error) {
-	logger := GetLoggerFromContext(ctx)
-
-	token, err := getAuthTokenFromRequest(r, secureKeys, logger)
+func IsAuthenticated(r *http.Request, tokenHandler *TokenHandler) (*int64, *JwtToken, error) {
+	token, err := getAuthTokenFromRequest(r, tokenHandler)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,7 +36,7 @@ func IsAuthenticated(ctx context.Context, r *http.Request, secureKeys []string) 
 		return nil, nil, ErrMissingScopes
 	}
 
-	userID, err := GetUserIDFromClaims(token.TypedClaims.RegisteredClaims, logger)
+	userID, err := GetUserIDFromClaims(token.TypedClaims.RegisteredClaims)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,31 +44,15 @@ func IsAuthenticated(ctx context.Context, r *http.Request, secureKeys []string) 
 	return &userID, token, nil
 }
 
-func getAuthTokenFromRequest(r *http.Request, secureKeys []string, logger *slog.Logger) (*JwtToken, error) {
+func getAuthTokenFromRequest(r *http.Request, tokenHandler *TokenHandler) (*JwtToken, error) {
 	cookie, err := GetAuthCookieFromRequest(r)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
 			return nil, errors.New("authorization cookie missing")
 		}
-		logger.Error("Error retrieving auth cookie", "error", err)
 		return nil, errors.New("error retrieving auth cookie")
 	}
 	tokenStr := cookie.Value
 
-	// Try each key when validating the token
-	for i, key := range secureKeys {
-		token, err := ParseToken(tokenStr, key)
-		if err == nil {
-			return token, nil
-		}
-
-		logger.Error("Failed parsing JWT token",
-			"error", err,
-			"key-index", i)
-		if i < (len(secureKeys) - 1) {
-			logger.Debug("Will try again with next key")
-		}
-	}
-
-	return nil, errors.New("invalid token")
+	return tokenHandler.Parse(tokenStr)
 }

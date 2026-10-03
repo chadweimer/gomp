@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -71,10 +72,10 @@ func getMockUploadsAPI(ctrl *gomock.Controller) (apiHandler, *fileaccessmock.Moc
 	upl, _ := fileaccess.CreateImageUploader(fsDriver, imgCfg)
 
 	api := apiHandler{
-		secureKeys: []string{"secure-key"},
-		fs:         fsDriver,
-		upl:        upl,
-		db:         dbDriver,
+		tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+		fs:           fsDriver,
+		upl:          upl,
+		db:           dbDriver,
 	}
 	return api, fsDriver
 }

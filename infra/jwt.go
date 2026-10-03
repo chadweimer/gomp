@@ -3,7 +3,6 @@ package infra
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"strconv"
 	"time"
 
@@ -32,40 +31,6 @@ type GompClaims struct {
 type JwtToken struct {
 	*jwt.Token
 	TypedClaims *GompClaims
-}
-
-// CreateToken creates a JWT token for the given user ID and scopes using the provided secure keys.
-// If rememberMe is true, the token is valid for 14 days; otherwise, it is valid for 24 hours.
-func CreateToken(userID int64, scopes []string, rememberMe bool) (*JwtToken, error) {
-	issuedAt := time.Now()
-	var expiresAt time.Time
-	if rememberMe {
-		expiresAt = issuedAt.AddDate(0, 0, 14)
-	} else {
-		expiresAt = issuedAt.Add(24 * time.Hour)
-	}
-
-	return CreateTokenWithExpiration(userID, scopes, rememberMe, issuedAt, expiresAt)
-}
-
-// CreateTokenWithExpiration creates a JWT token with explicit issuedAt and expiresAt timestamps using the provided secure keys.
-func CreateTokenWithExpiration(userID int64, scopes []string, rememberMe bool, issuedAt, expiresAt time.Time) (*JwtToken, error) {
-	claims := &GompClaims{
-		ExpiresAt:  jwt.NewNumericDate(expiresAt),
-		IssuedAt:   jwt.NewNumericDate(issuedAt),
-		Subject:    strconv.FormatInt(userID, 10),
-		Scopes:     jwt.ClaimStrings(scopes),
-		RememberMe: rememberMe,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return &JwtToken{token, claims}, nil
-}
-
-// SignToken signs the given JWT token using the first key in the provided secure keys slice.
-func SignToken(token *jwt.Token, secureKeys []string) (string, error) {
-	// Always sign using the 0'th key
-	return token.SignedString([]byte(secureKeys[0]))
 }
 
 // ShouldRefreshToken checks if the token should be refreshed and whether its expiration should be extended.
@@ -97,33 +62,11 @@ func ShouldRefreshToken(claims *GompClaims, user *models.User) (shouldRefresh bo
 	return shouldRefresh, extendExpiration
 }
 
-// ParseToken parses the given token string using the provided key and returns the token if it's valid
-func ParseToken(tokenStr, key string) (*JwtToken, error) {
-	claims := new(GompClaims)
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (any, error) {
-		if token.Method != jwt.SigningMethodHS256 {
-			return nil, errors.New("incorrect signing method")
-		}
-
-		return []byte(key), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-
-	return &JwtToken{token, claims}, nil
-}
-
 // GetUserIDFromClaims extracts the user ID from the given JWT claims.
 // It returns an error if the claims are invalid or if the user ID cannot be parsed.
-func GetUserIDFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int64, error) {
+func GetUserIDFromClaims(claims jwt.RegisteredClaims) (int64, error) {
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
-		logger.Error("Invalid claims", "error", err)
 		return -1, errors.New("invalid claims")
 	}
 

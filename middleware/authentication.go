@@ -14,10 +14,10 @@ import (
 // retrieves the associated user from the database, and adds both to the request context.
 // If the token is missing or invalid, or the user cannot be found, the request continues
 // without user/token in context, leaving enforcement to downstream scope verification.
-func Authenticate(secureKeys []string, dbDriver db.UserDriver) func(http.Handler) http.Handler {
+func Authenticate(tokenHandler *infra.TokenHandler, dbDriver db.UserDriver) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userID, token, err := infra.IsAuthenticated(r.Context(), r, secureKeys)
+			userID, token, err := infra.IsAuthenticated(r, tokenHandler)
 			if err == nil && userID != nil {
 				user, err := dbDriver.Read(r.Context(), *userID)
 				if err == nil && user != nil {
@@ -26,7 +26,8 @@ func Authenticate(secureKeys []string, dbDriver db.UserDriver) func(http.Handler
 					r = r.WithContext(ctx)
 				} else if !errors.Is(err, db.ErrNotFound) {
 					infra.GetLoggerFromContext(r.Context()).Error("Error retrieving user info", "error", err)
-					// TODO: Return an error here?
+					w.WriteHeader(http.StatusInternalServerError)
+					return
 				}
 			}
 
@@ -38,7 +39,7 @@ func Authenticate(secureKeys []string, dbDriver db.UserDriver) func(http.Handler
 // AutoRefreshToken is a middleware that checks if the authentication token in context
 // should be automatically refreshed (either near expiration for Remember Me tokens, or
 // due to access level changes), updates the response cookie, and updates the token in the request context.
-func AutoRefreshToken(secureKeys []string) func(http.Handler) http.Handler {
+func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Skip authentication endpoints that manage tokens/cookies themselves
@@ -51,36 +52,31 @@ func AutoRefreshToken(secureKeys []string) func(http.Handler) http.Handler {
 
 			user := infra.GetUserFromContext(r.Context())
 			token := infra.GetTokenFromContext(r.Context())
-			if user == nil || token == nil || user.ID == nil {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			claims := token.TypedClaims
-			shouldRefresh, extendExpiration := infra.ShouldRefreshToken(claims, user)
-			if shouldRefresh {
-				var (
-					token    *infra.JwtToken
-					tokenStr string
-					err      error
-				)
-				scopes := infra.GetScopes(user.AccessLevel)
-				if extendExpiration {
-					token, err = infra.CreateToken(*user.ID, scopes, claims.RememberMe)
-				} else {
-					token, err = infra.CreateTokenWithExpiration(*user.ID, scopes, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
-				}
-				if err == nil {
-					tokenStr, err = infra.SignToken(token.Token, secureKeys)
-				}
-
-				if err == nil {
-					http.SetCookie(w, infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time))
-					if newToken, err := infra.ParseToken(tokenStr, secureKeys[0]); err == nil {
-						r = r.WithContext(infra.AddTokenToContext(r.Context(), newToken))
+			if user != nil && token != nil && user.ID != nil {
+				claims := token.TypedClaims
+				shouldRefresh, extendExpiration := infra.ShouldRefreshToken(claims, user)
+				if shouldRefresh {
+					var (
+						token    *infra.JwtToken
+						tokenStr string
+						err      error
+					)
+					scopes := infra.GetScopes(user.AccessLevel)
+					if extendExpiration {
+						token, err = tokenHandler.Generate(*user.ID, scopes, claims.RememberMe)
+					} else {
+						token, err = tokenHandler.GenerateWithExpiration(*user.ID, scopes, claims.RememberMe, time.Now(), claims.ExpiresAt.Time)
 					}
-				} else {
-					infra.GetLoggerFromContext(r.Context()).Error("Error auto-refreshing token", "error", err)
+					if err == nil {
+						tokenStr, err = tokenHandler.Sign(token.Token)
+					}
+
+					if err == nil {
+						http.SetCookie(w, infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time))
+						r = r.WithContext(infra.AddTokenToContext(r.Context(), token))
+					} else {
+						infra.GetLoggerFromContext(r.Context()).Warn("Error auto-refreshing token", "error", err)
+					}
 				}
 			}
 

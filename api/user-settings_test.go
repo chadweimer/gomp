@@ -393,9 +393,9 @@ func getMockUserSettingsAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockUs
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
-		secureKeys: []string{"secure-key"},
-		upl:        upl,
-		db:         dbDriver,
+		tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+		upl:          upl,
+		db:           dbDriver,
 	}
 	return api, userSettingsDriver
 }

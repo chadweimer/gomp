@@ -19,19 +19,19 @@ var errMismatchedID = errors.New("id in the path does not match the one specifie
 // ---- End Standard Errors ----
 
 type apiHandler struct {
-	secureKeys []string
-	fs         fileaccess.Driver
-	upl        *fileaccess.ImageUploader
-	db         db.Driver
+	tokenHandler *infra.TokenHandler
+	fs           fileaccess.Driver
+	upl          *fileaccess.ImageUploader
+	db           db.Driver
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(secureKeys []string, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) (http.Handler, error) {
+func NewHandler(tokenHandler *infra.TokenHandler, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) (http.Handler, error) {
 	h := apiHandler{
-		secureKeys: secureKeys,
-		fs:         fs,
-		upl:        upl,
-		db:         drDriver,
+		tokenHandler: tokenHandler,
+		fs:           fs,
+		upl:          upl,
+		db:           drDriver,
 	}
 
 	spec, err := GetSpec()

@@ -20,11 +20,11 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 		return Login401Response{}, nil
 	}
 
-	token, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), credentials.RememberMe)
+	token, err := h.tokenHandler.Generate(*user.ID, infra.GetScopes(user.AccessLevel), credentials.RememberMe)
 	if err != nil {
 		return nil, err
 	}
-	tokenStr, err := infra.SignToken(token.Token, h.secureKeys)
+	tokenStr, err := h.tokenHandler.Sign(token.Token)
 	if err != nil {
 		return nil, err
 	}
@@ -50,11 +50,11 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 			rememberMe = token.TypedClaims.RememberMe
 		}
 
-		token, err := infra.CreateToken(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
+		token, err := h.tokenHandler.Generate(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
 		if err != nil {
 			return nil, err
 		}
-		tokenStr, err := infra.SignToken(token.Token, h.secureKeys)
+		tokenStr, err := h.tokenHandler.Sign(token.Token)
 		if err != nil {
 			return nil, err
 		}

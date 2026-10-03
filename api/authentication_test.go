@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"testing"
 	"time"
@@ -75,7 +74,7 @@ func Test_Login(t *testing.T) {
 				}
 
 				expectedRememberMe := test.rememberMe
-				err := checkToken(got.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel, expectedRememberMe)
+				err := checkToken(api.tokenHandler, got.Headers.SetCookie, expectedUserID, expectedScopes, test.accessLevel, expectedRememberMe)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -117,7 +116,7 @@ func Test_RefreshToken(t *testing.T) {
 			}
 			ctx := infra.AddUserToContext(t.Context(), user)
 
-			token, err := infra.CreateToken(expectedUserID, expectedScopes, test.rememberMe)
+			token, err := api.tokenHandler.Generate(expectedUserID, expectedScopes, test.rememberMe)
 			if err != nil {
 				t.Fatalf("failed to create token: %v", err)
 			}
@@ -151,7 +150,7 @@ func Test_RefreshToken(t *testing.T) {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(got.Headers.SetCookie, api.secureKeys[0], expectedUserID, expectedScopes, test.accessLevel, test.rememberMe)
+				err := checkToken(api.tokenHandler, got.Headers.SetCookie, expectedUserID, expectedScopes, test.accessLevel, test.rememberMe)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -294,6 +293,7 @@ func Test_checkScopes(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			ctx := t.Context()
+			tokenHandler := infra.NewTokenHandler([]string{"secure-key"})
 			if test.user != nil {
 				ctx = infra.AddUserToContext(ctx, test.user)
 			}
@@ -302,7 +302,7 @@ func Test_checkScopes(t *testing.T) {
 				if test.tokenIncludesScopes {
 					tokenScopes = infra.GetScopes(test.user.AccessLevel)
 				}
-				tok, _ := infra.CreateToken(*test.user.ID, tokenScopes, false)
+				tok, _ := tokenHandler.Generate(*test.user.ID, tokenScopes, false)
 				ctx = infra.AddTokenToContext(ctx, tok)
 			}
 
@@ -315,7 +315,7 @@ func Test_checkScopes(t *testing.T) {
 	}
 }
 
-func checkToken(cookieStr *string, key string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel, expectedRememberMe bool) error {
+func checkToken(tokenHandler *infra.TokenHandler, cookieStr *string, expectedUserID int64, expectedScopes []string, accessLevel models.AccessLevel, expectedRememberMe bool) error {
 	if cookieStr == nil {
 		return errors.New("cookie string is nil")
 	}
@@ -325,7 +325,7 @@ func checkToken(cookieStr *string, key string, expectedUserID int64, expectedSco
 		return fmt.Errorf("failed to parse cookie: %w", err)
 	}
 	tokenStr := cookie.Value
-	token, err := infra.ParseToken(tokenStr, key)
+	token, err := tokenHandler.Parse(tokenStr)
 	if err != nil {
 		return fmt.Errorf("failed to parse token in response: %w", err)
 	}
@@ -365,7 +365,7 @@ func checkToken(cookieStr *string, key string, expectedUserID int64, expectedSco
 		return fmt.Errorf("expected token duration around %v, got %v", expectedDuration, actualDuration)
 	}
 
-	userID, err := infra.GetUserIDFromClaims(claims.RegisteredClaims, slog.Default())
+	userID, err := infra.GetUserIDFromClaims(claims.RegisteredClaims)
 	if err != nil {
 		return fmt.Errorf("couldn't get user id from token: %s", tokenStr)
 	}
