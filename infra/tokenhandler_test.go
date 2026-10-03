@@ -4,9 +4,90 @@ import (
 	"testing"
 	"time"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/samber/lo"
 )
+
+func Test_Generate(t *testing.T) {
+	tokenHandler := NewTokenHandler([]string{"key1", "key2"})
+	userID := int64(100)
+	scopes := []string{string(models.Viewer)}
+
+	t.Run("RememberMe true (14 days)", func(t *testing.T) {
+		token, err := tokenHandler.Generate(userID, scopes, true)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if token.TypedClaims.ExpiresAt == nil {
+			t.Fatal("expected non-nil expiresAt")
+		}
+		duration := time.Until(token.TypedClaims.ExpiresAt.Time)
+		if duration < 13*24*time.Hour || duration > 15*24*time.Hour {
+			t.Errorf("expected expiration around 14 days, got %v", duration)
+		}
+		claims, ok := token.Claims.(*GompClaims)
+		if !ok {
+			t.Fatal("expected claims to be *GompClaims")
+		}
+		if !claims.RememberMe {
+			t.Error("expected claims.RememberMe to be true")
+		}
+	})
+
+	t.Run("RememberMe false (24 hours)", func(t *testing.T) {
+		token, err := tokenHandler.Generate(userID, scopes, false)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if token.TypedClaims.ExpiresAt == nil {
+			t.Fatal("expected non-nil expiresAt")
+		}
+		duration := time.Until(token.TypedClaims.ExpiresAt.Time)
+		if duration < 23*time.Hour || duration > 25*time.Hour {
+			t.Errorf("expected expiration around 24 hours, got %v", duration)
+		}
+		claims, ok := token.Claims.(*GompClaims)
+		if !ok {
+			t.Fatal("expected claims to be *GompClaims")
+		}
+		if claims.RememberMe {
+			t.Error("expected claims.RememberMe to be false")
+		}
+	})
+}
+
+func Test_GenerateWithExpiration(t *testing.T) {
+	tokenHandler := NewTokenHandler([]string{"key1"})
+	userID := int64(200)
+	scopes := []string{string(models.Admin)}
+	issuedAt := time.Now().Add(-5 * time.Hour)
+	expiresAt := time.Now().Add(10 * time.Hour)
+
+	token, err := tokenHandler.GenerateWithExpiration(userID, scopes, true, issuedAt, expiresAt)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !(token.TypedClaims.ExpiresAt.Time.Sub(expiresAt).Abs() < time.Second) {
+		t.Errorf("expected expiresAt %v, got %v", expiresAt, token.TypedClaims.ExpiresAt.Time)
+	}
+	if err != nil {
+		t.Fatalf("failed to parse token: %v", err)
+	}
+	claims, ok := token.Claims.(*GompClaims)
+	if !ok {
+		t.Fatal("expected claims to be *GompClaims")
+	}
+	if !claims.ExpiresAt.Time.Equal(expiresAt.Truncate(time.Second)) {
+		t.Errorf("expected claims expiresAt %v, got %v", expiresAt.Truncate(time.Second), claims.ExpiresAt.Time)
+	}
+	if !claims.IssuedAt.Time.Equal(issuedAt.Truncate(time.Second)) {
+		t.Errorf("expected claims issuedAt %v, got %v", issuedAt.Truncate(time.Second), claims.IssuedAt.Time)
+	}
+	if !claims.RememberMe {
+		t.Error("expected RememberMe to be true")
+	}
+}
 
 func Test_Parse(t *testing.T) {
 	type testArgs struct {
