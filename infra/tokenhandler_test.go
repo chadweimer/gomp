@@ -68,11 +68,8 @@ func Test_GenerateWithExpiration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !(token.TypedClaims.ExpiresAt.Time.Sub(expiresAt).Abs() < time.Second) {
+	if token.TypedClaims.ExpiresAt.Time.Sub(expiresAt).Abs() > time.Second {
 		t.Errorf("expected expiresAt %v, got %v", expiresAt, token.TypedClaims.ExpiresAt.Time)
-	}
-	if err != nil {
-		t.Fatalf("failed to parse token: %v", err)
 	}
 	claims, ok := token.Claims.(*GompClaims)
 	if !ok {
