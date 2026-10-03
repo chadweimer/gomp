@@ -54,7 +54,7 @@ func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.
 			token := infra.GetTokenFromContext(r.Context())
 			if user != nil && token != nil && user.ID != nil {
 				claims := token.TypedClaims
-				shouldRefresh, extendExpiration := infra.ShouldRefreshToken(claims, user)
+				shouldRefresh, extendExpiration := claims.ShouldRefresh(user)
 				if shouldRefresh {
 					var (
 						token    *infra.JwtToken

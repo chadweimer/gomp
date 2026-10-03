@@ -33,11 +33,11 @@ type JwtToken struct {
 	TypedClaims *GompClaims
 }
 
-// ShouldRefreshToken checks if the token should be refreshed and whether its expiration should be extended.
+// ShouldRefresh checks if the token should be refreshed and whether its expiration should be extended.
 // It returns shouldRefresh=true, extendExpiration=true if the token has RememberMe enabled and is near expiration (remaining <= half of total validity).
 // It returns shouldRefresh=true, extendExpiration=false if the user's scopes have changed but it is not near expiration.
 // If both conditions apply, extendExpiration is true.
-func ShouldRefreshToken(claims *GompClaims, user *models.User) (shouldRefresh bool, extendExpiration bool) {
+func (claims *GompClaims) ShouldRefresh(user *models.User) (shouldRefresh bool, extendExpiration bool) {
 	if claims == nil || user == nil {
 		return false, false
 	}
@@ -62,9 +62,9 @@ func ShouldRefreshToken(claims *GompClaims, user *models.User) (shouldRefresh bo
 	return shouldRefresh, extendExpiration
 }
 
-// GetUserIDFromClaims extracts the user ID from the given JWT claims.
+// GetUserID extracts the user ID from the given JWT claims.
 // It returns an error if the claims are invalid or if the user ID cannot be parsed.
-func GetUserIDFromClaims(claims jwt.RegisteredClaims) (int64, error) {
+func (claims *GompClaims) GetUserID() (int64, error) {
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
 		return -1, errors.New("invalid claims")

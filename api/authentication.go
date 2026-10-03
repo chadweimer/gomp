@@ -46,15 +46,15 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 		}
 
 		rememberMe := false
-		if token := infra.GetTokenFromContext(ctx); token != nil {
-			rememberMe = token.TypedClaims.RememberMe
+		if currentToken := infra.GetTokenFromContext(ctx); currentToken != nil {
+			rememberMe = currentToken.TypedClaims.RememberMe
 		}
 
-		token, err := h.tokenHandler.Generate(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
+		newToken, err := h.tokenHandler.Generate(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
 		if err != nil {
 			return nil, err
 		}
-		tokenStr, err := h.tokenHandler.Sign(token.Token)
+		tokenStr, err := h.tokenHandler.Sign(newToken.Token)
 		if err != nil {
 			return nil, err
 		}
@@ -62,7 +62,7 @@ func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObjec
 		return RefreshToken200JSONResponse{
 			Body: user.User,
 			Headers: RefreshToken200ResponseHeaders{
-				SetCookie: new(infra.CreateAuthCookie(tokenStr, token.TypedClaims.ExpiresAt.Time).String()),
+				SetCookie: new(infra.CreateAuthCookie(tokenStr, newToken.TypedClaims.ExpiresAt.Time).String()),
 			},
 		}, nil
 	})

@@ -40,23 +40,23 @@ func Test_GetScopes(t *testing.T) {
 	}
 }
 
-func Test_GetUserIdFromClaims(t *testing.T) {
+func Test_GompClaims_GetUserID(t *testing.T) {
 	type testArgs struct {
-		claims      jwt.RegisteredClaims
+		claims      GompClaims
 		expectedID  int64
 		expectError bool
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{jwt.RegisteredClaims{Subject: "1"}, 1, false},
-		{jwt.RegisteredClaims{Subject: "A"}, -1, true},
+		{GompClaims{Subject: "1"}, 1, false},
+		{GompClaims{Subject: "A"}, -1, true},
 	}
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			// Act
-			actualID, err := GetUserIDFromClaims(test.claims)
+			actualID, err := test.claims.GetUserID()
 
 			// Assert
 			if (err != nil) != test.expectError {

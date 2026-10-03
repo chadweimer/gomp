@@ -365,7 +365,7 @@ func checkToken(tokenHandler *infra.TokenHandler, cookieStr *string, expectedUse
 		return fmt.Errorf("expected token duration around %v, got %v", expectedDuration, actualDuration)
 	}
 
-	userID, err := infra.GetUserIDFromClaims(claims.RegisteredClaims)
+	userID, err := claims.GetUserID()
 	if err != nil {
 		return fmt.Errorf("couldn't get user id from token: %s", tokenStr)
 	}

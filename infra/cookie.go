@@ -36,7 +36,7 @@ func IsAuthenticated(r *http.Request, tokenHandler *TokenHandler) (*int64, *JwtT
 		return nil, nil, ErrMissingScopes
 	}
 
-	userID, err := GetUserIDFromClaims(token.TypedClaims.RegisteredClaims)
+	userID, err := token.TypedClaims.GetUserID()
 	if err != nil {
 		return nil, nil, err
 	}
