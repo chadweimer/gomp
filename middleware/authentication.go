@@ -47,9 +47,8 @@ func AutoRefreshToken(tokenHandler *infra.TokenHandler) func(http.Handler) http.
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Skip authentication endpoints that manage tokens/cookies themselves
-			path := r.URL.Path
-			if path == "/auth" || strings.HasPrefix(path, "/auth/") ||
-				path == "/api/v1/auth" || strings.HasPrefix(path, "/api/v1/auth/") {
+			path := strings.TrimPrefix(r.URL.Path, "/api/v1")
+			if path == "/auth" || strings.HasPrefix(path, "/auth/") {
 				next.ServeHTTP(w, r)
 				return
 			}
