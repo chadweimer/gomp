@@ -33,26 +33,7 @@ class Api {
   private readonly fetch = async (input: Request, init?: RequestInit): Promise<Response> => {
     state.loadingCount++;
     try {
-      let response = await globalThis.fetch(input, init);
-      if (response.status === 403) {
-        // Try refreshing the token and repeating the request
-        // This can fix the situation where the access level of
-        // the user has been changed and requires a new token
-        try {
-          const refreshClient = createClient<paths>({
-            baseUrl: `${globalThis.location.origin}/api/v1`
-          });
-          const { data: user, error } = await refreshClient.GET('/auth');
-          if (error) {
-            throw new Error('Failed to refresh token.', { cause: error });
-          }
-          state.currentUser = user;
-          response = await globalThis.fetch(input, init);
-        } catch (retryError) {
-          // Just log this; let the original error propagate
-          console.error(retryError);
-        }
-      }
+      const response = await globalThis.fetch(input, init);
       this.responses.next({ request: input, response });
       return response;
     } finally {
