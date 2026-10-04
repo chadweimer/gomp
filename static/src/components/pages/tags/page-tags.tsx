@@ -1,8 +1,8 @@
-import { alertController, Gesture } from '@ionic/core';
+import { Gesture } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, createSwipeGesture, isNull, ResultsPerPage, showResultsPerPageAlert } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -19,7 +19,7 @@ export class PageTags implements ComponentWithActivatedCallback {
   @State() sortDir: SortDir = SortDir.Desc;
   @State() page = 1;
   @State() numPages = 1;
-  @State() resultsPerPage: 24 | 36 | 60 | 96 | 120 = 60;
+  @State() resultsPerPage: ResultsPerPage = 60;
 
   async connectedCallback() {
     this.gesture = createSwipeGesture(this.el, swipe => {
@@ -147,38 +147,19 @@ export class PageTags implements ComponentWithActivatedCallback {
   }
 
   private async onResultsPerPageClicked() {
-    const menu = await alertController.create({
-      header: 'Results Per Page',
-      inputs: ([24, 36, 60, 96, 120] as const).map(item => ({
-        type: 'radio',
-        label: item.toLocaleString(),
-        value: item,
-        checked: this.resultsPerPage === item
-      })),
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'OK',
-          handler: (count: 24 | 36 | 60 | 96 | 120) => {
-            this.resultsPerPage = count;
-            this.page = 1;
-            this.load().catch(console.error);
-          }
-        }
-      ]
-    });
-    await menu.present();
-  }
+    await showResultsPerPageAlert(this.resultsPerPage, count => {
+        this.resultsPerPage = count;
+        this.page = 1;
+        this.load().catch(console.error);
+      });
+    }
 
   private onTagClicked(tag: string) {
-    const filter = getDefaultSearchFilter();
-    state.searchFilter = {
-      ...filter,
-      states: [],
-      tags: [tag]
-    };
-  }
+      const filter = getDefaultSearchFilter();
+      state.searchFilter = {
+        ...filter,
+        states: [],
+        tags: [tag]
+      };
+    }
 }
