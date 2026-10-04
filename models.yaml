@@ -69,6 +69,41 @@ components:
       x-go-custom-tag: db:"sort_by"
       x-oapi-codegen-extra-tags:
         db: sort_by
+    tagSortBy:
+      description: Field used to order tag results.
+      example: tag
+      type: string
+      enum:
+        - tag
+        - count
+      x-enum-varnames:
+        - Tag
+        - Count
+      x-go-custom-tag: db:"tag_sort_by"
+      x-oapi-codegen-extra-tags:
+        db: tag_sort_by
+    tag:
+      description: Tag and the number of recipes associated with it.
+      example:
+        tag: dinner
+        count: 12
+      type: object
+      required:
+        - tag
+        - count
+      properties:
+        tag:
+          type: string
+          x-go-custom-tag: db:"tag"
+          x-oapi-codegen-extra-tags:
+            db: tag
+        count:
+          type: integer
+          format: int64
+          minimum: 0
+          x-go-custom-tag: db:"count"
+          x-oapi-codegen-extra-tags:
+            db: count
     sortDir:
       description: Direction used to sort search results.
       example: desc

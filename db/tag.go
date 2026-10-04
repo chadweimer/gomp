@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -11,29 +12,55 @@ type sqlTagDriver struct {
 	Db *sqlx.DB
 }
 
-func (d *sqlTagDriver) List(ctx context.Context) (*map[string]int, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*map[string]int, error) {
-		rows, err := db.QueryContext(ctx, "SELECT tag, count(tag) as num FROM recipe_tag GROUP BY tag")
-		if err != nil {
-			return nil, err
-		}
-		defer rows.Close()
+func (d *sqlTagDriver) List(ctx context.Context, sortBy models.TagSortBy, sortDir models.SortDir, page int64, count int64) (*[]models.Tag, int64, error) {
+	var total int64
+	countStmt := "SELECT count(DISTINCT tag) FROM recipe_tag"
+	if err := sqlx.GetContext(ctx, d.Db, &total, countStmt); err != nil {
+		return nil, 0, err
+	}
 
-		tags := make(map[string]int)
-		for rows.Next() {
-			var tag string
-			var count int
-			if err := rows.Scan(&tag, &count); err != nil {
-				return nil, fmt.Errorf("scanning tag row: %w", err)
-			}
-			tags[tag] = count
-		}
-		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("iterating tag rows: %w", err)
-		}
+	orderStmt := getTagOrderStmt(sortBy, sortDir)
 
-		return &tags, nil
-	})
+	limitStmt := ""
+	limitArgs := make([]any, 0)
+	if count >= 0 {
+		limitStmt = "LIMIT ? OFFSET ?"
+		limitArgs = append(limitArgs, count, count*(page-1))
+	}
+
+	selectStmt := d.Db.Rebind(fmt.Sprintf(
+		"SELECT tag, count(tag) AS count FROM recipe_tag GROUP BY tag %s %s",
+		orderStmt, limitStmt,
+	))
+
+	tags := make([]models.Tag, 0)
+	if err := sqlx.SelectContext(ctx, d.Db, &tags, selectStmt, limitArgs...); err != nil {
+		return nil, 0, err
+	}
+
+	return &tags, total, nil
+}
+
+func getTagOrderStmt(sortBy models.TagSortBy, sortDir models.SortDir) string {
+	stmt := "ORDER BY "
+	switch sortBy {
+	case models.TagSortByCount:
+		stmt += "count(tag)"
+	case models.TagSortByTag:
+		fallthrough
+	default:
+		stmt += "tag"
+	}
+	if sortDir == models.Desc {
+		stmt += " DESC"
+	} else {
+		stmt += " ASC"
+	}
+	if sortBy == models.TagSortByCount {
+		stmt += ", tag ASC"
+	}
+
+	return stmt
 }
 
 func createTagForRecipe(ctx context.Context, recipeID int64, tag string, db sqlx.ExecerContext) error {

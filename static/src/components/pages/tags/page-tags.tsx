@@ -1,21 +1,48 @@
-import { Component, h, Host, Method, State } from '@stencil/core';
-import { SortDir } from '../../../helpers/schema.gen';
+import { alertController, Gesture } from '@ionic/core';
+import { Component, Element, h, Host, Method, State } from '@stencil/core';
+import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, isNull } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
+import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
-import { getDefaultSearchFilter } from '../../../models';
 
 @Component({
   tag: 'page-tags',
   styleUrl: 'page-tags.css'
 })
 export class PageTags implements ComponentWithActivatedCallback {
-  @State() tags: { [tag: string]: number } | null = null;
-  @State() sortBy: 'tag' | 'count' = 'count';
+  @Element() el!: HTMLPageTagsElement;
+  private gesture: Gesture | null = null;
+
+  @State() tags: Tag[] | null = null;
+  @State() sortBy: TagSortBy = TagSortBy.Count;
   @State() sortDir: SortDir = SortDir.Desc;
+  @State() page = 1;
+  @State() numPages = 1;
+  @State() resultsPerPage: 24 | 36 | 60 | 96 | 120 = 60;
 
   async connectedCallback() {
+    this.gesture = createSwipeGesture(this.el, swipe => {
+      switch (swipe) {
+        case SwipeDirection.Right:
+          if (this.page > 1) {
+            this.setPage(this.page - 1);
+          }
+          break;
+        case SwipeDirection.Left:
+          if (this.page < this.numPages) {
+            this.setPage(this.page + 1);
+          }
+          break;
+      }
+    });
+    this.gesture.enable();
     await this.load();
+  }
+
+  disconnectedCallback() {
+    this.gesture?.destroy();
+    this.gesture = null;
   }
 
   @Method()
@@ -29,13 +56,17 @@ export class PageTags implements ComponentWithActivatedCallback {
         <ion-header>
           <ion-toolbar>
             <ion-buttons class="ion-justify-content-center">
-              <ion-button color="secondary" onClick={() => this.sortBy = this.sortBy === 'tag' ? 'count' : 'tag'}>
+              <ion-button color="secondary" onClick={() => this.onSortByClicked()}>
                 <ion-icon slot="start" icon='swap-vertical' />
                 {this.sortBy}
               </ion-button>
-              <ion-button color="secondary" onClick={() => this.sortDir = this.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc}>
+              <ion-button color="secondary" onClick={() => this.onSortDirClicked()}>
                 <ion-icon slot="start" icon={this.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'} />
                 {this.sortDir}
+              </ion-button>
+              <ion-button color="secondary" onClick={() => this.onResultsPerPageClicked()}>
+                {this.resultsPerPage}
+                <ion-icon slot="end" icon="caret-down" />
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
@@ -45,36 +76,102 @@ export class PageTags implements ComponentWithActivatedCallback {
           <ion-grid class="no-pad">
             <ion-row>
               {!isNull(this.tags) &&
-                Object.entries(this.tags).sort(([keyA, valA], [keyB, valB]) => this.compare(keyA, valA, keyB, valB)).map(([key, val]) =>
-                  <ion-col key={key} size="12" size-md="6" size-lg="4" size-xl="3">
-                    <ion-item href="/recipes" onClick={() => this.onTagClicked(key)}>
-                      <ion-label>{key}</ion-label>
+                this.tags.map(item =>
+                  <ion-col key={item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
+                    <ion-item href="/recipes" onClick={() => this.onTagClicked(item.tag)}>
+                      <ion-label>{item.tag}</ion-label>
                       <ion-icon slot="end" name="bookmark" size="small" />
-                      <ion-note slot="end">{val}</ion-note>
+                      <ion-note slot="end">{item.count}</ion-note>
                     </ion-item>
                   </ion-col>
-                )
-              }
+                )}
             </ion-row>
           </ion-grid>
         </ion-content>
+
+        <ion-footer>
+          <ion-toolbar>
+            <page-navigator
+              class="ion-justify-content-center"
+              color="secondary"
+              page={this.page}
+              numPages={this.numPages}
+              onPageChanged={e => this.setPage(e.detail)}
+            />
+          </ion-toolbar>
+        </ion-footer>
       </Host>
     );
   }
 
   private async load() {
     try {
-      const { data: tags, error } = await api.client.GET('/tags');
+      const { data, error } = await api.client.GET('/tags', {
+        params: {
+          query: {
+            sort: this.sortBy,
+            dir: this.sortDir,
+            page: this.page,
+            count: this.resultsPerPage
+          }
+        }
+      });
 
-      if (error) {
+      if (error || isNull(data)) {
         throw new Error('Failed to load tags.', { cause: error });
       }
 
-      this.tags = tags;
+      this.tags = data.tags ?? [];
+      this.numPages = Math.max(Math.ceil(data.total / this.resultsPerPage), 1);
     } catch (ex) {
       this.tags = null;
+      this.numPages = 1;
       console.error(ex);
     }
+  }
+
+  private setPage(page: number) {
+    this.page = page;
+    this.load().catch(console.error);
+  }
+
+  private onSortByClicked() {
+    this.sortBy = this.sortBy === TagSortBy.Tag ? TagSortBy.Count : TagSortBy.Tag;
+    this.page = 1;
+    this.load().catch(console.error);
+  }
+
+  private onSortDirClicked() {
+    this.sortDir = this.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc;
+    this.page = 1;
+    this.load().catch(console.error);
+  }
+
+  private async onResultsPerPageClicked() {
+    const menu = await alertController.create({
+      header: 'Results Per Page',
+      inputs: ([24, 36, 60, 96, 120] as const).map(item => ({
+        type: 'radio',
+        label: item.toLocaleString(),
+        value: item,
+        checked: this.resultsPerPage === item
+      })),
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'OK',
+          handler: (count: 24 | 36 | 60 | 96 | 120) => {
+            this.resultsPerPage = count;
+            this.page = 1;
+            this.load().catch(console.error);
+          }
+        }
+      ]
+    });
+    await menu.present();
   }
 
   private onTagClicked(tag: string) {
@@ -84,27 +181,5 @@ export class PageTags implements ComponentWithActivatedCallback {
       states: [],
       tags: [tag]
     };
-  }
-
-  private compare(keyA: string, valA: number, keyB: string, valB: number): number {
-    const lessthan = this.sortDir === SortDir.Asc ? -1 : 1;
-    const greaterthan = this.sortDir === SortDir.Asc ? 1 : -1;
-    switch (this.sortBy) {
-      case 'tag':
-        if (keyA < keyB) {
-          return lessthan;
-        } else if (keyA > keyB) {
-          return greaterthan;
-        }
-        break;
-      case 'count':
-        if (valA < valB) {
-          return lessthan;
-        } else if (valA > valB) {
-          return greaterthan;
-        }
-        break;
-    }
-    return 0;
   }
 }

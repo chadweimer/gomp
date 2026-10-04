@@ -256,8 +256,7 @@ type UserSettingsDriver interface {
 
 // TagDriver provides functionality to retrieve tags across recipes.
 type TagDriver interface {
-	// List retrieves all tags across all recipes in the database.
-	// The returned map contains the tag as the key and the number of recipes
-	// associated with that tag as the value.
-	List(ctx context.Context) (*map[string]int, error)
+	// List retrieves tags across all recipes in the database according to sort and pagination parameters.
+	// Returns a slice of Tag items, the total count of unique tags, and any error encountered.
+	List(ctx context.Context, sortBy models.TagSortBy, sortDir models.SortDir, page int64, count int64) (*[]models.Tag, int64, error)
 }

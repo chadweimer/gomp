@@ -602,15 +602,35 @@ paths:
       summary: List tags
       description: get list of tags
       operationId: getAllTags
+      parameters:
+        - name: sort
+          in: query
+          schema:
+            $ref: './models.yaml#/components/schemas/tagSortBy'
+        - name: dir
+          in: query
+          schema:
+            $ref: './models.yaml#/components/schemas/sortDir'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: count
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          required: true
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
-                  type: integer
+                $ref: '#/components/schemas/tagSearchResult'
       security:
         - Cookie: [viewer]
   /uploads:
@@ -1148,6 +1168,19 @@ components:
           type: array
           items:
             $ref: './models.yaml#/components/schemas/recipeCompact'
+    tagSearchResult:
+      type: object
+      required:
+        - total
+      properties:
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+        tags:
+          type: array
+          items:
+            $ref: './models.yaml#/components/schemas/tag'
     userPasswordRequest:
       description: Password change request containing current and new password values.
       example:
