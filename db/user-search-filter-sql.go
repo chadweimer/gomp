@@ -203,17 +203,21 @@ func (*sqlUserSearchFilterDriver) deleteImpl(ctx context.Context, userID int64, 
 
 // List retrieves a user's saved search filters according to pagination parameters.
 func (d *sqlUserSearchFilterDriver) List(ctx context.Context, userID, page, count int64) (*[]models.SavedSearchFilterCompact, int64, error) {
-	var total int64
+	var (
+		total int64
+		args  = make([]any, 0)
+	)
+
 	countStmt := d.Db.Rebind("SELECT count(id) FROM search_filter WHERE user_id = ?")
 	if err := sqlx.GetContext(ctx, d.Db, &total, countStmt, userID); err != nil {
 		return nil, 0, err
 	}
+	args = append(args, userID)
 
 	limitStmt := ""
-	limitArgs := []any{userID}
 	if count >= 0 {
 		limitStmt = "LIMIT ? OFFSET ?"
-		limitArgs = append(limitArgs, count, count*(page-1))
+		args = append(args, count, count*(page-1))
 	}
 
 	selectStmt := d.Db.Rebind(fmt.Sprintf(
@@ -222,7 +226,7 @@ func (d *sqlUserSearchFilterDriver) List(ctx context.Context, userID, page, coun
 	))
 
 	filters := make([]models.SavedSearchFilterCompact, 0)
-	if err := sqlx.SelectContext(ctx, d.Db, &filters, selectStmt, limitArgs...); err != nil {
+	if err := sqlx.SelectContext(ctx, d.Db, &filters, selectStmt, args...); err != nil {
 		return nil, 0, err
 	}
 

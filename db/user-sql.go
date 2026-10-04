@@ -114,17 +114,20 @@ func (*sqlUserDriver) deleteImpl(ctx context.Context, id int64, db sqlx.ExecerCo
 }
 
 func (d *sqlUserDriver) List(ctx context.Context, page, count int64) (*[]models.User, int64, error) {
-	var total int64
+	var (
+		total int64
+		args  = make([]any, 0)
+	)
+
 	countStmt := "SELECT count(id) FROM app_user"
 	if err := sqlx.GetContext(ctx, d.Db, &total, countStmt); err != nil {
 		return nil, 0, err
 	}
 
 	limitStmt := ""
-	limitArgs := make([]any, 0)
 	if count >= 0 {
 		limitStmt = "LIMIT ? OFFSET ?"
-		limitArgs = append(limitArgs, count, count*(page-1))
+		args = append(args, count, count*(page-1))
 	}
 
 	selectStmt := d.Db.Rebind(fmt.Sprintf(
@@ -133,7 +136,7 @@ func (d *sqlUserDriver) List(ctx context.Context, page, count int64) (*[]models.
 	))
 
 	users := make([]models.User, 0)
-	if err := sqlx.SelectContext(ctx, d.Db, &users, selectStmt, limitArgs...); err != nil {
+	if err := sqlx.SelectContext(ctx, d.Db, &users, selectStmt, args...); err != nil {
 		return nil, 0, err
 	}
 

@@ -13,7 +13,11 @@ type sqlTagDriver struct {
 }
 
 func (d *sqlTagDriver) List(ctx context.Context, sortBy models.TagSortBy, sortDir models.SortDir, page int64, count int64) (*[]models.Tag, int64, error) {
-	var total int64
+	var (
+		total int64
+		args  = make([]any, 0)
+	)
+
 	countStmt := "SELECT count(DISTINCT tag) FROM recipe_tag"
 	if err := sqlx.GetContext(ctx, d.Db, &total, countStmt); err != nil {
 		return nil, 0, err
@@ -22,10 +26,9 @@ func (d *sqlTagDriver) List(ctx context.Context, sortBy models.TagSortBy, sortDi
 	orderStmt := getTagOrderStmt(sortBy, sortDir)
 
 	limitStmt := ""
-	limitArgs := make([]any, 0)
 	if count >= 0 {
 		limitStmt = "LIMIT ? OFFSET ?"
-		limitArgs = append(limitArgs, count, count*(page-1))
+		args = append(args, count, count*(page-1))
 	}
 
 	selectStmt := d.Db.Rebind(fmt.Sprintf(
@@ -34,7 +37,7 @@ func (d *sqlTagDriver) List(ctx context.Context, sortBy models.TagSortBy, sortDi
 	))
 
 	tags := make([]models.Tag, 0)
-	if err := sqlx.SelectContext(ctx, d.Db, &tags, selectStmt, limitArgs...); err != nil {
+	if err := sqlx.SelectContext(ctx, d.Db, &tags, selectStmt, args...); err != nil {
 		return nil, 0, err
 	}
 
