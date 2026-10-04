@@ -101,7 +101,7 @@ To provision a new database, or run migrations on an existing database, execute 
 ./gomp db migrate up
 ```
 
-See [Command Line Interface](#command-line-interface) for more on the available commands.
+See [CLI Interface](#cli-interface) for more on the available commands.
 
 ## Configuration
 
