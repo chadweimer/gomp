@@ -50,6 +50,12 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
               )}
             </ion-row>
           </ion-grid>
+
+          <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+            <ion-fab-button color="success" onClick={() => this.onAddFilterClicked()}>
+              <ion-icon icon="add" />
+            </ion-fab-button>
+          </ion-fab>
         </ion-content>
 
         <ion-footer>
@@ -63,12 +69,6 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
             />
           </ion-toolbar>
         </ion-footer>
-
-        <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-          <ion-fab-button color="success" onClick={() => this.onAddFilterClicked()}>
-            <ion-icon icon="add" />
-          </ion-fab-button>
-        </ion-fab>
       </Host>
     );
   }
