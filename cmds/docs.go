@@ -1,8 +1,11 @@
 package cmds
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/chadweimer/gomp/config"
 	docs "github.com/urfave/cli-docs/v3"
@@ -44,17 +47,19 @@ func generateDocs(cfg config.Config) func(context.Context, *cli.Command) error {
 
 		if tagged {
 			return docs.ToTabularToFileBetweenTags(RootCmd(cfg), "./gomp", path)
-		} else {
-			md, err := docs.ToTabularMarkdown(RootCmd(cfg), "./gomp")
-			if err != nil {
-				return err
-			}
-			err = os.WriteFile(path, []byte(md), 0644)
-			if err != nil {
-				return err
-			}
 		}
-		// Implement the logic for generating documentation using the path and tagged variables
-		return nil
+
+		md, err := docs.ToTabularMarkdown(RootCmd(cfg), "./gomp")
+		if err != nil {
+			return err
+		}
+		file, err := os.Create(filepath.Clean(path))
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		_, err = io.Copy(file, bytes.NewBufferString(md))
+		return err
 	}
 }
