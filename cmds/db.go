@@ -22,7 +22,7 @@ func databaseCmd(cfg config.Config) *cli.Command {
 		Commands: []*cli.Command{
 			{
 				Name:  "export",
-				Usage: "Export the database",
+				Usage: "Export the complete database to a JSON file",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:      "output",
@@ -53,7 +53,7 @@ func databaseCmd(cfg config.Config) *cli.Command {
 			},
 			{
 				Name:  "import",
-				Usage: "Import the database",
+				Usage: "Import the complete database from a JSON file. WARNING: Overwrites all existing data",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
 						Name:      "input",
@@ -85,7 +85,7 @@ func databaseCmd(cfg config.Config) *cli.Command {
 					},
 					{
 						Name:   "down",
-						Usage:  "Migrate the database down down by applying all pending migrations",
+						Usage:  "Migrate the database down by applying all pending migrations",
 						Action: withDatabase(cfg, migrateDatabaseDown),
 					},
 					{

@@ -41,6 +41,12 @@ GO_LD_FLAGS=-ldflags '-X "$(GO_MODULE_NAME)/metadata.BuildVersion=$(BUILD_VERSIO
 
 .DEFAULT_GOAL:=$(ROOT_BUILD_DIR)
 
+# ---- DOCUMENTATION ----
+
+.PHONY: docs
+docs:
+	go run ./... docs generate -o README.md --tagged
+
 
 # ---- INSTALL ----
 
@@ -49,11 +55,11 @@ install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
 $(CLIENT_INSTALL_DIR): static/package.json
-	cd static && npm ci --silent
+	npm --prefix static ci --silent
 
 .PHONY: uninstall
 uninstall:
-	cd static && npm run clear
+	npm --prefix static run clear
 
 
 # ---- CODEGEN ----
@@ -62,7 +68,7 @@ uninstall:
 codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
 
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
-	cd static && npm run codegen
+	npm --prefix static run codegen
 
 $(API_CODEGEN_FILE): $(MODELS_CODEGEN_FILE) openapi.yaml api/cfg.yaml
 	go generate $(GO_MODULE_NAME)/api
@@ -81,7 +87,7 @@ lint: lint-client lint-server
 
 .PHONY: lint-client
 lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
-	cd static && npm run lint
+	npm --prefix static run lint
 
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)
@@ -97,7 +103,7 @@ lint-server: $(CODEGEN_FILES)
 clean:
 	rm -rf $(ROOT_BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
-	cd static && npm run clean
+	npm --prefix static run clean
 	$(GO_ENV) go clean -i ./...
 
 
@@ -106,7 +112,7 @@ clean:
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR) $(CLIENT_FILES)
-	rm -rf $@ && cd static && npm run build $(CLIENT_EXTRA_BUILD_ARGS)
+	rm -rf $@ && npm --prefix static run build $(CLIENT_EXTRA_BUILD_ARGS)
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 
@@ -144,7 +150,7 @@ $(ROOT_BUILD_DIR)/coverage/server: go.mod $(CODEGEN_FILES) $(GO_FILES)
 $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	rm -rf $@
 	mkdir -p $@
-	cd static && npm run cover
+	npm --prefix static run cover
 	cp -r static/coverage/* $@
 	# Use sed to add static/ prefix to all file paths in the lcov.info file
 	sed -i 's/^SF:\(.*\)/SF:static\/\1/' $@/lcov.info
