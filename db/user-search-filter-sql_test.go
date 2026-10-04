@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"fmt"
 	"math/rand"
 	"testing"
 
@@ -15,6 +14,7 @@ import (
 
 func Test_UserSearchFilter_Create(t *testing.T) {
 	type testArgs struct {
+		name              string
 		searchFilter      *models.SavedSearchFilter
 		preConditionError error
 		dbError           error
@@ -24,7 +24,8 @@ func Test_UserSearchFilter_Create(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			&models.SavedSearchFilter{
+			name: "valid filter",
+			searchFilter: &models.SavedSearchFilter{
 				UserID:       new(int64(1)),
 				Name:         "My Filter",
 				Query:        "My Query",
@@ -35,35 +36,38 @@ func Test_UserSearchFilter_Create(t *testing.T) {
 				States:       []models.RecipeState{models.Active, models.Archived},
 				Tags:         []string{"weeknight", "high-protein"},
 			},
-			nil,
-			nil,
-			nil,
+			preConditionError: nil,
+			dbError:           nil,
+			expectedError:     nil,
 		},
 		{
-			&models.SavedSearchFilter{},
-			ErrMissingID,
-			nil,
-			ErrMissingID,
+			name:              "missing user ID",
+			searchFilter:      &models.SavedSearchFilter{},
+			preConditionError: ErrMissingID,
+			dbError:           nil,
+			expectedError:     ErrMissingID,
 		},
 		{
-			&models.SavedSearchFilter{
+			name: "no rows",
+			searchFilter: &models.SavedSearchFilter{
 				UserID: new(int64(1)),
 			},
-			nil,
-			sql.ErrNoRows,
-			ErrNotFound,
+			preConditionError: nil,
+			dbError:           sql.ErrNoRows,
+			expectedError:     ErrNotFound,
 		},
 		{
-			&models.SavedSearchFilter{
+			name: "connection done",
+			searchFilter: &models.SavedSearchFilter{
 				UserID: new(int64(1)),
 			},
-			nil,
-			sql.ErrConnDone,
-			sql.ErrConnDone,
+			preConditionError: nil,
+			dbError:           sql.ErrConnDone,
+			expectedError:     sql.ErrConnDone,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -142,6 +146,7 @@ func Test_UserSearchFilter_Create(t *testing.T) {
 
 func Test_UserSearchFilter_Read(t *testing.T) {
 	type testArgs struct {
+		name          string
 		userID        int64
 		filterID      int64
 		dbError       error
@@ -150,12 +155,12 @@ func Test_UserSearchFilter_Read(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, 2, nil, nil},
-		{1, 2, sql.ErrNoRows, ErrNotFound},
-		{1, 2, sql.ErrConnDone, sql.ErrConnDone},
+		{"successful read", 1, 2, nil, nil},
+		{"no rows found", 1, 2, sql.ErrNoRows, ErrNotFound},
+		{"connection done", 1, 2, sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -201,6 +206,7 @@ func Test_UserSearchFilter_Read(t *testing.T) {
 
 func Test_UserSearchFilter_Update(t *testing.T) {
 	type testArgs struct {
+		name              string
 		searchFilter      *models.SavedSearchFilter
 		preConditionError error
 		dbError           error
@@ -210,7 +216,8 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			&models.SavedSearchFilter{
+			name: "successful update",
+			searchFilter: &models.SavedSearchFilter{
 				UserID:       new(int64(1)),
 				ID:           new(int64(2)),
 				Name:         "My Filter",
@@ -222,47 +229,51 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 				States:       []models.RecipeState{models.Active, models.Archived},
 				Tags:         []string{"weeknight", "high-protein"},
 			},
-			nil,
-			nil,
-			nil,
+			preConditionError: nil,
+			dbError:           nil,
+			expectedError:     nil,
 		},
 		{
-			&models.SavedSearchFilter{
+			name: "missing user ID",
+			searchFilter: &models.SavedSearchFilter{
 				ID: new(int64(2)),
 			},
-			ErrMissingID,
-			nil,
-			ErrMissingID,
+			preConditionError: ErrMissingID,
+			dbError:           nil,
+			expectedError:     ErrMissingID,
 		},
 		{
-			&models.SavedSearchFilter{
+			name: "missing filter ID",
+			searchFilter: &models.SavedSearchFilter{
 				UserID: new(int64(1)),
 			},
-			ErrMissingID,
-			nil,
-			ErrMissingID,
+			preConditionError: ErrMissingID,
+			dbError:           nil,
+			expectedError:     ErrMissingID,
 		},
 		{
-			&models.SavedSearchFilter{
-				UserID: new(int64(1)),
-				ID:     new(int64(2)),
-			},
-			nil,
-			sql.ErrNoRows,
-			ErrNotFound,
-		},
-		{
-			&models.SavedSearchFilter{
+			name: "no rows found",
+			searchFilter: &models.SavedSearchFilter{
 				UserID: new(int64(1)),
 				ID:     new(int64(2)),
 			},
-			nil,
-			sql.ErrConnDone,
-			sql.ErrConnDone,
+			preConditionError: nil,
+			dbError:           sql.ErrNoRows,
+			expectedError:     ErrNotFound,
+		},
+		{
+			name: "connection done",
+			searchFilter: &models.SavedSearchFilter{
+				UserID: new(int64(1)),
+				ID:     new(int64(2)),
+			},
+			preConditionError: nil,
+			dbError:           sql.ErrConnDone,
+			expectedError:     sql.ErrConnDone,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -341,6 +352,7 @@ func Test_UserSearchFilter_Update(t *testing.T) {
 
 func Test_UserSearchFilter_Delete(t *testing.T) {
 	type testArgs struct {
+		name          string
 		userID        int64
 		filterID      int64
 		dbError       error
@@ -349,12 +361,12 @@ func Test_UserSearchFilter_Delete(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, 2, nil, nil},
-		{0, 0, sql.ErrNoRows, ErrNotFound},
-		{0, 0, sql.ErrConnDone, sql.ErrConnDone},
+		{name: "successful delete", userID: 1, filterID: 2, dbError: nil, expectedError: nil},
+		{name: "no rows", userID: 0, filterID: 0, dbError: sql.ErrNoRows, expectedError: ErrNotFound},
+		{name: "connection done", userID: 0, filterID: 0, dbError: sql.ErrConnDone, expectedError: sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -389,6 +401,7 @@ func Test_UserSearchFilter_Delete(t *testing.T) {
 
 func Test_UserSearchFilter_List(t *testing.T) {
 	type testArgs struct {
+		name           string
 		userID         int64
 		page           int64
 		count          int64
@@ -402,6 +415,7 @@ func Test_UserSearchFilter_List(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
+			name:          "first page of filters",
 			userID:        1,
 			page:          1,
 			count:         10,
@@ -420,6 +434,7 @@ func Test_UserSearchFilter_List(t *testing.T) {
 			},
 		},
 		{
+			name:          "second page of filters",
 			userID:        1,
 			page:          2,
 			count:         5,
@@ -433,6 +448,7 @@ func Test_UserSearchFilter_List(t *testing.T) {
 			},
 		},
 		{
+			name:          "count query error",
 			userID:        0,
 			page:          1,
 			count:         10,
@@ -440,6 +456,7 @@ func Test_UserSearchFilter_List(t *testing.T) {
 			expectedError: sql.ErrConnDone,
 		},
 		{
+			name:          "select query error",
 			userID:        0,
 			page:          1,
 			count:         10,
@@ -447,8 +464,8 @@ func Test_UserSearchFilter_List(t *testing.T) {
 			expectedError: sql.ErrConnDone,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
