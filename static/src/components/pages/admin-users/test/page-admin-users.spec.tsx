@@ -3,28 +3,8 @@ import { vi } from 'vitest';
 import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
 import { AccessLevel, User, UserSearchResult } from '../../../../helpers/schema.gen';
-import { SwipeDirection } from '../../../../models';
 import { clearState } from '../../../../stores/state';
-import { PageAdminUsers } from '../page-admin-users';
 import '../page-admin-users';
-
-let swipeHandler: ((swipe: SwipeDirection) => void) | undefined;
-const mockGestureDestroy = vi.fn();
-const mockGestureEnable = vi.fn();
-
-vi.mock('../../../../helpers/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../helpers/utils')>();
-  return {
-    ...actual,
-    createSwipeGesture: vi.fn((_el: HTMLElement, handler: (swipe: SwipeDirection) => void) => {
-      swipeHandler = handler;
-      return {
-        enable: mockGestureEnable,
-        destroy: mockGestureDestroy,
-      };
-    }),
-  };
-});
 
 describe('page-admin-users', () => {
   const originalFetch = globalThis.fetch;
@@ -65,9 +45,6 @@ describe('page-admin-users', () => {
     sessionStorage.clear();
     fetchMocker.resetMocks();
     clearState();
-    mockGestureEnable.mockClear();
-    mockGestureDestroy.mockClear();
-    swipeHandler = undefined;
   });
 
   afterEach(() => {
@@ -150,7 +127,7 @@ describe('page-admin-users', () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  describe('Pagination and Gestures', () => {
+  describe('Pagination', () => {
     it('changes page when page-navigator emits pageChanged', async () => {
       let capturedUrl = '';
       const paginatedResult: UserSearchResult = {
@@ -178,53 +155,6 @@ describe('page-admin-users', () => {
       await waitForChanges();
 
       expect(capturedUrl).toContain('page=2');
-    });
-
-    it('handles swipe gestures to change page', async () => {
-      let capturedUrl = '';
-      const paginatedResult: UserSearchResult = {
-        total: 100,
-        users: mockUsers,
-      };
-
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
-          capturedUrl = req.url;
-          return { status: 200, body: JSON.stringify(paginatedResult) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const { root, waitForChanges } = await render<HTMLPageAdminUsersElement>(<page-admin-users />);
-      await root.activatedCallback();
-      await waitForChanges();
-
-      expect(swipeHandler).toBeDefined();
-
-      // Swipe left (next page)
-      swipeHandler?.(SwipeDirection.Left);
-      await waitForChanges();
-      expect(capturedUrl).toContain('page=2');
-
-      // Swipe right (previous page)
-      swipeHandler?.(SwipeDirection.Right);
-      await waitForChanges();
-      expect(capturedUrl).toContain('page=1');
-    });
-
-    it('destroys gesture on disconnectedCallback', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUserResult) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const { instance } = await render<HTMLElement, PageAdminUsers>(<page-admin-users />);
-      expect(mockGestureEnable).toHaveBeenCalled();
-
-      instance?.disconnectedCallback();
-      expect(mockGestureDestroy).toHaveBeenCalled();
     });
   });
 

@@ -1,45 +1,22 @@
-import { alertController, Gesture, modalController } from '@ionic/core';
-import { Component, Element, Host, h, State, Method } from '@stencil/core';
+import { alertController, modalController } from '@ionic/core';
+import { Component, Host, h, State, Method } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, createSwipeGesture, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
-import { SwipeDirection } from '../../../models';
+import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-users',
   styleUrl: 'page-admin-users.css',
 })
 export class PageAdminUsers implements ComponentWithActivatedCallback {
-  @Element() el!: HTMLPageAdminUsersElement;
-  private gesture: Gesture | null = null;
   private readonly resultsPerPage = 24;
 
   @State() users: User[] = [];
   @State() page = 1;
-  @State() numPages = 1;;
+  @State() numPages = 1;
 
   async connectedCallback() {
-    this.gesture = createSwipeGesture(this.el, swipe => {
-      switch (swipe) {
-        case SwipeDirection.Right:
-          if (this.page > 1) {
-            this.setPage(this.page - 1);
-          }
-          break;
-        case SwipeDirection.Left:
-          if (this.page < this.numPages) {
-            this.setPage(this.page + 1);
-          }
-          break;
-      }
-    });
-    this.gesture.enable();
     await this.loadUsers();
-  }
-
-  disconnectedCallback() {
-    this.gesture?.destroy();
-    this.gesture = null;
   }
 
   @Method()

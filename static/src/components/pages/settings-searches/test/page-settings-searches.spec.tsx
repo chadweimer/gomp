@@ -3,28 +3,8 @@ import { vi } from 'vitest';
 import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
 import { RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilterSearchResult, SortBy, SortDir } from '../../../../helpers/schema.gen';
-import { SwipeDirection } from '../../../../models';
 import state, { clearState } from '../../../../stores/state';
-import { PageSettingsSearches } from '../page-settings-searches';
 import '../page-settings-searches';
-
-let swipeHandler: ((swipe: SwipeDirection) => void) | undefined;
-const mockGestureDestroy = vi.fn();
-const mockGestureEnable = vi.fn();
-
-vi.mock('../../../../helpers/utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../helpers/utils')>();
-  return {
-    ...actual,
-    createSwipeGesture: vi.fn((_el: HTMLElement, handler: (swipe: SwipeDirection) => void) => {
-      swipeHandler = handler;
-      return {
-        enable: mockGestureEnable,
-        destroy: mockGestureDestroy,
-      };
-    }),
-  };
-});
 
 describe('page-settings-searches', () => {
   const originalFetch = globalThis.fetch;
@@ -77,9 +57,6 @@ describe('page-settings-searches', () => {
     sessionStorage.clear();
     fetchMocker.resetMocks();
     clearState();
-    mockGestureEnable.mockClear();
-    mockGestureDestroy.mockClear();
-    swipeHandler = undefined;
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -161,7 +138,7 @@ describe('page-settings-searches', () => {
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  describe('Pagination and Gestures', () => {
+  describe('Pagination', () => {
     it('changes page when page-navigator emits pageChanged', async () => {
       let capturedUrl = '';
       const paginatedResult: SearchFilterSearchResult = {
@@ -189,53 +166,6 @@ describe('page-settings-searches', () => {
       await waitForChanges();
 
       expect(capturedUrl).toContain('page=2');
-    });
-
-    it('handles swipe gestures to change page', async () => {
-      let capturedUrl = '';
-      const paginatedResult: SearchFilterSearchResult = {
-        total: 100,
-        filters: mockFilterCompacts,
-      };
-
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-          capturedUrl = req.url;
-          return { status: 200, body: JSON.stringify(paginatedResult) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const { root, waitForChanges } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
-      await root.activatedCallback();
-      await waitForChanges();
-
-      expect(swipeHandler).toBeDefined();
-
-      // Swipe left (next page)
-      swipeHandler?.(SwipeDirection.Left);
-      await waitForChanges();
-      expect(capturedUrl).toContain('page=2');
-
-      // Swipe right (previous page)
-      swipeHandler?.(SwipeDirection.Right);
-      await waitForChanges();
-      expect(capturedUrl).toContain('page=1');
-    });
-
-    it('destroys gesture on disconnectedCallback', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterResult) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const { instance } = await render<HTMLElement, PageSettingsSearches>(<page-settings-searches />);
-      expect(mockGestureEnable).toHaveBeenCalled();
-
-      instance?.disconnectedCallback();
-      expect(mockGestureDestroy).toHaveBeenCalled();
     });
   });
 

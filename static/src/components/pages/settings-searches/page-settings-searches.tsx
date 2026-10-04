@@ -1,9 +1,8 @@
-import { alertController, Gesture, modalController } from '@ionic/core';
-import { Component, Element, Host, h, State, Method } from '@stencil/core';
+import { alertController, modalController } from '@ionic/core';
+import { Component, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, createSwipeGesture, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
-import { SwipeDirection } from '../../../models';
+import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -11,8 +10,6 @@ import state from '../../../stores/state';
   styleUrl: 'page-settings-searches.css',
 })
 export class PageSettingsSearches implements ComponentWithActivatedCallback {
-  @Element() el!: HTMLPageSettingsSearchesElement;
-  private gesture: Gesture | null = null;
   private readonly resultsPerPage = 24;
 
   @State() filters: SavedSearchFilterCompact[] = [];
@@ -20,27 +17,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   @State() numPages = 1;
 
   async connectedCallback() {
-    this.gesture = createSwipeGesture(this.el, swipe => {
-      switch (swipe) {
-        case SwipeDirection.Right:
-          if (this.page > 1) {
-            this.setPage(this.page - 1);
-          }
-          break;
-        case SwipeDirection.Left:
-          if (this.page < this.numPages) {
-            this.setPage(this.page + 1);
-          }
-          break;
-      }
-    });
-    this.gesture.enable();
     await this.loadFilters();
-  }
-
-  disconnectedCallback() {
-    this.gesture?.destroy();
-    this.gesture = null;
   }
 
   @Method()
