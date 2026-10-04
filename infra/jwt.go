@@ -3,8 +3,6 @@ package infra
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -25,62 +23,68 @@ var ErrMissingScopes = errors.New("token had no scopes")
 type GompClaims struct {
 	jwt.RegisteredClaims
 
-	Scopes jwt.ClaimStrings `json:"scopes"`
+	Scopes     jwt.ClaimStrings `json:"scopes"`
+	RememberMe bool             `json:"remember_me,omitempty"`
 }
 
-// CreateToken creates a JWT token for the given user ID and scopes using the provided secure keys
-func CreateToken(userID int64, scopes []string, secureKeys []string) (string, *time.Time, error) {
-	// Tokens are valid for 14 days
-	issuedAt := time.Now()
-	expiresAt := issuedAt.AddDate(0, 0, 14)
+// JwtToken is a strongly typed representation of the jwt.Token with GompClaims
+type JwtToken struct {
+	*jwt.Token
+	TypedClaims *GompClaims
+}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, GompClaims{
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expiresAt),
-			IssuedAt:  jwt.NewNumericDate(issuedAt),
-			Subject:   strconv.FormatInt(userID, 10),
-		},
-		Scopes: jwt.ClaimStrings(scopes),
-	})
-
-	// Always sign using the 0'th key
-	tokenStr, err := token.SignedString([]byte(secureKeys[0]))
-	if err != nil {
-		return "", nil, err
+// ShouldRefresh checks if the token should be refreshed and whether its expiration should be extended.
+// It returns shouldRefresh=true, extendExpiration=true if the token has RememberMe enabled and is near expiration (remaining <= half of total validity).
+// It returns shouldRefresh=true, extendExpiration=false if the user's scopes have changed but it is not near expiration.
+// If both conditions apply, extendExpiration is true.
+func (claims *GompClaims) ShouldRefresh(user *models.User) (shouldRefresh bool, extendExpiration bool) {
+	if claims == nil || user == nil {
+		return false, false
 	}
-	return tokenStr, &expiresAt, nil
-}
 
-// ParseToken parses the given token string using the provided key and returns the token if it's valid
-func ParseToken(tokenStr, key string) (*jwt.Token, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &GompClaims{}, func(token *jwt.Token) (any, error) {
-		if token.Method != jwt.SigningMethodHS256 {
-			return nil, errors.New("incorrect signing method")
+	if claims.RememberMe && claims.ExpiresAt != nil {
+		totalDuration := 14 * 24 * time.Hour
+		if claims.IssuedAt != nil {
+			totalDuration = claims.ExpiresAt.Time.Sub(claims.IssuedAt.Time)
 		}
-
-		return []byte(key), nil
-	})
-	if err != nil {
-		return nil, err
+		remainingDuration := time.Until(claims.ExpiresAt.Time)
+		if remainingDuration <= totalDuration/2 {
+			shouldRefresh = true
+			extendExpiration = true
+		}
 	}
 
-	if !token.Valid {
-		return nil, errors.New("invalid token")
+	userScopes := GetScopes(user.AccessLevel)
+	if !lo.ElementsMatch(userScopes, []string(claims.Scopes)) {
+		shouldRefresh = true
 	}
 
-	return token, nil
+	return shouldRefresh, extendExpiration
 }
 
-// GetUserIDFromClaims extracts the user ID from the given JWT claims.
+// GetUserID extracts the user ID from the given JWT claims.
 // It returns an error if the claims are invalid or if the user ID cannot be parsed.
-func GetUserIDFromClaims(claims jwt.RegisteredClaims, logger *slog.Logger) (int64, error) {
+func (claims *GompClaims) GetUserID() (int64, error) {
 	userID, err := strconv.ParseInt(claims.Subject, 10, 64)
 	if err != nil {
-		logger.Error("Invalid claims", "error", err)
 		return -1, errors.New("invalid claims")
 	}
 
 	return userID, nil
+}
+
+// Valid validates the GompClaims, ensuring that the registered claims are valid and that the user ID can be extracted.
+func (claims *GompClaims) Valid() error {
+	if claims == nil {
+		return errors.New("invalid claims")
+	}
+	if err := claims.RegisteredClaims.Valid(); err != nil {
+		return err
+	}
+	if _, err := claims.GetUserID(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetScopes returns a list of scopes that should be included in a token for a given access level.
@@ -102,18 +106,11 @@ func GetScopes(accessLevel models.AccessLevel) []string {
 }
 
 // CheckScopes verifies that the user has the required scopes.
-func CheckScopes(requiredScopes []string, user *models.User, claims *GompClaims) error {
+func CheckScopes(requiredScopes []string, claims *GompClaims) error {
 	// If the route requires scopes, check them
 	if len(requiredScopes) > 0 && (len(requiredScopes) != 1 || requiredScopes[0] != "") {
-		// If the user has been modified since issuing the token,
-		// we need to check if the scopes are still the same
-		if user.ModifiedAt != nil && claims.IssuedAt.Time.Before(*user.ModifiedAt) {
-			// If the scopes of the token don't match the latest scopes of the user,
-			// don't proceed. The client should refresh the token and try again.
-			userScopes := GetScopes(user.AccessLevel)
-			if !reflect.DeepEqual(userScopes, []string(claims.Scopes)) {
-				return errors.New("user scopes have changed")
-			}
+		if len(claims.Scopes) == 0 {
+			return ErrMissingScopes
 		}
 
 		missingScopes, _ := lo.Difference(requiredScopes, claims.Scopes)

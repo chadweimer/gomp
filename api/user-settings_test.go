@@ -1,13 +1,13 @@
 package api
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -141,7 +141,7 @@ func Test_GetSettings(t *testing.T) {
 				UserID:    &test.userID,
 				HomeTitle: &test.homeTitle,
 			}
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.userID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
 			if test.expectedError != nil {
 				userSettingsDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.expectedError)
 			} else {
@@ -230,7 +230,7 @@ func Test_SaveSettings(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSettingsDriver := getMockUserSettingsAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.currentUserID})
 			if test.dbError != nil {
 				userSettingsDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.dbError)
 			} else {
@@ -344,7 +344,7 @@ func Test_SaveUserSettings(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, userSettingsDriver := getMockUserSettingsAPI(ctrl)
-			ctx := context.WithValue(t.Context(), currentUserIDCtxKey, test.currentUserID)
+			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.currentUserID})
 			if test.dbError != nil {
 				userSettingsDriver.EXPECT().Update(ctx, gomock.Any()).Return(test.dbError)
 			} else {
@@ -393,9 +393,9 @@ func getMockUserSettingsAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockUs
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
-		secureKeys: []string{"secure-key"},
-		upl:        upl,
-		db:         dbDriver,
+		tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+		upl:          upl,
+		db:           dbDriver,
 	}
 	return api, userSettingsDriver
 }

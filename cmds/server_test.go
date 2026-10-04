@@ -14,6 +14,7 @@ import (
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
+	"github.com/chadweimer/gomp/middleware"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	"github.com/chadweimer/gomp/models"
 	"go.uber.org/mock/gomock"
@@ -66,7 +67,6 @@ func TestServeApplicationCmd(t *testing.T) {
 func Test_createMux(t *testing.T) {
 	tests := []struct {
 		name        string
-		secureKeys  []string
 		assetsFS    fs.FS
 		requestPath string
 		requestUser *models.User
@@ -74,8 +74,7 @@ func Test_createMux(t *testing.T) {
 		wantContent string
 	}{
 		{
-			name:       "index.html served for not found",
-			secureKeys: []string{},
+			name: "index.html served for not found",
 			assetsFS: fstest.MapFS{
 				"index.html": &fstest.MapFile{
 					Data:    []byte("<html><body>index</body></html>"),
@@ -88,8 +87,7 @@ func Test_createMux(t *testing.T) {
 			wantContent: "<html><body>index</body></html>",
 		},
 		{
-			name:       "Static files served",
-			secureKeys: []string{},
+			name: "Static files served",
 			assetsFS: fstest.MapFS{
 				"file.txt": &fstest.MapFile{
 					Data:    []byte("static content"),
@@ -103,15 +101,13 @@ func Test_createMux(t *testing.T) {
 		},
 		{
 			name:        "Uploads require auth",
-			secureKeys:  []string{},
 			assetsFS:    fstest.MapFS{},
 			requestPath: "/uploads/file.jpg",
 			wantCode:    http.StatusUnauthorized,
 			wantContent: "",
 		},
 		{
-			name:       "Uploads succeed with any authorized user",
-			secureKeys: []string{"key"},
+			name: "Uploads succeed with any authorized user",
 			assetsFS: fstest.MapFS{
 				"uploads/file.jpg": &fstest.MapFile{
 					Data:    []byte("uploaded content"),
@@ -130,7 +126,6 @@ func Test_createMux(t *testing.T) {
 		},
 		{
 			name:        "Backups require auth",
-			secureKeys:  []string{},
 			assetsFS:    fstest.MapFS{},
 			requestPath: "/backups/file.zip",
 			wantCode:    http.StatusUnauthorized,
@@ -138,7 +133,6 @@ func Test_createMux(t *testing.T) {
 		},
 		{
 			name:        "Backups fail for viewer",
-			secureKeys:  []string{"key"},
 			assetsFS:    fstest.MapFS{},
 			requestPath: "/backups/file.zip",
 			requestUser: &models.User{
@@ -151,7 +145,6 @@ func Test_createMux(t *testing.T) {
 		},
 		{
 			name:        "Backups fail for editor",
-			secureKeys:  []string{"key"},
 			assetsFS:    fstest.MapFS{},
 			requestPath: "/backups/file.zip",
 			requestUser: &models.User{
@@ -163,8 +156,7 @@ func Test_createMux(t *testing.T) {
 			wantContent: "",
 		},
 		{
-			name:       "Backups succeed for admin",
-			secureKeys: []string{"key"},
+			name: "Backups succeed for admin",
 			assetsFS: fstest.MapFS{
 				"backups/file.zip": &fstest.MapFile{
 					Data:    []byte("backup content"),
@@ -188,6 +180,7 @@ func Test_createMux(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			tokenHandler := infra.NewTokenHandler([]string{"key"})
 			uplDriver, uploader := getUploadMocks(ctrl)
 			dbDriver := dbmock.NewMockDriver(ctrl)
 			usersDriver := dbmock.NewMockUserDriver(ctrl)
@@ -195,9 +188,9 @@ func Test_createMux(t *testing.T) {
 			req := httptest.NewRequest("GET", tt.requestPath, nil)
 			if tt.requestUser != nil {
 				usersDriver.EXPECT().Read(gomock.Any(), *tt.requestUser.ID).Return(&db.UserWithPasswordHash{User: *tt.requestUser}, nil)
-				jwt, _, _ := infra.CreateToken(
-					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), tt.secureKeys)
-				cookie := infra.CreateAuthCookie(jwt, time.Now().Add(time.Duration(24)*time.Hour))
+				jwt, _ := tokenHandler.Generate(
+					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), false)
+				cookie, _ := tokenHandler.AsCookie(jwt)
 				req.AddCookie(cookie)
 			}
 			uplDriver.EXPECT().Open(gomock.Any()).AnyTimes().DoAndReturn(func(name string) (fs.File, error) {
@@ -206,8 +199,12 @@ func Test_createMux(t *testing.T) {
 			resp := httptest.NewRecorder()
 
 			// Act
-			mux, _ := createMux(tt.secureKeys, uploader, dbDriver, uplDriver, tt.assetsFS)
-			mux.ServeHTTP(resp, req)
+			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, tt.assetsFS)
+			r := middleware.Wrap(
+				mux,
+				middleware.Authenticate(tokenHandler, dbDriver.Users()),
+			)
+			r.ServeHTTP(resp, req)
 
 			// Assert
 			if resp.Code != tt.wantCode {

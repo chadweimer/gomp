@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -90,9 +91,9 @@ func TestCreateBackup(t *testing.T) {
 			tt.setupMocks(mockFS, mockBackupDriver, backupZip)
 
 			api := apiHandler{
-				secureKeys: []string{},
-				db:         mockDB,
-				fs:         mockFS,
+				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+				db:           mockDB,
+				fs:           mockFS,
 			}
 
 			request := CreateBackupRequestObject{
@@ -243,9 +244,9 @@ func TestGetBackups(t *testing.T) {
 			tt.setupMocks(mockFS, tt.listErr)
 
 			api := apiHandler{
-				secureKeys: []string{},
-				db:         mockDB,
-				fs:         mockFS,
+				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+				db:           mockDB,
+				fs:           mockFS,
 			}
 
 			request := GetBackupsRequestObject{}
@@ -422,9 +423,9 @@ func TestRestoreFromBackup(t *testing.T) {
 			tt.setupMocks(mockFS, mockBackupDriver)
 
 			api := apiHandler{
-				secureKeys: []string{},
-				db:         mockDB,
-				fs:         mockFS,
+				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+				db:           mockDB,
+				fs:           mockFS,
 			}
 
 			request := RestoreFromBackupRequestObject{
@@ -500,9 +501,9 @@ func TestDeleteBackup(t *testing.T) {
 			mockFS.EXPECT().Delete(gomock.Any()).Return(tt.deleteErr)
 
 			api := apiHandler{
-				secureKeys: []string{},
-				db:         mockDB,
-				fs:         mockFS,
+				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+				db:           mockDB,
+				fs:           mockFS,
 			}
 
 			request := DeleteBackupRequestObject{

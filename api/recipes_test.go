@@ -9,6 +9,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -609,9 +610,9 @@ func getMockRecipesAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockRecipeD
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
-		secureKeys: []string{"secure-key"},
-		upl:        upl,
-		db:         dbDriver,
+		tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
+		upl:          upl,
+		db:           dbDriver,
 	}
 	return api, recipeDriver, uplDriver
 }

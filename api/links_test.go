@@ -8,6 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
@@ -254,9 +255,9 @@ func getMockLinkAPI(ctrl *gomock.Controller) (apiHandler, *dbmock.MockLinkDriver
 	upl, _ := fileaccess.CreateImageUploader(uplDriver, imgCfg)
 
 	api := apiHandler{
-		secureKeys: []string{},
-		upl:        upl,
-		db:         dbDriver,
+		tokenHandler: infra.NewTokenHandler([]string{}),
+		upl:          upl,
+		db:           dbDriver,
 	}
 	return api, linkDriver
 }

@@ -2,7 +2,6 @@ package infra
 
 import (
 	"fmt"
-	"log/slog"
 	"testing"
 	"time"
 
@@ -41,23 +40,220 @@ func Test_GetScopes(t *testing.T) {
 	}
 }
 
-func Test_GetUserIdFromClaims(t *testing.T) {
+func Test_GompClaims_ShouldRefresh(t *testing.T) {
+	now := time.Now()
+
 	type testArgs struct {
-		claims      jwt.RegisteredClaims
+		name                   string
+		claims                 *GompClaims
+		user                   *models.User
+		expectShouldRefresh    bool
+		expectExtendExpiration bool
+	}
+
+	tests := []testArgs{
+		{
+			name:                   "Nil claims",
+			claims:                 nil,
+			user:                   &models.User{AccessLevel: models.Viewer},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "Nil user",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-1 * time.Hour)),
+				ExpiresAt:  jwt.NewNumericDate(now.Add(13 * 24 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: true,
+			},
+			user:                   nil,
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name:                   "Nil claims and user",
+			claims:                 nil,
+			user:                   nil,
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe true, > 50% time remaining, same scopes in same order",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-1 * 24 * time.Hour)), // 1 day ago
+				ExpiresAt:  jwt.NewNumericDate(now.Add(13 * 24 * time.Hour)), // 13 days left out of 14
+				Scopes:     GetScopes(models.Admin),                          // ["viewer", "admin", "editor"]
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Admin},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe true, > 50% time remaining, same scopes in DIFFERENT order",
+			claims: &GompClaims{
+				IssuedAt:  jwt.NewNumericDate(now.Add(-1 * 24 * time.Hour)),
+				ExpiresAt: jwt.NewNumericDate(now.Add(13 * 24 * time.Hour)),
+				// GetScopes(models.Admin) returns ["viewer", "admin", "editor"].
+				// We pass a different order ["editor", "viewer", "admin"]:
+				Scopes:     jwt.ClaimStrings{string(models.Editor), string(models.Viewer), string(models.Admin)},
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Admin},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe true, <= 50% time remaining (near expiration), same scopes in DIFFERENT order",
+			claims: &GompClaims{
+				RegisteredClaims: jwt.RegisteredClaims{
+					IssuedAt:  jwt.NewNumericDate(now.Add(-8 * 24 * time.Hour)), // 8 days ago
+					ExpiresAt: jwt.NewNumericDate(now.Add(6 * 24 * time.Hour)),  // 6 days left (<= 7 days)
+				},
+				Scopes:     jwt.ClaimStrings{string(models.Editor), string(models.Viewer), string(models.Admin)},
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Admin},
+			expectShouldRefresh:    true,
+			expectExtendExpiration: true,
+		},
+		{
+			name: "RememberMe true, <= 50% time remaining (near expiration), same scopes in same order",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-8 * 24 * time.Hour)),
+				ExpiresAt:  jwt.NewNumericDate(now.Add(6 * 24 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Viewer},
+			expectShouldRefresh:    true,
+			expectExtendExpiration: true,
+		},
+		{
+			name: "RememberMe false, <= 50% time remaining, same scopes in same order (should NOT refresh)",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-16 * time.Hour)), // 16 hours ago
+				ExpiresAt:  jwt.NewNumericDate(now.Add(8 * time.Hour)),   // 8 hours left out of 24
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: false,
+			},
+			user:                   &models.User{AccessLevel: models.Viewer},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe false, > 50% time remaining, same scopes in DIFFERENT order",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-2 * time.Hour)),
+				ExpiresAt:  jwt.NewNumericDate(now.Add(22 * time.Hour)),
+				Scopes:     jwt.ClaimStrings{string(models.Editor), string(models.Viewer)},
+				RememberMe: false,
+			},
+			user:                   &models.User{AccessLevel: models.Editor},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe true, > 50% time remaining, scopes changed (upgraded to Admin)",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-1 * 24 * time.Hour)),
+				ExpiresAt:  jwt.NewNumericDate(now.Add(13 * 24 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer), // only viewer
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Admin}, // now admin
+			expectShouldRefresh:    true,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe false, > 50% time remaining, scopes changed",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-2 * time.Hour)),
+				ExpiresAt:  jwt.NewNumericDate(now.Add(22 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: false,
+			},
+			user:                   &models.User{AccessLevel: models.Editor},
+			expectShouldRefresh:    true,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "RememberMe true, <= 50% time remaining AND scopes changed",
+			claims: &GompClaims{
+				IssuedAt:   jwt.NewNumericDate(now.Add(-8 * 24 * time.Hour)),
+				ExpiresAt:  jwt.NewNumericDate(now.Add(6 * 24 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Admin},
+			expectShouldRefresh:    true,
+			expectExtendExpiration: true,
+		},
+		{
+			name: "RememberMe true, IssuedAt is nil, remaining <= 7 days (fallback duration)",
+			claims: &GompClaims{
+				ExpiresAt:  jwt.NewNumericDate(now.Add(6 * 24 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Viewer},
+			expectShouldRefresh:    true,
+			expectExtendExpiration: true,
+		},
+		{
+			name: "RememberMe true, IssuedAt is nil, remaining > 7 days (fallback duration)",
+			claims: &GompClaims{
+				ExpiresAt:  jwt.NewNumericDate(now.Add(10 * 24 * time.Hour)),
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Viewer},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+		{
+			name: "ExpiresAt is nil, matching scopes",
+			claims: &GompClaims{
+				Scopes:     GetScopes(models.Viewer),
+				RememberMe: true,
+			},
+			user:                   &models.User{AccessLevel: models.Viewer},
+			expectShouldRefresh:    false,
+			expectExtendExpiration: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			shouldRefresh, extendExpiration := test.claims.ShouldRefresh(test.user)
+			if shouldRefresh != test.expectShouldRefresh {
+				t.Errorf("expected shouldRefresh %v, got %v", test.expectShouldRefresh, shouldRefresh)
+			}
+			if extendExpiration != test.expectExtendExpiration {
+				t.Errorf("expected extendExpiration %v, got %v", test.expectExtendExpiration, extendExpiration)
+			}
+		})
+	}
+}
+
+func Test_GompClaims_GetUserID(t *testing.T) {
+	type testArgs struct {
+		claims      GompClaims
 		expectedID  int64
 		expectError bool
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{jwt.RegisteredClaims{Subject: "1"}, 1, false},
-		{jwt.RegisteredClaims{Subject: "A"}, -1, true},
+		{GompClaims{Subject: "1"}, 1, false},
+		{GompClaims{Subject: "A"}, -1, true},
 	}
 
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			// Act
-			actualID, err := GetUserIDFromClaims(test.claims, slog.Default())
+			actualID, err := test.claims.GetUserID()
 
 			// Assert
 			if (err != nil) != test.expectError {
@@ -93,51 +289,13 @@ func Test_CheckScopes(t *testing.T) {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			// Arrange
 			now := time.Now()
-			user := models.User{AccessLevel: test.accessLevel, ModifiedAt: &now}
-			claims := GompClaims{
-				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, 1))},
-				Scopes:           GetScopes(test.accessLevel),
+			claims := &GompClaims{
+				IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, 1)),
+				Scopes:   GetScopes(test.accessLevel),
 			}
 
 			// Act
-			err := CheckScopes(test.routeScopes, &user, &claims)
-
-			// Assert
-			if (err != nil) != test.expectError {
-				t.Errorf("expected error: %v, received error: %v", test.expectError, err)
-			}
-		})
-	}
-}
-
-func Test_CheckScopes_UserUpdated(t *testing.T) {
-	type testArgs struct {
-		routeScopes    []string
-		issuedAtDelta  int
-		accessLevel    models.AccessLevel
-		newAccessLevel models.AccessLevel
-		expectError    bool
-	}
-
-	tests := []testArgs{
-		{[]string{string(models.Editor)}, 1, models.Admin, models.Admin, false},
-		{[]string{string(models.Editor)}, 1, models.Admin, models.Editor, false},
-		{[]string{string(models.Editor)}, -1, models.Admin, models.Admin, false},
-		{[]string{string(models.Editor)}, -1, models.Admin, models.Editor, true},
-	}
-
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			now := time.Now()
-			user := models.User{AccessLevel: test.newAccessLevel, ModifiedAt: &now}
-			claims := GompClaims{
-				RegisteredClaims: jwt.RegisteredClaims{IssuedAt: jwt.NewNumericDate(now.AddDate(0, 0, test.issuedAtDelta))},
-				Scopes:           GetScopes(test.accessLevel),
-			}
-
-			// Act
-			err := CheckScopes(test.routeScopes, &user, &claims)
+			err := CheckScopes(test.routeScopes, claims)
 
 			// Assert
 			if (err != nil) != test.expectError {

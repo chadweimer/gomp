@@ -9,6 +9,7 @@ import state from '../../../stores/state';
 })
 export class PageLogin {
   @State() errorMessage = '';
+  @State() rememberMe = false;
 
   @Element() el!: HTMLPageLoginElement;
 
@@ -43,6 +44,13 @@ export class PageLogin {
                       ref={(el: HTMLIonInputElement) => this.passwordInput = el}
                       required />
                   </ion-item>
+                  <ion-item lines="none">
+                    <ion-checkbox justify="start"
+                      checked={this.rememberMe}
+                      onIonChange={e => this.rememberMe = e.detail.checked}>
+                      Remember Me
+                    </ion-checkbox>
+                  </ion-item>
                   <ion-text color="danger">{this.errorMessage}</ion-text>
                 </ion-card-content>
                 <ion-footer>
@@ -65,12 +73,17 @@ export class PageLogin {
       this.errorMessage = '';
       const username = this.usernameInput.value as string;
       const password = this.passwordInput.value as string;
-      const { data: user, error } = await api.client.POST('/auth', {
-        body: { username, password }
+
+      const { data: user, error, response } = await api.client.POST('/auth', {
+        body: { username, password, rememberMe: this.rememberMe }
       });
 
       if (error) {
         throw new Error('Failed to login.', { cause: error });
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to login.');
       }
 
       // Store the user so we stay logged in

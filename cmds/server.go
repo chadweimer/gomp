@@ -16,6 +16,7 @@ import (
 	"github.com/chadweimer/gomp/config"
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
+	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
@@ -61,8 +62,10 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			return fmt.Errorf("opening base assets path: %w", err)
 		}
 
+		tokenHandler := infra.NewTokenHandler(cfg.Server.SecureKeys)
+
 		mux, err := createMux(
-			cfg.Server.SecureKeys,
+			tokenHandler,
 			uploader,
 			dbDriver,
 			fsDriver,
@@ -76,6 +79,8 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			mux,
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
 			middleware.Recover("Recovered from panic"),
+			middleware.Authenticate(tokenHandler, dbDriver.Users()),
+			middleware.AutoRefreshToken(tokenHandler),
 		)
 
 		// subscribe to SIGINT signals
@@ -92,7 +97,7 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 }
 
 func createMux(
-	secureKeys []string,
+	tokenHandler *infra.TokenHandler,
 	uploader *fileaccess.ImageUploader,
 	dbDriver db.Driver,
 	fsDriver fileaccess.Driver,
@@ -104,7 +109,7 @@ func createMux(
 		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 	}
 
-	apiHandler, err := api.NewHandler(secureKeys, uploader, dbDriver, fsDriver)
+	apiHandler, err := api.NewHandler(tokenHandler, uploader, dbDriver, fsDriver)
 	if err != nil {
 		return nil, fmt.Errorf("creating API handler: %w", err)
 	}
@@ -116,10 +121,10 @@ func createMux(
 	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(assetsFS)))
 	// Uploaded files require authentication
 	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
-		[]string{string(models.Viewer)}, secureKeys, dbDriver.Users())(fileServer))
+		[]string{string(models.Viewer)})(fileServer))
 	// Backups require admin access
 	handlePrefixed(mux, fileaccess.BackupDirectoryName, middleware.VerifyScopes(
-		[]string{string(models.Admin)}, secureKeys, dbDriver.Users())(fileServer))
+		[]string{string(models.Admin)})(fileServer))
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, assetsFS, "index.html")
 	}))
