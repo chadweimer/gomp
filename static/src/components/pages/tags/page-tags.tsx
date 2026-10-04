@@ -75,16 +75,15 @@ export class PageTags implements ComponentWithActivatedCallback {
         <ion-content>
           <ion-grid class="no-pad">
             <ion-row>
-              {!isNull(this.tags) &&
-                this.tags.map(item =>
-                  <ion-col key={item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
-                    <ion-item href="/recipes" onClick={() => this.onTagClicked(item.tag)}>
-                      <ion-label>{item.tag}</ion-label>
-                      <ion-icon slot="end" name="bookmark" size="small" />
-                      <ion-note slot="end">{item.count}</ion-note>
-                    </ion-item>
-                  </ion-col>
-                )}
+              {this.tags?.map(item =>
+                <ion-col key={item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
+                  <ion-item href="/recipes" onClick={() => this.onTagClicked(item.tag)}>
+                    <ion-label>{item.tag}</ion-label>
+                    <ion-icon slot="end" name="bookmark" size="small" />
+                    <ion-note slot="end">{item.count}</ion-note>
+                  </ion-item>
+                </ion-col>
+              )}
             </ion-row>
           </ion-grid>
         </ion-content>

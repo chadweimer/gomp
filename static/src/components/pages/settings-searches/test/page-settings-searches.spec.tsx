@@ -79,8 +79,11 @@ describe('page-settings-searches', () => {
       return { status: 404, body: '' };
     });
 
-    const { root } = await render(<page-settings-searches />);
+    const { root, waitForChanges } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
     expect(root).toHaveClass('hydrated');
+
+    await root.activatedCallback();
+    await waitForChanges();
 
     const cards = root.querySelectorAll('ion-card');
     expect(cards).toHaveLength(2);

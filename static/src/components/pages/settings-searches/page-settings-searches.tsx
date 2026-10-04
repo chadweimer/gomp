@@ -16,10 +16,6 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   @State() page = 1;
   @State() numPages = 1;
 
-  async connectedCallback() {
-    await this.loadFilters();
-  }
-
   @Method()
   async activatedCallback() {
     await this.loadFilters();
@@ -80,12 +76,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   private async loadFilters() {
     try {
       const { data, error } = await api.client.GET('/users/current/filters', {
-        params: {
-          query: {
-            page: this.page,
-            count: this.resultsPerPage
-          }
-        }
+        params: { query: { page: this.page, count: this.resultsPerPage } }
       });
 
       if (error) {

@@ -15,10 +15,6 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
   @State() page = 1;
   @State() numPages = 1;
 
-  async connectedCallback() {
-    await this.loadUsers();
-  }
-
   @Method()
   async activatedCallback() {
     await this.loadUsers();
@@ -76,12 +72,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
   private async loadUsers() {
     try {
       const { data, error } = await api.client.GET('/users', {
-        params: {
-          query: {
-            page: this.page,
-            count: this.resultsPerPage
-          }
-        }
+        params: { query: { page: this.page, count: this.resultsPerPage } }
       });
 
       if (error) {

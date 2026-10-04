@@ -62,8 +62,11 @@ describe('page-admin-users', () => {
       return { status: 404, body: '' };
     });
 
-    const { root } = await render(<page-admin-users />);
+    const { root, waitForChanges } = await render<HTMLPageAdminUsersElement>(<page-admin-users />);
     expect(root).toHaveClass('hydrated');
+
+    await root.activatedCallback();
+    await waitForChanges();
 
     const cards = root.querySelectorAll('ion-card');
     expect(cards).toHaveLength(3);
