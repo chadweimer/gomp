@@ -16,6 +16,7 @@ import (
 
 func Test_Login(t *testing.T) {
 	type testArgs struct {
+		name        string
 		username    string
 		accessLevel models.AccessLevel
 		rememberMe  bool
@@ -23,13 +24,37 @@ func Test_Login(t *testing.T) {
 	}
 
 	tests := []testArgs{
-		{"user1", models.Viewer, false, db.ErrNotFound},
-		{"user2", models.Viewer, false, errors.New("unknown error")},
-		{"user3", models.Admin, false, nil},
-		{"user4", models.Editor, true, nil},
+		{
+			name:        "User not found",
+			username:    "user1",
+			accessLevel: models.Viewer,
+			rememberMe:  false,
+			err:         db.ErrNotFound,
+		},
+		{
+			name:        "Unknown error",
+			username:    "user2",
+			accessLevel: models.Viewer,
+			rememberMe:  false,
+			err:         errors.New("unknown error"),
+		},
+		{
+			name:        "Admin user",
+			username:    "user3",
+			accessLevel: models.Admin,
+			rememberMe:  false,
+			err:         nil,
+		},
+		{
+			name:        "Editor user with remember me",
+			username:    "user4",
+			accessLevel: models.Editor,
+			rememberMe:  true,
+			err:         nil,
+		},
 	}
 	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -85,50 +110,57 @@ func Test_Login(t *testing.T) {
 
 func Test_RefreshToken(t *testing.T) {
 	type testArgs struct {
-		username    string
-		accessLevel models.AccessLevel
-		rememberMe  bool
-		err         error
+		name             string
+		user             *models.User
+		rememberMe       bool
+		expectedResponse RefreshTokenResponseObject
 	}
 
 	tests := []testArgs{
-		{"user1", models.Viewer, false, db.ErrNotFound},
-		{"user2", models.Viewer, false, errors.New("unknown error")},
-		{"user3", models.Admin, false, nil},
-		{"user4", models.Editor, true, nil},
-		{"user5", models.Viewer, true, nil},
+		{
+			name:             "Admin user without remember me",
+			user:             &models.User{ID: new(int64(1)), Username: "user1", AccessLevel: models.Admin},
+			rememberMe:       false,
+			expectedResponse: RefreshToken200JSONResponse{},
+		},
+		{
+			name:             "Editor user with remember me",
+			user:             &models.User{ID: new(int64(2)), Username: "user2", AccessLevel: models.Editor},
+			rememberMe:       true,
+			expectedResponse: RefreshToken200JSONResponse{},
+		},
+		{
+			name:             "Viewer user with remember me",
+			user:             &models.User{ID: new(int64(3)), Username: "user3", AccessLevel: models.Viewer},
+			rememberMe:       true,
+			expectedResponse: RefreshToken200JSONResponse{},
+		},
+		{
+			name:             "No user in context",
+			user:             nil,
+			rememberMe:       false,
+			expectedResponse: RefreshToken401Response{},
+		},
 	}
 
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			api, userDriver := getMockUsersAPI(ctrl)
-			expectedUserID := int64(i)
-			expectedScopes := infra.GetScopes(test.accessLevel)
+			api, _ := getMockUsersAPI(ctrl)
 
-			user := &models.User{
-				ID:          &expectedUserID,
-				Username:    test.username,
-				AccessLevel: test.accessLevel,
-			}
-			ctx := infra.AddUserToContext(t.Context(), user)
-
-			token, err := api.tokenHandler.Generate(expectedUserID, expectedScopes, test.rememberMe)
-			if err != nil {
-				t.Fatalf("failed to create token: %v", err)
-			}
-			ctx = infra.AddTokenToContext(ctx, token)
-
-			if test.err != nil {
-				userDriver.EXPECT().Read(ctx, gomock.Any()).Return(nil, test.err)
-			} else {
-				userDriver.EXPECT().Read(ctx, gomock.Any()).Return(
-					&db.UserWithPasswordHash{
-						User: *user,
-					}, nil)
+			var expectedScopes []string
+			ctx := t.Context()
+			if test.user != nil {
+				expectedScopes = infra.GetScopes(test.user.AccessLevel)
+				ctx = infra.AddUserToContext(ctx, test.user)
+				token, err := api.tokenHandler.Generate(*test.user.ID, expectedScopes, test.rememberMe)
+				if err != nil {
+					t.Fatalf("failed to create token: %v", err)
+				}
+				ctx = infra.AddTokenToContext(ctx, token)
 			}
 
 			// Act
@@ -139,21 +171,23 @@ func Test_RefreshToken(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if test.err != nil {
-				_, ok := resp.(RefreshToken401Response)
-				if !ok {
-					t.Fatalf("invalid response: %v", resp)
-				}
-			} else {
+			switch test.expectedResponse.(type) {
+			case RefreshToken200JSONResponse:
 				got, ok := resp.(RefreshToken200JSONResponse)
 				if !ok {
 					t.Fatalf("invalid response: %v", resp)
 				}
 
-				err := checkToken(api.tokenHandler, got.Headers.SetCookie, expectedUserID, expectedScopes, test.accessLevel, test.rememberMe)
+				err = checkToken(api.tokenHandler, got.Headers.SetCookie, *test.user.ID, expectedScopes, test.user.AccessLevel, test.rememberMe)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
+			case RefreshToken401Response:
+				if _, ok := resp.(RefreshToken401Response); !ok {
+					t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+				}
+			default:
+				t.Errorf("unexpected response type %T", resp)
 			}
 		})
 	}

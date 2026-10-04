@@ -37,34 +37,32 @@ func (h apiHandler) Login(ctx context.Context, request LoginRequestObject) (Logi
 }
 
 func (h apiHandler) RefreshToken(ctx context.Context, _ RefreshTokenRequestObject) (RefreshTokenResponseObject, error) {
-	return withCurrentUser[RefreshTokenResponseObject](ctx, RefreshToken401Response{}, func(userID int64) (RefreshTokenResponseObject, error) {
-		user, err := h.db.Users().Read(ctx, userID)
-		if err != nil {
-			infra.GetLoggerFromContext(ctx).Error("failure refreshing token", "error", err)
-			return RefreshToken401Response{}, nil
-		}
+	logger := infra.GetLoggerFromContext(ctx)
 
-		rememberMe := false
-		if currentToken := infra.GetTokenFromContext(ctx); currentToken != nil {
-			rememberMe = currentToken.TypedClaims.RememberMe
-		}
+	user := infra.GetUserFromContext(ctx)
+	currentToken := infra.GetTokenFromContext(ctx)
+	if user == nil || currentToken == nil {
+		logger.Error("Missing user or token in context")
+		return RefreshToken401Response{}, nil
+	}
 
-		newToken, err := h.tokenHandler.Generate(*user.ID, infra.GetScopes(user.AccessLevel), rememberMe)
-		if err != nil {
-			return nil, err
-		}
-		cookie, err := h.tokenHandler.AsCookie(newToken)
-		if err != nil {
-			return nil, err
-		}
+	newToken, err := h.tokenHandler.Generate(*user.ID, infra.GetScopes(user.AccessLevel), currentToken.TypedClaims.RememberMe)
+	if err != nil {
+		logger.Error("Error generating new token", "error", err)
+		return RefreshToken401Response{}, nil
+	}
+	cookie, err := h.tokenHandler.AsCookie(newToken)
+	if err != nil {
+		logger.Error("Error converting token to cookie", "error", err)
+		return RefreshToken401Response{}, nil
+	}
 
-		return RefreshToken200JSONResponse{
-			Body: user.User,
-			Headers: RefreshToken200ResponseHeaders{
-				SetCookie: new(cookie.String()),
-			},
-		}, nil
-	})
+	return RefreshToken200JSONResponse{
+		Body: *user,
+		Headers: RefreshToken200ResponseHeaders{
+			SetCookie: new(cookie.String()),
+		},
+	}, nil
 }
 
 func (h apiHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutResponseObject, error) {

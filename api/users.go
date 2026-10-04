@@ -3,22 +3,18 @@ package api
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 )
 
-func (h apiHandler) GetCurrentUser(ctx context.Context, _ GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
-	return withCurrentUser[GetCurrentUserResponseObject](ctx, GetCurrentUser401Response{}, func(userID int64) (GetCurrentUserResponseObject, error) {
-		user, err := h.db.Users().Read(ctx, userID)
-		if err != nil {
-			return nil, fmt.Errorf("reading user: %w", err)
-		}
-
-		return GetCurrentUser200JSONResponse(user.User), nil
-	})
+func (apiHandler) GetCurrentUser(ctx context.Context, _ GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
+	user := infra.GetUserFromContext(ctx)
+	if user == nil {
+		return GetCurrentUser401Response{}, nil
+	}
+	return GetCurrentUser200JSONResponse(*user), nil
 }
 
 func (h apiHandler) GetUser(ctx context.Context, request GetUserRequestObject) (GetUserResponseObject, error) {
