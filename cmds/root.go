@@ -9,7 +9,7 @@ import (
 // RootCmd returns the root CLI command for the application.
 func RootCmd(cfg config.Config) *cli.Command {
 	return &cli.Command{
-		Usage:           "Go Meal Planner",
+		Usage:           "Command-line interface for the application",
 		HideHelpCommand: true,
 		Version:         metadata.BuildVersion,
 		Copyright:       metadata.Copyright,
@@ -17,6 +17,7 @@ func RootCmd(cfg config.Config) *cli.Command {
 			serveApplicationCmd(cfg),
 			databaseCmd(cfg),
 			imagesCmd(cfg),
+			docsCmd(cfg),
 		},
 	}
 }
