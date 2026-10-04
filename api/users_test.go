@@ -177,6 +177,10 @@ func Test_GetAllUsers(t *testing.T) {
 	type testArgs struct {
 		name             string
 		users            []models.User
+		page             *int64
+		count            int64
+		expectedPage     int64
+		expectedTotal    int64
 		expectedError    error
 		expectedResponse GetAllUsersResponseObject
 	}
@@ -184,16 +188,34 @@ func Test_GetAllUsers(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			name: "success",
+			name: "success default page",
 			users: []models.User{
 				{Username: "user1"},
 			},
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    1,
+			expectedError:    nil,
+			expectedResponse: GetAllUsers200JSONResponse{},
+		},
+		{
+			name: "success explicit page",
+			users: []models.User{
+				{Username: "user1"},
+			},
+			page:             new(int64(2)),
+			count:            10,
+			expectedPage:     2,
+			expectedTotal:    12,
 			expectedError:    nil,
 			expectedResponse: GetAllUsers200JSONResponse{},
 		},
 		{
 			name:             "failure",
 			users:            []models.User{},
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    0,
 			expectedError:    errors.New("something failed"),
 			expectedResponse: nil,
 		},
@@ -205,13 +227,18 @@ func Test_GetAllUsers(t *testing.T) {
 
 			api, usersDriver := getMockUsersAPI(ctrl)
 			if test.expectedError != nil {
-				usersDriver.EXPECT().List(t.Context()).Return(&test.users, test.expectedError)
+				usersDriver.EXPECT().List(t.Context(), test.expectedPage, test.count).Return(&test.users, test.expectedTotal, test.expectedError)
 			} else {
-				usersDriver.EXPECT().List(t.Context()).Return(&test.users, nil)
+				usersDriver.EXPECT().List(t.Context(), test.expectedPage, test.count).Return(&test.users, test.expectedTotal, nil)
 			}
 
 			// Act
-			resp, err := api.GetAllUsers(t.Context(), GetAllUsersRequestObject{})
+			resp, err := api.GetAllUsers(t.Context(), GetAllUsersRequestObject{
+				Params: GetAllUsersParams{
+					Page:  test.page,
+					Count: test.count,
+				},
+			})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -223,8 +250,11 @@ func Test_GetAllUsers(t *testing.T) {
 					if !ok {
 						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
-					if len(got) != len(test.users) {
-						t.Errorf("expected length: %d, actual length: %d", len(test.users), len(got))
+					if got.Total != test.expectedTotal {
+						t.Errorf("expected total: %d, actual total: %d", test.expectedTotal, got.Total)
+					}
+					if got.Users == nil || len(*got.Users) != len(test.users) {
+						t.Errorf("expected length: %d, actual length: %d", len(test.users), len(*got.Users))
 					}
 				default:
 					t.Fatalf("unexpected expected response type: %T", test.expectedResponse)

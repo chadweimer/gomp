@@ -245,7 +245,7 @@ paths:
           schema:
             type: integer
             format: int64
-            minimum: 0
+            minimum: -1
           required: true
       responses:
         '200':
@@ -622,7 +622,7 @@ paths:
           schema:
             type: integer
             format: int64
-            minimum: 0
+            minimum: -1
           required: true
       responses:
         '200':
@@ -664,15 +664,27 @@ paths:
       summary: List users
       description: get list of users
       operationId: getAllUsers
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: count
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: -1
+          required: true
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: './models.yaml#/components/schemas/user'
+                $ref: '#/components/schemas/userSearchResult'
       security:
         - Cookie: [admin]
     post:
@@ -719,15 +731,27 @@ paths:
       summary: List current user search filters
       description: get a list of search filters
       operationId: getSearchFilters
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: count
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: -1
+          required: true
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: './models.yaml#/components/schemas/savedSearchFilterCompact'
+                $ref: '#/components/schemas/searchFilterSearchResult'
         '401':
           description: Unauthorized
       security:
@@ -958,15 +982,27 @@ paths:
       summary: List user search filters
       description: get a list of search filters
       operationId: getUserSearchFilters
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: count
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: -1
+          required: true
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: './models.yaml#/components/schemas/savedSearchFilterCompact'
+                $ref: '#/components/schemas/searchFilterSearchResult'
         '404':
           description: Not Found
       security:
@@ -1155,6 +1191,19 @@ components:
           type: string
         rememberMe:
           type: boolean
+    searchFilterSearchResult:
+      type: object
+      required:
+        - total
+      properties:
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+        filters:
+          type: array
+          items:
+            $ref: './models.yaml#/components/schemas/savedSearchFilterCompact'
     searchResult:
       type: object
       required:
@@ -1195,6 +1244,19 @@ components:
           type: string
         newPassword:
           type: string
+    userSearchResult:
+      type: object
+      required:
+        - total
+      properties:
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+        users:
+          type: array
+          items:
+            $ref: './models.yaml#/components/schemas/user'
     userWithPassword:
       allOf:
         - $ref: './models.yaml#/components/schemas/user'

@@ -390,27 +390,62 @@ func Test_UserSearchFilter_Delete(t *testing.T) {
 func Test_UserSearchFilter_List(t *testing.T) {
 	type testArgs struct {
 		userID         int64
+		page           int64
+		count          int64
+		expectedTotal  int64
 		expectedResult []models.SavedSearchFilterCompact
-		dbError        error
+		countDbError   error
+		selectDbError  error
 		expectedError  error
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{1, []models.SavedSearchFilterCompact{
-			{
-				ID:     new(int64(1)),
-				Name:   "Filter 1",
-				UserID: new(int64(1)),
+		{
+			userID:        1,
+			page:          1,
+			count:         10,
+			expectedTotal: 2,
+			expectedResult: []models.SavedSearchFilterCompact{
+				{
+					ID:     new(int64(1)),
+					Name:   "Filter 1",
+					UserID: new(int64(1)),
+				},
+				{
+					ID:     new(int64(2)),
+					Name:   "Filter 2",
+					UserID: new(int64(1)),
+				},
 			},
-			{
-				ID:     new(int64(2)),
-				Name:   "Filter 2",
-				UserID: new(int64(1)),
+		},
+		{
+			userID:        1,
+			page:          2,
+			count:         5,
+			expectedTotal: 12,
+			expectedResult: []models.SavedSearchFilterCompact{
+				{
+					ID:     new(int64(3)),
+					Name:   "Filter 3",
+					UserID: new(int64(1)),
+				},
 			},
-		}, nil, nil},
-		{0, nil, sql.ErrNoRows, ErrNotFound},
-		{0, nil, sql.ErrConnDone, sql.ErrConnDone},
+		},
+		{
+			userID:        0,
+			page:          1,
+			count:         10,
+			countDbError:  sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
+		{
+			userID:        0,
+			page:          1,
+			count:         10,
+			selectDbError: sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -421,19 +456,33 @@ func Test_UserSearchFilter_List(t *testing.T) {
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT id, user_id, name FROM search_filter WHERE user_id = \\$1 ORDER BY name ASC")
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"id", "name", "user_id"})
-				for _, filter := range test.expectedResult {
-					rows.AddRow(filter.ID, filter.Name, filter.UserID)
-				}
-				query.WillReturnRows(rows)
+			countQuery := dbmock.ExpectQuery("SELECT count\\(id\\) FROM search_filter WHERE user_id = \\?").
+				WithArgs(test.userID)
+			if test.countDbError != nil {
+				countQuery.WillReturnError(test.countDbError)
 			} else {
-				query.WillReturnError(test.dbError)
+				countRows := sqlmock.NewRows([]string{"count"}).AddRow(test.expectedTotal)
+				countQuery.WillReturnRows(countRows)
+
+				selectQuery := dbmock.ExpectQuery("SELECT id, user_id, name FROM search_filter WHERE user_id = \\? ORDER BY name ASC")
+				if test.count >= 0 {
+					selectQuery.WithArgs(test.userID, test.count, test.count*(test.page-1))
+				} else {
+					selectQuery.WithArgs(test.userID)
+				}
+				if test.selectDbError != nil {
+					selectQuery.WillReturnError(test.selectDbError)
+				} else {
+					rows := sqlmock.NewRows([]string{"id", "name", "user_id"})
+					for _, filter := range test.expectedResult {
+						rows.AddRow(filter.ID, filter.Name, filter.UserID)
+					}
+					selectQuery.WillReturnRows(rows)
+				}
 			}
 
 			// Act
-			result, err := sut.UserSearchFilters().List(t.Context(), test.userID)
+			result, total, err := sut.UserSearchFilters().List(t.Context(), test.userID, test.page, test.count)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -442,11 +491,10 @@ func Test_UserSearchFilter_List(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if test.expectedResult == nil {
-				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
+			if test.expectedError == nil {
+				if total != test.expectedTotal {
+					t.Errorf("expected total: %d, received: %d", test.expectedTotal, total)
 				}
-			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
 				} else if len(test.expectedResult) != len(*result) {

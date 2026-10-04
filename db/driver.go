@@ -213,8 +213,9 @@ type UserDriver interface {
 	// that is committed if there are not errors.
 	Delete(ctx context.Context, id int64) error
 
-	// List retrieves all users in the database.
-	List(ctx context.Context) (*[]models.User, error)
+	// List retrieves users in the database according to pagination parameters.
+	// Returns a slice of User items, the total count of users, and any error encountered.
+	List(ctx context.Context, page, count int64) (*[]models.User, int64, error)
 
 	// UpdatePassword updates the associated user's password, first verifying that the existing
 	// password is correct, using a dedicated transaction that is committed if there are not errors.
@@ -239,8 +240,9 @@ type UserSearchFilterDriver interface {
 	// that is committed if there are not errors.
 	Delete(ctx context.Context, userID int64, filterID int64) error
 
-	// List retrieves all user's saved search filters.
-	List(ctx context.Context, userID int64) (*[]models.SavedSearchFilterCompact, error)
+	// List retrieves a user's saved search filters according to pagination parameters.
+	// Returns a slice of SavedSearchFilterCompact items, the total count of search filters, and any error encountered.
+	List(ctx context.Context, userID, page, count int64) (*[]models.SavedSearchFilterCompact, int64, error)
 }
 
 // UserSettingsDriver provides functionality to edit and retrieve user settings.

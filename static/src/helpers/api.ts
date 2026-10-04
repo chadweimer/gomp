@@ -53,14 +53,16 @@ class Api {
     return settings ?? null;
   }
 
-  readonly loadSearchFilters = async (): Promise<SavedSearchFilterCompact[]> => {
-    const { data: filters, error } = await api.client.GET('/users/current/filters');
+  readonly loadSearchFilters = async (page = 1, count = -1): Promise<SavedSearchFilterCompact[]> => {
+    const { data, error } = await api.client.GET('/users/current/filters', {
+      params: { query: { page, count } }
+    });
 
     if (error) {
       throw new Error('Failed to load search filters.', { cause: error });
     }
 
-    return filters ?? [];
+    return data?.filters ?? [];
   }
 
   readonly performRecipeSearch = async (filter: SearchFilter, page: number, count: number): Promise<SearchResult> => {

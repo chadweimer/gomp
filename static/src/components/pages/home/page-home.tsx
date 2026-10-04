@@ -93,17 +93,8 @@ export class PageHome implements ComponentWithActivatedCallback {
         results: recipes ?? []
       });
 
-      // Then load all the user's saved filters
-      const { data: savedFilters, error } = await api.client.GET('/users/current/filters');
-
-      if (error) {
-        throw new Error('Failed to load saved filters.', { cause: error });
-      }
-
-      if (!savedFilters) {
-        return;
-      }
-
+      // Then load the first 10 of the user's saved filters
+      const savedFilters = await api.loadSearchFilters(1, 10);
       for (const savedFilter of savedFilters) {
         if (isNull(savedFilter.id)) continue;
         const { data: savedSearchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {

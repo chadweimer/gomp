@@ -9,21 +9,31 @@ import (
 	"github.com/chadweimer/gomp/models"
 )
 
-func (h apiHandler) GetSearchFilters(ctx context.Context, _ GetSearchFiltersRequestObject) (GetSearchFiltersResponseObject, error) {
+func (h apiHandler) GetSearchFilters(ctx context.Context, request GetSearchFiltersRequestObject) (GetSearchFiltersResponseObject, error) {
 	return withCurrentUser[GetSearchFiltersResponseObject](ctx, GetSearchFilters401Response{}, func(userID int64) (GetSearchFiltersResponseObject, error) {
-		searches, err := h.db.UserSearchFilters().List(ctx, userID)
+		page := int64(1)
+		if request.Params.Page != nil && *request.Params.Page > 0 {
+			page = *request.Params.Page
+		}
+
+		searches, total, err := h.db.UserSearchFilters().List(ctx, userID, page, request.Params.Count)
 		if err != nil {
 			return nil, err
 		}
 
-		return GetSearchFilters200JSONResponse(*searches), nil
+		return GetSearchFilters200JSONResponse{Filters: searches, Total: total}, nil
 	})
 }
 
 func (h apiHandler) GetUserSearchFilters(ctx context.Context, request GetUserSearchFiltersRequestObject) (GetUserSearchFiltersResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	searches, err := h.db.UserSearchFilters().List(ctx, request.UserID)
+	page := int64(1)
+	if request.Params.Page != nil && *request.Params.Page > 0 {
+		page = *request.Params.Page
+	}
+
+	searches, total, err := h.db.UserSearchFilters().List(ctx, request.UserID, page, request.Params.Count)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
 			return GetUserSearchFilters404Response{}, nil
@@ -34,7 +44,7 @@ func (h apiHandler) GetUserSearchFilters(ctx context.Context, request GetUserSea
 		return nil, err
 	}
 
-	return GetUserSearchFilters200JSONResponse(*searches), nil
+	return GetUserSearchFilters200JSONResponse{Filters: searches, Total: total}, nil
 }
 
 func (h apiHandler) AddSearchFilter(ctx context.Context, request AddSearchFilterRequestObject) (AddSearchFilterResponseObject, error) {

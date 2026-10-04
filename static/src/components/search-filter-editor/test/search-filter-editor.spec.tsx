@@ -43,10 +43,10 @@ describe('shows saved filter loader', () => {
           status: 200,
           body: JSON.stringify(settings),
         };
-      } else if (req.url.match(/\/users\/current\/filters$/)) {
+      } else if (req.url.match(/\/users\/current\/filters/)) {
         return {
           status: 200,
-          body: JSON.stringify([]),
+          body: JSON.stringify({ total: 0, filters: [] }),
         };
       }
       return {

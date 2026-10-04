@@ -1,17 +1,46 @@
-import { alertController, modalController } from '@ionic/core';
+import { alertController, Gesture, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, createSwipeGesture, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
+import { SwipeDirection } from '../../../models';
 
 @Component({
   tag: 'page-admin-users',
   styleUrl: 'page-admin-users.css',
 })
 export class PageAdminUsers implements ComponentWithActivatedCallback {
-  @State() users: User[] = [];
-
   @Element() el!: HTMLPageAdminUsersElement;
+  private gesture: Gesture | null = null;
+  private readonly resultsPerPage = 24;
+
+  @State() users: User[] = [];
+  @State() page = 1;
+  @State() numPages = 1;;
+
+  async connectedCallback() {
+    this.gesture = createSwipeGesture(this.el, swipe => {
+      switch (swipe) {
+        case SwipeDirection.Right:
+          if (this.page > 1) {
+            this.setPage(this.page - 1);
+          }
+          break;
+        case SwipeDirection.Left:
+          if (this.page < this.numPages) {
+            this.setPage(this.page + 1);
+          }
+          break;
+      }
+    });
+    this.gesture.enable();
+    await this.loadUsers();
+  }
+
+  disconnectedCallback() {
+    this.gesture?.destroy();
+    this.gesture = null;
+  }
 
   @Method()
   async activatedCallback() {
@@ -46,6 +75,18 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
           </ion-grid>
         </ion-content>
 
+        <ion-footer>
+          <ion-toolbar>
+            <page-navigator
+              class="ion-justify-content-center"
+              color="secondary"
+              page={this.page}
+              numPages={this.numPages}
+              onPageChanged={e => this.setPage(e.detail)}
+            />
+          </ion-toolbar>
+        </ion-footer>
+
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="success" onClick={() => this.onAddUserClicked()}>
             <ion-icon icon="person-add" />
@@ -57,16 +98,31 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
 
   private async loadUsers() {
     try {
-      const { data: users, error } = await api.client.GET('/users');
+      const { data, error } = await api.client.GET('/users', {
+        params: {
+          query: {
+            page: this.page,
+            count: this.resultsPerPage
+          }
+        }
+      });
 
       if (error) {
         throw new Error('Failed to load users.', { cause: error });
       }
 
-      this.users = users;
+      this.users = data?.users ?? [];
+      this.numPages = Math.max(Math.ceil((data?.total ?? 0) / this.resultsPerPage), 1);
     } catch (ex) {
+      this.users = [];
+      this.numPages = 1;
       console.error(ex);
     }
+  }
+
+  private setPage(page: number) {
+    this.page = page;
+    this.loadUsers().catch(console.error);
   }
 
   private async saveNewUser(user: User, password: string) {

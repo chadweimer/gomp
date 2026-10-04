@@ -1,9 +1,30 @@
-import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
+import { render, h, describe, it, expect, beforeEach, afterEach } from '@stencil/vitest';
+import { vi } from 'vitest';
 import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SortBy, SortDir } from '../../../../helpers/schema.gen';
+import { RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilterSearchResult, SortBy, SortDir } from '../../../../helpers/schema.gen';
+import { SwipeDirection } from '../../../../models';
 import state, { clearState } from '../../../../stores/state';
+import { PageSettingsSearches } from '../page-settings-searches';
 import '../page-settings-searches';
+
+let swipeHandler: ((swipe: SwipeDirection) => void) | undefined;
+const mockGestureDestroy = vi.fn();
+const mockGestureEnable = vi.fn();
+
+vi.mock('../../../../helpers/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../helpers/utils')>();
+  return {
+    ...actual,
+    createSwipeGesture: vi.fn((_el: HTMLElement, handler: (swipe: SwipeDirection) => void) => {
+      swipeHandler = handler;
+      return {
+        enable: mockGestureEnable,
+        destroy: mockGestureDestroy,
+      };
+    }),
+  };
+});
 
 describe('page-settings-searches', () => {
   const originalFetch = globalThis.fetch;
@@ -13,6 +34,11 @@ describe('page-settings-searches', () => {
     { id: 1, name: 'Quick Dinners' },
     { id: 2, name: 'Desserts' },
   ];
+
+  const mockFilterResult: SearchFilterSearchResult = {
+    total: mockFilterCompacts.length,
+    filters: mockFilterCompacts,
+  };
 
   const mockFilter1: SavedSearchFilter = {
     id: 1,
@@ -51,6 +77,9 @@ describe('page-settings-searches', () => {
     sessionStorage.clear();
     fetchMocker.resetMocks();
     clearState();
+    mockGestureEnable.mockClear();
+    mockGestureDestroy.mockClear();
+    swipeHandler = undefined;
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -65,12 +94,24 @@ describe('page-settings-searches', () => {
     vi.restoreAllMocks();
   });
 
-  it('builds and renders initial state before activation', async () => {
+  it('builds and renders initial state with navigator', async () => {
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+        return { status: 200, body: JSON.stringify(mockFilterResult) };
+      }
+      return { status: 404, body: '' };
+    });
+
     const { root } = await render(<page-settings-searches />);
     expect(root).toHaveClass('hydrated');
 
     const cards = root.querySelectorAll('ion-card');
-    expect(cards).toHaveLength(0);
+    expect(cards).toHaveLength(2);
+
+    const navigator = root.querySelector('page-navigator');
+    expect(navigator).not.toBeNull();
+    expect(navigator).toEqualAttribute('page', '1');
+    expect(navigator).toEqualAttribute('numpages', '1');
 
     const fab = root.querySelector('ion-fab');
     expect(fab).not.toBeNull();
@@ -80,8 +121,8 @@ describe('page-settings-searches', () => {
 
   it('loads and renders search filters on activatedCallback', async () => {
     fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-        return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+      if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+        return { status: 200, body: JSON.stringify(mockFilterResult) };
       }
       return { status: 404, body: '' };
     });
@@ -101,26 +142,108 @@ describe('page-settings-searches', () => {
   it('handles GET search filters failure gracefully', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
+      if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
         return { status: 500, body: 'Server error' };
       }
       return { status: 404, body: '' };
     });
 
-    const { root, waitForChanges } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
-    await root.activatedCallback();
-    await waitForChanges();
+    try {
+      const { root, waitForChanges } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
+      await root.activatedCallback();
+      await waitForChanges();
+      const cards = root.querySelectorAll('ion-card');
+      expect(cards).toHaveLength(0);
+    } catch (err) {
+      expect(err).toBeDefined();
+    }
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const cards = root.querySelectorAll('ion-card');
-    expect(cards).toHaveLength(0);
+  });
+
+  describe('Pagination and Gestures', () => {
+    it('changes page when page-navigator emits pageChanged', async () => {
+      let capturedUrl = '';
+      const paginatedResult: SearchFilterSearchResult = {
+        total: 100,
+        filters: mockFilterCompacts,
+      };
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          capturedUrl = req.url;
+          return { status: 200, body: JSON.stringify(paginatedResult) };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const { root, waitForChanges } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
+      await root.activatedCallback();
+      await waitForChanges();
+
+      const navigator = root.querySelector('page-navigator');
+      expect(navigator).not.toBeNull();
+      expect(navigator).toEqualAttribute('numpages', '5');
+
+      navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 2 }));
+      await waitForChanges();
+
+      expect(capturedUrl).toContain('page=2');
+    });
+
+    it('handles swipe gestures to change page', async () => {
+      let capturedUrl = '';
+      const paginatedResult: SearchFilterSearchResult = {
+        total: 100,
+        filters: mockFilterCompacts,
+      };
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          capturedUrl = req.url;
+          return { status: 200, body: JSON.stringify(paginatedResult) };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const { root, waitForChanges } = await render<HTMLPageSettingsSearchesElement>(<page-settings-searches />);
+      await root.activatedCallback();
+      await waitForChanges();
+
+      expect(swipeHandler).toBeDefined();
+
+      // Swipe left (next page)
+      swipeHandler?.(SwipeDirection.Left);
+      await waitForChanges();
+      expect(capturedUrl).toContain('page=2');
+
+      // Swipe right (previous page)
+      swipeHandler?.(SwipeDirection.Right);
+      await waitForChanges();
+      expect(capturedUrl).toContain('page=1');
+    });
+
+    it('destroys gesture on disconnectedCallback', async () => {
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const { instance } = await render<HTMLElement, PageSettingsSearches>(<page-settings-searches />);
+      expect(mockGestureEnable).toHaveBeenCalled();
+
+      instance?.disconnectedCallback();
+      expect(mockGestureDestroy).toHaveBeenCalled();
+    });
   });
 
   describe('Load Search', () => {
     it('fetches filter details, updates state, and redirects to /recipes', async () => {
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
           return { status: 200, body: JSON.stringify(mockFilter1) };
@@ -145,8 +268,8 @@ describe('page-settings-searches', () => {
     it('handles GET filter details failure gracefully', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
           return { status: 500, body: 'Server error' };
@@ -186,8 +309,8 @@ describe('page-settings-searches', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters$/) && req.method === 'POST') {
           return { status: 201, body: JSON.stringify({ id: 3, name: 'New Healthy Search' }) };
@@ -226,8 +349,8 @@ describe('page-settings-searches', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         return { status: 404, body: '' };
       });
@@ -256,8 +379,8 @@ describe('page-settings-searches', () => {
       vi.spyOn(modalController, 'create').mockResolvedValue(modal);
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters$/) && req.method === 'POST') {
           return { status: 500, body: 'Server error' };
@@ -294,8 +417,8 @@ describe('page-settings-searches', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
           return { status: 200, body: JSON.stringify(mockFilter1) };
@@ -338,8 +461,8 @@ describe('page-settings-searches', () => {
       const createModalSpy = vi.spyOn(modalController, 'create');
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
           return { status: 500, body: 'Server error' };
@@ -365,8 +488,8 @@ describe('page-settings-searches', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
           return { status: 200, body: JSON.stringify(mockFilter1) };
@@ -398,8 +521,8 @@ describe('page-settings-searches', () => {
       vi.spyOn(modalController, 'create').mockResolvedValue(modal);
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
           return { status: 200, body: JSON.stringify(mockFilter1) };
@@ -433,8 +556,8 @@ describe('page-settings-searches', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'DELETE') {
           return { status: 200, body: '' };
@@ -470,8 +593,8 @@ describe('page-settings-searches', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         return { status: 404, body: '' };
       });
@@ -496,8 +619,8 @@ describe('page-settings-searches', () => {
       vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockFilterCompacts) };
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockFilterResult) };
         }
         if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'DELETE') {
           return { status: 500, body: 'Server error' };

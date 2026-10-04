@@ -1,8 +1,9 @@
-import { alertController, modalController } from '@ionic/core';
+import { alertController, Gesture, modalController } from '@ionic/core';
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast, trap } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, createSwipeGesture, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
 @Component({
@@ -10,13 +11,41 @@ import state from '../../../stores/state';
   styleUrl: 'page-settings-searches.css',
 })
 export class PageSettingsSearches implements ComponentWithActivatedCallback {
-  @State() filters: SavedSearchFilterCompact[] = [];
-
   @Element() el!: HTMLPageSettingsSearchesElement;
+  private gesture: Gesture | null = null;
+  private readonly resultsPerPage = 24;
+
+  @State() filters: SavedSearchFilterCompact[] = [];
+  @State() page = 1;
+  @State() numPages = 1;
+
+  async connectedCallback() {
+    this.gesture = createSwipeGesture(this.el, swipe => {
+      switch (swipe) {
+        case SwipeDirection.Right:
+          if (this.page > 1) {
+            this.setPage(this.page - 1);
+          }
+          break;
+        case SwipeDirection.Left:
+          if (this.page < this.numPages) {
+            this.setPage(this.page + 1);
+          }
+          break;
+      }
+    });
+    this.gesture.enable();
+    await this.loadFilters();
+  }
+
+  disconnectedCallback() {
+    this.gesture?.destroy();
+    this.gesture = null;
+  }
 
   @Method()
   async activatedCallback() {
-    this.filters = await trap(api.loadSearchFilters, []);
+    await this.loadFilters();
   }
 
   render() {
@@ -50,6 +79,18 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           </ion-grid>
         </ion-content>
 
+        <ion-footer>
+          <ion-toolbar>
+            <page-navigator
+              class="ion-justify-content-center"
+              color="secondary"
+              page={this.page}
+              numPages={this.numPages}
+              onPageChanged={e => this.setPage(e.detail)}
+            />
+          </ion-toolbar>
+        </ion-footer>
+
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="success" onClick={() => this.onAddFilterClicked()}>
             <ion-icon icon="add" />
@@ -57,6 +98,35 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
         </ion-fab>
       </Host>
     );
+  }
+
+  private async loadFilters() {
+    try {
+      const { data, error } = await api.client.GET('/users/current/filters', {
+        params: {
+          query: {
+            page: this.page,
+            count: this.resultsPerPage
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error('Failed to load search filters.', { cause: error });
+      }
+
+      this.filters = data?.filters ?? [];
+      this.numPages = Math.max(Math.ceil((data?.total ?? 0) / this.resultsPerPage), 1);
+    } catch (ex) {
+      this.filters = [];
+      this.numPages = 1;
+      console.error(ex);
+    }
+  }
+
+  private setPage(page: number) {
+    this.page = page;
+    this.loadFilters().catch(console.error);
   }
 
   private async saveNewSearchFilter(searchFilter: SavedSearchFilter) {
@@ -129,7 +199,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           ...data.searchFilter,
           name: data.name
         });
-        this.filters = await trap(api.loadSearchFilters, []);
+        await this.loadFilters();
       }
     });
   }
@@ -166,7 +236,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           ...data.searchFilter,
           name: data.name
         });
-        this.filters = await trap(api.loadSearchFilters, []);
+        await this.loadFilters();
       }
     });
   }
@@ -188,7 +258,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
 
       if (role === 'confirm') {
         await this.deleteSearchFilter(searchFilter.id);
-        this.filters = await trap(api.loadSearchFilters, []);
+        await this.loadFilters();
       }
     });
   }

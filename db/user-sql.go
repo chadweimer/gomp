@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -112,20 +113,31 @@ func (*sqlUserDriver) deleteImpl(ctx context.Context, id int64, db sqlx.ExecerCo
 	return err
 }
 
-func (d *sqlUserDriver) List(ctx context.Context) (*[]models.User, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*[]models.User, error) {
-		return d.listImpl(ctx, db)
-	})
-}
-
-func (*sqlUserDriver) listImpl(ctx context.Context, db sqlx.QueryerContext) (*[]models.User, error) {
-	users := make([]models.User, 0)
-
-	if err := sqlx.SelectContext(ctx, db, &users, "SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC"); err != nil {
-		return nil, err
+func (d *sqlUserDriver) List(ctx context.Context, page, count int64) (*[]models.User, int64, error) {
+	var total int64
+	countStmt := "SELECT count(id) FROM app_user"
+	if err := sqlx.GetContext(ctx, d.Db, &total, countStmt); err != nil {
+		return nil, 0, err
 	}
 
-	return &users, nil
+	limitStmt := ""
+	limitArgs := make([]any, 0)
+	if count >= 0 {
+		limitStmt = "LIMIT ? OFFSET ?"
+		limitArgs = append(limitArgs, count, count*(page-1))
+	}
+
+	selectStmt := d.Db.Rebind(fmt.Sprintf(
+		"SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC %s",
+		limitStmt,
+	))
+
+	users := make([]models.User, 0)
+	if err := sqlx.SelectContext(ctx, d.Db, &users, selectStmt, limitArgs...); err != nil {
+		return nil, 0, err
+	}
+
+	return &users, total, nil
 }
 
 func hashPassword(password string) ([]byte, error) {
