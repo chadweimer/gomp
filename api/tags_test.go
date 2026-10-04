@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -17,6 +16,7 @@ import (
 
 func Test_GetAllTags(t *testing.T) {
 	type testArgs struct {
+		name            string
 		params          GetAllTagsParams
 		expectedSortBy  models.TagSortBy
 		expectedSortDir models.SortDir
@@ -35,15 +35,17 @@ func Test_GetAllTags(t *testing.T) {
 
 	tests := []testArgs{
 		{
+			name:            "default parameters",
 			params:          GetAllTagsParams{},
-			expectedSortBy:  models.TagSortByTag,
-			expectedSortDir: models.Asc,
+			expectedSortBy:  models.TagSortByCount,
+			expectedSortDir: models.Desc,
 			expectedPage:    1,
 			expectedCount:   0,
 			tags:            &[]models.Tag{{Tag: "tag1", Count: 2}, {Tag: "tag2", Count: 3}},
 			total:           2,
 		},
 		{
+			name: "custom parameters",
 			params: GetAllTagsParams{
 				Sort:  &sortByCount,
 				Dir:   &sortDirDesc,
@@ -58,19 +60,20 @@ func Test_GetAllTags(t *testing.T) {
 			total:           15,
 		},
 		{
+			name: "db error",
 			params: GetAllTagsParams{
 				Count: 10,
 			},
-			expectedSortBy:  models.TagSortByTag,
-			expectedSortDir: models.Asc,
+			expectedSortBy:  models.TagSortByCount,
+			expectedSortDir: models.Desc,
 			expectedPage:    1,
 			expectedCount:   10,
 			dbError:         db.ErrNotFound,
 			expectedError:   db.ErrNotFound,
 		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
