@@ -105,7 +105,7 @@ export class AppRoot {
           </ion-route>
         </ion-router>
 
-        <ion-menu side="start" type="reveal" content-id="main-content" ref={(el: HTMLIonMenuElement) => this.menu = el}>
+        <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el!}>
           <ion-content>
             <ion-list class="ion-no-padding">
               {this.appLinks
@@ -234,7 +234,7 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-router-outlet ref={(el: HTMLIonRouterOutletElement) => this.routerOutlet = el} />
+            <ion-router-outlet ref={el => this.routerOutlet = el!} />
           </ion-content>
         </div>
       </ion-app>
