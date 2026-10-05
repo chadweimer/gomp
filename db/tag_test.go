@@ -9,22 +9,58 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/mock/gomock"
 )
 
 func Test_Tag_List(t *testing.T) {
 	type testArgs struct {
-		expectedResult map[string]int
-		dbError        error
+		sortBy         models.TagSortBy
+		sortDir        models.SortDir
+		page           int64
+		count          int64
+		expectedTotal  int64
+		expectedResult []models.Tag
+		countDbError   error
+		selectDbError  error
 		expectedError  error
 	}
 
 	// Arrange
 	tests := []testArgs{
-		{map[string]int{"tag1": 2, "tag2": 3}, nil, nil},
-		{nil, sql.ErrNoRows, ErrNotFound},
-		{nil, sql.ErrConnDone, sql.ErrConnDone},
+		{
+			sortBy:         models.TagSortByTag,
+			sortDir:        models.Asc,
+			page:           1,
+			count:          10,
+			expectedTotal:  2,
+			expectedResult: []models.Tag{{Tag: "tag1", Count: 2}, {Tag: "tag2", Count: 3}},
+		},
+		{
+			sortBy:         models.TagSortByCount,
+			sortDir:        models.Desc,
+			page:           2,
+			count:          5,
+			expectedTotal:  12,
+			expectedResult: []models.Tag{{Tag: "popular", Count: 10}},
+		},
+		{
+			sortBy:        models.TagSortByTag,
+			sortDir:       models.Asc,
+			page:          1,
+			count:         10,
+			countDbError:  sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
+		{
+			sortBy:        models.TagSortByTag,
+			sortDir:       models.Asc,
+			page:          1,
+			count:         10,
+			selectDbError: sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -35,19 +71,30 @@ func Test_Tag_List(t *testing.T) {
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT tag, count\\(tag\\) as num FROM recipe_tag GROUP BY tag")
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"tag", "count"})
-				for tag, count := range test.expectedResult {
-					rows.AddRow(tag, count)
-				}
-				query.WillReturnRows(rows)
+			countQuery := dbmock.ExpectQuery("SELECT count\\(DISTINCT tag\\) FROM recipe_tag")
+			if test.countDbError != nil {
+				countQuery.WillReturnError(test.countDbError)
 			} else {
-				query.WillReturnError(test.dbError)
+				countRows := sqlmock.NewRows([]string{"count"}).AddRow(test.expectedTotal)
+				countQuery.WillReturnRows(countRows)
+
+				selectQuery := dbmock.ExpectQuery("SELECT tag, count\\(tag\\) AS count FROM recipe_tag GROUP BY tag")
+				if test.count >= 0 {
+					selectQuery.WithArgs(test.count, test.count*(test.page-1))
+				}
+				if test.selectDbError != nil {
+					selectQuery.WillReturnError(test.selectDbError)
+				} else {
+					rows := sqlmock.NewRows([]string{"tag", "count"})
+					for _, tag := range test.expectedResult {
+						rows.AddRow(tag.Tag, tag.Count)
+					}
+					selectQuery.WillReturnRows(rows)
+				}
 			}
 
 			// Act
-			result, err := sut.Tags().List(t.Context())
+			result, total, err := sut.Tags().List(t.Context(), test.sortBy, test.sortDir, test.page, test.count)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -56,16 +103,36 @@ func Test_Tag_List(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if test.expectedResult == nil {
-				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
+			if test.expectedError == nil {
+				if total != test.expectedTotal {
+					t.Errorf("expected total: %d, received: %d", test.expectedTotal, total)
 				}
-			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
 				} else if !reflect.DeepEqual(*result, test.expectedResult) {
-					t.Errorf("got = %v, want %v", result, test.expectedResult)
+					t.Errorf("got = %v, want %v", *result, test.expectedResult)
 				}
+			}
+		})
+	}
+}
+
+func Test_getTagOrderStmt(t *testing.T) {
+	tests := []struct {
+		sortBy   models.TagSortBy
+		sortDir  models.SortDir
+		expected string
+	}{
+		{models.TagSortByTag, models.Asc, "ORDER BY tag ASC"},
+		{models.TagSortByTag, models.Desc, "ORDER BY tag DESC"},
+		{models.TagSortByCount, models.Asc, "ORDER BY count(tag) ASC, tag ASC"},
+		{models.TagSortByCount, models.Desc, "ORDER BY count(tag) DESC, tag ASC"},
+	}
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("%s_%s", test.sortBy, test.sortDir), func(t *testing.T) {
+			got := getTagOrderStmt(test.sortBy, test.sortDir)
+			if got != test.expected {
+				t.Errorf("expected %q, got %q", test.expected, got)
 			}
 		})
 	}

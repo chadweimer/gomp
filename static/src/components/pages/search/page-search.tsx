@@ -2,7 +2,7 @@ import { alertController, Gesture, modalController, ScrollBaseDetail } from '@io
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl } from '../../../helpers/utils';
+import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl, showResultsPerPageAlert } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -269,25 +269,8 @@ export class PageSearch {
   }
 
   private async onResultsPerPage() {
-    const menu = await alertController.create({
-      header: 'Results Per Page',
-      inputs: [24, 36, 60, 96, 120].map(item => ({
-        type: 'radio',
-        label: item.toLocaleString(),
-        value: item,
-        checked: state.searchResultsPerPage === item
-      })),
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'OK',
-          handler: (count: 24 | 36 | 60 | 96 | 120) => { state.searchResultsPerPage = count }
-        }
-      ]
-    });
-    await menu.present();
-  }
+    await showResultsPerPageAlert(state.searchResultsPerPage, count => {
+        state.searchResultsPerPage = count;
+      });
+    }
 }

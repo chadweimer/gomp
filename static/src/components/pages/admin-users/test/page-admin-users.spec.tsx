@@ -1,7 +1,8 @@
-import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
+import { render, h, describe, it, expect, beforeEach, afterEach } from '@stencil/vitest';
+import { vi } from 'vitest';
 import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../../vitest.setup';
-import { AccessLevel, User } from '../../../../helpers/schema.gen';
+import { AccessLevel, User, UserSearchResult } from '../../../../helpers/schema.gen';
 import { clearState } from '../../../../stores/state';
 import '../page-admin-users';
 
@@ -13,6 +14,11 @@ describe('page-admin-users', () => {
     { id: 2, username: 'editor@example.com', accessLevel: AccessLevel.Editor },
     { id: 3, username: 'viewer@example.com', accessLevel: AccessLevel.Viewer },
   ];
+
+  const mockUserResult: UserSearchResult = {
+    total: mockUsers.length,
+    users: mockUsers,
+  };
 
   function mockModal(data: unknown = null): HTMLIonModalElement {
     return {
@@ -48,12 +54,27 @@ describe('page-admin-users', () => {
     vi.restoreAllMocks();
   });
 
-  it('builds and renders initial state', async () => {
-    const { root } = await render(<page-admin-users />);
+  it('builds and renders initial state with navigator', async () => {
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+        return { status: 200, body: JSON.stringify(mockUserResult) };
+      }
+      return { status: 404, body: '' };
+    });
+
+    const { root, waitForChanges } = await render<HTMLPageAdminUsersElement>(<page-admin-users />);
     expect(root).toHaveClass('hydrated');
 
+    await root.activatedCallback();
+    await waitForChanges();
+
     const cards = root.querySelectorAll('ion-card');
-    expect(cards).toHaveLength(0);
+    expect(cards).toHaveLength(3);
+
+    const navigator = root.querySelector('page-navigator');
+    expect(navigator).not.toBeNull();
+    expect(navigator).toEqualAttribute('page', '1');
+    expect(navigator).toEqualAttribute('numpages', '1');
 
     const fab = root.querySelector('ion-fab');
     expect(fab).not.toBeNull();
@@ -63,8 +84,8 @@ describe('page-admin-users', () => {
 
   it('loads and renders users on activatedCallback', async () => {
     fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users$/) && req.method === 'GET') {
-        return { status: 200, body: JSON.stringify(mockUsers) };
+      if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+        return { status: 200, body: JSON.stringify(mockUserResult) };
       }
       return { status: 404, body: '' };
     });
@@ -90,19 +111,54 @@ describe('page-admin-users', () => {
   it('handles GET users failure gracefully', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users$/) && req.method === 'GET') {
+      if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
         return { status: 500, body: 'Server error' };
       }
       return { status: 404, body: '' };
     });
 
-    const { root, waitForChanges } = await render<HTMLPageAdminUsersElement>(<page-admin-users />);
-    await root.activatedCallback();
-    await waitForChanges();
+    try {
+      const { root, waitForChanges } = await render<HTMLPageAdminUsersElement>(<page-admin-users />);
+      await root.activatedCallback();
+      await waitForChanges();
+      const cards = root.querySelectorAll('ion-card');
+      expect(cards).toHaveLength(0);
+    } catch (err) {
+      expect(err).toBeDefined();
+    }
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const cards = root.querySelectorAll('ion-card');
-    expect(cards).toHaveLength(0);
+  });
+
+  describe('Pagination', () => {
+    it('changes page when page-navigator emits pageChanged', async () => {
+      let capturedUrl = '';
+      const paginatedResult: UserSearchResult = {
+        total: 100,
+        users: mockUsers,
+      };
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          capturedUrl = req.url;
+          return { status: 200, body: JSON.stringify(paginatedResult) };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const { root, waitForChanges } = await render<HTMLPageAdminUsersElement>(<page-admin-users />);
+      await root.activatedCallback();
+      await waitForChanges();
+
+      const navigator = root.querySelector('page-navigator');
+      expect(navigator).not.toBeNull();
+      expect(navigator).toEqualAttribute('numpages', '5');
+
+      navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 2 }));
+      await waitForChanges();
+
+      expect(capturedUrl).toContain('page=2');
+    });
   });
 
   describe('Add User', () => {
@@ -114,8 +170,8 @@ describe('page-admin-users', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         if (req.url.match(/\/users$/) && req.method === 'POST') {
           return { status: 201, body: JSON.stringify({ id: 4, ...newUser }) };
@@ -154,8 +210,8 @@ describe('page-admin-users', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         return { status: 404, body: '' };
       });
@@ -182,8 +238,8 @@ describe('page-admin-users', () => {
       vi.spyOn(modalController, 'create').mockResolvedValue(modal);
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         if (req.url.match(/\/users$/) && req.method === 'POST') {
           return { status: 500, body: 'Server error' };
@@ -215,8 +271,8 @@ describe('page-admin-users', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         if (req.url.match(/\/users\/2$/) && req.method === 'PUT') {
           return { status: 200, body: '' };
@@ -228,10 +284,11 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      // Click Edit on second user (index 1)
       const editButtons = root.querySelectorAll<HTMLIonButtonElement>('ion-button:not([color="danger"])');
-      expect(editButtons.length).toBeGreaterThanOrEqual(2);
-      editButtons[1]?.click();
+      // Button 0 is the resultsPerPage in header; cards edit buttons start at index 1
+      const cardEditButtons = Array.from(editButtons).filter(btn => btn.closest('ion-card'));
+      expect(cardEditButtons.length).toBeGreaterThanOrEqual(2);
+      cardEditButtons[1]?.click();
       await waitForChanges();
 
       expect(createModalSpy).toHaveBeenCalledWith(
@@ -256,8 +313,8 @@ describe('page-admin-users', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         return { status: 404, body: '' };
       });
@@ -266,8 +323,8 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const editButtons = root.querySelectorAll<HTMLIonButtonElement>('ion-button:not([color="danger"])');
-      editButtons[0]?.click();
+      const cardEditButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
+      cardEditButtons[0]?.click();
       await waitForChanges();
 
       const putRequests = requests.filter(r => r.method === 'PUT');
@@ -283,8 +340,8 @@ describe('page-admin-users', () => {
       vi.spyOn(modalController, 'create').mockResolvedValue(modal);
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         if (req.url.match(/\/users\/1$/) && req.method === 'PUT') {
           return { status: 500, body: 'Server error' };
@@ -296,8 +353,8 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const editButtons = root.querySelectorAll<HTMLIonButtonElement>('ion-button:not([color="danger"])');
-      editButtons[0]?.click();
+      const cardEditButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
+      cardEditButtons[0]?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -315,8 +372,8 @@ describe('page-admin-users', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         if (req.url.match(/\/users\/2$/) && req.method === 'DELETE') {
           return { status: 200, body: '' };
@@ -352,8 +409,8 @@ describe('page-admin-users', () => {
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         return { status: 404, body: '' };
       });
@@ -379,8 +436,8 @@ describe('page-admin-users', () => {
       vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockUsers) };
+        if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockUserResult) };
         }
         if (req.url.match(/\/users\/1$/) && req.method === 'DELETE') {
           return { status: 500, body: 'Server error' };

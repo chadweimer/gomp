@@ -19,6 +19,10 @@ func Test_GetUserSearchFilters(t *testing.T) {
 		name             string
 		userID           int64
 		filters          []models.SavedSearchFilterCompact
+		page             *int64
+		count            int64
+		expectedPage     int64
+		expectedTotal    int64
 		dbError          error
 		expectedError    error
 		expectedResponse GetUserSearchFiltersResponseObject
@@ -27,23 +31,40 @@ func Test_GetUserSearchFilters(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			name:   "Successfully get user search filters",
+			name:   "Successfully get user search filters default page",
 			userID: 1,
 			filters: []models.SavedSearchFilterCompact{
 				{Name: "Filter 1"},
 				{Name: "Filter 2"},
 			},
-			dbError:       nil,
-			expectedError: nil,
-			expectedResponse: GetUserSearchFilters200JSONResponse{
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    2,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetUserSearchFilters200JSONResponse{},
+		},
+		{
+			name:   "Successfully get user search filters explicit page",
+			userID: 1,
+			filters: []models.SavedSearchFilterCompact{
 				{Name: "Filter 1"},
-				{Name: "Filter 2"},
 			},
+			page:             new(int64(2)),
+			count:            5,
+			expectedPage:     2,
+			expectedTotal:    6,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetUserSearchFilters200JSONResponse{},
 		},
 		{
 			name:             "User not found",
 			userID:           2,
 			filters:          []models.SavedSearchFilterCompact{},
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    0,
 			dbError:          db.ErrNotFound,
 			expectedError:    nil,
 			expectedResponse: GetUserSearchFilters404Response{},
@@ -52,6 +73,9 @@ func Test_GetUserSearchFilters(t *testing.T) {
 			name:             "DB error",
 			userID:           3,
 			filters:          []models.SavedSearchFilterCompact{},
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    0,
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,
 			expectedResponse: nil,
@@ -64,13 +88,19 @@ func Test_GetUserSearchFilters(t *testing.T) {
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
 			if test.dbError != nil {
-				userSearchFiltersDriver.EXPECT().List(t.Context(), gomock.Any()).Return(nil, test.dbError)
+				userSearchFiltersDriver.EXPECT().List(t.Context(), test.userID, test.expectedPage, test.count).Return(nil, int64(0), test.dbError)
 			} else {
-				userSearchFiltersDriver.EXPECT().List(t.Context(), test.userID).Return(&test.filters, nil)
+				userSearchFiltersDriver.EXPECT().List(t.Context(), test.userID, test.expectedPage, test.count).Return(&test.filters, test.expectedTotal, nil)
 			}
 
 			// Act
-			resp, err := api.GetUserSearchFilters(t.Context(), GetUserSearchFiltersRequestObject{UserID: test.userID})
+			resp, err := api.GetUserSearchFilters(t.Context(), GetUserSearchFiltersRequestObject{
+				UserID: test.userID,
+				Params: GetUserSearchFiltersParams{
+					Page:  test.page,
+					Count: test.count,
+				},
+			})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -86,8 +116,11 @@ func Test_GetUserSearchFilters(t *testing.T) {
 					if !ok {
 						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
-					if len(got) != len(test.filters) {
-						t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(got))
+					if got.Total != test.expectedTotal {
+						t.Errorf("expected total: %d, actual total: %d", test.expectedTotal, got.Total)
+					}
+					if got.Filters == nil || len(*got.Filters) != len(test.filters) {
+						t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(*got.Filters))
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)
@@ -102,6 +135,10 @@ func Test_GetSearchFilters(t *testing.T) {
 		name             string
 		userID           int64
 		filters          []models.SavedSearchFilterCompact
+		page             *int64
+		count            int64
+		expectedPage     int64
+		expectedTotal    int64
 		dbError          error
 		expectedError    error
 		expectedResponse GetSearchFiltersResponseObject
@@ -110,23 +147,40 @@ func Test_GetSearchFilters(t *testing.T) {
 	// Arrange
 	tests := []testArgs{
 		{
-			name:   "Successfully get user search filters",
+			name:   "Successfully get user search filters default page",
 			userID: 1,
 			filters: []models.SavedSearchFilterCompact{
 				{Name: "Filter 1"},
 				{Name: "Filter 2"},
 			},
-			dbError:       nil,
-			expectedError: nil,
-			expectedResponse: GetSearchFilters200JSONResponse{
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    2,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetSearchFilters200JSONResponse{},
+		},
+		{
+			name:   "Successfully get user search filters explicit page",
+			userID: 1,
+			filters: []models.SavedSearchFilterCompact{
 				{Name: "Filter 1"},
-				{Name: "Filter 2"},
 			},
+			page:             new(int64(2)),
+			count:            5,
+			expectedPage:     2,
+			expectedTotal:    6,
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: GetSearchFilters200JSONResponse{},
 		},
 		{
 			name:             "DB error",
 			userID:           3,
 			filters:          []models.SavedSearchFilterCompact{},
+			count:            10,
+			expectedPage:     1,
+			expectedTotal:    0,
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,
 			expectedResponse: nil,
@@ -139,14 +193,19 @@ func Test_GetSearchFilters(t *testing.T) {
 
 			api, userSearchFiltersDriver := getMockUserSearchFiltersAPI(ctrl)
 			ctx := infra.AddUserToContext(t.Context(), &models.User{ID: &test.userID})
-			if test.expectedError != nil {
-				userSearchFiltersDriver.EXPECT().List(ctx, gomock.Any()).Return(nil, test.expectedError)
+			if test.dbError != nil {
+				userSearchFiltersDriver.EXPECT().List(ctx, test.userID, test.expectedPage, test.count).Return(nil, int64(0), test.dbError)
 			} else {
-				userSearchFiltersDriver.EXPECT().List(ctx, test.userID).Return(&test.filters, nil)
+				userSearchFiltersDriver.EXPECT().List(ctx, test.userID, test.expectedPage, test.count).Return(&test.filters, test.expectedTotal, nil)
 			}
 
 			// Act
-			resp, err := api.GetSearchFilters(ctx, GetSearchFiltersRequestObject{})
+			resp, err := api.GetSearchFilters(ctx, GetSearchFiltersRequestObject{
+				Params: GetSearchFiltersParams{
+					Page:  test.page,
+					Count: test.count,
+				},
+			})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -158,8 +217,11 @@ func Test_GetSearchFilters(t *testing.T) {
 					if !ok {
 						t.Fatalf("expected %t, got %T", test.expectedResponse, resp)
 					}
-					if len(got) != len(test.filters) {
-						t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(got))
+					if got.Total != test.expectedTotal {
+						t.Errorf("expected total: %d, actual total: %d", test.expectedTotal, got.Total)
+					}
+					if got.Filters == nil || len(*got.Filters) != len(test.filters) {
+						t.Errorf("expected length: %d, actual length: %d", len(test.filters), len(*got.Filters))
 					}
 				default:
 					t.Errorf("unexpected response type: %T", resp)

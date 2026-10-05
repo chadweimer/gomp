@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -17,32 +16,77 @@ import (
 
 func Test_GetAllTags(t *testing.T) {
 	type testArgs struct {
-		expectedTags  map[string]int
-		expectedError error
+		name            string
+		params          GetAllTagsParams
+		expectedSortBy  models.TagSortBy
+		expectedSortDir models.SortDir
+		expectedPage    int64
+		expectedCount   int64
+		tags            *[]models.Tag
+		total           int64
+		dbError         error
+		expectedError   error
 	}
+
+	sortByCount := models.TagSortByCount
+	sortDirDesc := models.Desc
+	pageVal := int64(2)
+	countVal := int64(20)
 
 	tests := []testArgs{
 		{
-			map[string]int{"tag1": 2, "tag2": 3},
-			nil,
+			name:            "default parameters",
+			params:          GetAllTagsParams{},
+			expectedSortBy:  models.TagSortByCount,
+			expectedSortDir: models.Desc,
+			expectedPage:    1,
+			expectedCount:   0,
+			tags:            &[]models.Tag{{Tag: "tag1", Count: 2}, {Tag: "tag2", Count: 3}},
+			total:           2,
 		},
-		{map[string]int{}, db.ErrNotFound},
+		{
+			name: "custom parameters",
+			params: GetAllTagsParams{
+				Sort:  &sortByCount,
+				Dir:   &sortDirDesc,
+				Page:  &pageVal,
+				Count: countVal,
+			},
+			expectedSortBy:  sortByCount,
+			expectedSortDir: sortDirDesc,
+			expectedPage:    pageVal,
+			expectedCount:   countVal,
+			tags:            &[]models.Tag{{Tag: "tag1", Count: 10}},
+			total:           15,
+		},
+		{
+			name: "db error",
+			params: GetAllTagsParams{
+				Count: 10,
+			},
+			expectedSortBy:  models.TagSortByCount,
+			expectedSortDir: models.Desc,
+			expectedPage:    1,
+			expectedCount:   10,
+			dbError:         db.ErrNotFound,
+			expectedError:   db.ErrNotFound,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			api, tagDriver := getMockTagsAPI(ctrl)
-			if test.expectedError != nil {
-				tagDriver.EXPECT().List(t.Context()).Return(nil, test.expectedError)
+			if test.dbError != nil {
+				tagDriver.EXPECT().List(t.Context(), test.expectedSortBy, test.expectedSortDir, test.expectedPage, test.expectedCount).Return(nil, int64(0), test.dbError)
 			} else {
-				tagDriver.EXPECT().List(t.Context()).Return(&test.expectedTags, nil)
+				tagDriver.EXPECT().List(t.Context(), test.expectedSortBy, test.expectedSortDir, test.expectedPage, test.expectedCount).Return(test.tags, test.total, nil)
 			}
 
 			// Act
-			resp, err := api.GetAllTags(t.Context(), GetAllTagsRequestObject{})
+			resp, err := api.GetAllTags(t.Context(), GetAllTagsRequestObject{Params: test.params})
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -52,8 +96,11 @@ func Test_GetAllTags(t *testing.T) {
 				if !ok {
 					t.Errorf("test %v: invalid response", test)
 				}
-				if !reflect.DeepEqual(got, GetAllTags200JSONResponse(test.expectedTags)) {
-					t.Errorf("test %v: got = %v, want %v", test, got, test.expectedTags)
+				if got.Total != test.total {
+					t.Errorf("test %v: expected total: %d, got: %d", test, test.total, got.Total)
+				}
+				if !reflect.DeepEqual(got.Tags, test.tags) {
+					t.Errorf("test %v: got = %v, want %v", test, got.Tags, test.tags)
 				}
 			}
 		})

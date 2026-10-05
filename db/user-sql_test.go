@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -17,6 +16,7 @@ import (
 
 func Test_User_Create(t *testing.T) {
 	type testArgs struct {
+		name          string
 		username      string
 		password      string
 		accessLevel   models.AccessLevel
@@ -26,13 +26,13 @@ func Test_User_Create(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{"user@example.com", "password", models.Editor, nil, nil},
-		{"admin@example.com", "password", models.Admin, nil, nil},
-		{"", "", models.Viewer, sql.ErrNoRows, ErrNotFound},
-		{"", "", models.Viewer, sql.ErrConnDone, sql.ErrConnDone},
+		{"successful create", "user@example.com", "password", models.Editor, nil, nil},
+		{"successful create admin", "admin@example.com", "password", models.Admin, nil, nil},
+		{"no rows found", "", "", models.Viewer, sql.ErrNoRows, ErrNotFound},
+		{"connection done", "", "", models.Viewer, sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -68,7 +68,7 @@ func Test_User_Create(t *testing.T) {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
 			if err == nil && *user.ID != expectedID {
-				t.Errorf("expected note id %d, received %d", expectedID, *user.ID)
+				t.Errorf("expected user id %d, received %d", expectedID, *user.ID)
 			}
 		})
 	}
@@ -76,6 +76,7 @@ func Test_User_Create(t *testing.T) {
 
 func Test_User_Read(t *testing.T) {
 	type testArgs struct {
+		name          string
 		userID        int64
 		dbError       error
 		expectedError error
@@ -83,12 +84,12 @@ func Test_User_Read(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, nil, nil},
-		{0, sql.ErrNoRows, ErrNotFound},
-		{0, sql.ErrConnDone, sql.ErrConnDone},
+		{"successful read", 1, nil, nil},
+		{"no rows found", 0, sql.ErrNoRows, ErrNotFound},
+		{"connection done", 0, sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -124,6 +125,7 @@ func Test_User_Read(t *testing.T) {
 
 func Test_User_Authenticate(t *testing.T) {
 	type testArgs struct {
+		name              string
 		username          string
 		currentPassword   string
 		attemptedPassword string
@@ -133,13 +135,13 @@ func Test_User_Authenticate(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{"user@example.com", "password", "password", nil, nil},
-		{"user@example.com", "password", "wrongpassword", nil, ErrAuthenticationFailed},
-		{"", "", "", sql.ErrNoRows, ErrNotFound},
-		{"", "", "", sql.ErrConnDone, sql.ErrConnDone},
+		{"successful authentication", "user@example.com", "password", "password", nil, nil},
+		{"failed authentication", "user@example.com", "password", "wrongpassword", nil, ErrAuthenticationFailed},
+		{"no rows found", "", "", "", sql.ErrNoRows, ErrNotFound},
+		{"connection done", "", "", "", sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -179,6 +181,7 @@ func Test_User_Authenticate(t *testing.T) {
 
 func Test_User_Update(t *testing.T) {
 	type testArgs struct {
+		name          string
 		userID        int64
 		username      string
 		accessLevel   models.AccessLevel
@@ -188,12 +191,12 @@ func Test_User_Update(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "user@example.com", models.Admin, nil, nil},
-		{0, "", models.Viewer, sql.ErrNoRows, ErrNotFound},
-		{0, "", models.Viewer, sql.ErrConnDone, sql.ErrConnDone},
+		{"successful update", 1, "user@example.com", models.Admin, nil, nil},
+		{"no rows found", 0, "", models.Viewer, sql.ErrNoRows, ErrNotFound},
+		{"connection done", 0, "", models.Viewer, sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -234,6 +237,7 @@ func Test_User_Update(t *testing.T) {
 
 func Test_User_UpdatePassword(t *testing.T) {
 	type testArgs struct {
+		name              string
 		userID            int64
 		currentPassword   string
 		attemptedPassword string
@@ -244,13 +248,13 @@ func Test_User_UpdatePassword(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, "password", "password", "newpassword", nil, nil},
-		{1, "password", "wrongpassword", "newpassword", nil, ErrAuthenticationFailed},
-		{0, "password", "password", "newpassword", sql.ErrNoRows, ErrNotFound},
-		{0, "password", "password", "newpassword", sql.ErrConnDone, sql.ErrConnDone},
+		{"successful update password", 1, "password", "password", "newpassword", nil, nil},
+		{"failed authentication", 1, "password", "wrongpassword", "newpassword", nil, ErrAuthenticationFailed},
+		{"no rows found", 0, "password", "password", "newpassword", sql.ErrNoRows, ErrNotFound},
+		{"connection done", 0, "password", "password", "newpassword", sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -296,6 +300,7 @@ func Test_User_UpdatePassword(t *testing.T) {
 
 func Test_User_Delete(t *testing.T) {
 	type testArgs struct {
+		name          string
 		userID        int64
 		dbError       error
 		expectedError error
@@ -303,12 +308,12 @@ func Test_User_Delete(t *testing.T) {
 
 	// Arrange
 	tests := []testArgs{
-		{1, nil, nil},
-		{0, sql.ErrNoRows, ErrNotFound},
-		{0, sql.ErrConnDone, sql.ErrConnDone},
+		{"successful delete", 1, nil, nil},
+		{"no rows found", 0, sql.ErrNoRows, ErrNotFound},
+		{"connection done", 0, sql.ErrConnDone, sql.ErrConnDone},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -342,35 +347,73 @@ func Test_User_Delete(t *testing.T) {
 
 func Test_User_List(t *testing.T) {
 	type testArgs struct {
+		name           string
+		page           int64
+		count          int64
+		expectedTotal  int64
 		expectedResult []models.User
-		dbError        error
+		countDbError   error
+		selectDbError  error
 		expectedError  error
 	}
 
 	// Arrange
 	now := time.Now()
 	tests := []testArgs{
-		{[]models.User{
-			{
-				ID:          new(int64(1)),
-				Username:    "user@example.com",
-				AccessLevel: models.Editor,
-				CreatedAt:   &now,
-				ModifiedAt:  &now,
+		{
+			name:          "first page",
+			page:          1,
+			count:         10,
+			expectedTotal: 2,
+			expectedResult: []models.User{
+				{
+					ID:          new(int64(1)),
+					Username:    "user@example.com",
+					AccessLevel: models.Editor,
+					CreatedAt:   &now,
+					ModifiedAt:  &now,
+				},
+				{
+					ID:          new(int64(2)),
+					Username:    "admin@example.com",
+					AccessLevel: models.Admin,
+					CreatedAt:   &now,
+					ModifiedAt:  &now,
+				},
 			},
-			{
-				ID:          new(int64(2)),
-				Username:    "admin@example.com",
-				AccessLevel: models.Admin,
-				CreatedAt:   &now,
-				ModifiedAt:  &now,
+		},
+		{
+			name:          "second page",
+			page:          2,
+			count:         5,
+			expectedTotal: 12,
+			expectedResult: []models.User{
+				{
+					ID:          new(int64(3)),
+					Username:    "other@example.com",
+					AccessLevel: models.Viewer,
+					CreatedAt:   &now,
+					ModifiedAt:  &now,
+				},
 			},
-		}, nil, nil},
-		{nil, sql.ErrNoRows, ErrNotFound},
-		{nil, sql.ErrConnDone, sql.ErrConnDone},
+		},
+		{
+			name:          "count query error",
+			page:          1,
+			count:         10,
+			countDbError:  sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
+		{
+			name:          "select query error",
+			page:          1,
+			count:         10,
+			selectDbError: sql.ErrConnDone,
+			expectedError: sql.ErrConnDone,
+		},
 	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -378,19 +421,30 @@ func Test_User_List(t *testing.T) {
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC")
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"id", "username", "access_level", "created_at", "modified_at"})
-				for _, user := range test.expectedResult {
-					rows.AddRow(user.ID, user.Username, user.AccessLevel, user.CreatedAt, user.ModifiedAt)
-				}
-				query.WillReturnRows(rows)
+			countQuery := dbmock.ExpectQuery("SELECT count\\(id\\) FROM app_user")
+			if test.countDbError != nil {
+				countQuery.WillReturnError(test.countDbError)
 			} else {
-				query.WillReturnError(test.dbError)
+				countRows := sqlmock.NewRows([]string{"count"}).AddRow(test.expectedTotal)
+				countQuery.WillReturnRows(countRows)
+
+				selectQuery := dbmock.ExpectQuery("SELECT id, username, access_level, created_at, modified_at FROM app_user ORDER BY username ASC")
+				if test.count >= 0 {
+					selectQuery.WithArgs(test.count, test.count*(test.page-1))
+				}
+				if test.selectDbError != nil {
+					selectQuery.WillReturnError(test.selectDbError)
+				} else {
+					rows := sqlmock.NewRows([]string{"id", "username", "access_level", "created_at", "modified_at"})
+					for _, user := range test.expectedResult {
+						rows.AddRow(user.ID, user.Username, user.AccessLevel, user.CreatedAt, user.ModifiedAt)
+					}
+					selectQuery.WillReturnRows(rows)
+				}
 			}
 
 			// Act
-			result, err := sut.Users().List(t.Context())
+			result, total, err := sut.Users().List(t.Context(), test.page, test.count)
 
 			// Assert
 			if !errors.Is(err, test.expectedError) {
@@ -399,11 +453,10 @@ func Test_User_List(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if test.expectedResult == nil {
-				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
+			if test.expectedError == nil {
+				if total != test.expectedTotal {
+					t.Errorf("expected total: %d, received: %d", test.expectedTotal, total)
 				}
-			} else {
 				if result == nil {
 					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
 				} else if len(test.expectedResult) != len(*result) {

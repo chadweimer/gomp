@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -200,21 +201,34 @@ func (*sqlUserSearchFilterDriver) deleteImpl(ctx context.Context, userID int64, 
 	return err
 }
 
-// List retrieves all user's saved search filters.
-func (d *sqlUserSearchFilterDriver) List(ctx context.Context, userID int64) (*[]models.SavedSearchFilterCompact, error) {
-	return get(d.Db, func(db sqlx.QueryerContext) (*[]models.SavedSearchFilterCompact, error) {
-		filters := make([]models.SavedSearchFilterCompact, 0)
+// List retrieves a user's saved search filters according to pagination parameters.
+func (d *sqlUserSearchFilterDriver) List(ctx context.Context, userID, page, count int64) (*[]models.SavedSearchFilterCompact, int64, error) {
+	var (
+		total int64
+		args  = make([]any, 0)
+	)
 
-		err := sqlx.SelectContext(
-			ctx,
-			db,
-			&filters,
-			"SELECT id, user_id, name FROM search_filter WHERE user_id = $1 ORDER BY name ASC",
-			userID)
-		if err != nil {
-			return nil, err
-		}
+	countStmt := d.Db.Rebind("SELECT count(id) FROM search_filter WHERE user_id = ?")
+	if err := sqlx.GetContext(ctx, d.Db, &total, countStmt, userID); err != nil {
+		return nil, 0, err
+	}
+	args = append(args, userID)
 
-		return &filters, nil
-	})
+	limitStmt := ""
+	if count >= 0 {
+		limitStmt = "LIMIT ? OFFSET ?"
+		args = append(args, count, count*(page-1))
+	}
+
+	selectStmt := d.Db.Rebind(fmt.Sprintf(
+		"SELECT id, user_id, name FROM search_filter WHERE user_id = ? ORDER BY name ASC %s",
+		limitStmt,
+	))
+
+	filters := make([]models.SavedSearchFilterCompact, 0)
+	if err := sqlx.SelectContext(ctx, d.Db, &filters, selectStmt, args...); err != nil {
+		return nil, 0, err
+	}
+
+	return &filters, total, nil
 }

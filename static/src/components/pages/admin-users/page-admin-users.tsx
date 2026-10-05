@@ -1,5 +1,5 @@
 import { alertController, modalController } from '@ionic/core';
-import { Component, Element, Host, h, State, Method } from '@stencil/core';
+import { Component, Host, h, State, Method } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
@@ -9,9 +9,11 @@ import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue,
   styleUrl: 'page-admin-users.css',
 })
 export class PageAdminUsers implements ComponentWithActivatedCallback {
-  @State() users: User[] = [];
+  private readonly resultsPerPage = 24;
 
-  @Element() el!: HTMLPageAdminUsersElement;
+  @State() users: User[] = [];
+  @State() page = 1;
+  @State() numPages = 1;
 
   @Method()
   async activatedCallback() {
@@ -44,29 +46,51 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
               )}
             </ion-row>
           </ion-grid>
+
+          <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+            <ion-fab-button color="success" onClick={() => this.onAddUserClicked()}>
+              <ion-icon icon="person-add" />
+            </ion-fab-button>
+          </ion-fab>
         </ion-content>
 
-        <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-          <ion-fab-button color="success" onClick={() => this.onAddUserClicked()}>
-            <ion-icon icon="person-add" />
-          </ion-fab-button>
-        </ion-fab>
+        <ion-footer>
+          <ion-toolbar>
+            <page-navigator
+              class="ion-justify-content-center"
+              color="secondary"
+              page={this.page}
+              numPages={this.numPages}
+              onPageChanged={e => this.setPage(e.detail)}
+            />
+          </ion-toolbar>
+        </ion-footer>
       </Host>
     );
   }
 
   private async loadUsers() {
     try {
-      const { data: users, error } = await api.client.GET('/users');
+      const { data, error } = await api.client.GET('/users', {
+        params: { query: { page: this.page, count: this.resultsPerPage } }
+      });
 
       if (error) {
         throw new Error('Failed to load users.', { cause: error });
       }
 
-      this.users = users;
+      this.users = data?.users ?? [];
+      this.numPages = Math.max(Math.ceil((data?.total ?? 0) / this.resultsPerPage), 1);
     } catch (ex) {
+      this.users = [];
+      this.numPages = 1;
       console.error(ex);
     }
+  }
+
+  private setPage(page: number) {
+    this.page = page;
+    this.loadUsers().catch(console.error);
   }
 
   private async saveNewUser(user: User, password: string) {

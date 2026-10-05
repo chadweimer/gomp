@@ -34,14 +34,18 @@ func (h apiHandler) GetUser(ctx context.Context, request GetUserRequestObject) (
 	return GetUser200JSONResponse(user.User), nil
 }
 
-func (h apiHandler) GetAllUsers(ctx context.Context, _ GetAllUsersRequestObject) (GetAllUsersResponseObject, error) {
-	// Add pagination?
-	users, err := h.db.Users().List(ctx)
+func (h apiHandler) GetAllUsers(ctx context.Context, request GetAllUsersRequestObject) (GetAllUsersResponseObject, error) {
+	page := int64(1)
+	if request.Params.Page != nil && *request.Params.Page > 0 {
+		page = *request.Params.Page
+	}
+
+	users, total, err := h.db.Users().List(ctx, page, request.Params.Count)
 	if err != nil {
 		return nil, err
 	}
 
-	return GetAllUsers200JSONResponse(*users), nil
+	return GetAllUsers200JSONResponse{Users: users, Total: total}, nil
 }
 
 func (h apiHandler) AddUser(ctx context.Context, request AddUserRequestObject) (AddUserResponseObject, error) {

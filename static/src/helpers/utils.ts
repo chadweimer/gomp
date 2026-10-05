@@ -1,4 +1,4 @@
-import { createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
+import { alertController, createGesture, GestureDetail, loadingController, toastController } from '@ionic/core';
 import DOMPurify from 'dompurify';
 import { AccessLevel, User, YesNoAny } from '../helpers/schema.gen';
 import { SwipeDirection } from '../models';
@@ -191,6 +191,36 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
   } finally {
     await loading.dismiss();
   }
+}
+
+export type ResultsPerPage = 24 | 36 | 60 | 96 | 120;
+export const DEFAULT_RESULTS_PER_PAGE_OPTIONS: readonly ResultsPerPage[] = [24, 36, 60, 96, 120] as const;
+
+export async function showResultsPerPageAlert<T extends number = ResultsPerPage>(
+  currentValue: T,
+  onSelect: (count: T) => void,
+  options: readonly T[] = DEFAULT_RESULTS_PER_PAGE_OPTIONS as readonly T[],
+): Promise<void> {
+  const menu = await alertController.create({
+    header: 'Results Per Page',
+    inputs: options.map(item => ({
+      type: 'radio',
+      label: item.toLocaleString(),
+      value: item,
+      checked: currentValue === item,
+    })),
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'OK',
+        handler: (count: T) => onSelect(count),
+      },
+    ],
+  });
+  await menu.present();
 }
 
 async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {

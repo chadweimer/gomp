@@ -95,8 +95,8 @@ describe('page-home', () => {
     if (url.match(/\/users\/current\/filters\/11$/) && req.method === 'GET') {
       return { status: 200, body: JSON.stringify(mockSavedFilter11) };
     }
-    if (url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
-      return { status: 200, body: JSON.stringify(mockSavedFilters) };
+    if (url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+      return { status: 200, body: JSON.stringify({ total: mockSavedFilters.length, filters: mockSavedFilters }) };
     }
     if (url.match(/\/recipes\/42\/images$/) && req.method === 'POST') {
       return { status: 200, body: JSON.stringify({}) };
@@ -196,13 +196,16 @@ describe('page-home', () => {
         if (url.match(/\/users\/current\/settings$/)) {
           return { status: 200, body: JSON.stringify(mockUserSettings) };
         }
-        if (url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
+        if (url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
           return {
             status: 200,
-            body: JSON.stringify([
-              { id: null, name: 'Invalid Filter' },
-              { id: 10, name: 'Quick Dinners' },
-            ]),
+            body: JSON.stringify({
+              total: 2,
+              filters: [
+                { id: null, name: 'Invalid Filter' },
+                { id: 10, name: 'Quick Dinners' },
+              ],
+            }),
           };
         }
         if (url.match(/\/users\/current\/filters\/10$/)) {
@@ -474,7 +477,7 @@ describe('page-home', () => {
         if (url.match(/\/users\/current\/settings$/)) {
           return { status: 200, body: JSON.stringify(mockUserSettings) };
         }
-        if (url.match(/\/users\/current\/filters$/) && req.method === 'GET') {
+        if (url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
           return { status: 500, body: 'Error fetching filters' };
         }
         if (url.match(/\/recipes(\?.*)?$/)) {
@@ -502,8 +505,8 @@ describe('page-home', () => {
         if (url.match(/\/users\/current\/settings$/)) {
           return { status: 200, body: JSON.stringify(mockUserSettings) };
         }
-        if (url.match(/\/users\/current\/filters$/)) {
-          return { status: 200, body: JSON.stringify([]) };
+        if (url.match(/\/users\/current\/filters(\?.*)?$/)) {
+          return { status: 200, body: JSON.stringify({ total: 0, filters: [] }) };
         }
         if (url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
           return { status: 500, body: 'Search error' };
