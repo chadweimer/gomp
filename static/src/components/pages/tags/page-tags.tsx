@@ -2,7 +2,8 @@ import { Gesture } from '@ionic/core';
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, createSwipeGesture, isNull, ResultsPerPage, showResultsPerPageAlert } from '../../../helpers/utils';
+import { ResultsPerPage, showResultsPerPageAlert } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -148,18 +149,18 @@ export class PageTags implements ComponentWithActivatedCallback {
 
   private async onResultsPerPageClicked() {
     await showResultsPerPageAlert(this.resultsPerPage, count => {
-        this.resultsPerPage = count;
-        this.page = 1;
-        this.load().catch(console.error);
-      });
-    }
+      this.resultsPerPage = count;
+      this.page = 1;
+      this.load().catch(console.error);
+    });
+  }
 
   private onTagClicked(tag: string) {
-      const filter = getDefaultSearchFilter();
-      state.searchFilter = {
-        ...filter,
-        states: [],
-        tags: [tag]
-      };
-    }
+    const filter = getDefaultSearchFilter();
+    state.searchFilter = {
+      ...filter,
+      states: [],
+      tags: [tag]
+    };
+  }
 }

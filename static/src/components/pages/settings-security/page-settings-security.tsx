@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords, showToast } from '../../../helpers/utils';
+import { showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-security',

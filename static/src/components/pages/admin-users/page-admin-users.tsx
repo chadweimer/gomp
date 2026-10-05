@@ -2,7 +2,8 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Host, h, State, Method } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, enumKeyFromValue, isNull, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, enumKeyFromValue, isNull } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-users',

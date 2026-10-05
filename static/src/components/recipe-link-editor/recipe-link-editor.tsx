@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-link-editor',

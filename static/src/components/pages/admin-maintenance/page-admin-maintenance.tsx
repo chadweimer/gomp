@@ -2,7 +2,8 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Host, Method, State, h } from '@stencil/core';
 import { Backup } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, scaleValue, showLoading, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-admin-maintenance',

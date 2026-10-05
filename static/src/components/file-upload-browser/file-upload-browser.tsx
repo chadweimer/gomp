@@ -1,5 +1,5 @@
 import { Component, Element, Host, Prop, h } from '@stencil/core';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
 
 @Component({
   tag: 'file-upload-browser',

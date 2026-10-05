@@ -2,7 +2,8 @@ import { actionSheetController, alertController, modalController, popoverControl
 import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
 import { api, refreshSearchResults } from '../../helpers/api';
-import { redirect, enableBackForOverlay, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
+import { enableBackForOverlay } from '../../helpers/modals';
+import { redirect, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';

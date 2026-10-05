@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { UserSettings } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, showLoading, showToast, trap } from '../../../helpers/utils';
+import { showLoading, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, trap } from '../../../helpers/utils';
 
 @Component({
   tag: 'page-settings-preferences',

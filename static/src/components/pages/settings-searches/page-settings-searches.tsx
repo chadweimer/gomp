@@ -2,7 +2,8 @@ import { alertController, modalController } from '@ionic/core';
 import { Component, Host, h, State, Method } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({

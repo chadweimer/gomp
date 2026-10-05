@@ -2,7 +2,8 @@ import { alertController, Gesture, modalController, ScrollBaseDetail } from '@io
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl, showResultsPerPageAlert } from '../../../helpers/utils';
+import { showToast, enableBackForOverlay, showLoading, showResultsPerPageAlert } from '../../../helpers/modals';
+import { redirect, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -270,7 +271,7 @@ export class PageSearch {
 
   private async onResultsPerPage() {
     await showResultsPerPageAlert(state.searchResultsPerPage, count => {
-        state.searchResultsPerPage = count;
-      });
-    }
+      state.searchResultsPerPage = count;
+    });
+  }
 }

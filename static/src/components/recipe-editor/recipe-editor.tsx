@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-editor',

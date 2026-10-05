@@ -1,0 +1,97 @@
+import { alertController, loadingController, toastController } from "@ionic/core";
+
+export async function enableBackForOverlay(presenter: () => Promise<void>) {
+  if (!(globalThis.history.state as { modal?: boolean })?.modal) {
+    globalThis.history.pushState({ modal: true }, '');
+  }
+  try {
+    await presenter();
+  } finally {
+    if ((globalThis.history.state as { modal?: boolean })?.modal) {
+      globalThis.history.back();
+    }
+  }
+}
+
+export function getContainingModal(el: HTMLElement) {
+  return el.closest('ion-modal');
+}
+
+export function configureModalAutofocus(el: HTMLElement) {
+  getContainingModal(el)?.addEventListener('focus', performAutofocus);
+}
+
+function performAutofocus(this: HTMLIonModalElement) {
+  // Get the component displayed on the modal.
+  let component: Element | null = null;
+  if (typeof this.component === 'string') {
+    component = this.querySelector(this.component);
+  } else if (this.component instanceof HTMLElement) {
+    component = this.component;
+  }
+
+  // Check the shadow DOM first, then the light DOM, and finally the component itself.
+  let focusEl = component?.shadowRoot?.querySelector('[autofocus]') || component?.querySelector('[autofocus]') || component;
+
+  // WORKAROUND: If the component is an HTML-EDITOR,
+  // focus on the editor content instead of the editor itself.
+  if (focusEl?.tagName === 'HTML-EDITOR') {
+    focusEl = focusEl.querySelector('.editor-content');
+  }
+
+  if (focusEl instanceof HTMLElement) {
+    focusEl.focus();
+  }
+
+  this.removeEventListener('focus', performAutofocus);
+}
+
+export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
+  return getContainingModal(el)?.dismiss(data);
+}
+
+export async function showToast(message: string, duration = 2000) {
+  const toast = await toastController.create({ message, duration });
+  await toast.present();
+}
+
+export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
+  const loading = await loadingController.create({
+    message: message,
+  });
+  await loading.present();
+  try {
+    await action();
+  } finally {
+    await loading.dismiss();
+  }
+}
+
+export type ResultsPerPage = 24 | 36 | 60 | 96 | 120;
+export const DEFAULT_RESULTS_PER_PAGE_OPTIONS: readonly ResultsPerPage[] = [24, 36, 60, 96, 120] as const;
+export async function showResultsPerPageAlert<T extends number = ResultsPerPage>(
+  currentValue: T,
+  onSelect: (count: T) => void,
+  options: readonly T[] = DEFAULT_RESULTS_PER_PAGE_OPTIONS as readonly T[],
+): Promise<void> {
+  const menu = await alertController.create({
+    header: 'Results Per Page',
+    inputs: options.map(item => ({
+      type: 'radio',
+      label: item.toLocaleString(),
+      value: item,
+      checked: currentValue === item,
+    })),
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'OK',
+        handler: (count: T) => onSelect(count),
+      },
+    ],
+  });
+  await menu.present();
+}

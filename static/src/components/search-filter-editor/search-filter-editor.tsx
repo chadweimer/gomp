@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
+import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
 @Component({

@@ -2,7 +2,8 @@ import { actionSheetController, alertController, modalController } from '@ionic/
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
