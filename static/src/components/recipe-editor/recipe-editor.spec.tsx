@@ -222,7 +222,7 @@ describe('recipe-editor', () => {
       const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
       if (nameInput) {
         nameInput.value = 'Waffles';
-        nameInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: nameInput.value } }));
+        nameInput.dispatchEvent(new CustomEvent('ionChange', { detail: { value: nameInput.value } }));
       }
       await waitForChanges();
       expect(root.recipe.name).toBe('Waffles');
@@ -231,7 +231,7 @@ describe('recipe-editor', () => {
       const servingInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Serving Size"]');
       if (servingInput) {
         servingInput.value = '2 servings';
-        servingInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: servingInput.value } }));
+        servingInput.dispatchEvent(new CustomEvent('ionChange', { detail: { value: servingInput.value } }));
       }
       await waitForChanges();
       expect(root.recipe.servingSize).toBe('2 servings');
@@ -240,7 +240,7 @@ describe('recipe-editor', () => {
       const timeInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Time"]');
       if (timeInput) {
         timeInput.value = '15 mins';
-        timeInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: timeInput.value } }));
+        timeInput.dispatchEvent(new CustomEvent('ionChange', { detail: { value: timeInput.value } }));
       }
       await waitForChanges();
       expect(root.recipe.time).toBe('15 mins');
@@ -249,7 +249,7 @@ describe('recipe-editor', () => {
       const sourceInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Source"]');
       if (sourceInput) {
         sourceInput.value = 'https://example.com/waffles';
-        sourceInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: sourceInput.value } }));
+        sourceInput.dispatchEvent(new CustomEvent('ionChange', { detail: { value: sourceInput.value } }));
       }
       await waitForChanges();
       expect(root.recipe.sourceUrl).toBe('https://example.com/waffles');
