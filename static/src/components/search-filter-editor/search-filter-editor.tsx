@@ -184,8 +184,8 @@ export class SearchFilterEditor {
       a.withPictures === b.withPictures &&
       a.sortBy === b.sortBy &&
       a.sortDir === b.sortDir &&
-      JSON.stringify(a.fields?.sort()) === JSON.stringify(b.fields?.sort()) &&
-      JSON.stringify(a.states?.sort()) === JSON.stringify(b.states?.sort()) &&
-      JSON.stringify(a.tags?.sort()) === JSON.stringify(b.tags?.sort());
+      JSON.stringify(a.fields) === JSON.stringify(b.fields) &&
+      JSON.stringify(a.states) === JSON.stringify(b.states) &&
+      JSON.stringify(a.tags?.toSorted()) === JSON.stringify(b.tags?.toSorted());
   }
 }
