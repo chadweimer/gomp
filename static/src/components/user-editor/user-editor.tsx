@@ -48,7 +48,7 @@ export class UserEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Email" label-placement="stacked" type="email" value={this.user?.username ?? ''} disabled={!isNull(this.user?.id)}
-                onIonBlur={(e: Event) => this.user = { ...this.user, username: (e.currentTarget as HTMLIonInputElement).value as string }}
+                onIonInput={e => this.user = { ...this.user, username: e.detail.value as string }}
                 required
                 autofocus />
             </ion-item>
@@ -64,7 +64,7 @@ export class UserEditor {
               <ion-item lines="full">
                 <ion-input label="Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
-                  onIonBlur={(e: Event) => this.password = (e.currentTarget as HTMLIonInputElement).value as string}
+                  onIonInput={e => this.password = e.detail.value as string}
                   required />
               </ion-item>
             }
@@ -72,7 +72,7 @@ export class UserEditor {
               <ion-item lines="full">
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
-                  onIonBlur={(e: Event) => this.repeatPassword = (e.currentTarget as HTMLIonInputElement).value as string}
+                  onIonInput={e => this.repeatPassword = e.detail.value as string}
                   ref={el => this.repeatPasswordInput = el!}
                   required />
               </ion-item>
