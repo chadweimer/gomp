@@ -153,6 +153,6 @@ export class RecipeEditor {
       a.sourceUrl === b.sourceUrl &&
       a.storageInstructions === b.storageInstructions &&
       a.time === b.time &&
-      JSON.stringify(a.tags?.sort()) === JSON.stringify(b.tags?.sort());
+      JSON.stringify(a.tags?.toSorted()) === JSON.stringify(b.tags?.toSorted());
   }
 }
