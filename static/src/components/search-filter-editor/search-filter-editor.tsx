@@ -75,14 +75,14 @@ export class SearchFilterEditor {
                   spellcheck
                   required
                   autofocus
-                  onIonBlur={(e: Event) => this.name = (e.currentTarget as HTMLIonInputElement).value as string} />
+                  onIonInput={e => this.name = e.detail.value as string} />
               </ion-item>
             }
             <ion-item lines="full">
               <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter?.query}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={(e: Event) => this.searchFilter = { ...this.searchFilter, query: (e.currentTarget as HTMLIonInputElement).value as string }} />
+                onIonInput={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value as string }} />
             </ion-item>
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.searchFilter?.tags}
