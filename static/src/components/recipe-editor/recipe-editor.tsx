@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
 import { getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
 
 @Component({
@@ -39,33 +39,32 @@ export class RecipeEditor {
   private directionsInput!: HTMLHtmlEditorElement;
   private storageInput!: HTMLHtmlEditorElement;
   private nutritionInput!: HTMLHtmlEditorElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   async connectedCallback() {
     const initialRecipe = { ...this.recipe };
 
-    configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, async () => {
-      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      this.recipe = {
-        ...this.recipe,
-        name: this.nameInput.value as string,
-        servingSize: this.servingSizeInput.value as string,
-        time: this.timeInput.value as string,
-        sourceUrl: this.sourceUrlInput.value as string,
-        ingredients: toStorageHtml(this.el, await this.ingredientsInput.getValue()),
-        directions: toStorageHtml(this.el, await this.directionsInput.getValue()),
-        storageInstructions: toStorageHtml(this.el, await this.storageInput.getValue()),
-        nutritionInfo: toStorageHtml(this.el, await this.nutritionInput.getValue()),
-      }
+    this.parentModal = getContainingModal(this.el);
+    if (this.parentModal) {
+      configureModalCanDismiss(this.parentModal, async () => {
+        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+        this.recipe = {
+          ...this.recipe,
+          name: this.nameInput.value as string,
+          servingSize: this.servingSizeInput.value as string,
+          time: this.timeInput.value as string,
+          sourceUrl: this.sourceUrlInput.value as string,
+          ingredients: toStorageHtml(this.el, await this.ingredientsInput.getValue()),
+          directions: toStorageHtml(this.el, await this.directionsInput.getValue()),
+          storageInstructions: toStorageHtml(this.el, await this.storageInput.getValue()),
+          nutritionInfo: toStorageHtml(this.el, await this.nutritionInput.getValue()),
+        }
 
-      return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
-    });
+        return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
+      });
+    }
 
     this.currentUserSettings = await trap(api.loadUserSettings, null);
-  }
-
-  disconnectedCallback() {
-    configureModalCanDismiss(this.el, () => true);
   }
 
   render() {
@@ -165,14 +164,14 @@ export class RecipeEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, {
+    await this.parentModal?.dismiss({
       recipe: this.recipe,
       file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput?.files?.[0] : null
     }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el, undefined, 'cancel');
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 
   private areEqual(a: Recipe, b: Recipe) {

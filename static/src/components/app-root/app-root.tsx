@@ -241,11 +241,6 @@ export class AppRoot {
     );
   }
 
-  @Listen('popstate', { target: 'window' })
-  async onWindowPopState() {
-    await this.closeAllOverlays();
-  }
-
   private async loadAppConfiguration() {
     try {
       const { data: info, error: infoError } = await api.client.GET('/app/info');

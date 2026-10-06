@@ -1,5 +1,5 @@
 import { Component, Element, Host, Prop, h } from '@stencil/core';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { getContainingModal } from '../../helpers/modals';
 
 @Component({
   tag: 'file-upload-browser',
@@ -15,9 +15,10 @@ export class FileUploadBrowser {
 
   private inputForm!: HTMLFormElement;
   private fileInput!: HTMLInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
-    configureModalAutofocus(this.el);
+    this.parentModal = getContainingModal(this.el);
   }
 
   render() {
@@ -52,13 +53,12 @@ export class FileUploadBrowser {
       return;
     }
 
-    await dismissContainingModal(this.el, {
+    await this.parentModal?.dismiss({
       file: (this.fileInput?.files?.length ?? 0) > 0 ? this.fileInput.files?.[0] : null
     }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el, undefined, 'cancel');
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
-
 }

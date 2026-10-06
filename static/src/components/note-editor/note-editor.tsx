@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../helpers/schema.gen';
-import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
 import { isNull, toStorageHtml } from '../../helpers/utils';
 
 @Component({
@@ -16,20 +16,23 @@ export class NoteEditor {
   @Element() el!: HTMLNoteEditorElement;
   private form!: HTMLFormElement;
   private textInput!: HTMLHtmlEditorElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
     const initialNote = { ...this.note };
 
-    configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, async () => {
-      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      this.note = {
-        ...this.note,
-        text: toStorageHtml(this.el, await this.textInput?.getValue())
-      };
+    this.parentModal = getContainingModal(this.el);
+    if (this.parentModal) {
+      configureModalCanDismiss(this.parentModal, async () => {
+        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+        this.note = {
+          ...this.note,
+          text: toStorageHtml(this.el, await this.textInput?.getValue())
+        };
 
-      return this.note.text !== initialNote.text;
-    });
+        return this.note.text !== initialNote.text;
+      });
+    }
   }
 
   render() {
@@ -66,11 +69,10 @@ export class NoteEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, { note: this.note }, 'save');
+    await this.parentModal?.dismiss({ note: this.note }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el, undefined, 'cancel');
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
-
 }

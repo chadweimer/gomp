@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
 import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
@@ -26,24 +26,27 @@ export class SearchFilterEditor {
   private form!: HTMLFormElement;
   private nameInput?: HTMLIonInputElement;
   private queryInput!: HTMLIonInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   async connectedCallback() {
     const initialName = this.name;
     const initialFilter = { ...this.searchFilter };
 
-    configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, () => {
-      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      if (this.nameInput) {
-        this.name = this.nameInput.value as string;
-      }
-      this.searchFilter = {
-        ...this.searchFilter,
-        query: this.queryInput.value as string
-      };
+    this.parentModal = getContainingModal(this.el);
+    if (this.parentModal) {
+      configureModalCanDismiss(this.parentModal, () => {
+        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+        if (this.nameInput) {
+          this.name = this.nameInput.value as string;
+        }
+        this.searchFilter = {
+          ...this.searchFilter,
+          query: this.queryInput.value as string
+        };
 
-      return !this.areEqual(initialFilter, this.searchFilter) || this.name !== initialName;
-    });
+        return !this.areEqual(initialFilter, this.searchFilter) || this.name !== initialName;
+      });
+    }
 
     this.currentUserSettings = await trap(api.loadUserSettings, null);
     if (this.showSavedLoader) {
@@ -158,14 +161,14 @@ export class SearchFilterEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, {
+    await this.parentModal?.dismiss({
       name: this.name,
       searchFilter: this.searchFilter
     }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el, undefined, 'cancel');
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 
   private onResetClicked() {

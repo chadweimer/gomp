@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../helpers/schema.gen';
-import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({
@@ -22,21 +22,24 @@ export class UserEditor {
   private usernameInput!: HTMLIonInputElement;
   private passwordInput!: HTMLIonInputElement;
   private repeatPasswordInput!: HTMLIonInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
     const initialUser = { ...this.user };
 
-    configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, () => {
-      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      this.user = {
-        ...this.user,
-        username: this.usernameInput.value as string
-      };
+    this.parentModal = getContainingModal(this.el);
+    if (this.parentModal) {
+      configureModalCanDismiss(this.parentModal, () => {
+        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+        this.user = {
+          ...this.user,
+          username: this.usernameInput.value as string
+        };
 
-      return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
-        this.passwordInput.value !== '' || this.repeatPasswordInput.value !== '';
-    });
+        return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
+          this.passwordInput.value !== '' || this.repeatPasswordInput.value !== '';
+      });
+    }
   }
 
   render() {
@@ -104,16 +107,16 @@ export class UserEditor {
         return;
       }
 
-      await dismissContainingModal(this.el, {
+      await this.parentModal?.dismiss({
         user: this.user,
         password: this.password
       }, 'save');
     } else {
-      await dismissContainingModal(this.el, { user: this.user }, 'save');
+      await this.parentModal?.dismiss({ user: this.user }, 'save');
     }
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el, undefined, 'cancel');
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 }

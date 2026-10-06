@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { getContainingModal } from '../../helpers/modals';
 import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -19,9 +19,10 @@ export class RecipeLinkEditor {
   @Element() el!: HTMLRecipeLinkEditorElement;
   private form!: HTMLFormElement;
   private searchInput!: HTMLIonInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
-    configureModalAutofocus(this.el);
+    this.parentModal = getContainingModal(this.el);
   }
 
   render() {
@@ -121,10 +122,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, { recipeId: this.selectedRecipeId }, 'save');
+    await this.parentModal?.dismiss({ recipeId: this.selectedRecipeId }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el, undefined, 'cancel');
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 }
