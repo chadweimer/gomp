@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController } from '@ionic/core';
-import { Component, Host, Method, State, h } from '@stencil/core';
+import { Component, Element, Host, Method, State, h } from '@stencil/core';
 import { Backup } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/modals';
@@ -10,6 +10,8 @@ import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../hel
   styleUrl: 'page-admin-maintenance.css',
 })
 export class PageAdminMaintenance implements ComponentWithActivatedCallback {
+  @Element() el!: HTMLPageAdminMaintenanceElement;
+
   @State() backups: Backup[] = [];
 
   @Method()
@@ -237,6 +239,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   private async onUploadClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'file-upload-browser',
         componentProps: {
           heading: 'Upload Backup',

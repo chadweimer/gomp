@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
 import { getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
 
 @Component({
@@ -30,11 +30,19 @@ export class RecipeEditor {
 
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
-  private imageInput!: HTMLInputElement;
+  private imageInput?: HTMLInputElement;
 
   async connectedCallback() {
+    const initialRecipe = { ...this.recipe };
+
     configureModalAutofocus(this.el);
+    configureModalCanDismiss(this.el, () => !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0);
+
     this.currentUserSettings = await trap(api.loadUserSettings, null);
+  }
+
+  disconnectedCallback() {
+    configureModalCanDismiss(this.el, () => true);
   }
 
   render() {
@@ -60,7 +68,7 @@ export class RecipeEditor {
                 spellcheck
                 required
                 autofocus
-                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, name: (e.currentTarget as HTMLIonInputElement).value as string }} />
+                onIonInput={e => this.recipe = { ...this.recipe, name: e.detail.value as string }} />
             </ion-item>
             {isNull(this.recipe?.id) &&
               <ion-item lines="full">
@@ -74,13 +82,13 @@ export class RecipeEditor {
               <ion-input label="Serving Size" label-placement="stacked" value={this.recipe?.servingSize}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, servingSize: (e.currentTarget as HTMLIonInputElement).value as string }} />
+                onIonInput={e => this.recipe = { ...this.recipe, servingSize: e.detail.value as string }} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Time" label-placement="stacked" value={this.recipe?.time}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, time: (e.currentTarget as HTMLIonInputElement).value as string }} />
+                onIonInput={e => this.recipe = { ...this.recipe, time: e.detail.value as string }} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Ingredients" label-placement="stacked"
@@ -106,7 +114,7 @@ export class RecipeEditor {
             <ion-item lines="full">
               <ion-input label="Source" label-placement="stacked" value={this.recipe?.sourceUrl}
                 inputmode="url"
-                onIonBlur={(e: Event) => this.recipe = { ...this.recipe, sourceUrl: (e.currentTarget as HTMLIonInputElement).value as string }} />
+                onIonInput={e => this.recipe = { ...this.recipe, sourceUrl: e.detail.value as string }} />
             </ion-item>
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.recipe?.tags}
@@ -128,11 +136,23 @@ export class RecipeEditor {
 
     await dismissContainingModal(this.el, {
       recipe: this.recipe,
-      file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput.files?.[0] : null
+      file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput?.files?.[0] : null
     });
   }
 
   private async onCancelClicked() {
     await dismissContainingModal(this.el);
+  }
+
+  private areEqual(a: Recipe, b: Recipe) {
+    return a.name === b.name &&
+      a.directions === b.directions &&
+      a.ingredients === b.ingredients &&
+      a.nutritionInfo === b.nutritionInfo &&
+      a.servingSize === b.servingSize &&
+      a.sourceUrl === b.sourceUrl &&
+      a.storageInstructions === b.storageInstructions &&
+      a.time === b.time &&
+      JSON.stringify(a.tags?.sort()) === JSON.stringify(b.tags?.sort());
   }
 }

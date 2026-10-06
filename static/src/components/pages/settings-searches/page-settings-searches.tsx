@@ -1,5 +1,5 @@
 import { alertController, modalController } from '@ionic/core';
-import { Component, Host, h, State, Method } from '@stencil/core';
+import { Component, Host, h, State, Method, Element } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { enableBackForOverlay, showToast } from '../../../helpers/modals';
@@ -11,6 +11,8 @@ import state from '../../../stores/state';
   styleUrl: 'page-settings-searches.css',
 })
 export class PageSettingsSearches implements ComponentWithActivatedCallback {
+  @Element() el!: HTMLPageSettingsSearchesElement;
+
   private readonly resultsPerPage = 24;
 
   @State() filters: SavedSearchFilterCompact[] = [];
@@ -154,6 +156,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   private async onAddFilterClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'search-filter-editor',
         componentProps: {
           prompt: 'New Search'
@@ -188,6 +191,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       }
 
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'search-filter-editor',
         componentProps: {
           prompt: 'Edit Search',

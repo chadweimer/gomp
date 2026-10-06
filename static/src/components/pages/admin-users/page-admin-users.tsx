@@ -1,5 +1,5 @@
 import { alertController, modalController } from '@ionic/core';
-import { Component, Host, h, State, Method } from '@stencil/core';
+import { Component, Host, h, State, Method, Element } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { enableBackForOverlay, showToast } from '../../../helpers/modals';
@@ -10,6 +10,8 @@ import { ComponentWithActivatedCallback, enumKeyFromValue, isNull } from '../../
   styleUrl: 'page-admin-users.css',
 })
 export class PageAdminUsers implements ComponentWithActivatedCallback {
+  @Element() el!: HTMLPageAdminUsersElement;
+
   private readonly resultsPerPage = 24;
 
   @State() users: User[] = [];
@@ -151,6 +153,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
   private async onAddUserClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'user-editor',
         backdropDismiss: false,
       });
@@ -167,6 +170,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
   private async onEditUserClicked(user: User) {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'user-editor',
         componentProps: {
           user: user

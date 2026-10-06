@@ -50,6 +50,53 @@ export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
   return getContainingModal(el)?.dismiss(data);
 }
 
+export function configureModalCanDismiss(el: HTMLElement, isDirty: () => boolean) {
+  const modal = getContainingModal(el);
+  if (modal) {
+    modal.canDismiss = async () => {
+      // Dismiss immediately if the modal is no longer attached to the DOM.
+      if (modal.presentingElement && modal.presentingElement.parentElement === null) {
+        return true;
+      }
+
+      try {
+        if (isDirty()) {
+          const alert = await alertController.create({
+            header: 'Discard Changes?',
+            message: 'You have unsaved changes. Are you sure you want to discard them?',
+            buttons: [
+              {
+                text: 'Continue Editing',
+                role: 'cancel',
+              },
+              {
+                text: 'Discard Changes',
+                role: 'destructive',
+              },
+            ],
+          });
+
+          await alert.present();
+
+          const { role: alertRole } = await alert.onDidDismiss();
+          // If alertRole is undefined, it means the alert was dismissed automatically (e.g., browser back button)
+          const dismissed = alertRole === 'destructive' || !alertRole;
+
+          // If the modal was being dismissed due to the user attempting to navigate back,
+          // push a new state to prevent accidental dismissal.
+          if (!dismissed && !(globalThis.history.state as { modal?: boolean })?.modal) {
+            globalThis.history.pushState({ modal: true }, '');
+          }
+          return dismissed;
+        }
+      } catch (ex) {
+        console.error(ex);
+      }
+      return true;
+    };
+  }
+}
+
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
   await toast.present();

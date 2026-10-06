@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
 import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
@@ -26,7 +26,11 @@ export class SearchFilterEditor {
   private form!: HTMLFormElement;
 
   async connectedCallback() {
+    const initialFilter = { ...this.searchFilter };
+
     configureModalAutofocus(this.el);
+    configureModalCanDismiss(this.el, () => !this.areEqual(initialFilter, this.searchFilter));
+
     this.currentUserSettings = await trap(api.loadUserSettings, null);
     if (this.showSavedLoader) {
       this.filters = await trap(api.loadSearchFilters, []);
@@ -173,5 +177,15 @@ export class SearchFilterEditor {
     } catch (ex) {
       console.error(ex);
     }
+  }
+
+  private areEqual(a: SearchFilter, b: SearchFilter) {
+    return a.query === b.query &&
+      a.withPictures === b.withPictures &&
+      a.sortBy === b.sortBy &&
+      a.sortDir === b.sortDir &&
+      JSON.stringify(a.fields?.sort()) === JSON.stringify(b.fields?.sort()) &&
+      JSON.stringify(a.states?.sort()) === JSON.stringify(b.states?.sort()) &&
+      JSON.stringify(a.tags?.sort()) === JSON.stringify(b.tags?.sort());
   }
 }

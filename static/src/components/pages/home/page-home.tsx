@@ -185,6 +185,7 @@ export class PageHome implements ComponentWithActivatedCallback {
   private async onNewRecipeClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'recipe-editor',
         backdropDismiss: false,
       });

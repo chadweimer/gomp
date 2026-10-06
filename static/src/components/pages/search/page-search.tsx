@@ -76,7 +76,7 @@ export class PageSearch {
           </ion-toolbar>
         </ion-header>
 
-        <ion-content ref={(el: HTMLIonContentElement) => this.content = el} scroll-events
+        <ion-content ref={el => this.content = el!} scroll-events
           onIonScrollEnd={(e: CustomEvent<ScrollBaseDetail>) => this.onContentScrolled(e)}>
           <ion-grid class="no-pad">
             <ion-row>
@@ -211,6 +211,7 @@ export class PageSearch {
   private async onNewRecipeClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'recipe-editor',
         backdropDismiss: false,
       });

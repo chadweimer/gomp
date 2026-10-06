@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../helpers/schema.gen';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
 import { isNull } from '../../helpers/utils';
 
 @Component({
@@ -17,7 +17,10 @@ export class NoteEditor {
   private form!: HTMLFormElement;
 
   connectedCallback() {
+    const initialNote = { ...this.note };
+
     configureModalAutofocus(this.el);
+    configureModalCanDismiss(this.el, () => this.note.text !== initialNote.text);
   }
 
   render() {

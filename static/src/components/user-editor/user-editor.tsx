@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../helpers/schema.gen';
-import { configureModalAutofocus, dismissContainingModal } from '../../helpers/modals';
+import { configureModalAutofocus, configureModalCanDismiss, dismissContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({
@@ -22,7 +22,11 @@ export class UserEditor {
   private repeatPasswordInput!: HTMLIonInputElement;
 
   connectedCallback() {
+    const initialUser = { ...this.user };
+
     configureModalAutofocus(this.el);
+    configureModalCanDismiss(this.el, () =>
+      this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel);
   }
 
   render() {
@@ -69,7 +73,7 @@ export class UserEditor {
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
                   onIonBlur={(e: Event) => this.repeatPassword = (e.currentTarget as HTMLIonInputElement).value as string}
-                  ref={(el: HTMLIonInputElement) => this.repeatPasswordInput = el}
+                  ref={el => this.repeatPasswordInput = el!}
                   required />
               </ion-item>
             }

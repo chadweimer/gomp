@@ -515,6 +515,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   private async onEditClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'recipe-editor',
         componentProps: {
           recipe: this.recipe,
@@ -616,6 +617,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   private async onAddLinkClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'recipe-link-editor',
         componentProps: {
           parentRecipeId: this.recipeId
@@ -657,6 +659,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   private async onAddNoteClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'note-editor',
         backdropDismiss: false,
       });
@@ -673,6 +676,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   private async onEditNoteClicked(note: Note) {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'note-editor',
         componentProps: {
           note: note
@@ -717,6 +721,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   private async onUploadImageClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'file-upload-browser',
         componentProps: {
           heading: 'Upload Picture',

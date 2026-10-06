@@ -384,6 +384,7 @@ export class AppRoot {
   private async onSearchFilterClicked() {
     await enableBackForOverlay(async () => {
       const modal = await modalController.create({
+        presentingElement: this.el,
         component: 'search-filter-editor',
         componentProps: {
           saveLabel: 'Search',
