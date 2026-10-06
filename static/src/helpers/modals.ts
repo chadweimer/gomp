@@ -1,50 +1,56 @@
-import { actionSheetController, ActionSheetOptions, alertController, AlertOptions, ComponentRef, loadingController, modalController, ModalOptions, toastController } from "@ionic/core";
+import { actionSheetController, ActionSheetOptions, alertController, AlertOptions, ComponentRef, loadingController, modalController, ModalOptions, OverlayEventDetail, toastController } from "@ionic/core";
 
-async function preventBack<T = unknown>(presenter: () => Promise<T>) {
-  const onPopState = () => {
+async function present<T = unknown>(
+  presenter: {
+    present: () => Promise<void>,
+    dismiss: (data?: unknown, role?: string) => Promise<boolean>,
+    onDidDismiss: () => Promise<OverlayEventDetail<T>>
+  },
+  cancelRole: string
+) {
+  const onPopState = async () => {
     globalThis.history.pushState({ modal: true }, '');
+    await presenter.dismiss(undefined, cancelRole);
   };
 
-  globalThis.addEventListener('popstate', onPopState);
-  globalThis.history.pushState({ modal: true }, '');
+  let pushedState = false;
+  if (!(globalThis.history.state as { modal?: boolean })?.modal) {
+    globalThis.addEventListener('popstate', onPopState);
+    globalThis.history.pushState({ modal: true }, '');
+    pushedState = true;
+  }
   try {
-    return await presenter();
+    await presenter.present();
+    return await presenter.onDidDismiss();
   } finally {
     globalThis.removeEventListener('popstate', onPopState);
-    globalThis.history.back();
+    if (pushedState) {
+      globalThis.history.back();
+    }
   }
 }
 
-export async function showModal<T = unknown>(options: ModalOptions<ComponentRef>) {
-  return await preventBack(async () => {
-    // Default to not allowing backdrop dismiss if not specified.
-    options.backdropDismiss ??= false;
+export async function showModal<T = unknown>(options: ModalOptions<ComponentRef>, cancelRole = 'cancel') {
+  // Default to not allowing backdrop dismiss if not specified.
+  options.backdropDismiss ??= false;
 
-    const modal = await modalController.create(options);
-    modal.addEventListener?.('focus', performAutofocus);
-    try {
-      await modal.present();
-      return await modal.onDidDismiss<T>();
-    } finally {
-      modal.removeEventListener?.('focus', performAutofocus);
-    }
-  });
+  const modal = await modalController.create(options);
+  modal.addEventListener?.('focus', performAutofocus);
+  try {
+    return await present<T>(modal, cancelRole);
+  } finally {
+    modal.removeEventListener?.('focus', performAutofocus);
+  }
 }
 
-export async function showAlert<T = unknown>(options: AlertOptions) {
-  return await preventBack(async () => {
-    const alert = await alertController.create(options);
-    await alert.present();
-    return await alert.onDidDismiss<T>();
-  });
+export async function showAlert<T = unknown>(options: AlertOptions, cancelRole = 'cancel') {
+  const alert = await alertController.create(options);
+  return await present<T>(alert, cancelRole);
 }
 
-export async function showActionSheet<T = unknown>(options: ActionSheetOptions) {
-  return await preventBack(async () => {
-    const actionSheet = await actionSheetController.create(options);
-    await actionSheet.present();
-    return await actionSheet.onDidDismiss<T>();
-  });
+export async function showActionSheet<T = unknown>(options: ActionSheetOptions, cancelRole = 'cancel') {
+  const actionSheet = await actionSheetController.create(options);
+  return await present<T>(actionSheet, cancelRole);
 }
 
 export async function showToast(message: string, duration = 2000) {

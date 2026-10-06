@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
-import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
+import { Component, Element, Fragment, h, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
 import { api, refreshSearchResults } from '../../helpers/api';
 import { showModal } from '../../helpers/modals';
